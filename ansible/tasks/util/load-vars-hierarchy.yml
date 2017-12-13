@@ -1,0 +1,13 @@
+---
+
+# Load all the appropriate variables
+- include_tasks: ../tasks/util/load-vars-from-dir.yml
+  with_items:
+    - "{{ hierarchy_dir }}/vars"
+    - "{{ hierarchy_dir }}/vars/regional/{{ account.region }}"
+    - "{{ hierarchy_dir }}/vars/{{ account.name }}"
+    - "{{ hierarchy_dir }}/vars/{{ account.name }}/{{ account.region }}"
+  loop_control:
+    loop_var: vars_directory
+
+...

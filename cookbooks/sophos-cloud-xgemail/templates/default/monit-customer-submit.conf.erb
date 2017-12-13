@@ -1,0 +1,5 @@
+check process xgemail-jilter-service with pidfile /var/run/xgemail-jilter-service.pid
+  group mail
+  start program = "/etc/init.d/xgemail-jilter-service start"
+  stop  program = "/etc/init.d/xgemail-jilter-service stop"
+  if failed port 9876 type tcp then restart

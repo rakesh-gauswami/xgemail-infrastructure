@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Tomcat init script
+
+ulimit -n 32768
+
+export JAVA_HOME=/usr/lib/jvm/default-java
+export CATALINA_HOME=/usr/share/tomcat
+export CATALINA_BASE=/data/var
+export CATALINA_OUT=/data/log/tomcat/catalina.out
+export CATALINA_PID=<%= node['tomcat']['pid_file'] %>
+
+mkdir -p ${CATALINA_BASE}
+mkdir -p $(basename ${CATALINA_OUT})
+
+su -s /bin/bash -c "${CATALINA_HOME}/bin/catalina.sh $*" tomcat

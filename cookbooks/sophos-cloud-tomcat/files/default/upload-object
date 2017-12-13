@@ -1,0 +1,34 @@
+#!/bin/bash
+# Uploads an S3 object to the appropriate S3 bucket
+
+set -e
+
+if [ "$#" -ge 6 ]; then
+    ACCOUNT="$1"
+    VPC="$2"
+    REGION="$3"
+    BUCKET="$4"
+    BUCKETOBJECT="$5"
+    LOCALOBJECT="$6"
+
+    KEY_TYPE="connections"
+    ALIAS="alias/cloud-$ACCOUNT-$KEY_TYPE"
+    echo "Find the key id associated to alias: '$ALIAS'"
+
+    LOCATIONCONSTRAINT=$(aws s3api get-bucket-location --bucket $BUCKET | grep LocationConstraint | awk '{print $2}' | tr -d ',"')
+
+    echo "Key id of key alias has been found"
+    KEYID=`aws kms --region $LOCATIONCONSTRAINT list-aliases --query 'Aliases[*].[AliasName, TargetKeyId]' --output text | grep $ALIAS | awk '{print $2}'`
+    echo "Using key id  '$KEYID...'"
+
+    echo "Upload S3 object '$LOCALOBJECT' to bucket '$BUCKET' object '$BUCKETOBJECT'..."
+
+    aws --region $LOCATIONCONSTRAINT s3api put-object --bucket $BUCKET --key "$BUCKETOBJECT" --body "$LOCALOBJECT" --server-side-encryption aws:kms --ssekms-key-id $KEYID
+
+    echo "Saved '$BUCKETOBJECT'"
+
+else
+    echo "usage: $(basename $0) <account> <vpc-name> <region> <bucket-name> <app> <source-path>"
+    echo "ex: $(basename $0) dev5 CloudStation us-west-2 cloud-inf-connections download.tar.gz /sophos/tmp/download.tar.gz"
+    exit 2
+fi

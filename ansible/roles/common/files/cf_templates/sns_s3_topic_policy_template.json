@@ -1,0 +1,62 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+
+    "Description": "SNS S3 Topic Policy Template for Sophos Cloud VPC.",
+
+    "Metadata": {
+        "Copyright": [
+            "Copyright 2016, Sophos Limited. All rights reserved.",
+            "",
+            "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+            "Sophos Limited and Sophos Group.  All other product and company",
+            "names mentioned are trademarks or registered trademarks of their",
+            "respective owners."
+        ],
+
+        "Comments": [
+            "Creates SNS topic policy permitting S3 notification events from",
+            "specified bucket"
+        ]
+    },
+
+    "Parameters": {
+        "SNSTopicARN": {
+            "Description": "ARN of the topic",
+            "Type": "String"
+        },
+        "S3Bucket": {
+            "Description": "S3 Bucket to allow with Topic Policy",
+            "Type" : "String",
+            "Default": ""
+        }
+    },
+
+    "Resources": {
+        "SNSS3TopicPolicy": {
+          "Type" : "AWS::SNS::TopicPolicy",
+          "Properties" : {
+            "PolicyDocument" : {
+              "Id" : "SnsTopicPolicyDocument",
+               "Version" : "2012-10-17",
+               "Statement" : [ {
+                  "Sid" : "sns-topic-policy-document",
+                  "Effect" : "Allow",
+                  "Principal" : { "Service": "s3.amazonaws.com" },
+                  "Action" : "sns:Publish",
+                  "Resource" : { "Ref": "SNSTopicARN" },
+                  "Condition":{
+                    "ArnEquals": {
+                      "AWS:SourceArn": {
+                        "Fn::Join": ["", ["arn:aws:s3:*:*:",
+                          {"Ref": "S3Bucket"}
+                        ] ]
+                      }
+                    }
+                  }
+               } ]
+            },
+            "Topics" : [ { "Ref": "SNSTopicARN" } ]
+          }
+        }
+    }
+}

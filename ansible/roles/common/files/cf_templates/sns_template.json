@@ -1,0 +1,116 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+
+    "Description": "SNS Topic Template for Sophos Cloud VPC.",
+
+    "Metadata": {
+        "Copyright": [
+            "Copyright 2016, Sophos Limited. All rights reserved.",
+            "",
+            "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+            "Sophos Limited and Sophos Group.  All other product and company",
+            "names mentioned are trademarks or registered trademarks of their",
+            "respective owners."
+        ],
+
+        "Comments": [
+            { "Ref": "Description" },
+            ""
+        ]
+    },
+
+    "Parameters": {
+        "Environment": {
+            "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
+            "Type": "String"
+        },
+
+        "SNSTopicEndpointProtocol": {
+            "Description": "Protocol of communication with Endpoint, e.g. email, json, email-json, etc..",
+            "Type": "String",
+            "AllowedValues": [ "http", "https", "email", "email-json", "sms", "sqs", "application", "lambda" ]
+        },
+
+        "SNSTopicEndpointValue": {
+            "Description": "Endpoint of the topic, e.g. an email address, an lambda ARN, an sqs ARN, etc...",
+            "Type": "String"
+        },
+
+        "SNSTopicName": {
+            "Description": "Name of the topic",
+            "Type": "String"
+        },
+        "SNSS3TopicPolicyBucket": {
+            "Description": "SNS S3 Topic Policy Bucket",
+            "Type" : "String",
+            "Default": ""
+        },
+        "SNSS3TopicPolicyCreate": {
+          "Description": "Specify true to create a Topic Policy for S3, otherwise specify false",
+          "Type": "String",
+          "AllowedValues": [ "true", "false" ],
+          "Default": "false"
+        }
+    },
+    
+    "Conditions": {
+      "CreateS3TopicPolicy": {
+        "Fn::Equals" : [ { "Ref" : "SNSS3TopicPolicyCreate" }, "true" ]
+      }
+    },
+
+    "Resources": {
+        "SNSTopic": {
+            "Type": "AWS::SNS::Topic",
+            "Properties": {
+                "TopicName": {
+                    "Fn::Join": [
+                        "-",
+                        [
+                            { "Ref": "Environment" },
+                            { "Ref": "SNSTopicName" },
+                            "topic"
+                        ]
+                    ]
+                },
+                "Subscription": [
+                    { "Endpoint": { "Ref": "SNSTopicEndpointValue" }, "Protocol": { "Ref": "SNSTopicEndpointProtocol" } }
+                ]
+            }
+        },
+        "SNSS3TopicPolicy": {
+          "Condition" : "CreateS3TopicPolicy",
+          "Type" : "AWS::SNS::TopicPolicy",
+          "Properties" : {
+            "PolicyDocument" : {
+              "Id" : "SnsTopicPolicyDocument",
+               "Version" : "2012-10-17",
+               "Statement" : [ {
+                  "Sid" : "sns-topic-policy-document",
+                  "Effect" : "Allow",
+                  "Principal" : { "Service": "s3.amazonaws.com" },
+                  "Action" : "sns:Publish",
+                  "Resource" : { "Ref": "SNSTopic" },
+                  "Condition":{
+                    "ArnEquals": {
+                      "AWS:SourceArn": {
+                        "Fn::Join": ["", ["arn:aws:s3:*:*:",
+                          {"Ref": "SNSS3TopicPolicyBucket"}
+                        ] ]
+                      }
+                    }
+                  }
+               } ]
+            },
+            "Topics" : [ { "Ref": "SNSTopic" } ]
+          }
+        }
+    },
+
+    "Outputs": {
+        "SNSTopicARN": {
+            "Description": "ARN of the SNS topic",
+            "Value": { "Ref" : "SNSTopic" }
+        }
+    }
+}

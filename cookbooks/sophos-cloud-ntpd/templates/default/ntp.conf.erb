@@ -1,0 +1,23 @@
+driftfile /var/lib/ntp/drift
+
+
+restrict default nomodify notrap nopeer noquery
+
+statsdir /var/log/ntpstats/
+
+<% node[:ntp][:restrict].each do |res| -%>
+    restrict <%= res %>
+<% end -%>
+
+<% node.default[:ntp][:vpc_cidr_string].each_line do |res| -%>
+    restrict <%= res %>
+<% end -%>
+
+<% node[:ntp][:servers].each do |server| -%>
+    server <%= server %> iburst
+<% end -%>
+
+logconfig =clockall =peerall =sysall =syncall
+
+interface listen eth0
+interface ignore ipv6

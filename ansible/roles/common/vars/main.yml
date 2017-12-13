@@ -1,0 +1,114 @@
+---
+aws:
+  vpc:
+    cloud_email:
+      name: CloudEmail
+    cloud_station:
+      name: CloudStation
+  s3:
+    customer_submit_bucket:
+      name: stack.s3.customer_submit_bucket
+      template: "../roles/common/files/cf_templates/s3_bucket_template.json"
+      template_parameters:
+        Environment: {{account.name}}
+        RequireEncryptionForUploads: sse-s3
+        S3BucketName: "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name}}-xgemail-cust-submit"
+        S3LifeCycleDelete: 14
+        S3PolicyCreate: true
+        S3PolicyPrincipalList: "arn:aws:iam::{{AWS_ACCOUNT_ID}}:role/build-system-{{account.name}}"
+    emergency_inbox_bucket:
+      name: stack.s3.emergency_inbox_bucket
+      template: "../roles/common/files/cf_templates/s3_bucket_template.json"
+      template_parameters:
+        Environment: {{account.name}}
+        RequireEncryptionForUploads: sse-s3
+        S3BucketName: "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name}}-xgemail-emgcy-inbox"
+        S3LifeCycleDelete: 14
+        S3PolicyCreate: true
+        S3PolicyPrincipalList: "arn:aws:iam::{{AWS_ACCOUNT_ID}}:role/build-system-{{account.name}}"
+    msg_history_bucket:
+      name: stack.s3.msg_history_bucket
+      template: "../roles/common/files/cf_templates/s3_bucket_template.json"
+      template_parameters:
+        Environment: {{account.name}}
+        RequireEncryptionForUploads: sse-s3
+        S3BucketName: "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name}}-xgemail-msg-history"
+        S3PolicyCreate: true
+        S3PolicyPrincipalList: "arn:aws:iam::{{AWS_ACCOUNT_ID}}:role/build-system-{{account.name}}"
+    msg_stats_bucket:
+      name: stack.s3.msg_stats_bucket
+      template: "../roles/common/files/cf_templates/s3_bucket_template.json"
+      template_parameters:
+        Environment: {{account.name}}
+        RequireEncryptionForUploads: sse-s3
+        S3BucketName: "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name}}-xgemail-msg-stats"
+        S3LifeCycleDelete: 365
+        S3PolicyCreate: true
+        S3PolicyPrincipalList: "arn:aws:iam::{{AWS_ACCOUNT_ID}}:role/build-system-{{account.name}}"
+    policy_bucket:
+      name: stack.s3.policy_bucket_bucket
+      template: "../roles/common/files/cf_templates/s3_policy_bucket_template.json"
+      template_parameters:
+        Environment: {{account.name}}
+        RequireEncryptionForUploads: sse-s3
+        S3BucketName: "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name}}-xgemail-policy"
+        SnsPolicyTopic: 365
+        SnsRelayControlTopic:
+    quarantine_bucket:
+      name: stack.s3.quarantine_bucket
+      template: "../roles/common/files/cf_templates/s3_bucket_template.json"
+      template_parameters:
+        Environment: {{account.name}}
+        RequireEncryptionForUploads: sse-s3
+        S3BucketName: "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name}}-xgemail-quarantine"
+        S3LifeCycleDelete: 30
+        S3PolicyCreate: true
+        S3PolicyPrincipalList: "arn:aws:iam::{{AWS_ACCOUNT_ID}}:role/build-system-{{account.name}}"
+    submit_bucket:
+      name: stack.s3.submit_bucket
+      template: "../roles/common/files/cf_templates/s3_bucket_template.json"
+      template_parameters:
+        Environment: {{account.name}}
+        RequireEncryptionForUploads: sse-s3
+        S3BucketName: "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name}}-xgemail-submit"
+        S3LifeCycleDelete: 14
+        S3PolicyCreate: true
+        S3PolicyPrincipalList: "arn:aws:iam::{{AWS_ACCOUNT_ID}}:role/build-system-{{account.name}}"
+
+
+
+
+
+  asg:
+    ami_id:
+    max_size: 6
+    min_size: 1
+    instance_ssh_key: private-{{ account.region }}
+    instance_type: t2.large
+  bastion_security_group: "{{ security_output.ansible_facts.cloudformation[stacks.security].stack_outputs.SecurityGroupBastion }}"
+  branch: "{{ branch.name }}"
+  environment: "{{ account.name }}"
+  private_subnet_ids: "{{ vpc_output.ansible_facts.cloudformation[stacks.vpc].stack_outputs.VpcZoneIdentifiersPrivate }}"
+  public_subnet_ids: "{{ vpc_output.ansible_facts.cloudformation[stacks.vpc].stack_outputs.VpcZoneIdentifiersPublic }}"
+  region: "{{ account.region }}"
+  s3:
+    submit_bucket: "{{ s3_submit_output.ansible_facts.cloudformation[stacks.s3.submit].stack_outputs.S3BucketName }}"
+  sqs:
+    request:
+      queuename: "{{ vpc_output.ansible_facts.cloudformation[stacks.vpc].stack_outputs.Vpc }}-SASI_Request"
+      visibilitytimeout: 180
+    response:
+      queuename: "{{ vpc_output.ansible_facts.cloudformation[stacks.vpc].stack_outputs.Vpc }}-SASI_Response"
+      visibilitytimeout: 20
+  vpc_id: "{{ vpc_output.ansible_facts.cloudformation[stacks.vpc].stack_outputs.Vpc }}"
+
+  "NAT_EIP": "A",
+  "XGEMAIL_IOPS_DATA_GB": "100",
+"XGEMAIL_SIZE_DATA_GB": "40",
+"INSTANCE_SIZE_XGEMAIL_ELASTICSEARCH": "t2.medium",
+"INSTANCE_SIZE_XGEMAIL_INTERNET_DELIVERY": "t2.small",
+"INSTANCE_SIZE_XGEMAIL_DELIVERY": "t2.small",
+"INSTANCE_SIZE_XGEMAIL_SUBMIT": "t2.small",
+"INSTANCE_SIZE_XGEMAIL_XDELIVERY": "t2.small",
+"XGEMAIL_SXL_DBL": "uri.cal1.sophosxl.com",
+"XGEMAIL_SXL_RBL": "fur.cal1.sophosxl.com"

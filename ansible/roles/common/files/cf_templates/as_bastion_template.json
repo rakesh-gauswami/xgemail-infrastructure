@@ -1,0 +1,469 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+
+    "Description": "Bastion template for Sophos Cloud.",
+
+    "Metadata": {
+        "Copyright": [
+            "Copyright 2016, Sophos Limited. All rights reserved.",
+            "",
+            "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+            "Sophos Limited and Sophos Group.  All other product and company",
+            "names mentioned are trademarks or registered trademarks of their",
+            "respective owners."
+        ],
+
+        "Comments": [
+            { "Ref": "Description" },
+            ""
+        ]
+    },
+
+    "Parameters": {
+        "AmiId": {
+            "Description": "AMI ID to use as a base for the stack",
+            "Type": "String"
+        },
+        "AutoScalingMaxSize": {
+            "Description": "Maximum number of instances in the Auto Scaling Group",
+            "Type": "String",
+            "Default": "2"
+        },
+        "AutoScalingMinSize": {
+            "Description": "Minimum number of instances in the Auto Scaling Group",
+            "Type": "String",
+            "Default": "1"
+        },
+        "AvailabilityZones": {
+            "Type": "List<String>",
+            "Description": "List of Availability Zones with Public and Private Subnets",
+            "ConstraintDescription": "must be a comma-separated list of valid Availability Zones for the selected VPC"
+        },
+        "BastionInstanceProfile": {
+            "Description": "Default IAM instance profile for Bastion Hosts",
+            "Type": "String"
+        },
+        "BastionSecurityGroup": {
+            "Description": "Default security group for Bastion Hosts",
+            "Type": "AWS::EC2::SecurityGroup::Id"
+        },
+        "Branch": {
+            "Description": "(Develop, CPLAT-XXXX, etc...)",
+            "Type": "String"
+        },
+        "DeployIgnoreUnmodifiedGroupSize": {
+            "Description": "During a stack update, indicates whether AWS CloudFormation ignores any group size property differences between your current Auto Scaling group and the Auto Scaling group that is described in the update.",
+            "Type": "String",
+            "Default": "true",
+            "AllowedValues": [ "true", "false" ]
+        },
+        "DeployMaxBatchSize": {
+            "Description": "The maximum number of instances that are terminated at a given time.",
+            "Type": "Number",
+            "Default": "1"
+        },
+        "DeployMinInstancesInService": {
+            "Description": "The minimum number of instances that must be in service within the autoscaling group while obsolete instances are being terminated.",
+            "Type": "Number",
+            "Default": "1",
+            "MinValue": "1"
+        },
+        "DeployTimeout": {
+            "Description": "The amount of time to wait until the Auto Scaling group receives the required number of valid signals.",
+            "Type": "String",
+            "Default": "PT10M"
+        },
+        "Environment": {
+            "Description": "(dev, dev2, dev3, dev4, dev5, qa, etc...)",
+            "Type": "String"
+        },
+        "ExternalIpAccess": {
+            "Description": "The public IP address or Sophos address space of the Cloud Controller.",
+            "Type": "String",
+            "Default": "198.144.101.0/24"
+        },
+        "InstanceType": {
+            "Description": "Amazon EC2 instance type",
+            "Type": "String",
+            "Default": "t2.micro",
+            "AllowedValues": [
+                "t2.small",
+                "t2.micro",
+                "t2.medium",
+                "m3.medium",
+                "c3.large",
+                "t2.large"
+            ]
+        },
+        "KeyName": {
+            "Type": "AWS::EC2::KeyPair::KeyName",
+            "Description": "Key pair used to SSH to the instance"
+        },
+        "LogstashServer": {
+            "Description": "Hostname of the LogStash Server(s)",
+            "Type": "String"
+        },
+        "ScaleDownOnWeekends": {
+            "Description": "Enable scale down to zero on Saturday night and scale back on Monday morning. (Times are UTC, NON PROD/QA ENVIRONMENT ONLY)",
+            "Type": "String",
+            "Default": "false",
+            "AllowedValues": [ "true", "false" ]
+        },
+        "ScaleDownCron": {
+            "Description": "Cron string for when to begin scale down.",
+            "Type": "String",
+            "Default": "0 1 * * 6"
+        },
+        "ScaleUpCron": {
+            "Description": "Cron string for when to begin scale up.",
+            "Type": "String",
+            "Default": "0 4 * * 1"
+        },
+        "Vpc": {
+            "Description": "ID of an existing VPC",
+            "Type": "AWS::EC2::VPC::Id"
+        },
+        "VpcName": {
+            "Description": "Name of an existing VPC",
+            "Type": "String",
+            "Default": "CloudStation"
+        },
+        "VpcZoneIdentifiers": {
+            "Type": "List<AWS::EC2::Subnet::Id>",
+            "Description": "The list of Public Subnets for your VPC",
+            "ConstraintDescription": "must be a comma-separated list of valid Public Subnets for the selected VPC"
+        }
+    },
+
+    "Conditions": {
+        "EnableScaleDownOnWeekends": {
+            "Fn::And": [
+                {
+                    "Fn::Not": [
+                        {
+                            "Fn::Or": [
+                                {
+                                    "Fn::Equals": [
+                                        {"Ref": "Environment"},
+                                        "prod"
+                                    ]
+                                },
+                                {
+                                    "Fn::Equals": [
+                                        {"Ref": "Environment"},
+                                        "qa"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        {"Ref": "ScaleDownOnWeekends"},
+                        "true"
+                    ]
+                }
+            ]
+        }
+    },
+
+    "Resources": {
+        "BastionAutoScalingGroup": {
+            "Properties": {
+                "AvailabilityZones": {
+                    "Ref": "AvailabilityZones"
+                },
+                "LaunchConfigurationName": {
+                    "Ref": "BastionAutoScalingLaunchConfig"
+                },
+                "MaxSize": {
+                    "Ref": "AutoScalingMaxSize"
+                },
+                "MinSize": {
+                    "Ref": "AutoScalingMinSize"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                ":",
+                                [
+                                    {
+                                        "Ref": "VpcName"
+                                    },
+                                    "bastion",
+                                    {
+                                        "Ref": "Branch"
+                                    },
+                                    {
+                                        "Ref": "Environment"
+                                    }
+                                ]
+                            ]
+                        },
+                        "PropagateAtLaunch": true
+                    }
+                ],
+                "VPCZoneIdentifier": {
+                    "Ref": "VpcZoneIdentifiers"
+                }
+            },
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "CreationPolicy": {
+                "ResourceSignal": {
+                    "Count": { "Ref": "AutoScalingMinSize" },
+                    "Timeout": { "Ref": "DeployTimeout" }
+                }
+            },
+            "UpdatePolicy": {
+                "AutoScalingRollingUpdate": {
+                    "MaxBatchSize": { "Ref": "DeployMaxBatchSize" },
+                    "MinInstancesInService": { "Ref": "DeployMinInstancesInService" },
+                    "PauseTime": { "Ref": "DeployTimeout" },
+                    "SuspendProcesses": [
+                        "HealthCheck",
+                        "ReplaceUnhealthy",
+                        "ScheduledActions"
+                    ],
+                    "WaitOnResourceSignals": "true"
+                },
+                "AutoScalingScheduledAction": {
+                    "IgnoreUnmodifiedGroupSizeProperties": { "Ref": "DeployIgnoreUnmodifiedGroupSize" }
+                }
+            }
+        },
+        "AutoScalingScheduledScaleDown": {
+            "Type": "AWS::AutoScaling::ScheduledAction",
+            "Condition": "EnableScaleDownOnWeekends",
+            "Properties": {
+                "AutoScalingGroupName": {
+                    "Ref": "BastionAutoScalingGroup"
+                },
+                "MinSize": 0,
+                "Recurrence": {
+                    "Ref": "ScaleDownCron"
+                }
+            }
+        },
+        "AutoScalingScheduledScaleUp": {
+            "Type": "AWS::AutoScaling::ScheduledAction",
+            "Condition": "EnableScaleDownOnWeekends",
+            "Properties": {
+                "AutoScalingGroupName": {
+                    "Ref": "BastionAutoScalingGroup"
+                },
+                "MinSize": 1,
+                "Recurrence": {
+                    "Ref": "ScaleUpCron"
+                }
+            }
+        },
+        "BastionAutoScalingLaunchConfig": {
+            "Type": "AWS::AutoScaling::LaunchConfiguration",
+            "Metadata": {
+                "AWS::CloudFormation::Init": {
+                    "configSets": {
+                        "bastion_install": [
+                            "attributes",
+                            "bastion_install"
+                        ]
+                    },
+                    "attributes": {
+                        "files": {
+                            "/var/sophos/cookbooks/attributes.json": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "{\n",
+                                            "   \"sophos_cloud\" : {\n",
+                                            "       \"application_name\"    : \"{{application_name}}\",\n",
+                                            "       \"branch\"              : \"{{branch}}\",\n",
+                                            "       \"environment\"         : \"{{environment}}\",\n",
+                                            "       \"jeeves\"              : {\n",
+                                            "           \"bucket\"          : \"{{jeeves_bucket}}\",\n",
+                                            "           \"bucket_region\"   : \"{{jeeves_bucket_region}}\",\n",
+                                            "           \"path\"            : \"{{jeeves_path}}\",\n",
+                                            "           \"service\"         : \"{{application_name}}\"\n",
+                                            "       },\n",
+                                            "       \"region\"              : \"{{region}}\",\n",
+                                            "       \"vpc_name\"            : \"{{vpc_name}}\"\n",
+                                            "   },\n",
+                                            "   \"sophos_cloud_common\": {",
+                                            "       \"configure_logstash_forwarder\": {",
+                                            "           \"logstash_server\" : \"{{logstash_server}}\"",
+                                            "       }",
+                                            "   }\n",
+                                            "}\n"
+                                        ]
+                                    ]
+                                },
+                                "context": {
+                                    "application_name":                 "bastion",
+                                    "branch":                           { "Ref": "Branch" },
+                                    "environment":                      { "Ref": "Environment" },
+                                    "jeeves_bucket":                    { "Fn::Join": [ "", [
+                                        "cloud-", { "Ref": "Environment" }, "-connections"
+                                    ] ] },
+                                    "jeeves_bucket_region":             "us-west-2",
+                                    "jeeves_path":                      { "Fn::Join": [ "", [
+                                        { "Ref": "AWS::Region" }, "/", "jeeves"
+                                    ] ] },
+                                    "logstash_server":                  { "Ref": "LogstashServer" },
+                                    "region":                           { "Ref": "AWS::Region" },
+                                    "vpc_name":                         { "Ref": "VpcName" }
+                                },
+                                "mode": "000444",
+                                "owner": "root"
+                            },
+                            "/var/sophos/modify_attributes_json": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "#!/bin/bash -xe\n",
+                                            "export host_name=`wget -q -O - http://169.254.169.254/latest/meta-data/public-hostname`\n",
+                                            "sed -i \"s/<<host_name>>/$host_name/g\" ./attributes.json"
+                                        ]
+                                    ]
+                                },
+                                "mode": "000500",
+                                "owner": "root",
+                                "group": "root"
+                            }
+                        },
+                        "commands": {
+                            "01_modify_attributes_json": {
+                                "command": "/var/sophos/modify_attributes_json",
+                                "cwd": "/var/sophos/cookbooks"
+                            }
+                        }
+                    },
+                    "bastion_install": {
+                        "commands": {
+                            "01_delete_run_list_nodes": {
+                                "command": "rm -f /var/chef/chef-repo/nodes/*.*"
+                            },
+                            "02_run_chef_client": {
+                                "command": {
+                                    "Fn::Join": [
+                                        " ",
+                                        [
+                                            "chef-client --no-color -z",
+                                            "-c /var/chef/chef-repo/.chef/client.rb",
+                                            "-j /var/sophos/cookbooks/attributes.json",
+                                            "-l debug -L /var/log/chef-client.instance.install.chef.log"
+                                        ]
+                                    ]
+                                },
+                                "cwd": "/var/chef/chef-repo",
+                                "env": {
+                                    "HOME": "/var/chef"
+                                }
+                            },
+                            "03_configure_node_run_list": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "knife node run_list add -z `knife node list -z` \"",
+                                            " recipe[sophos-cloud-common::install_logstash_forwarder],",
+                                            " recipe[sophos-cloud-common::configure_logstash_forwarder],",
+                                            " recipe[sophos-central::create_jeeves_user],",
+                                            " recipe[sophos-central-bastion::register_route53],",
+                                            " recipe[sophos-cloud-common::run_install_cleanup]",
+                                            "\""
+                                        ]
+                                    ]
+                                },
+                                "cwd": "/var/chef/chef-repo",
+                                "env": {
+                                    "HOME": "/var/chef"
+                                }
+                            },
+                            "04_run_chef_client": {
+                                "command": {
+                                    "Fn::Join": [
+                                        " ",
+                                        [
+                                            "chef-client --no-color -z",
+                                            "-c /var/chef/chef-repo/.chef/client.rb",
+                                            "-j /var/sophos/cookbooks/attributes.json",
+                                            "-l debug -L /var/log/chef-client.instance.install.service.log"
+                                        ]
+                                    ]
+                                },
+                                "cwd": "/var/chef/chef-repo",
+                                "env": {
+                                    "HOME": "/var/chef"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "Properties": {
+                "AssociatePublicIpAddress": true,
+                "IamInstanceProfile": {
+                    "Ref": "BastionInstanceProfile"
+                },
+                "ImageId": {
+                    "Ref": "AmiId"
+                },
+                "InstanceMonitoring": true,
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "SecurityGroups": [
+                    {
+                        "Ref": "BastionSecurityGroup"
+                    }
+                ],
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash -xe\n",
+                                "# Install the files and packages from the metadata\n",
+
+                                "# Make sure we call cfn-signal before exiting, otherwise we have to\n",
+                                "# wait for the CreationPolicy timeout to detect failed initialization.\n",
+                                "# That's because of using the bash -e option, which makes the script\n",
+                                "# exit immediately as soon as any command, e.g. cfn-init, fails.\n",
+
+                                "onexit() {\n",
+                                "  exit_code=$?\n",
+                                "  /opt/aws/bin/cfn-signal -e $exit_code",
+                                " --stack ", { "Ref": "AWS::StackName" },
+                                " --resource BastionAutoScalingGroup",
+                                " --region ", { "Ref": "AWS::Region" },
+                                "\n",
+                                "}\n",
+
+                                "trap onexit EXIT\n",
+
+                                "# Wait for network access.\n",
+                                "/usr/bin/nc -v -z -w 60 www.google.com 80\n",
+
+                                "/opt/aws/bin/cfn-init --verbose ",
+                                " --stack ", { "Ref": "AWS::StackName" },
+                                " --resource BastionAutoScalingLaunchConfig ",
+                                " --configsets bastion_install ",
+                                " --region ", { "Ref": "AWS::Region" },
+                                "\n",
+
+                                "# Now the onexit function will get called.\n"
+                            ]
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}

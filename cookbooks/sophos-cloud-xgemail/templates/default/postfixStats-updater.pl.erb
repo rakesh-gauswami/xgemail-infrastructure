@@ -1,0 +1,164 @@
+#!/usr/bin/perl
+
+# Sample daemon program to extract application performance from Postfix log files,
+
+# Slightly modified by Sophos to convert this file into a chef template parameterized on instance name.
+
+# and store in Berkely DB.
+# The expectation is that the Db will be queried
+# by a companion program, to report the data to a management
+# system such as LogicMonitor.
+
+# Copyright (c) 2009 LogicMonitor LLC
+
+# Permission is hereby granted, free of charge, to any person
+# obtaining a copy of this software and associated documentation
+# files (the "Software"), to deal in the Software without
+# restriction, including without limitation the rights to use,
+# copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following
+# conditions:
+
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+# OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+# WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+# OTHER DEALINGS IN THE SOFTWARE.
+
+
+use strict;
+use POSIX 'setsid';
+use DB_File; # Install
+use File::Tail; # Install
+use POSIX 'setsid';
+use File::Basename;
+use File::Path;
+my $relay;
+
+#Assumes script is named in form APP-updater, and companion script to read data is APP-reporter
+my ($app, $remainder) = split('-',basename($0),2);
+
+
+# the log file to monitor
+# my $APPLOG = '/var/log/application.log';
+my $APPLOG = '/var/log/maillog';
+
+# Path to database
+# if changed here, must be changed in companion program that reads the DB.
+#data is stored in APP.db
+my $DBFILE = '/usr/local/logicmonitor/data/'.$app.'.db';
+
+# main line
+#
+mkpath(dirname($DBFILE));
+
+my $pid_file = '/var/run/'.basename($0).'.pid';
+
+# Handle TERM and INT with explicit exit so we can unlink PID
+# file on the way out
+$SIG{TERM} = $SIG{INT} = sub { exit 0; };
+
+# Open files, print warnings, etc before daemonizing,
+# else they will never be seen
+my $db = tie(my %stats, "DB_File", "$DBFILE", O_CREAT|O_RDWR, 0644, $DB_HASH) || die ("Cannot open $DBFILE");
+my $logref = tie(*LOG, "File::Tail", ( name=>$APPLOG ));
+
+# If no valid PID file, create one and daemonize.
+my $fh = open_pid_file($pid_file);
+my $pid = become_daemon();
+print $fh $pid;
+undef $fh;
+
+# Specific daemon code below.
+foreach (keys %stats) {
+  $stats{$_} = 0;
+}
+$db->sync;
+while (<LOG>) {
+  if (/status=sent/) {
+    next unless (/ postfix-<%= @instance_name %>\//);
+    if (/relay=([^,]+)/o) {
+      $relay = $1;
+    }
+    if ($relay !~ /\[/o ) {
+      $stats{"sent:$relay"} += 1;
+    } else {
+      $stats{"sent:smtp"} += 1;
+    }
+  } elsif (/status=bounced.+said: (\d)\d\d/) {
+    $stats{"smtp:$1xx"} += 1;
+  } elsif (/smtpd.*client=.*\[127/) {
+    $stats{"recv:local"} += 1;
+  } elsif (/pickup.*(sender|uid)=/) {
+    $stats{"recv:local"} += 1;
+  } elsif (/smtpd.*client=/) {
+    $stats{"recv:smtp"} += 1;
+  } elsif (/NOQUEUE: reject.+\]: (\d)\d\d/) {
+    $stats{"smtpd:$1xx"} += 1;
+  }
+
+  $db->sync;
+}
+
+$db->sync;
+untie $logref;
+untie %stats;
+
+#Remove the pid file on the way out.
+END { unlink $pid_file if $$ == $pid; };
+
+
+# ---- subroutines ------------------------------------------------------------
+
+# daemonize the process
+#
+sub become_daemon {
+  my $child = fork();
+  if ( !defined($child) ) {
+    die "Can't fork - $!\n";
+  }
+  elsif ( $child > 0 ) { # parent
+    exit 0;
+  }
+
+  # child process
+  setsid();
+
+  open(STDIN, "</dev/null");
+  open(STDOUT, ">/dev/null");
+  open(STDERR, ">&STDOUT");
+
+  return $$;
+}
+
+# create a pid file
+#
+sub open_pid_file {
+  my $file = shift;
+  if ( -e $file ) {                                         #file already exists
+    my $fh = IO::File->new($file) || return;
+    my $pid = <$fh>;
+    undef $fh;
+
+    # check if the process '$pid' is running
+    if ( kill(0, $pid) ) {
+      die "Server already running with PID $pid";
+    }
+
+    warn "Removing PID file for defunct server process $pid.\n";
+    die "Can't unlink PID file $file" unless unlink $file;
+  }
+
+  my $pid_fh = IO::File->new($file, O_WRONLY|O_CREAT|O_EXCL, 0644)
+      or die "Can't create $file: $!\n";
+}
+
+
+__END__

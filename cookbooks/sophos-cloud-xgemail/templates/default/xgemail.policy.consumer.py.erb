@@ -1,0 +1,148 @@
+#!/usr/bin/env python
+# vim: autoindent expandtab filetype=python shiftwidth=4 softtabstop=4 tabstop=4
+#
+# This downloads all policy documents from policy S3 bucket.
+#
+# Copyright: Copyright (c) 1997-2017. All rights reserved.
+# Company: Sophos Limited or one of its affiliates.
+
+import sys
+sys.path.append("<%= @xgemail_utils_path %>")
+import os
+import logging
+import policyconsumerutils
+import json
+from awshandler import AwsHandler
+from logging import handlers
+from botocore import exceptions
+
+AWS_REGION = "<%= @aws_region %>"
+CONFIGS = <%= Chef::JSONCompat.to_json_pretty(@configs) %>
+EX_TEMPFAIL = <%= @temp_failure_code %>
+POLICY_BUCKET_NAME = "<%= @policy_bucket %>"
+POLICY_SQS_VISIBILITY_TIMEOUT = "<%= @policy_sqs_visibility_timeout %>"
+POLICY_SQS_MESSAGE_RETENTION_PERIOD = "<%= @policy_sqs_msg_retention_period %>"
+QUEUE_NAME = "<%= @policy_queue_name %>"
+SNS_POLICY_ARN = "<%= @sns_policy_arn %>"
+
+# logging to syslog setup
+logger = logging.getLogger('policy-consumer')
+logger.setLevel(logging.INFO)
+syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
+formatter = logging.Formatter(
+    '[%(name)s] %(process)d %(levelname)s %(message)s'
+)
+syslog_handler.formatter = formatter
+logger.addHandler(syslog_handler)
+
+awshandler = AwsHandler(AWS_REGION)
+
+def setup_sqs():
+    logger.info("Setting up policy SQS [{0}]".format(QUEUE_NAME))
+    try:
+        sqs_url = awshandler.get_sqs_url(
+            QUEUE_NAME
+        )
+    except exceptions.ClientError as ex:
+        if ex.response['Error']['Code'] == 'AWS.SimpleQueueService.NonExistentQueue':
+            try:
+                sqs_url = awshandler.create_sqs(
+                    QUEUE_NAME,
+                    POLICY_SQS_MESSAGE_RETENTION_PERIOD,
+                    POLICY_SQS_VISIBILITY_TIMEOUT,
+                    SNS_POLICY_ARN
+                )
+
+                awshandler.subscribe_sqs(
+                    SNS_POLICY_ARN,
+                    sqs_url
+                )
+            except:
+                logger.exception("Unexpected exception during creating/subscribing [{0}]".format(QUEUE_NAME))
+                raise
+        else:
+            logger.exception("Unexpected exception during [{0}] get url call".format(QUEUE_NAME))
+            raise
+    return sqs_url
+
+
+def download_policy_documents(s3_path_prefix, to_file_dir_prefix, file_extension):
+    try:
+        s3_list = awshandler.list_objects(
+            POLICY_BUCKET_NAME,
+            s3_path_prefix
+        )
+
+        failed_sync_set = set()
+        if not s3_list:
+            # list is empty
+            logger.info("No policy documents in [{0}/{1}] to download".format(
+                POLICY_BUCKET_NAME, s3_path_prefix))
+            return
+
+        # Loop through each file
+        for s3_key in s3_list:
+            try:
+
+                # S3 file key is url encoded so we need to make sure to pass the
+                # correct filename to download
+                s3_path_prefix = os.path.dirname(s3_key) + '/'
+                s3_filename = os.path.basename(s3_key)
+
+                new_s3_file_path = s3_path_prefix + policyconsumerutils.decode_url_encoded(s3_filename)
+
+                download_file(
+                    new_s3_file_path,
+                    to_file_dir_prefix,
+                    policyconsumerutils.is_serialized(s3_key, file_extension)
+                )
+            except Exception as ex:
+                failed_sync_set.add(s3_key)
+                logger.exception("Unexpected exception in downloading file [{0}]. Error [{1}]"
+                    .format(s3_key, ex))
+                continue
+
+        if failed_sync_set:
+            logger.info("Startup policy sync failures are [{0}]".format(failed_sync_set))
+    except Exception as ex:
+        logger.exception("Unexpected exception in downloading policy docs.", ex)
+
+
+def download_file(s3_file_path, to_file_dir_prefix, is_serialized):
+    logger.info("Downloading file [{0}]".format(s3_file_path))
+    serialized_content = awshandler.download_data_from_s3(
+        POLICY_BUCKET_NAME,
+        s3_file_path
+    )
+
+    if is_serialized:
+        content = policyconsumerutils.deserialize(serialized_content)
+    else:
+        content = serialized_content
+
+    policyconsumerutils.write_file(
+        content,
+        s3_file_path,
+        to_file_dir_prefix
+    )
+
+
+if __name__ == "__main__":
+    try:
+        #creates a SQS and subscribe to an existing policy SNS topic
+        sqs_url = setup_sqs()
+
+        configs_list = json.loads(CONFIGS.replace("\'", '"'))
+
+        #Download all the S3 policies documents to local
+        for entry in configs_list:
+            download_policy_documents(
+                entry['s3_path_dir'],
+                entry['local_dir'],
+                entry['file_extension']
+            )
+
+    except Exception as e:
+        logger.exception("Unhandled exception in main ", e)
+        exit(EX_TEMPFAIL)
+

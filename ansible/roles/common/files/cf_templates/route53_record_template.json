@@ -1,0 +1,124 @@
+{
+    "AWSTemplateFormatVersion" : "2010-09-09",
+
+    "Description" : "Creates a Route53 record for another resource based on the parameters",
+
+    "Metadata": {
+        "Copyright": [
+            "Copyright 2016, Sophos Limited. All rights reserved.",
+            "",
+            "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+            "Sophos Limited and Sophos Group.  All other product and company",
+            "names mentioned are trademarks or registered trademarks of their",
+            "respective owners."
+        ],
+
+        "Comments": [
+            { "Ref": "Description" },
+            ""
+        ]
+    },
+
+    "Parameters" : {
+        "Delimiter": {
+            "Type": "String",
+            "Description": "Delimiter used after account subdomain",
+            "Default": "-",
+            "AllowedValues": [ "-", "." ]
+        },
+        "Environment" : {
+            "Description": "(dev, dev2, dev3, dev4, dev5, qa, etc...)",
+            "Type" : "String"
+        },
+        "HostedZoneName" : {
+            "Type": "String",
+            "Description": "The DNS name of an existing Amazon Route 53 hosted zone",
+            "AllowedPattern": "(?!-)[a-zA-Z0-9-.]{1,63}(?<!-)",
+            "ConstraintDescription": "must be a valid DNS zone name.",
+            "Default" : "hydra.sophos.com."
+        },
+        "RecordName" : {
+            "Type" : "String",
+            "Description" : "The name of the record set",
+            "Default": ""
+        },
+        "RecordType" : {
+            "Type" : "String",
+            "Description" : "The type of the record set",
+            "Default": "CNAME"
+        },
+        "ResourceRecords" : {
+            "Type" : "List<String>",
+            "Description" : "The resource you are referencing"
+        },
+        "ServiceName" : {
+            "Type" : "String",
+            "Description" : "The service name you want to reach",
+            "Default": "default"
+        },
+        "Ttl" : {
+            "Type" : "String",
+            "Description": "TTL setting for the new record",
+            "Default": "900"
+        },
+        "Vpc" : {
+            "Type" : "String",
+            "Description" : "The vpc for this record is for",
+            "Default" : "CloudStation"
+        }
+    },
+
+    "Conditions": {
+        "CreateMxRecord": {
+            "Fn::Equals": [
+                "MX",
+                { "Ref" : "RecordType" }
+            ]
+        },
+        "UseDefaultMxRecordName": {
+            "Fn::Equals": [
+                "",
+                { "Ref" : "RecordName" }
+            ]
+        },
+        "UseMultipleSubdomains": {
+            "Fn::Equals": [
+                ".",
+                { "Ref" : "Delimiter" }
+            ]
+        }
+    },
+
+    "Resources" : {
+        "NewDNSRecord" : {
+            "Type" : "AWS::Route53::RecordSet",
+            "Properties" : {
+                "HostedZoneName" : { "Fn::Join" : [".", [ { "Ref" : "Environment" },{ "Ref" : "HostedZoneName" }]] },
+                "Comment" : { "Fn::Join" : ["",[ "", { "Ref" : "RecordType" }, " redirect to ", { "Fn::Join" : [", ",{ "Ref" : "ResourceRecords" }] } , "." ]]},
+                "Name" : { "Fn::If": [
+                    "CreateMxRecord",
+                    { "Fn::If": [
+                        "UseDefaultMxRecordName",
+                        { "Fn::Join": [".", [ { "Ref" : "Environment" }, { "Ref" : "HostedZoneName" } ]]},
+                        { "Ref" : "RecordName" }
+                    ]},
+                    { "Fn::If": [
+                        "UseMultipleSubdomains",
+                        { "Fn::Join": [".", [ { "Ref" : "ServiceName" },  { "Ref" : "Vpc" } , { "Ref": "AWS::Region" }, { "Ref" : "Environment" }, { "Ref" : "HostedZoneName" } ]]},
+                        { "Fn::Join": [".", [ { "Fn::Join" : ["-",[  { "Ref" : "ServiceName" },  { "Ref" : "Vpc" } , { "Ref": "AWS::Region" }]]}, { "Ref" : "Environment" }, { "Ref" : "HostedZoneName" } ]]}
+                    ]}
+                ]},
+                "Type" : { "Ref" : "RecordType" },
+                "TTL" : { "Ref": "Ttl" },
+                "ResourceRecords" : { "Ref" : "ResourceRecords" }
+            }
+        }
+
+    },
+    "Outputs" : {
+        "NewRecord" : {
+            "Description" : "Fully qualified domain name",
+            "Value" : { "Ref" : "NewDNSRecord" }
+        }
+    }
+}

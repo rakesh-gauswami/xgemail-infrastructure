@@ -1,0 +1,237 @@
+#!/usr/bin/env python
+# vim: autoindent expandtab filetype=python shiftwidth=4 softtabstop=4 tabstop=4
+#
+# Polls the delivery SQS and if a message is available, retrieves it and
+# pulls the referenced email from S3. The last step is to inject the
+# email into the local Postfix delivery queue.
+#
+# Copyright: Copyright (c) 1997-2017. All rights reserved.
+# Company: Sophos Limited or one of its affiliates.
+
+import sys
+sys.path.append("<%= @xgemail_utils_path %>")
+
+import botocore
+import email
+import json
+import logging
+import messageformatter
+import metadataformatter
+import requests
+import smtplib
+import urllib
+from awshandler import AwsHandler
+from common.sqsmessage import SqsMessage
+from logging.handlers import SysLogHandler
+from smtplib import SMTPException
+
+# general constants
+AWS_REGION = "<%= @aws_region %>"
+BUCKET_NAME = "<%= @s3_bucket_name %>"
+MTA_HOST = "<%= @mta_host %>"
+MTA_PORT = <%= @mta_port %>
+PIC_CA_PATH = '<%= @xgemail_pic_ca_path %>'
+PIC_FQDN = '<%= @xgemail_pic_fqdn %>'
+SQS_MAX_NUMBER_OF_MESSAGES = <%= @sqs_max_number_of_messages %>
+SNS_SQS_URL = "<%= @sns_sqs_url %>"
+SQS_VISIBILITY_TIMEOUT = <%= @sqs_visibility_timeout %>
+SQS_WAIT_TIME_SECONDS = <%= @sqs_wait_time_seconds %>
+
+# headers API constants
+PIC_HEADERS_URL = 'https://%s/mail/api/xgemail/headers' % (PIC_FQDN)
+
+# logging to syslog setup
+logging.getLogger("botocore").setLevel(logging.WARNING)
+logger = logging.getLogger('sqsmsgconsumer')
+logger.setLevel(logging.INFO)
+handler = logging.handlers.SysLogHandler('/dev/log')
+formatter = logging.Formatter(
+    '[%(name)s] %(process)d %(levelname)s %(message)s'
+)
+handler.formatter = formatter
+logger.addHandler(handler)
+
+awshandler = AwsHandler(AWS_REGION)
+
+def parse_sqs_message(msg, receipt):
+    msg_as_json = json.loads(msg)
+    return SqsMessage(msg_as_json["schema_version"],
+                      msg_as_json["message_path"],
+                      msg_as_json["accepting_server_ip"],
+                      msg_as_json["queue_id"],
+                      msg_as_json["akm_key"],
+                      msg_as_json["nonce"],
+                      msg_as_json["message_key"],
+                      msg_as_json["submit_message_type"],
+                      receipt)
+
+# Attempts to retrieve headers and add them to the provided message object.
+# Returns the updated message object if successful. If any issues occurred with
+# retrieving or updating the headers, the original message object is returned.
+def add_headers(message, message_path):
+    try:
+        # encode the message_path query parameter with urllib to
+        # avoid issues with special characters such as /
+        query_parameters = {
+            'message_path': urllib.quote_plus(message_path)
+        }
+
+        logger.debug(
+            'Retrieving headers from [%s] for message [%s] and query parameters %s',
+            PIC_HEADERS_URL,
+            message_path,
+            query_parameters
+        )
+
+        response = requests.get(
+            PIC_HEADERS_URL,
+            verify = PIC_CA_PATH,
+            params = query_parameters
+        )
+
+        response.raise_for_status()
+
+        headers = response.json()['headers']
+
+        if len(headers) == 0:
+            logger.debug(
+                "No headers found for message [%s]", message_path
+            )
+            return message
+
+        parsed_message = email.message_from_string(message)
+
+        for header_key, header_value in response.json()['headers'].iteritems():
+            parsed_message[header_key] = header_value
+
+        logger.info(
+            'Added headers for message [%s]: %s',
+            message_path,
+            headers
+        )
+
+        return parsed_message.as_string()
+    except Exception:
+        logger.exception("Unable to add headers for message [%s]", message_path)
+
+        # return the original message without headers
+        return message
+
+# attempts to inject email into Postfix and
+# returns True if successful, False otherwise.
+def inject_email(sender, recipients, email):
+    sendmail_errors = {}
+    try:
+        server = smtplib.SMTP(MTA_HOST, MTA_PORT)
+        # TODO: record queue_id to stitch submit and delivery
+        sendmail_recipients_refused = server.sendmail(sender, recipients, email)
+    except SMTPException:
+        logger.exception("Errors during email injection")
+        return False
+    finally:
+        server.quit()
+
+    # SMTP.sendmail() returns a dictionary of refused recipients.
+    # At the time an email reaches the customer-delivery server,
+    # rejecting any recipients should not happen. If it does happen,
+    # we will log the rejected recipients and remove the message from SQS.
+    if sendmail_recipients_refused:
+        logger.error("Errors during email injection: {0}".format(sendmail_errors))
+        return True
+    return True
+
+while True:
+    try:
+        # doing a long poll to reduce number of empty responses.
+        response = awshandler.receive_sqs_messages(
+            SNS_SQS_URL,
+            [],
+            [".*"],
+            SQS_MAX_NUMBER_OF_MESSAGES,
+            SQS_VISIBILITY_TIMEOUT,
+            SQS_WAIT_TIME_SECONDS
+        )
+
+        if "Messages" not in response:
+            # no messages found
+            logger.info("No new messages found in delivery SNS listener queue [{0}]".format(SNS_SQS_URL))
+
+            continue
+
+        for msg in response["Messages"]:
+            if 'TopicArn' in msg['Body']:
+                # message came from SNS SQS queue
+                origin_sqs_queue = SNS_SQS_URL
+                msg_body = json.loads(msg['Body'])
+                sqs_message = parse_sqs_message(msg_body['Message'], msg['ReceiptHandle'])
+            else:
+                # this allows us to handle message directly injected into the customer delivery sns listener queue
+                origin_sqs_queue = SNS_SQS_URL
+                sqs_message = parse_sqs_message(msg["Body"], msg["ReceiptHandle"])
+
+            logger.info("Polled SQS message [{0}] from queue [{1}]".format(sqs_message, origin_sqs_queue))
+
+            try:
+                formatted_message = awshandler.download_message_from_s3(BUCKET_NAME, sqs_message)
+                message_binary = messageformatter.get_message_binary(formatted_message)
+
+                formatted_metadata = awshandler.download_metadata_from_s3(BUCKET_NAME, sqs_message)
+                metadata_raw = metadataformatter.get_metadata_binary(formatted_metadata)
+            except botocore.exceptions.ClientError as e:
+                # this exception should never happen. It means that an SQS job
+                # was created but the email or metadata was not properly uploaded to S3
+                if e.response["Error"]["Code"] == "NoSuchKey":
+                    logger.exception(
+                        "Email or metadata [{0}] not found."
+                        .format(sqs_message.message_path)
+                    )
+                else:
+                    logger.exception("Unexpected error during S3 object download.")
+                # for now, if any error occurs, we keep the SQS message.
+                # At a later point, we might decide to move the SQS message to a dead-letter queue.
+                continue
+            except ValueError:
+                logger.exception("Exception during message/metadata parsing")
+                continue
+
+            metadata = json.loads(metadata_raw)
+            queue_id = metadata["queue_id"]
+            sender = metadata["sender_address"]
+            recipients = metadata["recipients"]
+
+            logger.info(
+                "Email and metadata retrieved from S3. " \
+                "QueueId: {0} - sender: {1} - recipients: [<{2}>]"
+                .format(
+                  queue_id.encode('utf-8'),
+                  None if sender is None else sender.encode('utf-8'),
+                  '>, <'.join(r.encode('utf-8') for r in recipients)
+                )
+            )
+
+            # attempt to add any existing headers to the message
+            message_binary_with_headers = add_headers(
+                message_binary,
+                sqs_message.message_path
+            )
+
+            is_injection_success = inject_email(
+                sender,
+                recipients,
+                message_binary_with_headers
+            )
+
+            if is_injection_success:
+                # Delete message from SQS after injecting into Postfix
+                awshandler.delete_message(
+                    origin_sqs_queue,
+                    sqs_message.receipt
+                )
+
+                logger.info(
+                    "Removed message [{0}] from SQS".format(sqs_message.message_path)
+                )
+
+    except Exception:
+        logger.exception("Unhandled exception in main loop")
+        continue

@@ -1,0 +1,76 @@
+# Load all the appropriate variables
+- debug:
+    msg: 'Load variabled from {{ role_path }}'
+
+- include_tasks: ../tasks/util/load-vars-hierarchy.yml
+  vars:
+    hierarchy_dir: '{{ role_path }}'
+
+- import_tasks: create-task-artifacts.yml
+  tags:
+    - install
+    - uninstall
+
+- import_tasks: cloud-email-vpc.yml
+  tags:
+    - install
+    - uninstall
+
+- import_tasks: s3-buckets.yml
+  tags:
+    - install
+    - uninstall
+
+- import_tasks: sqs-queues.yml
+  tags:
+    - install
+    - uninstall
+
+- import_tasks: sns-topics.yml
+  tags:
+    - install
+    - uninstall
+
+- import_tasks: sqs-sns-subscriptions.yml
+  tags:
+    - install
+    - uninstall
+
+- import_tasks: bastion.yml
+  tags:
+    - install
+    - uninstall
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

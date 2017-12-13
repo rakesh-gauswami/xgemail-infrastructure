@@ -1,0 +1,12 @@
+---
+- name: "Deploy CloudEmail VPC to {{ account.name }}-{{ account.region }}"
+  cloudformation:
+    stack_name: "{{ stack.vpc.cloud_email_vpc }}"
+    state: present
+    region: "{{ account.region }}"
+    disable_rollback: true
+    template: "../roles/common/files/cf_templates/vpc_template.json"
+    template_parameters:
+      Environment:              "{{ account.name }}"
+      AZs:                      "{{ account.region }}a, {{ account.region }}b, {{ account.region }}c"
+  register: vpc_stack`

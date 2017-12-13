@@ -1,0 +1,122 @@
+{
+    "network" : {
+        "servers" : [ "<%= @logstash_server %>" ],
+        "ssl key" : "/etc/ssl/private/logstash-forwarder.key",
+        "ssl ca" : "/etc/ssl/certs/logstash-forwarder.crt",
+        "timeout" : <%= @logstash_timeout %>
+    },
+    "files" : [
+        <% if @mail_logs %>
+        {
+            "paths" : [
+                "/var/log/maillog"
+            ],
+            "fields" : {
+                "type"     : "maillog",
+                "region"   : "<%= @region %>",
+                "branch"   : "<%= @branch %>",
+                "env"      : "<%= @env %>",
+                "app"      : "<%= @app %>",
+                "instance" : "<%= @instance_id %>"
+            },
+            "dead time": "5m"
+        },
+        <% end %>
+        <% if @nginx_logs %>
+        {
+            "paths" : [
+                "/var/log/nginx/access.log", "/var/log/nginx/error.log"
+            ],
+            "fields" : {
+                "type"     : "nginx",
+                "region"   : "<%= @region %>",
+                "branch"   : "<%= @branch %>",
+                "env"      : "<%= @env %>",
+                "app"      : "<%= @app %>",
+                "instance" : "<%= @instance_id %>"
+            },
+            "dead time": "5m"
+        },
+        <% end %>
+        <% if @custom_logs %>
+        {
+            "paths" : [
+                <%= @instance_log_path %>
+            ],
+            "fields" : {
+                "type"     : "<%= @instance_log_type %>",
+                "region"   : "<%= @region %>",
+                "branch"   : "<%= @branch %>",
+                "env"      : "<%= @env %>",
+                "app"      : "<%= @app %>",
+                "instance" : "<%= @instance_id %>"
+            },
+            "dead time": "5m"
+        },
+        <% end %>
+        <% if @sophos_logs %>
+        {
+            "paths" : [
+            <%= @sophos_log_path %>
+            ],
+            "fields" : {
+                "type"     : "<%= @sophos_log_type %>",
+                "region"   : "<%= @region %>",
+                "branch"   : "<%= @branch %>",
+                "env"      : "<%= @env %>",
+                "app"      : "<%= @app %>",
+                "instance" : "<%= @instance_id %>"
+            },
+            "dead time": "5m"
+        },
+        <% end %>
+        <% if @wildfly_logs %>
+        {
+            "paths" : [
+            <%= @wildfly_log_path %>
+            ],
+            "fields" : {
+            "type"     : "<%= @wildfly_log_type %>",
+            "region"   : "<%= @region %>",
+            "branch"   : "<%= @branch %>",
+            "env"      : "<%= @env %>",
+            "app"      : "<%= @app %>",
+            "instance" : "<%= @instance_id %>"
+            },
+            "dead time": "5m"
+        },
+        <% end %>
+        {
+            "paths" : [
+                "/var/log/messages",
+                "/var/log/cfn-init.log",
+                "/var/log/cfn-init-cmd.log",
+                "/var/log/logstash-forwarder/logstash-forwarder.log",
+                "/var/log/yum.log"
+            ],
+            "fields" : {
+                "type"     : "syslog",
+                "region"   : "<%= @region %>",
+                "branch"   : "<%= @branch %>",
+                "env"      : "<%= @env %>",
+                "app"      : "<%= @app %>",
+                "instance" : "<%= @instance_id %>"
+            },
+            "dead time": "5m"
+        },
+        {
+            "paths" : [
+                "/var/log/audit/audit.log"
+            ],
+            "fields" : {
+                "type"     : "auditlog",
+                "region"   : "<%= @region %>",
+                "branch"   : "<%= @branch %>",
+                "env"      : "<%= @env %>",
+                "app"      : "<%= @app %>",
+                "instance" : "<%= @instance_id %>"
+            },
+            "dead time": "5m"
+        }
+    ]
+}

@@ -1,0 +1,48 @@
+# Ephemeral IP ports
+net.ipv4.ip_local_port_range = <%= @SYSCTL_IP_LOCAL_PORT_RANGE %>
+
+# Number of incoming connections backlog
+net.core.netdev_max_backlog = <%= @SYSCTL_NETDEV_MAX_BACKLOG %>
+
+# Maximum amount of option memory buffers
+net.core.optmem_max = <%= @SYSCTL_OPTMEM_MAX %>
+
+# Discourage Linux from swapping idle processes to disk (default = 60)
+vm.swappiness = <%= @SYSCTL_SWAPPINESS %>
+
+# Maximum Socket Receive Buffer
+net.core.rmem_max = <%= @SYSCTL_RMEM_MAX %>
+
+# Maximum Socket Send Buffer
+net.core.wmem_max = <%= @SYSCTL_WMEM_MAX %>
+
+# Default Socket Receive Buffer
+net.core.rmem_default = <%= @SYSCTL_RMEM_DEFAULT %>
+
+# Default Socket Send Buffer
+net.core.wmem_default = <%= @SYSCTL_WMEM_DEFAULT %>
+
+# Allocatable read-buffer space
+net.ipv4.tcp_rmem = <%= @SYSCTL_TCP_RMEM %>
+
+# Allocatable write-buffer-space
+net.ipv4.tcp_wmem = <%= @SYSCTL_TCP_WMEM %>
+
+# The time value for tcp_fin_timeout connection
+net.ipv4.tcp_fin_timeout = <%= @SYSCTL_TCP_FIN_TIMEOUT %>
+
+# Number of outstanding syn requests allowed
+net.ipv4.tcp_max_syn_backlog = <%= @SYSCTL_TCP_MAX_SYN_BACKLOG %>
+
+# Tcp-time-wait buckets pool size. Increase it to prevent simple DOS attacks
+net.ipv4.tcp_max_tw_buckets = <%= @SYSCTL_TCP_MAX_TW_BUCKETS %>
+
+# If disabled will disable TCP slow start on idle connections
+net.ipv4.tcp_slow_start_after_idle = <%= @SYSCTL_TCP_SLOW_START_AFTER_IDLE %>
+
+# If enabled allows the reuse of TIME-WAIT sockets for new connections when
+# it is safe from protocol viewpoint.
+net.ipv4.tcp_tw_reuse = <%= @SYSCTL_TCP_TW_REUSE %>
+
+# If enabled allows OS to manage window sizing to adjust for latency
+net.ipv4.tcp_window_scaling = <%= @SYSCTL_TCP_WINDOW_SCALING %>

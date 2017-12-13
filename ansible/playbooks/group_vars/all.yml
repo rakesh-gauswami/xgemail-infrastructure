@@ -1,0 +1,19 @@
+---
+# Contents of this file are loaded into the context of all playbook runs
+# Documentation: http://docs.ansible.com/ansible/playbooks_variables.html#variable-examples
+
+private:
+  # This private namespace is supposed to be used only within this file
+  # The caller need to be able to specify account and vpc member variables, which
+  # allows to deploy provisioning data to a specific account, region, vpc, and branch.
+  aws_account_name: "{{ aws_account }}"
+  # The default account inf is chosen whenever the caller doesn't specify a different account.
+  # The indirection is needed, because recursive referencing is not allowed within a domain.
+
+account:
+  name: "{{ private.aws_account_name }}"
+  region: "{{ aws_region }}"
+
+build:
+  branch: "{{ bamboo_branch_name }}"
+  number: "{{ bamboo_build_number | default(0) }}"

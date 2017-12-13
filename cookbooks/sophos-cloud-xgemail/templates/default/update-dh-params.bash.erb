@@ -1,0 +1,20 @@
+#!/bin/bash
+#
+# description: generate dh parameters for forward secrecy ciphers
+#
+# Copyright 2016 Sophos Limited. All rights reserved.
+
+set -eux
+
+POSTFIX_INSTANCE_NAME='<%= @postfix_instance_name %>'
+
+POSTFIX_CONFIG_DIR=$( postmulti -i "${POSTFIX_INSTANCE_NAME}" -x postconf -h config_directory )
+
+cd "${POSTFIX_CONFIG_DIR}"
+
+for len in 512 1024 2048
+do
+  openssl dhparam -out "dh${len}.tmp" "${len}"
+  mv "dh${len}.tmp" "dh${len}.pem"
+  chmod 644 "dh${len}.pem"
+done

@@ -1,0 +1,24 @@
+/var/log/cron
+/var/log/maillog
+/var/log/messages
+/var/log/secure
+/var/log/spooler
+/var/log/nginx/*.log
+/data/log/tomcat/catalina.out
+/data/log/tomcat/localhost_access_log.txt
+/data/var/webapps/*/WEB-INF/logs/sophos.log
+{
+    nodateext
+    copytruncate
+    rotate 4
+    size 140M
+    nocompress
+    missingok
+    sharedscripts
+    postrotate
+        /sbin/service logstash-forwarder force-stop > /dev/null 2>&1 || true
+        /sbin/service logstash-forwarder start > /dev/null 2>&1 || true
+        /bin/kill -HUP `cat /var/run/syslogd.pid 2> /dev/null` 2> /dev/null || true
+        /bin/kill -USR1 `cat /var/run/nginx/nginx.pid 2> /dev/null` 2> /dev/null || true
+    endscript
+}

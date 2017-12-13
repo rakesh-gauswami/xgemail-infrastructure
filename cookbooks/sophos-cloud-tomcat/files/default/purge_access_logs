@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# Purge old localhost_access_log files.
+# Their data is retained in logstash, so they have little value.
+LOGDIR=/data/log/tomcat
+
+# Note, because of the way the file commands rounds modification times,
+# we will end up keeping files one day older than LOGFILE_DAYS.
+LOGFILE_DAYS=1
+
+if [ -d "$LOGDIR" ]; then
+        find "$LOGDIR" -name localhost_access_log\*.txt -mtime +$LOGFILE_DAYS -print0 \
+                | xargs --no-run-if-empty -0 rm --
+fi

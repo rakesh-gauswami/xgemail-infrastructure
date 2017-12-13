@@ -1,0 +1,16 @@
+# Create a random string used to construct temporary path to store intermediate aggregated data
+- shell: uuidgen
+  register: uuid_build
+  
+- name: Set temp root directory
+  set_fact:
+    temp_dir_root: "{{ uuid_build.stdout | to_uuid }}"
+  
+- name: Create UUID string from uuidgen.output
+  set_fact:
+    temp_dir_vpc: "{{ uuid_build.stdout | to_uuid }}/vpc"
+
+- file:
+    state: directory
+    recurse: true
+    path: "{{ temp_dir_vpc }}"

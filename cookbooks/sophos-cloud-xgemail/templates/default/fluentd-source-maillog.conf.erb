@@ -1,0 +1,13 @@
+<source>
+  @type tail
+  format /^(?<time>(?:\S+\s+){2}\S+) (?<host>[^ ]+) (?<process>[^:]+): (?<message>((?<key>[^ :]+)[ :])? ?((to|from)=<(?<address>[^>]+)>)?.*)/
+  time_format %b %d %H:%M:%S
+  path /var/log/maillog
+  tag sophos.xgemail.<%= @application_name %>.maillog
+  pos_file /var/log/td-agent/maillog.pos
+</source>
+
+<filter sophos.xgemail.<%= @application_name %>.maillog>
+  @type grep
+  exclude1  message \.<%= @region %>\.compute\.internal
+</filter>

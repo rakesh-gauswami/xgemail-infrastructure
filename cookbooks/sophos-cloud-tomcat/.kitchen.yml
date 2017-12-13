@@ -1,0 +1,39 @@
+driver:
+    name: ec2
+    require_chef_omnibus: 12.18.31
+    subnet_id: subnet-d1c779fb
+    region: us-east-1
+    security_group_ids:
+      - sg-d05b1aa2
+    aws_ssh_key_id: test-kitchen-us-east-1
+    iam_profile_name: CloudStation-RegionIAMRoles-CoreInstProfile-1O9WZ1449LLJH
+    tags:
+        owner: <%=ENV['USER']%>
+        Name: TestKitchen::<%=ENV['USER']%>
+        created_by: test-kitchen
+
+provisioner:
+    name: chef_zero
+
+platforms:
+  - driver:
+        image_id: ami-a00da9da
+        instance_type: t2.xlarge
+    name: amazon-linux
+    transport:
+        username: ec2-user
+        compress: true
+        ssh_key: <%=ENV['HOME']%>/.ssh/test-kitchen-us-east-1
+        name: sftp
+suites:
+  - name: default
+    run_list:
+      - recipe[sophos-cloud-tomcat::deploy_envfile]
+    attributes:
+      sophos_cloud:
+        context: inf
+        environment: inf
+        thirdparty: cloud-inf-3rdparty
+        branch: develop
+        build_number: 3
+        war_name: core

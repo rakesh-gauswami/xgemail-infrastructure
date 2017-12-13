@@ -1,0 +1,125 @@
+#!/usr/bin/env python
+# vim: autoindent expandtab filetype=python shiftwidth=4 softtabstop=4 tabstop=4
+#
+# Copyright 2017, Sophos Limited. All rights reserved.
+#
+# 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
+# Sophos Limited and Sophos Group.  All other product and company
+# names mentioned are trademarks or registered trademarks of their
+# respective owners.
+#
+
+import sys
+sys.path.append("<%= @xgemail_utils_path %>")
+import os
+import logging
+import urllib
+import policyformatter
+from logging import handlers
+
+
+# logging to syslog setup
+logger = logging.getLogger('policy-utils')
+logger.setLevel(logging.INFO)
+syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
+formatter = logging.Formatter(
+    '[%(name)s] %(process)d %(levelname)s %(message)s'
+)
+syslog_handler.formatter = formatter
+logger.addHandler(syslog_handler)
+
+
+def is_serialized(s3_file, file_extension):
+    """
+    Identifying whether to deserialize file content or not based on the file extension
+    if extension is not present that means it's been encoded with the filename
+
+    FIXME: When we revisit this with new scalability design, it makes sense to have
+    different file extensions for different file to identify the contract between
+    the producer and consumer. It will simplify the formatting logic.
+    """
+    if s3_file.endswith(file_extension):
+        return True
+    else:
+        return False
+
+
+def decode_url_encoded(encoded_name):
+    """
+    This method decodes the url encoded name. For example AWS returns url encoded key
+    file key bWFpbGJveGxvY2FsLkNPTkZJRw== in a S3 notification event is bWFpbGJveGxvY2FsLkNPTkZJRw%3D%3D
+    """
+    logger.debug("Encoded name: [{0}]".format(encoded_name))
+    key = urllib.unquote(encoded_name)
+    logger.debug("Decoded name: [{0}]".format(key))
+    return key
+
+
+def remove_file(s3_file_path, local_path_prefix):
+    """
+    Removes a local policy file from policy directory if exists
+    """
+    if s3_file_path is None:
+        raise Exception("Invalid file path [{0}]".format(s3_file_path))
+
+    if local_path_prefix is None:
+        raise Exception("Invalid local_path_prefix [{0}]".format(local_path_prefix))
+
+    local_dir = os.path.dirname(local_path_prefix + s3_file_path) + '/'
+    local_file = local_dir + os.path.basename(s3_file_path)
+    logger.debug("Removing file [{0}]".format(local_file))
+
+    if os.path.isfile(local_file):
+        os.unlink(local_file)
+        logger.info("Successfully removed file [{0}]".format(local_file))
+
+        #remove an empty directory
+        if not os.listdir(local_dir):
+            os.rmdir(local_dir)
+            logger.debug("Removed dir [{0}]".format(local_dir))
+    else:
+        logger.info("File [{0}] doesn't exist to delete.".format(local_file))
+
+
+def deserialize(serialized_content):
+    """
+    Return deserialized data
+    """
+    if serialized_content is None:
+        raise Exception("Invalid serialized content")
+
+    return policyformatter.get_policy_binary(
+        serialized_content
+    )
+
+
+def write_file(content, s3_file_path, to_file_dir_prefix):
+    """
+    Writes a file locally at to_file_path. Creates the directory structure if doesn't exist
+    """
+    if s3_file_path is None:
+        raise Exception("Invalid file path [{0}]".format(s3_file_path))
+
+    if content is None:
+        raise Exception("Invalid content in file [{0}]".format(content))
+
+    if to_file_dir_prefix is None:
+        raise Exception("Invalid new file path [{0}]".format(to_file_dir_prefix))
+
+    logger.debug("Writing S3 file [{0}]".format(s3_file_path))
+
+    #create subfolder if doesn't exist
+    dir_name = os.path.dirname(to_file_dir_prefix + s3_file_path)
+    if not os.path.exists(dir_name):
+        os.makedirs(dir_name)
+
+    policy_file_path = dir_name + '/' + os.path.basename(s3_file_path)
+    tmp_policy_file = policy_file_path + '.tmp'
+
+    #write to a temp file
+    with open(tmp_policy_file, 'w') as f:
+        f.write(content)
+    f.close()
+    #rename the file with actual policy file
+    os.rename(tmp_policy_file, policy_file_path)
+    logger.info("Successfully downloaded file [{0}]".format(policy_file_path))

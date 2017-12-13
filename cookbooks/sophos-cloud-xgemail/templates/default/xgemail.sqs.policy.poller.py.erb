@@ -1,0 +1,278 @@
+#!/usr/bin/env python
+# vim: autoindent expandtab filetype=python shiftwidth=4 softtabstop=4 tabstop=4
+#
+# Polls the policy documents updates from policy SQS and download or remove the
+# updated file accordingly from the instance.
+#
+# Copyright: Copyright (c) 1997-2017. All rights reserved.
+# Company: Sophos Limited or one of its affiliates.
+
+import sys
+sys.path.append("<%= @xgemail_utils_path %>")
+import os
+import json
+import logging
+import policyconsumerutils
+from awshandler import AwsHandler
+from recoverableexception import RecoverableException
+from nonrecoverableexception import NonRecoverableException
+from logging import handlers
+from botocore import exceptions
+
+
+AWS_REGION = "<%= @aws_region %>"
+CONFIGS = <%= Chef::JSONCompat.to_json_pretty(@configs) %>
+NODE_TYPE = "<%= @node_type %>"
+POLICY_BUCKET_NAME = "<%= @policy_bucket %>"
+POLICY_QUEUE_NAME = "<%= @policy_queue_name %>"
+POLICY_DLQ_NAME = POLICY_QUEUE_NAME + "-DLQ"
+POLICY_MAX_NUMBER_OF_MESSAGES = <%= @policy_sqs_max_no_of_msgs %>
+POLICY_POLLER_WAIT_TIME_SECONDS = <%= @policy_sqs_wait_time_in_seconds %>
+POLICY_SQS_MESSAGE_VISIBILITY_TIMEOUT = <%= @policy_sqs_msg_visibility_timeout %>
+
+CONFIG_LIST = json.loads(CONFIGS.replace("\'", '"'))
+
+# logging to syslog setup
+logger = logging.getLogger('policy-poller')
+logger.setLevel(logging.INFO)
+syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
+formatter = logging.Formatter(
+    '[%(name)s] %(process)d %(levelname)s %(message)s'
+)
+syslog_handler.formatter = formatter
+logger.addHandler(syslog_handler)
+
+awshandler = AwsHandler(AWS_REGION)
+
+
+#FIXME: Generalize Full sync work in XGE-3821
+def sync_policy_documents(s3_path_prefix, to_file_dir):
+    try:
+        s3_list = awshandler.list_objects(
+            POLICY_BUCKET_NAME,
+            s3_path_prefix
+        )
+
+        if not s3_list:
+            # list is empty
+            logger.info("No policy documents in [{0}/{1}] to sync".format(
+                POLICY_BUCKET_NAME, s3_path_prefix))
+            return
+
+        s3_set = set()
+        failed_sync_set = set()
+        failed_orphan_set = set()
+
+        # Loop through each file
+        for cur_file in s3_list:
+            try:
+                s3_set.add(os.path.basename(cur_file))
+                sync_file(cur_file)
+            except Exception as ex:
+                #make a set of failed sync policy docs
+                failed_sync_set.add(cur_file)
+                logger.exception("Unexpected exception in syncing policy doc.", ex)
+                continue
+
+        #take a view of local policy files set
+        local_files_set = set(os.listdir(to_file_dir))
+        orphan_files_set = local_files_set.difference(s3_set)
+
+        for orphan_file in orphan_files_set:
+            try:
+                policyconsumerutils.remove_file(orphan_file)
+            except Exception as ex:
+                failed_orphan_set.add(orphan_file)
+                logger.exception("Unexpected exception in removing orphan policy doc.", ex)
+
+        logger.info("Full sync policy docs report: "
+            "Total sync count [{0}], Failed Sync: [{1}], Failed Orphan Remove [{2}]".format(
+            len(s3_set), failed_sync_set, failed_orphan_set)
+        )
+
+    except Exception as ex:
+        logger.exception("Unexpected exception in full sync of policy docs.", ex)
+
+
+def download_file(s3_file_path, to_file_dir_prefix, is_serialized):
+    logger.debug("Downloading file [{0}]".format(s3_file_path))
+    serialized_content = awshandler.download_data_from_s3(
+        POLICY_BUCKET_NAME,
+        s3_file_path
+    )
+
+    if is_serialized:
+        content = policyconsumerutils.deserialize(serialized_content)
+    else:
+        content = serialized_content
+
+    policyconsumerutils.write_file(
+        content,
+        s3_file_path,
+        to_file_dir_prefix
+    )
+
+
+def sync_file(s3_file_path):
+    """
+    Sync it from policy S3
+    """
+    try:
+        logger.info("Syncing file [{0}]".format(s3_file_path))
+
+        to_file_dir = None
+        file_extension = None
+
+        for entry in CONFIG_LIST:
+            if s3_file_path.startswith(entry['s3_path_dir']):
+                to_file_dir = entry['local_dir']
+                file_extension = entry['file_extension']
+                break
+
+        if to_file_dir is None:
+            logger.debug("No match found for file path [{0}] in config".format(s3_file_path))
+            return
+
+        # S3 file key is url encoded so we need to make sure to decode it first
+        # to perform download and key exists check
+        s3_path_prefix = os.path.dirname(s3_file_path) + '/'
+        s3_filename = os.path.basename(s3_file_path)
+        new_s3_file_path = s3_path_prefix + policyconsumerutils.decode_url_encoded(s3_filename)
+
+        #verify if file exists in S3
+        does_exist_in_s3 = awshandler.key_exists(
+            POLICY_BUCKET_NAME,
+            new_s3_file_path,
+            s3_path_prefix
+        )
+
+        if does_exist_in_s3:
+            logger.debug("File [{0}] exists in S3 hence downloading it".format(new_s3_file_path))
+            download_file(
+                new_s3_file_path,
+                to_file_dir,
+                policyconsumerutils.is_serialized(s3_file_path, file_extension)
+            )
+        else:
+            logger.debug("File [{0}] doesn't exist in S3 hence removing it".format(new_s3_file_path))
+            policyconsumerutils.remove_file(new_s3_file_path, to_file_dir)
+
+    except exceptions.ClientError as ex:
+        logger.exception("Unexpected exception in syncing file [{0}]."
+                         " Error [{1}]".format(s3_file_path, ex))
+        raise RecoverableException(ex)
+    except ValueError as ex:
+        logger.exception("Unexpected exception in parsing file [{0}]."
+                         " Error [{1}]".format(s3_file_path, ex))
+        #Technically this shouldn't happen unless we have a corrupted file in S3
+        raise NonRecoverableException(ex)
+    except Exception as ex:
+        logger.exception("Unexpected exception in syncing file [{0}]."
+                         " Error [{1}]".format(s3_file_path, ex))
+        raise RecoverableException(ex)
+
+
+def receive_sqs_messages(policy_sqs_url, policy_dlq_url):
+    while True:
+        try:
+            response = awshandler.receive_sqs_messages(
+                policy_sqs_url,
+                [],
+                [".*"],
+                POLICY_MAX_NUMBER_OF_MESSAGES,
+                POLICY_SQS_MESSAGE_VISIBILITY_TIMEOUT,
+                POLICY_POLLER_WAIT_TIME_SECONDS
+            )
+
+            if "Messages" not in response:
+                # no messages found
+                logger.debug("No new update found in [{0}]".format(policy_sqs_url))
+                continue
+
+            for msg in response["Messages"]:
+                try:
+                    receipt_handle = msg['ReceiptHandle']
+                    message = json.loads(json.loads(msg['Body'])['Message'])
+
+                    #FIXME: Generalize Full sync work in XGE-3821
+                    if NODE_TYPE == 'submit':
+                        if 'policy_type' in message and message['policy_type'] == 'SENDER_AUTHENTICATION' and 'policy_event' in message:
+                            inbound_config = CONFIG_LIST[0]
+                            policy_event = message['policy_event']
+                            if policy_event == 'FULL_SYNC':
+                                logger.info("Full Sync event received")
+                                sync_policy_documents(
+                                    inbound_config['s3_path_dir'],
+                                    inbound_config['local_dir']+ inbound_config['s3_path_dir']
+                                )
+                            elif policy_event == 'SYNC':
+                                domain = message['domain_name']
+
+                                sync_file(inbound_config['s3_path_dir'] + domain + inbound_config['file_extension'])
+                            else:
+                                logger.warning("Unexpected event received [{0}]".format(policy_event))
+
+                    if 'Records' in message:
+                        for record in message['Records']:
+                            event = record['eventName']
+                            logger.info("event_name [{0}]".format(event))
+                            filename = record['s3']['object']['key']
+                            logger.debug("filename [{0}]".format(filename))
+
+                            if not filename:
+                                logger.info("Empty filename [{0}] to update locally".format(filename))
+                                continue
+
+                            if 'ObjectCreated' or 'ObjectRemoved' in event:
+                                sync_file(filename)
+                                continue
+
+                            logger.warning("Unexpected event raised from policy S3 [{0}]".format(msg))
+
+                    #if reaches here then there are no exception and safe to remove
+                    awshandler.delete_message(
+                        policy_sqs_url,
+                        receipt_handle
+                    )
+
+                except NonRecoverableException as ex:
+                    logger.exception("Unexpected exception [{0}]".format(ex))
+                    #send it to the DLQ
+                    logger.info("sending msg [{0}] to DLQ [{1}]".format(response, policy_dlq_url))
+                    awshandler.add_to_sqs(
+                        policy_dlq_url,
+                        response
+                    )
+                    awshandler.delete_message(
+                        policy_sqs_url,
+                        receipt_handle
+                    )
+                except RecoverableException as ex:
+                    logger.info("Retrying the policy update [{0}]".format(msg))
+                    logger.exception("Unexpected exception [{0}]".format(ex))
+                except Exception as ex:
+                    logger.exception("Unexpected exception [{0}]".format(ex))
+                    continue
+
+        except Exception as ex:
+            logger.exception("Unexpected exception [{0}]".format(ex))
+            continue
+
+
+if __name__ == "__main__":
+    try:
+        #get policy sqs url
+        sqs_url = awshandler.get_sqs_url(
+            POLICY_QUEUE_NAME
+        )
+
+        dlq_url = awshandler.get_sqs_url(
+            POLICY_DLQ_NAME
+        )
+
+        #start receiving the updates
+        receive_sqs_messages(sqs_url, dlq_url)
+
+    except Exception as e:
+        logger.exception("Unexpected exception during processing policy updates [{0}]".format(e))
+

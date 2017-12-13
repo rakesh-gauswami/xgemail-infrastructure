@@ -1,0 +1,83 @@
+# See /usr/share/postfix/main.cf.dist for a commented, more complete version
+
+
+# Debian specific:  Specifying a file name will cause the first
+# line of that file to be used as the name.  The Debian default
+# is /etc/mailname.
+#myorigin = /etc/mailname
+
+smtpd_banner = $myhostname ESMTP $mail_name (<%= @mail_version %>)
+biff = no
+
+# appending .domain is the MUA's job.
+append_dot_mydomain = no
+
+# Uncomment the next line to generate "delayed mail" warnings
+#delay_warning_time = 4h
+
+readme_directory = no
+
+# Basic Authentication with Reflexion Relay
+smtp_sasl_auth_enable = yes
+smtp_sasl_tls_security_options = noanonymous
+
+# TLS parameters
+smtpd_tls_cert_file=<%= @cert_path_filename %>
+smtpd_tls_key_file=<%= @key_path_filename %>
+smtpd_tls_CAfile = /etc/ssl/certs/ca-bundle.crt
+
+smtpd_use_tls=yes
+smtpd_tls_session_cache_database = btree:${data_directory}/smtpd_scache
+smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
+
+# See /usr/share/doc/postfix/TLS_README.gz in the postfix-doc package for
+# information on enabling SSL in the smtp client.
+
+alias_maps = hash:/etc/aliases
+alias_database = hash:/etc/aliases
+#myorigin = /etc/mailname
+relayhost = [<%= @relay_host_name %>]:587
+mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
+mailbox_size_limit = 0
+recipient_delimiter = +
+inet_interfaces = loopback-only
+inet_protocols = all
+myhostname = <%= @host_name %>
+smtp_tls_cert_file = <%= @cert_path_filename %>
+smtp_tls_key_file = <%= @key_path_filename %>
+smtp_tls_CAfile = /etc/ssl/certs/ca-bundle.crt
+smtp_tls_security_level = encrypt
+smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
+
+smtpd_tls_received_header = yes
+smtpd_tls_loglevel = 1
+
+# Denial of Service Hardening
+# default_process_limit (default: 100)
+#   The default maximal number of Postfix child processes that provide a given service.
+#   This limit can be overruled for specific services in the master.cf file.
+# smtpd_client_connection_count_limit (default: 50)
+#   How many simultaneous connections any client is allowed to make to this service.
+#   By default, the limit is set to half the default process limit value.
+#   To disable this feature, specify a limit of 0.
+# smtpd_client_connection_rate_limit (default: 0)
+#   The maximal number of connection attempts any client is allowed to make to this service per time unit.
+#   The time unit is specified with the anvil_rate_time_unit configuration parameter.
+#   By default, a client can make as many connections per time unit as Postfix can accept.
+#   To disable this feature, specify a limit of 0.
+# queue_minfree (default: 0)
+#   The minimal amount of free space in bytes in the queue file system that is needed to receive mail.
+#   This is currently used by the Postfix SMTP server to decide if it will accept any mail at all.
+# header_size_limit (default: 102400)
+#   The maximal amount of memory in bytes for storing a message header. If a header is larger, the excess is discarded.
+# message_size_limit (default: 10240000)
+#   The maximal size in bytes of a message, including envelope information.
+# smtpd_recipient_limit (default: 1000)
+#   The maximal number of recipients that the Postfix SMTP server accepts per message delivery request.
+default_process_limit = 100
+smtpd_client_connection_count_limit = 20
+#smtpd_client_connection_rate_limit = 30
+queue_minfree = 20971520
+header_size_limit = 51200
+message_size_limit = 10485760
+smtpd_recipient_limit = 100

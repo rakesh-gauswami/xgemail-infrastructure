@@ -1,0 +1,74 @@
+<%#
+#===========================================================================
+#
+# luks-mount.init.erb
+#
+#===========================================================================
+#
+# ERB template for generating an init script that mounts a LUKS volume.  
+# This script is used instead of a crypttab keyscript as that runs before
+# networking services are started and is thus incompatible with KMS.
+#
+# expects the following attributes:
+#
+#	device_encrypted_name	- The name of the encrypted device.
+#	device_path 			- The path of the device to mount (eg /dev/sdb)
+#   device_name				- The name of the device (eg. sdb, sdc etc.)
+#	kms_key_id 				- The id of the KMS key.
+#	kms_region				- The region of the KMS service.
+#	mount_options			- The mount options to use.
+#	path					- The mount path.
+#	password_file			- The destination of the password file.
+#
+#===========================================================================
+-%>
+#!/bin/bash
+
+### BEGIN INIT INFO
+# Provides: 			luks-mount-<%= @device_name %>
+# Required-Start:		$local_fs, $network
+# Required-Stop:		
+# Default-Start:		2 3 4 5
+# Default-Stop:			0 1 6
+# Short-Descritpion:	Mount <%= @device_path %>
+# Description:			Mounts the encrypted file system at <%= @device_path %>
+### END INIT INFO
+
+start() {
+	if grep -q /dev/mapper/<%= @device_encrypted_name %> /proc/mounts; then
+		echo "<%= @device_path %> already mounted"
+		return 1
+	fi
+	
+	<% if @kms_key_id %>
+	PASSPHRASE="$(/usr/local/bin/aws --region <%= @kms_region %> kms decrypt --ciphertext-blob fileb://<%= @password_file %> --output text --query Plaintext | base64 -d)"
+	<% else %>
+	PASSPHRASE="$(cat <%= @password_file %>)"
+	<% end %>
+	UUID=$(cryptsetup luksUUID <%= @device_path %>)
+	echo "${PASSPHRASE}" | cryptsetup luksOpen UUID=${UUID} <%= @device_encrypted_name %>
+	mount /dev/mapper/<%= @device_encrypted_name %> <%= @path %> <% if @mount_options %> -o <%= @mount_options %> <% end %>
+	unset PASSPHRASE
+	echo "Mounted /dev/mapper/<%= @device_encrypted_name %> to <%= @path %>"
+}
+
+stop() {
+	echo "Nothing to do"
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	*)
+		echo "Usage $0 {start|stop}"
+esac
+		
+
+	
+
+
+

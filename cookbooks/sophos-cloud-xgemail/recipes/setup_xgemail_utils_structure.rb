@@ -1,0 +1,72 @@
+#
+# Cookbook Name:: sophos-cloud-xgemail
+# Recipe:: setup_xgemail_utils_structure
+#
+# Copyright 2016, Sophos
+#
+# All rights reserved - Do Not Redistribute
+#
+# Common configuration for python scripts used by different xgemail components
+# like submit, delivery and policy etc.
+
+NODE_TYPE = node['xgemail']['cluster_type']
+
+XGEMAIL_FILES_DIR = node['xgemail']['xgemail_files_dir']
+XGEMAIL_UTILS_DIR = node['xgemail']['xgemail_utils_files_dir']
+POLICY_FORMATTER = 'policyformatter.py'
+
+[
+    XGEMAIL_FILES_DIR,
+    XGEMAIL_UTILS_DIR
+].each do | cur |
+  directory cur do
+    mode '0755'
+    owner 'root'
+    group 'root'
+    recursive true
+  end
+end
+
+# Ensure __init__py file is created in python module
+file "#{XGEMAIL_UTILS_DIR}/__init__.py" do
+  mode '0644'
+  owner 'root'
+  group 'root'
+end
+
+[
+    'awshandler.py',
+    'formatterutils.py',
+    'gziputils.py',
+    'messageformatter.py',
+    'messagehistoryformatter.py',
+    'metadataformatter.py',
+    'nonrecoverableexception.py',
+    'recoverableexception.py'
+].each do | cur |
+  cookbook_file "#{XGEMAIL_UTILS_DIR}/#{cur}" do
+    source cur
+    mode '0644'
+    owner 'root'
+    group 'root'
+  end
+end
+
+
+if NODE_TYPE == 'submit'
+  cookbook_file "#{XGEMAIL_UTILS_DIR}/#{POLICY_FORMATTER}" do
+    source 'policyformatter.py'
+    mode '0644'
+    owner 'root'
+    group 'root'
+  end
+elsif NODE_TYPE == 'customer-submit'
+  cookbook_file "#{XGEMAIL_UTILS_DIR}/#{POLICY_FORMATTER}" do
+    source 'outboundpolicyformatter.py'
+    mode '0644'
+    owner 'root'
+    group 'root'
+  end
+else
+  #do nothing
+end

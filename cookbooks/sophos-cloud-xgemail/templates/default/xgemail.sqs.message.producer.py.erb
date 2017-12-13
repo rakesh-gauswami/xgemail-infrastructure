@@ -1,0 +1,370 @@
+#!/usr/bin/env python
+# vim: autoindent expandtab filetype=python shiftwidth=4 softtabstop=4 tabstop=4
+#
+# This script provides a communication between Postfix and S3. It works as a local
+# delivery agent to submit server which accepts an email from postfix and upload it
+# to a designated S3 bucket. In case of a failure email stays in postfix deferred
+# queue and postfix retries later.
+#
+# Copyright: Copyright (c) 1997-2016. All rights reserved.
+# Company: Sophos Limited or one of its affiliates.
+
+import sys
+sys.path.append("<%= @xgemail_utils_path %>")
+
+import gzip
+import io
+import json
+import logging
+import os
+import formatterutils
+import gziputils
+import messageformatter
+import metadataformatter
+import messagehistoryformatter
+from awshandler import AwsHandler
+from common.metadata import Metadata
+from common.sqsmessage import SqsMessage
+from common.messagehistoryevent import MessageHistoryEvent
+from datetime import datetime
+from datetime import timedelta
+from logging.handlers import SysLogHandler
+
+# Constants
+AWS_REGION = "<%= @sqs_msg_producer_aws_region %>"
+MSG_HISTORY_BUCKET_NAME = "<%= @sqs_msg_producer_msg_history_s3_bucket_name %>"
+MSG_HISTORY_SQS_URL = "<%= @sqs_msg_producer_msg_history_sqs_url %>"
+SUBMIT_TYPE = "<%= @xgemail_submit_type %>"
+S3_ENCRYPTION_ALGORITHM = "<%= @s3_encryption_algorithm %>"
+SUBMIT_BUCKET_NAME = "<%= @sqs_msg_producer_s3_bucket_name %>"
+SUBMIT_HOST_IP = "<%= @sqs_msg_producer_submit_ip %>"
+SUBMIT_SQS_URL = "<%= @sqs_msg_producer_sqs_url %>"
+TTL_IN_DAYS = <%= @sqs_msg_producer_ttl_in_days %>
+
+# Exit codes from sysexits
+EX_TEMPFAIL = <%= @sqs_msg_producer_ex_temp_failure_code %>
+
+#Message and metadata file details
+BUFFER_SIZE = <%= @sqs_msg_producer_buffer_size %>
+ROOT_DIR = "<%= @sqs_msg_producer_email_root_dir %>"
+TIMESTAMP_FORMAT = "%Y/%m/%d/%H/%M"
+
+# logging to syslog setup
+logging.getLogger("botocore").setLevel(logging.WARNING)
+logger = logging.getLogger('sqsmsgproducer')
+logger.setLevel(logging.INFO)
+handler = logging.handlers.SysLogHandler('/dev/log')
+formatter = logging.Formatter(
+    '[%(name)s] %(process)d %(levelname)s %(message)s'
+)
+handler.formatter = formatter
+logger.addHandler(handler)
+
+# Encryption constants
+# TODO: Need to be changed when Encryption is in place
+AKM_KEY = "akm_key"
+MESSAGE_KEY = "message_key"
+NONCE = "nonce"
+
+# Other constants
+DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
+MESSAGE_HISTORY_UNKNOWN_DESIGNATION = "UNKNOWN"
+MESSAGE_HISTORY_ACCEPTED_EVENT = "ACCEPTED"
+
+awshandler = AwsHandler(AWS_REGION)
+
+#postfix pipe sends metadata as sysargs.
+def get_metadata():
+    try:
+        metadata_length = len(sys.argv)
+        if (metadata_length < 7):
+            logger.info(" Usage: xgemail_sqs_message_producer.py <null_sender> "+
+                         "<sender> <client_address> <queue_id> <domain> <original_recipient> ")
+            exit(EX_TEMPFAIL)
+
+        null_sender = sys.argv[1]
+        sender_address = sys.argv[2]
+        sender_ip = sys.argv[3]
+        queue_id = sys.argv[4]
+        recipient_domain = sys.argv[5]
+        # TODO: see if we can pipe arrival date from postfix
+        date_recorded = datetime.now().strftime(DATETIME_FORMAT)
+        recipient_list = [ ]
+        for i in range (6,len(sys.argv)):
+            recipient_list.append(sys.argv[i])
+
+        if (sender_address == null_sender):
+            sender_address = None
+
+        metadata = Metadata(metadataformatter.SCHEMA_VERSION,
+                            sender_ip,
+                            sender_address,
+                            SUBMIT_HOST_IP,
+                            queue_id,
+                            date_recorded,
+                            recipient_domain,
+                            recipient_list)
+        #logging metadata info
+        logger.info("Input email metadata info [{0}]".format(metadata))
+        return metadata
+    except Exception as e:
+        logger.exception("Failed in preparing metadata [{0}]".format(e))
+        exit(EX_TEMPFAIL)
+
+# Accepts input email and gzip it
+def get_gzipped_email_body():
+    stdin_no = sys.stdin.fileno()
+
+    compressed_bytes = None
+
+    bytes_io = io.BytesIO()
+
+    try:
+        gzip_file = gzip.GzipFile(fileobj=bytes_io, mode='wb')
+
+        try:
+            while True:
+                try:
+                    new_bytes = os.read(stdin_no, BUFFER_SIZE)
+                    if not new_bytes:
+                        break
+                    gzip_file.write(new_bytes)
+                except EOFError:
+                    break
+                except Exception as e:
+                    logger.exception("Failed in parsing input email [{0}]".format(e))
+                    exit(EX_TEMPFAIL)
+        finally:
+            gzip_file.close()
+
+        compressed_bytes = bytes_io.getvalue()
+
+    finally:
+        bytes_io.close()
+
+    return compressed_bytes
+
+def add_to_sqs(sqs_url, sqs_json):
+    return awshandler.add_to_sqs(
+        sqs_url,
+        json.dumps(sqs_json)
+    )
+
+def upload_to_s3(bucket_name, file_path, formatted_data, expires):
+    return awshandler.upload_data_in_s3(
+        bucket_name,
+        file_path,
+        formatted_data,
+        expires,
+        S3_ENCRYPTION_ALGORITHM
+    )
+
+# uploads message file to S3
+def upload_message_to_s3(s3_file_path, expires):
+    try:
+        message_file_path = messageformatter.get_s3_message_path(
+            s3_file_path
+        )
+        logger.info("Processing message [{0}]".format(message_file_path))
+
+        #TODO: Encrypt mime message bytes after V1
+
+        formatted_email_data = messageformatter.get_formatted_email_data(
+            get_gzipped_email_body()
+        )
+
+        # upload message to the submit bucket
+        upload_to_s3(
+            SUBMIT_BUCKET_NAME,
+            message_file_path,
+            formatted_email_data,
+            expires
+        )
+
+        logger.info("Uploaded message to S3 [{0}]".format(message_file_path))
+
+    except Exception as e:
+        logger.exception("Failed in uploading message to S3 [{0}]".format(e))
+        exit(EX_TEMPFAIL)
+
+
+def upload_metadata_to_s3(s3_file_path, expires, metadata):
+    try:
+        metadata_file_path = metadataformatter.get_s3_metadata_path(
+            s3_file_path
+        )
+        logger.info("Processing metadata [{0}]".format(metadata_file_path))
+
+        #TODO: Encrypt metadata object after V1
+
+        # metadata_magic_bytes, schema_version, nonce_length, gzip_metadata_json):
+        formatted_metadata = metadataformatter.get_formatted_metadata(
+            gziputils.gzip_data(
+                json.dumps(metadata.get_metadata_json())
+            )
+        )
+
+        # upload metadata to submit bucket
+        upload_to_s3(
+            SUBMIT_BUCKET_NAME,
+            metadata_file_path,
+            formatted_metadata,
+            expires
+        )
+
+        logger.info("Uploaded metadata to S3 [{0}]".format(metadata_file_path))
+
+    except Exception as e:
+        logger.exception("Failed in uploading metadata to S3 [{0}]".format(e))
+        exit(EX_TEMPFAIL)
+
+
+# uploads message history parent file to message history bucket
+def upload_msg_history_to_s3(s3_file_path, expires, metadata):
+    try:
+        msg_history_file_path = messagehistoryformatter.get_s3_msg_history_path(
+            s3_file_path
+        )
+        logger.info("Processing message history [{0}]".format(msg_history_file_path))
+
+        #TODO: Encrypt msg history object after V1
+
+        # metadata_magic_bytes, schema_version, nonce_length, gzip_metadata_json):
+        formatted_msg_history = messagehistoryformatter.get_formatted_msg_history(
+            gziputils.gzip_data(
+                json.dumps(metadata.get_metadata_json())
+            )
+        )
+
+        # upload msg history to message history bucket
+        upload_to_s3(
+            MSG_HISTORY_BUCKET_NAME,
+            msg_history_file_path,
+            formatted_msg_history,
+            expires
+        )
+
+        logger.info("Uploaded message history to S3 [{0}]".format(msg_history_file_path))
+
+    except Exception as e:
+        logger.exception("Failed in uploading message history to S3 [{0}]".format(e))
+        exit(EX_TEMPFAIL)
+
+
+# Send an accepted message history event to msg history SQS
+def send_msg_history_event(s3_file_path, metadata, sqs_message):
+    try:
+        # create a message history event object
+        msg_history_event = MessageHistoryEvent(
+            metadata.schema_version,
+            s3_file_path,
+            metadata.accepting_server_ip,
+            metadata.queue_id,
+            sqs_message.akm_key,
+            sqs_message.nonce,
+            sqs_message.message_key,
+            datetime.now().strftime(DATETIME_FORMAT),
+            MESSAGE_HISTORY_ACCEPTED_EVENT,
+            MESSAGE_HISTORY_UNKNOWN_DESIGNATION,
+            None,
+            metadata.recipients,
+            False
+        )
+
+        sqs_json = msg_history_event.get_sqs_json()
+        logger.info("Processing message history event SQS job [{0}]".format(sqs_json))
+        logger.info("Added message history event SQS job response [{0}]".format
+            (add_to_sqs(
+                MSG_HISTORY_SQS_URL,
+                sqs_json)
+            )
+        )
+
+    except Exception as e:
+        logger.exception("Failed in uploading message history event to SQS [{0}]".format(e))
+        exit(EX_TEMPFAIL)
+
+
+# uploads message history parent file to S3
+def send_msg_processing_sqs_message(sqs_message):
+    try:
+        sqs_json = sqs_message.get_sqs_json()
+        logger.info("Processing SQS job [{0}]".format(sqs_json))
+        logger.info("Added SQS job response [{0}]".format
+            (add_to_sqs(
+                SUBMIT_SQS_URL,
+                sqs_json)
+            )
+        )
+
+    except Exception as e:
+        logger.exception("Failed in uploading message processing SQS job [{0}]".format(e))
+        exit(EX_TEMPFAIL)
+
+
+# accepts data from postfix and send message and metadata to S3 and
+# a json object to SQS which provides pointer to the message in S3
+def main():
+    try:
+        metadata = get_metadata()
+        logger.info("Metadata json info [{0}]".format(metadata))
+        queue_id = metadata.get_queue_id()
+        s3_file_path = formatterutils.get_s3_path(
+            ROOT_DIR,
+            TIMESTAMP_FORMAT,
+            SUBMIT_HOST_IP,
+            queue_id,
+            metadata.get_recipient_domain()
+        )
+
+        # prepared expiration date based on ttl_in_days
+        now = datetime.now()
+        expires = now + timedelta(days=TTL_IN_DAYS)
+
+        upload_message_to_s3(
+            s3_file_path,
+            expires
+        )
+
+        upload_metadata_to_s3(
+            s3_file_path,
+            expires,
+            metadata
+        )
+
+        # create a sqs object
+        sqs_message = SqsMessage(
+            messageformatter.SCHEMA_VERSION,
+            s3_file_path,
+            SUBMIT_HOST_IP,
+            queue_id,
+            AKM_KEY,
+            NONCE.encode('base64','strict'),
+            MESSAGE_KEY.encode('base64','strict'),
+            SUBMIT_TYPE
+        )
+
+        send_msg_processing_sqs_message(
+            sqs_message
+        )
+
+        if SUBMIT_TYPE == 'INTERNET':
+            upload_msg_history_to_s3(
+                s3_file_path,
+                expires,
+                metadata
+            )
+
+            send_msg_history_event(
+                s3_file_path,
+                metadata,
+                sqs_message
+            )
+
+    except Exception as e:
+        logger.exception("Failed in processing email [{0}]".format(e))
+        exit(EX_TEMPFAIL)
+
+
+if __name__ == "__main__":
+    main()

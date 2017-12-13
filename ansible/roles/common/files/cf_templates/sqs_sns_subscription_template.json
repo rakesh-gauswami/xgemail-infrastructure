@@ -1,0 +1,133 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+
+    "Description": "SQS Queue, SNS Topic Pair and Subscription Template for Sophos Cloud VPC.",
+
+    "Metadata": {
+        "Copyright": [
+            "Copyright 2016, Sophos Limited. All rights reserved.",
+            "",
+            "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+            "Sophos Limited and Sophos Group.  All other product and company",
+            "names mentioned are trademarks or registered trademarks of their",
+            "respective owners."
+        ],
+
+        "Comments": [
+            { "Ref": "Description" },
+            ""
+        ]
+    },
+
+    "Parameters": {
+        "Branch": {
+            "Description": "Deployed branch name",
+            "Type": "String"
+        },
+
+        "Environment": {
+            "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
+            "Type": "String"
+        },
+
+        "SubscriptionName": {
+            "Description": "Name of the subscription",
+            "Type": "String"
+        },
+
+        "VPCId": {
+            "Description": "Id of the vpc",
+            "Type": "String",
+            "Default": "none"
+        }
+    },
+
+    "Conditions" : {
+        "UseVPCId" : {"Fn::Not" : [{"Fn::Equals" : [{"Ref" : "VPCId"}, "none"]}]}
+    },
+
+    "Resources": {
+        "SQSQueue": {
+            "Type": "AWS::SQS::Queue",
+            "Properties": {
+                "MessageRetentionPeriod": 1209600,
+                "QueueName": {
+                    "Fn::Join": [
+                        "-", [
+                            {"Fn::If": [ "UseVPCId",
+                                { "Ref": "VPCId" },
+                                {"Ref" : "AWS::NoValue" }
+                            ]},
+                            { "Ref": "Environment" },
+                            { "Ref": "SubscriptionName" },
+                            "queue"
+                        ]
+                    ]
+                }
+            }
+        },
+
+        "SNSTopic": {
+            "Type": "AWS::SNS::Topic",
+            "DependsOn" : "SQSQueue",
+            "Properties": {
+                "Subscription": [{
+                    "Endpoint": { "Fn::GetAtt": ["SQSQueue", "Arn"] },
+                    "Protocol": "sqs"
+                }],
+                "TopicName": {
+                    "Fn::Join": [
+                        "-", [
+                            {"Fn::If": [ "UseVPCId",
+                                { "Ref": "VPCId" },
+                                {"Ref" : "AWS::NoValue" }
+                            ]},
+                            { "Ref": "Environment" },
+                            { "Ref": "SubscriptionName" },
+                            "topic"
+                        ]
+                    ]
+                }
+            }
+        },
+
+        "SQSQueuePolicy": {
+            "Type": "AWS::SQS::QueuePolicy",
+            "DependsOn" : "SNSTopic",
+            "Properties": {
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [{
+                        "Action": "sqs:SendMessage",
+                        "Effect": "Allow",
+                        "Resource": { "Fn::GetAtt": ["SQSQueue", "Arn"] },
+                        "Principal": { "AWS": "*" },
+                        "Condition": {
+                            "ArnEquals": {
+                                "aws:SourceArn": { "Ref": "SNSTopic" }
+                            }
+                        }
+                    }]
+                },
+                "Queues": [{ "Ref": "SQSQueue" }]
+            }
+        }
+    },
+
+    "Outputs": {
+        "SQSQueueARN": {
+            "Description": "ARN of the SQS queue",
+            "Value": { "Fn::GetAtt" : ["SQSQueue", "Arn"] }
+        },
+
+        "SQSQueueUrl": {
+            "Description": "URL of the SQS queue",
+            "Value": { "Ref" : "SQSQueue" }
+        },
+
+        "SNSTopicARN": {
+            "Description": "ARN of the SNS topic",
+            "Value": { "Ref" : "SNSTopic" }
+        }
+    }
+}

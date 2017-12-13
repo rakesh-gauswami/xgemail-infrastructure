@@ -1,0 +1,69 @@
+vpc:
+  cloud_email:
+    name: CloudEmail
+  cloud_station:
+    name: CloudStation
+s3:
+
+stack:
+  vpc:
+    cloud_email_vpc: "{{vpc.cloud_email.name}}-VPC"
+  asg:
+    bastion: "{{vpc.cloud_email.name}}-BastionHost"
+   iam:
+    cloud_email_roles: "{{vpc.cloud_email.name}}-IAMRoles"
+  security_groups:
+    cloud_email_security_groups: "{{vpc.cloud_email.name}}-SecurityGroups"
+  elb:
+    internet_submit_elb: "{{vpc.cloud_email.name}}-XGEMAIL-submit-ELB"
+    customer_submit_elb: "{{vpc.cloud_email.name}}-XGEMAIL-customer-submit-ELB"
+    customer_delivery_elb: "{{vpc.cloud_email.name}}-XGEMAIL-delivery-ELB"
+    internet_delivery_elb: "{{vpc.cloud_email.name}}-XGEMAIL-internet-delivery-ELB"
+    customer_xdelivery_elb: "{{vpc.cloud_email.name}}-XGEMAIL-xdelivery-ELB"
+    internet_xdelivery_elb: "{{vpc.cloud_email.name}}-XGEMAIL-internet-xdelivery-ELB"
+  route53:
+    customer_delivery_route53: "{{vpc.cloud_email.name}}-XGEMAIL-delivery-ROUTE53"
+    internet_delivery_route53: "{{vpc.cloud_email.name}}-XGEMAIL-internet-delivery-ROUTE53"
+    customer_xdelivery_route53: "{{vpc.cloud_email.name}}-XGEMAIL-xdelivery-ROUTE53"
+    internet_xdelivery_route53: "{{vpc.cloud_email.name}}-XGEMAIL-internet-xdelivery-ROUTE53"
+    customer_delivery_a_route53: "{{vpc.cloud_email.name}}-XGEMAIL-delivery-A-RECORD-A-ROUTE53"
+    customer_submit_a_route53: "{{vpc.cloud_email.name}}-XGEMAIL-customer-submit-A-RECORD-ROUTE53"
+    customer_delivery_b_route53: "{{vpc.cloud_email.name}}-XGEMAIL-delivery-A-RECORD-{1}-ROUTE53"
+    mx_01_route53: "{{vpc.cloud_email.name}}-XGEmailMX01-Cname"
+    mx_02_route53: "{{vpc.cloud_email.name}}-XGEmailMX02-Cname"
+  s3:
+    customer_submit_bucket: "{{vpc.cloud_email.name}}-XGEMAIL-customer-submit-bucket-S3"
+    emergency_inbox_bucket: "{{vpc.cloud_email.name}}-XGEMAIL-emergency-inbox-bucket-S3"
+    msg_history_bucket: "{{vpc.cloud_email.name}}-XGEMAIL-msg-history-bucket-S3"
+    msg_stats_bucket: "{{vpc.cloud_email.name}}-XGEMAIL-msg-stats-bucket-S3"
+    policy_bucket: "{{vpc.cloud_email.name}}-XGEMAIL-policy-bucket-S3"
+    quarantin_bucket: "{{vpc.cloud_email.name}}-XGEMAIL-quarantine-bucket-S3"
+    submit_bucket: "{{vpc.cloud_email.name}}-XGEMAIL-submit-bucket-S3"
+  sns:
+    policy_sns_topic: "{{vpc.cloud_email.name}}-xgemail-policy-SNS"
+    relay_control_sns_topic: "{{vpc.cloud_email.name}}-xgemail-relay-control-SNS"
+    alarm_sns_topic: "{{account.name}}-{{vpc.cloud_email.name}}-Alarm-Topic"
+    delay_sns_topic: "{{vpc.cloud_email.name}}-xgemail-delay-SNS"
+    deleted_events_sns_topic: "{{vpc.cloud_email.name}}-xgemail-deleted-events-SNS"
+    internet_delivery_sns_topic: "{{vpc.cloud_email.name}}-xgemail-internet-delivery-SNS"
+    quarantined_events_sns_topic: "{{vpc.cloud_email.name}}-xgemail-quarantined-events-SNS"
+    success_events_sns_topic: "{{vpc.cloud_email.name}}-xgemail-success-events-SNS"
+    xgemail_messaging: "{{vpc.cloud_email.name}}-XGEMAIL-messaging"
+  sqs:
+    lifecycle_sqs_sns: "{{vpc.cloud_email.name}}-Xgemail-LifeCycleEvents-Processing"
+    customer-delivery_sqs_queue:  "{{vpc.cloud_email.name}}-XGEMAIL-delivery-SQS"
+    customer_submit_sqs_queue: "{{vpc.cloud_email.name}}-XGEMAIL-customer-submit-SQS"
+    customer_delivery_sqs_queue_sns_listener: "{{vpc.cloud_email.name}}-XGEMAIL-delivery-SQS-SNS-listener"
+    internet_delivery_sqs_queue_sns_listener: "{{vpc.cloud_email.name}}-XGEMAIL-internet-delivery-SQS-SNS-listener"
+    dqs_sqs_queue: "{{vpc.cloud_email.name}}-XGEMAIL-dqs-SQS"
+    delay_sqs_queue: "{{vpc.cloud_email.name}}-XGEMAIL-delay-SQS"
+    emergency_inbox_sqs_queue: "{{vpc.cloud_email.name}}-XGEMAIL-emergency-inbox-SQS"
+    emergency_inbox_sqs_queue_sns_listener: "{{vpc.cloud_email.name}}-XGEMAIL-emergency-inbox-SQS-SNS-listener"
+    internet_delivery_sqs_queue: "{{vpc.cloud_email.name}}-XGEMAIL-internet-delivery-SQS"
+    internet_submit_sqs_queue: "{{vpc.cloud_email.name}}-XGEMAIL-submit-SQS"
+    msg_history_sqs_queue: "{{vpc.cloud_email.name}}-XGEMAIL-msg-history-SQS"
+    msg_history_sqs_queue_sns_listener: "{{vpc.cloud_email.name}}-XGEMAIL-msg-history-SQS-SNS-listener"
+    msg_statistics_sqs_queue: "{{vpc.cloud_email.name}}-XGEMAIL-msg-statistics-SQS"
+    msg_statistics_sqs_queue_sns_listener: "{{vpc.cloud_email.name}}-XGEMAIL-msg-statistics-SQS-SNS-listener"
+    quarantine_sqs_queue: "{{vpc.cloud_email.name}}-XGEMAIL-quarantine-SQS"
+    quarantine_sqs_queue_sns_listener: "{{vpc.cloud_email.name}}-XGEMAIL-quarantine-SQS-SNS-listener"
