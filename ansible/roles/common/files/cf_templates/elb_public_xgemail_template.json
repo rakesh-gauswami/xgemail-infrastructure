@@ -1,0 +1,215 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+
+    "Description": "XGEMAIL ELB template for Sophos Cloud.",
+
+    "Metadata": {
+        "Copyright": [
+            "Copyright 2016, Sophos Limited. All rights reserved.",
+            "",
+            "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+            "Sophos Limited and Sophos Group.  All other product and company",
+            "names mentioned are trademarks or registered trademarks of their",
+            "respective owners."
+        ],
+
+        "Comments": [
+            { "Ref": "Description" },
+            ""
+        ]
+    },
+
+    "Parameters": {
+        "Branch": {
+            "Description": "Deployed branch name",
+            "Type": "String"
+        },
+        "ConnectionDrainingPolicyTimeoutSeconds": {
+            "Description": "Time in seconds after the load balancer closes all connections to an unhealthy instance.",
+            "Type": "Number",
+            "Default": "300",
+            "MinValue": "0"
+        },
+        "Environment": {
+            "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
+            "Type": "String"
+        },
+        "ExternalPort": {
+            "Description": "ExternalPort for ELB to listen on",
+            "Type": "String",
+            "Default": "25"
+        },
+        "HealthCheckHealthyThreshold": {
+            "Description": "Specifies the number of consecutive health probe successes required before moving the instance to the Healthy state.",
+            "Type": "String",
+            "Default": "3"
+        },
+        "HealthCheckInterval": {
+            "Description": "Specifies the approximate interval, in seconds, between health checks of an individual instance.",
+            "Type": "String",
+            "Default": "30"
+        },
+        "HealthCheckTarget": {
+            "Description": "Specifies the instance's protocol and port to check. The protocol can be TCP, HTTP, HTTPS, or SSL. The range of valid ports is 1 through 65535.",
+            "Type": "String",
+            "Default": "TCP:25"
+        },
+        "HealthCheckTimeout": {
+            "Description": "Specifies the amount of time, in seconds, during which no response means a failed health probe. This value must be less than the value for Interval.",
+            "Type": "String",
+            "Default": "25"
+        },
+        "HealthCheckUnhealthyThreshold": {
+            "Description": "Specifies the number of consecutive health probe failures required before moving the instance to the Unhealthy state.",
+            "Type": "String",
+            "Default": "5"
+        },
+        "HostAlarmEvaluationPeriods": {
+            "Description": "Number of periods at which to alarm if Unhealthy Hosts are passed Threshold",
+            "Type": "Number",
+            "Default": "2"
+        },
+        "HostAlarmPeriod": {
+            "Description": "Period (in multiple of 60 seconds) at which to poll Hosts",
+            "Type": "Number",
+            "Default": "60"
+        },
+        "HostAlarmThreshold": {
+            "Description": "Number of Unhealthy Hosts at which to Alarm",
+            "Type": "Number",
+            "Default": "1"
+        },
+        "HostAlarmTopicARN": {
+            "Description": "ARN for SNS Topic that should receive Unhealthy Host Alarm notifications",
+            "Type": "String"
+        },
+        "LoadBalancerName": {
+            "Description": "Name for the ELB",
+            "Type": "String"
+        },
+        "SecurityGroupLb": {
+            "Description": "Security Group for the ELB",
+            "Type": "String"
+        },
+        "Subnets": {
+            "Description": "List of Subnets where instances reside for the ELB",
+            "Type": "List<AWS::EC2::Subnet::Id>"
+        },
+        "Vpc": {
+            "Description": "Name of an existing VPC",
+            "Type": "AWS::EC2::VPC::Id"
+        }
+    },
+
+    "Resources": {
+        "ElasticLoadBalancer" : {
+            "Properties" : {
+                "Tags": [
+                    {
+                        "Key": "Branch",
+                        "Value": { "Ref" : "Branch" }
+
+                    },
+                    {
+                        "Key": "Environment",
+                        "Value": { "Ref" : "Environment" }
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/lb/", { "Ref" : "LoadBalancerName" } ] ] }
+
+                    }
+                ],
+                "ConnectionDrainingPolicy": {
+                    "Enabled": "true",
+                    "Timeout": { "Ref": "ConnectionDrainingPolicyTimeoutSeconds" }
+                },
+                "CrossZone": "true",
+                "HealthCheck": {
+                    "Target": { "Ref" : "HealthCheckTarget" },
+                    "HealthyThreshold": { "Ref" : "HealthCheckHealthyThreshold" },
+                    "UnhealthyThreshold": { "Ref" : "HealthCheckUnhealthyThreshold" },
+                    "Interval": { "Ref" : "HealthCheckInterval" },
+                    "Timeout": { "Ref" : "HealthCheckTimeout" }
+                },
+                "Listeners": [
+                    {
+                        "LoadBalancerPort": { "Ref" : "ExternalPort" },
+                        "InstancePort": "25",
+                        "Protocol": "TCP"
+                    }
+                ],
+                "Policies" : [{
+                    "PolicyName" : "EnableProxyProtocol",
+                    "PolicyType" : "ProxyProtocolPolicyType",
+                    "Attributes" : [{
+                        "Name"  : "ProxyProtocol",
+                        "Value" : "true"
+                    }],
+                    "InstancePorts" : [{"Ref" : "ExternalPort"}]
+                }],
+                "SecurityGroups": [
+                    {
+                        "Ref": "SecurityGroupLb"
+                    }
+                ],
+                "Subnets": {
+                    "Ref": "Subnets"
+                }
+            },
+            "Type" : "AWS::ElasticLoadBalancing::LoadBalancer"
+        },
+
+        "HostAlarm": {
+            "Type" : "AWS::CloudWatch::Alarm",
+            "DependsOn" : "ElasticLoadBalancer",
+            "Properties": {
+                "AlarmDescription": "The number of instances connected to the ELB that are unhealthy exceeds limit.",
+                "MetricName": "UnHealthyHostCount",
+                "Namespace": "AWS/ELB",
+                "Statistic": "Average",
+                "Period": { "Ref": "HostAlarmPeriod" },
+                "EvaluationPeriods": { "Ref": "HostAlarmEvaluationPeriods" },
+                "Threshold": { "Ref": "HostAlarmThreshold" },
+                "AlarmActions": [
+                    { "Ref": "HostAlarmTopicARN" }
+                ],
+                "OKActions": [
+                    { "Ref": "HostAlarmTopicARN" }
+                ],
+                "Dimensions": [{
+                    "Name": "LoadBalancerName",
+                    "Value": { "Ref": "ElasticLoadBalancer" }
+                }],
+                "ComparisonOperator": "GreaterThanOrEqualToThreshold"
+            }
+        }
+    },
+
+    "Outputs": {
+        "CanonicalHostedZoneNameID": {
+            "Description": "The ID of the Amazon Route 53 hosted zone name that is associated with the load balancer.",
+            "Value": {
+                "Fn::GetAtt": [ "ElasticLoadBalancer", "CanonicalHostedZoneNameID" ]
+            }
+        },
+        "LoadBalancerDnsName": {
+            "Description": "DNS name of the ELB",
+            "Value": {
+                "Fn::GetAtt": [ "ElasticLoadBalancer", "DNSName" ]
+            }
+        },
+        "LoadBalancerId": {
+            "Description": "ID of the ELB",
+            "Value": {
+                "Ref": "ElasticLoadBalancer"
+            }
+        },
+        "SecurityGroupLb": {
+            "Description": "ID of the security group",
+            "Value": {
+                "Ref": "SecurityGroupLb"
+            }
+        }
+    }
+}

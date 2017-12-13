@@ -1,0 +1,173 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "S3 Bucket Template for Sophos Cloud VPC.",
+
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2017, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ],
+
+    "Comments": [
+      "Custom S3 bucket template for Xgemail, offering support for two",
+      "distinct notifications, and two events per notification."
+    ]
+  },
+
+  "Parameters": {
+    "Environment": {
+      "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
+      "Type": "String"
+    },
+    "S3BucketName": {
+      "Description": "Name of the S3 bucket",
+      "Type": "String",
+      "ConstraintDescription": "S3BucketName must be between 3 and 63 characters in length.",
+      "MinLength": "3",
+      "MaxLength": "63"
+    },
+    "SnsPolicyTopic": {
+      "Description": "The Policy SNS Topic Notification ARN",
+      "Type": "String"
+    },
+    "SnsRelayControlTopic": {
+      "Description": "The Relay Control Topic Notification ARN",
+      "Type": "String"
+    }
+  },
+
+  "Resources": {
+    "S3Bucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": { "Ref": "S3BucketName" },
+        "NotificationConfiguration": {
+          "TopicConfigurations": [
+            {
+              "Topic": { "Ref": "SnsPolicyTopic" },
+              "Event": "s3:ObjectCreated:*",
+              "Filter": {
+                "S3Key": {
+                  "Rules": [
+                    {
+                      "Name": "prefix",
+                      "Value": "spf/"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "Topic": { "Ref": "SnsPolicyTopic" },
+              "Event": "s3:ObjectRemoved:*",
+              "Filter": {
+                "S3Key": {
+                  "Rules": [
+                    {
+                      "Name": "prefix",
+                      "Value": "spf/"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "Topic": { "Ref": "SnsRelayControlTopic" },
+              "Event": "s3:ObjectCreated:*",
+              "Filter": {
+                "S3Key": {
+                  "Rules": [
+                    {
+                      "Name": "prefix",
+                      "Value": "config/outbound-relay-control/"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "Topic": { "Ref": "SnsRelayControlTopic" },
+              "Event": "s3:ObjectRemoved:*",
+              "Filter": {
+                "S3Key": {
+                  "Rules": [
+                    {
+                      "Name": "prefix",
+                      "Value": "config/outbound-relay-control/"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [ "", [
+                {
+                  "Ref": "Environment"
+                },
+                "-",
+                {
+                  "Ref": "AWS::StackName"
+                }
+              ]]
+            }
+          }
+        ]
+      }
+    },
+
+    "S3BucketPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": { "Ref": "S3Bucket" },
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Sid": "RequireS3EncryptionForUploads",
+              "Action": "s3:PutObject",
+              "Effect": "Deny",
+              "Resource": {
+                "Fn::Join": [
+                  "", [
+                    "arn:aws:s3:::", {
+                      "Ref": "S3Bucket"
+                    }, "/*"
+                  ]
+                ]
+              },
+              "Principal": "*",
+              "Condition": {
+                "StringNotEquals": {
+                  "s3:x-amz-server-side-encryption": "AES256"
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+
+  "Outputs": {
+    "S3BucketName": {
+      "Description": "Name of the S3 Bucket",
+      "Value": { "Ref": "S3Bucket" }
+    },
+    "S3BucketArn": {
+      "Description": "ARN of the S3 Bucket",
+      "Value": {
+        "Fn::GetAtt" : [ "S3Bucket", "Arn" ]
+      }
+    }
+
+  }
+}

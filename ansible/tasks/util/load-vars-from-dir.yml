@@ -1,0 +1,14 @@
+---
+
+- name: check if <{{ vars_directory }}> exists
+  stat: path="{{ vars_directory }}"
+  register: vars_directory_stats
+
+- name: Load variables from <{{ vars_directory }}> if it exists
+  include_tasks: ../tasks/util/load-vars-from-existing-dir.yml
+  when: >
+    vars_directory_stats.stat.isdir is defined
+      and
+    vars_directory_stats.stat.isdir == True
+
+...

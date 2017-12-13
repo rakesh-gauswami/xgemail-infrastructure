@@ -1,0 +1,9 @@
+<source>
+  @type tail
+  format /^\[(?<time>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3})\]\[(?<severity>[a-zA-Z]+\s*)\]\[(?<source>\S+)\s*\] \[(?<node>\S+)\] (?<message>.*)/
+  time_format %Y-%m-%d %H:%M:%S,%N
+  path /var/log/elasticsearch/quarantine.xgemail.<%= @account %>.<%= @region %>.sophos.cloud.com.log
+  read_from_head true
+  tag sophos.xgemail.<%= @application_name %>.elasticsearch
+  pos_file /var/log/td-agent/elasticsearch.pos
+</source>

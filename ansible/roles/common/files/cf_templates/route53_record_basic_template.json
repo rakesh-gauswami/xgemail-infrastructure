@@ -1,0 +1,115 @@
+{
+    "AWSTemplateFormatVersion" : "2010-09-09",
+
+    "Description" : "Creates a Route53 record for another resource based on the parameters without the vpc name",
+
+    "Metadata": {
+        "Copyright": [
+            "Copyright 2016, Sophos Limited. All rights reserved.",
+            "",
+            "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+            "Sophos Limited and Sophos Group.  All other product and company",
+            "names mentioned are trademarks or registered trademarks of their",
+            "respective owners."
+        ],
+
+        "Comments": [
+            "To create an ALIAS record.",
+            "Pass in ALIAS for RecordType, This is only for the condition",
+            "The condition for ALIAS will set A for RecordType",
+            "Do not pass in any values for ResourceRecords or TTL",
+            "Instead pass in DnsName and HostedZoneId",
+            "Get these values from Elastic Load Balancer Output."
+        ]
+    },
+
+    "Parameters" : {
+        "DnsName" : {
+            "Type" : "String",
+            "Description": "The DNS name of the load balancer.",
+            "Default": ""
+        },
+        "HostedZoneId" : {
+            "Type" : "String",
+            "Description": "The hosted zone ID.",
+            "Default": ""
+        },
+        "HostedZoneName" : {
+            "Type": "String",
+            "Description": "The DNS name of an existing Amazon Route 53 hosted zone",
+            "AllowedPattern": "(?!-)[a-zA-Z0-9-.]{1,63}(?<!-)",
+            "ConstraintDescription": "must be a valid DNS zone name.",
+            "Default" : "hydra.sophos.com."
+        },
+        "Environment" : {
+            "Description": "(dev, dev2, dev3, dev4, dev5, qa, etc...)",
+            "Type" : "String",
+            "Default": ""
+        },
+        "RecordType" : {
+            "Type" : "String",
+            "Description" : "The service name you want to reach"
+        },
+        "ResourceRecords" : {
+            "Type" : "List<String>",
+            "Description" : "The resource you are referencing",
+            "Default": ""
+        },
+        "ServiceName" : {
+            "Type" : "String",
+            "Description" : "The service name you want to reach",
+            "Default": ""
+        }
+    },
+
+    "Conditions": {
+        "CreateAliasRecord": {
+            "Fn::Equals": [
+                { "Ref": "RecordType" },
+                "ALIAS"
+            ]
+        },
+      "CreateMxRecord": {
+            "Fn::Equals": [
+                "MX",
+                { "Ref" : "RecordType" }
+            ]
+        },
+      "IsSubdomain": {
+            "Fn::Not": [
+              { "Fn::Equals": [
+                { "Ref": "Environment" }, "" ] }]
+        }
+    },
+
+    "Resources" : {
+        "NewDNSRecord": {
+            "Type": "AWS::Route53::RecordSet",
+            "Properties": {
+                "HostedZoneName": { "Fn::If": [ "IsSubdomain", { "Fn::Join": [ ".", [ { "Ref": "Environment" }, { "Ref": "HostedZoneName" } ] ] }, { "Ref": "HostedZoneName" }]},
+                "Comment": { "Fn::Join": [ "", [ "", { "Ref": "RecordType" }, " redirect to ", { "Fn::Join": [ ", ", { "Ref": "ResourceRecords" } ] }, "." ] ] },
+                "Name": { "Fn::If": [ "CreateMxRecord", { "Ref": "HostedZoneName" }, { "Fn::Join": [ ".", [ { "Fn::Join": [ "-", [ { "Ref": "ServiceName" }, { "Ref": "AWS::Region" } ] ] }, { "Ref": "Environment" }, { "Ref": "HostedZoneName" } ] ] }]},
+                "Type": { "Fn::If": [ "CreateAliasRecord", "A", { "Ref": "RecordType" } ] },
+                "TTL": { "Fn::If": [ "CreateAliasRecord", { "Ref": "AWS::NoValue" }, "900" ] },
+                "ResourceRecords": { "Fn::If": [ "CreateAliasRecord", { "Ref": "AWS::NoValue" }, { "Ref": "ResourceRecords" } ] },
+                "AliasTarget": {
+                    "Fn::If": [
+                        "CreateAliasRecord",
+                        {
+                            "HostedZoneId": { "Ref": "HostedZoneId" },
+                            "DNSName":  { "Ref": "DnsName" }
+                        },
+                        { "Ref": "AWS::NoValue" }
+                    ]
+                }
+            }
+        }
+    },
+
+    "Outputs": {
+        "NewRecord": {
+            "Description": "Fully qualified domain name",
+            "Value": { "Ref": "NewDNSRecord" }
+        }
+    }
+}

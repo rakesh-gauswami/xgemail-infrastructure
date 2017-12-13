@@ -1,0 +1,112 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "Creates a CNAME Route53 record",
+
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2017, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ]
+  },
+
+  "Parameters" : {
+    "HostedZoneName" : {
+      "Description": "The DNS name of an existing Amazon Route 53 hosted zone (domain)",
+      "Type": "String",
+      "Default" : "hydra.sophos.com."
+    },
+    "RecordName" : {
+      "Description" : "FQDN of the record to be added to HostedZoneName",
+      "Type" : "String"
+    },
+    "ResourceRecord" : {
+      "Description" : "The resource you are referencing",
+      "Type" : "String"
+    },
+    "SetIdentifier" : {
+      "Description" : "Identifier if more than one resource with the same name is created",
+      "Type" : "String",
+      "Default": ""
+    },
+    "Ttl" : {
+      "Description": "TTL setting for the new record",
+      "Type" : "Number",
+      "MinValue" : "0",
+      "Default": "900"
+    },
+    "Weight" : {
+      "Description" : "Portion of traffic to allocate to this resource. (-1 for turning off)",
+      "Type" : "Number",
+      "MinValue" : "-1",
+      "Default": "-1"
+    }
+  },
+
+  "Conditions": {
+      "HasSetIdentifier": {
+          "Fn::Not": [
+            {
+              "Fn::Equals": [
+                  "",
+                  { "Ref" : "SetIdentifier" }
+              ]
+            }
+          ]
+      },
+      "HasWeight": {
+          "Fn::Not": [
+            {
+              "Fn::Equals": [
+                  "-1",
+                  { "Ref" : "Weight" }
+              ]
+            }
+          ]
+      }
+  },
+
+  "Resources" : {
+    "CnameRecord" : {
+      "Type" : "AWS::Route53::RecordSet",
+      "Properties" : {
+        "HostedZoneName" : { "Ref" : "HostedZoneName" },
+        "Comment" : {
+          "Fn::Join" : [
+            "",
+            [ "CNAME redirect to ", { "Ref" : "ResourceRecord" }, "." ]
+          ]
+        },
+        "Name" : { "Ref" : "RecordName" },
+        "ResourceRecords" : [{ "Ref" : "ResourceRecord" }],
+        "SetIdentifier" : {
+          "Fn::If" : [
+            "HasSetIdentifier",
+            { "Ref": "SetIdentifier" },
+            { "Ref": "AWS::NoValue" }
+          ]
+        },
+        "TTL" : { "Ref": "Ttl" },
+        "Type" : "CNAME",
+        "Weight" : {
+          "Fn::If" : [
+              "HasWeight",
+              { "Ref": "Weight" },
+              { "Ref": "AWS::NoValue" }
+          ]
+        }
+      }
+    }
+  },
+
+  "Outputs" : {
+    "FQDN" : {
+      "Description" : "Fully qualified domain name",
+      "Value" : { "Ref" : "CnameRecord" }
+    }
+  }
+}

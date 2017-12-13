@@ -1,0 +1,511 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Creates, Updates, and Deletes AWS SES Service configuration with Domains, Route53 TXT verification records, Receive Rules, and Filters",
+
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2017, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ],
+
+    "Comments": [
+      "Amazon's Simple Email Service (SES) is not supported",
+      "in CloudFormation. This template uses a Lambda CloudFormation",
+      "Custom Resource to give an option for automated deployment.",
+      "Domains, Rules, Actions, and Filters are lists which can easily",
+      "be modified for a fully customized and automated deployment."
+    ]
+  },
+
+  "Parameters": {
+
+    "Domains": {
+      "Type": "CommaDelimitedList",
+      "Description": "List of Domains to add to SES",
+      "ConstraintDescription": "must be a comma-separated list of valid domain names."
+    },
+
+    "MailRecipients": {
+      "Type": "CommaDelimitedList",
+      "Description": "List of email addresses to add to SES",
+      "ConstraintDescription": "must be a comma-separated list of valid email addresses."
+    },
+
+     "RuleName": {
+      "Description": "The name of the SES receiving rule.",
+      "Type": "String"
+    },
+
+    "RuleSetName": {
+      "Description": "The name of the SES rule set.",
+      "Type": "String",
+      "Default": "us-west-2-rule-set"
+    },
+
+    "SesInvokeLambdaFunctionArn": {
+      "Description": "The ARN of the Lambda Function SES will invoke.",
+      "Type": "String"
+    }
+  },
+
+  "Resources": {
+    "LambdaExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": { "Service": [ "lambda.amazonaws.com" ] },
+              "Action": [ "sts:AssumeRole" ]
+            }
+          ]
+        },
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "root",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": "arn:aws:logs:*:*:*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ses:CreateReceiptFilter",
+                    "ses:CreateReceiptRule",
+                    "ses:CreateReceiptRuleSet",
+                    "ses:DeleteIdentity",
+                    "ses:DeleteReceiptFilter",
+                    "ses:DeleteReceiptRule",
+                    "ses:DeleteReceiptRuleSet",
+                    "ses:DescribeActiveReceiptRuleSet",
+                    "ses:GetIdentityVerificationAttributes",
+                    "ses:ListIdentities",
+                    "ses:ListReceiptFilters",
+                    "ses:ListReceiptRuleSets",
+                    "ses:ListVerifiedEmailAddresses",
+                    "ses:ReorderReceiptRuleSet",
+                    "ses:SetActiveReceiptRuleSet",
+                    "ses:UpdateReceiptRule",
+                    "ses:VerifyDomainIdentity",
+                    "ses:VerifyEmailAddress",
+                    "ses:VerifyEmailIdentity"
+                  ],
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "route53:ChangeResourceRecordSets",
+                    "route53:GetHostedZone",
+                    "route53:ListHostedZones",
+                    "route53:ListResourceRecordSets"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+
+    "SesDomainLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "DependsOn": "LambdaExecutionRole",
+      "Properties": {
+        "Code": {
+          "ZipFile": {
+            "Fn::Join": [
+              "", [
+                "import boto3\n",
+                "import botocore\n",
+                "import logging\n",
+                "import cfnresponse\n",
+                "logger = logging.getLogger()\n",
+                "logger.setLevel(logging.INFO)\n",
+                "session = boto3.Session()\n",
+                "route53 = session.client('route53')\n",
+                "ses = session.client('ses', region_name='",{ "Ref": "AWS::Region" },"')\n",
+                "\n",
+                "def domain_handler(event, context):\n",
+                "    response_data = {}\n",
+                "    try:\n",
+                "        logger.info('Event: %s' % str(event))\n",
+                "        logger.info('Context: %s'% str(context))\n",
+                "        request_type = event['RequestType']\n",
+                "        logger.info('Type: %s' % request_type)\n",
+                "        domains = event['ResourceProperties']['Domains']\n",
+                "        if request_type in ['Create', 'Update']:\n",
+                "            for domain in domains:\n",
+                "                hosted_zone_id = find_zone_id_for_domain(domain)\n",
+                "                verification_token = ses.verify_domain_identity(Domain=domain)['VerificationToken']\n",
+                "                logger.info('HostedZoneId: %s Domain: %s VerificationToken: %s' % (hosted_zone_id, domain, verification_token))\n",
+                "                change_route53_record(zone_id=hosted_zone_id, action='UPSERT', domain=domain, value=verification_token)\n",
+                "            response_data['Identities'] = ', '.join(ses.list_identities()['Identities'])\n",
+                "        elif request_type == 'Delete':\n",
+                "            for domain in domains:\n",
+                "                logger.info('Deleting Route53 TXT Verification Record for domain: %s' % domain)\n",
+                "                change_route53_record(\n",
+                "                    zone_id=find_zone_id_for_domain(domain),\n",
+                "                    action='DELETE',\n",
+                "                    domain=domain,\n",
+                "                    value=ses.get_identity_verification_attributes(\n",
+                "                        Identities=[domain]\n",
+                "                    )['VerificationAttributes'][domain]['VerificationToken']\n",
+                "                )\n",
+                "                logger.info('Deleting Identity: %s' % domain)\n",
+                "                ses.delete_identity(Identity=domain)\n",
+                "        logger.info(response_data)\n",
+                "        cfnresponse.send(event, context, cfnresponse.SUCCESS, response_data)\n",
+                "    except Exception as e:\n",
+                "        logger.info('Exception occured: %s' % str(e))\n",
+                "        cfnresponse.send(event, context, cfnresponse.FAILED, response_data)\n",
+                "        raise e\n",
+                "\n",
+                "def find_zone_id_for_domain(domain):\n",
+                "    for page in route53.get_paginator('list_hosted_zones').paginate():\n",
+                "        for zone in page['HostedZones']:\n",
+                "            if (domain.endswith(zone['Name']) or (domain + '.').endswith(zone['Name'])):\n",
+                "                return zone['Id']\n",
+                "\n",
+                "def get_domain(hosted_zone_id):\n",
+                "    hosted_zone = route53.get_hosted_zone(Id=hosted_zone_id)\n",
+                "    return hosted_zone['HostedZone']['Name'][:-1]\n",
+                "\n",
+                "def change_route53_record(zone_id, action, domain, value):\n",
+                "    route53.change_resource_record_sets(\n",
+                "        HostedZoneId=zone_id,\n",
+                "        ChangeBatch={\n",
+                "            'Changes': [\n",
+                "                {\n",
+                "                    'Action': action,\n",
+                "                    'ResourceRecordSet': {\n",
+                "                        'Name': '_amazonses.%s' % domain,\n",
+                "                        'Type': 'TXT',\n",
+                "                        'TTL': 1800,\n",
+                "                        'ResourceRecords': [\n",
+                "                            {'Value': '\"%s\"' % value}\n",
+                "                        ],\n",
+                "                    }\n",
+                "                }\n",
+                "            ]\n",
+                "        }\n",
+                "    )\n",
+                ""
+              ]
+            ]
+          }
+        },
+        "Handler": "index.domain_handler",
+        "Runtime": "python2.7",
+        "Timeout": "30",
+        "Role": { "Fn::GetAtt": [ "LambdaExecutionRole", "Arn" ] }
+      }
+    },
+
+    "SesRuleLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "DependsOn": "LambdaExecutionRole",
+      "Properties": {
+        "Code": {
+          "ZipFile": {
+            "Fn::Join": [
+              "", [
+                "import boto3\n",
+                "import botocore\n",
+                "import logging\n",
+                "import cfnresponse\n",
+                "logger = logging.getLogger()\n",
+                "logger.setLevel(logging.INFO)\n",
+                "session = boto3.Session()\n",
+                "ses = session.client('ses', region_name='",{ "Ref": "AWS::Region" },"')\n",
+                "\n",
+                "def rule_handler(event, context):\n",
+                "    response_data = {}\n",
+                "    try:\n",
+                "        logger.info('Event: %s' % str(event))\n",
+                "        logger.info('Context: %s' % str(context))\n",
+                "        request_type = event['RequestType']\n",
+                "        logger.info('Type: %s' % request_type)\n",
+                "        rule_set_name = event['ResourceProperties']['RuleSetName']\n",
+                "        receipt_rules = event['ResourceProperties']['Rules']\n",
+                "        if request_type in ['Create', 'Update']:\n",
+                "            result = ses.describe_active_receipt_rule_set()\n",
+                "            rule_exists = False\n",
+                "            rule_names = []\n",
+                "            for receipt_rule in receipt_rules:\n",
+                "                rule_name = receipt_rule['Name']\n",
+                "                if receipt_rule['Enabled'] == 'True':\n",
+                "                    receipt_rule['Enabled'] = True\n",
+                "                else:\n",
+                "                    receipt_rule['Enabled'] = False\n",
+                "                if receipt_rule['ScanEnabled'] == 'True':\n",
+                "                    receipt_rule['ScanEnabled'] = True\n",
+                "                else:\n",
+                "                    receipt_rule['ScanEnabled'] = False\n",
+                "                if 'Metadata' in result and 'Name' in result['Metadata']:\n",
+                "                    rule_set_name = result['Metadata']['Name']\n",
+                "                    rule_names = map(lambda rule: rule['Name'], result['Rules'])\n",
+                "                    rule_exists = rule_name in rule_names\n",
+                "                else:\n",
+                "                    logger.info('Creating new receipt rule set: %s' % rule_set_name)\n",
+                "                    ses.create_receipt_rule_set(RuleSetName=rule_set_name)\n",
+                "                    ses.set_active_receipt_rule_set(RuleSetName=rule_set_name)\n",
+                "                if not rule_exists:\n",
+                "                    logger.info('Creating new receipt rule %s in receipt rule set %s' % (receipt_rule, rule_set_name))\n",
+                "                    ses.create_receipt_rule(RuleSetName=rule_set_name, Rule=receipt_rule)\n",
+                "                    rule_names.insert(0, rule_name)\n",
+                "                    ses.reorder_receipt_rule_set(RuleSetName=rule_set_name, RuleNames=rule_names)\n",
+                "            result = ses.describe_active_receipt_rule_set()\n",
+                "            response_data['ReceiptRuleSet'] = result['Metadata']['Name']\n",
+                "            response_data['ReceiptRules'] = ', '.join(map(lambda rule: rule['Name'], result['Rules']))\n",
+                "        elif request_type == 'Delete':\n",
+                "            result = ses.describe_active_receipt_rule_set()\n",
+                "            for receipt_rule in receipt_rules:\n",
+                "                rule_name = receipt_rule['Name']\n",
+                "                if 'Metadata' in result and 'Name' in result['Metadata']:\n",
+                "                    logger.info('Active rule set exists.')\n",
+                "                    active_rule_set_name = result['Metadata']['Name']\n",
+                "                    rule_names = map(lambda rule: rule['Name'], result['Rules'])\n",
+                "                    rule_exists = rule_name in rule_names\n",
+                "                    if rule_exists:\n",
+                "                        logger.info('Rule %s exists. Deleting it...' % rule_name)\n",
+                "                        ses.delete_receipt_rule(RuleSetName=active_rule_set_name, RuleName=rule_name)\n",
+                "                    if active_rule_set_name == rule_set_name:\n",
+                "                        logger.info('RuleSet %s exists. Deleting it...' % rule_set_name)\n",
+                "                        ses.set_active_receipt_rule_set()\n",
+                "                        ses.delete_receipt_rule_set(RuleSetName=active_rule_set_name)\n",
+                "        cfnresponse.send(event, context, cfnresponse.SUCCESS, response_data)\n",
+                "    except Exception as e:\n",
+                "        logger.info('Exception occured: %s' % str(e))\n",
+                "        cfnresponse.send(event, context, cfnresponse.FAILED, response_data)\n",
+                "        raise e\n",
+                ""
+              ]
+            ]
+          }
+        },
+        "Handler": "index.rule_handler",
+        "Runtime": "python2.7",
+        "Timeout": "30",
+        "Role": { "Fn::GetAtt": [ "LambdaExecutionRole", "Arn" ] }
+      }
+    },
+
+    "SesFilterLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "DependsOn": "LambdaExecutionRole",
+      "Properties": {
+        "Code": {
+          "ZipFile": {
+            "Fn::Join": [
+              "", [
+                "import boto3\n",
+                "import botocore\n",
+                "import logging\n",
+                "import cfnresponse\n",
+                "logger = logging.getLogger()\n",
+                "logger.setLevel(logging.INFO)\n",
+                "session = boto3.Session()\n",
+                "ses = session.client('ses', region_name='",{ "Ref": "AWS::Region" },"')\n",
+                "\n",
+                "def filter_handler(event, context):\n",
+                "    response_data = {}\n",
+                "    try:\n",
+                "        logger.info('Event: %s' % str(event))\n",
+                "        logger.info('Context: %s' % str(context))\n",
+                "        request_type = event['RequestType']\n",
+                "        logger.info('Type: %s' % request_type)\n",
+                "        receipt_filters = event['ResourceProperties']['IpAddresFilters']\n",
+                "        if request_type in ['Create', 'Update']:\n",
+                "            receipt_filters_list = ses.list_receipt_filters()\n",
+                "            for receipt_filter in receipt_filters:\n",
+                "                filter_names = map(lambda name: name['Name'], receipt_filters_list['Filters'])\n",
+                "                filter_cidrs = map(lambda cidr: cidr['IpFilter']['Cidr'], receipt_filters_list['Filters'])\n",
+                "                if receipt_filter['IpFilter']['Cidr'] not in filter_cidrs:\n",
+                "                    if receipt_filter['Name'] in filter_names:\n",
+                "                        logger.info('Filter name %s already exists. Deleting it.' % receipt_filter['Name'])\n",
+                "                        ses.delete_receipt_filter(FilterName=receipt_filter['Name'])\n",
+                "                    logger.info('Creating receipt filter: %s' % receipt_filter)\n",
+                "                    ses.create_receipt_filter(Filter=receipt_filter)\n",
+                "            receipt_filters_list = ses.list_receipt_filters()\n",
+                "            response_data['FilterNames'] = ', '.join(map(lambda name: name['Name'], receipt_filters_list['Filters']))\n",
+                "            response_data['FilterIpAddresses'] = ', '.join(map(lambda cidr: cidr['IpFilter']['Cidr'], receipt_filters_list['Filters']))\n",
+                "        elif request_type == 'Delete':\n",
+                "            for receipt_filter in receipt_filters:\n",
+                "                logger.info('Deleting filter: %s' % receipt_filter['Name'])\n",
+                "                ses.delete_receipt_filter(FilterName=receipt_filter['Name'])\n",
+                "        cfnresponse.send(event, context, cfnresponse.SUCCESS, response_data)\n",
+                "    except Exception as e:\n",
+                "        logger.info('Exception occured: %s' % str(e))\n",
+                "        cfnresponse.send(event, context, cfnresponse.FAILED, response_data)\n",
+                "        raise e\n",
+                ""
+              ]
+            ]
+          }
+        },
+        "Handler": "index.filter_handler",
+        "Runtime": "python2.7",
+        "Timeout": "30",
+        "Role": { "Fn::GetAtt": [ "LambdaExecutionRole", "Arn" ] }
+      }
+    },
+
+    "SesDomains": {
+      "Type": "Custom::SesDomain",
+      "DependsOn": "SesDomainLambdaFunction",
+      "Properties": {
+        "ServiceToken": { "Fn::GetAtt": [ "SesDomainLambdaFunction", "Arn" ] },
+        "Domains": { "Ref": "Domains" }
+      }
+    },
+
+    "SesRules": {
+      "Type": "Custom::SesRule",
+      "DependsOn": [ "PermissionForSesToInvokeLambda", "SesRuleLambdaFunction" ],
+      "Properties": {
+        "ServiceToken": { "Fn::GetAtt": [ "SesRuleLambdaFunction", "Arn" ] },
+        "RuleSetName": { "Ref": "RuleSetName" },
+        "Rules": [
+          {
+            "Name": { "Ref": "RuleName" },
+            "Recipients": { "Ref": "MailRecipients" },
+            "Enabled": "True",
+            "ScanEnabled": "False",
+            "Actions": [
+              {
+                "LambdaAction": {
+                  "FunctionArn": { "Ref": "SesInvokeLambdaFunctionArn" },
+                  "InvocationType": "Event"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+
+    "SesFilters": {
+      "Type": "Custom::SesFilter",
+      "DependsOn": "SesFilterLambdaFunction",
+      "Properties": {
+        "ServiceToken": { "Fn::GetAtt": [ "SesFilterLambdaFunction", "Arn" ] },
+        "IpAddresFilters": [
+          {
+            "Name": "prod-us-east-2a",
+            "IpFilter": {
+              "Policy": "Allow",
+              "Cidr": "18.220.12.142/32"
+            }
+          },
+          {
+            "Name": "prod-us-east-2b",
+            "IpFilter": {
+              "Policy": "Allow",
+              "Cidr": "18.216.7.10/32"
+            }
+          },
+          {
+            "Name": "prod-us-west-2a",
+            "IpFilter": {
+              "Policy": "Allow",
+              "Cidr": "50.112.39.248/32"
+            }
+          },
+          {
+            "Name": "prod-us-west-2b",
+            "IpFilter": {
+              "Policy": "Allow",
+              "Cidr": "52.41.236.76/32"
+            }
+          },
+          {
+            "Name": "prod-eu-west-1a",
+            "IpFilter": {
+              "Policy": "Allow",
+              "Cidr": "52.31.106.198/32"
+            }
+          },
+          {
+            "Name": "prod-eu-west-1b",
+            "IpFilter": {
+              "Policy": "Allow",
+              "Cidr": "52.208.126.243/32"
+            }
+          },
+          {
+            "Name": "prod-eu-central-1a",
+            "IpFilter": {
+              "Policy": "Allow",
+              "Cidr": "52.29.100.147/32"
+            }
+          },
+          {
+            "Name": "prod-eu-central-1b",
+            "IpFilter": {
+              "Policy": "Allow",
+              "Cidr": "52.58.166.242/32"
+            }
+          }
+        ]
+      }
+    },
+
+    "PermissionForSesToInvokeLambda": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "SesInvokeLambdaFunctionArn"
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "ses.amazonaws.com",
+        "SourceAccount": { "Ref": "AWS::AccountId" }
+      }
+    }
+  },
+
+  "Outputs": {
+    "SesDomains": {
+      "Description": "SES Domains.",
+      "Value": { "Fn::GetAtt": [ "SesDomains", "Identities" ] }
+    },
+
+    "SesReceiptRuleSet": {
+      "Description": "SES Receipt Rule Set Name.",
+      "Value": { "Fn::GetAtt": [ "SesRules", "ReceiptRuleSet" ] }
+    },
+
+    "SesReceiptRules": {
+      "Description": "Ses Receipt Rules.",
+      "Value": { "Fn::GetAtt": [ "SesRules", "ReceiptRules" ] }
+    },
+
+    "SesFilterNames": {
+      "Description": "SES Filter Names.",
+      "Value": { "Fn::GetAtt": [ "SesFilters", "FilterNames" ] }
+    },
+
+    "SesFilterIpAddresses": {
+      "Description": "SES Filter IP Address.",
+      "Value": { "Fn::GetAtt": [ "SesFilters", "FilterIpAddresses" ] }
+    }
+
+  }
+}

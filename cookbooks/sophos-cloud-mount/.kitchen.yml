@@ -1,0 +1,36 @@
+---
+driver:
+  name: vagrant
+  vagrantfile_erb: Vagrantfile.erb
+  attached_disks:
+    - ["sdb.vmdk", "1028", "1", "0", "hdd"]
+    - ["sdc.vmdk", "1028", "1", "1", "hdd"]
+
+provisioner:
+  name: chef_solo
+
+platforms:
+  - name: ubuntu-14.04
+
+suites:
+  - name: default
+    run_list:
+      - recipe[sophos-cloud-mount::default]
+    attributes: {
+      mount: {
+        volumes: [{
+          path: "/d0/dfs",
+          device: "/dev/sdb",
+          encrypted: true,
+          fs_type: "ext3", 
+          mkfs_options: "-F -j -m 1 -O sparse_super,dir_index",
+          mount_options: "noatime,nodiratime"
+        },{
+          path: "/d1/dfs",
+          device: "/dev/sdc",
+          fs_type: "ext3",
+          mkfs_options: "-F -j -m 1 -O sparse_super,dir_index",
+          mount_options: "noatime,nodiratime"
+        }]
+      }
+    }

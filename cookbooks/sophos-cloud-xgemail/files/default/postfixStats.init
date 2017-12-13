@@ -1,0 +1,106 @@
+#!/bin/sh
+#
+# postfixStats               Start/Stop the postfixStats agent
+#
+# chkconfig: 2345 81 31
+# description: postfixStats
+#
+### BEGIN INIT INFO
+# Provides:          postfixStats
+# Required-Start:    $network postfix $mail-transfer-agent $syslog
+# Required-Stop:     $network postfix $mail-transfer-agent $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Monitors logfiles for Postfix info
+# Description:       Start perl daemon to monitor log files for Postfix information
+### END INIT INFO
+
+# Return values according to LSB for all commands but status:
+# 0 - success
+# 1 - generic or unspecified error
+# 2 - invalid or excess argument(s)
+# 3 - unimplemented feature (e.g. "reload")
+# 4 - insufficient privilege
+# 5 - program is not installed
+# 6 - program is not configured
+# 7 - program is not running
+#
+# Version: 1.0.0
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+prog=postfixStats-updater.pl
+exec="/usr/local/logicmonitor/utils/postfixStats-updater.pl"
+lockfile=/var/lock/subsys/postfixStats-updater.pl
+pidfile="/var/run/postfixStats-updater.pl.pid"
+mutexfile=/var/lock/postfixStats-updater.pl.mutex
+
+start()
+{
+  (flock -w 10 -x 9
+  if [ $UID -ne 0 ] ; then
+      echo "User has insufficient privilege."
+      exit 4
+  fi
+  [ -x $exec ] || exit 5
+  echo -n $"Starting $prog: "
+  daemon --pidfile=$pidfile --check=${prog} "nohup $exec >/dev/null 2>&1 &"
+  retval=$?
+  echo
+  [ $retval -eq 0 ] && touch $lockfile) 9>${mutexfile}
+  rm -f ${mutexfile}
+}
+
+stop()
+{
+  (flock -w 10 -x 9
+  if [ $UID -ne 0 ] ; then
+      echo "User has insufficient privilege."
+      exit 4
+  fi
+  echo -n $"Stopping $prog: "
+  if [ -n "`pidfileofproc $prog`" ]; then
+      killproc $prog
+  else
+      failure $"Stopping $prog"
+  fi
+  retval=$?
+  echo
+  [ $retval -eq 0 ] && rm -f $lockfile) 9>${mutexfile}
+  rm -f ${mutexfile}
+}
+
+restart()
+{
+  rh_status_q && stop
+  start
+}
+
+rh_status()
+{
+  status -p $pidfile -b /usr/bin/perl $exec
+}
+
+rh_status_q()
+{
+  rh_status >/dev/null 2>&1
+}
+
+case "$1" in
+  start)
+    rh_status_q && exit 0
+    $1 ;;
+  stop)
+    rh_status_q || exit 0
+    $1 ;;
+  restart)
+    $1 ;;
+  status)
+    rh_status ;;
+  condrestart|try-restart)
+    rh_status_q || exit 0
+    restart ;;
+  *)
+    echo "Usage: $0 {start|stop|status|restart|condrestart|try-restart}"
+    exit 2 ;;
+esac

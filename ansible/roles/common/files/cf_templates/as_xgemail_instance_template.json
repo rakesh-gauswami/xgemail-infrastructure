@@ -1,0 +1,968 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+
+    "Description": "XGEMAIL instance template for Sophos Cloud; used for 'submit' and 'delivery'.",
+
+    "Metadata": {
+        "Copyright": [
+            "Copyright 2016, Sophos Limited. All rights reserved.",
+            "",
+            "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+            "Sophos Limited and Sophos Group.  All other product and company",
+            "names mentioned are trademarks or registered trademarks of their",
+            "respective owners."
+        ],
+
+        "Comments": [
+            "Uses pre-baked Xgemail AMI to launch Submit and Delivery Instances in their respective AutoScaling Groups."
+        ]
+    },
+
+    "Parameters": {
+        "AesDecryptionKey": {
+            "Description": "Decryption key for encrypted buckets",
+            "Type": "String"
+        },
+        "AlarmTopicArn": {
+            "Description": "ARN for SNS Topic that should receive alarm notifications",
+            "Type": "String"
+        },
+        "AmiId": {
+            "Description": "AMI ID to use as a base for the stack",
+            "Type": "String"
+        },
+        "AutoScalingInstanceRoleArn": {
+            "Description": "Arn of the AutoScaling Role.",
+            "Type": "String"
+        },
+        "AutoScalingMinSize": {
+            "Description": "Minimum number of instances in the Auto Scaling Group",
+            "Type": "String",
+            "Default": "3"
+        },
+        "AutoScalingMaxSize": {
+            "Description": "Maximum number of instances in the Auto Scaling Group",
+            "Type": "String",
+            "Default": "12"
+        },
+        "AutoScalingNotificationTopicARN": {
+            "Description": "ARN for SNS Topic that should receive launch and termination notifications",
+            "Type": "String"
+        },
+        "AvailabilityZoneIndex": {
+            "Description": "Zero-based index for selecting availability zone (0=a, 1=b, etc.)",
+            "Type": "String",
+            "AllowedPattern": "^[0-9]$"
+        },
+        "AvailabilityZones": {
+            "Type": "List<String>",
+            "Description": "List of Availability Zones with Public and Private Subnets",
+            "ConstraintDescription": "must be a comma-separated list of valid Availability Zones for the selected VPC"
+        },
+        "BastionSecurityGroup": {
+            "Description": "Default security group for Bastion Hosts",
+            "Type": "AWS::EC2::SecurityGroup::Id"
+        },
+        "Branch": {
+            "Description": "(Develop, CPLAT-XXXX, etc...)",
+            "Type": "String"
+        },
+        "BuildVersion": {
+            "Description": "Version of the application from Bamboo",
+            "Type": "String",
+            "Default": "1.0"
+        },
+        "BundleVersion": {
+            "Description": "Version of the AMI bundle",
+            "Type": "Number"
+        },
+        "EbsMinIops": {
+            "Description": "Total IOPS to reserve",
+            "Type": "Number",
+            "Default": 100,
+            "MinValue": 100,
+            "MaxValue": 4000
+        },
+        "Environment": {
+            "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
+            "Type": "String"
+        },
+        "HealthCheckGracePeriod": {
+            "Description": "The seconds after an instance comes into service that health checks starts.",
+            "Type": "Number",
+            "Default": "120"
+        },
+        "HealthCheckType": {
+            "Description": "The service you want the health status from, Amazon EC2 or Elastic Load Balancer.",
+            "Type": "String",
+            "Default": "ELB",
+            "AllowedValues": [ "EC2", "ELB" ]
+        },
+        "InstanceProfile": {
+            "Description": "Instance profile for accessing aws resources",
+            "Type": "String"
+        },
+        "InstanceType": {
+            "Description": "Amazon EC2 instance type",
+            "Type" : "String",
+            "Default" : "t2.large",
+            "AllowedValues" : [ "t2.micro", "t2.small", "t2.medium", "t2.large", "m3.medium", "m4.large", "m4.xlarge", "m4.2xlarge", "m4.4xlarge", "m4.10xlarge", "c3.large", "c3.xlarge", "c3.2xlarge", "c4.large", "c4.xlarge", "c4.2xlarge", "c4.4xlarge", "c4.8xlarge", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge" ]
+        },
+        "JavaServiceType": {
+            "Description": "Service type for the java instance (Defaults to unknown so not to break builds)",
+            "Type": "String",
+            "Default" : "unknown"
+        },
+        "KeyName": {
+            "Type": "AWS::EC2::KeyPair::KeyName",
+            "Description": "Key pair used to SSH to the instance"
+        },
+        "LoadBalancerName": {
+            "Description": "Name for the ELB to attach to the Auto Scaling Group",
+            "Type": "List<String>"
+        },
+        "LogGroupRetentionPeriod": {
+            "Description": "The length of time (in days) to retain logs for",
+            "Type": "Number",
+            "AllowedValues": [ 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653 ],
+            "Default": 400
+        },
+        "MailDomain": {
+            "Description": "The mail domain to be configured.",
+            "Type": "String"
+        },
+        "NullTest" : {
+            "Description": "A value of yes let the test succeed immediately.",
+            "Type": "String",
+            "Default": "no",
+            "AllowedValues": [ "yes", "no" ]
+        },
+        "PublicIpAddressEnabled": {
+            "Description": "Whether or not we have a public IP address",
+            "Type": "String",
+            "Default" : "false",
+            "AllowedValues" : [ "false", "true" ]
+        },
+        "S3CookbookRepositoryURL": {
+            "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
+            "Type": "String",
+            "Default": "//cloud-applications/develop/cookbooks.enc"
+        },
+        "ScaleDownOnWeekends": {
+            "Description": "Enable scale down to zero on Saturday at midnight and scale back on Monday morning. (Times are UTC, NON PROD/QA ENVIRONMENT ONLY)",
+            "Type": "String",
+            "Default": "false",
+            "AllowedValues": [ "true", "false" ]
+        },
+        "ScaleDownCron": {
+            "Description": "Cron string for when to begin scale down.",
+            "Type": "String",
+            "Default": "0 1 * * 6"
+        },
+        "ScaleUpCron": {
+            "Description": "Cron string for when to begin scale up.",
+            "Type": "String",
+            "Default": "0 4 * * 1"
+        },
+        "SecurityGroups" : {
+            "Description" : "The security group that allows communication within the VPC.",
+            "Type" : "List<AWS::EC2::SecurityGroup::Id>"
+        },
+        "StationVpcName": {
+            "Description": "Name of the CloudStation VPC",
+            "Type": "String",
+            "Default": "CloudStation"
+        },
+        "TomcatMaxHeaderSize": {
+            "Description": "Max Header size Tomcat will allow",
+            "Type": "String",
+            "Default": "16384"
+        },
+        "Vpc": {
+            "Description": "ID of an existing VPC",
+            "Type": "AWS::EC2::VPC::Id"
+        },
+        "VpcName": {
+            "Description": "Name of an existing VPC",
+            "Type": "String",
+            "Default": "CloudStation"
+        },
+        "VpcZoneIdentifiers": {
+            "Type": "List<AWS::EC2::Subnet::Id>",
+            "Description": "The list of Public Subnets for your VPC",
+            "ConstraintDescription": "must be a comma-separated list of valid Public Subnets for the selected VPC"
+        },
+        "PostfixInstall": {
+            "Description": "Indicates whether postfix should be configured.",
+            "Type": "String",
+            "Default": "no",
+            "AllowedValues": [ "yes", "no" ]
+        },
+        "PostfixMailVersion": {
+            "Description": "The version of the mail system.",
+            "Type": "String",
+            "Default": "AWS Linux"
+        },
+        "UpdateInterval" : {
+            "Description" : "The interval in minutes cfn-hup watches stack modifications.",
+            "Type" : "Number",
+            "Default" : "1",
+            "MinValue" : "1",
+            "MaxValue" : "30"
+        },
+        "VolumeSetId": {
+            "Description": "Identifier to be combined with stack name and availability zone to associate volumes with an instance",
+            "Type": "String",
+            "Default": ""
+        },
+        "VolumeTrackerSimpleDbDomain": {
+            "Description": "Name of Simple DB Domain used to track persistent EBS volumes",
+            "Type": "String"
+        },
+        "XgemailBucketName" : {
+            "Description" : "Name of the S3 Bucket where XGEMAIL messages are sent",
+            "Type" : "String"
+        },
+        "XgemailDeliveryAddress" : {
+            "Description" : "Address for the XGEMAIL Delivery Servers",
+            "Type" : "String",
+            "Default": ""
+        },
+        "XgemailMinSizeDataGB" : {
+            "Description" : "Total GB to reserve for storing data files",
+            "Type" : "Number",
+            "MinValue" : 1,
+            "MaxValue" : 16384
+        },
+        "XgemailMsgHistoryBucketName" : {
+            "Description" : "Name of the S3 Bucket where XGEMAIL messages are sent",
+            "Type" : "String",
+            "Default": ""
+        },
+        "XgemailMsgHistoryQueueUrl" : {
+            "Description" : "URL for the SQS Queue where XGEMAIL messages are sent",
+            "Type" : "String",
+            "Default": ""
+        },
+        "XgemailPolicyArn" : {
+            "Description" : "ARN for the SNS Topic where XGEMAIL policies are sent",
+            "Type" : "String",
+            "Default": ""
+        },
+        "XgemailPolicyBucketName" : {
+            "Description" : "Name of the S3 Bucket where XGEMAIL policy docs are stored",
+            "Type" : "String",
+            "Default": ""
+        },
+        "XgemailQueueUrl" : {
+            "Description" : "URL for the SQS Queue where XGEMAIL messages are sent",
+            "Type" : "String"
+        },
+        "XgemailSnsSqsQueueUrl" : {
+            "Description" : "URL for the SNS-SQS Queue where XGEMAIL messages are sent",
+            "Type" : "String",
+            "Default": ""
+        },
+        "XgemailSubmitAddress" : {
+            "Description" : "Address for the XGEMAIL Submit Servers",
+            "Type" : "String",
+            "Default": ""
+        },
+        "XgemailSxlDbl" : {
+            "Description" : "SXL Domain Blacklist used by Xgemail Submit Servers",
+            "Type" : "String",
+            "Default": ""
+        },
+        "XgemailSxlRbl" : {
+            "Description" : "SXL Reputation Blacklist used by Xgemail Submit Servers",
+            "Type" : "String",
+            "Default": ""
+        }
+    },
+
+    "Mappings": {
+        "InstanceTypeMap": {
+            "t2.micro": {
+                "TomcatHeapSize": "1024m",
+                "TomcatThreadSize": "150"
+            },
+            "t2.small": {
+                "TomcatHeapSize": "1024m",
+                "TomcatThreadSize": "150"
+            },
+            "t2.medium": {
+                "TomcatHeapSize": "1024m",
+                "TomcatThreadSize": "150"
+            },
+            "t2.large": {
+                "TomcatHeapSize": "2048m",
+                "TomcatThreadSize": "150"
+            },
+
+            "m3.medium": {
+                "TomcatHeapSize": "2048m",
+                "TomcatThreadSize": "1000"
+            },
+            "m3.large": {
+                "TomcatHeapSize": "3072m",
+                "TomcatThreadSize": "1500"
+            },
+            "m3.xlarge": {
+                "TomcatHeapSize": "3072m",
+                "TomcatThreadSize": "2000"
+            },
+            "m3.2xlarge": {
+                "TomcatHeapSize": "3072m",
+                "TomcatThreadSize": "2000"
+            },
+
+            "m4.large": {
+                "TomcatHeapSize": "3072m",
+                "TomcatThreadSize": "1500"
+            },
+            "m4.xlarge": {
+                "TomcatHeapSize": "3072m",
+                "TomcatThreadSize": "2000"
+            },
+            "m4.2xlarge": {
+                "TomcatHeapSize": "3072m",
+                "TomcatThreadSize": "2000"
+            },
+            "m4.4xlarge": {
+                "TomcatHeapSize": "4096m",
+                "TomcatThreadSize": "2000"
+            },
+            "m4.10xlarge": {
+                "TomcatHeapSize": "4096m",
+                "TomcatThreadSize": "2500"
+            },
+
+            "c3.large": {
+                "TomcatHeapSize": "2048m",
+                "TomcatThreadSize": "1500"
+            },
+            "c3.xlarge": {
+                "TomcatHeapSize": "3072m",
+                "TomcatThreadSize": "2000"
+            },
+            "c3.2xlarge": {
+                "TomcatHeapSize": "3072m",
+                "TomcatThreadSize": "2500"
+            },
+            "c3.4xlarge": {
+                "TomcatHeapSize": "3072m",
+                "TomcatThreadSize": "2500"
+            },
+            "c3.8xlarge": {
+                "TomcatHeapSize": "3072m",
+                "TomcatThreadSize": "2500"
+            },
+
+            "c4.large": {
+                "TomcatHeapSize": "2048m",
+                "TomcatThreadSize": "1500"
+            },
+            "c4.xlarge": {
+                "TomcatHeapSize": "3072m",
+                "TomcatThreadSize": "2000"
+            },
+            "c4.2xlarge": {
+                "TomcatHeapSize": "3072m",
+                "TomcatThreadSize": "2500"
+            },
+            "c4.4xlarge": {
+                "TomcatHeapSize": "3072m",
+                "TomcatThreadSize": "2500"
+            },
+            "c4.8xlarge": {
+                "TomcatHeapSize": "3072m",
+                "TomcatThreadSize": "2500"
+            },
+
+            "g2.2xlarge": {
+                "TomcatHeapSize": "3072m",
+                "TomcatThreadSize": "2500"
+            },
+
+            "r3.large": {
+                "TomcatHeapSize": "3072m",
+                "TomcatThreadSize": "2500"
+            },
+            "r3.xlarge": {
+                "TomcatHeapSize": "3072m",
+                "TomcatThreadSize": "2500"
+            }
+        },
+        "RegionConfigMap": {
+            "ap-northeast-1": {
+                "Name": "Asia Pacific (Tokyo)",
+                "PrivateDns": "ap-northeast-1.compute.internal"
+            },
+            "ap-southeast-1": {
+                "Name": "Asia Pacific (Singapore)",
+                "PrivateDns": "ap-southeast-1.compute.internal"
+            },
+            "ap-southeast-2": {
+                "Name": "Asia Pacific (Sydney)",
+                "PrivateDns": "ap-southeast-2.compute.internal"
+            },
+            "eu-central-1": {
+                "Name": "EU (Frankfurt)",
+                "PrivateDns": "eu-central-1.compute.internal"
+            },
+            "eu-west-1": {
+                "Name": "EU (Ireland)",
+                "PrivateDns": "eu-west-1.compute.internal"
+            },
+            "us-east-1": {
+                "Name": "US East (N. Virginia)",
+                "PrivateDns": "ec2.internal"
+            },
+            "us-east-2": {
+                "AmiId": "ami-f6035893",
+                "Name": "US East (Ohio)",
+                "PrivateDns": "us-east-2.compute.internal"
+            },
+            "us-west-1": {
+                "Name": "US West (N. California)",
+                "PrivateDns": "us-west-1.compute.internal"
+            },
+            "us-west-2": {
+                "Name": "US West (Oregon)",
+                "PrivateDns": "us-west-2.compute.internal"
+            },
+            "sa-east-1": {
+                "Name": "South America (Sao Paulo)",
+                "PrivateDns": "sa-east-1.compute.internal"
+            }
+        }
+    },
+
+    "Conditions": {
+        "EnableScaleDownOnWeekends": {
+            "Fn::And": [
+                {
+                    "Fn::Not": [
+                        {
+                            "Fn::Or": [
+                                {
+                                    "Fn::Equals": [
+                                        {"Ref": "Environment"},
+                                        "prod"
+                                    ]
+                                },
+                                {
+                                    "Fn::Equals": [
+                                        {"Ref": "Environment"},
+                                        "qa"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        {"Ref": "ScaleDownOnWeekends"},
+                        "true"
+                    ]
+                }
+            ]
+        },
+        "IsInfDevelopmentEnvironment" : {
+            "Fn::Or": [
+                {
+                    "Fn::Equals": [
+                        {"Ref": "Environment"},
+                        "inf"
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        {"Ref": "Environment"},
+                        "qainf"
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        {"Ref": "Environment"},
+                        "dev"
+                    ]
+                }
+            ]
+        }
+    },
+
+    "Resources": {
+        "JavaAutoScalingGroup": {
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "Properties": {
+                "AvailabilityZones": [
+                    { "Fn::Select" : [
+                        { "Ref": "AvailabilityZoneIndex" },
+                        { "Ref": "AvailabilityZones" }
+                    ] }
+                ],
+                "Cooldown": "200",
+                "HealthCheckGracePeriod": { "Ref": "HealthCheckGracePeriod" },
+                "HealthCheckType": { "Ref": "HealthCheckType" },
+                "LaunchConfigurationName": { "Ref": "JavaAutoScalingLaunchConfig" },
+                "LoadBalancerNames": { "Ref": "LoadBalancerName" },
+                "MinSize": { "Ref": "AutoScalingMinSize"},
+                "MaxSize": { "Ref": "AutoScalingMaxSize"},
+                "VPCZoneIdentifier": [
+                    { "Fn::Select" : [
+                        { "Ref": "AvailabilityZoneIndex" },
+                        { "Ref": "VpcZoneIdentifiers" }
+                    ] }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join":  [":",[
+                                { "Ref": "VpcName"},
+                                { "Ref": "JavaServiceType" },
+                                { "Ref": "Branch" },
+                                { "Ref": "Environment" }
+                            ]]
+                        },
+                        "PropagateAtLaunch": true
+                    },
+                    {
+                        "Key": "BuildResultKey",
+                        "Value": { "Ref": "BuildVersion"},
+                        "PropagateAtLaunch": true
+                    },
+                    {
+                        "Key": "BundleVersion",
+                        "Value": { "Ref": "BundleVersion"},
+                        "PropagateAtLaunch": true
+                    }
+                ]
+            },
+            "CreationPolicy": {
+                "ResourceSignal": {
+                    "Count": { "Ref": "AutoScalingMinSize" },
+                    "Timeout": "PT20M"
+                }
+            }
+        },
+
+        "AutoScalingScheduledScaleDown": {
+            "Type": "AWS::AutoScaling::ScheduledAction",
+            "Condition": "EnableScaleDownOnWeekends",
+            "Properties": {
+                "AutoScalingGroupName": {"Ref": "JavaAutoScalingGroup"},
+                "MinSize": 0,
+                "Recurrence": {"Ref": "ScaleDownCron"}
+            }
+        },
+
+        "AutoScalingScheduledScaleUp": {
+            "Type": "AWS::AutoScaling::ScheduledAction",
+            "Condition": "EnableScaleDownOnWeekends",
+            "Properties": {
+                "AutoScalingGroupName": {"Ref": "JavaAutoScalingGroup"},
+                "MinSize": {"Ref": "AutoScalingMinSize"},
+                "Recurrence": {"Ref": "ScaleUpCron"}
+            }
+        },
+
+        "Ec2InstanceTerminatingLifecycleHook": {
+            "Type": "AWS::AutoScaling::LifecycleHook",
+            "Properties": {
+                "AutoScalingGroupName": { "Ref": "JavaAutoScalingGroup" },
+                "DefaultResult" : "CONTINUE",
+                "HeartbeatTimeout" : "300",
+                "LifecycleTransition": "autoscaling:EC2_INSTANCE_TERMINATING",
+                "NotificationTargetARN": { "Ref": "AutoScalingNotificationTopicARN" },
+                "RoleARN": { "Ref": "AutoScalingInstanceRoleArn" }
+            }
+        },
+
+        "JavaAutoScalingLaunchConfig": {
+            "Type": "AWS::AutoScaling::LaunchConfiguration",
+            "Metadata": {
+                "AWS::CloudFormation::Init": {
+                    "configSets": {
+                        "java_install": [ "attributes", "update_cookbooks", "java_install" ],
+                        "java_update":  [ "attributes", "update_cookbooks", "java_update" ]
+                    },
+
+                    "attributes": {
+                        "files": {
+                            "/var/sophos/cookbooks/attributes.json": {
+                                "content": {
+                                    "Fn::Join": [ "", [
+                                        "{\n",
+                                        "  \"sophos_cloud\" : {\n",
+                                        "    \"application_name\"               : \"{{cluster}}\",\n",
+                                        "    \"application_type\"               : \"xgemail\",\n",
+                                        "    \"availability_zone\"              : \"{{availability_zone}}\",\n",
+                                        "    \"connections\"                    : \"cloud-{{environment}}-connections\",\n",
+                                        "    \"configs\"                        : \"cloud-{{environment}}-configs\",\n",
+                                        "    \"context\"                        : \"{{environment}}\",\n",
+                                        "    \"environment\"                    : \"{{environment}}\",\n",
+                                        "    \"branch\"                         : \"{{branch}}\",\n",
+                                        "    \"cluster\"                        : \"{{cluster}}\",\n",
+                                        "    \"client-endpoint\"                : \"{{region}}\",\n",
+                                        "    \"is_java_app\"                    : \"no\",\n",
+                                        "    \"region\"                         : \"{{region}}\",\n",
+                                        "    \"vpc_id\"                         : \"{{vpc_id}}\",\n",
+                                        "    \"vpc_name\"                       : \"{{vpc_name}}\"\n",
+                                        "  },\n",
+                                        "  \"tomcat\" : {\n",
+                                        "    \"max_header_size\"                : \"{{tomcat_max_header_size}}\",\n",
+                                        "    \"heap_max\"                       : \"{{tomcat_heap_max}}\",\n",
+                                        "    \"thread_max\"                     : \"{{tomcat_thread_max}}\",\n",
+                                        "    \"should_update_keystore\"         : \"false\"\n",
+                                        "  },\n",
+                                        "  \"cert\" : {\n",
+                                        "    \"should_install_mx\"              : \"true\"\n",
+                                        "  },\n",
+                                        "  \"email\" : {\n",
+                                        "    \"install\"                        : \"{{email_install}}\",\n",
+                                        "    \"mail_domain\"                    : \"{{mail_domain}}\",\n",
+                                        "    \"mail_version\"                   : \"{{mail_version}}\"\n",
+                                        "  },\n",
+                                        "  \"volumes\" : {\n",
+                                        "    \"volume_min_iops\"                : \"{{volume_min_iops}}\",\n",
+                                        "    \"volume_min_size_data_gb\"        : \"{{volume_min_size_data_gb}}\",\n",
+                                        "    \"volume_mount_point\"             : \"storage\",\n",
+                                        "    \"volume_set_id\"                  : \"{{volume_set_id}}\",\n",
+                                        "    \"volume_snapshot_hour\"           : \"0\",\n",
+                                        "    \"volume_snapshot_weekday\"        : \"0\",\n",
+                                        "    \"volume_tracker_sdb_domain\"      : \"{{volume_tracker_sdb_domain}}\"\n",
+                                        "  },\n",
+                                        "  \"xgemail\" : {\n",
+                                        "    \"alarm_topic_arn\"                : \"{{alarm_topic_arn}}\",\n",
+                                        "    \"cluster_type\"                   : \"{{cluster_type}}\",\n",
+                                        "    \"delivery_server_dns\"            : \"{{delivery_server_dns}}\",\n",
+                                        "    \"lifecycle_topic_arn\"            : \"{{lifecycle_topic_arn}}\",\n",
+                                        "    \"msg_history_bucket_name\"        : \"{{msg_history_bucket_name}}\",\n",
+                                        "    \"msg_history_queue_url\"          : \"{{msg_history_queue_url}}\",\n",
+                                        "    \"station_vpc_name\"               : \"{{station_vpc_name}}\",\n",
+                                        "    \"submit_server_dns\"              : \"{{submit_server_dns}}\",\n",
+                                        "    \"sxl_dbl\"                        : \"{{sxl_dbl}}\",\n",
+                                        "    \"sxl_rbl\"                        : \"{{sxl_rbl}}\",\n",
+                                        "    \"xgemail_policy_bucket_name\"     : \"{{xgemail_policy_bucket_name}}\",\n",
+                                        "    \"xgemail_bucket_name\"            : \"{{xgemail_bucket_name}}\",\n",
+                                        "    \"xgemail_policy_arn\"             : \"{{xgemail_policy_arn}}\",\n",
+                                        "    \"xgemail_sns_sqs_url\"            : \"{{xgemail_sns_sqs_url}}\",\n",
+                                        "    \"xgemail_queue_url\"              : \"{{xgemail_queue_url}}\"\n",
+                                        "  }\n",
+                                        "}\n"
+                                    ]]
+                                },
+                                "context": {
+                                    "alarm_topic_arn":                          { "Ref": "AlarmTopicArn" },
+                                    "availability_zone":                        { "Fn::Select" : [
+                                                                                    { "Ref": "AvailabilityZoneIndex" },
+                                                                                    { "Ref": "AvailabilityZones" }
+                                                                                ] },
+                                    "branch":                                   { "Ref": "Branch" },
+                                    "cluster":                                  { "Ref": "JavaServiceType" },
+                                    "cluster_type":                             { "Ref": "JavaServiceType" },
+                                    "delivery_server_dns":                      { "Ref": "XgemailDeliveryAddress" },
+                                    "email_install":                            { "Ref": "PostfixInstall" },
+                                    "environment":                              { "Ref": "Environment" },
+                                    "internet_submit_server_dns":               { "Ref": "XgemailSubmitAddress" },
+                                    "lifecycle_topic_arn":                      { "Ref": "AutoScalingNotificationTopicARN" },
+                                    "mail_domain":                              { "Ref": "MailDomain" },
+                                    "mail_version":                             { "Ref": "PostfixMailVersion" },
+                                    "msg_history_bucket_name":                  { "Ref": "XgemailMsgHistoryBucketName" },
+                                    "msg_history_queue_url":                    { "Ref": "XgemailMsgHistoryQueueUrl" },
+                                    "region":                                   { "Ref": "AWS::Region" },
+                                    "stack":                                    { "Ref": "AWS::StackName" },
+                                    "station_vpc_name":                         { "Ref": "StationVpcName" },
+                                    "sxl_dbl":                                  { "Ref": "XgemailSxlDbl" },
+                                    "sxl_rbl":                                  { "Ref": "XgemailSxlRbl" },
+                                    "tomcat_heap_max":                          { "Fn::FindInMap": [ "InstanceTypeMap", { "Ref": "InstanceType" }, "TomcatHeapSize" ] },
+                                    "tomcat_max_header_size":                   { "Ref": "TomcatMaxHeaderSize" },
+                                    "tomcat_thread_max":                        { "Fn::FindInMap": [ "InstanceTypeMap", { "Ref": "InstanceType" }, "TomcatThreadSize" ] },
+                                    "vpc_id":                                   { "Ref": "Vpc" },
+                                    "vpc_name":                                 { "Ref": "VpcName" },
+                                    "volume_min_iops":                          { "Ref": "EbsMinIops" },
+                                    "volume_min_size_data_gb":                  { "Ref": "XgemailMinSizeDataGB" },
+                                    "volume_set_id":                            { "Ref": "VolumeSetId" },
+                                    "volume_tracker_sdb_domain":                { "Ref": "VolumeTrackerSimpleDbDomain" },
+                                    "xgemail_policy_bucket_name":               { "Ref": "XgemailPolicyBucketName" },
+                                    "xgemail_bucket_name":                      { "Ref": "XgemailBucketName" },
+                                    "xgemail_policy_arn":                       { "Ref": "XgemailPolicyArn" },
+                                    "xgemail_sns_sqs_url":                      { "Ref": "XgemailSnsSqsQueueUrl" },
+                                    "xgemail_queue_url":                        { "Ref": "XgemailQueueUrl" }
+                                },
+                                "mode": "000444",
+                                "owner": "root"
+                            }
+                        }
+                    },
+
+                    "update_cookbooks": {
+                        "commands": {
+                            "00_clean": {
+                                "command": {
+                                    "Fn::Join": [ "; ",[
+                                        "rm -f /var/chef/chef-repo/nodes/*.*",
+                                        "rm -f /var/chef/chef-repo/cookbooks.enc",
+                                        "rm -f /var/chef/chef-repo/cookbooks.tar.gz",
+                                        "rm -rf /var/chef/chef-repo/cookbooks"
+                                    ]]
+                                }
+                            },
+                            "01_get_cookbook": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [ "aws s3 cp s3:", { "Ref": "S3CookbookRepositoryURL" }, " /var/chef/chef-repo/cookbooks.enc" ]
+                                    ]
+                                },
+                                "cwd": "/var/chef",
+                                "env": {
+                                    "HOME": "/var/chef"
+                                }
+                            },
+                            "02_decrypt_cookbook": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [ "openssl enc -aes-256-cbc -d -in /var/chef/chef-repo/cookbooks.enc -out /var/chef/chef-repo/cookbooks.tar.gz -pass pass:", { "Ref": "AesDecryptionKey" } ]
+                                    ]
+                                },
+                                "cwd": "/var/chef/chef-repo",
+                                "env": {
+                                    "HOME": "/var/chef"
+                                }
+                            },
+                            "03_unpack_cookbook": {
+                                "command": "tar xvf /var/chef/chef-repo/cookbooks.tar.gz",
+                                "cwd": "/var/chef/chef-repo"
+                            }
+                        }
+                    },
+
+                    "java_install": {
+                        "files": {
+                            "/etc/cfn/cfn-hup.conf": {
+                                "content": {
+                                    "Fn::Join": ["", [
+                                        "[main]\n",
+                                        "stack=", {
+                                            "Ref": "AWS::StackName"
+                                        }, "\n",
+                                        "region=", {
+                                            "Ref": "AWS::Region"
+                                        }, "\n",
+                                        "interval=", {
+                                            "Ref": "UpdateInterval"
+                                        }, "\n"
+                                    ]]
+                                }
+                            },
+                            "/etc/cfn/hooks.d/cfn-auto-reloader.conf": {
+                                "content": {
+                                    "Fn::Join": ["", [
+                                        "[cfn-auto-reloader-hook]\n",
+                                        "triggers=post.update\n",
+                                        "path=Resources.JavaAutoScalingLaunchConfig.Metadata.AWS::CloudFormation::Init\n",
+                                        "action=/opt/aws/bin/cfn-init -v -s ",
+                                        {
+                                            "Ref": "AWS::StackName"
+                                        },
+                                        " -r JavaAutoScalingLaunchConfig",
+                                        " --configsets java_update",
+                                        " --region ", {
+                                            "Ref": "AWS::Region"
+                                        }, "\n",
+                                        "runas=root\n"
+                                    ]]
+                                }
+
+                            },
+                            "/var/sophos/modify_network_config": {
+                                "content": {
+                                    "Fn::Join": [ "", [
+                                        "export private_ip=`wget -q -O - http://169.254.169.254/latest/meta-data/local-ipv4`\n",
+                                        "export host_name=`wget -q -O - http://169.254.169.254/latest/meta-data/local-hostname`\n",
+                                        "export host_entry=\"$private_ip $host_name\"\n",
+                                        "echo $host_entry\n",
+                                        "echo > /etc/hosts\n",
+                                        "echo 127.0.0.1 $host_name localhost >> /etc/hosts\n",
+                                        "echo $host_entry >> /etc/hosts\n",
+                                        "echo >> /etc/dhcp/dhclient.conf\n",
+                                        "echo 'supersede domain-name \"", {
+                                            "Fn::FindInMap": [ "RegionConfigMap", {
+                                                "Ref": "AWS::Region"
+                                            }, "PrivateDns" ]
+                                        } , "\";' >> /etc/dhcp/dhclient.conf\n",
+                                        "echo >> /etc/resolv.conf\n",
+                                        "echo 'search ", {
+                                            "Fn::FindInMap": [ "RegionConfigMap", {
+                                                "Ref": "AWS::Region"
+                                            }, "PrivateDns" ]
+                                        } , "' >> /etc/resolv.conf\n"
+                                    ]]
+                                },
+                                "mode": "000500",
+                                "owner": "root"
+                            }
+                        },
+                        "commands": {
+                            "01_delete_run_list_nodes": {
+                                "command": "rm -f /var/chef/chef-repo/nodes/*.*"
+                            },
+                            "02_run_chef_client": {
+                                "command": {
+                                    "Fn::Join": [ " ", [
+                                        "chef-client --no-color -z",
+                                        "-c /var/chef/chef-repo/.chef/client.rb",
+                                        "-j /var/sophos/cookbooks/attributes.json",
+                                        "-l debug -L /var/log/chef-client.instance.install.chef.log"
+                                    ]]
+                                },
+                                "cwd": "/var/chef/chef-repo",
+                                "env": {
+                                    "HOME": "/var/chef"
+                                }
+                            },
+                            "03_configure_node_run_list": {
+                                "command": {
+                                    "Fn::Join": ["", [
+                                      "knife node run_list set -z `knife node list -z` \"",
+                                      "recipe[sophos-cloud-mount::default],",
+                                      "recipe[sophos-cloud-mount::install],",
+                                      "recipe[sophos-cloud-ntpd::default],",
+                                      "recipe[sophos-cloud-xgemail::configure_logging],",
+                                      "recipe[sophos-cloud-snmpd::configure],",
+                                      "recipe[sophos-cloud-tomcat::deploy_certs],",
+                                      "recipe[sophos-cloud-xgemail::setup_xgemail_utils_structure],",
+                                      "recipe[sophos-cloud-xgemail::configure-postfix],",
+                                      "recipe[sophos-cloud-xgemail::configure_postfix_snmp_logicmonitor],",
+                                      "recipe[sophos-cloud-xgemail::setup_xgemail_sqs_lifecycle_poller_cron],",
+                                      "recipe[sophos-cloud-xgemail::configure_monit],",
+                                      "recipe[sophos-cloud-common::run_install_cleanup]",
+                                      "\""
+                                    ]]
+                                },
+                                "cwd": "/var/chef/chef-repo",
+                                "env": {
+                                    "HOME": "/var/chef"
+                                }
+                            },
+                            "04_modify_network_config": {
+                                "command": "/var/sophos/modify_network_config"
+                            },
+                            "05_run_chef_client": {
+                                "command": {
+                                    "Fn::Join": [ " ", [
+                                        "chef-client --no-color -z",
+                                        "-c /var/chef/chef-repo/.chef/client.rb",
+                                        "-j /var/sophos/cookbooks/attributes.json",
+                                        "-l debug -L /var/log/chef-client.instance.install.service.log"
+                                    ]]
+                                },
+                                "cwd": "/var/chef/chef-repo",
+                                "env": {
+                                    "HOME": "/var/chef"
+                                }
+                            },
+                            "06_delete_cfn_hub_config": {
+                                "command": "rm -f /etc/cfn/hooks.d/cfn-auto-reloader.conf.*"
+                            }
+                        },
+                        "services": {
+                            "sysvinit": {
+                                "cfn-hup": {
+                                    "enabled": "true",
+                                    "ensureRunning": "true",
+                                    "files": [
+                                        "/etc/cfn/cfn-hup.conf",
+                                        "/etc/cfn/hooks.d/cfn-auto-reloader.conf"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+
+                    "java_update": {
+                        "commands": {
+                            "01_setup_node_run_list": {
+                                "command": {
+                                    "Fn::Join": ["", [
+                                        "knife node run_list set -z `knife node list -z` \"",
+                                        "recipe[sophos-cloud-xgemail::update]",
+                                        "\""
+                                    ]]
+                                },
+                                "cwd": "/var/chef/chef-repo",
+                                "env": {
+                                    "HOME": "/var/chef"
+                                }
+                            },
+                            "02_run_chef_client": {
+                                "command": {
+                                    "Fn::Join": [ " ", [
+                                        "chef-client --no-color -z",
+                                        "-c /var/chef/chef-repo/.chef/client.rb",
+                                        "-j /var/sophos/cookbooks/attributes.json",
+                                        "-l debug -L /var/log/chef-client.instance.update.log"
+                                    ]]
+                                },
+                                "cwd": "/var/chef/chef-repo",
+                                "env": {
+                                    "HOME": "/var/chef"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "Properties": {
+                "AssociatePublicIpAddress": { "Ref" : "PublicIpAddressEnabled" },
+                "ImageId": { "Ref" : "AmiId" },
+                "InstanceType": { "Ref": "InstanceType" },
+                "KeyName": { "Ref": "KeyName" },
+                "InstanceMonitoring": "true",
+                "SecurityGroups": { "Ref": "SecurityGroups" },
+                "IamInstanceProfile": { "Ref": "InstanceProfile" },
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [ "", [
+                            "#!/bin/bash -xe\n",
+                            "# Install the files and packages from the metadata\n",
+
+                            "# Make sure we call cfn-signal before exiting, otherwise we have to\n",
+                            "# wait for the CreationPolicy timeout to detect failed initialization.\n",
+                            "# That's because of using the bash -e option, which makes the script\n",
+                            "# exit immediately as soon as any command, e.g. cfn-init, fails.\n",
+
+                            "onexit() {\n",
+                            "  exit_code=$?\n",
+                            "  /opt/aws/bin/cfn-signal -e $exit_code",
+                            " --stack ", { "Ref": "AWS::StackName" },
+                            " --resource JavaAutoScalingGroup",
+                            " --region ", { "Ref": "AWS::Region" },
+                            "\n",
+                            "}\n",
+
+                            "trap onexit EXIT\n",
+
+                            "# Wait for network access.\n",
+                            "/usr/bin/nc -v -z -w 60 www.google.com 80\n",
+
+                            "/opt/aws/bin/cfn-init --verbose ",
+                            " --stack ", { "Ref": "AWS::StackName" },
+                            " --resource JavaAutoScalingLaunchConfig ",
+                            " --configsets java_install ",
+                            " --region ", { "Ref": "AWS::Region" }, "\n",
+
+                            "# Now the onexit function will get called.\n"
+                        ]
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}

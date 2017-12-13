@@ -1,0 +1,5 @@
+name            'sophos-cloud-elasticsearch'
+maintainer      'Sophos'
+license         'All rights reserved'
+description     'Installs/Configures sophos-cloud-elasticsearch nodes'
+version         '1.0.1'

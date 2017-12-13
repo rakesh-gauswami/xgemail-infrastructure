@@ -1,0 +1,17 @@
+- name: Create S3 Bucket Stacks in AWS
+  async: 100
+  poll: 0
+  cloudformation:
+    stack_name: "{{ item.name }}"
+    state: "present"
+    template: "{{ item.template }}"
+    template_parameters: "{{ item.template_parameters }}"
+  with_items: aws.s3
+  register: s3_stack_async_results
+
+- async_status:
+    jid: "{{item.ansible_job_id}}"
+  with_items: s3_stack_async_results.results
+  register: s3_stack_async_results
+  until: s3_stack_async_results.finished
+  retries: 30

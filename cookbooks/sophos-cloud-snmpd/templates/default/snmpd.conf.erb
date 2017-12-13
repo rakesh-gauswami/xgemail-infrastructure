@@ -1,0 +1,23 @@
+# Accept UDP and TCP connections on port 161.
+agentAddress udp:161,tcp:161
+
+# Rely on security groups to restrict SNMP access.
+# rocommunity public
+
+# Tell the operator where this instance is.
+sysLocation <%= node['sophos_cloud']['region'] %>
+
+# Configure SNMPD V3
+createUser <%= @snmp_user %> MD5 "<%= @snmp_pass %>"
+rouser  <%= @snmp_user %> auth
+
+# Tell the operator where to complain.
+sysContact support@cloud.sophos.com
+
+# This setting says what kind of services this instance provides.
+# 72 is the encoding for end-to-end (e.g. TCP) and applications (e.g. SMTP).
+# See http://tools.ietf.org/html/rfc3418 for details.
+sysServices 72
+
+#run as ec2-user after startup
+agentuser ec2-user

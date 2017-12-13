@@ -1,0 +1,172 @@
+#!/bin/sh
+#
+# chkconfig: 345 99 01
+# description: CYREN (ctasd) service
+#
+# start/stop/reload the daemon 
+#
+#
+###############################
+
+# Defaults
+
+NAME=ctasd
+BINDIR=/usr/lib/$NAME
+CONFDIR=/etc/$NAME
+RUNDIR=/var/run/$NAME
+
+DAEMON=$BINDIR/$NAME
+DAEMON_CONFFILE=$CONFDIR/$NAME.conf
+DAEMON_PIDFILE=$RUNDIR/$NAME.pid
+DAEMON_STOP_TIMEOUT=<%= @CTASD_DAEMON_STOP_TIMEOUT %>
+DAEMON_OPTS=
+
+AGENT=$BINDIR/snmp/snmp_agent.pl
+AGENT_OID=<%= @CTASD_AGENT_OID %>
+AGENT_PIDFILE=$RUNDIR/snmp_agent.pid
+AGENT_STOP_TIMEOUT=<%= @CTASD_AGENT_STOP_TIMEOUT %>
+AGENT_OPTS=
+
+HAVE_SNMP="<%= @CTASD_AGENT_HAVE_SNMP %>"
+
+# Reads config file (will override defaults above)
+[ -r /etc/default/$NAME ] && . /etc/default/$NAME
+
+cd $BINDIR
+start()
+{
+  if ensure_stop; then
+    echo "Sleeping for 5 seconds"
+    sleep 5s
+  fi
+
+  do_start
+}
+
+stop()
+{
+  if ! ensure_stop; then
+    echo "$NAME is not running"
+  fi
+}
+
+restart()
+{
+  start
+}
+
+reload()
+{
+  echo "Not implemented"
+}
+
+do_start()
+{
+  echo "Starting $NAME deamon"
+  $DAEMON -c $DAEMON_CONFFILE --pid $DAEMON_PIDFILE $DAEMON_OPTS
+
+  if [[ "$HAVE_SNMP" == "YES" ]];then
+    echo "Starting $NAME snmp agent"
+    $AGENT $NAME $AGENT_OID --pidfile $AGENT_PIDFILE $AGENT_OPTS
+  fi
+}
+
+do_stop()
+{
+  echo "Stopping $NAME deamon"
+  stop_process $NAME $DAEMON_PIDFILE $DAEMON_STOP_TIMEOUT
+}
+
+do_stop_snmp()
+{
+  echo "Stopping $NAME snmp agent"
+  stop_process "$NAME snmp agent" $AGENT_PIDFILE $AGENT_STOP_TIMEOUT
+}
+
+ensure_stop()
+{
+  local rc=1
+  if is_process_running $DAEMON_PIDFILE; then
+    do_stop
+    rc=0
+  fi
+  if is_process_running $AGENT_PIDFILE; then
+    do_stop_snmp
+    rc=0
+  fi
+  return $rc
+}
+
+is_process_running()
+{
+  local PIDFILE=$1
+  if [ -f $PIDFILE ]; then
+    local PID=`cat $PIDFILE`
+    if [ `ps --pid $PID --no-headers | wc -l` != 0 ]; then
+      return 0
+    fi
+  fi
+  return 1
+}
+
+wait_process()
+{
+  local PIDFILE=$1
+  local TIMEOUT=$2
+  while [ $TIMEOUT -gt 0 ]; do
+    if ! is_process_running $PIDFILE; then
+      return 0
+    fi
+    sleep 1s
+    TIMEOUT=$(($TIMEOUT-1))
+  done
+
+  if is_process_running $PIDFILE; then
+    return 1
+  fi
+  return 0
+}
+
+stop_process()
+{
+  local TYPE=$1
+  local PIDFILE=$2
+  local TIMEOUT=$3
+
+  if is_process_running $PIDFILE; then
+    local PID=`cat $PIDFILE`
+    kill -TERM -$(ps -o pgid= $PID | grep -o "[0-9]*")
+
+    if ! wait_process $PIDFILE $TIMEOUT; then
+      echo "terminating $TYPE..."
+      kill -s 9 $PID
+    fi
+    rm -f $PIDFILE
+  fi
+}
+
+case "$1" in
+  start)
+    start
+    ;;
+
+  stop)
+    stop
+    ;;
+
+  restart)
+    restart
+    ;;
+
+  reload)
+    reload
+    ;;
+
+  *)
+    echo "Usage : $0 (start|stop|restart|reload)"
+    ;;
+
+esac
+
+exit 0
+

@@ -1,0 +1,5 @@
+name             'sophos-cloud-ami'
+maintainer       'Sophos'
+license          'All rights reserved'
+description      'Installs/Configures tools for baking AMIs'
+version          '0.1.0'

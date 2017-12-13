@@ -1,0 +1,33 @@
+- name: Find ami <{{ autoscaling.image_name }}>
+  ec2_ami_find:
+    name: "{{ autoscaling.image_name }}*"
+    region: "{{ account.region }}"
+    sort: creationDate
+    sort_order: descending
+    sort_end: 1
+    no_result_action: fail
+  register: ami_xgemail
+
+- name: "Deploy Xgemail AMI to {{ account.name }}-{{ account.region }}"
+  cloudformation:
+    stack_name: "{{ stacks.ami.stack_name }}"
+    state: "present"
+    region: "{{ account.region }}"
+    disable_rollback: true
+    template: "../roles/ansible-controller/templates/image_xgemail_template.json"
+    template_parameters:
+      AesDecryptionKey:                    "{{ ami_ansible.results[0].ami_id }}"
+      AmiBuildTimeoutMinutes:        "{{ autoscaling.availability_zones }}"
+      AmiDestinationRegions:                   "{{ build.branch }}"
+      AmiLaunchPermissions:            "{{ build.number }}"
+      BlockDeviceMappingsXvdf:              "{{ account.name }}"
+      Branch:   "{{ autoscaling.security_group_base }}, {{ autoscaling.security_group_ansible }}"
+      Build:             "{{ autoscaling.instance_type }}"
+      ImageId:                    "{{ autoscaling.vpc_id }}"
+      JavaBranch:                  "{{ vpc.name }}"
+      JdkVersion:                  "{{ vpc.type }}"
+      PostfixInstall:       "{{ autoscaling.zone_a }}, {{ autoscaling.zone_b }}, {{ autoscaling.zone_c }}"
+      S3CookbookRepositoryUrl:                    "{{ autoscaling.vpc_id }}"
+      VpcSecurityGroup:                    "{{ autoscaling.vpc_id }}"
+      VpcSubnetId:                    "{{ autoscaling.vpc_id }}"
+

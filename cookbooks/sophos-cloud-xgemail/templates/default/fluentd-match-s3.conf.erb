@@ -1,0 +1,43 @@
+<match sophos.xgemail.**>
+    @type s3
+
+    s3_bucket logs-sophos-central-<%= @account %>-<%= @region %>
+    s3_region <%= @region %>
+
+    # Bucket must exist
+    auto_create_bucket false
+
+
+    path logs/
+    s3_object_key_format %{path}%{time_slice}_<%= @instance_id %>_%{index}.%{file_extension}
+
+    time_slice_format %Y/%m/%d/%H/%M
+
+    # Give straggling logs 20 seconds to catch up.
+    time_slice_wait 20s
+
+    path logs/
+
+    # Use UTC for path formatting
+    utc
+
+    format json
+    store_as json
+    include_tag_key true
+
+    # Buffer
+    buffer_type file
+    buffer_path /var/log/td-agent/buffer
+    buffer_chunk_limit 50m
+    buffer_queue_limit 20
+    buffer_queue_full_action drop_oldest_chunk
+
+    # Retry
+    retry_wait 3s
+    retry_limit 7
+    max_retry_wait 60s
+
+    # Flush
+    flush_at_shutdown true
+
+  </match>

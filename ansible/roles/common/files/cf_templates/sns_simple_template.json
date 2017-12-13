@@ -1,0 +1,47 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+
+    "Description": "SNS Topic template.",
+
+    "Metadata": {
+        "Copyright": [
+            "Copyright 2016, Sophos Limited. All rights reserved.",
+            "",
+            "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+            "Sophos Limited and Sophos Group.  All other product and company",
+            "names mentioned are trademarks or registered trademarks of their",
+            "respective owners."
+        ],
+
+        "Comments": [
+            "Simply creates SNS topic",
+            "No other frills"
+        ]
+    },
+
+    "Parameters": {
+        "TopicName": {
+            "Description": "Name of the SNS topic",
+            "Type": "String",
+            "MinLength": "1",
+            "MaxLength": "256",
+            "AllowedPattern": "[a-zA-Z0-9_-]+"
+        }
+    },
+
+    "Resources": {
+        "SnsTopic": {
+            "Type": "AWS::SNS::Topic",
+            "Properties": {
+                "TopicName": { "Ref": "TopicName" }
+            }
+        }
+    },
+
+    "Outputs": {
+        "SnsTopicArn": {
+            "Description": "ARN of the SNS topic",
+            "Value": { "Ref" : "SnsTopic" }
+        }
+    }
+}

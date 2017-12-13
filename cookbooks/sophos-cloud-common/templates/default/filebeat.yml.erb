@@ -1,0 +1,73 @@
+############################# Filebeat #####################################
+filebeat:
+  prospectors:
+    -
+      paths:
+        - /plain/*/*
+      fields:
+        logzio_codec: plain
+        token: AWNqyjNFHrleNTYcCnnDAfBMRbbZdyYB
+        type: "plain"
+        region: "<%= @region %>"
+        env: "<%= @env %>"
+        branch: "<%= @branch %>"
+        app: "<%= @app %>"
+        instance: "<%= @instance_id %>"
+      fields_under_root: true
+      ignore_older: 3h
+      document_type: misc_plain
+    -
+      paths:
+        - /json/*/*
+      fields:
+        logzio_codec: json
+        token: AWNqyjNFHrleNTYcCnnDAfBMRbbZdyYB
+        type: "json"
+        region: "<%= @region %>"
+        env: "<%= @env %>"
+        branch: "<%= @branch %>"
+        app: "<%= @app %>"
+        instance: "<%= @instance_id %>"
+      fields_under_root: true
+      ignore_older: 3h
+      document_type: misc_json
+    -
+      paths:
+        - /data/log/tomcat/*.txt
+      exclude_lines: ['management\/health']
+      fields:
+        logzio_codec: plain
+        token: AWNqyjNFHrleNTYcCnnDAfBMRbbZdyYB
+        type: "apache"
+        region: "<%= @region %>"
+        env: "<%= @env %>"
+        branch: "<%= @branch %>"
+        app: "<%= @app %>"
+        instance: "<%= @instance_id %>"
+      fields_under_root: true
+      ignore_older: 3h
+      document_type: apache
+    -
+      paths:
+        - <%= @sophos_logs %>/*.log
+      fields:
+        logzio_codec: json
+        token: AWNqyjNFHrleNTYcCnnDAfBMRbbZdyYB
+        type: "sophos"
+        region: "<%= @region %>"
+        env: "<%= @env %>"
+        branch: "<%= @branch %>"
+        app: "<%= @app %>"
+        instance: "<%= @instance_id %>"
+      fields_under_root: true
+      ignore_older: 3h
+      document_type: sophos
+  registry_file: /var/lib/filebeat/registry
+############################# Output ##########################################
+output:
+  logstash:
+    hosts: ["listener.logz.io:5015"]
+    tls:
+      certificate_authorities: ['/etc/logzio/logz.io.crt']
+    ssl:
+      certificate_authorities: ['/etc/logzio/logz.io.crt']

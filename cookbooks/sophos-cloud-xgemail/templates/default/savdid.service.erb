@@ -1,0 +1,81 @@
+#!/bin/bash
+#
+# chkconfig: 345 99 01
+# description: savdid service
+#
+# Copyright 2016 Sophos Limited. All rights reserved.
+
+SAVDID=/usr/sbin/<%= @savdid_service_name %>
+SAVDID_CONF=<%= @savdid_dir %>/<%= @savdid_service_name %>.conf
+PIDFILE=/var/run/<%= @savdid_service_name %>.pid
+
+# source function library
+source /etc/rc.d/init.d/functions
+
+RETVAL=0
+case "$1" in
+start)
+   echo -n $"Starting <%= @savdid_service_name %>:"
+   # Start savdid in daemon mode, no banner, and specifying
+   # the pidfile
+   "${SAVDID}" -d -s -f "${PIDFILE}" -c "${SAVDID_CONF}"
+   RETVAL=$?
+   # Sleep a moment to let savdid get things worked out
+   sleep 1
+   # The presence of the pidfile indicates that it is still running
+   [ -f "${PIDFILE}" ] && RETVAL=0
+   if [ "${RETVAL}" -eq 0 ]; then
+    echo_success
+    touch /var/lock/subsys/savdid
+   else
+    echo_failure
+   fi
+echo
+;; stop)
+   echo -n $"Shutting down <%= @savdid_service_name %>:"
+   # Tell savdid to stop dead
+   [ -f "${PIDFILE}" ] && kill -INT `cat "${PIDFILE}"`
+   while [ -f "${PIDFILE}" ]; do sleep 1; done
+   echo_success
+   rm -f /var/lock/subsys/savdid
+   echo
+   RETVAL=0
+   ;;
+ restart)
+   echo -n $"Shutting down <%= @savdid_service_name %>:"
+   # Tell savdid to exit gracefully
+   [ -f "${PIDFILE}" ] && kill -TERM `cat "${PIDFILE}"`
+   while [ -f "${PIDFILE}" ]; do sleep 1; done
+   echo_success
+   echo
+   $0 start
+   RETVAL=$?
+   ;;
+ reload)
+   echo -n $"Reloading <%= @savdid_service_name %>:"
+   if [ ! -f "${PIDFILE}" ]; then
+   echo " <%= @savdid_service_name %> is not running"
+   RETVAL=1
+   else
+   kill -HUP `cat "${PIDFILE}"`
+   RETVAL=0
+   fi
+   echo
+   ;;
+ condrestart)
+   if [ -f /var/lock/subsys/savdid ]; then
+     $0 stop
+     $0 start 
+   fi
+   RETVAL=$? 
+   ;; 
+ status)
+   status <%= @savdid_service_name %>
+   RETVAL=$?
+   ;;
+ *)
+   echo $"Usage: $0
+   {start|stop|restart|reload|condrestart|status}"
+   exit 1
+esac
+exit "${RETVAL}"

@@ -1,0 +1,67 @@
+#!/bin/bash
+#~
+#~ Syncs Sophos AV virus data updates (VDL files).
+#~
+#~ VDL (Virus Definition Language) contain the main virus data used by Sophos Anti-Virus.
+#~ VDL files are updated semi-frequently, it is recommended to check for updates once a day.
+#~
+#~ Copyright: Copyright (c) 1997-2016. All rights reserved.
+#~ Company: Sophos Limited or one of its affiliates.
+#~
+
+set -eu
+
+CRON_LOCK_FILE="<%= @SOPHOSAV_PKG_SAV_TMP_DIR %>/savdid-vdl-sync.lock"
+VDL_FILE="vdl.zip"
+
+function print_sha_sum()
+{
+  local file_name=${1:?${0}: ${FUNCNAME[0]}: missing arg1 ( file_name )}
+  echo $( sha1sum "<%= @SOPHOSAV_PKG_SAV_TMP_DIR %>/$file_name" 2> /dev/null )
+}
+
+# Synchronize VDL signature under flock
+(
+  flock -n 102
+
+  # remove lock file
+  trap 'rm -f "${CRON_LOCK_FILE}"' EXIT
+
+  # sleep $RANDOM % 60 seconds then start (to spread the load):
+  sleep $(expr $RANDOM % 60)
+
+  LATEST_VDL_FILE=$( ls -r "<%= @SOPHOSAV_PKG_SAV_TMP_DIR %>" | grep "${VDL_FILE}"  | head -n1 )
+  if [[ -z "${LATEST_VDL_FILE}" ]];then
+    SHA_BEFORE=""
+  else
+    SHA_BEFORE=$( print_sha_sum "${LATEST_VDL_FILE}" )
+  fi
+
+  /usr/bin/python "<%= @SOPHOSAV_PKG_SAV_TMP_DIR %>/sav-download.py" \
+    -d \
+    -U "<%= @SOPHOSAV_PKG_USERNAME %>" \
+    -P "<%= @SOPHOSAV_PKG_PASSWORD %>" \
+    -o "<%= @SOPHOSAV_PKG_SAV_TMP_DIR %>"
+
+  LATEST_VDL_FILE=$( ls -r "<%= @SOPHOSAV_PKG_SAV_TMP_DIR %>" | grep "${VDL_FILE}"  | head -n1 )
+  SHA_AFTER=$( print_sha_sum "${LATEST_VDL_FILE}" )
+
+  if [[ "${SHA_BEFORE}" == "${SHA_AFTER}" ]];then
+    echo "No new VDL updates, exiting."
+    rm -f "${CRON_LOCK_FILE}"
+    exit 0
+  fi
+
+  # remove old vdb (from vdl.zip) files before extracting new ones. This can be
+  # done while SAVi is running, because the signatures in those
+  # files are cached during runtime.
+  rm -f <%= @SOPHOSAV_PKG_LOCAL_DIR %>/*.vdb
+
+  # extract updated VDL files and overwrite the old ones
+  echo "Updating VDL files in <%= @SOPHOSAV_PKG_SAV_TMP_DIR %>"
+  unzip -o "<%= @SOPHOSAV_PKG_SAV_TMP_DIR %>/$LATEST_VDL_FILE" \
+    -d "<%= @SOPHOSAV_PKG_LOCAL_DIR %>"
+
+  # reload service if it is already running. Do nothing if it is not running.
+  /sbin/service "<%= @SOPHOSAV_SERVICE_NAME %>" status && /sbin/service "<%= @SOPHOSAV_SERVICE_NAME %>" reload || true
+) 102>"${CRON_LOCK_FILE}"
