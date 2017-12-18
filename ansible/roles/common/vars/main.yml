@@ -5,110 +5,281 @@ aws:
       name: CloudEmail
     cloud_station:
       name: CloudStation
+
+  ec2:
+    asg:
+      customer_delivery:
+      customer_submit:
+      customer_xdelivery:
+      internet_delivery:
+      internet_submit:
+      internet_xdelivery:
+      bastion:
+        stack_name:                             "{{stack.ec2.asg.bastion}}"
+        template:                               "{{template.ec2.asg.bastion}}"
+        template_parameters:
+          AmiId:                                ami-33dd7a4b
+          AutoScalingMinSize:                   "{{as_min_cap_bastion}}"
+          AvailabilityZones:                    "{{cloud_email_vpc_stack.stack_outputs.AvailabilityZones}}"
+          BastionInstanceProfile:               "{{iam_stack.stack_outputs.BastionInstanceProfile}}"
+          BastionSecurityGroup:                 "{{sg_stack.stack_outputs.SecurityGroupBastion}}"
+          Branch:                               "{{build.branch}}"
+          Environment:                          "{{account.name}}"
+          KeyName:                              "bastion-{{account.region}}"
+          LogstashServer:                       "lgstshshipper.{{vpc.cloud_email.name|lower}}.{{account.region}}.{{account.name}}.{{cloudstation_hostedzone}}:5000"
+          ScaleDownOnWeekends:                  "false"
+          ScaleDownCron:                        "{{cron_scale_down}}
+          ScaleUpCron:                          "{{cron_scale_up}}"
+          Vpc:                                  "{{cloud_email_vpc_stack.stack_outputs.Vpc}}"
+          VpcName:                              "{{vpc.cloud_email.name}}"
+          VpcZoneIdentifiers:                   "{{cloud_email_vpc_stack.stack_outputs.VpcZoneIdentifiersPublic}}"
+
   s3:
     customer_submit_bucket:
-      name: stack.s3.customer_submit_bucket
-      template: "../roles/common/files/cf_templates/s3_bucket_template.json"
+      stack_name:                               "{{stack.s3.customer_submit_bucket}}"
+      template:                                 "{{template.s3.s3_bucket_template}}"
       template_parameters:
-        Environment: {{account.name}}
-        RequireEncryptionForUploads: sse-s3
-        S3BucketName: "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name}}-xgemail-cust-submit"
-        S3LifeCycleDelete: 14
-        S3PolicyCreate: true
-        S3PolicyPrincipalList: "arn:aws:iam::{{AWS_ACCOUNT_ID}}:role/build-system-{{account.name}}"
+        Environment:                            "{{account.name}}"
+        RequireEncryptionForUploads:            sse-s3
+        S3BucketName:                           "{{s3.customer_submit_bucket}}"
+        S3LifeCycleDelete:                      14
+        S3PolicyCreate:                         "true"
+        S3PolicyPrincipalList:                  "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
     emergency_inbox_bucket:
-      name: stack.s3.emergency_inbox_bucket
-      template: "../roles/common/files/cf_templates/s3_bucket_template.json"
+      stack_name:                               "{{stack.s3.emergency_inbox_bucket}}"
+      template:                                 "{{template.s3.s3_bucket_template}}"
       template_parameters:
-        Environment: {{account.name}}
-        RequireEncryptionForUploads: sse-s3
-        S3BucketName: "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name}}-xgemail-emgcy-inbox"
-        S3LifeCycleDelete: 14
-        S3PolicyCreate: true
-        S3PolicyPrincipalList: "arn:aws:iam::{{AWS_ACCOUNT_ID}}:role/build-system-{{account.name}}"
+        Environment:                            "{{account.name}}"
+        RequireEncryptionForUploads:            sse-s3
+        S3BucketName:                           "{{s3.emergency_inbox_bucket}}"
+        S3LifeCycleDelete:                      14
+        S3PolicyCreate:                         "true"
+        S3PolicyPrincipalList:                  "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
     msg_history_bucket:
-      name: stack.s3.msg_history_bucket
-      template: "../roles/common/files/cf_templates/s3_bucket_template.json"
+      stack_name:                               "{{stack.s3.msg_history_bucket}}"
+      template:                                 "{{template.s3.s3_bucket_template}}"
       template_parameters:
-        Environment: {{account.name}}
-        RequireEncryptionForUploads: sse-s3
-        S3BucketName: "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name}}-xgemail-msg-history"
-        S3PolicyCreate: true
-        S3PolicyPrincipalList: "arn:aws:iam::{{AWS_ACCOUNT_ID}}:role/build-system-{{account.name}}"
+        Environment:                            "{{account.name}}"
+        RequireEncryptionForUploads:            sse-s3
+        S3BucketName:                           "{{s3.msg_history_bucket}}"
+        S3PolicyCreate:                         "true"
+        S3PolicyPrincipalList:                  "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
     msg_stats_bucket:
-      name: stack.s3.msg_stats_bucket
-      template: "../roles/common/files/cf_templates/s3_bucket_template.json"
+      stack_name:                               "{{stack.s3.msg_stats_bucket}}"
+      template:                                 "{{template.s3.s3_bucket_template}}"
       template_parameters:
-        Environment: {{account.name}}
-        RequireEncryptionForUploads: sse-s3
-        S3BucketName: "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name}}-xgemail-msg-stats"
-        S3LifeCycleDelete: 365
-        S3PolicyCreate: true
-        S3PolicyPrincipalList: "arn:aws:iam::{{AWS_ACCOUNT_ID}}:role/build-system-{{account.name}}"
-    policy_bucket:
-      name: stack.s3.policy_bucket_bucket
-      template: "../roles/common/files/cf_templates/s3_policy_bucket_template.json"
-      template_parameters:
-        Environment: {{account.name}}
-        RequireEncryptionForUploads: sse-s3
-        S3BucketName: "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name}}-xgemail-policy"
-        SnsPolicyTopic: 365
-        SnsRelayControlTopic:
+        Environment:                            "{{account.name}}"
+        RequireEncryptionForUploads:            sse-s3
+        S3BucketName:                           "{{s3.msg_stats_bucket}}"
+        S3LifeCycleDelete:                      365
+        S3PolicyCreate:                         "true"
+        S3PolicyPrincipalList:                  "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
     quarantine_bucket:
-      name: stack.s3.quarantine_bucket
-      template: "../roles/common/files/cf_templates/s3_bucket_template.json"
+      stack_name:                               "{{stack.s3.quarantine_bucket}}"
+      template:                                 "{{template.s3.s3_bucket_template}}"
       template_parameters:
-        Environment: {{account.name}}
-        RequireEncryptionForUploads: sse-s3
-        S3BucketName: "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name}}-xgemail-quarantine"
-        S3LifeCycleDelete: 30
-        S3PolicyCreate: true
-        S3PolicyPrincipalList: "arn:aws:iam::{{AWS_ACCOUNT_ID}}:role/build-system-{{account.name}}"
+        Environment:                            "{{account.name}}"
+        RequireEncryptionForUploads:            sse-s3
+        S3BucketName:                           "{{s3.quarantine_bucket}}"
+        S3LifeCycleDelete:                      30
+        S3PolicyCreate:                         "true"
+        S3PolicyPrincipalList:                  "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
     submit_bucket:
-      name: stack.s3.submit_bucket
-      template: "../roles/common/files/cf_templates/s3_bucket_template.json"
+      stack_name:                               "{{stack.s3.submit_bucket}}"
+      template:                                 "{{template.s3.s3_bucket_template}}"
       template_parameters:
-        Environment: {{account.name}}
-        RequireEncryptionForUploads: sse-s3
-        S3BucketName: "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name}}-xgemail-submit"
-        S3LifeCycleDelete: 14
-        S3PolicyCreate: true
-        S3PolicyPrincipalList: "arn:aws:iam::{{AWS_ACCOUNT_ID}}:role/build-system-{{account.name}}"
+        Environment:                            "{{account.name}}"
+        RequireEncryptionForUploads:            sse-s3
+        S3BucketName:                           "{{s3.submit_bucket}}"
+        S3LifeCycleDelete:                      14
+        S3PolicyCreate:                         "true"
+        S3PolicyPrincipalList:                  "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
+    policy_bucket:
+      stack_name:                               "{{stack.s3.policy_bucket}}"
+      template:                                 "{{template.s3.s3_policy_bucket_template}}"
+      template_parameters:
+        Environment:                            "{{account.name}}"
+        S3BucketName:                           "{{s3.policy_bucket}}"
+        SnsPolicyTopic:                         "{{sns.policy_sns_topic.arn}}"
+        SnsRelayControlTopic:                   "{{sns.relay_control_sns_topic.arn}}"
 
-
-
-
-
-  asg:
-    ami_id:
-    max_size: 6
-    min_size: 1
-    instance_ssh_key: private-{{ account.region }}
-    instance_type: t2.large
-  bastion_security_group: "{{ security_output.ansible_facts.cloudformation[stacks.security].stack_outputs.SecurityGroupBastion }}"
-  branch: "{{ branch.name }}"
-  environment: "{{ account.name }}"
-  private_subnet_ids: "{{ vpc_output.ansible_facts.cloudformation[stacks.vpc].stack_outputs.VpcZoneIdentifiersPrivate }}"
-  public_subnet_ids: "{{ vpc_output.ansible_facts.cloudformation[stacks.vpc].stack_outputs.VpcZoneIdentifiersPublic }}"
-  region: "{{ account.region }}"
-  s3:
-    submit_bucket: "{{ s3_submit_output.ansible_facts.cloudformation[stacks.s3.submit].stack_outputs.S3BucketName }}"
   sqs:
-    request:
-      queuename: "{{ vpc_output.ansible_facts.cloudformation[stacks.vpc].stack_outputs.Vpc }}-SASI_Request"
-      visibilitytimeout: 180
-    response:
-      queuename: "{{ vpc_output.ansible_facts.cloudformation[stacks.vpc].stack_outputs.Vpc }}-SASI_Response"
-      visibilitytimeout: 20
-  vpc_id: "{{ vpc_output.ansible_facts.cloudformation[stacks.vpc].stack_outputs.Vpc }}"
+    lifecycle_sqs_sns:
+      stack_name:                               "{{stack.sqs.lifecycle_sqs_sns}}"
+      template:                                 "{{templates.sqs.sqs_sns_subscription_template}}"
+      template_parameters:
+        Branch:                                 "{{build.branch}}"
+        Environment:                            "{{account.name}}"
+        SubscriptionName:                       xgemail-lifecycle
+    customer_delivery_sqs_queue:
+      stack_name:                               "{{stack.sqs.customer_delivery_sqs_queue}}"
+      template:                                 "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                              "{{sqs.customer_delivery_sqs_queue}}"
+    customer_submit_sqs_queue:
+      stack_name:                               "{{stack.sqs.customer_submit_sqs_queue}}"
+      template:                                 "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                              "{{sqs.customer_submit_sqs_queue}}"
+    customer_delivery_sqs_queue_sns_listener:
+      stack_name:                               "{{stack.sqs.customer_delivery_sqs_queue_sns_listener}}"
+      template:                                 "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                              "{{sqs.customer_delivery_sqs_queue}}"
+    internet_delivery_sqs_queue_sns_listener:
+      stack_name:                               "{{stack.sqs.internet_delivery_sqs_queue_sns_listener}}"
+      template:                                 "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                              "{{sqs.internet_delivery_sqs_queue_sns_listener}}"
+    dqs_sqs_queue:
+      stack_name:                               "{{stack.sqs.dqs_sqs_queue}}"
+      template:                                 "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                              "{{sqs.dqs_sqs_queue}}"
+    delay_sqs_queue:
+      stack_name:                               "{{stack.sqs.delay_sqs_queue}}"
+      template:                                 "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                              "{{sqs.delay_sqs_queue}}"
+        DelaySeconds:                           "600"
+    emergency_inbox_sqs_queue:
+      stack_name:                               "{{stack.sqs.emergency_inbox_sqs_queue}}"
+      template:                                 "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                              "{{sqs.emergency_inbox_sqs_queue}}"
+    emergency_inbox_sqs_queue_sns_listener:
+      stack_name:                               "{{stack.sqs.emergency_inbox_sqs_queue_sns_listener}}"
+      template:                                 "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                              "{{sqs.emergency_inbox_sqs_queue_sns_listener}}"
+    internet_delivery_sqs_queue:
+      stack_name:                               "{{stack.sqs.internet_delivery_sqs_queue}}"
+      template:                                 "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                              "{{sqs.internet_delivery_sqs_queue}}"
+    internet_submit_sqs_queue:
+      stack_name:                               "{{stack.sqs.internet_submit_sqs_queue}}"
+      template:                                 "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                              "{{sqs.internet_submit_sqs_queue}}"
+    msg_history_sqs_queue:
+      stack_name:                               "{{stack.sqs.msg_history_sqs_queue}}"
+      template:                                 "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                              "{{sqs.msg_history_sqs_queue}}"
+    msg_history_sqs_queue_sns_listener:
+      stack_name:                               "{{stack.sqs.msg_history_sqs_queue_sns_listener}}"
+      template:                                 "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                              "{{sqs.msg_history_sqs_queue_sns_listener}}"
+    msg_statistics_sqs_queue:
+      stack_name:                               "{{stack.sqs.msg_statistics_sqs_queue}}"
+      template:                                 "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                              "{{sqs.msg_statistics_sqs_queue}}"
+    msg_statistics_sqs_queue_sns_listener:
+      stack_name:                               "{{stack.sqs.msg_statistics_sqs_queue_sns_listener}}"
+      template:                                 "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                              "{{sqs.msg_statistics_sqs_queue_sns_listener}}"
+    quarantine_sqs_queue:
+      stack_name:                               "{{stack.sqs.quarantine_sqs_queue}}"
+      template:                                 "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                              "{{sqs.quarantine_sqs_queue}}"
+    quarantine_sqs_queue_sns_listener:
+      stack_name:                               "{{stack.sqs.quarantine_sqs_queue_sns_listener}}"
+      template:                                 "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                              "{{sqs.quarantine_sqs_queue_sns_listener}}"
 
-  "NAT_EIP": "A",
-  "XGEMAIL_IOPS_DATA_GB": "100",
-"XGEMAIL_SIZE_DATA_GB": "40",
-"INSTANCE_SIZE_XGEMAIL_ELASTICSEARCH": "t2.medium",
-"INSTANCE_SIZE_XGEMAIL_INTERNET_DELIVERY": "t2.small",
-"INSTANCE_SIZE_XGEMAIL_DELIVERY": "t2.small",
-"INSTANCE_SIZE_XGEMAIL_SUBMIT": "t2.small",
-"INSTANCE_SIZE_XGEMAIL_XDELIVERY": "t2.small",
-"XGEMAIL_SXL_DBL": "uri.cal1.sophosxl.com",
-"XGEMAIL_SXL_RBL": "fur.cal1.sophosxl.com"
+  sns:
+    alarm_sns_topic:
+      stack_name:                               "{{stack.sns.alarm_sns_topic}}"
+      template:                                 "{{template.sns.sns_template}}"
+      template_parameters:
+        Environment:                            "{{account.name}}"
+        SNSTopicEndpointProtocol:               email
+        SNSTopicEndpointValue:                  cloud-inf-aws-alerts@sophos.com
+        SNSTopicName:                           xgemail-alarm
+    delay_sns_topic:
+      stack_name:                               "{{stack.sns.delay_sns_topic}}"
+      template:                                 "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                              "{{sns.delay_sns_topic}}"
+    deleted_events_sns_topic:
+      stack_name:                               "{{stack.sns.deleted_events_sns_topic}}"
+      template:                                 "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                              "{{sns.deleted_events_sns_topic}}"
+    internet_delivery_sns_topic:
+      stack_name:                               "{{stack.sns.internet_delivery_sns_topic}}"
+      template:                                 "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                              "{{sns.internet_delivery_sns_topic}}"
+    quarantined_events_sns_topic:
+      stack_name:                               "{{stack.sns.quarantined_events_sns_topic}}"
+      template:                                 "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                              "{{sns.quarantined_events_sns_topic}}"
+    success_events_sns_topic:
+      stack_name:                               "{{stack.sns.success_events_sns_topic}}"
+      template:                                 "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                              "{{sns.success_events_sns_topic}}"
+    policy_sns_topic:
+      stack_name:                               "{{stack.sns.policy_sns_topic}}"
+      template:                                 "{{template.sns.sns_topic_policy_s3_template}}"
+      template_parameters:
+        TopicName:                              "{{sns.policy_sns_topic}}"
+        SnsS3TopicPolicyBucket:                 "{{s3.policy_bucket}}"
+        SnsS3TopicPolicyCreate:                 "true"
+    relay_control_sns_topic:
+      stack_name:                               "{{stack.sns.relay_control_sns_topic}}"
+      template:                                 "{{template.sns.sns_topic_policy_s3_template}}"
+      template_parameters:
+        TopicName:                              "{{sns.relay_control_sns_topic}}"
+        SnsS3TopicPolicyBucket:                 "{{s3.policy_bucket}}"
+        SnsS3TopicPolicyCreate:                 "true"
+
+  msg:
+    xgemail_messaging:
+      stack_name:                               "{{stack.msg.xgemail_messaging}}"
+      template:                                 "{{template.msg.xgemail_messaging_template}}"
+      template_parameters:
+        DeletedEventsTopicArn:                  "{{sns.arn_prefix}}{{sns.deleted_events_sns_topic}}"
+        DelayTopicArn:                          "{{sns.arn_prefix}}{{sns.delay_sns_topic}}"
+        DelayQueueArn:                          "{{sqs.arn_prefix}}{{sqs.delay_sqs_queue}}"
+        DelayQueueUrl:                          "{{sqs.url_prefix}}{{sqs.delay_sqs_queue}}"
+        QuarantinedEventsTopicArn:              "{{sns.arn_prefix}}{{sns.quarantined_events_sns_topic}}"
+        SuccessEventsTopicArn:                  "{{sns.arn_prefix}}{{sns.success_events_sns_topic}}"
+        DeliveryQueueArn:                       "{{sqs.arn_prefix}}{{sqs.customer_delivery_sqs_queue_sns_listener}}"
+        DeliveryQueueUrl:                       "{{sqs.url_prefix}}{{sqs.customer_delivery_sqs_queue_sns_listener}}"
+        EmergencyInboxQueueArn:                 "{{sqs.arn_prefix}}{{sqs.emergency_inbox_sqs_queue_sns_listener}}"
+        EmergencyInboxQueueUrl:                 "{{sqs.url_prefix}}{{sqs.emergency_inbox_sqs_queue_sns_listener}}"
+        InternetDeliveryTopicArn:               "{{sns.arn_prefix}}{{sns.internet_delivery_sqs_queue_sns_listener}}"
+        InternetDeliveryQueueArn:               "{{sqs.arn_prefix}}{{sqs.internet_delivery_sqs_queue_sns_listener}}"
+        InternetDeliveryQueueUrl:               "{{sqs.url_prefix}}{{sqs.internet_delivery_sqs_queue_sns_listener}}"
+        MessageHistoryQueueArn:                 "{{sqs.arn_prefix}}{{sqs.msg_history_sqs_queue_sns_listener}}"
+        MessageHistoryQueueUrl:                 "{{sqs.url_prefix}}{{sqs.msg_history_sqs_queue_sns_listener}}"
+        MessageStatisticsQueueArn:              "{{sqs.arn_prefix}}{{sqs.msg_statistics_sqs_queue_sns_listener}}"
+        MessageStatisticsQueueUrl:              "{{sqs.url_prefix}}{{sqs.msg_statistics_sqs_queue_sns_listener}}"
+        QuarantineQueueArn:                     "{{sqs.arn_prefix}}{{sqs.quarantine_sqs_queue_sns_listener}}"
+        QuarantineQueueUrl:                     "{{sqs.url_prefix}}{{sqs.quarantine_sqs_queue_sns_listener}}"
+
+
+ami_parent_id:
+as_min_cap_bastion: 1
+cloudstation_hostedzone: hydra.sophos.com
+cron_scale_down: "0 1 * * 6"
+cron_scale_up: "0 4 * * 1"
+nat_eip: a
+xgemail_iops_data_gb: 100
+xgemail_size_data_gb: 40
+instance_size_xgemail_elasticsearch: t2.medium
+instance_size_xgemail_internet_delivery: t2.small
+instance_size_xgemail_delivery: t2.small
+instance_size_xgemail_submit: t2.small
+instance_size_xgemail_xdelivery: t2.small
+xgemail_sxl_dbl: uri.cal1.sophosxl.com
+xgemail_sxl_rbl: fur.cal1.sophosxl.com

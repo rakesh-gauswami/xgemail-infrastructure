@@ -1,17 +1,25 @@
-- name: Create S3 Bucket Stacks in AWS
+---
+- name: Debug
+  debug:
+    msg: "{{item.value.stack_name}} {{item.value.template}} {{item.value.template_parameters}}"
+  with_dict: "{{aws.s3}}"
+
+- name: "Create S3 Bucket Stacks in AWS"
   async: 100
   poll: 0
   cloudformation:
-    stack_name: "{{ item.name }}"
-    state: "present"
-    template: "{{ item.template }}"
-    template_parameters: "{{ item.template_parameters }}"
-  with_items: aws.s3
+    stack_name: "{{ item.value.stack_name }}"
+    state: present
+    region:  "{{ account.region }}"
+    disable_rollback: true
+    template: "{{ item.value.template }}"
+    template_parameters: "{{ item.value.template_parameters }}"
+  with_dict: "{{aws.s3}}"
   register: s3_stack_async_results
 
 - async_status:
     jid: "{{item.ansible_job_id}}"
-  with_items: s3_stack_async_results.results
-  register: s3_stack_async_results
-  until: s3_stack_async_results.finished
+  with_items: "{{ s3_stack_async_results.results}}"
+  register: s3_stack_async_poll_results
+  until: "{{s3_stack_async_poll_results.finished}}"
   retries: 30

@@ -1,0 +1,22 @@
+---
+- name: "Deploy Security Groups {{ stack.ec2.sg.cloud_email_security_groups }} to {{ account.name }}-{{ account.region }}"
+  cloudformation:
+    stack_name: "{{ stack.ec2.sg.cloud_email_security_groups }}"
+    state: present
+    region: "{{ account.region }}"
+    disable_rollback: true
+    template: "/Users/ryanmurphy/g/Email/xgemail-infrastructure/ansible/roles/common/files/cf_templates/sg_xgemail_template.json"
+    template_parameters:
+      Branch:                              "{{ build.branch }}"
+      Environment:                         "{{ account.name }}"
+      Vpc:                                 "{{ cloud_email_vpc_stack.stack_outputs.Vpc }}"
+  register: sg_stack
+
+- debug:
+    var: sg_stack
+    verbosity: 3
+
+- name: "Display Security Groups Stack Output"
+  debug:
+    msg: "{{ sg_stack.stack_outputs }}"
+    verbosity: 2

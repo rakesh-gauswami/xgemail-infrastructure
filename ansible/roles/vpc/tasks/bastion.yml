@@ -1,0 +1,18 @@
+- name: "Deploy {{ stack.ec2.asg.bastion }} to {{ account.name }} {{ account.region }}"
+  cloudformation:
+    stack_name: "{{aws.ec2.asg.bastion.stack_name}}"
+    state: present
+    region: "{{ account.region }}"
+    disable_rollback: true
+    template: "{{aws.ec2.asg.bastion.template}}"
+    template_parameters: "{{aws.ec2.asg.bastion.template_parameters}}"
+  register: bastion_stack
+
+- debug:
+    var: bastion_stack
+    verbosity: 3
+
+- name: "Display CloudEmail Bastion Stack Output"
+  debug:
+    msg: "{{ bastion_stack.stack_outputs }}"
+    verbosity: 2

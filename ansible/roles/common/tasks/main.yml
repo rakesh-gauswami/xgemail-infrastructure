@@ -1,6 +1,20 @@
 ---
 # Load all the appropriate variables
-- include_tasks: load-vars-hierarchy.yml
+- include_tasks: ../tasks/util/load-vars-hierarchy.yml
   vars:
     hierarchy_dir: '{{ role_path }}'
 
+- name: "Gather {{ stack.vpc.cloud_station_vpc }} CloudFormation Stack Output"
+  cloudformation_facts:
+    stack_name: "{{ stack.vpc.cloud_station_vpc }}"
+    region: "{{account.region}}"
+  register: cloud_station_vpc_output
+
+- debug:
+    var: cloud_station_vpc_output
+    verbosity: 3
+
+#- import_tasks: create-task-artifacts.yml
+#  tags:
+#    - install
+#    - uninstall

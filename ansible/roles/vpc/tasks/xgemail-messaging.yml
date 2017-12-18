@@ -1,0 +1,18 @@
+- name: "Deploy {{ stack.msg.xgemail_messaging }} to {{ account.name }} {{ account.region }}"
+  cloudformation:
+    stack_name: "{{ aws.msg.xgemail_messaging.stack_name }}"
+    state: present
+    region: "{{ account.region }}"
+    disable_rollback: true
+    template: "{{aws.msg.xgemail_messaging.template}}"
+    template_parameters: "{{ aws.msg.xgemail_messaging.template_parameters }}"
+  register: messaging_stack
+
+- debug:
+    var: messaging_stack
+    verbosity: 3
+
+- name: "Display Xgemail Messaging Stack Output"
+  debug:
+    msg: "{{ messaging_stack.stack_outputs }}"
+    verbosity: 2

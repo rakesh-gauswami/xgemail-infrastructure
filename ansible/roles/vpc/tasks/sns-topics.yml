@@ -1,0 +1,25 @@
+---
+- name: Debug
+  debug:
+    msg: "{{item.value.stack_name}} {{item.value.template}} {{item.value.template_parameters}}"
+  with_dict: "{{aws.sns}}"
+
+- name: "Create SNS Topic Stacks in AWS"
+  async: 100
+  poll: 0
+  cloudformation:
+    stack_name: "{{ item.value.stack_name }}"
+    state: present
+    region:  "{{ account.region }}"
+    disable_rollback: true
+    template: "{{ item.value.template }}"
+    template_parameters: "{{ item.value.template_parameters }}"
+  with_dict: "{{aws.sns}}"
+  register: sns_stack_async_results
+
+- async_status:
+    jid: "{{item.ansible_job_id}}"
+  with_items: "{{ sns_stack_async_results.results}}"
+  register: sns_stack_async_poll_results
+  until: "{{sns_stack_async_poll_results.finished}}"
+  retries: 30

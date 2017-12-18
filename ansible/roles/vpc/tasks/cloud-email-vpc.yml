@@ -1,5 +1,5 @@
 ---
-- name: "Deploy CloudEmail VPC to {{ account.name }}-{{ account.region }}"
+- name: "Deploy {{ stack.vpc.cloud_email_vpc }} to {{ account.name }}-{{ account.region }}"
   cloudformation:
     stack_name: "{{ stack.vpc.cloud_email_vpc }}"
     state: present
@@ -9,4 +9,13 @@
     template_parameters:
       Environment:              "{{ account.name }}"
       AZs:                      "{{ account.region }}a, {{ account.region }}b, {{ account.region }}c"
-  register: vpc_stack`
+  register: cloud_email_vpc_stack
+
+- debug:
+    var: cloud_email_vpc_stack
+    verbosity: 3
+
+- name: "Display VPC Stack Output"
+  debug:
+    msg: "{{ cloud_email_vpc_stack.stack_outputs }}"
+    verbosity: 2
