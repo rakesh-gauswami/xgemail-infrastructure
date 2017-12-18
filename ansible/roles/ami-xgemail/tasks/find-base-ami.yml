@@ -1,0 +1,9 @@
+- name: Find ami <{{ autoscaling.image_name }}>
+  ec2_ami_find:
+    name: "{{ autoscaling.image_name }}*"
+    region: "{{ account.region }}"
+    sort: creationDate
+    sort_order: descending
+    sort_end: 1
+    no_result_action: fail
+  register: ami_xgemail

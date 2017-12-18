@@ -1,0 +1,50 @@
+---
+- name: "Deploy Xgemail AMI to {{ account.name }}-{{ account.region }}"
+  cloudformation:
+    stack_name: "{{ stacks.ami.stack_name }}"
+    state: "present"
+    region: "{{ account.region }}"
+    disable_rollback: true
+    template: "../roles/ami-xgemail/files/cf_templates/image_xgemail_template.json"
+    template_parameters:
+      AesDecryptionKey:                    "{{ ami_ansible.results[0].ami_id }}"
+      AmiBucket:
+      AmiBuildTimeoutMinutes:        80
+      AmiDestinationRegions:                   eu-west-1 us-east-2 us-west-2 eu-central-1
+      AmiLaunchPermissions:            750199083801 855146673459 769208163330 050963334367 455082247759 283871543274 382702281923 859103266070 202058678495 843638552935
+      ApplicationName:                      xgemail
+      BlockDeviceMappingsXvdf:              40
+      BlockDeviceMappingsXvdg:
+      BlockDeviceMappingsXvdh:
+      Branch:   "{{ autoscaling.security_group_base }}, {{ autoscaling.security_group_ansible }}"
+      Build:             "{{ autoscaling.instance_type }}"
+      Environment:
+      IamProfile:
+      ImageId:                    "{{ autoscaling.vpc_id }}"
+      InstanceType:
+      JavaBranch:                  develop
+      JdkVersion:                  jdk-1.8.0_101-b13
+      KeyPairName:
+      PostfixInstall:       yes
+      S3CookbookRepositoryUrl:                    "{{ autoscaling.vpc_id }}"
+      S3Sophos3rdPartyRepositoryUrl:
+      S3SophosAppRepositoryUrl:
+      TomcatVersion:
+      VpcSecurityGroup:                    sg-1b470e7e
+      VpcSubnetId:                    subnet-c5bb00a0
+  register: ami_stack
+
+- name: "Display EC2 Instance Id"
+  debug:
+    msg: "{{ami_stack.stack_outputs.XgemailServerInstance}}"
+
+- debug:
+    var: ami_stack
+    verbosity: 3
+
+- name: "Display AMI Stack Output"
+  debug:
+    msg: "{{ami_stack.stack_outputs}}"
+    verbosity: 2
+
+
