@@ -5,13 +5,13 @@ vpc:
     name: CloudStation
 # Cloud Email S3 Bucket Names.
 s3:
-  customer_submit_bucket:                               "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name | lower}}-xgemail-cust-submit"
-  emergency_inbox_bucket:                               "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name | lower}}-xgemail-emgcy-inbox"
-  msg_history_bucket:                                   "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name | lower}}-xgemail-msg-history"
-  msg_stats_bucket:                                     "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name | lower}}-xgemail-msg-stats"
-  policy_bucket:                                        "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name | lower}}-xgemail-policy"
-  quarantine_bucket:                                    "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name | lower}}-xgemail-quarantine"
-  submit_bucket:                                        "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name | lower}}-xgemail-submit"
+  customer_submit_bucket:                               "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-cust-submit"
+  emergency_inbox_bucket:                               "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-emgcy-inbox"
+  msg_history_bucket:                                   "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-msg-history"
+  msg_stats_bucket:                                     "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-msg-stats"
+  policy_bucket:                                        "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-policy"
+  quarantine_bucket:                                    "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-quarantine"
+  submit_bucket:                                        "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-submit"
 # Cloud Email SQS Queue Names.
 sqs:
   lifecycle_sqs_sns:                                    "{{account.name}}-Xgemail-LifeCycleEvents-Processing"
@@ -31,26 +31,20 @@ sqs:
   msg_statistics_sqs_queue_sns_listener:                "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Message_Statistics_SNS_Listener"
   quarantine_sqs_queue:                                 "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Quarantine_Delivery"
   quarantine_sqs_queue_sns_listener:                    "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Quarantine_Delivery_SNS_Listener"
-  arn_prefix:                                           arn:aws:sqs:{{account.region}}:{{aws_account_id}}:
-  url_prefix:                                           https://sqs.{{account.region}}.amazonaws.com/{{aws_account_id}}/
+  arn_prefix:                                           "arn:aws:sqs:{{account.region}}:{{aws_account_id}}:"
+  url_prefix:                                           "https://sqs.{{account.region}}.amazonaws.com/{{aws_account_id}}/"
 # Cloud Email SNS Topic Names.
 sns:
   alarm_sns_topic:                                      "{{account.name}}-{{vpc.cloud_email.name}}-Alarm-Topic"
-  policy_sns_topic:
-    name:                                               "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-policy-SNS"
-    arn:                                                "arn:aws:sns:{{account.region}}:{{aws_account_id}}:{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-policy-SNS"
-  relay_control_sns_topic:
-    name:                                               "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-relay-control-SNS"
-    arn:                                                "arn:aws:sns:{{account.region}}:{{aws_account_id}}:{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-relay-control-SNS"
+  policy_sns_topic:                                     "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-policy-SNS"
+  relay_control_sns_topic:                              "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-relay-control-SNS"
   delay_sns_topic:                                      "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-delay-SNS"
   deleted_events_sns_topic:                             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-deleted-events-SNS"
   internet_delivery_sns_topic:                          "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-internet-delivery-SNS"
   quarantined_events_sns_topic:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-quarantined-events-SNS"
   success_events_sns_topic:                             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-success-events-SNS"
-  arn_prefix:                                           arn:aws:sns:{{account.region}}:{{aws_account_id}}:
-# Cloud Email Messaging.
-msg:
-  xgemail_messaging:                                    "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-XGEMAIL-messaging"
+  arn_prefix:                                           "arn:aws:sns:{{account.region}}:{{aws_account_id}}:"
+
 # CloudEmail Stack Names
 stack:
   vpc:
@@ -90,16 +84,6 @@ stack:
     policy_bucket:                                      "{{vpc.cloud_email.name}}-XGEMAIL-policy-bucket-S3"
     quarantine_bucket:                                  "{{vpc.cloud_email.name}}-XGEMAIL-quarantine-bucket-S3"
     submit_bucket:                                      "{{vpc.cloud_email.name}}-XGEMAIL-submit-bucket-S3"
-  sns:
-    alarm_sns_topic:                                    "{{account.name}}-{{vpc.cloud_email.name}}-Alarm-Topic"
-    policy_sns_topic:                                   "{{vpc.cloud_email.name}}-xgemail-policy-SNS"
-    relay_control_sns_topic:                            "{{vpc.cloud_email.name}}-xgemail-relay-control-SNS"
-    delay_sns_topic:                                    "{{vpc.cloud_email.name}}-xgemail-delay-SNS"
-    deleted_events_sns_topic:                           "{{vpc.cloud_email.name}}-xgemail-deleted-events-SNS"
-    internet_delivery_sns_topic:                        "{{vpc.cloud_email.name}}-xgemail-internet-delivery-SNS"
-    quarantined_events_sns_topic:                       "{{vpc.cloud_email.name}}-xgemail-quarantined-events-SNS"
-    success_events_sns_topic:                           "{{vpc.cloud_email.name}}-xgemail-success-events-SNS"
-    xgemail_messaging:                                  "{{vpc.cloud_email.name}}-XGEMAIL-messaging"
   sqs:
     lifecycle_sqs_sns:                                  "{{account.name}}-Xgemail-LifeCycleEvents-Processing"
     customer_delivery_sqs_queue:                        "{{vpc.cloud_email.name}}-XGEMAIL-delivery-SQS"
@@ -118,9 +102,19 @@ stack:
     msg_statistics_sqs_queue_sns_listener:              "{{vpc.cloud_email.name}}-XGEMAIL-msg-statistics-SQS-SNS-listener"
     quarantine_sqs_queue:                               "{{vpc.cloud_email.name}}-XGEMAIL-quarantine-SQS"
     quarantine_sqs_queue_sns_listener:                  "{{vpc.cloud_email.name}}-XGEMAIL-quarantine-SQS-SNS-listener"
+  sns:
+    alarm_sns_topic:                                    "{{account.name}}-{{vpc.cloud_email.name}}-Alarm-Topic"
+    policy_sns_topic:                                   "{{vpc.cloud_email.name}}-xgemail-policy-SNS"
+    relay_control_sns_topic:                            "{{vpc.cloud_email.name}}-xgemail-relay-control-SNS"
+    delay_sns_topic:                                    "{{vpc.cloud_email.name}}-xgemail-delay-SNS"
+    deleted_events_sns_topic:                           "{{vpc.cloud_email.name}}-xgemail-deleted-events-SNS"
+    internet_delivery_sns_topic:                        "{{vpc.cloud_email.name}}-xgemail-internet-delivery-SNS"
+    quarantined_events_sns_topic:                       "{{vpc.cloud_email.name}}-xgemail-quarantined-events-SNS"
+    success_events_sns_topic:                           "{{vpc.cloud_email.name}}-xgemail-success-events-SNS"
   msg:
-    xgemail-messaging:                                  "{{vpc.cloud_email.name}}-XGEMAIL-messaging"
+    xgemail_messaging:                                  "{{vpc.cloud_email.name}}-XGEMAIL-messaging"
 
+template_directory: some/directory
 template:
   ec2:
     asg:

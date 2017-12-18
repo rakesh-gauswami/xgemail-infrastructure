@@ -15,24 +15,6 @@ aws:
       internet_submit:
       internet_xdelivery:
       bastion:
-        stack_name:                             "{{stack.ec2.asg.bastion}}"
-        template:                               "{{template.ec2.asg.bastion}}"
-        template_parameters:
-          AmiId:                                ami-33dd7a4b
-          AutoScalingMinSize:                   "{{as_min_cap_bastion}}"
-          AvailabilityZones:                    "{{cloud_email_vpc_stack.stack_outputs.AvailabilityZones}}"
-          BastionInstanceProfile:               "{{iam_stack.stack_outputs.BastionInstanceProfile}}"
-          BastionSecurityGroup:                 "{{sg_stack.stack_outputs.SecurityGroupBastion}}"
-          Branch:                               "{{build.branch}}"
-          Environment:                          "{{account.name}}"
-          KeyName:                              "bastion-{{account.region}}"
-          LogstashServer:                       "lgstshshipper.{{vpc.cloud_email.name|lower}}.{{account.region}}.{{account.name}}.{{cloudstation_hostedzone}}:5000"
-          ScaleDownOnWeekends:                  "false"
-          ScaleDownCron:                        "{{cron_scale_down}}"
-          ScaleUpCron:                          "{{cron_scale_up}}"
-          Vpc:                                  "{{cloud_email_vpc_stack.stack_outputs.Vpc}}"
-          VpcName:                              "{{vpc.cloud_email.name}}"
-          VpcZoneIdentifiers:                   "{{cloud_email_vpc_stack.stack_outputs.VpcZoneIdentifiersPublic}}"
 
   s3:
     customer_submit_bucket:
@@ -100,13 +82,13 @@ aws:
       template_parameters:
         Environment:                            "{{account.name}}"
         S3BucketName:                           "{{s3.policy_bucket}}"
-        SnsPolicyTopic:                         "{{sns.policy_sns_topic.arn}}"
-        SnsRelayControlTopic:                   "{{sns.relay_control_sns_topic.arn}}"
+        SnsPolicyTopic:                         "{{sns.arn_prefix}}{{sns.policy_sns_topic}}"
+        SnsRelayControlTopic:                   "{{sns.arn_prefix}}{{sns.relay_control_sns_topic}}"
 
   sqs:
     lifecycle_sqs_sns:
       stack_name:                               "{{stack.sqs.lifecycle_sqs_sns}}"
-      template:                                 "{{templates.sqs.sqs_sns_subscription_template}}"
+      template:                                 "{{template.sqs.sqs_sns_subscription_template}}"
       template_parameters:
         Branch:                                 "{{build.branch}}"
         Environment:                            "{{account.name}}"
@@ -125,7 +107,7 @@ aws:
       stack_name:                               "{{stack.sqs.customer_delivery_sqs_queue_sns_listener}}"
       template:                                 "{{template.sqs.sqs_simple_template}}"
       template_parameters:
-        QueueName:                              "{{sqs.customer_delivery_sqs_queue}}"
+        QueueName:                              "{{sqs.customer_delivery_sqs_queue_sns_listener}}"
     internet_delivery_sqs_queue_sns_listener:
       stack_name:                               "{{stack.sqs.internet_delivery_sqs_queue_sns_listener}}"
       template:                                 "{{template.sqs.sqs_simple_template}}"
@@ -241,31 +223,6 @@ aws:
         TopicName:                              "{{sns.relay_control_sns_topic}}"
         SnsS3TopicPolicyBucket:                 "{{s3.policy_bucket}}"
         SnsS3TopicPolicyCreate:                 "true"
-
-  msg:
-    xgemail_messaging:
-      stack_name:                               "{{stack.msg.xgemail_messaging}}"
-      template:                                 "{{template.msg.xgemail_messaging_template}}"
-      template_parameters:
-        DeletedEventsTopicArn:                  "{{sns.arn_prefix}}{{sns.deleted_events_sns_topic}}"
-        DelayTopicArn:                          "{{sns.arn_prefix}}{{sns.delay_sns_topic}}"
-        DelayQueueArn:                          "{{sqs.arn_prefix}}{{sqs.delay_sqs_queue}}"
-        DelayQueueUrl:                          "{{sqs.url_prefix}}{{sqs.delay_sqs_queue}}"
-        QuarantinedEventsTopicArn:              "{{sns.arn_prefix}}{{sns.quarantined_events_sns_topic}}"
-        SuccessEventsTopicArn:                  "{{sns.arn_prefix}}{{sns.success_events_sns_topic}}"
-        DeliveryQueueArn:                       "{{sqs.arn_prefix}}{{sqs.customer_delivery_sqs_queue_sns_listener}}"
-        DeliveryQueueUrl:                       "{{sqs.url_prefix}}{{sqs.customer_delivery_sqs_queue_sns_listener}}"
-        EmergencyInboxQueueArn:                 "{{sqs.arn_prefix}}{{sqs.emergency_inbox_sqs_queue_sns_listener}}"
-        EmergencyInboxQueueUrl:                 "{{sqs.url_prefix}}{{sqs.emergency_inbox_sqs_queue_sns_listener}}"
-        InternetDeliveryTopicArn:               "{{sns.arn_prefix}}{{sns.internet_delivery_sqs_queue_sns_listener}}"
-        InternetDeliveryQueueArn:               "{{sqs.arn_prefix}}{{sqs.internet_delivery_sqs_queue_sns_listener}}"
-        InternetDeliveryQueueUrl:               "{{sqs.url_prefix}}{{sqs.internet_delivery_sqs_queue_sns_listener}}"
-        MessageHistoryQueueArn:                 "{{sqs.arn_prefix}}{{sqs.msg_history_sqs_queue_sns_listener}}"
-        MessageHistoryQueueUrl:                 "{{sqs.url_prefix}}{{sqs.msg_history_sqs_queue_sns_listener}}"
-        MessageStatisticsQueueArn:              "{{sqs.arn_prefix}}{{sqs.msg_statistics_sqs_queue_sns_listener}}"
-        MessageStatisticsQueueUrl:              "{{sqs.url_prefix}}{{sqs.msg_statistics_sqs_queue_sns_listener}}"
-        QuarantineQueueArn:                     "{{sqs.arn_prefix}}{{sqs.quarantine_sqs_queue_sns_listener}}"
-        QuarantineQueueUrl:                     "{{sqs.url_prefix}}{{sqs.quarantine_sqs_queue_sns_listener}}"
 
 
 ami_parent_id:

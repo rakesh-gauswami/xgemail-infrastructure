@@ -1,11 +1,26 @@
-- name: "Deploy {{ stack.ec2.asg.bastion }} to {{ account.name }} {{ account.region }}"
+- name: "Deploy {{stack.ec2.asg.bastion}} to {{account.name}} {{account.region}}"
   cloudformation:
-    stack_name: "{{aws.ec2.asg.bastion.stack_name}}"
+    stack_name: "{{stack.ec2.asg.bastion}}"
     state: present
-    region: "{{ account.region }}"
+    region: "{{account.region}}"
     disable_rollback: true
-    template: "{{aws.ec2.asg.bastion.template}}"
-    template_parameters: "{{aws.ec2.asg.bastion.template_parameters}}"
+    template: "{{template.ec2.asg.bastion}}"
+    template_parameters:
+      AmiId:                                ami-33dd7a4b
+      AutoScalingMinSize:                   "{{as_min_cap_bastion}}"
+      AvailabilityZones:                    "{{cloud_email_vpc_stack.stack_outputs.AvailabilityZones}}"
+      BastionInstanceProfile:               "{{iam_stack.stack_outputs.BastionInstanceProfile}}"
+      BastionSecurityGroup:                 "{{sg_stack.stack_outputs.SecurityGroupBastion}}"
+      Branch:                               "{{build.branch}}"
+      Environment:                          "{{account.name}}"
+      KeyName:                              "bastion-{{account.region}}"
+      LogstashServer:                       "lgstshshipper.{{vpc.cloud_email.name|lower}}.{{account.region}}.{{account.name}}.{{cloudstation_hostedzone}}:5000"
+      ScaleDownOnWeekends:                  "false"
+      ScaleDownCron:                        "{{cron_scale_down}}"
+      ScaleUpCron:                          "{{cron_scale_up}}"
+      Vpc:                                  "{{cloud_email_vpc_stack.stack_outputs.Vpc}}"
+      VpcName:                              "{{vpc.cloud_email.name}}"
+      VpcZoneIdentifiers:                   "{{cloud_email_vpc_stack.stack_outputs.VpcZoneIdentifiersPublic}}"
   register: bastion_stack
 
 - debug:
@@ -14,5 +29,5 @@
 
 - name: "Display CloudEmail Bastion Stack Output"
   debug:
-    msg: "{{ bastion_stack.stack_outputs }}"
+    msg: "{{bastion_stack.stack_outputs}}"
     verbosity: 2
