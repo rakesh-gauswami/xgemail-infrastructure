@@ -28,7 +28,7 @@ aws:
           KeyName:                              "bastion-{{account.region}}"
           LogstashServer:                       "lgstshshipper.{{vpc.cloud_email.name|lower}}.{{account.region}}.{{account.name}}.{{cloudstation_hostedzone}}:5000"
           ScaleDownOnWeekends:                  "false"
-          ScaleDownCron:                        "{{cron_scale_down}}
+          ScaleDownCron:                        "{{cron_scale_down}}"
           ScaleUpCron:                          "{{cron_scale_up}}"
           Vpc:                                  "{{cloud_email_vpc_stack.stack_outputs.Vpc}}"
           VpcName:                              "{{vpc.cloud_email.name}}"
