@@ -5,7 +5,7 @@
     state: present
     region: "{{account.region}}"
     disable_rollback: true
-    stack_policy:
+    stack_policy: "{{tmp_artifacts_dir}}/vpc_policy.json"
     template: "{{template.vpc.vpc_template}}"
     template_parameters:
       Environment:              "{{account.name}}"
