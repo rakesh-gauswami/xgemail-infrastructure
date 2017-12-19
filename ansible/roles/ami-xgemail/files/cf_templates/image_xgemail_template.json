@@ -120,23 +120,10 @@
       "Default": "develop"
     },
 
-    "JdkVersion": {
-      "Description": "Version of the Oracle JDK for installation.",
-      "Type": "String",
-      "Default": "jdk-1.8.0_101-b13"
-    },
-
     "KeyPairName": {
       "Description": "Name of an existing Amazon EC2 key pair for RDP access",
       "Type": "AWS::EC2::KeyPair::KeyName",
       "Default": "ami-builder-key"
-    },
-
-    "PostfixInstall": {
-      "Description": "Indicates whether postfix should be installed.",
-      "Type": "String",
-      "Default": "no",
-      "AllowedValues": [ "yes", "no" ]
     },
 
     "S3CookbookRepositoryUrl": {
@@ -154,13 +141,6 @@
       "Description": "The S3 bucket path where to find application packages. (//<bucket>)",
       "Type": "String",
       "Default": "//cloud-applications"
-    },
-
-    "TomcatVersion": {
-      "Description": "Version of tomcat to install on the instance",
-      "Type": "String",
-      "Default": "8",
-      "AllowedValues": [ "7", "8" ]
     },
 
     "VpcSecurityGroup": {
@@ -359,14 +339,8 @@
                       "        \"aeskey\"                       :\"{{aes_decryption_key}}\",",
                       "        \"context\"                      :\"{{environment}}\",",
                       "        \"cookbooks\"                    :\"{{s3_cookbook_repo_url}}\",",
-                      "        \"java\"                         :\"{{s3_3rdparty_repo_url}}/jdk\",",
-                      "        \"jdk_version\"                  :\"{{jdk_version}}\",",
                       "        \"savi\"                         :\"{{s3_3rdparty_repo_url}}/savi-install.tar.gz\",",
-                      "        \"thirdparty\"                   :\"{{s3_3rdparty_repo_url}}\",",
-                      "        \"tomcat\"                       :\"{{s3_3rdparty_repo_url}}/tomcat{{tomcat_version}}.tar.gz\"",
-                      "    },",
-                      "    \"email\" : {",
-                      "        \"install\"                      :\"{{postfix_install}}\"",
+                      "        \"thirdparty\"                   :\"{{s3_3rdparty_repo_url}}\"",
                       "    }",
                       "}",
                       ""
@@ -383,13 +357,10 @@
                   "build":                                      { "Ref": "Build" },
                   "environment":                                { "Ref": "Environment" },
                   "java_branch":                                { "Ref": "JavaBranch" },
-                  "jdk_version":                                { "Ref": "JdkVersion" },
-                  "postfix_install":                            { "Ref": "PostfixInstall" },
                   "region":                                     { "Ref": "AWS::Region" },
                   "s3_3rdparty_repo_url":                       { "Ref": "S3Sophos3rdPartyRepositoryUrl" },
                   "s3_app_repo_url":                            { "Ref": "S3SophosAppRepositoryUrl" },
                   "s3_cookbook_repo_url":                       { "Ref": "S3CookbookRepositoryUrl" },
-                  "tomcat_version":                             { "Ref": "TomcatVersion" }
                 },
                 "mode": "000444",
                 "owner": "root",
@@ -402,14 +373,10 @@
                   "Fn::Join": [
                     "", [
                       "knife node run_list add -z `knife node list -z` \"",
-                      "recipe[sophos-cloud-tomcat::setup],",
-                      "recipe[sophos-cloud-tomcat::deploy],",
                       "recipe[sophos-cloud-xgemail::install_tdagent],",
                       "recipe[sophos-cloud-xgemail::install_monit_service],",
                       "recipe[sophos-cloud-xgemail::ami],",
-                      "recipe[sophos-cloud-common::install_savi],",
-                      "recipe[sophos-cloud-xgemail::download_libspf2],",
-                      "recipe[sophos-cloud-ami::create_image]",
+                      "recipe[sophos-cloud-xgemail::download_libspf2]",
                       "\""
                     ]
                   ]
@@ -590,6 +557,11 @@
   },
 
   "Outputs": {
+    "InstanceId": {
+      "Value": {
+        "Ref": "XgemailServerInstance"
+      }
+    },
     "AvailabilityZone": {
       "Value": {
         "Fn::GetAtt": [ "XgemailServerInstance", "AvailabilityZone" ]

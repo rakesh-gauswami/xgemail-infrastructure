@@ -1,0 +1,17 @@
+---
+# Xgemail AMI Creation
+- ec2_ami:
+    aws_access_key: xxxxxxxxxxxxxxxxxxxxxxx
+    aws_secret_key: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    description: "Sophos, Inc. Prepared image of {{build.branch}}-{{app.name}}-{{build.number}}"
+    instance_id: "{{ami_stack.stack_outputs}}"
+    state: present
+    region: "{{account.region}}"
+    wait: yes
+    wait_timeout:
+    name: "{{account.name}}-{{build.branch}}-{{app.name}}-{{build.number}}-${TIMESTAMP}"
+    launch_permissions:
+    tags:
+      Name: newtest
+      Service: TestService
+  register: image
