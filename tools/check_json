@@ -1,0 +1,78 @@
+#!/usr/bin/env python
+# vim: autoindent expandtab tabstop=4 softtabstop=4 shiftwidth=4 filetype=python
+
+# Copyright 2016, Sophos Limited. All rights reserved.
+#
+# 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
+# Sophos Limited and Sophos Group.  All other product and company
+# names mentioned are trademarks or registered trademarks of their
+# respective owners.
+
+# check_json: Check syntax of each json file listed on the command line.
+
+import sys
+
+
+
+# If we have the demjson package, our first choice is to use jsonlint from that package.
+try:
+    from cStringIO import StringIO
+    import os
+
+    from demjson import jsonlint
+    from ruamel import yaml
+
+    def check_json(path):
+        """Use jsonlint from the demjson module to check json files
+        """
+        # Run 'jsonlint --help-behaviors' at the commandline for a list of values
+        config_file = os.path.join(os.path.dirname(__file__), 'check_json_config.yml')
+        with open(config_file) as config:
+            rules = yaml.safe_load(config)
+
+        args = ['--verbose', '--strict']
+        for rule_type in ['allow', 'warn', 'forbid']:
+            try:
+                args += ['--%s' % rule_type, ','.join(rules[rule_type])]
+            except (KeyError, TypeError):
+                pass
+        args += [path]
+
+        output = StringIO()
+        if not jsonlint(stdout=output).main(args):
+            return True
+        else:
+            print >> sys.stderr, output.getvalue()
+            return False
+
+except ImportError:
+    # Use simplejson if it's available as it is more likely to report the location
+    # of any parse errors it detects.  Fallback to json if we have to.
+    try:
+        import simplejson as json
+    except ImportError:
+        import json
+
+    def check_json(path):
+        try:
+            with open(path) as fp:
+                json.load(fp)
+            return True
+        except StandardError as e:
+            print >> sys.stderr, "%s: %s" % (path, e)
+            return False
+
+
+def main():
+    paths = sys.argv[1:]
+
+    failed = False
+    for path in paths:
+        if not check_json(path):
+            failed = True
+
+    sys.exit(1 if failed else 0)
+
+
+if __name__ == "__main__":
+    main()

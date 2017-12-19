@@ -1,0 +1,266 @@
+#!/usr/bin/env ruby
+# vim: tabstop=2 softtabstop=2 shiftwidth=2 expandtab filetype=ruby
+
+# vpc_generate_property_files:
+#   Generate application, bootstrap, and service.properties files for all
+#   P0 and UPE Java instance types in each region.
+#
+#   Files are written to the current working directory, in subdirectories
+#   named by account name, region, and abbreviated instance type, e.g.
+#
+#     dev/eu-west-1/hub/
+#
+#   Data for the files is collected from procon and from representative
+#   Java server instances for each region and service.
+
+require 'fileutils'
+require 'hammer/opclient'
+require 'open3'
+require 'parseconfig'
+require 'yaml'
+
+# See http://stackoverflow.com/questions/3772864/how-do-i-remove-leading-whitespace-chars-from-ruby-heredoc
+class String
+  def unindent
+    gsub /^#{self[/\A\s*/]}/, ''
+  end
+end
+
+class App
+  MASTERCC_CONF_PATH = '/data/mastercc/conf/mastercc.conf'
+  PROCON_CONF_PATH = '/data/mastercc/conf/instances/amzn-eu-west-1/p0-upe/procon.conf'
+
+  INSTANCE_TYPES = {
+    'p0' => ['svc_hub'],
+    'upe' => [
+      'svc_api',
+      'svc_core',
+      'svc_mcs',
+      'svc_mob',
+      'svc_csg',
+      'svc_utm',
+      'svc_wifi',
+    ]
+  }
+
+  def initialize
+    @account = File.read('/etc/hmr-dept').strip
+    @version = File.read('/etc/hmr-version').strip
+
+    @mastercc_conf = ParseConfig.new(MASTERCC_CONF_PATH).params
+    @procon_conf = YAML.load_file(PROCON_CONF_PATH)
+
+    @procon_ip = File.read(Hammer::OpClient::PROCON_EU_WEST_1_STATIC).strip
+    @op_client = Hammer::OpClient.new(@procon_ip, 4443)
+  end
+
+  def hub_api_url(service, data)
+    root_domain = @mastercc_conf['hmr_root_domain']
+    "https://hub.p0.#{root_domain}/sophos"
+  end
+
+  def csg_api_url(service, data)
+    case @account
+    when 'prod'
+      "https://portal-proxy-cloud-sophos.mojave.net/rest"
+    when 'qa'
+      "https://portal-proxy-cloud-sophos-q.mojave.net/rest"
+    else
+      "https://portal-proxy-cloud-sophos-d.mojave.net/rest"
+    end
+  end
+
+  def utm_api_url(service, data)
+    location = data['location']
+    service_id = service.split('_')[-1]
+    root_domain = @mastercc_conf['hmr_root_domain']
+    "https://dzr-utm-#{location}-#{service_id}.upe.#{root_domain}/"
+  end
+
+  def wifi_api_url(service, data)
+    location = data['location']
+    service_id = service.split('_')[-1]
+    root_domain = @mastercc_conf['hmr_root_domain']
+    "https://dzr-wifi-#{location}-#{service_id}.upe.#{root_domain}/"
+  end
+
+  def service_properties(service, data)
+    template = <<-EOF.unindent
+      root_domain = %{root_domain}
+      service_id = %{service_id}
+      product_type = %{product_type}
+
+      iapi_procon_hostname = %{iapi_procon_hostname}
+      iapi_procon_username = %{iapi_procon_username}
+      iapi_procon_password = %{iapi_procon_password}
+
+      [hub]
+      hub_api_url = %{hub_api_url}
+
+      [csg]
+      csg_api_url = %{csg_api_url}
+
+      [utm]
+      utm_api_url = %{utm_api_url}
+
+      [wifi]
+      wifi_api_url = %{wifi_api_url}
+    EOF
+
+    template % {
+      root_domain: @mastercc_conf['hmr_root_domain'],
+      service_id: service.split('_')[-1],
+      product_type: data['product_type'] || 'business',
+      iapi_procon_hostname: 'iapi.p0.' + @mastercc_conf['hmr_root_domain'],
+      iapi_procon_username: @procon_conf['services']['p0_0000']['iapi_procon_id'],
+      iapi_procon_password: @procon_conf['services']['p0_0000']['iapi_procon_token'],
+      hub_api_url: hub_api_url(service, data),
+      csg_api_url: csg_api_url(service, data),
+      utm_api_url: utm_api_url(service, data),
+      wifi_api_url: wifi_api_url(service, data),
+    }
+  end
+
+  def one_instance_ip(service, location, types)
+    @op_client.instances.each do |inst|
+      next if inst.status != 'ready'
+      next if inst.service != service
+      next if inst.location != location
+      next if !types.include?(inst.type)
+      return inst.ipv4_address
+    end
+    nil
+  end
+
+  def procon_cat(ip, path)
+    command = [
+      'procon -q -t',
+      'ssh -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null', ip,
+      'cat', path
+    ].join(' ')
+
+    Open3.popen3(command) do |stdin, stdout, stderr, wait_thr|
+      output = stdout.read
+      error = stderr.read
+
+      stdin.close
+      stdout.close
+      stderr.close
+
+      if error && error.size > 0
+        $stderr.puts error
+      end
+
+      if !wait_thr.value.success?
+        exit 1
+      end
+
+      return output
+    end
+  end
+
+  def make_files(service, data, instance_types)
+    location = data['location']
+
+    # We assume that all hosts for the same service and location have
+    # identical bootstrap.properties files, and application.properties
+    # files that differ only in the application.cluster value.  So we
+    # just need to get a copy of these files from any instance of the
+    # specified instance types, then we can use that as a template for
+    # all the specified instance types.
+    instance_ip = one_instance_ip(service, location, instance_types)
+    if !instance_ip
+      $stderr.puts "Cannot find a running instance of #{location}/#{service}"
+      $stderr.puts "Is anything deployed?  Is the version recent enough?"
+      $stderr.puts "Continuing ..."
+      return
+    end
+
+    application_properties = procon_cat(instance_ip, '/usr/local/etc/sophos/application.properties')
+
+    bootstrap_properties = procon_cat(instance_ip, '/usr/local/etc/sophos/bootstrap.properties')
+
+    # The application.properties files generated by procon don't always
+    # contain the full mongodb and redis server lists; sometimes the use
+    # a single hostname # with multiple A records.  We want individual
+    # hosts, so we extract those lists from the bootstrap.properties file
+    # and update the application.properties file to use them.
+
+    mongodb_addresses = nil
+    bootstrap_properties.scan(/^mongoClient.addresses\s*=\s*(\S.*)$/) do |match|
+      mongodb_addresses = match[0]
+    end
+
+    redis_addresses = nil
+    bootstrap_properties.scan(/^redisPool.addresses\s*=\s*(\S.*)$/) do |match|
+      redis_addresses = match[0]
+    end
+
+    application_properties.sub!(/^(mongoDb.cfg.addresses\s*=\s*)(\S.*)$/, "\\1#{mongodb_addresses}")
+
+    application_properties.sub!(/^(application.waitFor\s*=\s*)(\S.*)$/, "\\1#{mongodb_addresses},#{redis_addresses}")
+
+    region = location.sub(/^amzn-/, '')
+    instance_types.each do |instance_type|
+      abbreviated_type = instance_type.split('_')[-1]
+      dir = "#{@account}/#{region}/#{abbreviated_type}"
+      FileUtils.mkpath(dir)
+
+      puts "Populating #{dir} ..."
+
+      application_properties.sub!(/^(application.cluster\s*=\s*)(\S.*)$/, "\\1#{instance_type}")
+      File.open("#{dir}/application.properties", 'w') do |f|
+        f.write(application_properties)
+      end
+
+      File.open("#{dir}/bootstrap.properties", 'w') do |f|
+        f.write(bootstrap_properties)
+      end
+
+      if service !~ /^p0_/
+        File.open("#{dir}/service.properties", 'w') do |f|
+          f.write(service_properties(service, data))
+        end
+      end
+    end
+
+    # The svc_mob instance also requires some legacy keystore info.
+    if instance_types.include?('svc_mob')
+      mobile_ip = one_instance_ip(service, location, ['svc_mob'])
+      if !mobile_ip
+        $stderr.puts "Cannot find a running instance of #{location}/#{service}/svc_mob"
+        $stderr.puts "Is mobile disabled for this service?"
+        $stderr.puts "Continuing ..."
+      else
+        dir = "#{@account}/#{region}/mob"
+
+        keystore_yml = procon_cat(mobile_ip, '/usr/local/etc/sophos/keystore.yml')
+        File.open("#{dir}/keystore.yml", 'w') do |f|
+          f.write(keystore_yml)
+        end
+
+        pkcs12_yml = procon_cat(mobile_ip, '/usr/local/etc/sophos/pkcs12.yml')
+        File.open("#{dir}/pkcs12.yml", 'w') do |f|
+          f.write(pkcs12_yml)
+        end
+      end
+    end
+  end
+
+  def run
+    puts "Generating property files for account #{@account}, version #{@version}"
+
+    @procon_conf['services'].each do |service, data|
+      case service
+      when /^p0_/
+        make_files(service, data, INSTANCE_TYPES['p0'])
+      when /^upe_/
+        make_files(service, data, INSTANCE_TYPES['upe'])
+      end
+    end
+
+    puts "Done."
+  end
+end
+
+App.new.run
