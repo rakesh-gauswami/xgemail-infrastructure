@@ -106,9 +106,15 @@ stack:
 
 template_directory: some/directory
 template:
+  vpc:
+    vpc_template:                                       /Users/ryanmurphy/g/Email/xgemail-infrastructure/ansible/roles/common/files/cf_templates/vpc_template.json
   ec2:
+    sg:
+      sg_xgemail_template:                              /Users/ryanmurphy/g/Email/xgemail-infrastructure/ansible/roles/common/files/cf_templates/sg_xgemail_template.json
     asg:
       bastion:                                          /Users/ryanmurphy/g/Email/xgemail-infrastructure/ansible/roles/common/files/cf_templates/as_bastion_template.json
+  iam:
+    roles_xgemail_template:                             /Users/ryanmurphy/g/Email/xgemail-infrastructure/ansible/roles/common/files/cf_templates/roles_xgemail_template.json
   s3:
     s3_bucket_template:                                 /Users/ryanmurphy/g/Email/xgemail-infrastructure/ansible/roles/common/files/cf_templates/s3_bucket_template.json
     s3_policy_bucket_template:                          /Users/ryanmurphy/g/Email/xgemail-infrastructure/ansible/roles/common/files/cf_templates/s3_policy_bucket_template.json

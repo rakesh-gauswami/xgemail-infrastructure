@@ -5,7 +5,8 @@
     state: present
     region: "{{account.region}}"
     disable_rollback: true
-    template: "../roles/common/files/cf_templates/vpc_template.json"
+    stack_policy:
+    template: "{{template.vpc.vpc_template}}"
     template_parameters:
       Environment:              "{{account.name}}"
       AZs:                      "{{account.region}}a, {{account.region}}b, {{account.region}}c"

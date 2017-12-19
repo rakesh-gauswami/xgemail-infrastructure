@@ -1,0 +1,53 @@
+#!/usr/bin/python
+# vim: autoindent expandtab tabstop=4 softtabstop=4 shiftwidth=4 filetype=python
+
+# Copyright 2016, Sophos Limited. All rights reserved.
+#
+# 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
+# Sophos Limited and Sophos Group.  All other product and company
+# names mentioned are trademarks or registered trademarks of their
+# respective owners.
+
+# check_python_unit_tests: Check python unit test results for directories listed on command-line.
+
+import os
+import subprocess
+import sys
+
+
+def check_python_unit_tests(root, path):
+    print "Checking python unit tests in", path, "..."
+
+    os.chdir(root)
+    os.chdir(path)
+
+    # Remove .pyc files to make sure we detect broken references to python modules
+    # that have been removed or renamed.
+    subprocess.call("rm -f *.pyc", shell=True)
+
+    # Execute unit tests.
+    p = subprocess.Popen(
+            ["python", "-m", "unittest", "discover", "-v"],
+            stdout=subprocess.PIPE)
+    p.communicate()
+
+    print ""
+
+    return True if p.returncode == 0 else False
+
+
+def main():
+    paths = sys.argv[1:]
+
+    root = os.getcwd()
+
+    failed = False
+    for path in paths:
+        if not check_python_unit_tests(root, path):
+            failed = True
+
+    sys.exit(1 if failed else 0)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,146 @@
+#!/bin/bash
+
+# This is a toy implementation for now; in the future, instead of the local encryption
+# with openssl, we will be sending the raw data via an SSH channel to a stand-alone
+# Ansible Vault host that will do the encryption with different keys for various
+# environments (inf/dev/etc) and stream the encrypted data back to us.
+
+# See the bottom of this file on a similar thing could be done with
+# 'ansible-controller' executed via an ssh channel.
+
+quit() { echo "failure: $@"; exit 1; }
+
+oper=${1:?- oper - not set}
+path=${2:?- path - not set}
+
+known_environments=(
+dev
+dev3
+dev4
+inf
+prod
+qa
+)
+
+env=$(IFS=/ read -ra ay <<< $path
+      for item in ${ay[@]}; do
+	[[ $item =~ $(IFS='|'; echo "^(${known_environments[*]})\$") ]] && { echo $item; break; }
+      done)
+
+[[ $env ]] || quit "env=$env"
+
+## FIXME: A mock setup, which we'll need to change when we have proper hardware to use;
+## "env" is unused in this mock-up.
+enc=aes-256-cbc
+pass=foo
+
+## N.B.: The 'openssl' '-salt' option (or the omission of '-nosalt': '-salt' is the
+## 'openssl enc' default) will result in creating a different set of encrypted data's
+## bytes.  That will obviously result in different hashes of the encrypted result every
+## time you hash.  And you do hash on running 'git status'.  When you switch to a branch
+## where a certain file FOO to be encrypted from a branch where this file doesn't exist,
+## the file path alongside with its hash previously recorded on the branch will be
+## restored inside Git's object store.  But another encryption run to get the status will
+## result in a different hash value now: you see 'git status => FOO is modified' but 'git
+## diff FOO' will be empty.  If you commit, you eliminate the "status modified" message
+## but your commit will have no change body.  This may get annoying with many files
+## covered by the encryption, although with time, when all to-be-encrypted files exists on
+## all branches in development, the level of annoyance should go quickly down, perhaps to
+## zero.
+##
+## 'ansible-vault' produces a different encryption result for its every invocation,
+## similarly to using the 'openssl enc' '-salt' option.
+
+## [ 2016-06-01 Alex ] ==>
+##
+## The pains of managing files / GIT index with the random '-salt' have been *horrible*,
+## and this has been, to repeat, due to the intention to use the truly secure encryption
+## (CBC) mechanics, when cyphertext is always different even if the input is the same.  We
+## have to move to something simpler -- 3/4 as secure as asking 'openssl' to use a random
+## "salt" number: we will be passing in the "salt" number which will be always the same
+## for the same file path and likely different for other paths. That way, the produced
+## cyphertext will be always the same for the same file path with the same contents and
+## Git will not report the 'modified' status when there is no change in the file contents.
+##
+## Going over to 'ansible-vault' will bring us back to this ugly problem but the good news
+## is that we don¹t have to use 'ansible-vault': with the same 'ssh' mechanics that we had
+## discussed, we could invoke 'openssl' at the back end and encrypt the stream with it
+## instead of 'ansible-vault'.  The latter has zero advantage over the former.
+
+salt=$(echo $path | shasum -a 1 | sed 's/\(.\{8\}\).*/\1/')
+
+openssl_cmd0="openssl $enc -a -salt -S $salt -pass pass:$pass"
+case $oper in
+  encr) $openssl_cmd0 -e;;
+  decr) $openssl_cmd0 -d;;
+  *) quit "Invalid arguments: $@";;
+esac
+
+exit 0
+
+# I installed Ansible on a VirtualBox VM running on my MacBook.
+
+# These are the users I set up on that VM:
+
+# a0
+# b0
+# c0
+# d0
+
+# These are the encryption password files, with very limited access rights:
+
+# -rw-------. 1 a0 a0 11 May 26 13:06 a0/ansible-password/password.txt
+# -rw-------. 1 b0 b0 11 May 26 13:06 b0/ansible-password/password.txt
+# -rw-------. 1 c0 c0 11 May 26 13:06 c0/ansible-password/password.txt
+# -rw-------. 1 d0 d0 11 May 26 13:06 d0/ansible-password/password.txt
+
+# SSH-ing to the VM as user 'a0', I can enrypt the text stream sent to
+# the VM and get back the encrypted data if I use 'a0's 'password.txt'
+
+# echo ansible is fun | ssh -A -p 2211 a0@localhost 'ansible-vault encrypt \
+# --vault-password-file=/home/a0/ansible-password/password.txt --output=-'
+# =>
+# $ANSIBLE_VAULT;1.1;AES256
+# 32383761613664643934363662366361393764366133656361396337613931306430303030306237
+# 3062323331653337326231333136303865363664666234650a366238356561336561326462636230
+# 37346638383230336633383431663737316436656435363831363137373331393130356262646534
+# 3162396465333637380a373533343139633239346532626638653761313266373639366431306237
+# 3365
+
+# I can do the same with user 'b0', if I am using user 'b0's 'password.txt':
+
+# echo ansible is fun | ssh -A -p 2211 b0@localhost 'ansible-vault encrypt \
+# --vault-password-file=/home/b0/ansible-password/password.txt --output=-'
+# =>
+# $ANSIBLE_VAULT;1.1;AES256
+# 35393664353338366532313637656261396530303135643535326562633563376662636131323738
+# 3263633366336431663733653735376534373631323162310a633637393433633735363835393837
+# 39646664333663626566646430653036336430643036656435613763396261653735303232376437
+# 6430633461316462660a326462633231383661353937306431383536396266643639383931346333
+# 3665
+
+# I cannot do it -- and this "cannot" is required -- when I connect as
+# one user but am trying to use another user's 'password.txt':
+
+# echo ansible is fun | ssh -A -p 2211 a0@localhost 'ansible-vault encrypt \
+# --vault-password-file=/home/b0/ansible-password/password.txt --output=-'
+# =>
+# ERROR! The vault password file /home/b0/ansible-password/password.txt was not found
+
+# Lastly, let's show the correct result of the encryption/decryption sequence:
+
+# echo ansible is fun | \
+# ssh -A -p 2211 a0@localhost 'ansible-vault encrypt \
+# --vault-password-file=/home/a0/ansible-password/password.txt --output=-' | \
+# ssh -A -p 2211 a0@localhost 'ansible-vault decrypt \
+# --vault-password-file=/home/a0/ansible-password/password.txt --output=-'
+# =>
+# ansible is fun
+
+# Q.E.D. (But I am sticking to the opinion that we should not be using 'ansible-vault'.)
+
+# local variables:
+# mode: shell-script
+# sh-basic-offset: 2
+# fill-column: 90
+# end:

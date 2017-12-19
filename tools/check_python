@@ -1,0 +1,67 @@
+#!/usr/bin/python
+# vim: autoindent expandtab tabstop=4 softtabstop=4 shiftwidth=4 filetype=python
+
+# Copyright 2016, Sophos Limited. All rights reserved.
+#
+# 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
+# Sophos Limited and Sophos Group.  All other product and company
+# names mentioned are trademarks or registered trademarks of their
+# respective owners.
+
+# check_python: Check syntax of each python source file listed on the command line.
+
+import ast
+import subprocess
+import sys
+import traceback
+
+
+def check_python(path, use_pylint):
+    try:
+        # Always check to see if python code is parseable.
+        with open(path) as fp:
+            ast.parse(fp.read(), filename=path)
+
+        # Use pylint if possible, as it provides better error checking
+        # than the built-in compileall module.  For example, pylint detects
+        # missing import statements, which are very common is code that is
+        # growing.  The compileall module is a pure syntax checker and
+        # doesn't check that each module used has an associated import
+        # statement.
+        if use_pylint:
+            argv = ["pylint", "--rcfile=/dev/null", "-E", path]
+
+            # For some reason pylint writes its error messages to stdout.
+            pipe = subprocess.Popen(argv, stdout=subprocess.PIPE)
+
+            output = pipe.communicate()[0]
+            for line in output.splitlines():
+                print >> sys.stderr, "%s: %s" % (path, line)
+
+            if pipe.returncode != 0:
+                return False
+
+        return True
+
+    except StandardError as e:
+        for line in traceback.format_exception_only(type(e), e):
+            print >> sys.stderr, "%s: %s" % (path, line.rstrip())
+
+        return False
+
+
+def main():
+    paths = sys.argv[1:]
+
+    use_pylint = subprocess.call(["which", "pylint"], stdout=subprocess.PIPE) == 0
+
+    failed = False
+    for path in paths:
+        if not check_python(path, use_pylint):
+            failed = True
+
+    sys.exit(1 if failed else 0)
+
+
+if __name__ == "__main__":
+    main()
