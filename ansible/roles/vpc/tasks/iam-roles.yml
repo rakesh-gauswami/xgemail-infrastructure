@@ -3,20 +3,20 @@
 # Documentation: http://ansible-manual.readthedocs.io/en/latest/s3_module.html
 - name: "Upload the config file for {{stack.iam.cloud_email_roles}} to the config bucket {{cloud_applications}}"
   s3:
-    mode: put
-    region: "{{account.region}}"
-    bucket: "{{cloud_applications}}"
-    object: "{{build.branch}}/roles_xgemail_template.json"
-    src: "/Users/ryanmurphy/g/Email/xgemail-infrastructure/ansible/roles/common/files/cf_templates/roles_xgemail_template.json"
-    overwrite: always
+    mode:               put
+    region:             "{{account.region}}"
+    bucket:             "{{cloud_applications}}"
+    object:             "{{build.branch}}/roles_xgemail_template.json"
+    src:                "{{template.iam.roles_xgemail_template}}"
+    overwrite:          always
 
 - name: "Deploy {{stack.iam.cloud_email_roles}} to {{account.name}} {{account.region}}"
   cloudformation:
-    stack_name: "{{stack.iam.cloud_email_roles}}"
-    state: present
-    region: "{{account.region}}"
-    disable_rollback: true
-    template_url: "https://s3.amazonaws.com/{{cloud_applications}}/{{build.branch}}/roles_xgemail_template.json"
+    stack_name:                                 "{{stack.iam.cloud_email_roles}}"
+    state:                                      present
+    region:                                     "{{account.region}}"
+    disable_rollback:                           true
+    template_url:                               "https://s3.amazonaws.com/{{cloud_applications}}/{{build.branch}}/roles_xgemail_template.json"
     template_parameters:
       Environment:                              "{{account.name}}"
       XgemailMsgHistoryBucketName:              "{{s3.msg_history_bucket}}"
