@@ -24,6 +24,25 @@
 # here that cannot be a reasonable default for all systems where these
 # cookbooks are running; e.g. do not add the name of the "next host".
 
+
+
+# Sophos
+default['sophos_cloud']['application']                  = "//cloud-applications/develop/core-services.war"
+default['sophos_cloud']['cluster']                      = "core"
+default['sophos_cloud']['configs']                      = "//cloud-dev-configs"
+default['sophos_cloud']['connections']                  = "//cloud-dev-connections"
+# annoying that we use both of these... imported recipes require environment -- we should standardize
+default['sophos_cloud']['environment']                  = "dev"
+default['sophos_cloud']['context']                      = "dev"
+#
+default['sophos_cloud']['cookbooks']                    = "//cloud-dev-cookbooks/cookbooks.tar.gz"
+default['sophos_cloud']['domain']                       = "p0.d.hmr.sophos.com"
+default['sophos_cloud']['local_cert_path']              = "/etc/ssl/certs"
+default['sophos_cloud']['local_key_path']               = "/etc/ssl/private"
+default['sophos_cloud']['script_path']                  = "/var/sophos/scripts"
+default['sophos_cloud']['thirdparty']                   = "//cloud-dev-3rdparty"
+default['sophos_cloud']['tmp']                          = "/tmp/sophos"
+
 # XGEmail-specific settings
 default['xgemail']['station_vpc_name'] = nil
 

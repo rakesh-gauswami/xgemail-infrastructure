@@ -7,6 +7,79 @@
 # All rights reserved - Do Not Redistribute
 #
 
+directory sophos_script_path do
+  mode '0755'
+  owner 'root'
+  group 'root'
+  action :create
+  recursive true
+end
+
+directory sophos_tmp_path do
+  mode '0755'
+  owner 'root'
+  group 'root'
+  action :create
+  recursive true
+end
+# Add local IP to /etc/hosts
+bash 'edit_etc_hosts' do
+  user 'root'
+  cwd '/tmp'
+  code <<-EOH
+    echo "$(wget -q -O - http://169.254.169.254/latest/meta-data/local-ipv4) $(hostname)" >> /etc/hosts
+  EOH
+end
+
+# Uninstall OpenJDK.
+bash 'remove_openjdk' do
+  user 'root'
+  cwd '/tmp'
+  code <<-EOH
+    for p in $(yum list installed | awk '/java/ {print $1}'); do
+      yum remove -y $p
+    done
+  EOH
+end
+
+cron 'logrotate_cron' do
+  minute '0,15,30,45'
+  user 'root'
+  command '/usr/sbin/logrotate /etc/logrotate.conf'
+end
+
+chef_gem 'aws-sdk' do
+  action [:install, :upgrade]
+  compile_time false
+end
+
+# Download the application
+bash 'download_war' do
+  user 'root'
+  cwd '/tmp'
+  code <<-EOH
+    aws --region us-west-2 s3 cp s3:#{node['sophos_cloud']['application']}/ /tmp/ --recursive
+
+    # Rename encrypted mobile WAR
+    mv mob*-services.enc mob-services.enc
+
+    # Copy encrypted hub WAR to dep WAR
+    cp hub-services.enc dep-services.enc
+  EOH
+end
+
+# Decrypt the application
+bash 'decrypt_war' do
+  user 'root'
+  cwd '/tmp'
+  code <<-EOH
+      for war in *-services.enc; do
+        war_name=${war%-services.enc}
+        openssl enc -aes-256-cbc -d -in /tmp/$war -out /tmp/"$war_name".war -pass pass:#{node['sophos_cloud']['aeskey']}
+      done
+  EOH
+end
+
 $SYSWIDE_ACCOUNT_NAM = node['sophos_cloud']['account'] || 'inf'
 shcmd_h = Mixlib::ShellOut.new('echo -n $(runlevel 2>&1)')
 runlevel = shcmd_h.run_command.stdout
@@ -33,6 +106,11 @@ end
 execute 'enable_postfix_service' do
   user 'root'
   command 'chkconfig --level 2345 postfix on'
+end
+
+yum_package 'sendmail' do
+  action :remove
+  flush_cache [:before]
 end
 
 # Install packages for all supported file systems.
@@ -106,4 +184,23 @@ template SYSCTL_FILE do
     :SYSCTL_TCP_WINDOW_SCALING => node['xgemail']['sysctl_tcp_window_scaling']
   )
   notifies :run, "execute[#{LOAD_SYSCTL_PARAMETERS}]", :immediately
+end
+
+# Install Sophos Anti-Virus.
+bash 'install_savi_client' do
+  user 'root'
+  cwd '/tmp'
+  code <<-EOH
+    set -e
+
+    mkdir -p /tmp/savi
+    aws --region us-west-2 s3 cp s3:#{node['sophos_cloud']['savi']} /tmp/savi
+    tar -xzvf /tmp/savi/savi-install.tar.gz -C /tmp/savi/
+
+    pushd /tmp/savi/savi-install
+    bash install.sh
+    popd
+
+    rm -rf /tmp/savi /tmp/savi-install.tar.gz
+  EOH
 end
