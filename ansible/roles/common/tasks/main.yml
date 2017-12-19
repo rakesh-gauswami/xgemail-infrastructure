@@ -1,4 +1,10 @@
 ---
+- include_tasks: create_temp_artifacts.yml
+
+- debug:
+    var: tmp_artifacts_dir
+    verbosity: 3
+
 # Load all the appropriate variables
 - include_tasks: ../tasks/util/load-vars-hierarchy.yml
   vars:
@@ -13,8 +19,3 @@
 - debug:
     var: cloud_station_vpc_output
     verbosity: 3
-
-#- import_tasks: create-task-artifacts.yml
-#  tags:
-#    - install
-#    - uninstall

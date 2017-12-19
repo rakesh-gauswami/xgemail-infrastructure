@@ -2,27 +2,14 @@
   "Statement" : [
     {
       "Effect" : "Deny",
+      "Principal" : "*",
       "Action" : "Update:*",
-      "Principal": "*",
-      "Resource" : "LogicalResourceId/NatA"
-    },
-    {
-      "Effect" : "Deny",
-      "Action" : "Update:*",
-      "Principal": "*",
-      "Resource" : "LogicalResourceId/NatEipA"
-    },
-    {
-      "Effect" : "Deny",
-      "Action" : "Update:*",
-      "Principal": "*",
-      "Resource" : "LogicalResourceId/NatB"
-    },
-    {
-      "Effect" : "Deny",
-      "Action" : "Update:*",
-      "Principal": "*",
-      "Resource" : "LogicalResourceId/NatEipB"
+      "Resource" : "*",
+      "Condition" : {
+        "StringEquals" : {
+          "ResourceType" : ["AWS::EC2::NatGateway", "AWS::EC2::EIP"]
+        }
+      }
     },
     {
       "Effect" : "Allow",
