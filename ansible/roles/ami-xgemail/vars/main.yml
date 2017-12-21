@@ -1,63 +1,39 @@
 ami:
-  branch: "{{ ansible_controller_ami_branch | default(build.branch) }}"
-
-ec2_instance:
-    stack_name:              "ami-build-xgemail-${bamboo.shortPlanKey}-${bamboo.buildNumber}"
-    image_name:              "hmr-core-{{ ami.branch }}-ansible"
-    availability_zones:      "{{ lookup('cloudformation', '{{ account.region }}/{{ vpc.name }}-VPC/output/AvailabilityZones', 'default=az-not-found') }}"
-    vpc_id:                  "{{ lookup('cloudformation', '{{ account.region }}/{{ vpc.name }}-VPC/output/Vpc', 'default=vpcId-not-found') }}"
-    instance_profile:        "{{ lookup('cloudformation', '{{ account.region }}/{{ vpc.name }}-IAMRoles/output/AnsibleInstanceProfile', 'default=iam-profile-not-found') }}"
-    instance_type:           "m4.xlarge"
-    security_group_base:     "{{ lookup('cloudformation', '{{ account.region }}/{{ vpc.name }}-SecurityGroups/output/SecurityGroupBase', 'default=securitygroup-base-not-found') }}"
-    security_group_ansible:  "{{ lookup('cloudformation', '{{ account.region }}/{{ vpc.name }}-SecurityGroups/output/SecurityGroupAnsible', 'default=securitygroup-ansible-not-found') }}"
-    zone_a:                  "{{ lookup('cloudformation', '{{ account.region }}/{{ vpc.name }}-VPC/output/PrivateSubnetDefaultA', 'default=zone-A-not-found') }}"
-    zone_b:                  "{{ lookup('cloudformation', '{{ account.region }}/{{ vpc.name }}-VPC/output/PrivateSubnetDefaultB', 'default=zone-B-not-found') }}"
-    zone_c:                  "{{ lookup('cloudformation', '{{ account.region }}/{{ vpc.name }}-VPC/output/PrivateSubnetDefaultC', 'default=zone-C-not-found') }}"
-
-internal:
-    package_filename:       "playbook.zip"
-    package_path:           "{{ temp }}"
-
-local:
-    package_path:
-    package_filename_path:  "{{ internal.package_path }}_{{ internal.package_filename }}"
-    log_path:               "{{ log_path }}"
-
-remote:
-    s3_bucket:              "cloud-{{ account.name }}-ansible"
-    s3_object:              "{{ build.branch }}/{{ temp }}_{{ internal.package_filename }}"
-    s3_prefix:              "{{ build.branch }}/{{ temp }}"
-    s3_prefix_output:       "playbook_results/{{ build.branch }}"
-    kms_key:                "cloud-{{ account.name }}-configurations"
-
-
-
-
-
-        "ParameterValue": "${bamboo.aeskey}"
-
-        "ParameterValue": "${bamboo.AMI_BUILD_TIMEOUT_MINUTES}"
-
-        "ParameterValue": "${bamboo.COPYREGIONS}"
-
-        "ParameterValue": "${bamboo.LAUNCHPERMISSIONS}"
-
-        "ParameterValue": "${bamboo.blockDeviceMappingsXvdf}"
-
-        "ParameterValue": "${bamboo.planRepository.branchName}"
-
-        "ParameterValue": "${bamboo.buildNumber}"
-
-        "ParameterValue": "${bamboo.inject.AMI_PARENT_ID}"
-
-        "ParameterValue": "${bamboo.javaBranchName}"
-
-        "ParameterValue": "${bamboo.JDK_VERSION}"
-
-        "ParameterValue": "${bamboo.POSTFIX_INSTALL}"
-
-        "ParameterValue": "//cloud-applications/${bamboo.planRepository.branchName}/cookbooks.enc"
-
-        "ParameterValue": "${bamboo.VPC_SECURITYGROUPID}"
-
-        "ParameterValue": "${bamboo.VPC_SUBNETID}"
+  base:
+    branch: "{{ build.branch | default(develop) }}"
+    ami_id: "{{ ec2_ami_find_output }}
+    ami_parent_alternate_bugfix_branch: release/2017.50
+    ami_parent_alternate_feature_branch: develop
+    ami_parent_description: Sophos Cloud base amazon linux AMI
+    ami_parent_name: sophos-cloud-base-amazon-linux-ami
+    ami_type: base-amazon-linux
+    ami_version: latest
+  xgemail:
+    stack_name:                                             "ami-build-xgemail-{{ bamboo_plan_key }}-{{ build.number }}"
+    ami_build_timeout_minutes:                              "{{ lookup('env','bamboo_AMI_BUILD_TIMEOUT_MINUTES') | default(80) }}"
+    ami_parent_alternate_bugfix_branch:                     "{{ lookup('env','bamboo_AMI_PARENT_ALTERNATE_BUGFIX_BRANCH') | default(develop) }}"
+    ami_parent_alternate_feature_branch:                    "{{ lookup('env','bamboo_AMI_BUILD_TIMEOUT_MINUTES') | default(develop) }}"
+    ami_parent_description:                                 "{{ lookup('env','bamboo_AMI_PARENT_DESCRIPTION') | default(Sophos Cloud base amazon linux AMI) }}"
+    ami_type:                                               "{{ lookup('env','bamboo_AMI_TYPE') | default(xgemail) }}"
+    connector_env:                                          "{{ lookup('env','bamboo_CONNECTOR_ENV') | default(45ad1c14-edde-48a1-a36c-e3e7c986998a) }}"
+    region:                                                 "{{ account.region }}"
+    aes_decryption_key:                                     "{{ lookup('env','bamboo_aeskey') }}"
+    ami_destination_regions:                                "{{ lookup('env','bamboo_COPYREGIONS') | default(eu-west-1 us-east-2 us-west-2 eu-central-1) }}"
+    ami_launch_permissions:                                 "{{ lookup('env','bamboo_LAUNCHPERMISSIONS') | default(750199083801 855146673459 769208163330 050963334367 455082247759 283871543274 382702281923 859103266070 202058678495 843638552935) }}"
+    application_name:                                       xgemail
+    block_device_mappings_xvdf:                             "{{ lookup('env','bamboo_blockDeviceMappingsXvdf') | default(40) }}"
+    block_device_mappings_xvdg:                             "{{ lookup('env','bamboo_AMI_TYPE') | default(50) }}"
+    block_device_mappings_xvdh:                             "{{ lookup('env','bamboo_AMI_TYPE') | default(20) }}"
+    branch:                                                 "{{ build.branch }}"
+    build:                                                  "{{ build.number }}"
+    environment:                                            hmr-core
+    iam_profile:                                            sophos-cloud-image-setup
+    image_id:                                               "{{ ec2_ami_find.results[0].ami_id }}"
+    instance_type:                                          t2.large
+    key_pair_name:                                          ami-builder-key
+    s3_cookbook_repository_url:                             "//cloud-applications/{{ build.branch }}/cookbooks.enc"
+    s3_sophos_3rdparty_repository_url:                      //cloud-applications-3rdparty
+    s3_sophos_apprepository_url:                            //cloud-applications
+    vpc_security_group:                                     sg-1b470e7e
+    vpc_subnet_id:                                          subnet-c5bb00a0
+    image_name:                                             "hmr-core-{{ ami.branch }}-xgemail"

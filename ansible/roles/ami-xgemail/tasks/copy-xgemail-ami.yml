@@ -1,12 +1,22 @@
 ---
-# Tagged AMI copy
-- ec2_ami_copy:
-description:
-    source_region: us-east-1
-    region: eu-west-1
-    source_image_id: ami-xxxxxxx
-    name:
-    tags:
-        Name: My-Super-AMI
-        Branch: "{{build.branch}}"
-        Build: "{{build.number}}"
+# Copy AMI to Destination Regions
+- name: "Copy AMI to Destination Regions {{ami.xgemail.ami_destination_regions}}"
+  ec2_ami_copy:
+  async: 600
+  poll: 0
+    description:          "{{xgemail_ami.results[0].description}}"
+    source_region:        "{{ami.xgemail.region}}"
+    region:               "{{item}}"
+    source_image_id:      "{{xgemail_ami.results[0].image_id}}"
+    name:                 "{{xgemail_ami.results[0].name}}"
+    tags:                 "{{xgemail_ami.results[0].tags}}"
+    wait:                 no
+  with_items:             "{{ami.xgemail.ami_destination_regions}}"
+  register: ec2_ami_copy
+
+- async_status:
+    jid: "{{item.ansible_job_id}}"
+  with_items: "{{ec2_ami_copy.results}}"
+  register: ec2_ami_copy_poll_results
+  until: "{{ec2_ami_copy_poll_results.finished}}"
+  retries: 30

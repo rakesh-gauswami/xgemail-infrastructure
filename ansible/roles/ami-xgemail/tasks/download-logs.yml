@@ -1,27 +1,9 @@
-- name: List SSM log files
-  s3_object:
-    aws_region: "us-west-2"
-    bucket: "{{ remote.s3_bucket }}"
-    operation: "list"
-    object: "{{ remote.s3_prefix_output }}/{{ param_command_id }}/"
-    path: ""
-  register: log_files_found
-
-- set_fact:
-    object_keys: "{{ log_files_found }}"
-
-- set_fact:
-    list_object_keys: "{{ object_keys.result.Contents | map(attribute='Key') | list }}"
-
-- name: "Create local log result directory <{{ local.log_path }}>"
-  file: path="{{ local.log_path }}" state=directory mode=0755
-
-- name: Download SSM log files
-  s3_object:
-    aws_region: "us-west-2"
-    bucket: "{{ remote.s3_bucket }}"
-    operation: "download"
-    object: "{{ item }}"
-    path: "{{ local.log_path }}/{{ param_command_id }}_{{ item | basename }}.txt"
-  with_items:
-    - "{{ list_object_keys }}"
+---
+- name: "Download Xgemail AMI Creation the config file for {{stack.iam.cloud_email_roles}} to the config bucket {{cloud_applications}}"
+  s3:
+    mode:               put
+    region:             "{{account.region}}"
+    bucket:             "{{cloud_applications}}"
+    object:             "{{build.branch}}/roles_xgemail_template.json"
+    src:                "{{template.iam.roles_xgemail_template}}"
+    overwrite:          always
