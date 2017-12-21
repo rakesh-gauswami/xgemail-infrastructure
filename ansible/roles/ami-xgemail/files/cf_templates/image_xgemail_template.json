@@ -38,16 +38,6 @@
       "AllowedPattern": "^[1-9][0-9]*$"
     },
 
-    "AmiDestinationRegions": {
-      "Description": "AWS::Regions to copy AMI into separated by spaces",
-      "Type": "String"
-    },
-
-    "AmiLaunchPermissions": {
-      "Description": "Account IDs for AMI launch permissions separated by spaces",
-      "Type": "String"
-    },
-
     "ApplicationName": {
       "Description": "Default to java for all bundled WARs",
       "Type": "String",
@@ -103,21 +93,25 @@
     "InstanceType": {
       "Description": "Amazon EC2 instance type",
       "Type": "String",
-      "Default": "t2.small",
-      "AllowedValues": [
-        "t2.small",
+      "Default": "t2.large",
+      "AllowedValues" : [
         "t2.micro",
+        "t2.small",
         "t2.medium",
-        "m3.medium",
         "t2.large",
-        "c3.large"
+        "m4.large",
+        "m4.xlarge",
+        "m4.2xlarge",
+        "m4.4xlarge",
+        "m5.large",
+        "m5.xlarge",
+        "m5.2xlarge",
+        "c4.large",
+        "c4.xlarge",
+        "c5.large",
+        "c5.xlarge"
       ]
-    },
 
-    "JavaBranch": {
-      "Description": "(Develop, CPLAT-XXXX, etc...)",
-      "Type": "String",
-      "Default": "develop"
     },
 
     "KeyPairName": {
@@ -326,8 +320,6 @@
                       "{",
                       "    \"ami\": {",
                       "        \"ami_bucket\"                   :\"{{ami_bucket}}\",",
-                      "        \"ami_destination_regions\"      :\"{{ami_destination_regions}}\",",
-                      "        \"ami_launch_permissions\"       :\"{{ami_launch_permissions}}\",",
                       "        \"application_name\"             :\"{{application_name}}\",",
                       "        \"branch\"                       :\"{{branch}}\",",
                       "        \"build\"                        :\"{{build}}\",",
@@ -335,7 +327,6 @@
                       "        \"region\"                       :\"{{region}}\"",
                       "    },",
                       "    \"sophos_cloud\" : {",
-                      "        \"application\"                  :\"{{s3_app_repo_url}}/{{java_branch}}\",",
                       "        \"aeskey\"                       :\"{{aes_decryption_key}}\",",
                       "        \"context\"                      :\"{{environment}}\",",
                       "        \"cookbooks\"                    :\"{{s3_cookbook_repo_url}}\",",
@@ -350,13 +341,10 @@
                 "context": {
                   "aes_decryption_key":                         { "Ref": "AesDecryptionKey" },
                   "ami_bucket":                                 { "Ref": "AmiBucket" },
-                  "ami_destination_regions":                    { "Ref": "AmiDestinationRegions" },
-                  "ami_launch_permissions":                     { "Ref": "AmiLaunchPermissions" },
                   "application_name":                           { "Ref": "ApplicationName" },
                   "branch":                                     { "Ref": "Branch" },
                   "build":                                      { "Ref": "Build" },
                   "environment":                                { "Ref": "Environment" },
-                  "java_branch":                                { "Ref": "JavaBranch" },
                   "region":                                     { "Ref": "AWS::Region" },
                   "s3_3rdparty_repo_url":                       { "Ref": "S3Sophos3rdPartyRepositoryUrl" },
                   "s3_app_repo_url":                            { "Ref": "S3SophosAppRepositoryUrl" },
@@ -409,33 +397,17 @@
           { "DeviceName": "/dev/xvdg", "Ebs": { "DeleteOnTermination": "true", "VolumeSize": { "Ref": "BlockDeviceMappingsXvdg" } } },
           { "DeviceName": "/dev/xvdh", "Ebs": { "DeleteOnTermination": "true", "VolumeSize": { "Ref": "BlockDeviceMappingsXvdh" } } }
         ],
-        "IamInstanceProfile": {
-          "Ref": "IamProfile"
-        },
-        "ImageId": {
-          "Ref": "ImageId"
-        },
-        "InstanceType": {
-          "Ref": "InstanceType"
-        },
-        "KeyName": {
-          "Ref": "KeyPairName"
-        },
+        "IamInstanceProfile": { "Ref": "IamProfile" },
+        "ImageId": { "Ref": "ImageId" },
+        "InstanceType": { "Ref": "InstanceType" },
+        "KeyName": { "Ref": "KeyPairName" },
         "NetworkInterfaces": [
           {
             "AssociatePublicIpAddress": "true",
             "DeleteOnTermination": "true",
             "DeviceIndex": "0",
-
-            "GroupSet": [
-              {
-                "Ref": "VpcSecurityGroup"
-              }
-            ],
-
-            "SubnetId": {
-              "Ref": "VpcSubnetId"
-            }
+            "GroupSet": [ { "Ref": "VpcSecurityGroup" } ],
+            "SubnetId": { "Ref": "VpcSubnetId" }
           }
         ],
         "Monitoring": "true",

@@ -1,7 +1,0 @@
-- shell: uuidgen
-  register: uuid_build 
-- name: Set temp root directory
-  set_fact:
-    temp: "{{ uuid_build.stdout | to_uuid }}"
-- name: "Create the working subdirectory {{ temp }}"
-  file: path="./{{ local.package_path }}" state=directory mode=0755
