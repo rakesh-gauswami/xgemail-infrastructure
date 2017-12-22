@@ -1,7 +1,7 @@
 ami:
   base:
     branch: "{{ build.branch | default(develop) }}"
-    ami_id: "{{ ec2_ami_find_output }}
+    ami_id: "{{ ec2_ami_find_output }}"
     ami_parent_alternate_bugfix_branch: release/2017.50
     ami_parent_alternate_feature_branch: develop
     ami_parent_description: Sophos Cloud base amazon linux AMI
@@ -10,7 +10,7 @@ ami:
     ami_version: latest
   xgemail:
     stack_name:                                             "ami-build-xgemail-{{ bamboo_plan_key }}-{{ build.number }}"
-    ami_bucket:                                             "sophos-cloud-amis"
+    ami_bucket:                                             sophos-cloud-amis
     ami_build_timeout_minutes:                              "{{ lookup('env','bamboo_AMI_BUILD_TIMEOUT_MINUTES') | default(80) }}"
     ami_parent_alternate_bugfix_branch:                     "{{ lookup('env','bamboo_AMI_PARENT_ALTERNATE_BUGFIX_BRANCH') | default(develop) }}"
     ami_parent_alternate_feature_branch:                    "{{ lookup('env','bamboo_AMI_BUILD_TIMEOUT_MINUTES') | default(develop) }}"
