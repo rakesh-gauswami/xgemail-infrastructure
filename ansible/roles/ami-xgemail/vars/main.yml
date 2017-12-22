@@ -10,6 +10,7 @@ ami:
     ami_version: latest
   xgemail:
     stack_name:                                             "ami-build-xgemail-{{ bamboo_plan_key }}-{{ build.number }}"
+    ami_bucket:                                             "sophos-cloud-amis"
     ami_build_timeout_minutes:                              "{{ lookup('env','bamboo_AMI_BUILD_TIMEOUT_MINUTES') | default(80) }}"
     ami_parent_alternate_bugfix_branch:                     "{{ lookup('env','bamboo_AMI_PARENT_ALTERNATE_BUGFIX_BRANCH') | default(develop) }}"
     ami_parent_alternate_feature_branch:                    "{{ lookup('env','bamboo_AMI_BUILD_TIMEOUT_MINUTES') | default(develop) }}"
