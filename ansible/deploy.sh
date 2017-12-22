@@ -12,5 +12,5 @@ echo $AWS_SECRET_ACCESS_KEY >> aws.txt
 echo $AWS_SESSION_TOKEN >> aws.txt
 echo $AWS_REGION >> aws.txt
 
-cd ansible
-ansible-playbook -vvv ./playbooks/build-xgemail-ami.yml --extra-vars="aws_region=${REGION} aws_account=${ACCOUNT} bamboo_plan_key=${bamboo_shortPlanKey} bamboo_branch_name=${bamboo_planRepository_branchName} bamboo_branch_build=${bamboo_buildNumber}"
+cd ./ansible
+ansible-playbook -vvv ./playbooks/build-xgemail-ami.yml --extra-vars="aws_region=${bamboo_REGION} aws_account=${bamboo_ACCOUNT} bamboo_plan_key=${bamboo_shortPlanKey} bamboo_branch_name=${bamboo_planRepository_branchName} bamboo_branch_build=${bamboo_buildNumber}"
