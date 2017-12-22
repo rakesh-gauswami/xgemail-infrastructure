@@ -1,6 +1,6 @@
 ami:
   base:
-    branch: "{{ build.branch | default(develop) }}"
+    branch: "{{ build.branch | default('develop') }}"
     ami_id: "{{ ec2_ami_find_output }}"
     ami_parent_alternate_bugfix_branch: release/2017.50
     ami_parent_alternate_feature_branch: develop
@@ -37,4 +37,4 @@ ami:
     s3_sophos_apprepository_url:                            //cloud-applications
     vpc_security_group:                                     sg-1b470e7e
     vpc_subnet_id:                                          subnet-c5bb00a0
-    image_name:                                             "hmr-core-{{ ami.branch }}-xgemail"
+    image_name:                                             "hmr-core-{{ build.branch }}-xgemail"
