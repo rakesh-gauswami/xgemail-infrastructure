@@ -1,9 +1,9 @@
 ---
-- name: "Download Xgemail AMI Creation the config file for {{stack.iam.cloud_email_roles}} to the config bucket {{cloud_applications}}"
+- name: "Download Xgemail AMI Creation logs for {{xgemail_ami.results[0].image_id}}"
   s3:
-    mode:               put
+    mode:               get
     region:             "{{account.region}}"
-    bucket:             "{{cloud_applications}}"
-    object:             "{{build.branch}}/roles_xgemail_template.json"
-    src:                "{{template.iam.roles_xgemail_template}}"
+    bucket:             "{{ami.xgemail.ami_bucket}}"
+    object:             "{{build.branch}}/build-{{build.number}}/create-xgemail-ami-b{{build.number}}.zip"
+    dest:               "{{playbook_dir}}"
     overwrite:          always
