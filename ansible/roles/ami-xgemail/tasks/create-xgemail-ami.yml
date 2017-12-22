@@ -18,7 +18,7 @@
 - name: "Set Fact xgemail_ami"
   set_fact:
     ec2_ami_image_id: "{{ xgemail_ami.results[0].image_id }}"
-    when: ec2_ami_find.failed != true
+    when: xgemail_ami.failed != true
 
 - name: "Display Xgemail AMI Id"
   debug:
