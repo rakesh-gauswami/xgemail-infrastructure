@@ -1,18 +1,19 @@
 ---
-#- name: "Find Base AMI ({{build.branch}})"
-#  ec2_ami_find:
-#    name: "{{ami.base.ami_parent_name}}"
-#    region: "{{account.region}}"
-#    sort: creationDate
-#    sort_order: descending
-#    sort_end: 1
-#    no_result_action: success
-#  register: ec2_ami_find_output
-#
-#- name: "Display EC2 AMI Find Output"
-#  debug:
-#    msg: "{{ec2_ami_find_output}}"
-#    verbosity: 3
+- name: "Find Base AMI ({{build.branch}})"
+  ec2_ami_find:
+    name: "{{ami.base.ami_parent_name}}"
+    region: "{{account.region}}"
+    sort: creationDate
+    sort_order: descending
+    sort_end: 1
+    no_result_action: success
+  register: ec2_ami_find_output
+
+- name: "Display EC2 AMI Find Output"
+  debug:
+    msg: "{{ec2_ami_find_output}}"
+    verbosity: 3
+  when: not(ec2_ami_find_output.results | length==0)
 
 - name: Find Base AMI (develop)
   ec2_ami_find:
@@ -23,17 +24,17 @@
     sort_end: 1
     no_result_action: fail
   register: ec2_ami_find_output
-  when: not((ec2_ami_find_output.results is undefined) or (ec2_ami_find_output.results is none) or (ec2_ami_find_output.results | trim == ''))
+  when: ec2_ami_find_output.results | length==0
 
 - name: "Set Fact ec2_ami_image_id"
   set_fact:
     ec2_ami_image_id: "{{ ec2_ami_find_output.results[0].ami_id }}"
-    when: ec2_ami_find_output.failed != true
+  when: not(ec2_ami_find_output.results | length==0)
 
 - name: "Display EC2 AMI Id"
   debug:
     msg: "{{ec2_ami_find_output.results[0].ami_id}}"
-    when: ec2_ami_find_output.failed != true
+  when: not(ec2_ami_find_output.results | length==0)
 
 #- debug:
 #    var: {{ec2_ami_find_output.results[0]}}
@@ -44,5 +45,5 @@
   debug:
     msg: "{{ec2_ami_find_output}}"
     verbosity: 3
-    when: ec2_ami_find_output.failed != true
+  when: not(ec2_ami_find_output.results | length==0)
 
