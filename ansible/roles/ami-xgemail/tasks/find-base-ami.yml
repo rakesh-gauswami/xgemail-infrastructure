@@ -1,7 +1,7 @@
 ---
 - name: "Find Base AMI ({{build.branch}})"
   ec2_ami_find:
-    name: "{{ami.base.ami_parent_name}}"
+    name: "{{ami.base.ami_parent_name}}-*"
     region: "{{account.region}}"
     ami_tags:
       branch: "{{ami.base.branch}}"
@@ -20,7 +20,7 @@
 
 - name: Find Base AMI (develop)
   ec2_ami_find:
-    name: "{{ami.base.ami_parent_name}}"
+    name: "{{ami.base.ami_parent_name}}-*"
     region: "{{account.region}}"
     ami_tags:
       branch: develop
