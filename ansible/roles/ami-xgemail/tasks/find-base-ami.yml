@@ -1,18 +1,18 @@
 ---
-- name: "Find Base AMI ({{build.branch}})"
-  ec2_ami_find:
-    name: "{{ami.base.ami_parent_name}}"
-    region: "{{account.region}}"
-    sort: creationDate
-    sort_order: descending
-    sort_end: 1
-    no_result_action: success
-  register: ec2_ami_find_output
-
-- name: "Display EC2 AMI Find Output"
-  debug:
-    msg: "{{ec2_ami_find_output}}"
-    verbosity: 3
+#- name: "Find Base AMI ({{build.branch}})"
+#  ec2_ami_find:
+#    name: "{{ami.base.ami_parent_name}}"
+#    region: "{{account.region}}"
+#    sort: creationDate
+#    sort_order: descending
+#    sort_end: 1
+#    no_result_action: success
+#  register: ec2_ami_find_output
+#
+#- name: "Display EC2 AMI Find Output"
+#  debug:
+#    msg: "{{ec2_ami_find_output}}"
+#    verbosity: 3
 
 - name: Find Base AMI (develop)
   ec2_ami_find:
