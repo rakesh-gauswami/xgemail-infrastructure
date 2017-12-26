@@ -7,10 +7,10 @@
     region: "{{ami.xgemail.region}}"
     wait: yes
     wait_timeout:
-    name: "{{account.name}}-{{build.branch}}-{{app.name}}-{{build.number}}-{{ansible_date_time.epoch}}"
+    name: "{{ami.xgemail.environment}}-{{build.branch}}-{{app.name}}-{{build.number}}-{{ansible_date_time.epoch}}"
     launch_permissions: "{{ami.xgemail.ami_launch_permissions}}"
     tags:
-      Name:         "{{account.name}}-{{build.branch}}-{{ami.xgemail.application_name}}-{{build.number}}-{{ansible_date_time.epoch}}"
+      Name:         "{{ami.xgemail.environment}}-{{build.branch}}-{{ami.xgemail.application_name}}-{{build.number}}-{{ansible_date_time.epoch}}"
       Branch:       "{{ami.xgemail.branch}}"
       Branch:       "{{ami.xgemail.build}}"
   register: xgemail_ami
