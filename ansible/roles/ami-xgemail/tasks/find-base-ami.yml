@@ -3,6 +3,9 @@
   ec2_ami_find:
     name: "{{ami.base.ami_parent_name}}"
     region: "{{account.region}}"
+    ami_tags:
+      branch: "{{ami.base.branch}}"
+    is_public: no
     sort: creationDate
     sort_order: descending
     sort_end: 1
@@ -19,6 +22,9 @@
   ec2_ami_find:
     name: "{{ami.base.ami_parent_name}}"
     region: "{{account.region}}"
+    ami_tags:
+      branch: develop
+    is_public: no
     sort: creationDate
     sort_order: descending
     sort_end: 1
