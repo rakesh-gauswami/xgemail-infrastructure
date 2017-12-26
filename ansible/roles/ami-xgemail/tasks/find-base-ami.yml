@@ -23,7 +23,7 @@
     sort_end: 1
     no_result_action: fail
   register: ec2_ami_find_output
-  when: ec2_ami_find_output is none
+  when: ec2_ami_find_output.results[0].ami_id is none
 
 - name: "Set Fact ec2_ami_image_id"
   set_fact:
