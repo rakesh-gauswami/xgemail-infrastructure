@@ -17,7 +17,7 @@ ami:
     ami_type:                                               "{{ lookup('env','AMI_TYPE') | default('xgemail') }}"
     connector_env:                                          "{{ lookup('env','CONNECTOR_ENV') | default('45ad1c14-edde-48a1-a36c-e3e7c986998a') }}"
     region:                                                 "{{ account.region }}"
-    aes_decryption_key:                                     "{{ lookup('env','aeskey') }}"
+    aes_decryption_key:                                     "{{ lookup('env','AES_KEY') }}"
     ami_destination_regions:                                "{{ lookup('env','COPYREGIONS') | default('eu-west-1 us-east-2 us-west-2 eu-central-1') }}"
     ami_launch_permissions:                                 "{{ lookup('env','LAUNCHPERMISSIONS') | default('750199083801 855146673459 769208163330 050963334367 455082247759 283871543274 382702281923 859103266070 202058678495 843638552935') }}"
     application_name:                                       xgemail
