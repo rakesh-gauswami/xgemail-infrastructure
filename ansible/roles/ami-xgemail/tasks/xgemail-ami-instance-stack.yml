@@ -1,7 +1,7 @@
 ---
 - name: "Deploy Xgemail AMI Stack to {{ami.xgemail.environment}} {{account.region}}"
   block:
-    cloudformation:
+    - cloudformation:
       stack_name: "{{ami.xgemail.stack_name}}"
       state: "present"
       region: "{{account.region}}"
