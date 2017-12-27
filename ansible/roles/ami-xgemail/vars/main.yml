@@ -8,7 +8,7 @@ ami:
     ami_type: base-amazon-linux
     ami_version: latest
   xgemail:
-    stack_name:                                             "ami-build-xgemail-{{ bamboo_plan_key }}-{{ build.number }}"
+    stack_name:                                             "ami-build-xgemail-{{ build.plan_key }}-{{ build.number }}"
     ami_bucket:                                             sophos-cloud-amis
     ami_build_timeout_minutes:                              "{{ lookup('env','AMI_BUILD_TIMEOUT_MINUTES') | default('80') }}"
     ami_parent_alternate_bugfix_branch:                     "{{ lookup('env','AMI_PARENT_ALTERNATE_BUGFIX_BRANCH') | default('develop') }}"
@@ -26,6 +26,7 @@ ami:
     block_device_mappings_xvdh:                             "{{ lookup('env','blockDeviceMappingsXvdh') | default('20') }}"
     branch:                                                 "{{ build.branch }}"
     build:                                                  "{{ build.number }}"
+    build_id:                                               "{{ build.result_key }}"
     environment:                                            hmr-core
     iam_profile:                                            sophos-cloud-image-setup
     instance_type:                                          t2.large

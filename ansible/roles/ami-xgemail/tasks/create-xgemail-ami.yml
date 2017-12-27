@@ -6,13 +6,16 @@
     state: present
     region: "{{ami.xgemail.region}}"
     wait: yes
-    wait_timeout:
-    name: "{{ami.xgemail.environment}}-{{build.branch}}-{{app.name}}-{{build.number}}-{{ansible_date_time.epoch}}"
+    wait_timeout: 30
+    name: "{{ami.xgemail.environment}}-{{build.branch}}-{{ami.xgemail.application_name}}-{{build.number}}-{{ansible_date_time.epoch}}"
     launch_permissions: "{{ami.xgemail.ami_launch_permissions}}"
     tags:
       Name:         "{{ami.xgemail.environment}}-{{build.branch}}-{{ami.xgemail.application_name}}-{{build.number}}-{{ansible_date_time.epoch}}"
-      Branch:       "{{ami.xgemail.branch}}"
-      Build:       "{{ami.xgemail.build}}"
+      branch:       "{{ami.xgemail.branch}}"
+      build:        "{{ami.xgemail.build}}"
+      build_id:     "{{ami.xgemail.build_id}}"
+      source_ami:   "{{ ec2_ami_find_output.results[0].ami_id }}"
+      ami_type:
   register: xgemail_ami
 
 - name: "Set Fact xgemail_ami"
