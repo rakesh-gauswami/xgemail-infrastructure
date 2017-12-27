@@ -1,7 +1,7 @@
 ---
 - name: "Find Base AMI ({{build.branch}})"
   ec2_ami_find:
-    name: "{{ami.base.ami_parent_name}}-*"
+    name: "{{ami.base.ami_parent_name}}-{{build.branch}}*"
     region: "{{account.region}}"
     owner: 283871543274
     is_public: no
@@ -19,7 +19,7 @@
 
 - name: Find Base AMI (develop)
   ec2_ami_find:
-    name: "{{ami.base.ami_parent_name}}-*"
+    name: "{{ami.base.ami_parent_name}}-develop*"
     region: "{{account.region}}"
     owner: 283871543274
     is_public: no
