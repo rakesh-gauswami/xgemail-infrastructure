@@ -2,12 +2,17 @@
 
 - import_tasks: find-base-ami.yml
 
-- import_tasks: xgemail-ami-instance-stack.yml
+- block:
+
+  - import_tasks: create-ami-instance-stack.yml
+
+  always:
+    - import_tasks: download-logs.yml
 
 - import_tasks: create-xgemail-ami.yml
 
 - import_tasks: copy-xgemail-ami.yml
 
-- import_tasks: download-logs.yml
+
 
 #- import_tasks: remove-temp-artifacts.yml
