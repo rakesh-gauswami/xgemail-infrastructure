@@ -2,6 +2,7 @@
 - name: "Delete Xgemail AMI Stack from {{ami.xgemail.environment}} {{account.region}}"
   cloudformation:
     stack_name: "{{ami.xgemail.stack_name}}"
+    region: "{{account.region}}"
     state: "absent"
   register: deleted_stack_output
 
