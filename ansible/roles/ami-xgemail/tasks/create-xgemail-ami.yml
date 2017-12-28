@@ -1,6 +1,6 @@
 ---
-# Xgemail AMI Creation
-- ec2_ami:
+- name: Create Xgemail AMI from EC2 Instance: {{ami_stack.stack_outputs.InstanceId}}
+  ec2_ami:
     description: "Sophos, Inc. Prepared image of {{build.branch}}-{{ami.xgemail.application_name}}-{{build.number}}"
     instance_id: "{{ami_stack.stack_outputs.InstanceId}}"
     state: present
@@ -8,7 +8,8 @@
     wait: yes
     wait_timeout: 30
     name: "{{ami.xgemail.environment}}-{{build.branch}}-{{ami.xgemail.application_name}}-{{build.number}}-{{ansible_date_time.epoch}}"
-    launch_permissions: "{{ami.xgemail.ami_launch_permissions}}"
+    launch_permissions:
+      user_ids: "{{ami.xgemail.ami_launch_permissions}}"
     tags:
       Name:         "{{ami.xgemail.environment}}-{{build.branch}}-{{ami.xgemail.application_name}}-{{build.number}}-{{ansible_date_time.epoch}}"
       branch:       "{{ami.xgemail.branch}}"

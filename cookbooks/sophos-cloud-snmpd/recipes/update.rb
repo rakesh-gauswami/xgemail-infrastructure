@@ -7,12 +7,12 @@
 # All rights reserved - Do Not Redistribute
 #
 
-include_recipe "sophos-cloud-snmpd::deploy_snmpd_conf"
+include_recipe 'sophos-cloud-snmpd::deploy_snmpd_conf'
 
-service "snmpd" do
+service 'snmpd' do
   action :stop
 end
 
-service "snmpd" do
+service 'snmpd' do
   action :start
 end

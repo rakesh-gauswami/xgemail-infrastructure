@@ -66,33 +66,6 @@ cookbook_file '/etc/init.d/postfixStats' do
     action :create
 end
 
-# Add to /etc/snmp/snmpd.conf
-ruby_block 'edit snmpd.conf' do
-    block do
-        ['extend postfix-recv-local /usr/bin/sudo\ /usr/local/logicmonitor/utils/postfixStats-reporter.pl recv:local',
-         'extend postfix-recv-smtp /usr/bin/sudo\ /usr/local/logicmonitor/utils/postfixStats-reporter.pl recv:smtp',
-         'extend postfix-sent-dovecot /usr/bin/sudo\ /usr/local/logicmonitor/utils/postfixStats-reporter.pl sent:dovecot',
-         'extend postfix-sent-local /usr/bin/sudo\ /usr/local/logicmonitor/utils/postfixStats-reporter.pl sent:local',
-         'extend postfix-sent-smtp /usr/bin/sudo\ /usr/local/logicmonitor/utils/postfixStats-reporter.pl sent:smtp',
-         'extend postfix-smtp-bounce /usr/bin/sudo\ /usr/local/logicmonitor/utils/postfixStats-reporter.pl smtp:5xx',
-         'extend postfix-smtp-errorbounce /usr/bin/sudo\ /usr/local/logicmonitor/utils/postfixStats-reporter.pl smtp:4xx',
-         'extend postfix-smtpd-rejected /usr/bin/sudo\ /usr/local/logicmonitor/utils/postfixStats-reporter.pl smtpd:5xx',
-         'extend postfix-smtpd-errorbounce /usr/bin/sudo\ /usr/local/logicmonitor/utils/postfixStats-reporter.pl smtpd:4xx',
-         'extend postfix-active /usr/bin/sudo\ /usr/local/logicmonitor/utils/postfixStats-reporter.pl active',
-         'extend postfix-deferred /usr/bin/sudo\ /usr/local/logicmonitor/utils/postfixStats-reporter.pl deferred'
-        ].each do |line|
-            file = Chef::Util::FileEdit.new('/etc/snmp/snmpd.conf')
-            file.insert_line_if_no_match(/#{line}/, line)
-            file.write_file
-        end
-    end
-end
-
-# Restart SNMP service
-service 'snmpd' do
-    action :restart
-end
-
 # Add and start postfixStats service
 service 'postfixStats' do
     action [ :enable, :start ]

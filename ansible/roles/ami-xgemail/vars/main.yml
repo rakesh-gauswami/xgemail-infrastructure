@@ -19,7 +19,7 @@ ami:
     region:                                                 "{{account.region }}"
     aes_decryption_key:                                     "{{lookup('env','AES_KEY') }}"
     ami_destination_regions:                                "{{lookup('env','COPYREGIONS') | default('eu-west-1 us-east-2 us-west-2 eu-central-1') }}"
-    ami_launch_permissions:                                 "{{lookup('env','LAUNCHPERMISSIONS') | default('750199083801 855146673459 769208163330 050963334367 455082247759 283871543274 382702281923 859103266070 202058678495 843638552935') }}"
+    ami_launch_permissions:                                 ['750199083801' '855146673459' '769208163330' '050963334367' '455082247759' '283871543274' '382702281923' '859103266070' '202058678495' '843638552935']
     application_name:                                       xgemail
     block_device_mappings_xvdf:                             "{{lookup('env','blockDeviceMappingsXvdf') | default('40') }}"
     block_device_mappings_xvdg:                             "{{lookup('env','blockDeviceMappingsXvdg') | default('50') }}"
