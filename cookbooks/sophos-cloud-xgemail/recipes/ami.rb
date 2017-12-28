@@ -58,31 +58,31 @@ chef_gem 'aws-sdk' do
 end
 
 # Download the application
-bash 'download_war' do
-  user 'root'
-  cwd '/tmp'
-  code <<-EOH
-    aws --region us-west-2 s3 cp s3:#{node['sophos_cloud']['application']}/ /tmp/ --recursive
-
-    # Rename encrypted mobile WAR
-    mv mob*-services.enc mob-services.enc
-
-    # Copy encrypted hub WAR to dep WAR
-    cp hub-services.enc dep-services.enc
-  EOH
-end
-
-# Decrypt the application
-bash 'decrypt_war' do
-  user 'root'
-  cwd '/tmp'
-  code <<-EOH
-      for war in *-services.enc; do
-        war_name=${war%-services.enc}
-        openssl enc -aes-256-cbc -d -in /tmp/$war -out /tmp/"$war_name".war -pass pass:#{node['sophos_cloud']['aeskey']}
-      done
-  EOH
-end
+# bash 'download_war' do
+#   user 'root'
+#   cwd '/tmp'
+#   code <<-EOH
+#     aws --region us-west-2 s3 cp s3:#{node['sophos_cloud']['application']}/ /tmp/ --recursive
+#
+#     # Rename encrypted mobile WAR
+#     mv mob*-services.enc mob-services.enc
+#
+#     # Copy encrypted hub WAR to dep WAR
+#     cp hub-services.enc dep-services.enc
+#   EOH
+# end
+#
+# # Decrypt the application
+# bash 'decrypt_war' do
+#   user 'root'
+#   cwd '/tmp'
+#   code <<-EOH
+#       for war in *-services.enc; do
+#         war_name=${war%-services.enc}
+#         openssl enc -aes-256-cbc -d -in /tmp/$war -out /tmp/"$war_name".war -pass pass:#{node['sophos_cloud']['aeskey']}
+#       done
+#   EOH
+# end
 
 $SYSWIDE_ACCOUNT_NAM = node['sophos_cloud']['account'] || 'inf'
 shcmd_h = Mixlib::ShellOut.new('echo -n $(runlevel 2>&1)')

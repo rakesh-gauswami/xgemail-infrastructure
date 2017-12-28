@@ -111,7 +111,12 @@
         "c5.large",
         "c5.xlarge"
       ]
+    },
 
+    "JavaBranch": {
+      "Description": "(Develop, CPLAT-XXXX, etc...)",
+      "Type": "String",
+      "Default": "develop"
     },
 
     "KeyPairName": {
@@ -327,8 +332,10 @@
                       "        \"region\"                       :\"{{region}}\"",
                       "    },",
                       "    \"sophos_cloud\" : {",
+                      "        \"application\"                  :\"{{s3_app_repo_url}}/{{java_branch}}\",",
                       "        \"aeskey\"                       :\"{{aes_decryption_key}}\",",
                       "        \"context\"                      :\"{{environment}}\",",
+                      "        \"environment\"                  :\"{{environment}}\",",
                       "        \"cookbooks\"                    :\"{{s3_cookbook_repo_url}}\",",
                       "        \"savi\"                         :\"{{s3_3rdparty_repo_url}}/savi-install.tar.gz\",",
                       "        \"thirdparty\"                   :\"{{s3_3rdparty_repo_url}}\"",
@@ -345,6 +352,7 @@
                   "branch":                                     { "Ref": "Branch" },
                   "build":                                      { "Ref": "Build" },
                   "environment":                                { "Ref": "Environment" },
+                  "java_branch":                                { "Ref": "JavaBranch" },
                   "region":                                     { "Ref": "AWS::Region" },
                   "s3_3rdparty_repo_url":                       { "Ref": "S3Sophos3rdPartyRepositoryUrl" },
                   "s3_app_repo_url":                            { "Ref": "S3SophosAppRepositoryUrl" },
@@ -364,6 +372,7 @@
                       "recipe[sophos-cloud-xgemail::install_tdagent],",
                       "recipe[sophos-cloud-xgemail::install_monit_service],",
                       "recipe[sophos-cloud-xgemail::ami],",
+                      "recipe[sophos-cloud-java::oracle],",
                       "recipe[sophos-cloud-xgemail::download_libspf2]",
                       "\""
                     ]
