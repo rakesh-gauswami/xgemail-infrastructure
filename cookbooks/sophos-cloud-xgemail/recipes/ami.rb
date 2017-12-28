@@ -7,6 +7,9 @@
 # All rights reserved - Do Not Redistribute
 #
 
+sophos_script_path = node['sophos_cloud']['script_path']
+sophos_tmp_path = node['sophos_cloud']['tmp']
+
 directory sophos_script_path do
   mode '0755'
   owner 'root'
@@ -22,6 +25,7 @@ directory sophos_tmp_path do
   action :create
   recursive true
 end
+
 # Add local IP to /etc/hosts
 bash 'edit_etc_hosts' do
   user 'root'
@@ -119,8 +123,6 @@ yum_package 'xfsprogs' do
   action :install
 end
 
-
-
 PACKAGES_DIR = '/opt/sophos/packages'
 JILTER_INBOUND_VERSION = node['xgemail']['jilter_inbound_version']
 JILTER_INBOUND_PACKAGE_NAME = "xgemail-jilter-inbound-#{JILTER_INBOUND_VERSION}"
@@ -143,7 +145,6 @@ execute 'download_jilter_inbound' do
   EOH
 end
 
-
 execute 'download_jilter_outbound' do
   user 'root'
   cwd "#{PACKAGES_DIR}"
@@ -151,7 +152,6 @@ execute 'download_jilter_outbound' do
       aws --region us-west-2 s3 cp s3://cloud-applications-3rdparty/xgemail/#{JILTER_OUTBOUND_PACKAGE_NAME}.tar .
   EOH
 end
-
 
 SYSCTL_FILE = '/etc/sysctl.d/01-xgemail.conf'
 LOAD_SYSCTL_PARAMETERS = "/sbin/sysctl -p '#{SYSCTL_FILE}'"
