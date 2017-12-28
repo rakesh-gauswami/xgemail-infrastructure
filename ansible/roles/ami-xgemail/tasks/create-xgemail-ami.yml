@@ -1,5 +1,5 @@
 ---
-- name: Create Xgemail AMI from EC2 Instance: {{ami_stack.stack_outputs.InstanceId}}
+- name: Create Xgemail AMI from EC2 Instance {{ami_stack.stack_outputs.InstanceId}}
   ec2_ami:
     description: "Sophos, Inc. Prepared image of {{build.branch}}-{{ami.xgemail.application_name}}-{{build.number}}"
     instance_id: "{{ami_stack.stack_outputs.InstanceId}}"
