@@ -17,11 +17,11 @@ java_home = node[:java][:home]
 version = node[:java][:version]
 
 if version == 8
-    url = "http://download.oracle.com/otn-pub/java/jdk/8u131-b11/d54c1d3a095b4ff2b6607d096fa80163/jdk-8u131-linux-x64.tar.gz"
-    file_name = "jdk1.8.0_131"
+    url = 'http://download.oracle.com/otn-pub/java/jdk/8u131-b11/d54c1d3a095b4ff2b6607d096fa80163/jdk-8u131-linux-x64.tar.gz'
+    file_name = 'jdk1.8.0_131'
 else 
-    url = "http://download.oracle.com/otn-pub/java/jdk/7u67-b01/jdk-7u67-linux-x64.tar.gz"
-    file_name = "jdk1.7.0_67" 
+    url = 'http://download.oracle.com/otn-pub/java/jdk/7u67-b01/jdk-7u67-linux-x64.tar.gz'
+    file_name = 'jdk1.7.0_67' 
 end
 
 #----------------------------------------------------------------------------
@@ -38,19 +38,19 @@ end
 
 remote_file "/opt/#{file_name}.tar.gz" do
 	source url
-	headers("Cookie" => "oraclelicense=accept-securebackup-cookie")
-	owner "root"
-	group "root"
+	headers('Cookie' => 'oraclelicense=accept-securebackup-cookie')
+	owner 'root'
+	group 'root'
 	mode 0664
     not_if { File.exists?("/opt/#{file_name}.tar.gz") }
 end
 
 #----------------------------------------------------------------------------
-bash "install jdk" do
+bash 'install jdk' do
 	creates "/opt/#{file_name}"
-	user "root"
+	user 'root'
 	umask 022
-	cwd "/opt"
+	cwd '/opt'
     code <<-EOH
         tar -xzf /opt/#{file_name}.tar.gz
         chown -R root:root /opt/#{file_name}

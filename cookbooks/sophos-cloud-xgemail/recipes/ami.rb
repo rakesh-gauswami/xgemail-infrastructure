@@ -40,7 +40,7 @@ bash 'remove_openjdk' do
   user 'root'
   cwd '/tmp'
   code <<-EOH
-    for p in $(yum list installed | awk '/java/ {print $1}'); do
+    for p in $(yum list installed | awk '/openjdk/ {print $1}'); do
       yum remove -y $p
     done
   EOH
