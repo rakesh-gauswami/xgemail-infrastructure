@@ -18,22 +18,11 @@
       ami_type:     "{{ami.xgemail.ami_type}}"
   register: xgemail_ami
 
-- name: "Set Fact xgemail_ami"
-  set_fact:
-    ec2_ami_image_id: "{{ xgemail_ami.results[0].image_id }}"
-    when: xgemail_ami.failed != true
-
 - name: "Display Xgemail AMI Id"
   debug:
-    msg: "{{xgemail_ami.results[0].image_id}}"
+    msg: "{{xgemail_ami.image_id}}"
     when: xgemail_ami.failed != true
 
-- debug:
-    var: xgemail_ami.results[0]
-    verbosity: 3
-    when: xgemail_ami.failed != true
-
-- name: "Display Xgemail AMI Find Output"
   debug:
     msg: "{{xgemail_ami}}"
     verbosity: 3
