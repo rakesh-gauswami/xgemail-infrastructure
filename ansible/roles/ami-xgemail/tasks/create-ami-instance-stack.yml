@@ -34,11 +34,8 @@
     msg: "{{ami_stack.stack_outputs}}"
     verbosity: 2
 
-- ini_file:
+- lineinfile:
     path: "{{playbook_dir}}/instance_id.ini"
-    section: null
-    option: instance_id
-    value: "{{ami_stack.stack_outputs.InstanceId}}"
+    line: 'instance_id={{ami_stack.stack_outputs.InstanceId}}'
     state: present
-    no_extra_spaces: True
-
+    create: yes
