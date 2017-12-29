@@ -16,14 +16,17 @@
       build:        "{{ami.xgemail.build}}"
       build_id:     "{{ami.xgemail.build_id}}"
       ami_type:     "{{ami.xgemail.ami_type}}"
-  register: xgemail_ami
+  register: ec2_ami_output
+
+- debug:
+    var: ec2_ami_output
 
 - name: "Display Xgemail AMI Id"
   debug:
-    msg: "{{xgemail_ami.image_id}}"
-    when: xgemail_ami.failed != true
+    msg: "{{ec2_ami_output.image_id}}"
+  when: ec2_ami_output.failed == false
 
   debug:
-    msg: "{{xgemail_ami}}"
+    msg: "{{ec2_ami_output}}"
     verbosity: 3
-    when: xgemail_ami.failed != true
+  when: ec2_ami_output.failed == false

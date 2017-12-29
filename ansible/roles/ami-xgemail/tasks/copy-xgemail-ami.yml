@@ -4,12 +4,12 @@
   async: 600
   poll: 0
   ec2_ami_copy:
-    description:          "{{xgemail_ami.results[0].description}}"
+    description:          "{{ec2_ami_output.description}}"
     source_region:        "{{ami.xgemail.region}}"
     region:               "{{item}}"
-    source_image_id:      "{{xgemail_ami.results[0].image_id}}"
-    name:                 "{{xgemail_ami.results[0].name}}"
-    tags:                 "{{xgemail_ami.results[0].tags}}"
+    source_image_id:      "{{ec2_ami_output.image_id}}"
+    name:                 "{{ec2_ami_output.name}}"
+    tags:                 "{{ec2_ami_output.tags}}"
     wait:                 no
   with_items:             "{{ami.xgemail.ami_destination_regions}}"
   register: ec2_ami_copy_output
@@ -24,10 +24,10 @@
 - name: "Display Xgemail AMI Id"
   debug:
     msg: "{{ec2_ami_copy_output.image_id}}"
-    when: ec2_ami_copy_output.failed != true
+  when: ec2_ami_copy_output.failed != true
 
 - name: "Display Xgemail AMI Find Output"
   debug:
     msg: "{{ec2_ami_copy_output}}"
     verbosity: 3
-    when: ec2_ami_copy_output.failed != true
+  when: ec2_ami_copy_output.failed != true
