@@ -24,10 +24,10 @@
 - name: "Display Xgemail AMI Id"
   debug:
     msg: "{{ec2_ami_copy_output.image_id}}"
-  when: ec2_ami_copy_output.failed != true
+  when: ec2_ami_copy_output.failed == false
 
 - name: "Display Xgemail AMI Find Output"
   debug:
     msg: "{{ec2_ami_copy_output}}"
     verbosity: 3
-  when: ec2_ami_copy_output.failed != true
+  when: ec2_ami_copy_output.failed == false
