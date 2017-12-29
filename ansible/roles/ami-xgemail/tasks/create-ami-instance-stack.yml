@@ -34,4 +34,10 @@
     msg: "{{ami_stack.stack_outputs}}"
     verbosity: 2
 
+- ini_file:
+    path: "{{playbook_dir}}/instance_3id.ini"
+    section: null
+    option: instance_id
+    value: "{{ami_stack.stack_outputs.InstanceId}}"
+    no_extra_spaces: True
 
