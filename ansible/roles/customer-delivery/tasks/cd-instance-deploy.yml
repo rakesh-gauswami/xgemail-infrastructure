@@ -1,0 +1,70 @@
+---
+- name: Debug
+  debug:
+    msg: "{{item.value.stack_name}} {{item.value.template}} {{item.value.template_parameters}}"
+  with_dict: "{{aws.ec2.asg.cd}}"
+
+- name: "Create CD ASG Stacks in AWS"
+  async: 100
+  poll: 0
+  cloudformation:
+    stack_name: "{{item.value.stack_name}}"
+    state: "{{item.value.state}}"
+    region:  "{{account.region}}"
+    disable_rollback: true
+    template: "{{item.value.template}}"
+    template_parameters:
+      AesDecryptionKey:                     "aes_decryption_key"
+      AlarmTopicArn:                        "{{sns.arn_prefix}}{{sns.alarm_sns_topic}}"
+      AmiId:                                ""
+      AutoScalingInstanceRoleArn:           ""
+      AutoScalingMinSize:                   ""
+      AutoScalingMaxSize:                   ""
+      AutoScalingNotificationTopicARN:      ""
+      AvailabilityZoneIndex:                ""
+      AvailabilityZones:                    ""
+      BastionSecurityGroup:                 ""
+      Branch:                               ""
+      BuildVersion:                         ""
+      BundleVersion:                        ""
+      EbsMinIops:                           ""
+      Environment:                          ""
+      HealthCheckGracePeriod:               ""
+      HealthCheckType:                      ""
+      InstanceProfile:                      ""
+      InstanceType:                         ""
+      JavaServiceType:                      ""
+      KeyName:                              ""
+      LoadBalancerName:                     ""
+      MailDomain:                           ""
+      PostfixInstall:                       ""
+      PublicIpAddressEnabled:               ""
+      S3CookbookRepositoryURL:              ""
+      ScaleDownOnWeekends:                  ""
+      ScaleDownCron:                        ""
+      ScaleUpCron:                          ""
+      SecurityGroups:                       ""
+      StationVpcName:                       ""
+      VolumeSetId:                          ""
+      VolumeTrackerSimpleDbDomain:          ""
+      Vpc:                                  ""
+      VpcZoneIdentifiers:                   ""
+      VpcName:                              ""
+      XgemailBucketName:                    ""
+      XgemailDeliveryAddress:               ""
+      XgemailMinSizeDataGB:                 ""
+      XgemailMsgHistoryBucketName:          ""
+      XgemailMsgHistoryQueueUrl:            ""
+      XgemailSnsSqsQueueUrl:                ""
+      XgemailSubmitAddress:                 ""
+      XgemailSxlDbl:                        ""
+      XgemailSxlRbl:                        ""
+  with_dict: "{{aws.ec2.asg.cd}}"
+  register: cd_stack_async_results
+
+- async_status:
+    jid: "{{item.ansible_job_id}}"
+  with_items: "{{cd_stack_async_results.results}}"
+  register: cd_stack_async_poll_results
+  until: "{{cd_stack_async_poll_results.finished}}"
+  retries: 30

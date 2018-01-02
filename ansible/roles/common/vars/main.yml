@@ -8,13 +8,35 @@ aws:
 
   ec2:
     asg:
-      customer_delivery:
-      customer_submit:
-      customer_xdelivery:
-      internet_delivery:
-      internet_submit:
-      internet_xdelivery:
-      bastion:
+      bastion:                                  ""
+      cd:
+        stack_name:                             "{{stack.ec2.asg.cd}}{{item}}"
+        template:                               "{{template.ec2.asg.as_xgemail_instance_template}}"
+      cs:
+        stack_name:                             ""
+        template:                               ""
+        template_parameters:
+          AesDecryptionKey:                     ""
+      cx:
+        stack_name:                             ""
+        template:                               ""
+        template_parameters:
+          AesDecryptionKey:                     ""
+      id:
+        stack_name:                             ""
+        template:                               ""
+        template_parameters:
+          AesDecryptionKey:                     ""
+      is:
+        stack_name:                             ""
+        template:                               ""
+        template_parameters:
+          AesDecryptionKey:                     ""
+      ix:
+        stack_name:                             ""
+        template:                               ""
+        template_parameters:
+          AesDecryptionKey:                     ""
 
   s3:
     customer_submit_bucket:
@@ -242,17 +264,58 @@ aws:
         SnsS3TopicPolicyCreate:                 "true"
 
 ami_parent_id:
-as_min_cap_bastion: 1
-cloudstation_hostedzone: hydra.sophos.com
-cron_scale_down: "0 1 * * 6"
-cron_scale_up: "0 4 * * 1"
-nat_eip: a
-xgemail_iops_data_gb: 100
-xgemail_size_data_gb: 40
-instance_size_xgemail_elasticsearch: t2.medium
-instance_size_xgemail_internet_delivery: t2.small
-instance_size_xgemail_delivery: t2.small
-instance_size_xgemail_submit: t2.small
-instance_size_xgemail_xdelivery: t2.small
-xgemail_sxl_dbl: uri.cal1.sophosxl.com
-xgemail_sxl_rbl: fur.cal1.sophosxl.com
+as_min_cap_bastion:                             1
+cloudstation_hostedzone:                        hydra.sophos.com
+cron_scale_down:                                "0 1 * * 6"
+cron_scale_up:                                  "0 4 * * 1"
+nat_eip:                                        a
+xgemail_iops_data_gb:                           100
+xgemail_size_data_gb:                           40
+instance_size_xgemail_elasticsearch:            t2.medium
+instance_size_xgemail_internet_delivery:        t2.small
+instance_size_xgemail_delivery:                 t2.small
+instance_size_xgemail_submit:                   t2.small
+instance_size_xgemail_xdelivery:                t2.small
+xgemail_sxl_dbl:                                uri.cal1.sophosxl.com
+xgemail_sxl_rbl:                                fur.cal1.sophosxl.com
+
+aes_decryption_key:                             "{{lookup('env','AES_KEY')}}"
+ami_id:                                         "{{lookup('env','AMI_ID')}}"
+as_instance_role_arn:                           ""
+as_min_size:                                    ""
+as_max_size:                                    ""
+as_notification_topic_arn:                      ""
+az_index:                                       ""
+az:                                             ""
+bastion_sg:                                     ""
+branch:                                         ""
+build_version:                                  ""
+bundle_version:                                 ""
+ebs_min_iops:                                   ""
+env:                                            ""
+health_check_grace_period:                      ""
+health_check_type:                              ""
+instance_profile:                               ""
+instance_type:                                  ""
+java_service_type:                              ""
+key_name:                                       ""
+lb_name:                                        ""
+mail_domain:                                    ""
+postfix_install:                                ""
+public_ip_address_enabled:                      ""
+s3_cookbook_repo_url:                           ""
+scale_down_on_weekends:                         ""
+security_groups:                                ""
+station_vpc_name:                               ""
+volume_set_id:                                  ""
+volume_tracker_simple_db_domain:                ""
+vpc:                                            ""
+vpc_zone_identifiers:                           ""
+vpc_name:                                       ""
+xgemail_bucket_name:                            ""
+xgemail_delivery_address:                       ""
+xgemail_min_size_db_gb:                         ""
+xgemail_msg_history_bucket_name:                ""
+xgemail_msg_history_queue_url:                  ""
+xgemail_sns_sqs_queue_url:                      ""
+xgemail_submit_address:                         ""
