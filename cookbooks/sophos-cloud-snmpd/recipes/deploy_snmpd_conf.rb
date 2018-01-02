@@ -19,7 +19,7 @@ region = node[:sophos_cloud][:region]
 bucket = node[:sophos_cloud][:connections]
 s3_key = "#{region}/#{vpc_name}/logicmonitor.json"
 
-chef_gem "aws-sdk" do
+chef_gem 'aws-sdk' do
   action [:install]
 end
 
@@ -41,23 +41,23 @@ return if resp == nil
 
 # Configure SNMP.
 decrypted_config = JSON.parse(resp.body.read)
-template "snmpd.conf" do
-  path "/etc/snmp/snmpd.conf"
-  source "snmpd.conf.erb"
+template 'snmpd.conf' do
+  path '/etc/snmp/snmpd.conf'
+  source 'snmpd.conf.erb'
   variables({
     :snmp_user => decrypted_config['snmp_user'],
     :snmp_pass => decrypted_config['snmp_pass']
   })
-  mode "0600"
-  owner "root"
-  group "root"
+  mode '0600'
+  owner 'root'
+  group 'root'
 end
 
 # Create empty snmp.conf and snmptrapd.conf files.
 %w{/etc/snmp/snmp.conf /etc/snmp/snmptrapd.conf}.each do |f|
   file f do
-    mode "0600"
-    owner "root"
-    group "root"
+    mode '0600'
+    owner 'root'
+    group 'root'
   end
 end

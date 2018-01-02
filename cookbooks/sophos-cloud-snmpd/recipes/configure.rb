@@ -9,16 +9,16 @@
 
 # Configure snmpd
 
-package "net-snmp"
+package 'net-snmp'
 
-include_recipe "sophos-cloud-snmpd::deploy_snmpd_conf"
+include_recipe 'sophos-cloud-snmpd::deploy_snmpd_conf'
 
-service "snmpd" do
+service 'snmpd' do
   action :start
 end
 
-bash "add_snmpd_to_startup" do
-  user "root"
+bash 'add_snmpd_to_startup' do
+  user 'root'
   code <<-EOH
     chkconfig --level 3 snmpd on
   EOH
