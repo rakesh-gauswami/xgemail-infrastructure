@@ -1,0 +1,29 @@
+---
+- name: "Deploy {{stack.ec2.elb.customer_delivery_elb}} to {{account.name}}-{{account.region}}"
+  cloudformation:
+    stack_name: "{{stack.ec2.elb.customer_delivery_elb}}"
+    state: present
+    region: "{{account.region}}"
+    disable_rollback: true
+    template: "{{template.ec2.elb.elb_public_xgemail_template}}"
+    template_parameters:
+      Branch:                        "{{build.branch}}"
+      Environment:                   "{{aws.account}}"
+      ExternalPort:                  "2255"
+      HealthCheckInterval:           "60"
+      HealthCheckTarget:             "TCP:25"
+      HostAlarmTopicARN:             "{{sns.arn_prefix}}{{sns.alarm_sns_topic}}"
+      LoadBalancerName:              "XGEMAIL-DELIVERY"
+      SecurityGroupLb:               "{{lookup('cloudformation','{{vpc.cloud_email.name}}-SecurityGroups/output/XgemailDeliverySecurityGroupLb','default=securitygroups-not-found')}}"
+      Subnets:                       "{{lookup('cloudformation','{{vpc.cloud_email.name}}-VPC/output/VpcZoneIdentifiersPublic','default=subnets-not-found')}}"
+      Vpc:                           "{{lookup('cloudformation','{{vpc.cloud_email.name}}-VPC/output/Vpc','default=vpcId-not-found')}}"
+  register: elb_stack_output
+
+- debug:
+    var: elb_stack_output
+    verbosity: 3
+
+- name: "Display ELB Stack Output"
+  debug:
+    msg: "{{elb_stack_output.stack_outputs}}"
+    verbosity: 2

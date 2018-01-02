@@ -44,7 +44,7 @@ sqs:
   url_prefix:                                           "https://sqs.{{account.region}}.amazonaws.com/{{aws_account_id}}/"
 # Cloud Email SNS Topic Names.
 sns:
-  alarm_sns_topic:                                      "{{account.name}}-{{vpc.cloud_email.name}}-Alarm-Topic"
+  alarm_sns_topic:                                      "{{account.name}}-xgemail-alarm-topic"
   policy_sns_topic:                                     "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-policy-SNS"
   relay_control_sns_topic:                              "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-relay-control-SNS"
   delay_sns_topic:                                      "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-delay-SNS"
@@ -68,19 +68,19 @@ stack:
       cloud_station_security_groups:                    "{{vpc.cloud_station.name}}-SecurityGroups"
     asg:
       bastion:                                          "{{vpc.cloud_email.name}}-BastionHost"
-      cd:                                               "{{vpc.cloud_email.name}}-xgemail-delivery-0000-"
-      cs:                                               "{{vpc.cloud_email.name}}-xgemail-customer-submit-0000-"
-      cx:                                               "{{vpc.cloud_email.name}}-xgemail-xdelivery-0000-"
-      id:                                               "{{vpc.cloud_email.name}}-xgemail-internet-delivery-0000-"
-      is:                                               "{{vpc.cloud_email.name}}-xgemail-submit-0000-"
-      ix:                                               "{{vpc.cloud_email.name}}-xgemail-internet-xdelivery-0000-"
-  elb:
-    internet_submit_elb:                                "{{vpc.cloud_email.name}}-XGEMAIL-submit-ELB"
-    customer_submit_elb:                                "{{vpc.cloud_email.name}}-XGEMAIL-customer-submit-ELB"
-    customer_delivery_elb:                              "{{vpc.cloud_email.name}}-XGEMAIL-delivery-ELB"
-    internet_delivery_elb:                              "{{vpc.cloud_email.name}}-XGEMAIL-internet-delivery-ELB"
-    customer_xdelivery_elb:                             "{{vpc.cloud_email.name}}-XGEMAIL-xdelivery-ELB"
-    internet_xdelivery_elb:                             "{{vpc.cloud_email.name}}-XGEMAIL-internet-xdelivery-ELB"
+      customer_delivery_asg:                            "{{vpc.cloud_email.name}}-xgemail-delivery-0000-"
+      customer_submit_asg:                              "{{vpc.cloud_email.name}}-xgemail-customer-submit-0000-"
+      customer_xdelivery_asg:                           "{{vpc.cloud_email.name}}-xgemail-xdelivery-0000-"
+      internet_delivery_asg:                            "{{vpc.cloud_email.name}}-xgemail-internet-delivery-0000-"
+      internet_submit_asg:                              "{{vpc.cloud_email.name}}-xgemail-submit-0000-"
+      internet_xdelivery_asg:                           "{{vpc.cloud_email.name}}-xgemail-internet-xdelivery-0000-"
+    elb:
+      internet_submit_elb:                              "{{vpc.cloud_email.name}}-XGEMAIL-submit-ELB"
+      customer_submit_elb:                              "{{vpc.cloud_email.name}}-XGEMAIL-customer-submit-ELB"
+      customer_delivery_elb:                            "{{vpc.cloud_email.name}}-XGEMAIL-delivery-ELB"
+      internet_delivery_elb:                            "{{vpc.cloud_email.name}}-XGEMAIL-internet-delivery-ELB"
+      customer_xdelivery_elb:                           "{{vpc.cloud_email.name}}-XGEMAIL-xdelivery-ELB"
+      internet_xdelivery_elb:                           "{{vpc.cloud_email.name}}-XGEMAIL-internet-xdelivery-ELB"
   route53:
     customer_delivery_route53:                          "{{vpc.cloud_email.name}}-XGEMAIL-delivery-ROUTE53"
     internet_delivery_route53:                          "{{vpc.cloud_email.name}}-XGEMAIL-internet-delivery-ROUTE53"
@@ -134,6 +134,8 @@ template:
   vpc:
     vpc_template:                                       "{{tmp_artifacts_dir}}/vpc_template.json"
   ec2:
+    elb:
+      elb_xgemail_template:                             "{{tmp_artifacts_dir}}/elb_public_xgemail_template.json"
     sg:
       sg_xgemail_template:                              "{{tmp_artifacts_dir}}/sg_xgemail_template.json"
     asg:

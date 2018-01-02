@@ -222,7 +222,7 @@ aws:
         Environment:                            "{{account.name}}"
         SNSTopicEndpointProtocol:               email
         SNSTopicEndpointValue:                  cloud-inf-aws-alerts@sophos.com
-        SNSTopicName:                           xgemail-alarm
+        SNSTopicName:                           "{{sns.alarm_sns_topic}}"
     delay_sns_topic:
       stack_name:                               "{{stack.sns.delay_sns_topic}}"
       template:                                 "{{template.sns.sns_simple_template}}"
