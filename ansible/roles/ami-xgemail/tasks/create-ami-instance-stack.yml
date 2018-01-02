@@ -1,0 +1,41 @@
+---
+- name: "Deploy Xgemail AMI Stack to {{ami.xgemail.environment}} {{account.region}}"
+  cloudformation:
+    stack_name: "{{ami.xgemail.stack_name}}"
+    state: "present"
+    region: "{{account.region}}"
+    disable_rollback: true
+    template: "{{role_path}}/files/cf_templates/image_xgemail_template.json"
+    template_parameters:
+      AesDecryptionKey:            "{{ami.xgemail.aes_decryption_key}}"
+      AmiBuildTimeoutMinutes:      "{{ami.xgemail.ami_build_timeout_minutes}}"
+      ApplicationName:             "{{ami.xgemail.application_name}}"
+      Branch:                      "{{ami.xgemail.branch}}"
+      Build:                       "{{ami.xgemail.build}}"
+      Environment:                 "{{ami.xgemail.environment}}"
+      IamProfile:                  "{{ami.xgemail.iam_profile}}"
+      ImageId:                     "{{ec2_ami_find_output.results[0].ami_id}}"
+      InstanceType:                "{{ami.xgemail.instance_type}}"
+      S3CookbookRepositoryUrl:     "{{ami.xgemail.s3_cookbook_repository_url}}"
+      VpcSecurityGroup:            "{{ami.xgemail.vpc_security_group}}"
+      VpcSubnetId:                 "{{ami.xgemail.vpc_subnet_id}}"
+  register: ami_stack
+
+- name: "Display EC2 Instance Id"
+  debug:
+    msg: "{{ami_stack.stack_outputs.InstanceId}}"
+
+- debug:
+    var: ami_stack
+    verbosity: 3
+
+- name: "Display AMI Stack Output"
+  debug:
+    msg: "{{ami_stack.stack_outputs}}"
+    verbosity: 2
+
+- lineinfile:
+    path: "{{playbook_dir}}/instance_id.ini"
+    line: 'instance_id={{ami_stack.stack_outputs.InstanceId}}'
+    state: present
+    create: yes

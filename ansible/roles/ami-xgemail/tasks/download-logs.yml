@@ -1,9 +1,10 @@
 ---
-- name: "Download Xgemail AMI Creation logs for {{xgemail_ami.results[0].image_id}}"
-  s3:
-    mode:               get
-    region:             "{{account.region}}"
-    bucket:             "{{ami.xgemail.ami_bucket}}"
-    object:             "{{build.branch}}/build-{{build.number}}/create-xgemail-ami-b{{build.number}}.zip"
-    dest:               "{{playbook_dir}}"
-    overwrite:          always
+- name: "Download Xgemail AMI Creation logs for {{ami.xgemail.stack_name}}"
+  aws_s3:
+    mode:                         get
+    ignore_nonexistent_bucket:    True
+    region:                       "{{account.region}}"
+    bucket:                       "{{ami.xgemail.ami_bucket}}"
+    object:                       "{{build.branch}}/build-{{build.number}}/create-{{ami.xgemail.application_name}}-ami-b{{build.number}}.zip"
+    dest:                         "{{playbook_dir}}/create-{{ami.xgemail.application_name}}-ami-b{{build.number}}.zip"
+    overwrite:                    always

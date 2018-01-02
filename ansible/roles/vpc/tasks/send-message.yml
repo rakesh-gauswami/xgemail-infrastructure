@@ -1,0 +1,11 @@
+# http://docs.ansible.com/ansible/latest/hipchat_module.html
+- name: Send Hipchat notification AMI is finished baking
+    hipchat:
+      api: "{{ hipchat_url }}"
+      token: "{{ hipchat_token }}"
+      room: "{{ hipchat_room }}"
+      msg: "Finished baking AMI for: {{ play }} \n
+            AMI-ID: {{ ami_register.image_id }} \n
+           "
+    ignore_errors: yes
+    when: hipchat_token is defined
