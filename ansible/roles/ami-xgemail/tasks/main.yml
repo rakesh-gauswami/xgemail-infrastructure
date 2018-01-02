@@ -1,22 +1,16 @@
-#- import_tasks: create-temp-artifacts.yml
-
+---
 - import_tasks: find-base-ami.yml
   when: stage == '1'
 
 - block:
     - import_tasks: create-ami-instance-stack.yml
-
   rescue:
     - import_tasks: delete-ami-instance-stack.yml
-
   always:
     - import_tasks: download-logs.yml
   when: stage == '1'
 
 - block:
-    - import_tasks: create-xgemail-ami.yml
-    - import_tasks: copy-xgemail-ami.yml
-
-#  always:
-#    - import_tasks: delete-ami-instance-stack.yml
+    - import_tasks: create-ami.yml
+    - import_tasks: copy-ami.yml
   when: stage == '2'
