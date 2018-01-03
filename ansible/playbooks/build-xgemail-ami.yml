@@ -4,4 +4,5 @@
   connection: local
 
   roles:
-    - { role: "ami-xgemail" }
+    - { role: ami-base, when: stage == '1' }
+    - { role: ami-xgemail }
