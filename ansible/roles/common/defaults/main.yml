@@ -1,6 +1,6 @@
 vpc:
   cloud_email:
-    name: CloudEmail
+    name: "{{vpc_name}}"
   cloud_station:
     name: CloudStation
 # Cloud Email S3 Bucket Names.
@@ -35,7 +35,7 @@ sqs:
   url_prefix:                                           "https://sqs.{{account.region}}.amazonaws.com/{{aws_account_id}}/"
 # Cloud Email SNS Topic Names.
 sns:
-  alarm_sns_topic:                                      "{{account.name}}-{{vpc.cloud_email.name}}-Alarm-Topic"
+  alarm_sns_topic:                                      "{{account.name}}-xgemail-alarm-topic"
   policy_sns_topic:                                     "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-policy-SNS"
   relay_control_sns_topic:                              "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-relay-control-SNS"
   delay_sns_topic:                                      "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-delay-SNS"

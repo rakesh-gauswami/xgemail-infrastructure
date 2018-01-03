@@ -1,10 +1,5 @@
-# Load all the appropriate variables
-- debug:
-    msg: 'Load variables from {{ role_path }}'
-
-#- include_tasks: ../../../../tasks/util/load-vars-hierarchy.yml
-#  vars:
-#    hierarchy_dir: '{{ role_path }}'
+---
+- include_tasks: get-cloudstation-vpc-output.yml
 
 - import_tasks: cloud-email-vpc.yml
   tags:

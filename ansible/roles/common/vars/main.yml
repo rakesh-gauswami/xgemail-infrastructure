@@ -1,22 +1,5 @@
 ---
 aws:
-  vpc:
-    cloud_email:
-      name: "{{vpc_name}}"
-    cloud_station:
-      name: CloudStation
-
-  ec2:
-
-    asg:
-      customer_delivery:
-      customer_submit:
-      customer_xdelivery:
-      internet_delivery:
-      internet_submit:
-      internet_xdelivery:
-      bastion:
-
   s3:
     customer_submit_bucket:
       stack_name:                               "{{stack.s3.customer_submit_bucket}}"
@@ -198,10 +181,9 @@ aws:
       stack_name:                               "{{stack.sns.alarm_sns_topic}}"
       template:                                 "{{template.sns.sns_template}}"
       template_parameters:
-        Environment:                            "{{account.name}}"
         SNSTopicEndpointProtocol:               email
         SNSTopicEndpointValue:                  cloud-inf-aws-alerts@sophos.com
-        SNSTopicName:                           xgemail-alarm
+        SNSTopicName:                           "{{sns.alarm_sns_topic}}"
     delay_sns_topic:
       stack_name:                               "{{stack.sns.delay_sns_topic}}"
       template:                                 "{{template.sns.sns_simple_template}}"
