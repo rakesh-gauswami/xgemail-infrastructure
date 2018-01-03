@@ -20,11 +20,6 @@
     },
 
     "Parameters": {
-        "Environment": {
-            "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
-            "Type": "String"
-        },
-
         "SNSTopicEndpointProtocol": {
             "Description": "Protocol of communication with Endpoint, e.g. email, json, email-json, etc..",
             "Type": "String",
@@ -63,16 +58,7 @@
         "SNSTopic": {
             "Type": "AWS::SNS::Topic",
             "Properties": {
-                "TopicName": {
-                    "Fn::Join": [
-                        "-",
-                        [
-                            { "Ref": "Environment" },
-                            { "Ref": "SNSTopicName" },
-                            "topic"
-                        ]
-                    ]
-                },
+                "TopicName": { "Ref": "SNSTopicName" },
                 "Subscription": [
                     { "Endpoint": { "Ref": "SNSTopicEndpointValue" }, "Protocol": { "Ref": "SNSTopicEndpointProtocol" } }
                 ]
