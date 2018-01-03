@@ -2,7 +2,7 @@ ami:
   xgemail:
     stack_name:                                             "ami-build-xgemail-{{build.plan_key}}-{{build.number}}"
     ami_bucket:                                             sophos-cloud-amis
-    ami_build_timeout_minutes:                              "{{lookup('env','AMI_BUILD_TIMEOUT_MINUTES') | default('80')}}"
+    ami_build_timeout_minutes:                              "{{lookup('env','AMI_BUILD_TIMEOUT_MINUTES') | default('20')}}"
     ami_type:                                               "{{lookup('env','AMI_TYPE') | default('xgemail')}}"
     region:                                                 "{{account.region}}"
     aes_decryption_key:                                     "{{lookup('env','AES_KEY')}}"
