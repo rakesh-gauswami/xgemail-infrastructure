@@ -1,0 +1,50 @@
+---
+# http://docs.ansible.com/ansible/latest/ec2_ami_find_module.html
+- name: "Find Xgemail AMI ({{build.branch}})"
+  ec2_ami_find:
+    name: "{{ami.base.ami_parent_name}}-{{build.branch}}*"
+    region: "{{account.region}}"
+    owner: 283871543274
+    is_public: no
+    virtualization_type: hvm
+    sort: creationDate
+    sort_order: descending
+    sort_end: 1
+    no_result_action: success
+  register: ec2_ami_find_output
+
+- name: Find Base AMI (develop)
+  ec2_ami_find:
+    name: "{{ami.base.ami_parent_name}}-develop*"
+    region: "{{account.region}}"
+    owner: 283871543274
+    is_public: no
+    virtualization_type: hvm
+    sort: creationDate
+    sort_order: descending
+    sort_end: 1
+    no_result_action: fail
+  register: ec2_ami_find_output
+  when: ec2_ami_find_output.results | length==0
+
+- name: "Set Fact ec2_ami_image_id"
+  set_fact:
+    ec2_ami_image_id: "{{ ec2_ami_find_output.results[0].ami_id }}"
+  when: not(ec2_ami_find_output.results | length==0)
+
+- name: "Display EC2 AMI Id"
+  debug:
+    msg: "{{ec2_ami_find_output.results[0].ami_id}}"
+  when: not(ec2_ami_find_output.results | length==0)
+
+- name: "Display EC2 AMI Find Output"
+  debug:
+    msg: "{{ec2_ami_find_output}}"
+    verbosity: 3
+  when: not(ec2_ami_find_output.results | length==0)
+
+- lineinfile:
+    path: "{{playbook_dir}}/ami_id"
+    line: 'ami_id={{ec2_ami_find_output.results[0].ami_id}}'
+    state: present
+    create: yes

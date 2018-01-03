@@ -1,0 +1,10 @@
+---
+- name: "Gather {{stack.vpc.cloud_station_vpc}} CloudFormation Stack Output"
+  cloudformation_facts:
+    stack_name: "{{stack.vpc.cloud_station_vpc}}"
+    region: "{{account.region}}"
+  register: cloud_station_vpc_output
+
+- debug:
+    var: cloud_station_vpc_output
+    verbosity: 3

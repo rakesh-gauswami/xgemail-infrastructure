@@ -6,7 +6,7 @@
     disable_rollback: true
     template: "{{template.ec2.asg.bastion}}"
     template_parameters:
-      AmiId:                                ami-33dd7a4b
+      AmiId:                                "{{ami_id}}"
       AutoScalingMinSize:                   "{{as_min_cap_bastion}}"
       AvailabilityZones:                    "{{cloud_email_vpc_stack.stack_outputs.AvailabilityZones}}"
       BastionInstanceProfile:               "{{iam_stack.stack_outputs.BastionInstanceProfile}}"

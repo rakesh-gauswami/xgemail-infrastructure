@@ -1,21 +1,13 @@
 ---
-- include_tasks: create_temp_artifacts.yml
-
-- debug:
-    var: tmp_artifacts_dir
-    verbosity: 3
-
 # Load all the appropriate variables
 - include_tasks: ../tasks/util/load-vars-hierarchy.yml
   vars:
     hierarchy_dir: '{{ role_path }}'
 
-- name: "Gather {{stack.vpc.cloud_station_vpc}} CloudFormation Stack Output"
-  cloudformation_facts:
-    stack_name: "{{stack.vpc.cloud_station_vpc}}"
-    region: "{{account.region}}"
-  register: cloud_station_vpc_output
+- block:
+  - include_tasks: get-cloudstation-vpc-output.yml
+  - include_tasks: create-temp-artifacts.yml
+  when: deploy == True
 
-- debug:
-    var: cloud_station_vpc_output
-    verbosity: 3
+
+

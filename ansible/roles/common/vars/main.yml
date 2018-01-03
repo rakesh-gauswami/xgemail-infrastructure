@@ -2,11 +2,12 @@
 aws:
   vpc:
     cloud_email:
-      name: CloudEmail
+      name: "{{vpc_name}}"
     cloud_station:
       name: CloudStation
 
   ec2:
+
     asg:
       bastion:                                  ""
       cd:
@@ -263,21 +264,21 @@ aws:
         SnsS3TopicPolicyBucket:                 "{{s3.policy_bucket}}"
         SnsS3TopicPolicyCreate:                 "true"
 
-ami_parent_id:
-as_min_cap_bastion:                             1
-cloudstation_hostedzone:                        hydra.sophos.com
-cron_scale_down:                                "0 1 * * 6"
-cron_scale_up:                                  "0 4 * * 1"
-nat_eip:                                        a
-xgemail_iops_data_gb:                           100
-xgemail_size_data_gb:                           40
-instance_size_xgemail_elasticsearch:            t2.medium
-instance_size_xgemail_internet_delivery:        t2.small
-instance_size_xgemail_delivery:                 t2.small
-instance_size_xgemail_submit:                   t2.small
-instance_size_xgemail_xdelivery:                t2.small
-xgemail_sxl_dbl:                                uri.cal1.sophosxl.com
-xgemail_sxl_rbl:                                fur.cal1.sophosxl.com
+ami_parent_id: "{{ami_id}}"
+as_min_cap_bastion: 1
+cloudstation_hostedzone: hydra.sophos.com
+cron_scale_down: "0 1 * * 6"
+cron_scale_up: "0 4 * * 1"
+nat_eip: a
+xgemail_iops_data_gb: 100
+xgemail_size_data_gb: 40
+instance_size_xgemail_elasticsearch: t2.medium
+instance_size_xgemail_internet_delivery: t2.small
+instance_size_xgemail_delivery: t2.small
+instance_size_xgemail_submit: t2.small
+instance_size_xgemail_xdelivery: t2.small
+xgemail_sxl_dbl: uri.cal1.sophosxl.com
+xgemail_sxl_rbl: fur.cal1.sophosxl.com
 
 aes_decryption_key:                             "{{lookup('env','AES_KEY')}}"
 ami_id:                                         "{{lookup('env','AMI_ID')}}"

@@ -1,16 +1,8 @@
 ami:
-  base:
-    branch: "{{build.branch | default('develop')}}"
-    ami_parent_alternate_bugfix_branch: "{{lookup('env','AMI_PARENT_ALTERNATE_BUGFIX_BRANCH') | default('release/2017.50')}}"
-    ami_parent_alternate_feature_branch: "{{lookup('env','AMI_PARENT_ALTERNATE_FEATURE_BRANCH') | default('develop')}}"
-    ami_parent_description: "{{lookup('env','AMI_PARENT_DESCRIPTION') | default('Sophos Cloud base amazon linux AMI')}}"
-    ami_parent_name: Sophos-Cloud-base-amazon-linux-AMI
-    ami_type: base-amazon-linux
-    ami_version: latest
   xgemail:
     stack_name:                                             "ami-build-xgemail-{{build.plan_key}}-{{build.number}}"
     ami_bucket:                                             sophos-cloud-amis
-    ami_build_timeout_minutes:                              "{{lookup('env','AMI_BUILD_TIMEOUT_MINUTES') | default('80')}}"
+    ami_build_timeout_minutes:                              "{{lookup('env','AMI_BUILD_TIMEOUT_MINUTES') | default('20')}}"
     ami_type:                                               "{{lookup('env','AMI_TYPE') | default('xgemail')}}"
     region:                                                 "{{account.region}}"
     aes_decryption_key:                                     "{{lookup('env','AES_KEY')}}"
