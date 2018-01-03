@@ -42,3 +42,8 @@
     verbosity: 3
   when: not(ec2_ami_find_output.results | length==0)
 
+- lineinfile:
+    path: "{{playbook_dir}}/ami_id_base"
+    line: 'ami_id={{ec2_ami_find_output.results[0].ami_id}}'
+    state: present
+    create: yes
