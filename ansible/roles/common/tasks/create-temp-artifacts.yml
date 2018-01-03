@@ -6,6 +6,10 @@
   set_fact:
     tmp_artifacts_dir: "{{uuid_build.stdout|to_uuid}}"
 
+- debug:
+    var: tmp_artifacts_dir
+    verbosity: 3
+
 - name: "Create the working subdirectory {{tmp_artifacts_dir}}"
   file: path="./{{tmp_artifacts_dir}}" state=directory mode=0755
 

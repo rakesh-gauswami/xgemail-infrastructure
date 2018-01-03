@@ -456,7 +456,7 @@
                 "  EXIT_CODE=$?\n",
                 "",
                 "  # Upload logs before reporting failure to avoid race against termination.\n",
-                "  LOG_DIR=/tmp/create-", { "Ref": "ApplicationName" }, "-ami-b", { "Ref": "Build" }, "\n",
+                "  LOG_DIR=/tmp/create-", { "Ref": "ApplicationName" }, "-ami-build", { "Ref": "Build" }, "\n",
                 "",
                 "  cd /tmp\n",
                 "  rm -rf ${LOG_DIR}\n",
@@ -504,7 +504,7 @@
 
                 "# Push the Public IP of the instance to S3 for artifact retrieval via Bamboo.\n",
 
-                "PUBLIC_IP=ip-address-", { "Ref": "ApplicationName" }, "-ami-b", { "Ref": "Build" }, "\n",
+                "PUBLIC_IP=ip-address-", { "Ref": "ApplicationName" }, "-ami-build", { "Ref": "Build" }, "\n",
                 "wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4 > /tmp/${PUBLIC_IP}.txt\n",
 
                 "aws s3 cp --region us-west-2 /tmp/${PUBLIC_IP}.txt",

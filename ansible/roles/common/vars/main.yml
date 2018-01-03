@@ -2,11 +2,12 @@
 aws:
   vpc:
     cloud_email:
-      name: CloudEmail
+      name: "{{vpc_name}}"
     cloud_station:
       name: CloudStation
 
   ec2:
+
     asg:
       customer_delivery:
       customer_submit:
@@ -241,7 +242,7 @@ aws:
         SnsS3TopicPolicyBucket:                 "{{s3.policy_bucket}}"
         SnsS3TopicPolicyCreate:                 "true"
 
-ami_parent_id:
+ami_parent_id: "{{ami_id}}"
 as_min_cap_bastion: 1
 cloudstation_hostedzone: hydra.sophos.com
 cron_scale_down: "0 1 * * 6"
