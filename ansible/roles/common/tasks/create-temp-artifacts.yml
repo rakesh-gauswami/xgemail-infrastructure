@@ -1,24 +1,26 @@
-# Create a random string used to construct temporary path to store intermediate aggregated data
-- shell: uuidgen
+---
+- name: "Generate uuid string"
+  shell: uuidgen
   register: uuid_build
 
-- name: Create UUID string from uuidgen.output
+- name: "Create UUID string from uuidgen.output"
   set_fact:
     tmp_artifacts_dir: "{{uuid_build.stdout|to_uuid}}"
 
-- debug:
+- name: "Display temp artifacts directory path"
+  debug:
     var: tmp_artifacts_dir
     verbosity: 3
 
 - name: "Create the working subdirectory {{tmp_artifacts_dir}}"
   file: path="./{{tmp_artifacts_dir}}" state=directory mode=0755
 
-- name: Copy CloudFormation Templates to temp directory.
+- name: "Copy CloudFormation Templates to temp directory."
   copy:
     src: "cf_templates/"
     dest: "{{tmp_artifacts_dir}}"
 
-- name: Copy CloudFormation Stack Policies to temp directory.
+- name: "Copy CloudFormation Stack Policies to temp directory."
   copy:
     src: "cf_policies/"
     dest: "{{tmp_artifacts_dir}}"
