@@ -1,5 +1,4 @@
----
-- name: Debug
+- name: "Display S3 CloudFormation Stack Information."
   debug:
     msg: "{{item.value.stack_name}} {{item.value.template}} {{item.value.template_parameters}}"
   with_dict: "{{aws.s3}}"

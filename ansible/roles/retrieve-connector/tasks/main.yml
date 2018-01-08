@@ -1,5 +1,6 @@
+---
 - lineinfile:
     path: "{{playbook_dir}}/connector_env"
-    line: 'CONNECTOR_ENV={{connector_env_newboo}}'
+    line: 'CONNECTOR_ENV={{connector[account.name].env_newboo}}'
     state: present
     create: yes
