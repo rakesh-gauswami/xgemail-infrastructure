@@ -1,12 +1,17 @@
----
-# Load all the appropriate variables
-- include_tasks: ../tasks/util/load-vars-hierarchy.yml
-  vars:
-    hierarchy_dir: '{{ role_path }}'
+- name: "Import Account Variables."
+  include_vars:
+    extensions: ['yml']
+    dir: "{{account.name}}"
+    depth: 1
 
-- block:
-  - include_tasks: create-temp-artifacts.yml
-  when: deploy == True
+- name: "Import Regional Variables."
+  include_vars:
+    extensions: ['yml']
+    dir: "{{account.name}}/{{account.region}}"
+    depth: 1
 
+- name: "Include Create Temp Artifacts Task"
+  include_tasks: create-temp-artifacts.yml
 
-
+- name: "Include {{stack.vpc.cloud_station_vpc}} CloudFormation Stack Output."
+  include_tasks: get-cloudstation-vpc-output.yml
