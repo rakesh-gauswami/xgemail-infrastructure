@@ -1,35 +1,35 @@
 aws:
   ec2:
     asg:
-      bastion:                                  ""
+      bastion:                                  something
       cd:
-        stack_name:                             ""
-        template:                               ""
+        stack_name:                             something
+        template:                               something
       cs:
-        stack_name:                             ""
-        template:                               ""
+        stack_name:                             something
+        template:                               something
         template_parameters:
-          AesDecryptionKey:                     ""
+          AesDecryptionKey:                     something
       cx:
-        stack_name:                             ""
-        template:                               ""
+        stack_name:                             something
+        template:                               something
         template_parameters:
-          AesDecryptionKey:                     ""
+          AesDecryptionKey:                     something
       id:
-        stack_name:                             ""
-        template:                               ""
+        stack_name:                             something
+        template:                               something
         template_parameters:
-          AesDecryptionKey:                     ""
+          AesDecryptionKey:                     something
       is:
-        stack_name:                             ""
-        template:                               ""
+        stack_name:                             something
+        template:                               something
         template_parameters:
-          AesDecryptionKey:                     ""
+          AesDecryptionKey:                     something
       ix:
-        stack_name:                             ""
-        template:                               ""
+        stack_name:                             something
+        template:                               something
         template_parameters:
-          AesDecryptionKey:                     ""
+          AesDecryptionKey:                     something
 
   s3:
     customer_submit_bucket:
@@ -255,7 +255,6 @@ aws:
         SnsS3TopicPolicyBucket:                 "{{s3.policy_bucket}}"
         SnsS3TopicPolicyCreate:                 "true"
 
-deploy: yes
 ami_parent_id: "{{ami_id}}"
 as_min_cap_bastion: 1
 cloudstation_hostedzone: hydra.sophos.com
@@ -272,43 +271,43 @@ instance_size_xgemail_xdelivery: t2.small
 xgemail_sxl_dbl: uri.cal1.sophosxl.com
 xgemail_sxl_rbl: fur.cal1.sophosxl.com
 
-aes_decryption_key:                             "{{lookup('env','AES_KEY')}}"
-ami_id:                                         "{{lookup('env','AMI_ID')}}"
-as_instance_role_arn:                           ""
-as_min_size:                                    ""
-as_max_size:                                    ""
-as_notification_topic_arn:                      ""
-az_index:                                       ""
-az:                                             ""
-bastion_sg:                                     ""
-branch:                                         ""
-build_version:                                  ""
-bundle_version:                                 ""
-ebs_min_iops:                                   ""
-env:                                            ""
-health_check_grace_period:                      ""
-health_check_type:                              ""
-instance_profile:                               ""
-instance_type:                                  ""
-java_service_type:                              ""
-key_name:                                       ""
-lb_name:                                        ""
-mail_domain:                                    ""
-postfix_install:                                ""
-public_ip_address_enabled:                      ""
-s3_cookbook_repo_url:                           ""
-scale_down_on_weekends:                         ""
-security_groups:                                ""
-station_vpc_name:                               ""
-volume_set_id:                                  ""
-volume_tracker_simple_db_domain:                ""
-vpc:                                            ""
-vpc_zone_identifiers:                           ""
-vpc_name:                                       ""
-xgemail_bucket_name:                            ""
-xgemail_delivery_address:                       ""
-xgemail_min_size_db_gb:                         ""
-xgemail_msg_history_bucket_name:                ""
-xgemail_msg_history_queue_url:                  ""
-xgemail_sns_sqs_queue_url:                      ""
-xgemail_submit_address:                         ""
+aes_decryption_key:                             "{{lookup('env','AES_KEY') | default('EFB0D00E7B34527A6CFE3CD804A53312C5A7AF129650A9793D2CEF3A3C6B3741')}}"
+#ami_id:                                         "{{lookup('env','AMI_ID') | default('ami-0b8e3b73')}}"
+#as_instance_role_arn:                           something
+#as_min_size:                                    something
+#as_max_size:                                    something
+#as_notification_topic_arn:                      something
+#az_index:                                       something
+#az:                                             something
+#bastion_sg:                                     something
+#branch:                                         something
+#build_version:                                  something
+#bundle_version:                                 something
+#ebs_min_iops:                                   something
+#env:                                            something
+#health_check_grace_period:                      something
+#health_check_type:                              something
+#instance_profile:                               something
+#instance_type:                                  something
+#java_service_type:                              something
+#key_name:                                       something
+#lb_name:                                        something
+#mail_domain:                                    something
+#postfix_install:                                something
+#public_ip_address_enabled:                      something
+#s3_cookbook_repo_url:                           something
+#scale_down_on_weekends:                         something
+#security_groups:                                something
+#station_vpc_name:                               something
+#volume_set_id:                                  something
+#volume_tracker_simple_db_domain:                something
+#vpc:                                            something
+#vpc_zone_identifiers:                           something
+#vpc_name:                                       something
+#xgemail_bucket_name:                            something
+#xgemail_delivery_address:                       something
+#xgemail_min_size_db_gb:                         something
+#xgemail_msg_history_bucket_name:                something
+#xgemail_msg_history_queue_url:                  something
+#xgemail_sns_sqs_queue_url:                      something
+#xgemail_submit_address:                         something

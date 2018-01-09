@@ -1,0 +1,12 @@
+---
+
+- name: "Gather {{stack.ec2.sg.cloud_email_security_groups}} CloudFormation Stack Output"
+  cloudformation_facts:
+    stack_name: "{{stack.ec2.sg.cloud_email_security_groups}}"
+    region: "{{account.region}}"
+  register: cloud_email_sg_output
+
+- name: "Print {{stack.ec2.sg.cloud_email_security_groups}} CloudFormation Stack Output"
+  debug:
+    var: cloud_email_sg_output
+    verbosity: 3

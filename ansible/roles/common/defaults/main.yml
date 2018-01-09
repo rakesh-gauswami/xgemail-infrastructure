@@ -6,12 +6,12 @@ vpc:
 # Cloud Email EC2 ELB Names:
 ec2:
   elb:
-    cd:                                                 ""
-    cs:                                                 ""
-    cx:                                                 ""
-    id:                                                 ""
-    is:                                                 ""
-    ix:                                                 ""
+    cd:                                                 XGEMAIL-DELIVERY
+    cs:                                                 XGEMAIL-SUBMIT
+    cx:                                                 XGEMAIL-XDELIVERY
+    id:                                                 XGEMAIL-INTERNET-DELIVERY
+    is:                                                 XGEMAIL-CUSTOMER-SUBMIT
+    ix:                                                 XGEMAIL-INTERNET-XDELIVERY
 # Cloud Email S3 Bucket Names.
 s3:
   customer_submit_bucket:                               "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-cust-submit"
@@ -142,6 +142,8 @@ template:
       as_xgemail_instance_template:                     "{{tmp_artifacts_dir}}/as_xgemail_instance_template.json"
   iam:
     roles_xgemail_template:                             "{{tmp_artifacts_dir}}/roles_xgemail_template.json"
+  route53:
+    route53_record_basic_template:                      "{{tmp_artifacts_dir}}/route53_record_basic_template.json"
   s3:
     s3_bucket_template:                                 "{{tmp_artifacts_dir}}/s3_bucket_template.json"
     s3_policy_bucket_template:                          "{{tmp_artifacts_dir}}/s3_policy_bucket_template.json"

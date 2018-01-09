@@ -1,6 +1,13 @@
 ---
-- import_tasks: cd-elb-deploy.yml
 
-#- import_tasks: cd-route53-deploy.yml
+- include_tasks: get-cloudemail-vpc-output.yml
 
-#- import_tasks: cd-instance-deploy.yml
+- include_tasks: get-cloudemail-security-group-output.yml
+
+- include_tasks: get-cloudemail-iam-output.yml
+
+- include_tasks: cd-elb-deploy.yml
+
+- include_tasks: cd-route53-deploy.yml
+
+#- include_tasks: cd-instance-deploy.yml
