@@ -260,7 +260,7 @@ as_min_cap_bastion: 1
 cloudstation_hostedzone: hydra.sophos.com
 cron_scale_down: "0 1 * * 6"
 cron_scale_up: "0 4 * * 1"
-nat_eip: a
+nat_eip_a: "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.NatEipA}}"
 xgemail_iops_data_gb: 100
 xgemail_size_data_gb: 40
 instance_size_xgemail_elasticsearch: t2.medium

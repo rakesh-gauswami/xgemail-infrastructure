@@ -1,0 +1,32 @@
+---
+- name: "Print NatEipA"
+  debug:
+    var: cloud_email_vpc_stack.stack_outputs.NatEipA
+
+- name: "Print NatEipA with dashes"
+  debug:
+    msg: "{{cloud_email_vpc_stack.stack_outputs.NatEipA | regex_replace('\\.', '-')}}"
+
+- name: "Deploy {{stack.route53.customer_delivery_a_route53}} to {{account.name}} {{account.region}}"
+  cloudformation:
+    stack_name: "{{stack.route53.customer_delivery_a_route53}}"
+    state: present
+    region: "{{account.region}}"
+    disable_rollback: true
+    template: "{{template.route53.route53_record_basic_template}}"
+    template_parameters:
+      Environment:                   "{{account.name}}"
+      HostedZoneName:                hydra.sophos.com.
+      RecordType:                    A
+      ResourceRecords:               "{{cloud_email_vpc_stack.stack_outputs.NatEipA}}"
+      ServiceName:                   "outbound-{{cloud_email_vpc_stack.stack_outputs.NatEipA | regex_replace('\\.', '-')}}"
+  register: route53_nat_a_stack_output
+
+- debug:
+    var: route53_nat_a_stack_output
+    verbosity: 3
+
+- name: "Display Route53 NAT A Stack Output"
+  debug:
+    msg: "{{route53_nat_a_stack_output.stack_outputs}}"
+    verbosity: 2
