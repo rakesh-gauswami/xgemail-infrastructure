@@ -35,14 +35,14 @@
   register: ec2_ami_find_output
   when: ec2_ami_find_output.results | length==0
 
-- name: "Display EC2 AMI Id"
-  debug:
-    msg: "{{ec2_ami_find_output.results[0].ami_id}}"
-
 - name: "Display EC2 AMI Find Output"
   debug:
     msg: "{{ec2_ami_find_output}}"
     verbosity: 3
+
+- name: "Display EC2 AMI Id"
+  debug:
+    msg: "{{ec2_ami_find_output.results[0].ami_id}}"
 
 - lineinfile:
     path: "{{playbook_dir}}/ami_id"
