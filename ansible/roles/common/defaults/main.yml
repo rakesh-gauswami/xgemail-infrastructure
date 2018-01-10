@@ -44,6 +44,7 @@ sqs:
   url_prefix:                                           "https://sqs.{{account.region}}.amazonaws.com/{{aws_account_id}}/"
 # Cloud Email SNS Topic Names.
 sns:
+  lifecycle_sqs_sns:                                    "{{account.name}}-xgemail-lifecycle-topic"
   alarm_sns_topic:                                      "{{account.name}}-xgemail-alarm-topic"
   policy_sns_topic:                                     "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-policy-SNS"
   relay_control_sns_topic:                              "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-relay-control-SNS"
