@@ -2,7 +2,7 @@
 # http://docs.ansible.com/ansible/latest/ec2_ami_find_module.html
 - name: "Find Xgemail AMI ({{build.branch}})"
   ec2_ami_find:
-    name: "{{ami.base.ami_parent_name}}-{{build.branch}}*"
+    name: "hmr-core-{{build.branch}}-{{ami_type}}-*"
     region: "{{account.region}}"
     owner: 283871543274
     is_public: no
@@ -11,11 +11,15 @@
     sort_order: descending
     sort_end: 1
     no_result_action: success
+    tags:
+      Name:         "hmr-core-{{build.branch}}-{{ami_type}}-*"
+      branch:       "{{build.branch}}"
+      ami_type:     "{{ami_type}}"
   register: ec2_ami_find_output
 
 - name: Find Base AMI (develop)
   ec2_ami_find:
-    name: "{{ami.base.ami_parent_name}}-develop*"
+    name: "hmr-core-develop-{{ami_type}}-*"
     region: "{{account.region}}"
     owner: 283871543274
     is_public: no
@@ -24,6 +28,10 @@
     sort_order: descending
     sort_end: 1
     no_result_action: fail
+    tags:
+      Name:         "hmr-core-develop-{{ami_type}}-*"
+      branch:       develop
+      ami_type:     "{{ami_type}}"
   register: ec2_ami_find_output
   when: ec2_ami_find_output.results | length==0
 
