@@ -9,19 +9,19 @@
   poll: 0
   cloudformation:
     stack_name: "{{item.value.stack_name}}"
-    state: "{{item.value.state}}"
+    state: present
     region:  "{{account.region}}"
     disable_rollback: true
-    template: "{{item.value.template}}"
+    template: "{{template.ec2.asg.as_xgemail_instance_template}}"
     template_parameters:
       AesDecryptionKey:                     "{{aes_decryption_key}}"
       AlarmTopicArn:                        "{{sns.arn_prefix}}{{sns.alarm_sns_topic}}"
       AmiId:                                "{{ami_parent_id}}"
       AutoScalingInstanceRoleArn:           "{{cloud_email_iam_output.stack_outputs.AutoScalingInstanceRoleArn}}"
-      AutoScalingMinSize:                   "{{item.value.template_parameters.AutoScalingMinSize}}"
+      AutoScalingMinSize:                   "{{item.value.AutoScalingMinSize}}"
       AutoScalingMaxSize:                   1
       AutoScalingNotificationTopicARN:      "{{sns.arn_prefix}}{{sns.lifecycle_sqs_sns}}"
-      AvailabilityZoneIndex:                "{{item.value.template_parameters.AutoScalingMinSize}}"
+      AvailabilityZoneIndex:                "{{item.value.AutoScalingMinSize}}"
       AvailabilityZones:                    "{{account.region}}a, {{account.region}}b, {{account.region}}c"
       BastionSecurityGroup:                 "{{cloud_email_sg_output.stack_outputs.SecurityGroupBastion}}"
       Branch:                               "{{build.branch}}"
