@@ -108,7 +108,7 @@
             "Default" : "t2.large",
             "AllowedValues" : [ "t2.micro", "t2.small", "t2.medium", "t2.large", "m3.medium", "m4.large", "m4.xlarge", "m4.2xlarge", "m4.4xlarge", "m4.10xlarge", "c3.large", "c3.xlarge", "c3.2xlarge", "c4.large", "c4.xlarge", "c4.2xlarge", "c4.4xlarge", "c4.8xlarge", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge" ]
         },
-        "JavaServiceType": {
+        "XgemailServiceType": {
             "Description": "Service type for the java instance (Defaults to unknown so not to break builds)",
             "Type": "String",
             "Default" : "unknown"
@@ -126,10 +126,6 @@
             "Type": "Number",
             "AllowedValues": [ 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653 ],
             "Default": 400
-        },
-        "MailDomain": {
-            "Description": "The mail domain to be configured.",
-            "Type": "String"
         },
         "NullTest" : {
             "Description": "A value of yes let the test succeed immediately.",
@@ -192,17 +188,6 @@
             "Description": "The list of Public Subnets for your VPC",
             "ConstraintDescription": "must be a comma-separated list of valid Public Subnets for the selected VPC"
         },
-        "PostfixInstall": {
-            "Description": "Indicates whether postfix should be configured.",
-            "Type": "String",
-            "Default": "no",
-            "AllowedValues": [ "yes", "no" ]
-        },
-        "PostfixMailVersion": {
-            "Description": "The version of the mail system.",
-            "Type": "String",
-            "Default": "AWS Linux"
-        },
         "UpdateInterval" : {
             "Description" : "The interval in minutes cfn-hup watches stack modifications.",
             "Type" : "Number",
@@ -222,11 +207,6 @@
         "XgemailBucketName" : {
             "Description" : "Name of the S3 Bucket where XGEMAIL messages are sent",
             "Type" : "String"
-        },
-        "XgemailDeliveryAddress" : {
-            "Description" : "Address for the XGEMAIL Delivery Servers",
-            "Type" : "String",
-            "Default": ""
         },
         "XgemailMinSizeDataGB" : {
             "Description" : "Total GB to reserve for storing data files",
@@ -260,11 +240,6 @@
         },
         "XgemailSnsSqsQueueUrl" : {
             "Description" : "URL for the SNS-SQS Queue where XGEMAIL messages are sent",
-            "Type" : "String",
-            "Default": ""
-        },
-        "XgemailSubmitAddress" : {
-            "Description" : "Address for the XGEMAIL Submit Servers",
             "Type" : "String",
             "Default": ""
         },
@@ -522,7 +497,7 @@
                         "Value": {
                             "Fn::Join":  [":",[
                                 { "Ref": "VpcName"},
-                                { "Ref": "JavaServiceType" },
+                                { "Ref": "XgemailServiceType" },
                                 { "Ref": "Branch" },
                                 { "Ref": "Environment" }
                             ]]
@@ -638,12 +613,10 @@
                                         "  \"xgemail\" : {\n",
                                         "    \"alarm_topic_arn\"                : \"{{alarm_topic_arn}}\",\n",
                                         "    \"cluster_type\"                   : \"{{cluster_type}}\",\n",
-                                        "    \"delivery_server_dns\"            : \"{{delivery_server_dns}}\",\n",
                                         "    \"lifecycle_topic_arn\"            : \"{{lifecycle_topic_arn}}\",\n",
                                         "    \"msg_history_bucket_name\"        : \"{{msg_history_bucket_name}}\",\n",
                                         "    \"msg_history_queue_url\"          : \"{{msg_history_queue_url}}\",\n",
                                         "    \"station_vpc_name\"               : \"{{station_vpc_name}}\",\n",
-                                        "    \"submit_server_dns\"              : \"{{submit_server_dns}}\",\n",
                                         "    \"sxl_dbl\"                        : \"{{sxl_dbl}}\",\n",
                                         "    \"sxl_rbl\"                        : \"{{sxl_rbl}}\",\n",
                                         "    \"xgemail_policy_bucket_name\"     : \"{{xgemail_policy_bucket_name}}\",\n",
@@ -662,12 +635,10 @@
                                                                                     { "Ref": "AvailabilityZones" }
                                                                                 ] },
                                     "branch":                                   { "Ref": "Branch" },
-                                    "cluster":                                  { "Ref": "JavaServiceType" },
-                                    "cluster_type":                             { "Ref": "JavaServiceType" },
-                                    "delivery_server_dns":                      { "Ref": "XgemailDeliveryAddress" },
+                                    "cluster":                                  { "Ref": "XgemailServiceType" },
+                                    "cluster_type":                             { "Ref": "XgemailServiceType" },
                                     "email_install":                            { "Ref": "PostfixInstall" },
                                     "environment":                              { "Ref": "Environment" },
-                                    "internet_submit_server_dns":               { "Ref": "XgemailSubmitAddress" },
                                     "lifecycle_topic_arn":                      { "Ref": "AutoScalingNotificationTopicARN" },
                                     "mail_domain":                              { "Ref": "MailDomain" },
                                     "mail_version":                             { "Ref": "PostfixMailVersion" },

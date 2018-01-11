@@ -1,0 +1,12 @@
+---
+
+- name: "Gather {{stack.sdb.volume_tracker_sdb}} CloudFormation Stack Output"
+  cloudformation_facts:
+    stack_name: "{{stack.sdb.volume_tracker_sdb}}"
+    region: us-west-2
+  register: volume_tracker_sdb_output
+
+- name: "Print {{stack.sdb.volume_tracker_sdb}} CloudFormation Stack Output"
+  debug:
+    var: volume_tracker_sdb_output.stack_outputs
+    verbosity: 3

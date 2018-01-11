@@ -1,46 +1,46 @@
 ---
 
-- include_tasks: cloud-email-vpc.yml
+- name: "Include CloudEmail VPC Creation Task."
+  include_tasks: cloud-email-vpc.yml
   tags:
-    - install
-    - uninstall
+    - vpc
 
-- include_tasks: route53-nat-a-records.yml
+- name: "Include Route53 NAT Gateway A Record Creation Task."
+  include_tasks: route53-nat-a-records.yml
   tags:
-    - install
-    - uninstall
+    - vpc
 
-- include_tasks: s3-buckets.yml
+- name: "Include CloudEmail VPC S3 Buckets Creation Task."
+  include_tasks: s3-buckets.yml
   tags:
-    - install
-    - uninstall
+    - vpc
 
-- include_tasks: security-groups.yml
+- name: "Include CloudEmail VPC Security Groups Creation Task."
+  include_tasks: security-groups.yml
   tags:
-    - install
-    - uninstall
+    - vpc
 
-- include_tasks: iam-roles.yml
+- name: "Include CloudEmail VPC IAM Roles Creation Task."
+  include_tasks: iam-roles.yml
   tags:
-    - install
-    - uninstall
+    - vpc
 
-- include_tasks: sqs-queues.yml
+- name: "Include CloudEmail VPC SQS Queues Creation Task."
+  include_tasks: sqs-queues.yml
   tags:
-    - install
-    - uninstall
+    - vpc
 
-- include_tasks: sns-topics.yml
+- name: "Include CloudEmail VPC SNS Topics Creation Task."
+  include_tasks: sns-topics.yml
   tags:
-    - install
-    - uninstall
+    - vpc
 
-- include_tasks: xgemail-messaging.yml
+- name: "Include CloudEmail VPC Messaging Creation Task."
+  include_tasks: xgemail-messaging.yml
   tags:
-    - install
-    - uninstall
+    - vpc
 
-- include_tasks: bastion.yml
+- name: "Include CloudEmail VPC Bastion Host Creation Task."
+  include_tasks: bastion.yml
   tags:
-    - install
-    - uninstall
+    - vpc

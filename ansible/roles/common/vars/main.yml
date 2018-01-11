@@ -3,8 +3,12 @@ aws:
     asg:
       bastion:                                  something
       cd:
-        stack_name:                             something
-        template:                               something
+        1a:
+          stack_name:                           "{{vpc.cloud_email.name}}-xgemail-delivery-0000-1"
+          template_parameters:
+            AutoScalingMinSize:                 0
+            AvailabilityZoneIndex:              1
+            VolumeSetId:                        delivery-1
       cs:
         stack_name:                             something
         template:                               something
@@ -255,59 +259,30 @@ aws:
         SnsS3TopicPolicyBucket:                 "{{s3.policy_bucket}}"
         SnsS3TopicPolicyCreate:                 "true"
 
-ami_parent_id: "{{ami_id}}"
-as_min_cap_bastion: 1
-cloudstation_hostedzone: hydra.sophos.com
-cron_scale_down: "0 1 * * 6"
-cron_scale_up: "0 4 * * 1"
-nat_eip_a: "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.NatEipA}}"
-xgemail_iops_data_gb: 100
-xgemail_size_data_gb: 40
-instance_size_xgemail_elasticsearch: t2.medium
-instance_size_xgemail_internet_delivery: t2.small
-instance_size_xgemail_delivery: t2.small
-instance_size_xgemail_submit: t2.small
-instance_size_xgemail_xdelivery: t2.small
-xgemail_sxl_dbl: uri.cal1.sophosxl.com
-xgemail_sxl_rbl: fur.cal1.sophosxl.com
-
 aes_decryption_key:                             "{{lookup('env','AES_KEY') | default('EFB0D00E7B34527A6CFE3CD804A53312C5A7AF129650A9793D2CEF3A3C6B3741')}}"
-#ami_id:                                         "{{lookup('env','AMI_ID') | default('ami-0b8e3b73')}}"
-#as_instance_role_arn:                           something
-#as_min_size:                                    something
-#as_max_size:                                    something
-#as_notification_topic_arn:                      something
-#az_index:                                       something
-#az:                                             something
-#bastion_sg:                                     something
-#branch:                                         something
-#build_version:                                  something
-#bundle_version:                                 something
-#ebs_min_iops:                                   something
-#env:                                            something
-#health_check_grace_period:                      something
-#health_check_type:                              something
-#instance_profile:                               something
-#instance_type:                                  something
-#java_service_type:                              something
-#key_name:                                       something
-#lb_name:                                        something
-#mail_domain:                                    something
-#postfix_install:                                something
-#public_ip_address_enabled:                      something
-#s3_cookbook_repo_url:                           something
-#scale_down_on_weekends:                         something
-#security_groups:                                something
-#station_vpc_name:                               something
-#volume_set_id:                                  something
-#volume_tracker_simple_db_domain:                something
-#vpc:                                            something
-#vpc_zone_identifiers:                           something
-#vpc_name:                                       something
-#xgemail_bucket_name:                            something
-#xgemail_delivery_address:                       something
-#xgemail_min_size_db_gb:                         something
-#xgemail_msg_history_bucket_name:                something
-#xgemail_msg_history_queue_url:                  something
-#xgemail_sns_sqs_queue_url:                      something
-#xgemail_submit_address:                         something
+
+ami_parent_id:                                  "{{ami_id}}"
+as_min_cap_bastion:                             1
+cloudstation_hostedzone:                        hydra.sophos.com
+cron_scale_down:                                "0 1 * * 6"
+cron_scale_up:                                  "0 4 * * 1"
+nat_eip_a: "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.NatEipA}}"
+health_check_grace_period_cd:                   600
+health_check_grace_period_id:                   600
+health_check_grace_period_cs:                   600
+health_check_grace_period_is:                   600
+health_check_grace_period_cd:                   600
+health_check_grace_period_cd:                   600
+instance_size_elasticsearch:                    t2.medium
+instance_size_id:                               t2.small
+instance_size_cd:                               t2.small
+instance_size_is:                               t2.small
+instance_size_cs:                               t2.small
+instance_size_ix:                               t2.small
+instance_size_cx:                               t2.small
+weekend_scale_down:                             "false"
+xgemail_sxl_dbl:                                uri.cal1.sophosxl.com
+xgemail_sxl_rbl:                                fur.cal1.sophosxl.com
+xgemail_iops_data_gb:                           100
+xgemail_size_data_gb:                           40
+

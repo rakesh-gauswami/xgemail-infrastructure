@@ -1,0 +1,16 @@
+---
+
+- name: "Include Customer Submit ELB Creation Task."
+  include_tasks: cs-elb-deploy.yml
+  tags:
+    - asg
+
+- name: "Include Customer Submit Route53 Creation Task."
+  include_tasks: cs-route53-deploy.yml
+  tags:
+    - asg
+
+- name: "Include Customer Submit EC2 Instance Creation Task."
+  include_tasks: cs-instance-deploy.yml
+  tags:
+    - asg

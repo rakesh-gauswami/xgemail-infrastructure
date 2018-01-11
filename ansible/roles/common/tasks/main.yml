@@ -3,15 +3,21 @@
     extensions: ['yml']
     dir: "{{account.name}}"
     depth: 1
+  tags:
+    - always
 
 - name: "Import Regional Variables."
   include_vars:
     extensions: ['yml']
     dir: "{{account.name}}/{{account.region}}"
     depth: 1
+  tags:
+    - always
 
 - name: "Include Create Temp Artifacts Task"
   include_tasks: create-temp-artifacts.yml
+  tags:
+    - always
 
 - name: "Dump all variables."
   debug:
@@ -19,3 +25,26 @@
 
 - name: "Include {{stack.vpc.cloud_station_vpc}} CloudFormation Stack Output."
   include_tasks: get-cloudstation-vpc-output.yml
+  tags:
+    - vpc
+    - asg
+
+- name: "Include {{stack.vpc.cloud_email_vpc}} CloudFormation Stack Output."
+  include_tasks: get-cloudemail-vpc-output.yml
+  tags:
+    - asg
+
+- name: "Include {{stack.ec2.sg.cloud_email_security_groups}} CloudFormation Stack Output."
+  include_tasks: get-cloudemail-security-group-output.yml
+  tags:
+    - asg
+
+- name: "Include {{stack.iam.cloud_email_roles}} CloudFormation Stack Output."
+  include_tasks: get-cloudemail-iam-output.yml
+  tags:
+    - asg
+
+- name: "Include {{stack.vpc.volume_tracker_sdb}} CloudFormation Stack Output."
+  include_tasks: get-simpledb-domain.yml
+  tags:
+    - asg

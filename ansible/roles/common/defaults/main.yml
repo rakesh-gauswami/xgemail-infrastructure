@@ -54,7 +54,8 @@ sns:
   quarantined_events_sns_topic:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-quarantined-events-SNS"
   success_events_sns_topic:                             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-success-events-SNS"
   arn_prefix:                                           "arn:aws:sns:{{account.region}}:{{aws_account_id}}:"
-
+sdb:
+  volume_tracker_sdb:                                 "{{volume_tracker_sdb_output.ansible_facts.cloudformation[stack.sdb.volume_tracker_sdb].stack_outputs.SimpleDbDomain}}"
 # CloudEmail Stack Names
 stack:
   vpc:
@@ -129,6 +130,8 @@ stack:
     success_events_sns_topic:                           "{{vpc.cloud_email.name}}-xgemail-success-events-SNS"
   msg:
     xgemail_messaging:                                  "{{vpc.cloud_email.name}}-XGEMAIL-messaging"
+  sdb:
+    volume_tracker_sdb:                                 SDBVolumeTracker
 
 template:
   vpc:
