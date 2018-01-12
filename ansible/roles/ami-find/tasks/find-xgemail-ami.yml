@@ -1,50 +1,59 @@
 ---
 # http://docs.ansible.com/ansible/latest/ec2_ami_find_module.html
-- name: "Find Xgemail AMI ({{build.branch}})"
-  ec2_ami_find:
-    name: "{{ami.base.ami_parent_name}}-{{build.branch}}*"
-    region: "{{account.region}}"
-    owner: 283871543274
-    is_public: no
-    virtualization_type: hvm
-    sort: creationDate
-    sort_order: descending
-    sort_end: 1
-    no_result_action: success
-  register: ec2_ami_find_output
+- block:
+    - name: "Find Xgemail AMI ({{build.branch}})"
+      ec2_ami_find:
+        name: "hmr-core-{{build.branch}}-{{ami_type}}-*"
+        region: "{{account.region}}"
+        owner: 843638552935
+        is_public: no
+        virtualization_type: hvm
+        sort: creationDate
+        sort_order: descending
+        sort_end: 1
+        no_result_action: fail
+        ami_tags:
+          Name:         "hmr-core-{{build.branch}}-{{ami_type}}-*"
+          branch:       "{{build.branch}}"
+          ami_type:     "{{ami_type}}"
+      register: ec2_ami_find_output
 
-- name: Find Base AMI (develop)
-  ec2_ami_find:
-    name: "{{ami.base.ami_parent_name}}-develop*"
-    region: "{{account.region}}"
-    owner: 283871543274
-    is_public: no
-    virtualization_type: hvm
-    sort: creationDate
-    sort_order: descending
-    sort_end: 1
-    no_result_action: fail
-  register: ec2_ami_find_output
-  when: ec2_ami_find_output.results | length==0
+  rescue:
+    - name: Find Base AMI (develop)
+      ec2_ami_find:
+        name: "hmr-core-develop-{{ami_type}}-*"
+        region: "{{account.region}}"
+        owner: 843638552935
+        is_public: no
+        virtualization_type: hvm
+        sort: creationDate
+        sort_order: descending
+        sort_end: 1
+        no_result_action: fail
+        ami_tags:
+          Name:         "hmr-core-develop-{{ami_type}}-*"
+          branch:       develop
+          ami_type:     "{{ami_type}}"
+      register: ec2_ami_find_output
+   #when: ec2_ami_find_output.results | length==0
+  always:
+    - name: "Display EC2 AMI Find Output"
+      debug:
+        msg: "{{ec2_ami_find_output}}"
+        verbosity: 3
 
-- name: "Set Fact ec2_ami_image_id"
-  set_fact:
-    ec2_ami_image_id: "{{ ec2_ami_find_output.results[0].ami_id }}"
-  when: not(ec2_ami_find_output.results | length==0)
+    - name: "Display EC2 AMI Id"
+      debug:
+        msg: "{{ec2_ami_find_output.results[0].ami_id}}"
 
-- name: "Display EC2 AMI Id"
-  debug:
-    msg: "{{ec2_ami_find_output.results[0].ami_id}}"
-  when: not(ec2_ami_find_output.results | length==0)
+    - lineinfile:
+        path: "{{playbook_dir}}/ami_id"
+        line: 'ami_id={{ec2_ami_find_output.results[0].ami_id}}'
+        state: present
+        create: yes
 
-- name: "Display EC2 AMI Find Output"
-  debug:
-    msg: "{{ec2_ami_find_output}}"
-    verbosity: 3
-  when: not(ec2_ami_find_output.results | length==0)
-
-- lineinfile:
-    path: "{{playbook_dir}}/ami_id"
-    line: 'ami_id={{ec2_ami_find_output.results[0].ami_id}}'
-    state: present
-    create: yes
+    - lineinfile:
+        path: "{{playbook_dir}}/ami_id"
+        line: 'ami_build={{ec2_ami_find_output.results[0].tags.build}}'
+        state: present
+        create: yes

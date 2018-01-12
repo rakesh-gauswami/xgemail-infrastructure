@@ -1,0 +1,12 @@
+---
+
+- name: "Gather {{stack.vpc.cloud_email_vpc}} CloudFormation Stack Output"
+  cloudformation_facts:
+    stack_name: "{{stack.vpc.cloud_email_vpc}}"
+    region: "{{account.region}}"
+  register: cloud_email_vpc_output
+
+- name: "Print {{stack.vpc.cloud_email_vpc}} CloudFormation Stack Output"
+  debug:
+    var: cloud_email_vpc_output
+    verbosity: 3

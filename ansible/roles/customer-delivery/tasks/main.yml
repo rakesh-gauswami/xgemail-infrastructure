@@ -1,0 +1,16 @@
+---
+
+- name: "Include Customer Delivery ELB Creation Task."
+  include_tasks: cd-elb-deploy.yml
+  tags:
+    - asg
+
+- name: "Include Customer Delivery Route53 Creation Task."
+  include_tasks: cd-route53-deploy.yml
+  tags:
+    - asg
+
+- name: "Include Customer Delivery EC2 Instance Creation Task."
+  include_tasks: cd-instance-deploy.yml
+  tags:
+    - asg
