@@ -1085,6 +1085,37 @@
                 "FromPort": "22",
                 "ToPort": "22"
             }
+        },
+        "XgemailPolicyEfsMountTargetSecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "Tags": [{
+                    "Key": "Name",
+                    "Value": {
+                        "Fn::Join": [ "", [
+                            { "Ref": "Environment" }, "-",
+                            { "Ref": "Branch" }, "-",
+                            { "Ref": "AWS::StackName" }, "/sg/xgemail/efs/policymount"
+                        ]]
+                    }
+                }],
+                "VpcId": { "Ref": "Vpc" },
+                "GroupDescription": "Controls access to the policy EFS mount targets",
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "2049",
+                        "ToPort": "2049",
+                        "SourceSecurityGroupId": { "Ref": "XgemailCustomerSubmitSecurityGroup" }
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "2049",
+                        "ToPort": "2049",
+                        "SourceSecurityGroupId": { "Ref": "XgemailSubmitSecurityGroup" }
+                    }
+                ]
+            }
         }
     },
 
@@ -1196,7 +1227,18 @@
             "Value": {
                 "Ref": "XgemailInternetXdeliverySecurityGroup"
             }
+        },
+        "XgemailPolicyEfsMountTargetSecurityGroup": {
+            "Description": "Xgemail EFS mount target security group",
+            "Value": {
+                "Ref": "XgemailPolicyEfsMountTargetSecurityGroup"
+            }
+        },
+        "XgemailPolicyEfsMountTargetSecurityGroupId": {
+            "Description": "Xgemail EFS mount target security group Id",
+            "Value": {
+                "Fn::GetAtt" : [ "XgemailPolicyEfsMountTargetSecurityGroup", "GroupId" ]
+            }
         }
-
     }
 }

@@ -1,0 +1,73 @@
+#!/bin/bash
+#
+# Copyright 2016, Sophos Limited. All rights reserved.
+#
+# 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
+# Sophos Limited and Sophos Group.  All other product and company
+# names mentioned are trademarks or registered trademarks of their
+# respective owners.
+#
+# Uploads a passphrase text file to S3
+# Passphrase is encrypted using KMS/SSE
+
+set -e
+
+print_help () {
+    echo "Uploads a passphrase text file to S3"
+    echo "You can supply a passphrase as parameter for use in scripts:"
+    echo "usage 1: $(basename $0) <bucket-name> <file-name> <passphrase>"
+    echo "ex 1: $(basename $0) cloud-dev-connections inf-ca-pass passphrase"
+
+    echo "Interactive: This script will ask you to enter the passphrase which will be uploaded."
+    echo "usage 2: $(basename $0) <bucket-name> <file-name>"
+    echo "ex 2: $(basename $0) cloud-dev-connections inf-ca-pass"
+    exit 2
+}
+
+if [ "$#" -ge 2 ]; then
+
+    # S3 specific
+    BUCKET_NAME="$1"
+
+    # S3 file name
+    FILE_NAME="$2"
+
+    # The pass phrase which should be uploaded
+    PASS_PHRASE="$3"
+
+    if [ -z "$PASS_PHRASE" ]; then
+        read -s -r -p "Enter passphrase which should be uploaded" PASS_PHRASE
+    fi
+
+    REGION="us-west-2"
+
+    ROOT_DIR="/home/$USER/aws/certificates"
+
+    upload_passphrase () {
+        KMS_COMMAND="aws kms --region $REGION list-aliases --query Aliases[?AliasName==\`alias/"$BUCKET_NAME"\`].{TargetKeyId:TargetKeyId} --output text"
+        KMS_KEY_ID=$($KMS_COMMAND)
+
+        echo $PASS_PHRASE > "$ROOT_DIR"/"$FILE_NAME"
+
+        aws s3api put-object \
+            --region "$REGION" \
+            --bucket "$BUCKET_NAME" \
+            --key "$FILE_NAME" \
+            --body "$ROOT_DIR"/"$FILE_NAME" \
+            --server-side-encryption aws:kms \
+            --ssekms-key-id "$KMS_KEY_ID"
+
+    }
+    onexit() {
+        rm -f "$ROOT_DIR"/"$FILE_NAME"
+    }
+
+    trap onexit EXIT
+
+    upload_passphrase
+
+else
+
+    print_help
+
+fi

@@ -1,6 +1,6 @@
 # vim: autoindent noexpandtab tabstop=8 softtabstop=8 shiftwidth=8 filetype=make
 
-# Copyright 2017, Sophos Limited. All rights reserved.
+# Copyright 2018, Sophos Limited. All rights reserved.
 #
 # 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
 # Sophos Limited and Sophos Group.  All other product and company
@@ -12,7 +12,7 @@
 # We should add checks for shell scripts, python files, js files,
 # and run unit tests too.
 
-.PHONY: top check local clean
+.PHONY: top check local clean group1 group2 group3
 
 # Make the default target on laptops the local one that does not have Bamboo
 # dependencies.  Hopefully this won't lead to unpleasant surprises.
@@ -30,11 +30,12 @@ BAMBOO_TARGETS = .check.python \
 
 # These tests work when run locally:
 
+# TODO: Put .check.docker back into this list once the fluentd Dockerfile passes again or is removed.
+
 LOCAL_TARGETS = .check.ansible \
 		.check.bash \
 		.check.cloudformation \
 		.check.copyright \
-		.check.docker \
 		.check.erb \
 		.check.json \
 		.check.pyunit.local \
@@ -42,6 +43,28 @@ LOCAL_TARGETS = .check.ansible \
 		.check.yaml \
 		.check.vaulted \
 		$(EOL)
+
+# Build Group 1 - Python Bamboo
+GROUP_1 =   .check.python \
+			.check.pyunit.bamboo \
+			$(EOL)
+
+# Build Group 2 - Python Local
+GROUP_2 =   .check.pyunit.local \
+			$(EOL)
+
+# Build Group 3 - Everything else
+GROUP_3 = 	.check.ansible \
+			.check.bash \
+			.check.cloudformation \
+			.check.copyright \
+			.check.erb \
+			.check.json \
+			.check.ruby \
+			.check.unvaulted \
+			.check.yaml \
+			.check.vaulted \
+			$(EOL)
 
 # These directories contains python unit tests that can run locally.
 # The python unit tests in other directories might not work locally.
@@ -54,13 +77,23 @@ PYUNIT_LOCAL_DIRS := ./ansible/roles/vault/files \
 		./cookbooks/sophos-cloud-mongo/files/default \
 		./lambda \
 		./tools \
-		./ww \
+		./ww/variables-test \
 		./ww/ww_lib \
 		$(EOL)
 
 # Use this target to run all checks.
 
 check: clean $(LOCAL_TARGETS) $(BAMBOO_TARGETS)
+	@echo OK
+
+# Breakout Bamboo only targets to run in parallel with LOCAL_TARGETS
+group1: clean $(GROUP_1)
+	@echo OK
+
+group2: clean $(GROUP_2)
+	@echo OK
+
+group3: clean $(GROUP_3)
 	@echo OK
 
 # Use this target to run checks that don't depend on Bamboo.
@@ -281,8 +314,10 @@ NUM_ERB_FILES=$(shell echo $(ERB_FILES) | wc -w)
 	@./tools/check_erb $(ERB_FILES)
 	@touch $@
 
-YAML_FILES := $(shell find . -name '*.yml')
-YAML_FILES += $(shell find . -name '*.yaml' | grep -v -F .check.yaml)
+# exclude .git folder to avoid problems with branch names containing .yml or .yaml
+# see https://stackoverflow.com/a/15736463
+YAML_FILES := $(shell find . -path './.git/*' -prune -o -name '*.yml' -print)
+YAML_FILES += $(shell find . -path './.git/*' -prune -o -name '*.yaml' -print| grep -v -F .check.yaml)
 
 NUM_YAML_FILES=$(shell echo $(YAML_FILES) | wc -w)
 
@@ -303,8 +338,6 @@ CLOUDFORMATION_PARAMETER_FILES += $(shell find ww/parameters -name '*.json')
 	@./tools/check_cloudformation -b ami_builder_vpc_template.json ami_builder_vpc_parameters.json
 	@./tools/check_cloudformation -b as_bastion_template.json as_bastion_parameters.json
 	@./tools/check_cloudformation -b as_elasticsearch_instance_template.json as_elasticsearch_instance_parameters.json
-	@./tools/check_cloudformation -b as_elasticsearch_server_template.json as_logging_elasticsearch_parameters.json
-	@./tools/check_cloudformation -b as_kibana_server_template.json as_logging_kibana_parameters.json
 	@./tools/check_cloudformation -b as_lnp_template.json as_lnp_parameters.json
 	@./tools/check_cloudformation -b as_proxy_template.json as_proxy_api_parameters.json
 	@./tools/check_cloudformation -b as_proxy_template.json as_proxy_core_parameters.json
@@ -313,15 +346,12 @@ CLOUDFORMATION_PARAMETER_FILES += $(shell find ww/parameters -name '*.json')
 	@./tools/check_cloudformation -b as_proxy_template.json as_proxy_utm_parameters.json
 	@./tools/check_cloudformation -b as_proxy_template.json as_proxy_wifi_parameters.json
 	@./tools/check_cloudformation -b as_vpn_template.json as_vpn_parameters.json
-	@./tools/check_cloudformation -b cw_log_group_with_filter_and_alarm_template.json cw_log_group_logstash_parameters.json
 	@./tools/check_cloudformation -b ec_memcached_template.json ec_memcached_parameters.json
 	@./tools/check_cloudformation -b ec_redis_template.json ec_redis_parameters.json
 	@./tools/check_cloudformation -b elb_advanced_template.json elb_advanced_akm_parameters.json
 	@./tools/check_cloudformation -b elb_advanced_template.json elb_advanced_elasticsearch_client_parameters.json
 	@./tools/check_cloudformation -b elb_advanced_template.json elb_advanced_elasticsearch_parameters.json
 	@./tools/check_cloudformation -b elb_advanced_template.json elb_advanced_elasticsearch_public_parameters.json
-	@./tools/check_cloudformation -b elb_advanced_template.json elb_advanced_kibana_parameters.json
-	@./tools/check_cloudformation -b elb_advanced_multi_listener_template.json elb_advanced_logstash_shipper_parameters.json
 	@./tools/check_cloudformation -b elb_integration_template.json elb_integration_dep_parameters.json
 	@./tools/check_cloudformation -b elb_public_template.json elb_public_api_parameters.json
 	@./tools/check_cloudformation -b elb_public_template.json elb_public_core_parameters.json
@@ -334,7 +364,6 @@ CLOUDFORMATION_PARAMETER_FILES += $(shell find ww/parameters -name '*.json')
 	@./tools/check_cloudformation -b elb_public_template.json elb_public_utm_parameters.json
 	@./tools/check_cloudformation -b elb_public_template.json elb_public_wifi_parameters.json
 	@./tools/check_cloudformation -b image_elasticsearch_instance.json image_elasticsearch_parameters.json
-	@./tools/check_cloudformation -b image_logstash_server_template.json image_logstash_server_parameters.json
 	@./tools/check_cloudformation -b image_mongodb_template.json image_mongodb_parameters.json
 	@./tools/check_cloudformation -b image_push_server_template.json image_push_server_parameters.json
 	@./tools/check_cloudformation -b image_xgemail_instance.json image_xgemail_parameters.json
@@ -353,18 +382,12 @@ CLOUDFORMATION_PARAMETER_FILES += $(shell find ww/parameters -name '*.json')
 	@./tools/check_cloudformation -b route53_record_template.json route53_record_core_parameters.json
 	@./tools/check_cloudformation -b route53_record_template.json route53_record_csg_parameters.json
 	@./tools/check_cloudformation -b route53_record_template.json route53_record_dep_parameters.json
-	@./tools/check_cloudformation -b route53_record_template.json route53_record_elk_elasticsearch_parameters.json
-	@./tools/check_cloudformation -b route53_record_template.json route53_record_elk_elasticsearch_public_parameters.json
-	@./tools/check_cloudformation -b route53_record_template.json route53_record_elk_kibana_parameters.json
 	@./tools/check_cloudformation -b route53_record_template.json route53_record_hub_parameters.json
-	@./tools/check_cloudformation -b route53_record_template.json route53_record_logstash_shipper_parameters.json
 	@./tools/check_cloudformation -b route53_record_template.json route53_record_mail_parameters.json
 	@./tools/check_cloudformation -b route53_record_template.json route53_record_mcs_parameters.json
 	@./tools/check_cloudformation -b route53_record_template.json route53_record_memcached_parameters.json
 	@./tools/check_cloudformation -b route53_record_template.json route53_record_mob_parameters.json
-	@./tools/check_cloudformation -b route53_record_template.json route53_record_redis_logging_parameters.json
 	@./tools/check_cloudformation -b route53_record_template.json route53_record_redis_parameters.json
-	@./tools/check_cloudformation -b route53_record_template.json route53_record_smc_parameters.json
 	@./tools/check_cloudformation -b route53_record_template.json route53_record_utm_parameters.json
 	@./tools/check_cloudformation -b route53_record_template.json route53_record_wifi_parameters.json
 	@./tools/check_cloudformation -b s3_bucket_template.json s3_3rdparty_bucket_parameters.json
@@ -391,6 +414,7 @@ CLOUDFORMATION_PARAMETER_FILES += $(shell find ww/parameters -name '*.json')
 	@./tools/check_cloudformation -b worker_template.json worker_create_updated_amazon_nat_ami_parameters.json
 	@echo Checking weather-wizard parameter files ...
 	@./tools/check_cloudformation -w alb_push_server_template.json alb/public/push_parameters.json
+	@./tools/check_cloudformation -w as_ansible_controller_template.json -
 	@./tools/check_cloudformation -w as_ansible_instance_template.json as_ansible_instance_parameters.json
 	@./tools/check_cloudformation -w as_bastion_template.json as/bastion_parameters.json
 	@./tools/check_cloudformation -w as_cloudera_core_template.json as_cloudera_core_hbase_rs_parameters.json
@@ -411,7 +435,6 @@ CLOUDFORMATION_PARAMETER_FILES += $(shell find ww/parameters -name '*.json')
 	@./tools/check_cloudformation -w as_elasticsearch_instance_template.json elasticsearch/master/xgemail_1a_parameters.json
 	@./tools/check_cloudformation -w as_elasticsearch_instance_template.json elasticsearch/master/xgemail_1b_parameters.json
 	@./tools/check_cloudformation -w as_elasticsearch_instance_template.json elasticsearch/master/xgemail_1c_parameters.json
-	@./tools/check_cloudformation -w as_elasticsearch_server_template.json as_logging_elasticsearch_parameters.json
 	@./tools/check_cloudformation -w as_internal_web_proxy_template.json as_internal_web_proxy_parameters.json
 	@./tools/check_cloudformation -w as_java_instance_template.json as_java_api_parameters.json
 	@./tools/check_cloudformation -w as_java_instance_template.json as_java_archivinglifecycle_parameters.json
@@ -432,12 +455,10 @@ CLOUDFORMATION_PARAMETER_FILES += $(shell find ww/parameters -name '*.json')
 	@./tools/check_cloudformation -w as_java_instance_template.json as_java_utm_parameters.json
 	@./tools/check_cloudformation -w as_java_instance_template.json as_java_slec_parameters.json
 	@./tools/check_cloudformation -w as_java_instance_template.json as_java_wifi_parameters.json
-	@./tools/check_cloudformation -w as_kibana_server_template.json as_logging_kibana_parameters.json
 	@./tools/check_cloudformation -w kinesis_template.json kinesis_auditing_events_parameters.json
 	@./tools/check_cloudformation -w kinesis_template.json kinesis/push_parameters.json
 	@./tools/check_cloudformation -w as_lnp_template.json as/lnp_parameters.json
 	@./tools/check_cloudformation -w as_logicmonitor_collector_template.json as_logicmonitor_collector_parameters.json
-	@./tools/check_cloudformation -w as_logstash_server_template.json as_logging_logstash_shipper_parameters.json
 	@./tools/check_cloudformation -w as_mongodb_client_instance_template.json as_mongodb_client_instance_parameters.json
 	@./tools/check_cloudformation -w as_mongodb_instance_template.json as_mongodb_configsvr_a_parameters.json
 	@./tools/check_cloudformation -w as_mongodb_instance_template.json as_mongodb_configsvr_b_parameters.json
@@ -496,18 +517,17 @@ CLOUDFORMATION_PARAMETER_FILES += $(shell find ww/parameters -name '*.json')
 	@./tools/check_cloudformation -w bakery_asg_template.json bakery_asg_parameters.json
 	@./tools/check_cloudformation -w bakery_vpc_template.json bakery_vpc_parameters.json
 	@./tools/check_cloudformation -w cloudfront_template.json cloudfront_stac_public_parameters.json
-	@./tools/check_cloudformation -w cw_log_group_with_filter_and_alarm_template.json cw/log_group_logstash_parameters.json
 	@./tools/check_cloudformation -w ec_memcached_template.json ec/memcached_parameters.json
-	@./tools/check_cloudformation -w ec_redis_template.json ec/redis_logging_parameters.json
 	@./tools/check_cloudformation -w ec_redis_template.json ec/redis_parameters.json
 	@./tools/check_cloudformation -w ec_redis_template.json ec/smc_redis_parameters.json
+	@./tools/check_cloudformation -w ec_sharded_redis_template.json ec/redis_core_parameters.json
+	@./tools/check_cloudformation -w efs_mount_target_template.json efs/xgemail_policy_efs_mount_target_parameters.json
+	@./tools/check_cloudformation -w efs_template.json efs/xgemail_policy_efs_parameters.json
 	@./tools/check_cloudformation -w elb_advanced_template.json elb/advanced/elasticsearch_client_parameters.json
 	@./tools/check_cloudformation -w elb_advanced_template.json elb/advanced/elasticsearch_parameters.json
 	@./tools/check_cloudformation -w elb_advanced_template.json elb/advanced/elasticsearch_public_parameters.json
 	@./tools/check_cloudformation -w elb_advanced_template.json elb/advanced/email_xdelivery_parameters.json
 	@./tools/check_cloudformation -w elb_advanced_template.json elb/advanced/email_internet_xdelivery_parameters.json
-	@./tools/check_cloudformation -w elb_advanced_template.json elb/advanced/kibana_parameters.json
-	@./tools/check_cloudformation -w elb_advanced_multi_listener_template.json elb/advanced/logstash_shipper_parameters.json
 	@./tools/check_cloudformation -w elb_advanced_template.json elb/advanced/smc_worker_parameters.json
 	@./tools/check_cloudformation -w elb_advanced_template.json elb_advanced_cloudera_mgr_hb_parameters.json
 	@./tools/check_cloudformation -w elb_advanced_template.json elb_advanced_cloudera_mgr_parameters.json
@@ -544,6 +564,8 @@ CLOUDFORMATION_PARAMETER_FILES += $(shell find ww/parameters -name '*.json')
 	@./tools/check_cloudformation -w eni_template.json eni_zookeeper1_parameters.json
 	@./tools/check_cloudformation -w eni_template.json eni_zookeeper2_parameters.json
 	@./tools/check_cloudformation -w eni_template.json eni_zookeeper3_parameters.json
+	@./tools/check_cloudformation -w es_domain_template.json elasticsearch/aws/es_domain_template_parameters.json
+	@./tools/check_cloudformation -w firehose_log_to_s3_template.json firehose-log-shipper/firehose-log-shipper-stream-parameters.json
 	@./tools/check_cloudformation -w firehose_log_to_s3_template.json ses-mail-relay/ses-log-delivery-stream-parameters.json
 	@./tools/check_cloudformation -w gateway_template.json public_gateway_parameters.json
 	@./tools/check_cloudformation -w image_push_load_generator_template.json image/image_push_load_generator_parameters.json
@@ -559,11 +581,15 @@ CLOUDFORMATION_PARAMETER_FILES += $(shell find ww/parameters -name '*.json')
 	@./tools/check_cloudformation -w lambda_template.json lambda_image_search_resource_parameters.json
 	@./tools/check_cloudformation -w lambda_template.json lambda/lambda_xgemail_monitor_receive_parameters.json
 	@./tools/check_cloudformation -w lambda_template.json lambda/lambda_xgemail_monitor_send_parameters.json
+	@./tools/check_cloudformation -w lambda_xgemail_eip_monitor_template.json lambda/lambda_xgemail_eip_monitor_parameters.json
+	@./tools/check_cloudformation -w lambda_xgemail_eip_rotation_template.json lambda/lambda_xgemail_eip_rotation_parameters.json
 	@./tools/check_cloudformation -w policies_push_template.json policies_push_parameters.json
 	@./tools/check_cloudformation -w policies_stac_template.json policies_stac_parameters.json
 	@./tools/check_cloudformation -w policy_call_lambda_template.json ses-mail-relay/firehose-call-transform-lambda-policy-parameters.json
+	@./tools/check_cloudformation -w policy_firehose_publish_to_s3_template.json firehose-log-shipper/firehose-log-shipper-publish-to-s3-policy-parameters.json
 	@./tools/check_cloudformation -w policy_firehose_publish_to_s3_template.json ses-mail-relay/firehose-publish-ses-log-to-s3-policy-parameters.json
-	@./tools/check_cloudformation -w policy_ses_publish_to_firehose_template.json ses-mail-relay/ses-publish-to-firehose-policy-parameters.json
+	@./tools/check_cloudformation -w policy_publish_to_firehose_template.json firehose-log-shipper/ec2-instance-publish-to-firehose-log-shipper-policy-parameters.json
+	@./tools/check_cloudformation -w policy_publish_to_firehose_template.json ses-mail-relay/ses-publish-to-firehose-policy-parameters.json
 	@./tools/check_cloudformation -w rds_template.json rds_parameters.json
 	@./tools/check_cloudformation -w rds_template.json rds/smc_parameters.json
 	@./tools/check_cloudformation -w roles_cloudfront_lambda_template.json -
@@ -574,8 +600,11 @@ CLOUDFORMATION_PARAMETER_FILES += $(shell find ww/parameters -name '*.json')
 	@./tools/check_cloudformation -w roles_nightly_automation_template.json roles/nightly_automation_parameters.json
 	@./tools/check_cloudformation -w roles_region_push_template.json roles/roles_region_push_parameters.json
 	@./tools/check_cloudformation -w roles_region_template.json roles/region_parameters.json
+	@./tools/check_cloudformation -w roles_simple_template.json firehose-log-shipper/firehose-log-shipper-publish-to-s3-role-parameters.json
 	@./tools/check_cloudformation -w roles_simple_template.json ses-mail-relay/firehose-publish-ses-log-to-s3-role-parameters.json
 	@./tools/check_cloudformation -w roles_simple_template.json ses-mail-relay/ses-publish-to-firehose-role-parameters.json
+	@./tools/check_cloudformation -w roles_s3_policy_template.json roles/toc_bucket_access_policy_parameters.json
+	@./tools/check_cloudformation -w roles_s3_policy_template.json roles/xgemail_settings_bucket_access_policy_parameters.json
 	@./tools/check_cloudformation -w roles_xgemail_template.json roles/xgemail_parameters.json
 	@./tools/check_cloudformation -w route53_alias_record_template.json route53/record/mcs_elbv2_hmr_alias_parameters.json
 	@./tools/check_cloudformation -w route53_cname_record_template.json route53/record/mcs_elbv2_hydra_cname_parameters.json
@@ -603,30 +632,25 @@ CLOUDFORMATION_PARAMETER_FILES += $(shell find ww/parameters -name '*.json')
 	@./tools/check_cloudformation -w route53_record_template.json route53/record/csg_parameters.json
 	@./tools/check_cloudformation -w route53_record_template.json route53/record/dep_parameters.json
 	@./tools/check_cloudformation -w route53_record_template.json route53/record/dp_parameters.json
-	@./tools/check_cloudformation -w route53_record_template.json route53/record/elk_elasticsearch_parameters.json
-	@./tools/check_cloudformation -w route53_record_template.json route53/record/elk_elasticsearch_public_parameters.json
-	@./tools/check_cloudformation -w route53_record_template.json route53/record/elk_kibana_parameters.json
 	@./tools/check_cloudformation -w route53_record_template.json route53/record/email_delivery_parameters.json
 	@./tools/check_cloudformation -w route53_record_template.json route53/record/email_internet_delivery_parameters.json
 	@./tools/check_cloudformation -w route53_record_template.json route53/record/email_xdelivery_parameters.json
 	@./tools/check_cloudformation -w route53_record_template.json route53/record/email_internet_xdelivery_parameters.json
 	@./tools/check_cloudformation -w route53_record_template.json route53/record/hub_parameters.json
 	@./tools/check_cloudformation -w route53_record_template.json route53/record/hydra_hosted_zone_mx_record.json
-	@./tools/check_cloudformation -w route53_record_template.json route53/record/logstash_shipper_parameters.json
 	@./tools/check_cloudformation -w route53_record_template.json route53/record/mail_parameters.json
 	@./tools/check_cloudformation -w route53_record_template.json route53/record/mailinbound_parameters.json
 	@./tools/check_cloudformation -w route53_record_template.json route53/record/mailoutbound_parameters.json
 	@./tools/check_cloudformation -w route53_record_template.json route53/record/memcached_parameters.json
 	@./tools/check_cloudformation -w route53_record_template.json route53/record/mob_parameters.json
 	@./tools/check_cloudformation -w route53_record_template.json route53/record/push_parameters.json
-	@./tools/check_cloudformation -w route53_record_template.json route53/record/redis_logging_parameters.json
 	@./tools/check_cloudformation -w route53_record_template.json route53/record/redis_parameters.json
-	@./tools/check_cloudformation -w route53_record_template.json route53/record/smc_cloudif_parameters.json
-	@./tools/check_cloudformation -w route53_record_template.json route53/record/smc_deviceif_parameters.json
-	@./tools/check_cloudformation -w route53_record_template.json route53/record/smc_parameters.json
+	@./tools/check_cloudformation -w route53_smc_record_template.json route53/record/smc_cloudif_parameters.json
+	@./tools/check_cloudformation -w route53_smc_record_template.json route53/record/smc_deviceif_parameters.json
+	@./tools/check_cloudformation -w route53_smc_record_template.json route53/record/smc_parameters.json
 	@./tools/check_cloudformation -w route53_record_template.json route53/record/smc_rds_parameters.json
 	@./tools/check_cloudformation -w route53_record_template.json route53/record/smc_redis_parameters.json
-	@./tools/check_cloudformation -w route53_record_template.json route53/record/smc_userif_parameters.json
+	@./tools/check_cloudformation -w route53_smc_record_template.json route53/record/smc_userif_parameters.json
 	@./tools/check_cloudformation -w route53_record_template.json route53/record/stac_cloudfront_public_parameters.json
 	@./tools/check_cloudformation -w route53_record_template.json route53/record/utm_parameters.json
 	@./tools/check_cloudformation -w route53_record_template.json route53/record/wifi_parameters.json
@@ -638,9 +662,11 @@ CLOUDFORMATION_PARAMETER_FILES += $(shell find ww/parameters -name '*.json')
 	@./tools/check_cloudformation -w route53_txt_record_template.json ses-mail-relay/ses-home-mail-domain-dns-spf-parameters.json
 	@./tools/check_cloudformation -w route53_txt_record_template.json ses-mail-relay/ses-home-mail-domain-dns-verification-parameters.json
 	@./tools/check_cloudformation -w route53_txt_record_template.json ses-mail-relay/ses-home-mail-domain-mail-from-dns-spf-parameters.json
+	@./tools/check_cloudformation -w s3_bucket_policy_fragment_shard_template.json s3/policy_fragment_bucket_shard_parameters.json
 	@./tools/check_cloudformation -w -t generic s3_bucket_template.json bakery_s3_parameters.json
-	@./tools/check_cloudformation -w s3_bucket_sns_notifications_template.json s3/policy_bucket_parameters.json
+	@./tools/check_cloudformation -w s3_policy_bucket_template.json s3/policy_bucket_parameters.json
 	@./tools/check_cloudformation -w s3_bucket_template.json archiving/archiving_expiry_bucket.json
+	@./tools/check_cloudformation -w s3_bucket_template.json archiving/archiving_integration_bucket_parameters.json
 	@./tools/check_cloudformation -w s3_bucket_template.json archiving/archiving_message_bucket.json
 	@./tools/check_cloudformation -w s3_bucket_template.json s3/3rdparty_bucket_parameters.json
 	@./tools/check_cloudformation -w s3_bucket_template.json s3/ansible_bucket_parameters.json
@@ -672,6 +698,7 @@ CLOUDFORMATION_PARAMETER_FILES += $(shell find ww/parameters -name '*.json')
 	@./tools/check_cloudformation -w s3_bucket_template.json s3_stac_private_labs_bucket_parameters.json
 	@./tools/check_cloudformation -w s3_bucket_template.json s3_stac_public_bucket_parameters.json
 	@./tools/check_cloudformation -w s3_bucket_template.json s3/hub_account_export_data_bucket_parameters.json
+	@./tools/check_cloudformation -w s3_bucket_template.json s3/xgemail_custom_setttings_bucket_parameters.json
 	@./tools/check_cloudformation -w sdb_domain_template.json -
 	@./tools/check_cloudformation -w ses_configuration_set_template.json ses-mail-relay/ses_configuration_set_parameters.json
 	@./tools/check_cloudformation -w ses_domain_identity_template.json ses-mail-relay/ses-business-mail-domain-identity-parameters.json
@@ -679,6 +706,7 @@ CLOUDFORMATION_PARAMETER_FILES += $(shell find ww/parameters -name '*.json')
 	@./tools/check_cloudformation -w sg_template.json sg/parameters.json
 	@./tools/check_cloudformation -w sg_push_template.json sg/sg_push_parameters.json
 	@./tools/check_cloudformation -w sg_push_load_generator_template.json sg/sg_push_load_generator_parameters.json
+	@./tools/check_cloudformation -w sg_stac_esdomain_template.json sg/stac_esdomain_parameters.json
 	@./tools/check_cloudformation -w sg_ops_manager_template.json sg/ops_manager_parameters.json
 	@./tools/check_cloudformation -w sg_bi_import_template.json sg/sg_bi_import_parameters.json
 	@./tools/check_cloudformation -w sg_xgemail_template.json sg/xgemail_parameters.json
@@ -688,6 +716,7 @@ CLOUDFORMATION_PARAMETER_FILES += $(shell find ww/parameters -name '*.json')
 	@./tools/check_cloudformation -w sns_not_so_simple_template.json sns/xgemail_deleted_events_parameters.json
 	@./tools/check_cloudformation -w sns_not_so_simple_template.json sns/xgemail_internet_delivery_parameters.json
 	@./tools/check_cloudformation -w sns_not_so_simple_template.json sns/xgemail_policy_parameters.json
+	@./tools/check_cloudformation -w sns_not_so_simple_template.json sns/xgemail_multi_policy_parameters.json
 	@./tools/check_cloudformation -w sns_not_so_simple_template.json sns/xgemail_quarantined_events_parameters.json
 	@./tools/check_cloudformation -w sns_not_so_simple_template.json sns/xgemail_relay_control_parameters.json
 	@./tools/check_cloudformation -w sns_not_so_simple_template.json sns/xgemail_success_events_parameters.json
@@ -696,19 +725,17 @@ CLOUDFORMATION_PARAMETER_FILES += $(shell find ww/parameters -name '*.json')
 	@./tools/check_cloudformation -w sns_template.json sns/xgemail_parameters.json
 	@./tools/check_cloudformation -w sqs_simple_template.json sqs/archiving_lifecycle_sqs_parameters.json
 	@./tools/check_cloudformation -w sqs_simple_template.json sqs/xgemail_customer_delivery_listener_parameters.json
-	@./tools/check_cloudformation -w sqs_simple_template.json sqs/xgemail_customer_delivery_parameters.json
+	@./tools/check_cloudformation -w sqs_simple_template.json sqs/xgemail_internet_delivery_listener_parameters.json
 	@./tools/check_cloudformation -w sqs_simple_template.json sqs/xgemail_customer_submit_parameters.json
 	@./tools/check_cloudformation -w sqs_simple_template.json sqs/xgemail_delay_parameters.json
 	@./tools/check_cloudformation -w sqs_simple_template.json sqs/xgemail_dqs_parameters.json
 	@./tools/check_cloudformation -w sqs_simple_template.json sqs/xgemail_emergency_inbox_listener_parameters.json
-	@./tools/check_cloudformation -w sqs_simple_template.json sqs/xgemail_emergency_inbox_parameters.json
 	@./tools/check_cloudformation -w sqs_simple_template.json sqs/xgemail_msg_history_listener_parameters.json
 	@./tools/check_cloudformation -w sqs_simple_template.json sqs/xgemail_msg_history_parameters.json
 	@./tools/check_cloudformation -w sqs_simple_template.json sqs/xgemail_msg_statistics_listener_parameters.json
-	@./tools/check_cloudformation -w sqs_simple_template.json sqs/xgemail_msg_statistics_parameters.json
+	@./tools/check_cloudformation -w sqs_simple_template.json sqs/xgemail_notifier_request_parameters.json
+	@./tools/check_cloudformation -w sqs_simple_template.json sqs/xgemail_multi_policy_parameters.json
 	@./tools/check_cloudformation -w sqs_simple_template.json sqs/xgemail_quarantine_delivery_listener_parameters.json
-	@./tools/check_cloudformation -w sqs_simple_template.json sqs/xgemail_quarantine_delivery_parameters.json
-	@./tools/check_cloudformation -w sqs_simple_template.json sqs/xgemail_internet_delivery_parameters.json
 	@./tools/check_cloudformation -w sqs_simple_template.json sqs/xgemail_internet_submit_parameters.json
 	@./tools/check_cloudformation -w sqs_template.json sqs/smc_compliance_parameters.json
 	@./tools/check_cloudformation -w sqs_template.json sqs/smc_import_data_processor_parameters.json

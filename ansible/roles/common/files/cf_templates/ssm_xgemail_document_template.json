@@ -1,0 +1,90 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "Template containing a collection of Xgemail SSM Documents",
+
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2018, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ],
+
+    "Comments": [
+      "Creates SSM Documents to automate control of various functions on CloudEmail infrastructure."
+    ]
+  },
+
+  "Resources" : {
+    "PostfixService": {
+      "Type": "AWS::SSM::Document",
+      "Properties":{
+        "Content": {
+          "schemaVersion": "1.2",
+          "description": "Start or Stop Postfix Service via Monit Service",
+          "parameters": {
+             "cmd":{
+              "type":"String",
+              "description":"Start or stop Postfix."
+            }
+          },
+          "runtimeConfig": {
+            "aws:runShellScript": {
+              "properties": [
+                {
+                  "id": "0.aws:runShellScript",
+                  "runCommand": ["monit {{ cmd }} postfix"]
+                }
+              ]
+            }
+          }
+        },
+        "DocumentType": "Command"
+      }
+    },
+
+    "UpdateHostname": {
+      "Type": "AWS::SSM::Document",
+      "Properties":{
+        "Content": {
+          "schemaVersion": "1.2",
+          "description": "Update the hostname on an EC2 instance",
+          "parameters": {
+            "hostname":{
+              "type":"String",
+              "description":"The hostname of the ec2 instance."
+            }
+          },
+          "runtimeConfig": {
+            "aws:runShellScript": {
+              "properties": [
+                {
+                  "id": "0.aws:runShellScript",
+                  "runCommand": [
+                    "postmulti -i $(postmulti -l | grep -v '^-' | awk '{print $1}') -x postconf myhostname={{ hostname }}",
+                    "monit start postfix"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        "DocumentType": "Command"
+      }
+    }
+  },
+
+  "Outputs" : {
+    "PostfixService" : {
+      "Description" : "SSM Postfix Service control document name",
+      "Value" : { "Ref" : "PostfixService" }
+    },
+    "UpdateHostname" : {
+      "Description" : "SSM Update Hostname document name",
+      "Value" : { "Ref" : "UpdateHostname" }
+    }
+  }
+}

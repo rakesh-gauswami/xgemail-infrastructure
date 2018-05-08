@@ -23,7 +23,9 @@ class MessageHistoryEvent(object):
                  designation,
                  customer_id,
                  mailboxes,
-                 reindex):
+                 reindex,
+                 direction,
+                 sender):
 
         self.schema_version = schema_version
         self.message_path = message_path
@@ -38,6 +40,8 @@ class MessageHistoryEvent(object):
         self.customer_id = customer_id
         self.mailboxes = mailboxes
         self.reindex = reindex
+        self.direction = direction
+        self.sender = sender
 
     def __str__(self):
         sqs_printable = {
@@ -53,7 +57,9 @@ class MessageHistoryEvent(object):
             'designation': self.designation,
             'customer_id': self.customer_id,
             'mailboxes': self.mailboxes,
-            'reindex': self.reindex
+            'reindex': self.reindex,
+            'direction': self.direction,
+            'sender': self.sender
         }
         return ', '.join('%s=%s' % (key, value) for (key, value) in sqs_printable.iteritems())
 
@@ -72,6 +78,8 @@ class MessageHistoryEvent(object):
             'designation': self.designation,
             'customer_id': self.customer_id,
             'mailboxes': self.mailboxes,
-            'reindex': self.reindex
+            'reindex': self.reindex,
+            'direction': self.direction,
+            'sender': self.sender
         }
         return sqs_json

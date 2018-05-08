@@ -42,7 +42,8 @@ end
     'messagehistoryformatter.py',
     'metadataformatter.py',
     'nonrecoverableexception.py',
-    'recoverableexception.py'
+    'recoverableexception.py',
+    'multipolicyreaderutils.py'
 ].each do | cur |
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{cur}" do
     source cur

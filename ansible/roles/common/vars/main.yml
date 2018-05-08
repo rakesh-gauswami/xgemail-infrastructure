@@ -11,12 +11,12 @@ aws:
         1b:
           stack_name:                           "{{vpc.cloud_email.name}}-xgemail-delivery-0000-2"
           AutoScalingMinSize:                   0
-          AvailabilityZoneIndex:                1
+          AvailabilityZoneIndex:                2
           VolumeSetId:                          delivery-2
         1c:
           stack_name:                           "{{vpc.cloud_email.name}}-xgemail-delivery-0000-3"
           AutoScalingMinSize:                   0
-          AvailabilityZoneIndex:                1
+          AvailabilityZoneIndex:                3
           VolumeSetId:                          delivery-2
       cs:
         stack_name:                             something
@@ -43,7 +43,14 @@ aws:
         template:                               something
         template_parameters:
           AesDecryptionKey:                     something
-
+  es:
+    toc_elasticsearch_domain:
+      ebs_volume_size:                          10
+      master_node_type:                         't2.small.elasticsearch'
+      node_type:                                t2.medium.elasticsearch
+      instance_number:                          1
+      master_instance_number:                   2
+      snapshot_start_hour:                      0
   s3:
     customer_submit_bucket:
       stack_name:                               "{{stack.s3.customer_submit_bucket}}"
@@ -103,6 +110,14 @@ aws:
         S3BucketName:                           "{{s3.submit_bucket}}"
         S3LifeCycleDelete:                      14
         S3PolicyCreate:                         "true"
+        S3PolicyPrincipalList:                  "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
+    lambda_bucket:
+      stack_name:                               "{{stack.s3.lambda_bucket}}"
+      template:                                 "{{template.s3.s3_bucket_template}}"
+      template_parameters:
+        Environment:                            "{{account.name}}"
+        S3BucketName:                           "{{s3.lambda_bucket}}"
+        S3PolicyCreate:                         "false"
         S3PolicyPrincipalList:                  "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
     policy_bucket:
       stack_name:                               "{{stack.s3.policy_bucket}}"
@@ -260,6 +275,13 @@ aws:
         TopicName:                              "{{sns.policy_sns_topic}}"
         SnsS3TopicPolicyBucket:                 "{{s3.policy_bucket}}"
         SnsS3TopicPolicyCreate:                 "true"
+    multi_policy_sns_topic:
+      stack_name:                               "{{stack.sns.multi_policy_sns_topic}}"
+      template:                                 "{{template.sns.sns_topic_policy_s3_template}}"
+      template_parameters:
+        TopicName:                              "{{sns.multi_policy_sns_topic}}"
+        SnsS3TopicPolicyBucket:                 "{{s3.policy_bucket}}"
+        SnsS3TopicPolicyCreate:                 "true"
     relay_control_sns_topic:
       stack_name:                               "{{stack.sns.relay_control_sns_topic}}"
       template:                                 "{{template.sns.sns_topic_policy_s3_template}}"
@@ -271,16 +293,17 @@ aws:
 aes_decryption_key:                             "{{lookup('env','AES_KEY') | default('EFB0D00E7B34527A6CFE3CD804A53312C5A7AF129650A9793D2CEF3A3C6B3741')}}"
 ami_parent_id:                                  "{{ami_id}}"
 as_min_cap_bastion:                             1
-cloudstation_hostedzone:                        hydra.sophos.com
+hostedzone:                                     hydra.sophos.com
 cron_scale_down:                                "0 1 * * 6"
 cron_scale_up:                                  "0 4 * * 1"
-nat_eip_a: "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.NatEipA}}"
+nat_eip_a:                                      "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.NatEipA}}"
 health_check_grace_period_cd:                   600
 health_check_grace_period_id:                   600
 health_check_grace_period_cs:                   600
 health_check_grace_period_is:                   600
 health_check_grace_period_cd:                   600
 health_check_grace_period_cd:                   600
+hopper_public_ip:                               "198.144.101.106/32"
 instance_size_elasticsearch:                    t2.medium
 instance_size_id:                               t2.small
 instance_size_cd:                               t2.small
@@ -288,9 +311,11 @@ instance_size_is:                               t2.small
 instance_size_cs:                               t2.small
 instance_size_ix:                               t2.small
 instance_size_cx:                               t2.small
+instance_size_xgemail_spot_price:               -1
 weekend_scale_down:                             "false"
 xgemail_sxl_dbl:                                uri.cal1.sophosxl.com
 xgemail_sxl_rbl:                                fur.cal1.sophosxl.com
 xgemail_iops_data_gb:                           100
 xgemail_size_data_gb:                           40
+
 

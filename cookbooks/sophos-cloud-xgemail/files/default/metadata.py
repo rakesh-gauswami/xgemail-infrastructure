@@ -44,6 +44,9 @@ class Metadata:
             'recipients': self.recipients
         }
 
+    def get_schema_version(self):
+        return self.schema_version
+
     def get_sender_address(self):
         return self.sender_address
 
@@ -64,3 +67,6 @@ class Metadata:
 
     def get_recipients(self):
         return self.recipients
+
+    def set_recipients(self, recipients):
+        self.recipients = recipients

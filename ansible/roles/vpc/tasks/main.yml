@@ -10,6 +10,11 @@
   tags:
     - vpc
 
+- name: "Include CloudEmail VPC SSM Documents Creation Task."
+  include_tasks: ssm-documents.yml
+  tags:
+    - vpc
+
 - name: "Include CloudEmail VPC S3 Buckets Creation Task."
   include_tasks: s3-buckets.yml
   tags:
@@ -35,8 +40,23 @@
   tags:
     - vpc
 
+- name: "Include CloudEmail VPC EFS Volumes Creation Task."
+  include_tasks: efs-volumes.yml
+  tags:
+    - vpc
+
 - name: "Include CloudEmail VPC Messaging Creation Task."
   include_tasks: xgemail-messaging.yml
+  tags:
+    - vpc
+
+- name: "Include CloudEmail VPC Elasticsearch Domains Creation Task."
+  include_tasks: elasticsearch-domains.yml
+  tags:
+    - vpc
+
+- name: "Include CloudEmail VPC Lambda Functions Creation Task."
+  include_tasks: lambda-functions.yml
   tags:
     - vpc
 

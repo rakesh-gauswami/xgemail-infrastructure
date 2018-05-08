@@ -1,0 +1,68 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "",
+
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2018, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ],
+
+    "Comments": [
+      "Template definition for EFS file system mount points.",
+      "One mount point is provisioned in each subnet."
+    ]
+  },
+
+  "Parameters": {
+    "FileSystemId": {
+      "Description": "The Id of the file system for which mounts will be created",
+      "Type": "String"
+    },
+    "SecurityGroups": {
+      "Description": "The security group that defines access to the EFS volume",
+      "Type": "String"
+    },
+    "SubnetIds": {
+      "Type": "CommaDelimitedList",
+      "Description": "The subnets in which to create a mount point"
+    }
+  },
+
+  "Conditions": {
+    "NotEuCentral1" : { "Fn::Not" : [{ "Fn::Equals" : [{ "Ref" : "AWS::Region" }, "eu-central-1" ]} ] }
+  },
+
+  "Resources": {
+    "MountTargetSubnetA": {
+      "Type": "AWS::EFS::MountTarget",
+      "Properties": {
+        "FileSystemId": { "Ref": "FileSystemId"},
+        "SecurityGroups": [ { "Ref": "SecurityGroups" } ],
+        "SubnetId": { "Fn::Select" : [ "0", { "Ref" : "SubnetIds"} ] }
+      }
+    },
+    "MountTargetSubnetB": {
+      "Type": "AWS::EFS::MountTarget",
+      "Properties": {
+        "FileSystemId": { "Ref": "FileSystemId"},
+        "SecurityGroups": [ { "Ref": "SecurityGroups" } ],
+        "SubnetId": { "Fn::Select" : [ "1", { "Ref" : "SubnetIds"} ] }
+      }
+    },
+    "MountTargetSubnetC": {
+      "Condition" : "NotEuCentral1",
+      "Type": "AWS::EFS::MountTarget",
+      "Properties": {
+        "FileSystemId": { "Ref": "FileSystemId"},
+        "SecurityGroups": [ { "Ref": "SecurityGroups" } ],
+        "SubnetId": { "Fn::Select" : [ "2", { "Ref" : "SubnetIds"} ] }
+      }
+    }
+  }
+}

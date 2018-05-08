@@ -46,10 +46,8 @@ POLLER_SCRIPT               = 'xgemail.sqs.policy.poller.py'
 POLLER_SCRIPT_PATH          = "#{PACKAGE_DIR}/#{POLLER_SCRIPT}"
 TEMP_FAILURE_CODE           = node['xgemail']['temp_failure_code']
 
-
 if NODE_TYPE == 'submit'
   POLICY_DIR                  = "spf/domains/"
-  LOCAL_POLICY_DIR_LIST       = ["#{XGEMAIL_FILES_DIR}/#{POLICY_DIR}"]
 
   CONFIGS = [
       {
@@ -61,20 +59,30 @@ if NODE_TYPE == 'submit'
   ]
 
 elsif NODE_TYPE == 'customer-submit'
-  RELAY_CONTROL_PATH_PREFIX   = 'config/outbound-relay-control'
-  SERVICE_PROVIDER_DIR        = "#{RELAY_CONTROL_PATH_PREFIX}/service-providers/"
-  OUTBOUND_GATEWAY_CONFIG_DIR = "#{RELAY_CONTROL_PATH_PREFIX}/domains/"
-  LOCAL_POLICY_DIR_LIST       = ["#{XGEMAIL_FILES_DIR}/#{SERVICE_PROVIDER_DIR}", "#{XGEMAIL_FILES_DIR}/#{OUTBOUND_GATEWAY_CONFIG_DIR}"]
+  RELAY_CONTROL_PATH_PREFIX     = 'config/outbound-relay-control'
+  SERVICE_PROVIDER_DIR          = "#{RELAY_CONTROL_PATH_PREFIX}/service-providers/"
+  GATEWAY_CONFIG_DIR            = "#{RELAY_CONTROL_PATH_PREFIX}/domains/"
+  RATE_LIMIT_CONFIG_DIR         = "#{RELAY_CONTROL_PATH_PREFIX}/rate-limit/"
+  BLOCK_LIST_CONFIG_DIR         = "#{RELAY_CONTROL_PATH_PREFIX}/block-list/"
 
   CONFIGS = [
       {
-          :s3_path_dir        => OUTBOUND_GATEWAY_CONFIG_DIR,
+          :s3_path_dir        => GATEWAY_CONFIG_DIR,
           :local_dir          => "#{XGEMAIL_FILES_DIR}/",
-          :magic_number       => '\0SOPHCONFIG',
           :file_extension     => '.CONFIG'
       },
       {
           :s3_path_dir        => SERVICE_PROVIDER_DIR,
+          :local_dir          => "#{XGEMAIL_FILES_DIR}/",
+          :file_extension     => '.CONFIG'
+      },
+      {
+          :s3_path_dir        => RATE_LIMIT_CONFIG_DIR,
+          :local_dir          => "#{XGEMAIL_FILES_DIR}/",
+          :file_extension     => '.CONFIG'
+      },
+      {
+          :s3_path_dir        => BLOCK_LIST_CONFIG_DIR,
           :local_dir          => "#{XGEMAIL_FILES_DIR}/",
           :file_extension     => '.CONFIG'
       }
@@ -90,16 +98,6 @@ POLICY_SQS_MESSAGE_RETENTION_PERIOD     = node['xgemail']['sqs_policy_poller_mes
 POLICY_SQS_MESSAGE_VISIBILITY_TIMEOUT   = node['xgemail']['sqs_policy_sqs_message_visibility_timeout']
 POLICY_POLLER_SERVICE_NAME              = node['xgemail']['sqs_policy_poller_service_name']
 
-
-#directory for policy documents
-LOCAL_POLICY_DIR_LIST.each do |dir|
-  directory dir do
-    mode '0755'
-    owner 'root'
-    group 'root'
-    recursive true
-  end
-end
 
 #directory for policy services
 directory PACKAGE_DIR do

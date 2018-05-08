@@ -48,7 +48,7 @@
             "Type": "AWS::EC2::SecurityGroup::Id"
         },
         "Branch": {
-            "Description": "(Develop, CPLAT-XXXX, etc...)",
+            "Description": "(Develop, XGE-XXXX, etc...)",
             "Type": "String"
         },
         "DeployIgnoreUnmodifiedGroupSize": {
@@ -85,15 +85,7 @@
         "InstanceType": {
             "Description": "Amazon EC2 instance type",
             "Type": "String",
-            "Default": "t2.micro",
-            "AllowedValues": [
-                "t2.small",
-                "t2.micro",
-                "t2.medium",
-                "m3.medium",
-                "c3.large",
-                "t2.large"
-            ]
+            "Default": "m5.large"
         },
         "KeyName": {
             "Type": "AWS::EC2::KeyPair::KeyName",
@@ -119,6 +111,11 @@
             "Type": "String",
             "Default": "0 4 * * 1"
         },
+        "SpotPrice": {
+            "Description": "Spot price",
+            "Type": "String",
+            "Default": "-1"
+        },
         "Vpc": {
             "Description": "ID of an existing VPC",
             "Type": "AWS::EC2::VPC::Id"
@@ -136,6 +133,40 @@
     },
 
     "Conditions": {
+        "EnableDetailedMonitoring": {
+            "Fn::Equals": [
+                {
+                    "Ref": "Environment"
+                },
+                "prod"
+            ]
+        },
+        "UseSpotPrice": {
+            "Fn::And": [
+                {
+                    "Fn::Not": [
+                        {
+                            "Fn::Equals": [
+                                {
+                                    "Ref": "Environment"
+                                },
+                                "prod"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "Fn::Not": [
+                        {
+                            "Fn::Equals": [
+                                {"Ref": "SpotPrice"},
+                                "-1"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
         "EnableScaleDownOnWeekends": {
             "Fn::And": [
                 {
@@ -220,7 +251,13 @@
             "UpdatePolicy": {
                 "AutoScalingRollingUpdate": {
                     "MaxBatchSize": { "Ref": "DeployMaxBatchSize" },
-                    "MinInstancesInService": { "Ref": "DeployMinInstancesInService" },
+                    "MinInstancesInService": {
+                        "Fn::If": [
+                            "UseSpotPrice",
+                            "0",
+                            { "Ref": "DeployMinInstancesInService" }
+                        ]
+                    },
                     "PauseTime": { "Ref": "DeployTimeout" },
                     "SuspendProcesses": [
                         "HealthCheck",
@@ -412,7 +449,13 @@
                 "ImageId": {
                     "Ref": "AmiId"
                 },
-                "InstanceMonitoring": true,
+                "InstanceMonitoring": {
+                    "Fn::If": [
+                        "EnableDetailedMonitoring",
+                        "true",
+                        "false"
+                    ]
+                },
                 "InstanceType": {
                     "Ref": "InstanceType"
                 },
@@ -424,6 +467,7 @@
                         "Ref": "BastionSecurityGroup"
                     }
                 ],
+                "SpotPrice": { "Fn::If": ["UseSpotPrice",  {"Ref": "SpotPrice"}, {"Ref": "AWS::NoValue"} ]},
                 "UserData": {
                     "Fn::Base64": {
                         "Fn::Join": [
@@ -431,31 +475,62 @@
                             [
                                 "#!/bin/bash -xe\n",
                                 "# Install the files and packages from the metadata\n",
+                                "\n",
 
                                 "# Make sure we call cfn-signal before exiting, otherwise we have to\n",
                                 "# wait for the CreationPolicy timeout to detect failed initialization.\n",
                                 "# That's because of using the bash -e option, which makes the script\n",
                                 "# exit immediately as soon as any command, e.g. cfn-init, fails.\n",
+                                "\n",
 
                                 "onexit() {\n",
-                                "  exit_code=$?\n",
-                                "  /opt/aws/bin/cfn-signal -e $exit_code",
+                                "  # Save exit code for call to cfn-signal below.\n",
+                                "  EXIT_CODE=$?\n",
+                                "\n",
+                                "  # Disable errexit so errors below don't prevent the call to cfn-signal.\n",
+                                "  set +o errexit\n",
+                                "\n",
+                                "  # Set LastHealth tag so cloud list command shows progress.\n",
+                                "  if [ \"$EXIT_CODE\" == 0 ]; then\n",
+                                "    /opt/sophos/bin/set_instance_tag.py LastHealth UserDataSuccess\n",
+                                "  else\n",
+                                "    /opt/sophos/bin/set_instance_tag.py LastHealth UserDataFailure\n",
+                                "  fi\n",
+                                "\n",
+                                "  # Upload logs before reporting failure to avoid race against termination.\n",
+                                "  ACCOUNT='", { "Ref" : "Environment" }, "'\n",
+                                "  BRANCH='", { "Ref": "Branch" }, "'\n",
+                                "  DEPLOYMENT_NAME='bastion-", { "Ref": "VpcName" }, "'\n",
+                                "  /opt/sophos/bin/upload_deployment_logs.py -a ${ACCOUNT} -b ${BRANCH} ${DEPLOYMENT_NAME}",
+                                "\n",
+                                "\n",
+                                "  /opt/aws/bin/cfn-signal -e $EXIT_CODE",
                                 " --stack ", { "Ref": "AWS::StackName" },
                                 " --resource BastionAutoScalingGroup",
                                 " --region ", { "Ref": "AWS::Region" },
                                 "\n",
                                 "}\n",
+                                "\n",
 
                                 "trap onexit EXIT\n",
+                                "\n",
 
                                 "# Wait for network access.\n",
                                 "/usr/bin/nc -v -z -w 60 www.google.com 80\n",
+                                "\n",
 
                                 "/opt/aws/bin/cfn-init --verbose ",
                                 " --stack ", { "Ref": "AWS::StackName" },
                                 " --resource BastionAutoScalingLaunchConfig ",
                                 " --configsets bastion_install ",
-                                " --region ", { "Ref": "AWS::Region" },
+                                " --region ", { "Ref": "AWS::Region" }, "\n",
+                                "\n",
+
+                                "# Disable errexit so errors below don't prevent the call to cfn-signal.\n",
+                                "# This is NOT redundant with the call to disable errexit inside onexit,\n",
+                                "# because an error that happens earlier than this point will be trapped\n",
+                                "# and generate a call to onexit before this code is reached.\n",
+                                "set +o errexit\n",
                                 "\n",
 
                                 "# Now the onexit function will get called.\n"
