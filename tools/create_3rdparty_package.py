@@ -22,6 +22,7 @@ import json
 import os
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
@@ -819,7 +820,7 @@ class NginxPushStreamModulePackageFileCreator(PackageFileCreator):
     and push-stream-module. OpenResty build is nginx + lua and other modules.
     """
 
-    OPENRESTY_VER = "1.11.2.1"
+    OPENRESTY_VER = "1.13.6.1"
     PSM_VER = "0.5.2"
 
     OPENRESTY_PUBKEY = """-----BEGIN PGP PUBLIC KEY BLOCK-----
@@ -1180,6 +1181,38 @@ class TDAgentPackageFileCreator(PackageFileCreator):
         return [self.DownloadItem(filename, url, [])]
 
 
+class TerraformPackageFileCreator(PackageFileCreator):
+    """
+    Terraform Package Creator.  Generates a .tar.gz file containing the required TF executable.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(TerraformPackageFileCreator, self).__init__(*args, **kwargs)
+        self.package = "terraform"
+        self.sample_version = "0.11.7"
+
+    def _get_download_items(self):
+        url = "https://nexus.sophos-tools.com/repository/build-assets/%s_%s" % (self.package, self.version)
+
+        package_directory = self.get_package_file_basename()
+
+        os.makedirs(package_directory)
+
+        filename = os.path.join(package_directory, self.package)
+
+        return [self.DownloadItem(filename, url, [])]
+
+    def _prepare_files_for_packing(self, ignored_download_items):
+
+        package_directory = self.get_package_file_basename()
+
+        filename = os.path.join(package_directory, self.package)
+        st = os.stat(filename)
+
+        os.chmod(filename, st.st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+
+        return [package_directory]
+
 class TomcatPackageFileCreator(PackageFileCreator):
     """
     Tomcat Package Creator.  Generates a .tar.gz file containing the required files.
@@ -1331,6 +1364,7 @@ def _main():
         SaviPackageFileCreator(),
         SophosFluentdPackageFileCreator(script_path = script_path),
         TDAgentPackageFileCreator(),
+        TerraformPackageFileCreator(),
         TomcatPackageFileCreator(),
         WildflyPackageFileCreator()
     ]
