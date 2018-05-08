@@ -160,8 +160,9 @@
             },
             {
               "Action": [
-                "s3:GetBucketLocation",
-                "s3:GetObject"
+                "s3:GetObject",
+                "s3:PutObject",
+                "s3:GetBucketLocation"
 
               ],
               "Effect": "Allow",
@@ -178,6 +179,16 @@
                 "logs:DescribeLogStreams",
                 "logs:DescribeMetricFilters",
                 "logs:PutLogEvents"
+              ],
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "route53:ChangeResourceRecordSets",
+                "route53:ListHostedZonesByName"
               ],
               "Resource": [
                 "*"
