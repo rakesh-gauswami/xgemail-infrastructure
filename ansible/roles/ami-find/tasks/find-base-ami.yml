@@ -1,32 +1,31 @@
 ---
 # http://docs.ansible.com/ansible/latest/ec2_ami_find_module.html
-- block:
-  - name: "Find Base AMI ({{build.branch}})"
-    ec2_ami_find:
-      name: "{{ami.base.ami_parent_name}}-{{build.branch}}*"
-      region: "{{account.region}}"
-      owner: 283871543274
-      is_public: no
-      virtualization_type: hvm
-      sort: creationDate
-      sort_order: descending
-      sort_end: 1
-      no_result_action: success
-    register: ec2_ami_find_output
-  rescue:
-    - name: Find Base AMI (develop)
-      ec2_ami_find:
-        name: "{{ami.base.ami_parent_name}}-develop*"
-        region: "{{account.region}}"
-        owner: 283871543274
-        is_public: no
-        virtualization_type: hvm
-        sort: creationDate
-        sort_order: descending
-        sort_end: 1
-        no_result_action: fail
-      register: ec2_ami_find_output
-      when: ec2_ami_find_output.results | length==0
+- name: "Find Base AMI ({{build.branch}})"
+  ec2_ami_find:
+    name: "{{ami.base.ami_parent_name}}-{{build.branch}}*"
+    region: "{{account.region}}"
+    owner: 283871543274
+    is_public: no
+    virtualization_type: hvm
+    sort: creationDate
+    sort_order: descending
+    sort_end: 1
+    no_result_action: success
+  register: ec2_ami_find_output
+
+- name: Find Base AMI (develop)
+  ec2_ami_find:
+    name: "{{ami.base.ami_parent_name}}-develop*"
+    region: "{{account.region}}"
+    owner: 283871543274
+    is_public: no
+    virtualization_type: hvm
+    sort: creationDate
+    sort_order: descending
+    sort_end: 1
+    no_result_action: fail
+  register: ec2_ami_find_output
+  when: ec2_ami_find_output.results | length==0
 
 - name: "Set Fact ec2_ami_image_id"
   set_fact:
