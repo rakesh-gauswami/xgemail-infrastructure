@@ -1,506 +1,506 @@
 {
-    "AWSTemplateFormatVersion": "2010-09-09",
+  "AWSTemplateFormatVersion": "2010-09-09",
 
-    "Description": "Xgemail SNS Subscription Template",
+  "Description": "Xgemail SNS Subscription Template",
 
-    "Metadata": {
-        "Copyright": [
-            "Copyright 2018, Sophos Limited. All rights reserved.",
-            "",
-            "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
-            "Sophos Limited and Sophos Group.  All other product and company",
-            "names mentioned are trademarks or registered trademarks of their",
-            "respective owners."
-        ],
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2018, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ],
 
-        "Comments": [
-            "Marries SNS topics to SQS queues to support XGEMAIL messaging."
-        ]
+    "Comments": [
+      "Marries SNS topics to SQS queues to support XGEMAIL messaging."
+    ]
+  },
+
+  "Parameters": {
+    "DeletedEventsTopicArn": {
+      "Description": "TopicArn of Deleted Events SNS",
+      "Type": "String"
     },
-
-    "Parameters": {
-        "DeletedEventsTopicArn": {
-            "Description": "TopicArn of Deleted Events SNS",
-            "Type": "String"
-        },
-        "QuarantinedEventsTopicArn": {
-            "Description": "TopicArn of Quarantined Events SNS",
-            "Type": "String"
-        },
-        "SuccessEventsTopicArn": {
-            "Description": "TopicArn of Success Events SNS",
-            "Type": "String"
-        },
-        "DelayTopicArn": {
-            "Description": "TopicArn of Delay Events SNS",
-            "Type": "String"
-        },
-        "DelayQueueArn": {
-            "Description": "Endpoint for delay SQS queue",
-            "Type": "String"
-        },
-        "DelayQueueUrl": {
-            "Description": "Endpoint URL for delay SQS queue",
-            "Type": "String"
-        },
-        "DeliveryQueueArn": {
-            "Description": "Endpoint for delivery SQS queue",
-            "Type": "String"
-        },
-        "DeliveryQueueUrl": {
-            "Description": "Endpoint URL for delivery SQS queue",
-            "Type": "String"
-        },
-        "EmergencyInboxQueueArn": {
-            "Description": "Endpoint for emergency inbox SQS queue",
-            "Type": "String"
-        },
-        "EmergencyInboxQueueUrl": {
-            "Description": "Endpoint URL for emergency inbox SQS queue",
-            "Type": "String"
-        },
-        "InternetDeliveryTopicArn": {
-            "Description": "TopicArn of Internet delivery Events SNS",
-            "Type": "String"
-        },
-        "InternetDeliveryQueueArn": {
-            "Description": "Endpoint for Internet delivery SQS queue",
-            "Type": "String"
-        },
-        "InternetDeliveryQueueUrl": {
-            "Description": "Endpoint URL for Internet delivery SQS queue",
-            "Type": "String"
-        },
-        "MessageHistoryQueueArn": {
-            "Description": "Endpoint for message history SQS queue",
-            "Type": "String"
-        },
-        "MessageHistoryQueueUrl": {
-            "Description": "Endpoint URL for message history SQS queue",
-            "Type": "String"
-        },
-        "MessageStatisticsQueueArn": {
-            "Description": "Endpoint for message statistics SQS queue",
-            "Type": "String"
-        },
-        "MessageStatisticsQueueUrl": {
-            "Description": "Endpoint URL for message statistics SQS queue",
-            "Type": "String"
-        },
-        "QuarantineQueueArn": {
-            "Description": "Endpoint for quarantine SQS queue",
-            "Type": "String"
-        },
-        "QuarantineQueueUrl": {
-            "Description": "Endpoint URL for quarantine SQS queue",
-            "Type": "String"
-        },
-        "MultiPolicyQueueUrl": {
-            "Description": "Endpoint URL for multi policy queue",
-            "Type": "String"
-        },
-        "MultiPolicyQueueArn": {
-            "Description": "Endpoint for multi Policy queue",
-            "Type": "String"
-        },
-        "MultiPolicyTopicArn": {
-            "Description": "Endpoint for multi policy arn",
-            "Type": "String"
-        }
+    "QuarantinedEventsTopicArn": {
+      "Description": "TopicArn of Quarantined Events SNS",
+      "Type": "String"
     },
-
-    "Resources": {
-        "MacroDetectionQueueToDeletedSnsSubscription": {
-            "Type" : "AWS::SNS::Subscription",
-            "Properties": {
-                "Endpoint": "arn:aws:sqs:us-east-1:459806747212:dsml-email",
-                "Protocol": "sqs",
-                "TopicArn": { "Ref": "DeletedEventsTopicArn"}
-            }
-        },
-        "MacroDetectionQueueToQuarantinedSnsSubscription": {
-            "Type" : "AWS::SNS::Subscription",
-            "Properties": {
-                "Endpoint": "arn:aws:sqs:us-east-1:459806747212:dsml-email",
-                "Protocol": "sqs",
-                "TopicArn": { "Ref": "QuarantinedEventsTopicArn"}
-            }
-        },
-        "MessageHistoryQueueToDeletedSnsSubsciption": {
-            "Type" : "AWS::SNS::Subscription",
-            "Properties": {
-                "Endpoint": { "Ref": "MessageHistoryQueueArn" },
-                "Protocol": "sqs",
-                "TopicArn": { "Ref": "DeletedEventsTopicArn"}
-            }
-        },
-        "MessageStatisticsQueueToDeletedSnsSubsciption": {
-            "Type" : "AWS::SNS::Subscription",
-            "Properties": {
-                "Endpoint": { "Ref": "MessageStatisticsQueueArn" },
-                "Protocol": "sqs",
-                "TopicArn": { "Ref": "DeletedEventsTopicArn"}
-            }
-        },
-        "MessageHistoryQueueToQuarantinedSnsSubsciption": {
-            "Type" : "AWS::SNS::Subscription",
-            "Properties": {
-                "Endpoint": { "Ref": "MessageHistoryQueueArn" },
-                "Protocol": "sqs",
-                "TopicArn": { "Ref": "QuarantinedEventsTopicArn"}
-            }
-        },
-        "MessageStatisticsQueueToQuarantinedSnsSubsciption": {
-            "Type" : "AWS::SNS::Subscription",
-            "Properties": {
-                "Endpoint": { "Ref": "MessageStatisticsQueueArn" },
-                "Protocol": "sqs",
-                "TopicArn": { "Ref": "QuarantinedEventsTopicArn"}
-            }
-        },
-        "QuarantineQueueToQuarantinedSnsSubsciption": {
-            "Type" : "AWS::SNS::Subscription",
-            "Properties": {
-                "Endpoint": { "Ref": "QuarantineQueueArn" },
-                "Protocol": "sqs",
-                "TopicArn": { "Ref": "QuarantinedEventsTopicArn"}
-            }
-        },
-        "DelayQueueToDelaySnsSubsciption": {
-            "Type" : "AWS::SNS::Subscription",
-            "Properties": {
-                "Endpoint": { "Ref": "DelayQueueArn" },
-                "Protocol": "sqs",
-                "TopicArn": { "Ref": "DelayTopicArn"}
-            }
-        },
-        "DeliveryQueueToSuccessSnsSubsciption": {
-            "Type" : "AWS::SNS::Subscription",
-            "Properties": {
-                "Endpoint": { "Ref": "DeliveryQueueArn" },
-                "Protocol": "sqs",
-                "TopicArn": { "Ref": "SuccessEventsTopicArn"}
-            }
-        },
-        "EmergencyInboxQueueToSuccessSnsSubsciption": {
-            "Type" : "AWS::SNS::Subscription",
-            "Properties": {
-                "Endpoint": { "Ref": "EmergencyInboxQueueArn" },
-                "Protocol": "sqs",
-                "TopicArn": { "Ref": "SuccessEventsTopicArn"}
-            }
-        },
-        "InternetDeliveryQueueToInternetDeliverySnsSubsciption": {
-            "Type" : "AWS::SNS::Subscription",
-            "Properties": {
-                "Endpoint": { "Ref": "InternetDeliveryQueueArn" },
-                "Protocol": "sqs",
-                "TopicArn": { "Ref": "InternetDeliveryTopicArn"}
-            }
-        },
-        "MessageHistoryQueueToInternetDeliverySnsSubscription": {
-            "Type" : "AWS::SNS::Subscription",
-            "Properties": {
-                "Endpoint": { "Ref": "MessageHistoryQueueArn" },
-                "Protocol": "sqs",
-                "TopicArn": { "Ref": "InternetDeliveryTopicArn"}
-            }
-        },
-        "MessageHistoryQueueToSuccessSnsSubsciption": {
-            "Type" : "AWS::SNS::Subscription",
-            "Properties": {
-                "Endpoint": { "Ref": "MessageHistoryQueueArn" },
-                "Protocol": "sqs",
-                "TopicArn": { "Ref": "SuccessEventsTopicArn"}
-            }
-        },
-        "MessageStatisticsQueueToInternetDeliverySnsSubscription": {
-            "Type" : "AWS::SNS::Subscription",
-            "Properties": {
-                "Endpoint": { "Ref": "MessageStatisticsQueueArn" },
-                "Protocol": "sqs",
-                "TopicArn": { "Ref": "InternetDeliveryTopicArn"}
-            }
-        },
-        "MessageStatisticsQueueToSuccessSnsSubsciption": {
-            "Type" : "AWS::SNS::Subscription",
-            "Properties": {
-                "Endpoint": { "Ref": "MessageStatisticsQueueArn" },
-                "Protocol": "sqs",
-                "TopicArn": { "Ref": "SuccessEventsTopicArn"}
-            }
-        },
-        "MultiPolicyQueueToMultiPolicySnsSubsciption": {
-            "Type" : "AWS::SNS::Subscription",
-            "Properties": {
-                "Endpoint": { "Ref": "MultiPolicyQueueArn" },
-                "Protocol": "sqs",
-                "TopicArn": { "Ref": "MultiPolicyTopicArn"}
-            }
-        },
-        "DeliveryQueuePolicy": {
-            "Type": "AWS::SQS::QueuePolicy",
-            "Properties": {
-                "PolicyDocument": {
-                    "Version": "2012-10-17",
-                    "Id": "DeliveryQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
-                    "Statement": [
-                        {
-                            "Sid": "Allow-SuccessEventsTopicArn",
-                            "Effect": "Allow",
-                            "Principal": "*",
-                            "Action": ["sqs:SendMessage"],
-                            "Resource": "*",
-                            "Condition": {
-                                "ArnEquals": {
-                                    "aws:SourceArn": {"Ref": "SuccessEventsTopicArn"}
-                                }
-                            }
-                        }
-                    ]
-                },
-                "Queues": [{ "Ref": "DeliveryQueueUrl" }]
-            }
-        },
-        "DelayQueuePolicy": {
-            "Type": "AWS::SQS::QueuePolicy",
-            "Properties": {
-                "PolicyDocument": {
-                    "Version": "2012-10-17",
-                    "Id": "DelayQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
-                    "Statement": [
-                        {
-                            "Sid": "Allow-DelayTopicArn",
-                            "Effect": "Allow",
-                            "Principal": "*",
-                            "Action": ["sqs:SendMessage"],
-                            "Resource": "*",
-                            "Condition": {
-                                "ArnEquals": {
-                                    "aws:SourceArn": {"Ref": "DelayTopicArn"}
-                                }
-                            }
-                        }
-                    ]
-                },
-                "Queues": [{ "Ref": "DelayQueueUrl" }]
-            }
-        },
-        "EmergencyInboxQueuePolicy": {
-            "Type": "AWS::SQS::QueuePolicy",
-            "Properties": {
-                "PolicyDocument": {
-                    "Version": "2012-10-17",
-                    "Id": "EmergencyInboxQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
-                    "Statement": [
-                        {
-                            "Sid": "Allow-SuccessEventsTopicArn",
-                            "Effect": "Allow",
-                            "Principal": "*",
-                            "Action": ["sqs:SendMessage"],
-                            "Resource": "*",
-                            "Condition": {
-                                "ArnEquals": {
-                                    "aws:SourceArn": {"Ref": "SuccessEventsTopicArn"}
-                                }
-                            }
-                        }
-                    ]
-                },
-                "Queues": [{ "Ref": "EmergencyInboxQueueUrl" }]
-            }
-        },
-        "InternetDeliveryQueuePolicy": {
-            "Type": "AWS::SQS::QueuePolicy",
-            "Properties": {
-                "PolicyDocument": {
-                    "Version": "2012-10-17",
-                    "Id": "InternetDeliveryQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
-                    "Statement": [
-                        {
-                            "Sid": "Allow-InternetDeliveryTopicArn",
-                            "Effect": "Allow",
-                            "Principal": "*",
-                            "Action": ["sqs:SendMessage"],
-                            "Resource": "*",
-                            "Condition": {
-                                "ArnEquals": {
-                                    "aws:SourceArn": {"Ref": "InternetDeliveryTopicArn"}
-                                }
-                            }
-                        }
-                    ]
-                },
-                "Queues": [{ "Ref": "InternetDeliveryQueueUrl" }]
-            }
-        },
-        "MessageHistoryQueuePolicy": {
-            "Type": "AWS::SQS::QueuePolicy",
-            "Properties": {
-                "PolicyDocument": {
-                    "Version": "2012-10-17",
-                    "Id": "MessageHistoryQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
-                    "Statement": [
-                        {
-                            "Sid": "Allow-DeletedEventsTopicArn",
-                            "Effect": "Allow",
-                            "Principal": "*",
-                            "Action": ["sqs:SendMessage"],
-                            "Resource": "*",
-                            "Condition": {
-                                "ArnEquals": {
-                                    "aws:SourceArn": {"Ref": "DeletedEventsTopicArn"}
-                                }
-                            }
-                        },
-                        {
-                            "Sid": "Allow-InternetDeliveryTopicArn",
-                            "Effect": "Allow",
-                            "Principal": "*",
-                            "Action": ["sqs:SendMessage"],
-                            "Resource": "*",
-                            "Condition": {
-                                "ArnEquals": {
-                                    "aws:SourceArn": {"Ref": "InternetDeliveryTopicArn"}
-                                }
-                            }
-                        },
-                        {
-                            "Sid": "Allow-QuarantinedEventsTopicArn",
-                            "Effect": "Allow",
-                            "Principal": "*",
-                            "Action": ["sqs:SendMessage"],
-                            "Resource": "*",
-                            "Condition": {
-                                "ArnEquals": {
-                                    "aws:SourceArn": {"Ref": "QuarantinedEventsTopicArn"}
-                                }
-                            }
-                        },
-                        {
-                            "Sid": "Allow-SuccessEventsTopicArn",
-                            "Effect": "Allow",
-                            "Principal": "*",
-                            "Action": ["sqs:SendMessage"],
-                            "Resource": "*",
-                            "Condition": {
-                                "ArnEquals": {
-                                    "aws:SourceArn": {"Ref": "SuccessEventsTopicArn"}
-                                }
-                            }
-                        }
-                    ]
-                },
-                "Queues": [{ "Ref": "MessageHistoryQueueUrl" }]
-            }
-        },
-        "MessageStatisticsQueuePolicy": {
-            "Type": "AWS::SQS::QueuePolicy",
-            "Properties": {
-                "PolicyDocument": {
-                    "Version": "2012-10-17",
-                    "Id": "MessageStatisticsQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
-                    "Statement": [
-                        {
-                            "Sid": "Allow-DeletedEventsTopicArn",
-                            "Effect": "Allow",
-                            "Principal": "*",
-                            "Action": ["sqs:SendMessage"],
-                            "Resource": "*",
-                            "Condition": {
-                                "ArnEquals": {
-                                    "aws:SourceArn": {"Ref": "DeletedEventsTopicArn"}
-                                }
-                            }
-                        },
-                        {
-                            "Sid": "Allow-InternetDeliveryTopicArn",
-                            "Effect": "Allow",
-                            "Principal": "*",
-                            "Action": ["sqs:SendMessage"],
-                            "Resource": "*",
-                            "Condition": {
-                                "ArnEquals": {
-                                    "aws:SourceArn": {"Ref": "InternetDeliveryTopicArn"}
-                                }
-                            }
-                        },
-                        {
-                            "Sid": "Allow-QuarantinedEventsTopicArn",
-                            "Effect": "Allow",
-                            "Principal": "*",
-                            "Action": ["sqs:SendMessage"],
-                            "Resource": "*",
-                            "Condition": {
-                                "ArnEquals": {
-                                    "aws:SourceArn": {"Ref": "QuarantinedEventsTopicArn"}
-                                }
-                            }
-                        },
-                        {
-                            "Sid": "Allow-SuccessEventsTopicArn",
-                            "Effect": "Allow",
-                            "Principal": "*",
-                            "Action": ["sqs:SendMessage"],
-                            "Resource": "*",
-                            "Condition": {
-                                "ArnEquals": {
-                                    "aws:SourceArn": {"Ref": "SuccessEventsTopicArn"}
-                                }
-                            }
-                        }
-                    ]
-                },
-                "Queues": [{ "Ref": "MessageStatisticsQueueUrl" }]
-            }
-        },
-        "QuarantineQueuePolicy": {
-            "Type": "AWS::SQS::QueuePolicy",
-            "Properties": {
-                "PolicyDocument": {
-                    "Version": "2012-10-17",
-                    "Id": "QuarantineQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
-                    "Statement": [
-                        {
-                            "Sid": "Allow-QuarantinedEventsTopicArn",
-                            "Effect": "Allow",
-                            "Principal": "*",
-                            "Action": ["sqs:SendMessage"],
-                            "Resource": "*",
-                            "Condition": {
-                                "ArnEquals": {
-                                    "aws:SourceArn": {"Ref": "QuarantinedEventsTopicArn"}
-                                }
-                            }
-                        }
-                    ]
-                },
-                "Queues": [{ "Ref": "QuarantineQueueUrl" }]
-            }
-        },
-        "MultiPolicyQueuePolicy": {
-            "Type": "AWS::SQS::QueuePolicy",
-            "Properties": {
-                "PolicyDocument": {
-                    "Version": "2012-10-17",
-                    "Id": "MultiPolicyQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
-                    "Statement": [
-                        {
-                            "Sid": "Allow-MultiPolicyTopicArn",
-                            "Effect": "Allow",
-                            "Principal": "*",
-                            "Action": ["sqs:SendMessage"],
-                            "Resource": "*",
-                            "Condition": {
-                                "ArnEquals": {
-                                    "aws:SourceArn": {"Ref": "MultiPolicyTopicArn"}
-                                }
-                            }
-                        }
-                    ]
-                },
-                "Queues": [{ "Ref": "MultiPolicyQueueUrl" }]
-            }
-        }
+    "SuccessEventsTopicArn": {
+      "Description": "TopicArn of Success Events SNS",
+      "Type": "String"
+    },
+    "DelayTopicArn": {
+      "Description": "TopicArn of Delay Events SNS",
+      "Type": "String"
+    },
+    "DelayQueueArn": {
+      "Description": "Endpoint for delay SQS queue",
+      "Type": "String"
+    },
+    "DelayQueueUrl": {
+      "Description": "Endpoint URL for delay SQS queue",
+      "Type": "String"
+    },
+    "DeliveryQueueArn": {
+      "Description": "Endpoint for delivery SQS queue",
+      "Type": "String"
+    },
+    "DeliveryQueueUrl": {
+      "Description": "Endpoint URL for delivery SQS queue",
+      "Type": "String"
+    },
+    "EmergencyInboxQueueArn": {
+      "Description": "Endpoint for emergency inbox SQS queue",
+      "Type": "String"
+    },
+    "EmergencyInboxQueueUrl": {
+      "Description": "Endpoint URL for emergency inbox SQS queue",
+      "Type": "String"
+    },
+    "InternetDeliveryTopicArn": {
+      "Description": "TopicArn of Internet delivery Events SNS",
+      "Type": "String"
+    },
+    "InternetDeliveryQueueArn": {
+      "Description": "Endpoint for Internet delivery SQS queue",
+      "Type": "String"
+    },
+    "InternetDeliveryQueueUrl": {
+      "Description": "Endpoint URL for Internet delivery SQS queue",
+      "Type": "String"
+    },
+    "MessageHistoryQueueArn": {
+      "Description": "Endpoint for message history SQS queue",
+      "Type": "String"
+    },
+    "MessageHistoryQueueUrl": {
+      "Description": "Endpoint URL for message history SQS queue",
+      "Type": "String"
+    },
+    "MessageStatisticsQueueArn": {
+      "Description": "Endpoint for message statistics SQS queue",
+      "Type": "String"
+    },
+    "MessageStatisticsQueueUrl": {
+      "Description": "Endpoint URL for message statistics SQS queue",
+      "Type": "String"
+    },
+    "QuarantineQueueArn": {
+      "Description": "Endpoint for quarantine SQS queue",
+      "Type": "String"
+    },
+    "QuarantineQueueUrl": {
+      "Description": "Endpoint URL for quarantine SQS queue",
+      "Type": "String"
+    },
+    "MultiPolicyQueueUrl": {
+      "Description": "Endpoint URL for multi policy queue",
+      "Type": "String"
+    },
+    "MultiPolicyQueueArn": {
+      "Description": "Endpoint for multi Policy queue",
+      "Type": "String"
+    },
+    "MultiPolicyTopicArn": {
+      "Description": "Endpoint for multi policy arn",
+      "Type": "String"
     }
+  },
+
+  "Resources": {
+    "MacroDetectionQueueToDeletedSnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": "arn:aws:sqs:us-east-1:459806747212:dsml-email",
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "DeletedEventsTopicArn"}
+      }
+    },
+    "MacroDetectionQueueToQuarantinedSnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": "arn:aws:sqs:us-east-1:459806747212:dsml-email",
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "QuarantinedEventsTopicArn"}
+      }
+    },
+    "MessageHistoryQueueToDeletedSnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "MessageHistoryQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "DeletedEventsTopicArn"}
+      }
+    },
+    "MessageStatisticsQueueToDeletedSnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "MessageStatisticsQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "DeletedEventsTopicArn"}
+      }
+    },
+    "MessageHistoryQueueToQuarantinedSnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "MessageHistoryQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "QuarantinedEventsTopicArn"}
+      }
+    },
+    "MessageStatisticsQueueToQuarantinedSnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "MessageStatisticsQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "QuarantinedEventsTopicArn"}
+      }
+    },
+    "QuarantineQueueToQuarantinedSnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "QuarantineQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "QuarantinedEventsTopicArn"}
+      }
+    },
+    "DelayQueueToDelaySnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "DelayQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "DelayTopicArn"}
+      }
+    },
+    "DeliveryQueueToSuccessSnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "DeliveryQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "SuccessEventsTopicArn"}
+      }
+    },
+    "EmergencyInboxQueueToSuccessSnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "EmergencyInboxQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "SuccessEventsTopicArn"}
+      }
+    },
+    "InternetDeliveryQueueToInternetDeliverySnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "InternetDeliveryQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "InternetDeliveryTopicArn"}
+      }
+    },
+    "MessageHistoryQueueToInternetDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "MessageHistoryQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "InternetDeliveryTopicArn"}
+      }
+    },
+    "MessageHistoryQueueToSuccessSnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "MessageHistoryQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "SuccessEventsTopicArn"}
+      }
+    },
+    "MessageStatisticsQueueToInternetDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "MessageStatisticsQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "InternetDeliveryTopicArn"}
+      }
+    },
+    "MessageStatisticsQueueToSuccessSnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "MessageStatisticsQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "SuccessEventsTopicArn"}
+      }
+    },
+    "MultiPolicyQueueToMultiPolicySnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "MultiPolicyQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "MultiPolicyTopicArn"}
+      }
+    },
+    "DeliveryQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "DeliveryQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-SuccessEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "SuccessEventsTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{ "Ref": "DeliveryQueueUrl" }]
+      }
+    },
+    "DelayQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "DelayQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-DelayTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "DelayTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{ "Ref": "DelayQueueUrl" }]
+      }
+    },
+    "EmergencyInboxQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "EmergencyInboxQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-SuccessEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "SuccessEventsTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{ "Ref": "EmergencyInboxQueueUrl" }]
+      }
+    },
+    "InternetDeliveryQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "InternetDeliveryQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-InternetDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "InternetDeliveryTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{ "Ref": "InternetDeliveryQueueUrl" }]
+      }
+    },
+    "MessageHistoryQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "MessageHistoryQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-DeletedEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "DeletedEventsTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-InternetDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "InternetDeliveryTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-QuarantinedEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "QuarantinedEventsTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-SuccessEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "SuccessEventsTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{ "Ref": "MessageHistoryQueueUrl" }]
+      }
+    },
+    "MessageStatisticsQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "MessageStatisticsQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-DeletedEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "DeletedEventsTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-InternetDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "InternetDeliveryTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-QuarantinedEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "QuarantinedEventsTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-SuccessEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "SuccessEventsTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{ "Ref": "MessageStatisticsQueueUrl" }]
+      }
+    },
+    "QuarantineQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "QuarantineQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-QuarantinedEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "QuarantinedEventsTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{ "Ref": "QuarantineQueueUrl" }]
+      }
+    },
+    "MultiPolicyQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "MultiPolicyQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-MultiPolicyTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "MultiPolicyTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{ "Ref": "MultiPolicyQueueUrl" }]
+      }
+    }
+  }
 }

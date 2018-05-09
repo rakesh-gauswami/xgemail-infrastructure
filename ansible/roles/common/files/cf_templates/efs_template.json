@@ -1,52 +1,52 @@
 {
-    "AWSTemplateFormatVersion": "2010-09-09",
+  "AWSTemplateFormatVersion": "2010-09-09",
 
-    "Description": "",
+  "Description": "",
 
-    "Metadata": {
-      "Copyright": [
-        "Copyright 2018, Sophos Limited. All rights reserved.",
-        "",
-        "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
-        "Sophos Limited and Sophos Group.  All other product and company",
-        "names mentioned are trademarks or registered trademarks of their",
-        "respective owners."
-      ],
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2018, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ],
 
-      "Comments": "Template definition for a EFS file system"
+    "Comments": "Template definition for a EFS file system"
+  },
+
+  "Parameters": {
+
+    "Encrypted": {
+      "Description": "If true, the file system will be encrypted",
+      "Type": "String",
+      "Default" : "true",
+      "AllowedValues" : [ "false", "true" ]
     },
 
-    "Parameters": {
-
-        "Encrypted": {
-            "Description": "If true, the file system will be encrypted",
-            "Type": "String",
-            "Default" : "true",
-            "AllowedValues" : [ "false", "true" ]
-        },
-
-        "PerformanceMode": {
-            "Description": "The performance mode to be used for the EGS volume",
-            "Type": "String",
-            "Default": "generalPurpose",
-            "AllowedValues": ["generalPurpose", "maxIO"]
-        }
-    },
-
-    "Resources": {
-        "FileSystem": {
-            "Type": "AWS::EFS::FileSystem",
-            "Properties": {
-                "Encrypted": { "Ref": "Encrypted" },
-                "PerformanceMode": { "Ref": "PerformanceMode" }
-            }
-        }
-    },
-
-    "Outputs": {
-        "FileSystemId": {
-            "Description": "FileSystem Id",
-            "Value": { "Ref": "FileSystem" }
-        }
+    "PerformanceMode": {
+      "Description": "The performance mode to be used for the EGS volume",
+      "Type": "String",
+      "Default": "generalPurpose",
+      "AllowedValues": ["generalPurpose", "maxIO"]
     }
+  },
+
+  "Resources": {
+    "FileSystem": {
+      "Type": "AWS::EFS::FileSystem",
+      "Properties": {
+        "Encrypted": { "Ref": "Encrypted" },
+        "PerformanceMode": { "Ref": "PerformanceMode" }
+      }
+    }
+  },
+
+  "Outputs": {
+    "FileSystemId": {
+      "Description": "FileSystem Id",
+      "Value": { "Ref": "FileSystem" }
+    }
+  }
 }

@@ -1,829 +1,827 @@
 {
-    "AWSTemplateFormatVersion": "2010-09-09",
+  "AWSTemplateFormatVersion": "2010-09-09",
 
-    "Description": "XGEMAIL instance template for Sophos Cloud; used for Extended Delivery 'xdelivery'.",
+  "Description": "XGEMAIL instance template for Sophos Cloud; used for Extended Delivery 'xdelivery'.",
 
-    "Metadata": {
-        "Copyright": [
-            "Copyright 2018, Sophos Limited. All rights reserved.",
-            "",
-            "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
-            "Sophos Limited and Sophos Group.  All other product and company",
-            "names mentioned are trademarks or registered trademarks of their",
-            "respective owners."
-        ],
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2018, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ],
 
-        "Comments": [
-            "Xgemail Extended Delivery Instances are for delivering email that is temporarily undeliverable.",
-            "After a configurable number of attempts delivery instances will be able to transfer messages here.",
-            "These instances are also for assisting the AutoScaling of Delivery Instances during termnination.",
-            "They may transfer mail to Extended Delivery preventing the loss of email.",
-            "We use auto-scaling here for repair but not horizontal scaling.",
-            "We need to associate each replica member with a set of volumes.",
-            "Since each volume lives in a specific AZ, each replica member",
-            "must live in the AZ that its volumes live in.",
-            "So we create a separate auto-scaling group with a dedicated AZ",
-            "for each replica set member."
-        ]
+    "Comments": [
+      "Xgemail Extended Delivery Instances are for delivering email that is temporarily undeliverable.",
+      "After a configurable number of attempts delivery instances will be able to transfer messages here.",
+      "These instances are also for assisting the AutoScaling of Delivery Instances during termnination.",
+      "They may transfer mail to Extended Delivery preventing the loss of email.",
+      "We use auto-scaling here for repair but not horizontal scaling.",
+      "We need to associate each replica member with a set of volumes.",
+      "Since each volume lives in a specific AZ, each replica member",
+      "must live in the AZ that its volumes live in.",
+      "So we create a separate auto-scaling group with a dedicated AZ",
+      "for each replica set member."
+    ]
+  },
+
+  "Parameters": {
+    "AesDecryptionKey": {
+      "Description": "Decryption key for encrypted buckets",
+      "Type": "String"
     },
 
-    "Parameters": {
-        "AesDecryptionKey": {
-            "Description": "Decryption key for encrypted buckets",
-            "Type": "String"
-        },
-
-        "AmiId": {
-            "Description": "AMI ID to use as a base for the stack",
-            "Type": "String"
-        },
-
-        "AutoScalingMaxSize": {
-            "Description": "Maximum number of instances in the Auto Scaling Group",
-            "Type": "String",
-            "Default": "12"
-        },
-
-        "AutoScalingMinSize": {
-            "Description": "Minimum number of instances in the Auto Scaling Group",
-            "Type": "String",
-            "Default": "3"
-        },
-
-        "AutoScalingNotificationTopicARN": {
-            "Description": "ARN for SNS Topic that should receive launch and termination notifications",
-            "Type": "String"
-        },
-
-        "AvailabilityZoneIndex": {
-            "Description": "Zero-based index for selecting availability zone (0=a, 1=b, etc.)",
-            "Type": "String",
-            "AllowedPattern": "^[0-9]$"
-        },
-
-        "AvailabilityZones": {
-            "Description": "List of Availability Zones with Public and Private Subnets",
-            "Type": "List<String>",
-            "ConstraintDescription": "must be a comma-separated list of valid Availability Zones for the selected VPC"
-        },
-
-        "Branch": {
-            "Description": "(Develop, CPLAT-XXXX, etc...)",
-            "Type": "String"
-        },
-
-        "BuildVersion": {
-            "Description": "Version of the application from Bamboo",
-            "Type": "String",
-            "Default": "1.0"
-        },
-
-        "BundleVersion": {
-            "Description": "Version of the AMI bundle",
-            "Type": "Number"
-        },
-
-        "EbsMinIops": {
-            "Description": "Total IOPS to reserve",
-            "Type": "Number",
-            "Default": "0",
-            "MinValue": "0",
-            "MaxValue": "4000"
-        },
-
-        "Environment": {
-            "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
-            "Type": "String"
-        },
-
-        "HealthCheckGracePeriod": {
-            "Description": "The seconds after an instance comes into service that health checks starts.",
-            "Type": "Number",
-            "Default": "120",
-            "MinValue": "60",
-            "MaxValue": "600"
-        },
-
-        "HealthCheckType": {
-            "Description": "The service you want the health status from, Amazon EC2 or Elastic Load Balancer.",
-            "Type": "String",
-            "Default": "EC2",
-            "AllowedValues": [
-                "EC2",
-                "ELB"
-            ]
-        },
-
-        "InstanceProfile": {
-            "Description": "Instance profile for accessing aws resources",
-            "Type": "String"
-        },
-
-        "InstanceType": {
-            "Description": "Amazon EC2 instance type",
-            "Type": "String",
-            "Default": "t2.large"
-        },
-
-        "KeyName": {
-            "Description": "Key pair used to SSH to the instance",
-            "Type": "AWS::EC2::KeyPair::KeyName"
-        },
-
-        "LoadBalancerName": {
-            "Description": "Name for the ELB to attach to the Auto Scaling Group",
-            "Type": "List<String>"
-        },
-
-        "LogGroupRetentionPeriod": {
-            "Description": "The length of time (in days) to retain logs for",
-            "Type": "Number",
-            "Default": "400",
-            "AllowedValues": [
-                "1",
-                "3",
-                "5",
-                "7",
-                "14",
-                "30",
-                "60",
-                "90",
-                "120",
-                "150",
-                "180",
-                "365",
-                "400",
-                "545",
-                "731",
-                "1827",
-                "3653"
-            ]
-        },
-
-        "PublicIpAddressEnabled": {
-          "Description": "Whether or not we have a public IP address",
-          "Type": "String",
-          "Default" : "false",
-          "AllowedValues" : [ "false", "true" ]
-        },
-
-        "S3CookbookRepositoryURL": {
-          "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
-          "Type": "String",
-          "Default": "//cloud-applications/develop/cookbooks.enc"
-        },
-
-        "ScaleDownOnWeekends": {
-            "Description": "Enable scale down to zero on Saturday at midnight and scale back on Monday morning. (Times are UTC, NON PROD/QA ENVIRONMENT ONLY)",
-            "Type": "String",
-            "Default": "false",
-            "AllowedValues": [
-                "true",
-                "false"
-            ]
-        },
-
-        "SecurityGroups": {
-            "Description": "The security group that allows communication within the VPC.",
-            "Type": "List<AWS::EC2::SecurityGroup::Id>"
-        },
-
-        "SpotPrice": {
-          "Description": "Spot price",
-            "Type": "String",
-            "Default": "-1"
-        },
-
-        "StationVpcName": {
-            "Description": "Name of the CloudStation VPC",
-            "Type": "String",
-            "Default": "CloudStation"
-        },
-
-        "UpdateInterval": {
-            "Description": "The interval in minutes cfn-hup watches stack modifications.",
-            "Type": "Number",
-            "Default": "1",
-            "MinValue": "1",
-            "MaxValue": "30"
-        },
-
-        "VolumeSetId": {
-            "Description": "Identifier to be combined with stack name and availability zone to associate volumes with an instance",
-            "Type": "String",
-            "Default": ""
-        },
-
-        "VolumeTrackerSimpleDbDomain": {
-            "Description": "Name of Simple DB Domain used to track persistent EBS volumes",
-            "Type": "String"
-        },
-
-        "Vpc": {
-            "Description": "ID of an existing VPC",
-            "Type": "AWS::EC2::VPC::Id"
-        },
-
-        "VpcName": {
-            "Description": "Name of an existing VPC",
-            "Type": "String",
-            "Default": "CloudStation"
-        },
-
-        "VpcZoneIdentifiers": {
-            "Description": "The list of Public Subnets for your VPC",
-            "Type": "List<AWS::EC2::Subnet::Id>",
-            "ConstraintDescription": "must be a comma-separated list of valid Public Subnets for the selected VPC"
-        },
-
-        "XgemailMinSizeDataGB": {
-            "Description": "Total GB to reserve for storing data files",
-            "Type": "Number",
-            "MinValue": "1",
-            "MaxValue": "16384"
-        },
-
-        "XgemailNotifierQueueUrl" : {
-            "Description" : "URL for the SQS Queue where XGEMAIL messages are sent",
-            "Type" : "String",
-            "Default": ""
-        },
-
-        "XgemailServiceType": {
-            "Description": "Service type for the xgemail instance (Defaults to unknown so not to break builds)",
-            "Type": "String",
-            "Default": "unknown"
-        }
-
+    "AmiId": {
+      "Description": "AMI ID to use as a base for the stack",
+      "Type": "String"
     },
 
-    "Mappings": {
-        "RegionConfigMap": {
-            "ap-northeast-1": {
-                "Name": "Asia Pacific (Tokyo)",
-                "PrivateDns": "ap-northeast-1.compute.internal"
-            },
-            "ap-southeast-1": {
-                "Name": "Asia Pacific (Singapore)",
-                "PrivateDns": "ap-southeast-1.compute.internal"
-            },
-            "ap-southeast-2": {
-                "Name": "Asia Pacific (Sydney)",
-                "PrivateDns": "ap-southeast-2.compute.internal"
-            },
-            "eu-central-1": {
-                "Name": "EU (Frankfurt)",
-                "PrivateDns": "eu-central-1.compute.internal"
-            },
-            "eu-west-1": {
-                "Name": "EU (Ireland)",
-                "PrivateDns": "eu-west-1.compute.internal"
-            },
-            "sa-east-1": {
-                "Name": "South America (Sao Paulo)",
-                "PrivateDns": "sa-east-1.compute.internal"
-            },
-            "us-east-1": {
-                "Name": "US East (N. Virginia)",
-                "PrivateDns": "ec2.internal"
-            },
-            "us-east-2": {
-                "Name": "US East (Ohio)",
-                "PrivateDns": "us-east-2.compute.internal"
-            },
-            "us-west-1": {
-                "Name": "US West (N. California)",
-                "PrivateDns": "us-west-1.compute.internal"
-            },
-            "us-west-2": {
-                "Name": "US West (Oregon)",
-                "PrivateDns": "us-west-2.compute.internal"
-            }
-        }
+    "AutoScalingMaxSize": {
+      "Description": "Maximum number of instances in the Auto Scaling Group",
+      "Type": "String",
+      "Default": "12"
     },
 
-    "Conditions": {
-        "EnableDetailedMonitoring": {
-            "Fn::Equals": [
+    "AutoScalingMinSize": {
+      "Description": "Minimum number of instances in the Auto Scaling Group",
+      "Type": "String",
+      "Default": "3"
+    },
+
+    "AutoScalingNotificationTopicARN": {
+      "Description": "ARN for SNS Topic that should receive launch and termination notifications",
+      "Type": "String"
+    },
+
+    "AvailabilityZoneIndex": {
+      "Description": "Zero-based index for selecting availability zone (0=a, 1=b, etc.)",
+      "Type": "String",
+      "AllowedPattern": "^[0-9]$"
+    },
+
+    "AvailabilityZones": {
+      "Description": "List of Availability Zones with Public and Private Subnets",
+      "Type": "List<String>",
+      "ConstraintDescription": "must be a comma-separated list of valid Availability Zones for the selected VPC"
+    },
+
+    "Branch": {
+      "Description": "(Develop, CPLAT-XXXX, etc...)",
+      "Type": "String"
+    },
+
+    "BuildVersion": {
+      "Description": "Version of the application from Bamboo",
+      "Type": "String",
+      "Default": "1.0"
+    },
+
+    "BundleVersion": {
+      "Description": "Version of the AMI bundle",
+      "Type": "Number"
+    },
+
+    "EbsMinIops": {
+      "Description": "Total IOPS to reserve",
+      "Type": "Number",
+      "Default": "0",
+      "MinValue": "0",
+      "MaxValue": "4000"
+    },
+
+    "Environment": {
+      "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
+      "Type": "String"
+    },
+
+    "HealthCheckGracePeriod": {
+      "Description": "The seconds after an instance comes into service that health checks starts.",
+      "Type": "Number",
+      "Default": "120",
+      "MinValue": "60",
+      "MaxValue": "600"
+    },
+
+    "HealthCheckType": {
+      "Description": "The service you want the health status from, Amazon EC2 or Elastic Load Balancer.",
+      "Type": "String",
+      "Default": "EC2",
+      "AllowedValues": [
+        "EC2",
+        "ELB"
+      ]
+    },
+
+    "InstanceProfile": {
+      "Description": "Instance profile for accessing aws resources",
+      "Type": "String"
+    },
+
+    "InstanceType": {
+      "Description": "Amazon EC2 instance type",
+      "Type": "String",
+      "Default": "t2.large"
+    },
+
+    "KeyName": {
+      "Description": "Key pair used to SSH to the instance",
+      "Type": "AWS::EC2::KeyPair::KeyName"
+    },
+
+    "LoadBalancerName": {
+      "Description": "Name for the ELB to attach to the Auto Scaling Group",
+      "Type": "List<String>"
+    },
+
+    "LogGroupRetentionPeriod": {
+      "Description": "The length of time (in days) to retain logs for",
+      "Type": "Number",
+      "Default": "400",
+      "AllowedValues": [
+        "1",
+        "3",
+        "5",
+        "7",
+        "14",
+        "30",
+        "60",
+        "90",
+        "120",
+        "150",
+        "180",
+        "365",
+        "400",
+        "545",
+        "731",
+        "1827",
+        "3653"
+      ]
+    },
+
+    "PublicIpAddressEnabled": {
+      "Description": "Whether or not we have a public IP address",
+      "Type": "String",
+      "Default" : "false",
+      "AllowedValues" : [ "false", "true" ]
+    },
+
+    "S3CookbookRepositoryURL": {
+      "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
+      "Type": "String",
+      "Default": "//cloud-applications/develop/cookbooks.enc"
+    },
+
+    "ScaleDownOnWeekends": {
+      "Description": "Enable scale down to zero on Saturday at midnight and scale back on Monday morning. (Times are UTC, NON PROD/QA ENVIRONMENT ONLY)",
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [
+        "true",
+        "false"
+      ]
+    },
+
+    "SecurityGroups": {
+      "Description": "The security group that allows communication within the VPC.",
+      "Type": "List<AWS::EC2::SecurityGroup::Id>"
+    },
+
+    "SpotPrice": {
+      "Description": "Spot price",
+      "Type": "String",
+      "Default": "-1"
+    },
+
+    "StationVpcName": {
+      "Description": "Name of the CloudStation VPC",
+      "Type": "String",
+      "Default": "CloudStation"
+    },
+
+    "UpdateInterval": {
+      "Description": "The interval in minutes cfn-hup watches stack modifications.",
+      "Type": "Number",
+      "Default": "1",
+      "MinValue": "1",
+      "MaxValue": "30"
+    },
+
+    "VolumeSetId": {
+      "Description": "Identifier to be combined with stack name and availability zone to associate volumes with an instance",
+      "Type": "String",
+      "Default": ""
+    },
+
+    "VolumeTrackerSimpleDbDomain": {
+      "Description": "Name of Simple DB Domain used to track persistent EBS volumes",
+      "Type": "String"
+    },
+
+    "Vpc": {
+      "Description": "ID of an existing VPC",
+      "Type": "AWS::EC2::VPC::Id"
+    },
+
+    "VpcName": {
+      "Description": "Name of an existing VPC",
+      "Type": "String",
+      "Default": "CloudStation"
+    },
+
+    "VpcZoneIdentifiers": {
+      "Description": "The list of Public Subnets for your VPC",
+      "Type": "List<AWS::EC2::Subnet::Id>",
+      "ConstraintDescription": "must be a comma-separated list of valid Public Subnets for the selected VPC"
+    },
+
+    "XgemailMinSizeDataGB": {
+      "Description": "Total GB to reserve for storing data files",
+      "Type": "Number",
+      "MinValue": "1",
+      "MaxValue": "16384"
+    },
+
+    "XgemailNotifierQueueUrl" : {
+      "Description" : "URL for the SQS Queue where XGEMAIL messages are sent",
+      "Type" : "String",
+      "Default": ""
+    },
+
+    "XgemailServiceType": {
+      "Description": "Service type for the xgemail instance (Defaults to unknown so not to break builds)",
+      "Type": "String",
+      "Default": "unknown"
+    }
+
+  },
+
+  "Mappings": {
+    "RegionConfigMap": {
+      "ap-northeast-1": {
+        "Name": "Asia Pacific (Tokyo)",
+        "PrivateDns": "ap-northeast-1.compute.internal"
+      },
+      "ap-southeast-1": {
+        "Name": "Asia Pacific (Singapore)",
+        "PrivateDns": "ap-southeast-1.compute.internal"
+      },
+      "ap-southeast-2": {
+        "Name": "Asia Pacific (Sydney)",
+        "PrivateDns": "ap-southeast-2.compute.internal"
+      },
+      "eu-central-1": {
+        "Name": "EU (Frankfurt)",
+        "PrivateDns": "eu-central-1.compute.internal"
+      },
+      "eu-west-1": {
+        "Name": "EU (Ireland)",
+        "PrivateDns": "eu-west-1.compute.internal"
+      },
+      "sa-east-1": {
+        "Name": "South America (Sao Paulo)",
+        "PrivateDns": "sa-east-1.compute.internal"
+      },
+      "us-east-1": {
+        "Name": "US East (N. Virginia)",
+        "PrivateDns": "ec2.internal"
+      },
+      "us-east-2": {
+        "Name": "US East (Ohio)",
+        "PrivateDns": "us-east-2.compute.internal"
+      },
+      "us-west-1": {
+        "Name": "US West (N. California)",
+        "PrivateDns": "us-west-1.compute.internal"
+      },
+      "us-west-2": {
+        "Name": "US West (Oregon)",
+        "PrivateDns": "us-west-2.compute.internal"
+      }
+    }
+  },
+
+  "Conditions": {
+    "EnableDetailedMonitoring": {
+      "Fn::Equals": [
+        {
+          "Ref": "Environment"
+        },
+        "prod"
+      ]
+    },
+    "UseSpotPrice": {
+      "Fn::And": [
+        {
+          "Fn::Not": [
+            {
+              "Fn::Equals": [
                 {
-                    "Ref": "Environment"
+                  "Ref": "Environment"
                 },
                 "prod"
-            ]
+              ]
+            }
+          ]
         },
-        "UseSpotPrice": {
-            "Fn::And": [
-                {
-                    "Fn::Not": [
-                        {
-                            "Fn::Equals": [
-                                {
-                                    "Ref": "Environment"
-                                },
-                                "prod"
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "Fn::Not": [
-                        {
-                            "Fn::Equals": [
-                                {"Ref": "SpotPrice"},
-                                "-1"
-                            ]
-                        }
-                    ]
-                }
-            ]
-        },
-        "EnableScaleDownOnWeekends": {
-            "Fn::And": [
-                {
-                    "Fn::Not": [
-                        {
-                            "Fn::Or": [
-                                { "Fn::Equals": [ { "Ref": "Environment" }, "prod" ] },
-                                { "Fn::Equals": [ { "Ref": "Environment" }, "qa" ] }
-                            ]
-                        }
-                    ]
-                },
-                { "Fn::Equals": [ { "Ref": "ScaleDownOnWeekends" }, "true" ] }
-            ]
-        },
-
-        "IsInfDevelopmentEnvironment": {
-            "Fn::Or": [
-                { "Fn::Equals": [ { "Ref": "Environment" }, "inf" ] },
-                { "Fn::Equals": [ { "Ref": "Environment" }, "qainf" ] },
-                { "Fn::Equals": [ { "Ref": "Environment" }, "dev" ] }
-            ]
+        {
+          "Fn::Not": [
+            {
+              "Fn::Equals": [
+                {"Ref": "SpotPrice"},
+                "-1"
+              ]
+            }
+          ]
         }
+      ]
+    },
+    "EnableScaleDownOnWeekends": {
+      "Fn::And": [
+        {
+          "Fn::Not": [
+            {
+              "Fn::Or": [
+                { "Fn::Equals": [ { "Ref": "Environment" }, "prod" ] },
+                { "Fn::Equals": [ { "Ref": "Environment" }, "qa" ] }
+              ]
+            }
+          ]
+        },
+        { "Fn::Equals": [ { "Ref": "ScaleDownOnWeekends" }, "true" ] }
+      ]
     },
 
-    "Resources": {
-        "XgemailAutoScalingGroup": {
-            "Type": "AWS::AutoScaling::AutoScalingGroup",
-            "CreationPolicy": {
-                "ResourceSignal": {
-                    "Count": { "Ref": "AutoScalingMinSize" },
-                    "Timeout": "PT20M"
-                }
-            },
-            "Properties": {
-                "AvailabilityZones": [
-                    {
-                        "Fn::Select": [
-                            { "Ref": "AvailabilityZoneIndex" },
-                            { "Ref": "AvailabilityZones" }
-                        ]
-                    }
-                ],
-                "Cooldown": "200",
-                "HealthCheckGracePeriod": { "Ref": "HealthCheckGracePeriod" },
-                "HealthCheckType": { "Ref": "HealthCheckType" },
-                "LaunchConfigurationName": { "Ref": "XgemailAutoScalingLaunchConfig" },
-                "LoadBalancerNames": { "Ref": "LoadBalancerName" },
-                "MaxSize": { "Ref": "AutoScalingMaxSize" },
-                "MinSize": { "Ref": "AutoScalingMinSize" },
-                "NotificationConfiguration": {
-                    "NotificationTypes": [
-                        "autoscaling:EC2_INSTANCE_LAUNCH",
-                        "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
-                        "autoscaling:EC2_INSTANCE_TERMINATE",
-                        "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
-                        "autoscaling:TEST_NOTIFICATION"
-                    ],
-                    "TopicARN": { "Ref": "AutoScalingNotificationTopicARN" }
-                },
-                "Tags": [
-                    {
-                        "Key": "Name",
-                        "Value": {
-                            "Fn::Join": [
-                                ":", [
-                                    { "Ref": "VpcName" },
-                                    { "Ref": "XgemailServiceType" },
-                                    { "Ref": "Branch" },
-                                    { "Ref": "BundleVersion" }
-                                ]
-                            ]
-                        },
-                        "PropagateAtLaunch": true
-                    }, {
-                        "Key": "BuildResultKey",
-                        "Value": { "Ref": "BuildVersion" },
-                        "PropagateAtLaunch": true
-                    }, {
-                        "Key": "BundleVersion",
-                        "Value": { "Ref": "BundleVersion" },
-                        "PropagateAtLaunch": true
-                    }
-                ],
-                "VPCZoneIdentifier": [
-                    {
-                        "Fn::Select": [
-                            { "Ref": "AvailabilityZoneIndex" },
-                            { "Ref": "VpcZoneIdentifiers" }
-                        ]
-                    }
-                ]
-            }
-        },
-
-        "XgemailAutoScalingLaunchConfig": {
-            "Type": "AWS::AutoScaling::LaunchConfiguration",
-            "Metadata": {
-                "AWS::CloudFormation::Init": {
-                    "configSets": {
-                        "xgemail_install": [
-                          "attributes",
-                          "update_cookbooks",
-                          "xgemail_install"
-                        ],
-                        "xgemail_update": [
-                          "attributes",
-                          "update_cookbooks",
-                          "xgemail_update"
-                        ]
-                    },
-
-                    "attributes": {
-                        "files": {
-                            "/var/sophos/cookbooks/attributes.json": {
-                                "content": {
-                                    "Fn::Join": [
-                                        "", [
-                                            "{\n",
-                                            "  \"sophos_cloud\" : {\n",
-                                            "    \"application_name\"               : \"{{cluster}}\",\n",
-                                            "    \"application_type\"               : \"xgemail\",\n",
-                                            "    \"availability_zone\"              : \"{{availability_zone}}\",\n",
-                                            "    \"connections\"                    : \"cloud-{{environment}}-connections\",\n",
-                                            "    \"configs\"                        : \"cloud-{{environment}}-configs\",\n",
-                                            "    \"context\"                        : \"{{environment}}\",\n",
-                                            "    \"environment\"                    : \"{{environment}}\",\n",
-                                            "    \"branch\"                         : \"{{branch}}\",\n",
-                                            "    \"cluster\"                        : \"{{cluster}}\",\n",
-                                            "    \"client-endpoint\"                : \"{{region}}\",\n",
-                                            "    \"region\"                         : \"{{region}}\",\n",
-                                            "    \"vpc_id\"                         : \"{{vpc_id}}\",\n",
-                                            "    \"vpc_name\"                       : \"{{vpc_name}}\"\n",
-                                            "  },\n",
-                                            "  \"tomcat\" : {\n",
-                                            "    \"should_update_keystore\"         : \"false\"\n",
-                                            "  },\n",
-                                            "  \"cert\" : {\n",
-                                            "    \"should_install_mx\"              : \"true\"\n",
-                                            "  },\n",
-                                            "  \"volumes\" : {\n",
-                                            "    \"volume_min_iops\"                : \"{{volume_min_iops}}\",\n",
-                                            "    \"volume_min_size_data_gb\"        : \"{{volume_min_size_data_gb}}\",\n",
-                                            "    \"volume_mount_point\"             : \"storage\",\n",
-                                            "    \"volume_set_id\"                  : \"{{volume_set_id}}\",\n",
-                                            "    \"volume_snapshot_hour\"           : \"0\",\n",
-                                            "    \"volume_snapshot_weekday\"        : \"0\",\n",
-                                            "    \"volume_tracker_sdb_domain\"      : \"{{volume_tracker_sdb_domain}}\"\n",
-                                            "  },\n",
-                                            "  \"xgemail\" : {\n",
-                                            "    \"cluster_type\"                   : \"{{cluster_type}}\",\n",
-                                            "    \"msg_notifier_queue_url\"         : \"{{msg_notifier_queue_url}}\",\n",
-                                            "    \"station_vpc_name\"               : \"{{station_vpc_name}}\"\n",
-                                            "  }\n",
-                                            "}\n"
-                                        ]
-                                    ]
-                                },
-                                "context": {
-                                    "availability_zone": {
-                                        "Fn::Select": [
-                                            { "Ref": "AvailabilityZoneIndex" },
-                                            { "Ref": "AvailabilityZones" }
-                                        ]
-                                    },
-                                    "branch": { "Ref": "Branch" },
-                                    "cluster": { "Ref": "XgemailServiceType" },
-                                    "cluster_type": { "Ref": "XgemailServiceType" },
-                                    "environment": { "Ref": "Environment" },
-                                    "region": { "Ref": "AWS::Region" },
-                                    "stack": { "Ref": "AWS::StackName" },
-                                    "station_vpc_name": { "Ref": "StationVpcName" },
-                                    "volume_min_iops": { "Ref": "EbsMinIops" },
-                                    "volume_min_size_data_gb": { "Ref": "XgemailMinSizeDataGB" },
-                                    "volume_set_id": { "Ref": "VolumeSetId" },
-                                    "volume_tracker_sdb_domain": { "Ref": "VolumeTrackerSimpleDbDomain" },
-                                    "vpc_id": { "Ref": "Vpc" },
-                                    "vpc_name": { "Ref": "VpcName" },
-                                    "msg_notifier_queue_url": { "Ref": "XgemailNotifierQueueUrl" }
-                                },
-                                "owner": "root",
-                                "mode": "000444"
-                            },
-                            "/var/sophos/modify_attributes_json": {
-                                "content": {
-                                    "Fn::Join": [
-                                        "", [
-                                            "#!/bin/bash -xe\n",
-                                            "export host_name=`wget -q -O - http://169.254.169.254/latest/meta-data/public-hostname`\n",
-                                            "sed -i \"s/<<host_name>>/$host_name/g\" ./attributes.json"
-                                        ]
-                                    ]
-                                },
-                                "owner": "root",
-                                "group": "root",
-                                "mode": "000500"
-                            }
-                        },
-
-                        "commands": {
-                            "01_modify_attributes_json": {
-                                "command": "/var/sophos/modify_attributes_json",
-                                "cwd": "/var/sophos/cookbooks"
-                            }
-                        }
-                    },
-
-                    "update_cookbooks": {
-                        "commands": {
-                            "00_clean": {
-                                "command": {
-                                    "Fn::Join": [ "; ",[
-                                        "rm -f /var/chef/chef-repo/nodes/*.*",
-                                        "rm -f /var/chef/chef-repo/cookbooks.enc",
-                                        "rm -f /var/chef/chef-repo/cookbooks.tar.gz",
-                                        "rm -rf /var/chef/chef-repo/cookbooks"
-                                    ]]
-                                }
-                            },
-                            "01_get_cookbook": {
-                                "command": {
-                                    "Fn::Join": [
-                                        "",
-                                        [ "aws s3 cp s3:", { "Ref": "S3CookbookRepositoryURL" }, " /var/chef/chef-repo/cookbooks.enc" ]
-                                    ]
-                                },
-                                "cwd": "/var/chef",
-                                "env": {
-                                    "HOME": "/var/chef"
-                                }
-                            },
-                            "02_decrypt_cookbook": {
-                                "command": {
-                                    "Fn::Join": [
-                                        "",
-                                        [ "openssl enc -aes-256-cbc -d -in /var/chef/chef-repo/cookbooks.enc -out /var/chef/chef-repo/cookbooks.tar.gz -pass pass:", { "Ref": "AesDecryptionKey" } ]
-                                    ]
-                                },
-                                "cwd": "/var/chef/chef-repo",
-                                "env": {
-                                    "HOME": "/var/chef"
-                                }
-                            },
-                            "03_unpack_cookbook": {
-                                "command": "tar xvf /var/chef/chef-repo/cookbooks.tar.gz",
-                                "cwd": "/var/chef/chef-repo"
-                            }
-                        }
-                    },
-
-                    "xgemail_install": {
-                        "files": {
-                            "/etc/cfn/cfn-hup.conf": {
-                                "content": {
-                                    "Fn::Join": [
-                                        "", [
-                                            "[main]\n",
-                                            "stack=",
-                                            { "Ref": "AWS::StackName" },
-                                            "\n",
-                                            "region=",
-                                            { "Ref": "AWS::Region" },
-                                            "\n",
-                                            "interval=",
-                                            { "Ref": "UpdateInterval" },
-                                            "\n"
-                                        ]
-                                    ]
-                                }
-                            },
-                            "/etc/cfn/hooks.d/cfn-auto-reloader.conf": {
-                                "content": {
-                                    "Fn::Join": [
-                                        "", [
-                                            "[cfn-auto-reloader-hook]\n",
-                                            "triggers=post.update\n",
-                                            "path=Resources.XgemailAutoScalingLaunchConfig.Metadata.AWS::CloudFormation::Init\n",
-                                            "action=/opt/aws/bin/cfn-init -v -s ",
-                                            { "Ref": "AWS::StackName" },
-                                            " -r XgemailAutoScalingLaunchConfig",
-                                            " --configsets xgemail_update",
-                                            " --region ",
-                                            { "Ref": "AWS::Region" },
-                                            "\n",
-                                            "runas=root\n"
-                                        ]
-                                    ]
-                                }
-                            },
-                            "/var/sophos/modify_network_config": {
-                                "content": {
-                                    "Fn::Join": [
-                                        "", [
-                                            "export private_ip=`wget -q -O - http://169.254.169.254/latest/meta-data/local-ipv4`\n",
-                                            "export host_name=`wget -q -O - http://169.254.169.254/latest/meta-data/local-hostname`\n",
-                                            "export host_entry=\"$private_ip $host_name\"\n",
-                                            "echo $host_entry\n",
-                                            "echo > /etc/hosts\n",
-                                            "echo 127.0.0.1 $host_name localhost >> /etc/hosts\n",
-                                            "echo $host_entry >> /etc/hosts\n",
-                                            "echo >> /etc/dhcp/dhclient.conf\n",
-                                            "echo 'supersede domain-name \"",
-                                            {
-                                                "Fn::FindInMap": [
-                                                    "RegionConfigMap",
-                                                    { "Ref": "AWS::Region" },
-                                                    "PrivateDns"
-                                                ]
-                                            },
-                                            "\";' >> /etc/dhcp/dhclient.conf\n",
-                                            "echo >> /etc/resolv.conf\n",
-                                            "echo 'search ",
-                                            {
-                                                "Fn::FindInMap": [
-                                                    "RegionConfigMap",
-                                                    { "Ref": "AWS::Region" },
-                                                    "PrivateDns"
-                                                ]
-                                            },
-                                            "' >> /etc/resolv.conf\n"
-                                        ]
-                                    ]
-                                },
-                                "owner": "root",
-                                "mode": "000500"
-                            }
-                        },
-
-                        "commands": {
-                            "01_delete_run_list_nodes": { "command": "rm -f /var/chef/chef-repo/nodes/*.*" },
-                            "02_run_chef_client": {
-                                "command": {
-                                    "Fn::Join": [
-                                        " ", [
-                                            "chef-client --no-color -z",
-                                            "-c /var/chef/chef-repo/.chef/client.rb",
-                                            "-j /var/sophos/cookbooks/attributes.json",
-                                            "-l debug -L /var/log/chef-client.instance.install.chef.log"
-                                        ]
-                                    ]
-                                },
-                                "cwd": "/var/chef/chef-repo",
-                                "env": { "HOME": "/var/chef" }
-                            },
-                            "03_configure_node_run_list": {
-                                "command": {
-                                    "Fn::Join": [
-                                        "", [
-                                            "knife node run_list set -z `knife node list -z` \"",
-                                            "recipe[sophos-cloud-mount::default],",
-                                            "recipe[sophos-cloud-mount::install],",
-                                            "recipe[sophos-cloud-ntpd::default],",
-                                            "recipe[sophos-cloud-snmpd::configure],",
-                                            "recipe[sophos-cloud-tomcat::deploy_certs],",
-                                            "recipe[sophos-cloud-xgemail::setup_xgemail_utils_structure],",
-                                            "recipe[sophos-cloud-xgemail::configure_logging],",
-                                            "recipe[sophos-cloud-xgemail::configure-extended-delivery-queue],",
-                                            "recipe[sophos-cloud-xgemail::configure_postfix_snmp_logicmonitor],",
-                                            "recipe[sophos-cloud-xgemail::configure_monit],",
-                                            "recipe[sophos-cloud-common::run_install_cleanup]",
-                                            "\""
-                                        ]
-                                    ]
-                                },
-                                "cwd": "/var/chef/chef-repo",
-                                "env": { "HOME": "/var/chef" }
-                            },
-                            "04_modify_network_config": { "command": "/var/sophos/modify_network_config" },
-                            "05_run_chef_client": {
-                                "command": {
-                                    "Fn::Join": [
-                                        " ", [
-                                            "chef-client --no-color -z",
-                                            "-c /var/chef/chef-repo/.chef/client.rb",
-                                            "-j /var/sophos/cookbooks/attributes.json",
-                                            "-l debug -L /var/log/chef-client.instance.install.service.log"
-                                        ]
-                                    ]
-                                },
-                                "cwd": "/var/chef/chef-repo",
-                                "env": { "HOME": "/var/chef" }
-                            },
-                            "06_delete_cfn_hup_config": {
-                                "command": "rm -f /etc/cfn/hooks.d/cfn-auto-reloader.conf.*"
-                            }
-                        },
-
-                        "services": {
-                            "sysvinit": {
-                                "cfn-hup": {
-                                    "enabled": "true",
-                                    "ensureRunning": "true",
-                                    "files": [
-                                        "/etc/cfn/cfn-hup.conf",
-                                        "/etc/cfn/hooks.d/cfn-auto-reloader.conf"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-
-                    "xgemail_update": {
-                        "commands": {
-                            "01_setup_node_run_list": {
-                                "command": {
-                                    "Fn::Join": [
-                                        "", [
-                                            "knife node run_list set -z `knife node list -z` \"",
-                                            "recipe[sophos-cloud-ntpd::default],",
-                                            "recipe[sophos-cloud-snmpd::update]",
-                                            "\""
-                                        ]
-                                    ]
-                                },
-                                "cwd": "/var/chef/chef-repo",
-                                "env": { "HOME": "/var/chef" }
-                            },
-                            "02_run_chef_client": {
-                                "command": {
-                                    "Fn::Join": [
-                                        " ", [
-                                            "chef-client --no-color -z",
-                                            "-c /var/chef/chef-repo/.chef/client.rb",
-                                            "-j /var/sophos/cookbooks/attributes.json",
-                                            "-l debug -L /var/log/chef-client.instance.update.log"
-                                        ]
-                                    ]
-                                },
-                                "cwd": "/var/chef/chef-repo",
-                                "env": { "HOME": "/var/chef" }
-                            }
-                        }
-                    }
-                }
-            },
-            "Properties": {
-                "AssociatePublicIpAddress": { "Ref" : "PublicIpAddressEnabled" },
-                "IamInstanceProfile": { "Ref": "InstanceProfile" },
-                "ImageId": { "Ref": "AmiId" },
-                "InstanceMonitoring": {
-                    "Fn::If": [
-                        "EnableDetailedMonitoring",
-                        "true",
-                        "false"
-                    ]
-                },
-                "InstanceType": { "Ref": "InstanceType" },
-                "KeyName": { "Ref": "KeyName" },
-                "SecurityGroups": { "Ref": "SecurityGroups" },
-                "SpotPrice": { "Fn::If": ["UseSpotPrice",  {"Ref": "SpotPrice"}, {"Ref": "AWS::NoValue"} ]},
-                "UserData": {
-                    "Fn::Base64": {
-                        "Fn::Join": [
-                            "", [
-                                "#!/bin/bash -xe\n",
-                                "# Install the files and packages from the metadata\n",
-                                "# Make sure we call cfn-signal before exiting, otherwise we have to\n",
-                                "# wait for the CreationPolicy timeout to detect failed initialization.\n",
-                                "# That's because of using the bash -e option, which makes the script\n",
-                                "# exit immediately as soon as any command, e.g. cfn-init, fails.\n",
-                                "onexit() {\n",
-                                "  exit_code=$?\n",
-                                "  /opt/aws/bin/cfn-signal -e $exit_code",
-                                " --stack ",
-                                { "Ref": "AWS::StackName" },
-                                " --resource XgemailAutoScalingGroup",
-                                " --region ",
-                                { "Ref": "AWS::Region" },
-                                "\n",
-                                "}\n",
-                                "trap onexit EXIT\n",
-                                "# Wait for network access.\n",
-                                "/usr/bin/nc -v -z -w 60 www.google.com 80\n",
-                                "/opt/aws/bin/cfn-init --verbose ",
-                                " --stack ",
-                                { "Ref": "AWS::StackName" },
-                                " --resource XgemailAutoScalingLaunchConfig ",
-                                " --configsets xgemail_install ",
-                                " --region ",
-                                { "Ref": "AWS::Region" },
-                                "\n",
-                                "# Now the onexit function will get called.\n"
-                            ]
-                        ]
-                    }
-                }
-            }
-        }
+    "IsInfDevelopmentEnvironment": {
+      "Fn::Or": [
+        { "Fn::Equals": [ { "Ref": "Environment" }, "inf" ] },
+        { "Fn::Equals": [ { "Ref": "Environment" }, "qainf" ] },
+        { "Fn::Equals": [ { "Ref": "Environment" }, "dev" ] }
+      ]
     }
+  },
+
+  "Resources": {
+    "XgemailAutoScalingGroup": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "CreationPolicy": {
+        "ResourceSignal": {
+          "Count": { "Ref": "AutoScalingMinSize" },
+          "Timeout": "PT20M"
+        }
+      },
+      "Properties": {
+        "AvailabilityZones": [
+          {
+            "Fn::Select": [
+              { "Ref": "AvailabilityZoneIndex" },
+              { "Ref": "AvailabilityZones" }
+            ]
+          }
+        ],
+        "Cooldown": "200",
+        "HealthCheckGracePeriod": { "Ref": "HealthCheckGracePeriod" },
+        "HealthCheckType": { "Ref": "HealthCheckType" },
+        "LaunchConfigurationName": { "Ref": "XgemailAutoScalingLaunchConfig" },
+        "LoadBalancerNames": { "Ref": "LoadBalancerName" },
+        "MaxSize": { "Ref": "AutoScalingMaxSize" },
+        "MinSize": { "Ref": "AutoScalingMinSize" },
+        "NotificationConfiguration": {
+          "NotificationTypes": [
+            "autoscaling:EC2_INSTANCE_LAUNCH",
+            "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
+            "autoscaling:EC2_INSTANCE_TERMINATE",
+            "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
+            "autoscaling:TEST_NOTIFICATION"
+          ],
+          "TopicARN": { "Ref": "AutoScalingNotificationTopicARN" }
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                ":", [
+                  { "Ref": "VpcName" },
+                  { "Ref": "XgemailServiceType" },
+                  { "Ref": "Branch" },
+                  { "Ref": "BundleVersion" }
+                ]
+              ]
+            },
+            "PropagateAtLaunch": true
+          }, {
+            "Key": "BuildResultKey",
+            "Value": { "Ref": "BuildVersion" },
+            "PropagateAtLaunch": true
+          }, {
+            "Key": "BundleVersion",
+            "Value": { "Ref": "BundleVersion" },
+            "PropagateAtLaunch": true
+          }
+        ],
+        "VPCZoneIdentifier": [
+          {
+            "Fn::Select": [
+              { "Ref": "AvailabilityZoneIndex" },
+              { "Ref": "VpcZoneIdentifiers" }
+            ]
+          }
+        ]
+      }
+    },
+
+    "XgemailAutoScalingLaunchConfig": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Metadata": {
+        "AWS::CloudFormation::Init": {
+          "configSets": {
+            "xgemail_install": [
+              "attributes",
+              "update_cookbooks",
+              "xgemail_install"
+            ],
+            "xgemail_update": [
+              "attributes",
+              "update_cookbooks",
+              "xgemail_update"
+            ]
+          },
+
+          "attributes": {
+            "files": {
+              "/var/sophos/cookbooks/attributes.json": {
+                "content": {
+                  "Fn::Join": [
+                    "", [
+                      "{\n",
+                      "  \"sophos_cloud\" : {\n",
+                      "    \"application_name\"               : \"{{cluster}}\",\n",
+                      "    \"application_type\"               : \"xgemail\",\n",
+                      "    \"availability_zone\"              : \"{{availability_zone}}\",\n",
+                      "    \"connections\"                    : \"cloud-{{environment}}-connections\",\n",
+                      "    \"configs\"                        : \"cloud-{{environment}}-configs\",\n",
+                      "    \"context\"                        : \"{{environment}}\",\n",
+                      "    \"environment\"                    : \"{{environment}}\",\n",
+                      "    \"branch\"                         : \"{{branch}}\",\n",
+                      "    \"cluster\"                        : \"{{cluster}}\",\n",
+                      "    \"client-endpoint\"                : \"{{region}}\",\n",
+                      "    \"region\"                         : \"{{region}}\",\n",
+                      "    \"vpc_id\"                         : \"{{vpc_id}}\",\n",
+                      "    \"vpc_name\"                       : \"{{vpc_name}}\"\n",
+                      "  },\n",
+                      "  \"tomcat\" : {\n",
+                      "    \"should_update_keystore\"         : \"false\"\n",
+                      "  },\n",
+                      "  \"cert\" : {\n",
+                      "    \"should_install_mx\"              : \"true\"\n",
+                      "  },\n",
+                      "  \"volumes\" : {\n",
+                      "    \"volume_min_iops\"                : \"{{volume_min_iops}}\",\n",
+                      "    \"volume_min_size_data_gb\"        : \"{{volume_min_size_data_gb}}\",\n",
+                      "    \"volume_mount_point\"             : \"storage\",\n",
+                      "    \"volume_set_id\"                  : \"{{volume_set_id}}\",\n",
+                      "    \"volume_snapshot_hour\"           : \"0\",\n",
+                      "    \"volume_snapshot_weekday\"        : \"0\",\n",
+                      "    \"volume_tracker_sdb_domain\"      : \"{{volume_tracker_sdb_domain}}\"\n",
+                      "  },\n",
+                      "  \"xgemail\" : {\n",
+                      "    \"cluster_type\"                   : \"{{cluster_type}}\",\n",
+                      "    \"msg_notifier_queue_url\"         : \"{{msg_notifier_queue_url}}\",\n",
+                      "    \"station_vpc_name\"               : \"{{station_vpc_name}}\"\n",
+                      "  }\n",
+                      "}\n"
+                    ]
+                  ]
+                },
+                "context": {
+                  "availability_zone":                        { "Fn::Select": [
+                                                                { "Ref": "AvailabilityZoneIndex" },
+                                                                { "Ref": "AvailabilityZones" }
+                                                              ] },
+                  "branch":                                   { "Ref": "Branch" },
+                  "cluster":                                  { "Ref": "XgemailServiceType" },
+                  "cluster_type":                             { "Ref": "XgemailServiceType" },
+                  "environment":                              { "Ref": "Environment" },
+                  "region":                                   { "Ref": "AWS::Region" },
+                  "stack":                                    { "Ref": "AWS::StackName" },
+                  "station_vpc_name":                         { "Ref": "StationVpcName" },
+                  "volume_min_iops":                          { "Ref": "EbsMinIops" },
+                  "volume_min_size_data_gb":                  { "Ref": "XgemailMinSizeDataGB" },
+                  "volume_set_id":                            { "Ref": "VolumeSetId" },
+                  "volume_tracker_sdb_domain":                { "Ref": "VolumeTrackerSimpleDbDomain" },
+                  "vpc_id":                                   { "Ref": "Vpc" },
+                  "vpc_name":                                 { "Ref": "VpcName" },
+                  "msg_notifier_queue_url":                   { "Ref": "XgemailNotifierQueueUrl" }
+                },
+                "owner": "root",
+                "mode": "000444"
+              },
+              "/var/sophos/modify_attributes_json": {
+                "content": {
+                  "Fn::Join": [
+                    "", [
+                      "#!/bin/bash -xe\n",
+                      "export host_name=`wget -q -O - http://169.254.169.254/latest/meta-data/public-hostname`\n",
+                      "sed -i \"s/<<host_name>>/$host_name/g\" ./attributes.json"
+                    ]
+                  ]
+                },
+                "owner": "root",
+                "group": "root",
+                "mode": "000500"
+              }
+            },
+
+            "commands": {
+              "01_modify_attributes_json": {
+                "command": "/var/sophos/modify_attributes_json",
+                "cwd": "/var/sophos/cookbooks"
+              }
+            }
+          },
+
+          "update_cookbooks": {
+            "commands": {
+              "00_clean": {
+                "command": {
+                  "Fn::Join": [ "; ",[
+                    "rm -f /var/chef/chef-repo/nodes/*.*",
+                    "rm -f /var/chef/chef-repo/cookbooks.enc",
+                    "rm -f /var/chef/chef-repo/cookbooks.tar.gz",
+                    "rm -rf /var/chef/chef-repo/cookbooks"
+                  ]]
+                }
+              },
+              "01_get_cookbook": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [ "aws s3 cp s3:", { "Ref": "S3CookbookRepositoryURL" }, " /var/chef/chef-repo/cookbooks.enc" ]
+                  ]
+                },
+                "cwd": "/var/chef",
+                "env": {
+                  "HOME": "/var/chef"
+                }
+              },
+              "02_decrypt_cookbook": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [ "openssl enc -aes-256-cbc -d -in /var/chef/chef-repo/cookbooks.enc -out /var/chef/chef-repo/cookbooks.tar.gz -pass pass:", { "Ref": "AesDecryptionKey" } ]
+                  ]
+                },
+                "cwd": "/var/chef/chef-repo",
+                "env": {
+                  "HOME": "/var/chef"
+                }
+              },
+              "03_unpack_cookbook": {
+                "command": "tar xvf /var/chef/chef-repo/cookbooks.tar.gz",
+                "cwd": "/var/chef/chef-repo"
+              }
+            }
+          },
+
+          "xgemail_install": {
+            "files": {
+              "/etc/cfn/cfn-hup.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "", [
+                      "[main]\n",
+                      "stack=",
+                      { "Ref": "AWS::StackName" },
+                      "\n",
+                      "region=",
+                      { "Ref": "AWS::Region" },
+                      "\n",
+                      "interval=",
+                      { "Ref": "UpdateInterval" },
+                      "\n"
+                    ]
+                  ]
+                }
+              },
+              "/etc/cfn/hooks.d/cfn-auto-reloader.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "", [
+                      "[cfn-auto-reloader-hook]\n",
+                      "triggers=post.update\n",
+                      "path=Resources.XgemailAutoScalingLaunchConfig.Metadata.AWS::CloudFormation::Init\n",
+                      "action=/opt/aws/bin/cfn-init -v -s ",
+                      { "Ref": "AWS::StackName" },
+                      " -r XgemailAutoScalingLaunchConfig",
+                      " --configsets xgemail_update",
+                      " --region ",
+                      { "Ref": "AWS::Region" },
+                      "\n",
+                      "runas=root\n"
+                    ]
+                  ]
+                }
+              },
+              "/var/sophos/modify_network_config": {
+                "content": {
+                  "Fn::Join": [
+                    "", [
+                      "export private_ip=`wget -q -O - http://169.254.169.254/latest/meta-data/local-ipv4`\n",
+                      "export host_name=`wget -q -O - http://169.254.169.254/latest/meta-data/local-hostname`\n",
+                      "export host_entry=\"$private_ip $host_name\"\n",
+                      "echo $host_entry\n",
+                      "echo > /etc/hosts\n",
+                      "echo 127.0.0.1 $host_name localhost >> /etc/hosts\n",
+                      "echo $host_entry >> /etc/hosts\n",
+                      "echo >> /etc/dhcp/dhclient.conf\n",
+                      "echo 'supersede domain-name \"",
+                      {
+                        "Fn::FindInMap": [
+                          "RegionConfigMap",
+                          { "Ref": "AWS::Region" },
+                          "PrivateDns"
+                        ]
+                      },
+                      "\";' >> /etc/dhcp/dhclient.conf\n",
+                      "echo >> /etc/resolv.conf\n",
+                      "echo 'search ",
+                      {
+                        "Fn::FindInMap": [
+                          "RegionConfigMap",
+                          { "Ref": "AWS::Region" },
+                          "PrivateDns"
+                        ]
+                      },
+                      "' >> /etc/resolv.conf\n"
+                    ]
+                  ]
+                },
+                "owner": "root",
+                "mode": "000500"
+              }
+            },
+
+            "commands": {
+              "01_delete_run_list_nodes": { "command": "rm -f /var/chef/chef-repo/nodes/*.*" },
+              "02_run_chef_client": {
+                "command": {
+                  "Fn::Join": [
+                    " ", [
+                      "chef-client --no-color -z",
+                      "-c /var/chef/chef-repo/.chef/client.rb",
+                      "-j /var/sophos/cookbooks/attributes.json",
+                      "-l debug -L /var/log/chef-client.instance.install.chef.log"
+                    ]
+                  ]
+                },
+                "cwd": "/var/chef/chef-repo",
+                "env": { "HOME": "/var/chef" }
+              },
+              "03_configure_node_run_list": {
+                "command": {
+                  "Fn::Join": [
+                    "", [
+                      "knife node run_list set -z `knife node list -z` \"",
+                      "recipe[sophos-cloud-mount::default],",
+                      "recipe[sophos-cloud-mount::install],",
+                      "recipe[sophos-cloud-ntpd::default],",
+                      "recipe[sophos-cloud-snmpd::configure],",
+                      "recipe[sophos-cloud-tomcat::deploy_certs],",
+                      "recipe[sophos-cloud-xgemail::setup_xgemail_utils_structure],",
+                      "recipe[sophos-cloud-xgemail::configure_logging],",
+                      "recipe[sophos-cloud-xgemail::configure-extended-delivery-queue],",
+                      "recipe[sophos-cloud-xgemail::configure_postfix_snmp_logicmonitor],",
+                      "recipe[sophos-cloud-xgemail::configure_monit],",
+                      "recipe[sophos-cloud-common::run_install_cleanup]",
+                      "\""
+                    ]
+                  ]
+                },
+                "cwd": "/var/chef/chef-repo",
+                "env": { "HOME": "/var/chef" }
+              },
+              "04_modify_network_config": { "command": "/var/sophos/modify_network_config" },
+              "05_run_chef_client": {
+                "command": {
+                  "Fn::Join": [
+                    " ", [
+                      "chef-client --no-color -z",
+                      "-c /var/chef/chef-repo/.chef/client.rb",
+                      "-j /var/sophos/cookbooks/attributes.json",
+                      "-l debug -L /var/log/chef-client.instance.install.service.log"
+                    ]
+                  ]
+                },
+                "cwd": "/var/chef/chef-repo",
+                "env": { "HOME": "/var/chef" }
+              },
+              "06_delete_cfn_hup_config": {
+                "command": "rm -f /etc/cfn/hooks.d/cfn-auto-reloader.conf.*"
+              }
+            },
+
+            "services": {
+              "sysvinit": {
+                "cfn-hup": {
+                  "enabled": "true",
+                  "ensureRunning": "true",
+                  "files": [
+                    "/etc/cfn/cfn-hup.conf",
+                    "/etc/cfn/hooks.d/cfn-auto-reloader.conf"
+                  ]
+                }
+              }
+            }
+          },
+
+          "xgemail_update": {
+            "commands": {
+              "01_setup_node_run_list": {
+                "command": {
+                  "Fn::Join": [
+                    "", [
+                      "knife node run_list set -z `knife node list -z` \"",
+                      "recipe[sophos-cloud-ntpd::default],",
+                      "recipe[sophos-cloud-snmpd::update]",
+                      "\""
+                    ]
+                  ]
+                },
+                "cwd": "/var/chef/chef-repo",
+                "env": { "HOME": "/var/chef" }
+              },
+              "02_run_chef_client": {
+                "command": {
+                  "Fn::Join": [
+                    " ", [
+                      "chef-client --no-color -z",
+                      "-c /var/chef/chef-repo/.chef/client.rb",
+                      "-j /var/sophos/cookbooks/attributes.json",
+                      "-l debug -L /var/log/chef-client.instance.update.log"
+                    ]
+                  ]
+                },
+                "cwd": "/var/chef/chef-repo",
+                "env": { "HOME": "/var/chef" }
+              }
+            }
+          }
+        }
+      },
+      "Properties": {
+        "AssociatePublicIpAddress": { "Ref" : "PublicIpAddressEnabled" },
+        "IamInstanceProfile": { "Ref": "InstanceProfile" },
+        "ImageId": { "Ref": "AmiId" },
+        "InstanceMonitoring": {
+          "Fn::If": [
+            "EnableDetailedMonitoring",
+            "true",
+            "false"
+          ]
+        },
+        "InstanceType": { "Ref": "InstanceType" },
+        "KeyName": { "Ref": "KeyName" },
+        "SecurityGroups": { "Ref": "SecurityGroups" },
+        "SpotPrice": { "Fn::If": ["UseSpotPrice",  {"Ref": "SpotPrice"}, {"Ref": "AWS::NoValue"} ]},
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "", [
+                "#!/bin/bash -xe\n",
+                "# Install the files and packages from the metadata\n",
+                "# Make sure we call cfn-signal before exiting, otherwise we have to\n",
+                "# wait for the CreationPolicy timeout to detect failed initialization.\n",
+                "# That's because of using the bash -e option, which makes the script\n",
+                "# exit immediately as soon as any command, e.g. cfn-init, fails.\n",
+                "onexit() {\n",
+                "  exit_code=$?\n",
+                "  /opt/aws/bin/cfn-signal -e $exit_code",
+                " --stack ",
+                { "Ref": "AWS::StackName" },
+                " --resource XgemailAutoScalingGroup",
+                " --region ",
+                { "Ref": "AWS::Region" },
+                "\n",
+                "}\n",
+                "trap onexit EXIT\n",
+                "# Wait for network access.\n",
+                "/usr/bin/nc -v -z -w 60 www.google.com 80\n",
+                "/opt/aws/bin/cfn-init --verbose ",
+                " --stack ",
+                { "Ref": "AWS::StackName" },
+                " --resource XgemailAutoScalingLaunchConfig ",
+                " --configsets xgemail_install ",
+                " --region ",
+                { "Ref": "AWS::Region" },
+                "\n",
+                "# Now the onexit function will get called.\n"
+              ]
+            ]
+          }
+        }
+      }
+    }
+  }
 }
