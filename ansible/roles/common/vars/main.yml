@@ -128,6 +128,61 @@ aws:
         SnsPolicyTopic:                         "{{sns.arn_prefix}}{{sns.policy_sns_topic}}"
         SnsRelayControlTopic:                   "{{sns.arn_prefix}}{{sns.relay_control_sns_topic}}"
 
+  sns:
+    alarm_sns_topic:
+      stack_name:                               "{{stack.sns.alarm_sns_topic}}"
+      template:                                 "{{template.sns.sns_template}}"
+      template_parameters:
+        SNSTopicEndpointProtocol:               email
+        SNSTopicEndpointValue:                  cloud-inf-aws-alerts@sophos.com
+        SNSTopicName:                           "{{sns.alarm_sns_topic}}"
+    delay_sns_topic:
+      stack_name:                               "{{stack.sns.delay_sns_topic}}"
+      template:                                 "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                              "{{sns.delay_sns_topic}}"
+    deleted_events_sns_topic:
+      stack_name:                               "{{stack.sns.deleted_events_sns_topic}}"
+      template:                                 "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                              "{{sns.deleted_events_sns_topic}}"
+    internet_delivery_sns_topic:
+      stack_name:                               "{{stack.sns.internet_delivery_sns_topic}}"
+      template:                                 "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                              "{{sns.internet_delivery_sns_topic}}"
+    quarantined_events_sns_topic:
+      stack_name:                               "{{stack.sns.quarantined_events_sns_topic}}"
+      template:                                 "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                              "{{sns.quarantined_events_sns_topic}}"
+    success_events_sns_topic:
+      stack_name:                               "{{stack.sns.success_events_sns_topic}}"
+      template:                                 "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                              "{{sns.success_events_sns_topic}}"
+    policy_sns_topic:
+      stack_name:                               "{{stack.sns.policy_sns_topic}}"
+      template:                                 "{{template.sns.sns_topic_policy_s3_template}}"
+      template_parameters:
+        TopicName:                              "{{sns.policy_sns_topic}}"
+        SnsS3TopicPolicyBucket:                 "{{s3.policy_bucket}}"
+        SnsS3TopicPolicyCreate:                 "true"
+    multi_policy_sns_topic:
+      stack_name:                               "{{stack.sns.multi_policy_sns_topic}}"
+      template:                                 "{{template.sns.sns_topic_policy_s3_template}}"
+      template_parameters:
+        TopicName:                              "{{sns.multi_policy_sns_topic}}"
+        SnsS3TopicPolicyBucket:                 "{{s3.policy_bucket}}"
+        SnsS3TopicPolicyCreate:                 "true"
+    relay_control_sns_topic:
+      stack_name:                               "{{stack.sns.relay_control_sns_topic}}"
+      template:                                 "{{template.sns.sns_topic_policy_s3_template}}"
+      template_parameters:
+        TopicName:                              "{{sns.relay_control_sns_topic}}"
+        SnsS3TopicPolicyBucket:                 "{{s3.policy_bucket}}"
+        SnsS3TopicPolicyCreate:                 "true"
+
   sqs:
     lifecycle_sqs_sns:
       stack_name:                               "{{stack.sqs.lifecycle_sqs_sns}}"
@@ -216,6 +271,12 @@ aws:
       template:                                 "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                              "{{sqs.msg_statistics_sqs_queue}}"
+    multi_policy_sqs_queue:
+      stack_name:                               "{{stack.sqs.multi_policy_sqs_queue}}"
+      state:                                    "present"
+      template:                                 "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                              "{{sqs.quarantine_sqs_queue_sns_listener}}"
     msg_statistics_sqs_queue_sns_listener:
       stack_name:                               "{{stack.sqs.msg_statistics_sqs_queue_sns_listener}}"
       state:                                    "present"
@@ -234,61 +295,6 @@ aws:
       template:                                 "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                              "{{sqs.quarantine_sqs_queue_sns_listener}}"
-
-  sns:
-    alarm_sns_topic:
-      stack_name:                               "{{stack.sns.alarm_sns_topic}}"
-      template:                                 "{{template.sns.sns_template}}"
-      template_parameters:
-        SNSTopicEndpointProtocol:               email
-        SNSTopicEndpointValue:                  cloud-inf-aws-alerts@sophos.com
-        SNSTopicName:                           "{{sns.alarm_sns_topic}}"
-    delay_sns_topic:
-      stack_name:                               "{{stack.sns.delay_sns_topic}}"
-      template:                                 "{{template.sns.sns_simple_template}}"
-      template_parameters:
-        TopicName:                              "{{sns.delay_sns_topic}}"
-    deleted_events_sns_topic:
-      stack_name:                               "{{stack.sns.deleted_events_sns_topic}}"
-      template:                                 "{{template.sns.sns_simple_template}}"
-      template_parameters:
-        TopicName:                              "{{sns.deleted_events_sns_topic}}"
-    internet_delivery_sns_topic:
-      stack_name:                               "{{stack.sns.internet_delivery_sns_topic}}"
-      template:                                 "{{template.sns.sns_simple_template}}"
-      template_parameters:
-        TopicName:                              "{{sns.internet_delivery_sns_topic}}"
-    quarantined_events_sns_topic:
-      stack_name:                               "{{stack.sns.quarantined_events_sns_topic}}"
-      template:                                 "{{template.sns.sns_simple_template}}"
-      template_parameters:
-        TopicName:                              "{{sns.quarantined_events_sns_topic}}"
-    success_events_sns_topic:
-      stack_name:                               "{{stack.sns.success_events_sns_topic}}"
-      template:                                 "{{template.sns.sns_simple_template}}"
-      template_parameters:
-        TopicName:                              "{{sns.success_events_sns_topic}}"
-    policy_sns_topic:
-      stack_name:                               "{{stack.sns.policy_sns_topic}}"
-      template:                                 "{{template.sns.sns_topic_policy_s3_template}}"
-      template_parameters:
-        TopicName:                              "{{sns.policy_sns_topic}}"
-        SnsS3TopicPolicyBucket:                 "{{s3.policy_bucket}}"
-        SnsS3TopicPolicyCreate:                 "true"
-    multi_policy_sns_topic:
-      stack_name:                               "{{stack.sns.multi_policy_sns_topic}}"
-      template:                                 "{{template.sns.sns_topic_policy_s3_template}}"
-      template_parameters:
-        TopicName:                              "{{sns.multi_policy_sns_topic}}"
-        SnsS3TopicPolicyBucket:                 "{{s3.policy_bucket}}"
-        SnsS3TopicPolicyCreate:                 "true"
-    relay_control_sns_topic:
-      stack_name:                               "{{stack.sns.relay_control_sns_topic}}"
-      template:                                 "{{template.sns.sns_topic_policy_s3_template}}"
-      template_parameters:
-        TopicName:                              "{{sns.relay_control_sns_topic}}"
-        SnsS3TopicPolicyBucket:                 "{{s3.policy_bucket}}"
-        SnsS3TopicPolicyCreate:                 "true"
 
 aes_decryption_key:                             "{{lookup('env','AES_KEY') | default('EFB0D00E7B34527A6CFE3CD804A53312C5A7AF129650A9793D2CEF3A3C6B3741')}}"
 ami_parent_id:                                  "{{ami_id}}"
