@@ -48,7 +48,7 @@
     verbosity: 2
 
 # EIP Rotation Lambda Function
-- name: "Create a zip archive of eip monitor lambda function"
+- name: "Create a zip archive of eip rotation lambda function"
   archive:
     path: /work/lambda/xgemail_eip_rotation.py
     dest: "{{tmp_artifacts_dir}}/xgemail_eip_rotation.zip"
@@ -63,7 +63,7 @@
     src:                "{{tmp_artifacts_dir}}/xgemail_eip_rotation.zip"
     overwrite:          always
 
-- name: "Deploy EIP Monitor Lambda Function {{stack.lambda.eip_rotation_lambda_function}} to {{account.name}}-{{account.region}}"
+- name: "Deploy EIP Rotation Lambda Function {{stack.lambda.eip_rotation_lambda_function}} to {{account.name}}-{{account.region}}"
   cloudformation:
     stack_name:                             "{{stack.lambda.eip_rotation_lambda_function}}"
     state:                                  present
@@ -78,6 +78,8 @@
       S3Bucket:                             "{{s3.lambda_bucket}}"
       S3Key:                                "lambda/{{build.number}}/xgemail_eip_rotation.zip"
       ScheduleExpression:                   rate(45 minutes)
+      SsmPostfixService:                    "{{ssm_stack.stack_outputs.PostfixService}}"
+      SsmUpdateHostname:                    "{{ssm_stack.stack_outputs.UpdateHostname}}"
   register: eip_rotation_stack
 
 - debug:
