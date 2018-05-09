@@ -33,7 +33,7 @@
       FunctionName:                         "{{lambda.eip_monitor_lambda_function}}"
       HandlerName:                          xgemail_eip_monitor.eip_monitor_handler
       IAMRoleArn:                           "{{iam_stack.stack_outputs.EipMonitorLambdaExecutionRoleArn}}"
-      S3Bucket:                             "{{vpc.cloud_email.name}}-{{account.name}}-{{account.region}}-lambda-bucket-S3"
+      S3Bucket:                             "{{s3.lambda_bucket}}"
       S3Key:                                "lambda/{{build.number}}/xgemail_eip_monitor.zip"
       ScheduleExpression:                   rate(60 minutes)
   register: eip_monitor_stack
@@ -75,7 +75,7 @@
       FunctionName:                         "{{lambda.eip_rotation_lambda_function}}"
       HandlerName:                          xgemail_eip_rotation.eip_rotation_handler
       IAMRoleArn:                           "{{iam_stack.stack_outputs.EipRotationLambdaExecutionRoleArn}}"
-      S3Bucket:                             "{{vpc.cloud_email.name}}-{{account.name}}-{{account.region}}-lambda-bucket-S3"
+      S3Bucket:                             "{{s3.lambda_bucket}}"
       S3Key:                                "lambda/{{build.number}}/xgemail_eip_rotation.zip"
       ScheduleExpression:                   rate(45 minutes)
   register: eip_rotation_stack
