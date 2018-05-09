@@ -23,16 +23,19 @@
 
 - name: "Deploy EIP Monitor Lambda Function {{stack.lambda.eip_monitor_lambda_function}} to {{account.name}}-{{account.region}}"
   cloudformation:
-    stack_name:                               "{{stack.lambda.eip_monitor_lambda_function}}"
-      template:                               "{{template.lambda.lambda_xgemail_eip_monitor_template}}"
-      template_parameters:
-        Environment:                          "{{account.name}}"
-        FunctionName:                         "{{lambda.eip_monitor_lambda_function}}"
-        HandlerName:                          xgemail_eip_monitor.eip_monitor_handler
-        IAMRoleArn:                           "{{iam_stack.stack_outputs.EipMonitorLambdaExecutionRoleArn}}"
-        S3Bucket:                             "{{vpc.cloud_email.name}}-{{account.name}}-{{account.region}}-lambda-bucket-S3"
-        S3Key:                                "lambda/{{build.number}}/xgemail_eip_monitor.zip"
-        ScheduleExpression:                   rate(60 minutes)
+    stack_name:                             "{{stack.lambda.eip_monitor_lambda_function}}"
+    state:                                  present
+    region:                                 "{{account.region}}"
+    disable_rollback:                       true
+    template:                               "{{template.lambda.lambda_xgemail_eip_monitor_template}}"
+    template_parameters:
+      Environment:                          "{{account.name}}"
+      FunctionName:                         "{{lambda.eip_monitor_lambda_function}}"
+      HandlerName:                          xgemail_eip_monitor.eip_monitor_handler
+      IAMRoleArn:                           "{{iam_stack.stack_outputs.EipMonitorLambdaExecutionRoleArn}}"
+      S3Bucket:                             "{{vpc.cloud_email.name}}-{{account.name}}-{{account.region}}-lambda-bucket-S3"
+      S3Key:                                "lambda/{{build.number}}/xgemail_eip_monitor.zip"
+      ScheduleExpression:                   rate(60 minutes)
   register: eip_monitor_stack
 
 - debug:
@@ -62,16 +65,19 @@
 
 - name: "Deploy EIP Monitor Lambda Function {{stack.lambda.eip_rotation_lambda_function}} to {{account.name}}-{{account.region}}"
   cloudformation:
-    stack_name:                               "{{stack.lambda.eip_rotation_lambda_function}}"
-      template:                               "{{template.lambda.lambda_xgemail_eip_rotation_template}}"
-      template_parameters:
-        Environment:                          "{{account.name}}"
-        FunctionName:                         "{{lambda.eip_rotation_lambda_function}}"
-        HandlerName:                          xgemail_eip_rotation.eip_rotation_handler
-        IAMRoleArn:                           "{{iam_stack.stack_outputs.EipRotationLambdaExecutionRoleArn}}"
-        S3Bucket:                             "{{vpc.cloud_email.name}}-{{account.name}}-{{account.region}}-lambda-bucket-S3"
-        S3Key:                                "lambda/{{build.number}}/xgemail_eip_rotation.zip"
-        ScheduleExpression:                   rate(45 minutes)
+    stack_name:                             "{{stack.lambda.eip_rotation_lambda_function}}"
+    state:                                  present
+    region:                                 "{{account.region}}"
+    disable_rollback:                       true
+    template:                               "{{template.lambda.lambda_xgemail_eip_rotation_template}}"
+    template_parameters:
+      Environment:                          "{{account.name}}"
+      FunctionName:                         "{{lambda.eip_rotation_lambda_function}}"
+      HandlerName:                          xgemail_eip_rotation.eip_rotation_handler
+      IAMRoleArn:                           "{{iam_stack.stack_outputs.EipRotationLambdaExecutionRoleArn}}"
+      S3Bucket:                             "{{vpc.cloud_email.name}}-{{account.name}}-{{account.region}}-lambda-bucket-S3"
+      S3Key:                                "lambda/{{build.number}}/xgemail_eip_rotation.zip"
+      ScheduleExpression:                   rate(45 minutes)
   register: eip_rotation_stack
 
 - debug:
