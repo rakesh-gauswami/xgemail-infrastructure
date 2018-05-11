@@ -10,18 +10,18 @@ aws:
         1a:
           stack_name:                           "{{vpc.cloud_email.name}}-xgemail-delivery-0000-1"
           AutoScalingMinSize:                   0
-          AvailabilityZoneIndex:                1
+          AvailabilityZoneIndex:                0
           VolumeSetId:                          delivery-1
         1b:
           stack_name:                           "{{vpc.cloud_email.name}}-xgemail-delivery-0000-2"
           AutoScalingMinSize:                   0
-          AvailabilityZoneIndex:                2
+          AvailabilityZoneIndex:                1
           VolumeSetId:                          delivery-2
         1c:
           stack_name:                           "{{vpc.cloud_email.name}}-xgemail-delivery-0000-3"
           AutoScalingMinSize:                   0
-          AvailabilityZoneIndex:                3
-          VolumeSetId:                          delivery-2
+          AvailabilityZoneIndex:                2
+          VolumeSetId:                          delivery-3
       cs:
         stack_name:                             something
         template:                               something
@@ -325,7 +325,7 @@ instance_size_xgemail_spot_price:               -1
 weekend_scale_down:                             "false"
 xgemail_sxl_dbl:                                uri.cal1.sophosxl.com
 xgemail_sxl_rbl:                                fur.cal1.sophosxl.com
-xgemail_iops_data_gb:                           100
+xgemail_iops_data_gb:                           0
 xgemail_size_data_gb:                           40
 
 

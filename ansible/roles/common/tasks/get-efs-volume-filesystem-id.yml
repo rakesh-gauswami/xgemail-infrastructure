@@ -1,0 +1,11 @@
+---
+
+- name: "Gather {{stack.efs.policy_efs_volume}} CloudFormation Stack Output"
+  cloudformation_facts:
+    stack_name: "{{stack.efs.policy_efs_volume}}"
+  register: efs_volume_output
+
+- name: "Print {{stack.efs.policy_efs_volume}} CloudFormation Stack Output"
+  debug:
+    var: efs_volume_output
+    verbosity: 3

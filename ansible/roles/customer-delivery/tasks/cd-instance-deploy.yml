@@ -21,7 +21,7 @@
       AutoScalingMinSize:                   "{{item.value.AutoScalingMinSize}}"
       AutoScalingMaxSize:                   1
       AutoScalingNotificationTopicARN:      "{{sns.arn_prefix}}{{sns.lifecycle_sqs_sns}}"
-      AvailabilityZoneIndex:                "{{item.value.AutoScalingMinSize}}"
+      AvailabilityZoneIndex:                "{{item.value.AvailabilityZoneIndex}}"
       AvailabilityZones:                    "{{account.region}}a, {{account.region}}b, {{account.region}}c"
       BastionSecurityGroup:                 "{{cloud_email_sg_output.stack_outputs.SecurityGroupBastion}}"
       Branch:                               "{{build.branch}}"
@@ -33,17 +33,15 @@
       HealthCheckType:                      ELB
       InstanceProfile:                      "{{cloud_email_iam_output.stack_outputs.XgemailDeliveryInstanceProfile}}"
       InstanceType:                         "{{instance_size_cd}}"
-      XgemailServiceType:                   delivery
-      KeyName:                              private-{{account.region}}
+      KeyName:                              "private-{{account.region}}"
       LoadBalancerName:                     "{{elb_stack_output.stack_outputs.LoadBalancerId}}"
-      MailDomain:                           "{{mail_domain}}"
-      PostfixInstall:                       "yes"
       PublicIpAddressEnabled:               "false"
       S3CookbookRepositoryURL:              "//cloud-{{account.name}}-templates/{{build.branch}}/cookbooks.enc"
       ScaleDownOnWeekends:                  "{{weekend_scale_down}}"
       ScaleDownCron:                        "{{cron_scale_down}}"
       ScaleUpCron:                          "{{cron_scale_up}}"
       SecurityGroups:                       "{{cloud_email_sg_output.stack_outputs.XgemailDeliverySecurityGroup}},{{cloud_email_sg_output.stack_outputs.SecurityGroupBase}}"
+      SpotPrice:                            "{{instance_size_xgemail_spot_price}}"
       StationVpcName:                       "{{vpc.cloud_station.name}}"
       VolumeSetId:                          xgemail-delivery
       VolumeTrackerSimpleDbDomain:          "{{sdb.volume_tracker_sdb}}"
@@ -55,6 +53,7 @@
       XgemailMsgHistoryBucketName:          "{{s3.msg_history_bucket}}"
       XgemailMsgHistoryQueueUrl:            "{{sqs.url_prefix}}{{sqs.msg_history_sqs_queue}}"
       XgemailSnsSqsQueueUrl:                "{{sqs.url_prefix}}{{sqs.customer_delivery_sqs_queue_sns_listener}}"
+      XgemailServiceType:                   delivery
       XgemailSxlDbl:                        "{{xgemail_sxl_dbl}}"
       XgemailSxlRbl:                        "{{xgemail_sxl_rbl}}"
   with_dict: "{{aws.ec2.asg.cd}}"
