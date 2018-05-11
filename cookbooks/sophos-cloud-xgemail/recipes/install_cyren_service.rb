@@ -11,7 +11,7 @@
 # Only install on mail node
 
 NODE_TYPE = node['sophos_cloud']['cluster']
-if NODE_TYPE == 'mail' || NODE_TYPE == 'mailinbound'
+if NODE_TYPE == 'mailinbound'
 
   # Ensure all required packages are installed before proceeding
   # with CYREN installation

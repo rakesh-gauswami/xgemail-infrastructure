@@ -11,7 +11,7 @@
 # Ensure all required packages are installed before proceeding
 # with SAVi installation
 NODE_TYPE = node['sophos_cloud']['cluster']
-if NODE_TYPE == 'mail' || NODE_TYPE == 'mailoutbound' || NODE_TYPE == 'mailinbound'
+if NODE_TYPE == 'mailoutbound' || NODE_TYPE == 'mailinbound'
   package 'wget'
   package 'unzip'
   package 'python'

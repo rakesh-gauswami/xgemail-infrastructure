@@ -1,264 +1,264 @@
 {
-    "AWSTemplateFormatVersion": "2010-09-09",
+  "AWSTemplateFormatVersion": "2010-09-09",
 
-    "Description": "Public ELB template for Sophos Cloud.",
+  "Description": "Public ELB template for Sophos Cloud.",
 
-    "Metadata": {
-        "Copyright": [
-            "Copyright 2016, Sophos Limited. All rights reserved.",
-            "",
-            "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
-            "Sophos Limited and Sophos Group.  All other product and company",
-            "names mentioned are trademarks or registered trademarks of their",
-            "respective owners."
-        ],
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2016, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ],
 
-        "Comments": [
-            { "Ref": "Description" },
-            ""
-        ]
+    "Comments": [
+      { "Ref": "Description" },
+      ""
+    ]
+  },
+
+  "Parameters": {
+    "InternetFacing": {
+      "Description": "Create an internal or internet-facing elb",
+      "Type": "String",
+      "Default" : "internal",
+      "AllowedValues" :[ "internal", "internet-facing" ]
     },
-
-    "Parameters": {
-        "InternetFacing": {
-            "Description": "Create an internal or internet-facing elb",
-            "Type": "String",
-            "Default" : "internal",
-            "AllowedValues" :[ "internal", "internet-facing" ]
-        },
-        "Branch": {
-            "Description": "Deployed branch name",
-            "Type": "String"
-        },
-        "ConnectionDrainingPolicyTimeoutSeconds": {
-            "Description": "Time in seconds after the load balancer closes all connections to an unhealthy instance.",
-            "Type": "Number",
-            "Default": "300",
-            "MinValue": "0"
-        },
-        "CloudBillingTagValue": {
-            "Description": "CloudBilling Tag Value for the Resource",
-            "Type": "String",
-            "Default": ""
-        },
-        "Environment": {
-            "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
-            "Type": "String"
-        },
-        "LoadbalancerPort": {
-            "Description": "Port number load balancer should listen on.",
-            "Type": "Number",
-            "Default": "443"
-        },
-        "InstancePort": {
-            "Description": "Port number the EC2 instances are listening on.",
-            "Type": "Number",
-            "Default": "443"
-        },
-        "LoadbalancerProtocol": {
-            "Description": "TCP, HTTP, HTTPS,...",
-            "Type": "String",
-            "Default": "TCP"
-        },
-        "InstanceProtocol": {
-            "Description": "TCP, HTTP, HTTPS,...",
-            "Type": "String",
-            "Default": "TCP"
-        },
-        "HealthCheckTarget": {
-            "Description": "Health check target protocol and port",
-            "Type": "String",
-            "Default": "HTTP:8080/"
-        },
-        "HostAlarmEvaluationPeriods": {
-            "Description": "Number of periods at which to alarm if Unhealthy Hosts are passed Threshold",
-            "Type": "Number",
-            "Default": "2"
-        },
-        "HostAlarmPeriod": {
-            "Description": "Period (in multiple of 60 seconds) at which to poll Hosts",
-            "Type": "Number",
-            "Default": "60"
-        },
-        "HostAlarmThreshold": {
-            "Description": "Number of Unhealthy Hosts at which to Alarm",
-            "Type": "Number",
-            "Default": "1"
-        },
-        "HostAlarmTopicARN": {
-            "Description": "ARN for SNS Topic that should receive Unhealthy Host Alarm notifications",
-            "Type": "String"
-        },
-        "LoadBalancerName": {
-            "Description": "Name for the ELB",
-            "Type": "String"
-        },
-        "SecurityGroupLb": {
-            "Description": "Security Group for the ELB",
-            "Type": "List<AWS::EC2::SecurityGroup::Id>"
-        },
-        "SslCertificate": {
-            "Description": "SSL certificate for the ELB",
-            "Type": "String",
-            "Default": "no"
-        },
-        "SslSecurityPolicy": {
-            "Description": "Predefined ELB SSL Security Policy",
-            "Type": "String"
-        },
-        "Subnets": {
-            "Description": "List of Subnets where instances reside for the ELB",
-            "Type": "List<AWS::EC2::Subnet::Id>"
-        },
-        "Vpc": {
-            "Description": "Name of an existing VPC",
-            "Type": "AWS::EC2::VPC::Id"
-        }
+    "Branch": {
+      "Description": "Deployed branch name",
+      "Type": "String"
     },
-    "Conditions" : {
-        "AttachCertificateToListener" : {
-            "Fn::Not": [
-                {
-                    "Fn::Equals": [
-                        {
-                            "Ref": "SslCertificate"
-                        },
-                        "no"
-                    ]
-                }
-            ]
-        },
-        "CreateCloudBillingTag": {
-            "Fn::Not": [
-                { "Fn::Equals": [ { "Ref": "CloudBillingTagValue" }, "" ] }
-            ]
-        }
+    "ConnectionDrainingPolicyTimeoutSeconds": {
+      "Description": "Time in seconds after the load balancer closes all connections to an unhealthy instance.",
+      "Type": "Number",
+      "Default": "300",
+      "MinValue": "0"
     },
-    "Resources": {
-        "ElasticLoadBalancer" : {
-            "Properties" : {
-                "Tags": [
-                    {
-                        "Key": "Branch",
-                        "Value": { "Ref" : "Branch" }
-
-                    },
-                    {
-                        "Key": "Environment",
-                        "Value": { "Ref" : "Environment" }
-                    },
-                    {
-                        "Key": "Name",
-                        "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/lb/", { "Ref" : "LoadBalancerName" } ] ] }
-
-                    },
-                    {
-                        "Fn::If": [
-                            "CreateCloudBillingTag",
-                            {
-                                "Key": "CloudBillingV1",
-                                "Value": { "Ref": "CloudBillingTagValue" }
-                            },
-                            { "Ref": "AWS::NoValue" }
-                        ]
-                    }
-                ],
-                "Scheme" : { "Ref" : "InternetFacing" },
-                "ConnectionDrainingPolicy": {
-                    "Enabled": "true",
-                    "Timeout": { "Ref": "ConnectionDrainingPolicyTimeoutSeconds" }
-                },
-                "CrossZone": "true",
-                "HealthCheck": {
-                    "Target": { "Ref" : "HealthCheckTarget"},
-                    "HealthyThreshold": "2",
-                    "UnhealthyThreshold": "4",
-                    "Interval": "30",
-                    "Timeout": "10"
-                },
-                "Listeners": [
-                    {
-                        "LoadBalancerPort": {"Ref" : "LoadbalancerPort" },
-                        "InstancePort": {"Ref" : "InstancePort" },
-                        "Protocol": {"Ref" : "LoadbalancerProtocol" },
-                        "InstanceProtocol": {"Ref" : "InstanceProtocol" },
-                        "SSLCertificateId": { "Fn::If": [
-                            "AttachCertificateToListener",
-                            {
-                                "Fn::Join": [
-                                    "",
-                                    [
-                                        "arn:aws:iam::",
-                                        {
-                                            "Ref": "AWS::AccountId"
-                                        },
-                                        ":server-certificate/",
-                                        {
-                                            "Ref": "SslCertificate"
-                                        }
-                                    ]
-                                ]
-                            },
-                            { "Ref": "AWS::NoValue" }
-                        ]},
-                        "PolicyNames": { "Fn::If": [
-                            "AttachCertificateToListener",
-                            [ "ELBSSLNegotiationPolicy" ],
-                            { "Ref": "AWS::NoValue" }
-                        ]}
-                    }
-                ],
-                "Policies": [{
-                    "PolicyName" : "ELBSSLNegotiationPolicy",
-                    "PolicyType" : "SSLNegotiationPolicyType",
-                    "Attributes" : [{
-                        "Name"  : "Reference-Security-Policy",
-                        "Value" : { "Ref": "SslSecurityPolicy" }
-                    }]
-                }],
-                "SecurityGroups": { "Ref": "SecurityGroupLb" },
-                "Subnets": {
-                    "Ref": "Subnets"
-                }
-            },
-            "Type" : "AWS::ElasticLoadBalancing::LoadBalancer"
-        },
-        "HostAlarm": {
-            "Type" : "AWS::CloudWatch::Alarm",
-            "DependsOn" : "ElasticLoadBalancer",
-            "Properties": {
-                "AlarmDescription": "The number of instances connected to the ELB that are unhealthy exceeds limit.",
-                "MetricName": "UnHealthyHostCount",
-                "Namespace": "AWS/ELB",
-                "Statistic": "Average",
-                "Period": { "Ref": "HostAlarmPeriod" },
-                "EvaluationPeriods": { "Ref": "HostAlarmEvaluationPeriods" },
-                "Threshold": { "Ref": "HostAlarmThreshold" },
-                "AlarmActions": [
-                    { "Ref": "HostAlarmTopicARN" }
-                ],
-                "Dimensions": [{
-                    "Name": "LoadBalancerName",
-                    "Value": { "Ref": "ElasticLoadBalancer" }
-                }],
-                "ComparisonOperator": "GreaterThanOrEqualToThreshold"
-            }
-        }
-
+    "CloudBillingTagValue": {
+      "Description": "CloudBilling Tag Value for the Resource",
+      "Type": "String",
+      "Default": ""
     },
-
-    "Outputs": {
-        "LoadBalancerDnsName": {
-            "Description": "DNS name of the ELB",
-            "Value": {
-                "Fn::GetAtt": [ "ElasticLoadBalancer", "DNSName" ]
-            }
-        },
-        "LoadBalancerId": {
-            "Description": "ID of the ELB",
-            "Value": {
-                "Ref": "ElasticLoadBalancer"
-            }
-        }
+    "Environment": {
+      "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
+      "Type": "String"
+    },
+    "LoadbalancerPort": {
+      "Description": "Port number load balancer should listen on.",
+      "Type": "Number",
+      "Default": "443"
+    },
+    "InstancePort": {
+      "Description": "Port number the EC2 instances are listening on.",
+      "Type": "Number",
+      "Default": "443"
+    },
+    "LoadbalancerProtocol": {
+      "Description": "TCP, HTTP, HTTPS,...",
+      "Type": "String",
+      "Default": "TCP"
+    },
+    "InstanceProtocol": {
+      "Description": "TCP, HTTP, HTTPS,...",
+      "Type": "String",
+      "Default": "TCP"
+    },
+    "HealthCheckTarget": {
+      "Description": "Health check target protocol and port",
+      "Type": "String",
+      "Default": "HTTP:8080/"
+    },
+    "HostAlarmEvaluationPeriods": {
+      "Description": "Number of periods at which to alarm if Unhealthy Hosts are passed Threshold",
+      "Type": "Number",
+      "Default": "2"
+    },
+    "HostAlarmPeriod": {
+      "Description": "Period (in multiple of 60 seconds) at which to poll Hosts",
+      "Type": "Number",
+      "Default": "60"
+    },
+    "HostAlarmThreshold": {
+      "Description": "Number of Unhealthy Hosts at which to Alarm",
+      "Type": "Number",
+      "Default": "1"
+    },
+    "HostAlarmTopicARN": {
+      "Description": "ARN for SNS Topic that should receive Unhealthy Host Alarm notifications",
+      "Type": "String"
+    },
+    "LoadBalancerName": {
+      "Description": "Name for the ELB",
+      "Type": "String"
+    },
+    "SecurityGroupLb": {
+      "Description": "Security Group for the ELB",
+      "Type": "List<AWS::EC2::SecurityGroup::Id>"
+    },
+    "SslCertificate": {
+      "Description": "SSL certificate for the ELB",
+      "Type": "String",
+      "Default": "no"
+    },
+    "SslSecurityPolicy": {
+      "Description": "Predefined ELB SSL Security Policy",
+      "Type": "String"
+    },
+    "Subnets": {
+      "Description": "List of Subnets where instances reside for the ELB",
+      "Type": "List<AWS::EC2::Subnet::Id>"
+    },
+    "Vpc": {
+      "Description": "Name of an existing VPC",
+      "Type": "AWS::EC2::VPC::Id"
     }
+  },
+  "Conditions" : {
+    "AttachCertificateToListener" : {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "SslCertificate"
+            },
+            "no"
+          ]
+        }
+      ]
+    },
+    "CreateCloudBillingTag": {
+      "Fn::Not": [
+        { "Fn::Equals": [ { "Ref": "CloudBillingTagValue" }, "" ] }
+      ]
+    }
+  },
+  "Resources": {
+    "ElasticLoadBalancer" : {
+      "Properties" : {
+        "Tags": [
+          {
+            "Key": "Branch",
+            "Value": { "Ref" : "Branch" }
+
+          },
+          {
+            "Key": "Environment",
+            "Value": { "Ref" : "Environment" }
+          },
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/lb/", { "Ref" : "LoadBalancerName" } ] ] }
+
+          },
+          {
+            "Fn::If": [
+              "CreateCloudBillingTag",
+              {
+                "Key": "CloudBillingV1",
+                "Value": { "Ref": "CloudBillingTagValue" }
+              },
+              { "Ref": "AWS::NoValue" }
+            ]
+          }
+        ],
+        "Scheme" : { "Ref" : "InternetFacing" },
+        "ConnectionDrainingPolicy": {
+          "Enabled": "true",
+          "Timeout": { "Ref": "ConnectionDrainingPolicyTimeoutSeconds" }
+        },
+        "CrossZone": "true",
+        "HealthCheck": {
+          "Target": { "Ref" : "HealthCheckTarget"},
+          "HealthyThreshold": "2",
+          "UnhealthyThreshold": "4",
+          "Interval": "30",
+          "Timeout": "10"
+        },
+        "Listeners": [
+          {
+            "LoadBalancerPort": {"Ref" : "LoadbalancerPort" },
+            "InstancePort": {"Ref" : "InstancePort" },
+            "Protocol": {"Ref" : "LoadbalancerProtocol" },
+            "InstanceProtocol": {"Ref" : "InstanceProtocol" },
+            "SSLCertificateId": { "Fn::If": [
+              "AttachCertificateToListener",
+              {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:iam::",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":server-certificate/",
+                    {
+                      "Ref": "SslCertificate"
+                    }
+                  ]
+                ]
+              },
+              { "Ref": "AWS::NoValue" }
+            ]},
+            "PolicyNames": { "Fn::If": [
+              "AttachCertificateToListener",
+              [ "ELBSSLNegotiationPolicy" ],
+              { "Ref": "AWS::NoValue" }
+            ]}
+          }
+        ],
+        "Policies": [{
+          "PolicyName" : "ELBSSLNegotiationPolicy",
+          "PolicyType" : "SSLNegotiationPolicyType",
+          "Attributes" : [{
+            "Name"  : "Reference-Security-Policy",
+            "Value" : { "Ref": "SslSecurityPolicy" }
+          }]
+        }],
+        "SecurityGroups": { "Ref": "SecurityGroupLb" },
+        "Subnets": {
+          "Ref": "Subnets"
+        }
+      },
+      "Type" : "AWS::ElasticLoadBalancing::LoadBalancer"
+    },
+    "HostAlarm": {
+      "Type" : "AWS::CloudWatch::Alarm",
+      "DependsOn" : "ElasticLoadBalancer",
+      "Properties": {
+        "AlarmDescription": "The number of instances connected to the ELB that are unhealthy exceeds limit.",
+        "MetricName": "UnHealthyHostCount",
+        "Namespace": "AWS/ELB",
+        "Statistic": "Average",
+        "Period": { "Ref": "HostAlarmPeriod" },
+        "EvaluationPeriods": { "Ref": "HostAlarmEvaluationPeriods" },
+        "Threshold": { "Ref": "HostAlarmThreshold" },
+        "AlarmActions": [
+          { "Ref": "HostAlarmTopicARN" }
+        ],
+        "Dimensions": [{
+          "Name": "LoadBalancerName",
+          "Value": { "Ref": "ElasticLoadBalancer" }
+        }],
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold"
+      }
+    }
+
+  },
+
+  "Outputs": {
+    "LoadBalancerDnsName": {
+      "Description": "DNS name of the ELB",
+      "Value": {
+        "Fn::GetAtt": [ "ElasticLoadBalancer", "DNSName" ]
+      }
+    },
+    "LoadBalancerId": {
+      "Description": "ID of the ELB",
+      "Value": {
+        "Ref": "ElasticLoadBalancer"
+      }
+    }
+  }
 }

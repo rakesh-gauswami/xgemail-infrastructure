@@ -1,0 +1,92 @@
+---
+# EIP Monitor Lambda Function
+- name: "Create a zip archive of eip monitor lambda function"
+  archive:
+    path:
+    - /work/lambda/xgemail_eip_monitor.py
+    - /work/lambda/requests
+    - /work/lambda/idna
+    - /work/lambda/urllib3
+    - /work/lambda/certifi
+    - /work/lambda/chardet
+    dest: "{{tmp_artifacts_dir}}/xgemail_eip_monitor.zip"
+    format: zip
+
+- name: "Upload the eip monitor lambda function for {{stack.lambda.eip_monitor_lambda_function}} to the config bucket {{s3.lambda_bucket}}"
+  s3:
+    mode:               put
+    region:             "{{account.region}}"
+    bucket:             "{{s3.lambda_bucket}}"
+    object:             "lambda/{{build.number}}/xgemail_eip_monitor.zip"
+    src:                "{{tmp_artifacts_dir}}/xgemail_eip_monitor.zip"
+    overwrite:          always
+
+- name: "Deploy EIP Monitor Lambda Function {{stack.lambda.eip_monitor_lambda_function}} to {{account.name}}-{{account.region}}"
+  cloudformation:
+    stack_name:                             "{{stack.lambda.eip_monitor_lambda_function}}"
+    state:                                  present
+    region:                                 "{{account.region}}"
+    disable_rollback:                       true
+    template:                               "{{template.lambda.lambda_xgemail_eip_monitor_template}}"
+    template_parameters:
+      Environment:                          "{{account.name}}"
+      FunctionName:                         "{{lambda.eip_monitor_lambda_function}}"
+      HandlerName:                          xgemail_eip_monitor.eip_monitor_handler
+      IAMRoleArn:                           "{{iam_stack.stack_outputs.EipMonitorLambdaExecutionRoleArn}}"
+      S3Bucket:                             "{{s3.lambda_bucket}}"
+      S3Key:                                "lambda/{{build.number}}/xgemail_eip_monitor.zip"
+      ScheduleExpression:                   rate(60 minutes)
+  register: eip_monitor_stack
+
+- debug:
+    var: eip_monitor_stack
+    verbosity: 3
+
+- name: "Display EIP Monitor Lambda Function Stack Output"
+  debug:
+    msg: "{{eip_monitor_stack.stack_outputs}}"
+    verbosity: 2
+
+# EIP Rotation Lambda Function
+- name: "Create a zip archive of eip rotation lambda function"
+  archive:
+    path: /work/lambda/xgemail_eip_rotation.py
+    dest: "{{tmp_artifacts_dir}}/xgemail_eip_rotation.zip"
+    format: zip
+
+- name: "Upload the eip rotation lambda function for {{stack.lambda.eip_rotation_lambda_function}} to the config bucket {{s3.lambda_bucket}}"
+  s3:
+    mode:               put
+    region:             "{{account.region}}"
+    bucket:             "{{s3.lambda_bucket}}"
+    object:             "lambda/{{build.number}}/xgemail_eip_rotation.zip"
+    src:                "{{tmp_artifacts_dir}}/xgemail_eip_rotation.zip"
+    overwrite:          always
+
+- name: "Deploy EIP Rotation Lambda Function {{stack.lambda.eip_rotation_lambda_function}} to {{account.name}}-{{account.region}}"
+  cloudformation:
+    stack_name:                             "{{stack.lambda.eip_rotation_lambda_function}}"
+    state:                                  present
+    region:                                 "{{account.region}}"
+    disable_rollback:                       true
+    template:                               "{{template.lambda.lambda_xgemail_eip_rotation_template}}"
+    template_parameters:
+      Environment:                          "{{account.name}}"
+      FunctionName:                         "{{lambda.eip_rotation_lambda_function}}"
+      HandlerName:                          xgemail_eip_rotation.eip_rotation_handler
+      IAMRoleArn:                           "{{iam_stack.stack_outputs.EipRotationLambdaExecutionRoleArn}}"
+      S3Bucket:                             "{{s3.lambda_bucket}}"
+      S3Key:                                "lambda/{{build.number}}/xgemail_eip_rotation.zip"
+      ScheduleExpression:                   rate(45 minutes)
+      SsmPostfixService:                    "{{ssm_stack.stack_outputs.PostfixService}}"
+      SsmUpdateHostname:                    "{{ssm_stack.stack_outputs.UpdateHostname}}"
+  register: eip_rotation_stack
+
+- debug:
+    var: eip_rotation_stack
+    verbosity: 3
+
+- name: "Display EIP Rotation Lambda Function Stack Output"
+  debug:
+    msg: "{{eip_rotation_stack.stack_outputs}}"
+    verbosity: 2

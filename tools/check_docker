@@ -18,10 +18,18 @@ def check_docker(path):
     try:
         subprocess.check_output([
             'hadolint',
+            # https://github.com/hadolint/hadolint/wiki/DL3002 Do not switch to root USER
             '--ignore',
             'DL3002',
+            # https://github.com/hadolint/hadolint/wiki/DL3004 Do not use sudo
             '--ignore',
             'DL3004',
+            # https://github.com/hadolint/hadolint/wiki/DL3019 Use the --no-cache switch
+            '--ignore',
+            'DL3019',
+            # https://github.com/hadolint/hadolint/wiki/DL4000 MAINTAINER is deprecated
+            '--ignore',
+            'DL4000',
             path
         ])
         return True

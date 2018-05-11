@@ -6,7 +6,6 @@
 #
 # All rights reserved - Do Not Redistribute
 #
-
 sophos_script_path = node['sophos_cloud']['script_path']
 sophos_tmp_path = node['sophos_cloud']['tmp']
 
@@ -83,39 +82,12 @@ end
 #       done
 #   EOH
 # end
-
 $SYSWIDE_ACCOUNT_NAM = node['sophos_cloud']['account'] || 'inf'
 shcmd_h = Mixlib::ShellOut.new('echo -n $(runlevel 2>&1)')
 runlevel = shcmd_h.run_command.stdout
 
 MANUAL_TEST_RUN = ($SYSWIDE_ACCOUNT_NAM != 'hmr-core')
 log "runlevel='#{runlevel}', $SYSWIDE_ACCOUNT_NAM=#{$SYSWIDE_ACCOUNT_NAM}, MANUAL_TEST_RUN=#{MANUAL_TEST_RUN}" do level :info end
-
-execute 'install_ghetto_forge_repo' do
-  user 'root'
-  command 'yum install -y http://mirror.ghettoforge.org/distributions/gf/el/6/gf/x86_64/gf-release-6-10.gf.el6.noarch.rpm'
-  creates '/etc/yum.repos.d/gf.repo'
-end
-
-execute 'remove_postfix_package' do
-  command 'rpm -e --nodeps postfix'
-  ignore_failure true
-end
-
-yum_package 'postfix3' do
-  action :install
-  options '--enablerepo=gf-plus'
-end
-
-execute 'enable_postfix_service' do
-  user 'root'
-  command 'chkconfig --level 2345 postfix on'
-end
-
-yum_package 'sendmail' do
-  action :remove
-  flush_cache [:before]
-end
 
 # Install packages for all supported file systems.
 
@@ -129,6 +101,7 @@ JILTER_INBOUND_PACKAGE_NAME = "xgemail-jilter-inbound-#{JILTER_INBOUND_VERSION}"
 
 JILTER_OUTBOUND_VERSION = node['xgemail']['jilter_outbound_version']
 JILTER_OUTBOUND_PACKAGE_NAME = "xgemail-jilter-outbound-#{JILTER_OUTBOUND_VERSION}"
+POSTFIX3_RPM = "postfix3-sophos-#{node['xgemail']['postfix3_version']}.el6.x86_64.rpm"
 
 directory PACKAGES_DIR do
   mode '0755'
@@ -150,6 +123,49 @@ execute 'download_jilter_outbound' do
   cwd "#{PACKAGES_DIR}"
   command <<-EOH
       aws --region us-west-2 s3 cp s3://cloud-applications-3rdparty/xgemail/#{JILTER_OUTBOUND_PACKAGE_NAME}.tar .
+  EOH
+end
+
+execute 'remove_postfix_package' do
+  command 'rpm -e --nodeps postfix'
+  ignore_failure true
+end
+
+execute 'download_postfix3-sophos-rpm' do
+  user 'root'
+  cwd "#{PACKAGES_DIR}"
+  command <<-EOH
+      aws --region us-west-2 s3 cp s3://cloud-applications-3rdparty/xgemail/postfix3-sophos/output/#{POSTFIX3_RPM} .
+  EOH
+end
+
+rpm_package 'install postfix3-sophos' do
+  action :install
+  package_name "#{POSTFIX3_RPM}"
+  source "#{PACKAGES_DIR}/#{POSTFIX3_RPM}"
+end
+
+execute 'enable_postfix_service' do
+  user 'root'
+  command 'chkconfig --level 2345 postfix on'
+end
+
+# Install Sophos Anti-Virus.
+bash 'install_savi_client' do
+  user 'root'
+  cwd '/tmp'
+  code <<-EOH
+    set -e
+
+    mkdir -p /tmp/savi
+    aws --region us-west-2 s3 cp s3:#{node['sophos_cloud']['savi']} /tmp/savi
+    tar -xzvf /tmp/savi/savi-install.tar.gz -C /tmp/savi/
+
+    pushd /tmp/savi/savi-install
+    bash install.sh
+    popd
+
+    rm -rf /tmp/savi /tmp/savi-install.tar.gz
   EOH
 end
 
@@ -184,23 +200,4 @@ template SYSCTL_FILE do
     :SYSCTL_TCP_WINDOW_SCALING => node['xgemail']['sysctl_tcp_window_scaling']
   )
   notifies :run, "execute[#{LOAD_SYSCTL_PARAMETERS}]", :immediately
-end
-
-# Install Sophos Anti-Virus.
-bash 'install_savi_client' do
-  user 'root'
-  cwd '/tmp'
-  code <<-EOH
-    set -e
-
-    mkdir -p /tmp/savi
-    aws --region us-west-2 s3 cp s3:#{node['sophos_cloud']['savi']} /tmp/savi
-    tar -xzvf /tmp/savi/savi-install.tar.gz -C /tmp/savi/
-
-    pushd /tmp/savi/savi-install
-    bash install.sh
-    popd
-
-    rm -rf /tmp/savi /tmp/savi-install.tar.gz
-  EOH
 end

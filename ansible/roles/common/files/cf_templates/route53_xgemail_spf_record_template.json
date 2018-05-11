@@ -1,0 +1,94 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "Creates TXT SPF Route53 records for XGEMAIL customer inclusion",
+
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2018, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ]
+  },
+
+  "Parameters" : {
+    "Environment": {
+      "Description": "The AWS account that contains the existing Amazon Route 53 hosted zone (domain)",
+      "Type": "String"
+    }
+  },
+
+  "Resources" : {
+    "TxtRecordSpf" : {
+      "Type" : "AWS::Route53::RecordSet",
+      "Properties" : {
+        "HostedZoneName" : { "Fn::Join" : [ "", [ { "Ref" : "Environment" }, ".hydra.sophos.com." ] ] },
+        "Name" : { "Fn::Join" : [ "", [ "_spf.", { "Ref" : "Environment" }, ".hydra.sophos.com." ] ] },
+        "ResourceRecords" : ["\"v=spf1 include:_spf_uswest2.prod.hydra.sophos.com include:_spf_euwest1.prod.hydra.sophos.com include:_spf_eucentral1.prod.hydra.sophos.com include:_spf_useast2.prod.hydra.sophos.com ~all\""],
+        "TTL" : "3600",
+        "Type" : "TXT"
+      }
+    },
+    "TxtRecordSpfUswest2" : {
+      "Type" : "AWS::Route53::RecordSet",
+      "Properties" : {
+        "HostedZoneName" : { "Fn::Join" : [ "", [ { "Ref" : "Environment" }, ".hydra.sophos.com." ] ] },
+        "Name" : { "Fn::Join" : [ "", [ "_spf_uswest2.", { "Ref" : "Environment" }, ".hydra.sophos.com." ] ] },
+        "ResourceRecords" : ["\"v=spf1 ip4:34.212.96.64/26 ip4:34.213.30.0/26 ip4:34.213.30.64/26 ip4:34.213.30.128/26 ~all\""],
+        "TTL" : "3600",
+        "Type" : "TXT"
+      }
+    },
+    "TxtRecordSpfEuwest1" : {
+      "Type" : "AWS::Route53::RecordSet",
+      "Properties" : {
+        "HostedZoneName" : { "Fn::Join" : [ "", [ { "Ref" : "Environment" }, ".hydra.sophos.com." ] ] },
+        "Name" : { "Fn::Join" : [ "", [ "_spf_euwest1.", { "Ref" : "Environment" }, ".hydra.sophos.com." ] ] },
+        "ResourceRecords" : ["\"v=spf1 ip4:34.253.219.128/26 ip4:34.253.219.192/26 ip4:34.253.238.0/26 ip4:34.253.238.64/26 ~all\""],
+        "TTL" : "3600",
+        "Type" : "TXT"
+      }
+    },
+    "TxtRecordSpfEucentral1" : {
+      "Type" : "AWS::Route53::RecordSet",
+      "Properties" : {
+        "HostedZoneName" : { "Fn::Join" : [ "", [ { "Ref" : "Environment" }, ".hydra.sophos.com." ] ] },
+        "Name" : { "Fn::Join" : [ "", [ "_spf_eucentral1.", { "Ref" : "Environment" }, ".hydra.sophos.com." ] ] },
+        "ResourceRecords" : ["\"v=spf1 ip4:35.159.27.0/26 ip4:35.159.27.64/26 ip4:35.159.27.128/26 ip4:35.159.27.192/26 ~all\""],
+        "TTL" : "3600",
+        "Type" : "TXT"
+      }
+    },
+    "TxtRecordSpfUseast2" : {
+      "Type" : "AWS::Route53::RecordSet",
+      "Properties" : {
+        "HostedZoneName" : { "Fn::Join" : [ "", [ { "Ref" : "Environment" }, ".hydra.sophos.com." ] ] },
+        "Name" : { "Fn::Join" : [ "", [ "_spf_useast2.", { "Ref" : "Environment" }, ".hydra.sophos.com." ] ] },
+        "ResourceRecords" : ["\"v=spf1 ip4:18.216.13.64/26 ip4:18.216.13.128/26 ip4:18.216.13.192/26 ip4:18.216.23.0/26 ~all\""],
+        "TTL" : "3600",
+        "Type" : "TXT"
+      }
+    }
+  },
+
+  "Outputs" : {
+    "TxtRecordSpf" : {
+      "Value" : { "Ref" : "TxtRecordSpf" }
+    },
+    "TxtRecordSpfUswest2" : {
+      "Value" : { "Ref" : "TxtRecordSpfUswest2" }
+    },
+    "TxtRecordSpfEuwest1" : {
+      "Value" : { "Ref" : "TxtRecordSpfEuwest1" }
+    },
+    "TxtRecordSpfEucentral1" : {
+      "Value" : { "Ref" : "TxtRecordSpfEucentral1" }
+    },
+    "TxtRecordSpfUseast2" : {
+      "Value" : { "Ref" : "TxtRecordSpfUseast2" }
+    }
+  }
+}

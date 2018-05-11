@@ -25,6 +25,9 @@
       MessageStatisticsQueueUrl:              "{{sqs.url_prefix}}{{sqs.msg_statistics_sqs_queue_sns_listener}}"
       QuarantineQueueArn:                     "{{sqs.arn_prefix}}{{sqs.quarantine_sqs_queue_sns_listener}}"
       QuarantineQueueUrl:                     "{{sqs.url_prefix}}{{sqs.quarantine_sqs_queue_sns_listener}}"
+      MultiPolicyQueueArn:                    "{{sqs.arn_prefix}}{{sqs.multi_policy_sqs_queue}}"
+      MultiPolicyQueueUrl:                    "{{sqs.url_prefix}}{{sqs.multi_policy_sqs_queue}}"
+      MultiPolicyTopicArn:                    "{{sns.arn_prefix}}{{sns.multi_policy_sns_topic}}"
   register: messaging_stack
 
 - debug:

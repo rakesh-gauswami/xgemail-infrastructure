@@ -1,4 +1,5 @@
 {
+
   "AWSTemplateFormatVersion": "2010-09-09",
 
   "Description": "Creates, Updates, and Deletes AWS SES Service configuration with Domains, Route53 TXT verification records, Receive Rules, and Filters",
@@ -30,7 +31,13 @@
       "ConstraintDescription": "must be a comma-separated list of valid domain names."
     },
 
-    "MailRecipients": {
+    "InboundMailRecipients": {
+      "Type": "CommaDelimitedList",
+      "Description": "List of email addresses to add to SES",
+      "ConstraintDescription": "must be a comma-separated list of valid email addresses."
+    },
+
+    "OutboundMailRecipients": {
       "Type": "CommaDelimitedList",
       "Description": "List of email addresses to add to SES",
       "ConstraintDescription": "must be a comma-separated list of valid email addresses."
@@ -38,6 +45,11 @@
 
      "RuleName": {
       "Description": "The name of the SES receiving rule.",
+      "Type": "String"
+    },
+
+    "OutboundRuleName": {
+      "Description": "The name of the Outbound SES receiving rule.",
       "Type": "String"
     },
 
@@ -49,6 +61,11 @@
 
     "SesInvokeLambdaFunctionArn": {
       "Description": "The ARN of the Lambda Function SES will invoke.",
+      "Type": "String"
+    },
+
+    "SesInvokeOutboundLambdaFunctionArn": {
+      "Description": "The ARN of the Outbound Lambda Function SES will invoke.",
       "Type": "String"
     }
   },
@@ -264,15 +281,19 @@
                 "                    rule_names = map(lambda rule: rule['Name'], result['Rules'])\n",
                 "                    rule_exists = rule_name in rule_names\n",
                 "                else:\n",
-                "                    logger.info('Creating new receipt rule set: %s' % rule_set_name)\n",
-                "                    ses.create_receipt_rule_set(RuleSetName=rule_set_name)\n",
+                "                    logger.info('New receipt rule set: %s' % rule_set_name)\n",
+                "                    try:\n",
+                "                        ses.create_receipt_rule_set(RuleSetName=rule_set_name)\n",
+                "                    except botocore.exceptions.ClientError as e:\n",
+                "                        if e.response['Error']['Code'] == 'AlreadyExists':\n",
+                "                            continue\n",
                 "                    ses.set_active_receipt_rule_set(RuleSetName=rule_set_name)\n",
                 "                if not rule_exists:\n",
-                "                    logger.info('Creating new receipt rule %s in receipt rule set %s' % (receipt_rule, rule_set_name))\n",
+                "                    logger.info('New receipt rule %s in receipt rule set %s' % (receipt_rule, rule_set_name))\n",
                 "                    ses.create_receipt_rule(RuleSetName=rule_set_name, Rule=receipt_rule)\n",
                 "                    rule_names.insert(0, rule_name)\n",
                 "                    ses.reorder_receipt_rule_set(RuleSetName=rule_set_name, RuleNames=rule_names)\n",
-                "            result = ses.describe_active_receipt_rule_set()\n",
+                "                result = ses.describe_active_receipt_rule_set()\n",
                 "            response_data['ReceiptRuleSet'] = result['Metadata']['Name']\n",
                 "            response_data['ReceiptRules'] = ', '.join(map(lambda rule: rule['Name'], result['Rules']))\n",
                 "        elif request_type == 'Delete':\n",
@@ -285,12 +306,13 @@
                 "                    rule_names = map(lambda rule: rule['Name'], result['Rules'])\n",
                 "                    rule_exists = rule_name in rule_names\n",
                 "                    if rule_exists:\n",
-                "                        logger.info('Rule %s exists. Deleting it...' % rule_name)\n",
+                "                        logger.info('Rule %s exists. Deleting it.' % rule_name)\n",
                 "                        ses.delete_receipt_rule(RuleSetName=active_rule_set_name, RuleName=rule_name)\n",
-                "                    if active_rule_set_name == rule_set_name:\n",
-                "                        logger.info('RuleSet %s exists. Deleting it...' % rule_set_name)\n",
-                "                        ses.set_active_receipt_rule_set()\n",
-                "                        ses.delete_receipt_rule_set(RuleSetName=active_rule_set_name)\n",
+                "                    result = ses.describe_active_receipt_rule_set()\n",
+                "            if active_rule_set_name == rule_set_name:\n",
+                "                logger.info('RuleSet %s exists. Deleting it.' % rule_set_name)\n",
+                "                ses.set_active_receipt_rule_set()\n",
+                "                ses.delete_receipt_rule_set(RuleSetName=active_rule_set_name)\n",
                 "        cfnresponse.send(event, context, cfnresponse.SUCCESS, response_data)\n",
                 "    except Exception as e:\n",
                 "        logger.info('Exception occured: %s' % str(e))\n",
@@ -386,13 +408,27 @@
         "Rules": [
           {
             "Name": { "Ref": "RuleName" },
-            "Recipients": { "Ref": "MailRecipients" },
+            "Recipients": { "Ref": "InboundMailRecipients" },
             "Enabled": "True",
             "ScanEnabled": "False",
             "Actions": [
               {
                 "LambdaAction": {
                   "FunctionArn": { "Ref": "SesInvokeLambdaFunctionArn" },
+                  "InvocationType": "Event"
+                }
+              }
+            ]
+          },
+          {
+            "Name": { "Ref": "OutboundRuleName" },
+            "Recipients": { "Ref": "OutboundMailRecipients" },
+            "Enabled": "True",
+            "ScanEnabled": "False",
+            "Actions": [
+              {
+                "LambdaAction": {
+                  "FunctionArn": { "Ref": "SesInvokeOutboundLambdaFunctionArn" },
                   "InvocationType": "Event"
                 }
               }
@@ -473,6 +509,17 @@
       "Properties": {
         "FunctionName": {
           "Ref": "SesInvokeLambdaFunctionArn"
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "ses.amazonaws.com",
+        "SourceAccount": { "Ref": "AWS::AccountId" }
+      }
+    },
+    "PermissionForSesToInvokeOutboundLambda": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "SesInvokeOutboundLambdaFunctionArn"
         },
         "Action": "lambda:InvokeFunction",
         "Principal": "ses.amazonaws.com",

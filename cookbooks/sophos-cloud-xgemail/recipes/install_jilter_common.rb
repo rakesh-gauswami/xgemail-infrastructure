@@ -15,6 +15,10 @@ PACKAGES_DIR = '/opt/sophos/packages'
 LIBSPF2_VERSION = node['xgemail']['libspf2_version']
 LIBSPF2_PACKAGE_NAME = "libspf2-#{LIBSPF2_VERSION}"
 
+# Install Java before we install Jilter
+include_recipe 'sophos-cloud-java::oracle'
+
+
 directory DEPLOYMENT_DIR do
   mode '0755'
   owner 'root'

@@ -53,4 +53,5 @@ def get_policy_binary(formatted_s3_policy):
     if "schema_version" in content and content["schema_version"] == OUTBOUND_SCHEMA_VERSION:
         return decompressed_bytes
     else:
-        raise ValueError("Policy file format error: Mismatch format and content versions!")
+        # Schema version field is not present in other configs like rate limit, black-list etc.
+        return decompressed_bytes

@@ -34,8 +34,13 @@ EXEMPTIONS = ['/smc_shared_passphrase"',
               '(MOB_ROOT_RA_SECRET)',
               '(MOB_KEYSTORE_SECRET_KEY)',
               '(MOB_APPLE_MDM_VENDOR_SECRET)',
-              '<your-global-zone-password>']
-
+              '<your-global-zone-password>',
+              # prefix for all chassis secret buckets
+              'tf-comm-secret-',
+              'alerts_vaulted',
+              'no_password_changes',
+              'rotate-master-password'
+              ]
 
 def is_comment(line):
     """Given a line, check if is a YAML comment."""

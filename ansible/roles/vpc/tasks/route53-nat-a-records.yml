@@ -9,11 +9,11 @@
 
 - name: "Deploy {{stack.route53.customer_delivery_a_route53}} to {{account.name}} {{account.region}}"
   cloudformation:
-    stack_name: "{{stack.route53.customer_delivery_a_route53}}"
-    state: present
-    region: "{{account.region}}"
-    disable_rollback: true
-    template: "{{template.route53.route53_record_basic_template}}"
+    stack_name:                       "{{stack.route53.customer_delivery_a_route53}}"
+    state:                           present
+    region:                          "{{account.region}}"
+    disable_rollback:                true
+    template:                        "{{template.route53.route53_record_basic_template}}"
     template_parameters:
       Environment:                   "{{account.name}}"
       HostedZoneName:                hydra.sophos.com.

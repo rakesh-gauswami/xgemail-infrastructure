@@ -28,6 +28,7 @@ DEPLOYMENT_DIR = node['xgemail']['xgemail_files_dir']
 PACKAGES_DIR = '/opt/sophos/packages'
 
 LIBSPF_JNI_VERSION = node['xgemail']['libspfjni']
+LIBDKIM_JNI_VERSION = node['xgemail']['libdkimjni']
 
 JILTER_SERVICE_NAME = node['xgemail']['jilter_service_name']
 JILTER_VERSION = node['xgemail']['jilter_inbound_version']
@@ -35,6 +36,9 @@ JILTER_PACKAGE_PREFIX = 'xgemail-jilter-inbound'
 JILTER_PACKAGE_NAME = "#{JILTER_PACKAGE_PREFIX}-#{JILTER_VERSION}"
 JILTER_SCRIPT_DIR = "#{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}/scripts"
 JILTER_SCRIPT_PATH = "#{JILTER_SCRIPT_DIR}/xgemail.jilter.service.sh"
+
+LIBOPENDKIM_VERSION = node['xgemail']['libopendkim_version']
+LIBOPENDKIM_PACKAGE_NAME = "libopendkim-#{LIBOPENDKIM_VERSION}"
 
 SERVICE_USER = node['xgemail']['jilter_user']
 
@@ -99,11 +103,45 @@ execute 'move_jilter_jni' do
 end
 
 
+# Install libopendkim package via yum
+execute "execute_yum_dkim_install" do
+  user "root"
+  cwd "/tmp"
+  command <<-EOH
+      yum-config-manager --enable epel
+      yum install -y #{LIBOPENDKIM_PACKAGE_NAME}
+      yum-config-manager --disable epel
+  EOH
+end
+
+
+# dkim jni movement
+src = "#{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}/lib/libdkimjni-#{LIBDKIM_JNI_VERSION}.so"
+
+log "filename_information" do
+  message "dkim jni library is: #{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}/lib/libdkimjni-#{LIBDKIM_JNI_VERSION}.so"
+  level :debug
+end
+
+src_url = "file://#{src}"
+dest_location = "#{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}/lib/libdkimjni.so"
+
+remote_file "move_dkim_jni" do
+  path dest_location
+  source src_url
+  owner 'root'
+  action :create
+end
+
 # Cleanup the deployment package
 file "#{PACKAGES_DIR}/#{JILTER_PACKAGE_NAME}.tar" do
   action :delete
 end
 
+# Remove the dkim library
+file "#{src}" do
+  action :delete
+end
 
 # Create the jilter script directory
 directory JILTER_SCRIPT_DIR do
@@ -113,13 +151,11 @@ directory JILTER_SCRIPT_DIR do
   recursive true
 end
 
-
 # Create jilter user
 user SERVICE_USER do
   system true
   shell '/sbin/nologin'
 end
-
 
 # Create the Jilter service
 template 'xgemail.jilter.service.sh' do

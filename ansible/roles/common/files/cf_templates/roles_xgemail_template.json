@@ -163,6 +163,7 @@
                 "s3:GetObject",
                 "s3:PutObject",
                 "s3:GetBucketLocation"
+
               ],
               "Effect": "Allow",
               "Resource": [
@@ -211,6 +212,192 @@
         "Roles": [
           {
             "Ref": "BastionInstanceRole"
+          }
+        ]
+      },
+      "Type": "AWS::IAM::Policy"
+    },
+
+    "EipMonitorLambdaExecutionRole" : {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [ "lambda.amazonaws.com" ]
+            },
+            "Action": [ "sts:AssumeRole" ]
+          }]
+        },
+        "Path": "/"
+      }
+    },
+    "EipMonitorLambdaExecutionRolePolicies": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "lambda:*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:logs:*:*:*"
+              ]
+            },
+            {
+              "Action": [
+                "ec2:CreateTags",
+                "ec2:DescribeAddresses"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action" : [
+                "kms:Decrypt",
+                "kms:DescribeKey",
+                "kms:ListAliases",
+                "kms:ListKeys"
+              ],
+              "Effect" : "Allow",
+              "Resource" : ["*"]
+            },
+            {
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:ListBucket"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "-", [
+                      "arn:aws:s3:::cloud",
+                      { "Ref": "Environment" },
+                      "connections"
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Action": [
+                "s3:GetObject"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "-", [
+                      "arn:aws:s3:::cloud",
+                      { "Ref": "Environment" },
+                      "connections/*"
+                    ]
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "PolicyName": "root",
+        "Roles": [
+          {
+            "Ref": "EipMonitorLambdaExecutionRole"
+          }
+        ]
+      },
+      "Type": "AWS::IAM::Policy"
+    },
+    "EipRotationLambdaExecutionRole" : {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [ "lambda.amazonaws.com" ]
+            },
+            "Action": [ "sts:AssumeRole" ]
+          }]
+        },
+        "Path": "/"
+      }
+    },
+
+    "EipRotationLambdaExecutionRolePolicies": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "lambda:*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:logs:*:*:*"
+              ]
+            },
+            {
+              "Action": [
+                "ec2:AssociateAddress",
+                "ec2:CreateTags",
+                "ec2:DescribeAddresses",
+                "ec2:DescribeInstances",
+                "ec2:DescribeInstanceStatus",
+                "ec2:DisassociateAddress"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "ssm:DescribeDocument",
+                "ssm:GetCommandInvocation",
+                "ssm:ListInstanceAssociations",
+                "ssm:ListCommands",
+                "ssm:SendCommand"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ]
+        },
+        "PolicyName": "root",
+        "Roles": [
+          {
+            "Ref": "EipRotationLambdaExecutionRole"
           }
         ]
       },
@@ -351,6 +538,7 @@
     "XgemailDeliveryInstanceRole" : {
       "Type": "AWS::IAM::Role",
       "Properties": {
+        "ManagedPolicyArns": [ "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM" ],
         "AssumeRolePolicyDocument": {
           "Statement": [
             {
@@ -583,6 +771,7 @@
     "XgemailInternetDeliveryInstanceRole" : {
       "Type": "AWS::IAM::Role",
       "Properties": {
+        "ManagedPolicyArns": [ "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM" ],
         "AssumeRolePolicyDocument": {
           "Statement": [
             {
@@ -616,10 +805,12 @@
             },
             {
               "Action" : [
+                "ec2:AssociateAddress",
                 "ec2:AttachVolume",
                 "ec2:CreateSnapshot",
                 "ec2:CreateTags",
                 "ec2:CreateVolume",
+                "ec2:DescribeAddresses",
                 "ec2:DescribeImages",
                 "ec2:DescribeSnapshots",
                 "ec2:DescribeTags",
@@ -802,6 +993,7 @@
     "XgemailSubmitInstanceRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
+        "ManagedPolicyArns": [ "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM" ],
         "AssumeRolePolicyDocument": {
           "Statement": [
             {
@@ -1059,6 +1251,7 @@
     "XgemailCustomerSubmitInstanceRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
+        "ManagedPolicyArns": [ "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM" ],
         "AssumeRolePolicyDocument": {
           "Statement": [
             {
@@ -1301,6 +1494,7 @@
     "XgemailXdeliveryInstanceRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
+        "ManagedPolicyArns": [ "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM" ],
         "AssumeRolePolicyDocument": {
           "Statement": [
             {
@@ -1460,6 +1654,7 @@
     "XgemailInternetXdeliveryInstanceRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
+        "ManagedPolicyArns": [ "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM" ],
         "AssumeRolePolicyDocument": {
           "Statement": [
             {
@@ -1491,10 +1686,12 @@
             },
             {
               "Action": [
+                "ec2:AssociateAddress",
                 "ec2:AttachVolume",
                 "ec2:CreateSnapshot",
                 "ec2:CreateTags",
                 "ec2:CreateVolume",
+                "ec2:DescribeAddresses",
                 "ec2:DescribeImages",
                 "ec2:DescribeSnapshots",
                 "ec2:DescribeTags",
@@ -1592,8 +1789,23 @@
               "Resource": [
                 "*"
               ]
+            },
+            {
+              "Action" : [
+                "sqs:ChangeMessageVisibility",
+                "sqs:CreateQueue",
+                "sqs:DeleteMessage",
+                "sqs:DeleteQueue",
+                "sqs:GetQueueAttributes",
+                "sqs:GetQueueUrl",
+                "sqs:ListQueues",
+                "sqs:SendMessage",
+                "sqs:SetQueueAttributes",
+                "sqs:ReceiveMessage"
+              ],
+              "Effect" : "Allow",
+              "Resource" : ["*"]
             }
-
           ]
         },
         "PolicyName": "root",
@@ -1624,6 +1836,22 @@
     "BastionInstanceRole": {
       "Description": "Bastion instance role",
       "Value": { "Ref": "BastionInstanceRole" }
+    },
+    "EipMonitorLambdaExecutionRole": {
+      "Description": "Lambda Execution role",
+      "Value": { "Ref": "EipMonitorLambdaExecutionRole" }
+    },
+    "EipMonitorLambdaExecutionRoleArn": {
+      "Description": "Lambda Execution role ARN",
+      "Value": { "Fn::GetAtt" : [ "EipMonitorLambdaExecutionRole", "Arn" ] }
+    },
+    "EipRotationLambdaExecutionRole": {
+      "Description": "Lambda Execution role",
+      "Value": { "Ref": "EipRotationLambdaExecutionRole" }
+    },
+    "EipRotationLambdaExecutionRoleArn": {
+      "Description": "Lambda Execution role ARN",
+      "Value": { "Fn::GetAtt" : [ "EipRotationLambdaExecutionRole", "Arn" ] }
     },
     "LogicMonitorInstanceProfile": {
       "Description": "Profile for logic monitor collectors to do their job",

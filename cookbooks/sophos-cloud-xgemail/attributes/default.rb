@@ -39,6 +39,7 @@ default['sophos_cloud']['script_path']                  = '/var/sophos/scripts'
 default['sophos_cloud']['thirdparty']                   = '//cloud-dev-3rdparty'
 default['sophos_cloud']['tmp']                          = '/tmp/sophos'
 
+
 # XGEmail-specific settings
 default['xgemail']['station_vpc_name'] = nil
 
@@ -84,12 +85,18 @@ default['xgemail']['savdid_version'] = '2.4'
 default['xgemail']['savdid_cxmail_version'] = 'Cloud:Email:1.0.0'
 
 # Jilter settings
-default['xgemail']['jilter_inbound_version'] = '0.3.1-SNAPSHOT'
-default['xgemail']['jilter_outbound_version'] = '0.1.0-SNAPSHOT'
+default['xgemail']['jilter_inbound_version'] = '0.7.0-SNAPSHOT'
+default['xgemail']['jilter_outbound_version'] = '0.4.1-SNAPSHOT'
 default['xgemail']['libspfjni'] = '0.1.0-SNAPSHOT'
 default['xgemail']['libspf2_version'] = '1.2.10-9'
 default['xgemail']['jilter_user'] = 'jilter'
 default['xgemail']['jilter_service_name'] = 'xgemail-jilter-service'
+
+# DKIM specific
+default['xgemail']['libdkimjni'] = '0.6.0-SNAPSHOT'
+default['xgemail']['libopendkim_version'] = '2.11.0'
+
+default['xgemail']['policy_efs_mount_dir'] = '/policy-storage'
 
 ## SAVi SXL Live Protection settings
 default['xgemail']['savdid_sxl_pua_detection'] = 1
@@ -102,6 +109,15 @@ default['xgemail']['savdid_sxl_live_protection_enabled'] = 1
 
 ## Domain blacklist settings
 default['xgemail']['sxl_dbl'] = nil
+# SXL returns different codes for domain reputation lookup. All of the following
+# response codes are considered spam except 127.0.1.2:
+#
+#  - 127.0.1.1: SXL_URI (Contains a known spam URL (SXL lookup))
+#  - 127.0.1.2: SXL_URI_NEW (Contains a recently registered domain name (SXL lookup))
+#  - 127.0.1.3: SXL_URI_LAB (Contains a known spam URL (SXL lookup))
+#  - 127.0.1.4: SXL_URI_SBC (Contains a known spam URL (SXL lookup))
+#  - 127.0.1.5: SXL_URI_SHD (Contains a known spam URL (SXL lookup))
+default['xgemail']['sxl_dbl_response_codes'] = "127.0.1.[1;3;4;5]"
 
 ## IP blacklist settings
 default['xgemail']['sxl_rbl'] = nil
@@ -113,6 +129,7 @@ default['xgemail']['sqs_policy_poller_visibility_timeout'] = '10'
 default['xgemail']['sqs_policy_poller_message_retention_period'] = '172800'
 default['xgemail']['sqs_policy_sqs_message_visibility_timeout'] = 300
 default['xgemail']['sqs_policy_poller_service_name'] = 'xgemail-sqs-policy-poller'
+default['xgemail']['sqs_multi_policy_poller_service_name'] = 'xgemail-sqs-multi-policy-poller'
 
 ## SQS Lifecycle Poller settings
 default['xgemail']['sqs_lifecycle_poller_max_number_of_messages'] = 10
@@ -142,6 +159,16 @@ default['xgemail']['sqs_message_consumer_max_number_of_messages'] = 1
 default['xgemail']['sqs_message_consumer_service_name'] = 'xgemail-sqs-consumer'
 default['xgemail']['sqs_message_consumer_visibility_timeout'] = 300
 default['xgemail']['sqs_message_consumer_wait_time_seconds'] = 10
+
+## Mail Pic Api settings
+default['xgemail']['mail_pic_apis_response_timeout_seconds'] = 60
+default['xgemail']['mail_pic_api_auth'] = "xgemail-#{node['sophos_cloud']['region']}-mail"
+
+## Internet delivery DSN/NDR settings
+XGEMAIL_SQS_MESSAGE_BOUNCER_DIR ="#{XGEMAIL_FILES_DIR}/message-bouncer"
+default['xgemail']['internet_delivery_message_bouncer_processor_dir'] = XGEMAIL_SQS_MESSAGE_BOUNCER_DIR
+default['xgemail']['internet_delivery_message_bouncer_common_dir'] = "#{XGEMAIL_SQS_MESSAGE_BOUNCER_DIR}/common"
+default['xgemail']['internet_delivery_bounce_message_processor_user'] = 'bouncer'
 
 ## Cronjob settings
 default['xgemail']['cron_job_timeout'] = '10m'
@@ -185,6 +212,8 @@ default['xgemail']['tdagent_version'] = '2.3.5-0'
 
 ## Postfix configuration
 SUBMIT_MESSAGE_SIZE_LIMIT_BYTES = 52428800
+default['xgemail']['postfix3_version'] = '3.2.4.1-1'
+
 
 default['xgemail']['postfix_instance_data'] = {
   # internet-submit

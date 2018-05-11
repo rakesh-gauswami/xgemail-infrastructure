@@ -1,1202 +1,1244 @@
 {
-    "AWSTemplateFormatVersion": "2010-09-09",
+  "AWSTemplateFormatVersion": "2010-09-09",
 
-    "Description": "XGEMAIL security resources template.",
+  "Description": "XGEMAIL security resources template.",
 
-    "Metadata": {
-        "Copyright": [
-            "Copyright 2017, Sophos Limited. All rights reserved.",
-            "",
-            "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
-            "Sophos Limited and Sophos Group.  All other product and company",
-            "names mentioned are trademarks or registered trademarks of their",
-            "respective owners."
-        ],
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2017, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ],
 
-        "Comments": [
-            "SecurityGroup Template for access to and from Instances in the CloudEmail Vpc"
-        ]
+    "Comments": [
+      "SecurityGroup Template for access to and from Instances in the CloudEmail Vpc"
+    ]
+  },
+
+  "Parameters": {
+    "BastionIngressExternalSshCidr": {
+      "Description": "The source CIDR allowed SSH access to the bastion.",
+      "Type": "String",
+      "Default": "198.144.101.0/24"
     },
 
-    "Parameters": {
-        "BastionIngressExternalSshCidr": {
-            "Description": "The source CIDR allowed SSH access to the bastion.",
-            "Type": "String",
-            "Default": "198.144.101.0/24"
-        },
-
-        "Branch": {
-            "Description": "Git branch (develop, feature/CPLAT-9660, etc.).",
-            "Type": "String"
-        },
-
-        "Environment": {
-            "Description": "AWS account being used (inf, dev, qa, etc.).",
-            "Type": "String"
-        },
-        "ExternalIpAccess": {
-            "Description": "The public IP address of the remote VPN instance.",
-            "Type": "String",
-            "Default": "198.144.101.0/24"
-        },
-        "Vpc": {
-            "Description": "Target VPC ID",
-            "Type": "AWS::EC2::VPC::Id"
-        }
+    "Branch": {
+      "Description": "Git branch (develop, feature/CPLAT-9660, etc.).",
+      "Type": "String"
     },
 
-    "Mappings": {
-        "RegionMap": {
-            "us-west-2": { "VpcCidrBlock": "172.17.0.0/16", "PublicSubnetCidrBlocks": "172.17.0.0/24" },
-            "us-east-1": { "VpcCidrBlock": "172.18.0.0/16", "PublicSubnetCidrBlocks": "172.18.0.0/24" },
-            "eu-west-1": {"VpcCidrBlock": "172.19.0.0/16", "PublicSubnetCidrBlocks": "172.19.0.0/24" },
-            "eu-central-1": {"VpcCidrBlock": "172.20.0.0/16", "PublicSubnetCidrBlocks": "172.20.0.0/24" },
-            "us-east-2": {"VpcCidrBlock": "172.21.0.0/16", "PublicSubnetCidrBlocks": "172.21.0.0/24" }
-        }
+    "Environment": {
+      "Description": "AWS account being used (inf, dev, qa, etc.).",
+      "Type": "String"
     },
-
-    "Conditions": {
-        "IsProdOrQaEnvironment" : {
-            "Fn::Or": [
-                {
-                    "Fn::Equals": [
-                        {"Ref": "Environment"},
-                        "prod"
-                    ]
-                },
-                {
-                    "Fn::Equals": [
-                        {"Ref": "Environment"},
-                        "qa"
-                    ]
-                }
-            ]
-        }
+    "ExternalIpAccess": {
+      "Description": "The public IP address of the remote VPN instance.",
+      "Type": "String",
+      "Default": "198.144.101.0/24"
     },
-
-    "Resources": {
-        "SecurityGroupBase": {
-            "Properties": {
-                "GroupDescription": "The default security group used by all instances.",
-                "SecurityGroupEgress": {
-                    "CidrIp": "0.0.0.0/0",
-                    "IpProtocol": "-1"
-                },
-                "SecurityGroupIngress": [
-                    {
-                        "CidrIp": { "Ref": "ExternalIpAccess" },
-                        "FromPort": "22",
-                        "IpProtocol": "tcp",
-                        "ToPort": "22"
-                    },
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "161",
-                        "ToPort": "161",
-                        "SourceSecurityGroupId": { "Ref": "SecurityGroupLogicMonitor" }
-                    },
-                    {
-                        "IpProtocol": "udp",
-                        "FromPort": "161",
-                        "ToPort": "161",
-                        "SourceSecurityGroupId": { "Ref": "SecurityGroupLogicMonitor" }
-                    },
-                    {
-                        "IpProtocol": "udp",
-                        "FromPort": "123",
-                        "ToPort": "123",
-                        "SourceSecurityGroupId": { "Ref": "SecurityGroupLogicMonitor" }
-                    },
-                    {
-                        "IpProtocol" : "icmp",
-                        "FromPort" : "8",
-                        "ToPort" : "-1",
-                        "SourceSecurityGroupId": { "Ref": "SecurityGroupLogicMonitor" }
-                    }
-                ],
-                "Tags": [
-                    {
-                        "Key": "Name",
-                        "Value": { "Fn::Join": [ "", [ {"Ref" : "Environment"}, "-", {"Ref" : "Branch"}, "-" ,{"Ref" : "AWS::StackName"} , "/sg/bastion" ] ] }
-                    }
-                ],
-                "VpcId": {
-                    "Ref": "Vpc"
-                }
-            },
-            "Type": "AWS::EC2::SecurityGroup"
-        },
-
-        "SecurityGroupBaseIngress": {
-            "Properties": {
-                "GroupId": { "Ref": "SecurityGroupBase" },
-                "IpProtocol": "tcp",
-                "FromPort": "22",
-                "ToPort": "22",
-                "SourceSecurityGroupId": { "Ref": "SecurityGroupBase" }
-            },
-            "Type": "AWS::EC2::SecurityGroupIngress"
-        },
-
-        "SecurityGroupJGroups" :
-        {
-            "Type": "AWS::EC2::SecurityGroup",
-            "Properties" : {
-                "GroupDescription": "Enables JGroups communication.",
-                "SecurityGroupEgress": {
-                    "CidrIp": "0.0.0.0/0",
-                    "IpProtocol": "-1"
-                },
-                "Tags": [
-                    {
-                        "Key": "Name",
-                        "Value": {
-                            "Fn::Join": [ "", [
-                                {
-                                    "Ref": "Environment"
-                                },
-                                "-",
-                                {
-                                    "Ref": "Branch"
-                                },
-                                "-" ,
-                                {
-                                    "Ref": "AWS::StackName"
-                                } ,
-                                "/sg/svc/java/jgroups"
-                            ] ]
-                        }
-                    }
-                ],
-                "VpcId": {
-                    "Ref": "Vpc"
-                }
-            }
-        },
-        "SecurityGroupJGroupsIngress": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Properties": {
-                "GroupId": { "Ref": "SecurityGroupJGroups" },
-                "IpProtocol": "tcp",
-                "FromPort": "7800",
-                "ToPort": "7825",
-                "SourceSecurityGroupId": { "Ref": "SecurityGroupJGroups" }
-            }
-        },
-
-        "SecurityGroupJavaSvcBaseLb": {
-            "Properties": {
-                "GroupDescription": "Controls access to public facing ELBs.",
-                "Tags": [
-                    {
-                        "Key": "Branch",
-                        "Value": { "Ref" : "Branch" }
-
-                    },
-                    {
-                        "Key": "Environment",
-                        "Value": { "Ref" : "Environment" }
-                    },
-                    {
-                        "Key": "Role",
-                        "Value": "svc-java-base-elb"
-
-                    }
-                ],
-                "SecurityGroupIngress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "80",
-                        "ToPort": "80",
-                        "CidrIp": "0.0.0.0/0"
-                    },
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "443",
-                        "ToPort": "443",
-                        "CidrIp": "0.0.0.0/0"
-                    },
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "8444",
-                        "ToPort": "8446",
-                        "CidrIp": "0.0.0.0/0"
-                    }
-                ],
-                "SecurityGroupEgress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "0",
-                        "ToPort": "65535",
-                        "CidrIp": "0.0.0.0/0"
-                    }
-                ],
-                "VpcId": {
-                    "Ref": "Vpc"
-                },
-                "Tags" :  [
-                    {
-                        "Key" : "Name", "Value" : { "Fn::Join": [ "", [ {"Ref" : "Environment"}, "-", {"Ref" : "Branch"}, "-" ,{"Ref" : "AWS::StackName"} , "/sg/svc/java/elb" ] ] }
-                    }
-                ]
-            },
-            "Type": "AWS::EC2::SecurityGroup"
-        },
-
-        "SecurityGroupJavaSvcBase": {
-            "Type": "AWS::EC2::SecurityGroup",
-            "Properties": {
-                "GroupDescription": "The default service security group controls access to all java services.",
-                "SecurityGroupEgress": {
-                    "CidrIp": "0.0.0.0/0",
-                    "IpProtocol": "-1"
-                },
-                "SecurityGroupIngress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "22",
-                        "ToPort": "22",
-                        "SourceSecurityGroupId": { "Ref": "SecurityGroupBase" }
-                    },
-                    {
-                        "IpProtocol" : "tcp",
-                        "FromPort" : "80",
-                        "ToPort" : "80",
-                        "SourceSecurityGroupId":{ "Ref": "SecurityGroupJavaSvcBaseLb" }
-                    },
-                    {
-                        "IpProtocol" : "tcp",
-                        "FromPort" : "8080",
-                        "ToPort" : "8080",
-                        "SourceSecurityGroupId":{ "Ref": "SecurityGroupJavaSvcBaseLb" }
-                    },
-                    {
-                        "IpProtocol" : "tcp",
-                        "FromPort" : "443",
-                        "ToPort" : "443",
-                        "SourceSecurityGroupId":{ "Ref": "SecurityGroupJavaSvcBaseLb" }
-                    }
-                ],
-                "VpcId": {
-                    "Ref": "Vpc"
-                },
-                "Tags": [
-                    {
-                        "Key": "Branch",
-                        "Value": { "Ref" : "Branch" }
-                    },
-                    {
-                        "Key": "Environment",
-                        "Value": { "Ref" : "Environment" }
-                    },
-                    {
-                        "Key" : "Name",
-                        "Value" : { "Fn::Join": [ "", [ {"Ref" : "Environment"}, "-", {"Ref" : "Branch"}, "-" ,{"Ref" : "AWS::StackName"} , "/sg/svc/java/base" ] ] }
-                    }
-                ]
-            }
-        },
-
-        "SecurityGroupJavaSvcBaseJGroupsIngress": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Properties": {
-                "GroupId": { "Ref": "SecurityGroupJavaSvcBase" },
-                "IpProtocol": "tcp",
-                "FromPort": "7800",
-                "ToPort": "7825",
-                "SourceSecurityGroupId": { "Ref": "SecurityGroupJavaSvcBase" }
-            }
-        },
-
-        "SecurityGroupBastion": {
-            "Type": "AWS::EC2::SecurityGroup",
-            "Properties": {
-                "GroupDescription": "Bastion security group.",
-                "Tags": [{
-                    "Key": "Name",
-                    "Value": {
-                        "Fn::Join": [ "", [
-                            { "Ref": "Environment" }, "-",
-                            { "Ref": "Branch" }, "-",
-                            { "Ref": "AWS::StackName" }, "/sg/bastion"
-                        ]]
-                    }
-                }],
-                "VpcId": { "Ref": "Vpc" }
-            }
-        },
-
-        "SecurityGroupBastionEgress": {
-            "Type": "AWS::EC2::SecurityGroupEgress",
-            "Properties": {
-                "GroupId": { "Ref": "SecurityGroupBastion" },
-                "CidrIp": "0.0.0.0/0",
-                "IpProtocol": "-1"
-            }
-        },
-
-        "SecurityGroupBastionIngressExternalSsh": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Properties": {
-                "GroupId": { "Ref": "SecurityGroupBastion" },
-                "CidrIp": { "Ref": "BastionIngressExternalSshCidr" },
-                "IpProtocol": "tcp",
-                "FromPort": "22",
-                "ToPort": "22"
-            }
-        },
-
-        "SecurityGroupBastionIngressInternalSsh": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Properties": {
-                "GroupId": { "Ref": "SecurityGroupBastion" },
-                "SourceSecurityGroupId": { "Ref": "SecurityGroupBastion" },
-                "IpProtocol": "tcp",
-                "FromPort": "22",
-                "ToPort": "22"
-            }
-        },
-
-        "SecurityGroupLogicMonitor": {
-            "Properties": {
-                "GroupDescription": "Controls the access to and from Logic Monitor.",
-                "SecurityGroupEgress": {
-                    "CidrIp": "0.0.0.0/0",
-                    "IpProtocol": "-1"
-                },
-
-                "SecurityGroupIngress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "22",
-                        "ToPort": "22",
-                        "SourceSecurityGroupId": { "Ref": "SecurityGroupBastion" }
-                    }
-                ],
-                "VpcId": { "Ref": "Vpc" },
-                "Tags": [
-                    {
-                        "Key": "Name", "Value": { "Fn::Join": [ "", [ { "Ref": "Environment" }, "-", { "Ref": "Branch" }, "-", { "Ref": "AWS::StackName" }, "/sg/logicmonitor" ] ] }
-                    }
-                ]
-            },
-            "Type": "AWS::EC2::SecurityGroup"
-        },
-
-        "SecurityGroupBastionLogicMonitorSnmpTcpIngress": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Properties": {
-                "GroupId": { "Ref": "SecurityGroupBastion" },
-                "IpProtocol": "tcp",
-                "FromPort": "161",
-                "ToPort": "162",
-                "SourceSecurityGroupId": { "Ref": "SecurityGroupLogicMonitor" }
-            }
-        },
-
-        "SecurityGroupBastionLogicMonitorSnmpUdpIngress": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Properties": {
-                "GroupId": { "Ref": "SecurityGroupBastion" },
-                "IpProtocol": "udp",
-                "FromPort": "161",
-                "ToPort": "162",
-                "SourceSecurityGroupId": { "Ref": "SecurityGroupLogicMonitor" }
-            }
-        },
-
-        "SecurityGroupBastionLogicMonitorIcmpIngress": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Properties": {
-                "GroupId": { "Ref": "SecurityGroupBastion" },
-                "IpProtocol": "icmp",
-                "FromPort": "-1",
-                "ToPort": "-1",
-                "SourceSecurityGroupId": { "Ref": "SecurityGroupLogicMonitor" }
-            }
-        },
-
-        "XgemailSubmitSecurityGroupLb": {
-            "Properties": {
-                "GroupDescription": "Controls access to public facing ELBs.",
-                "Tags": [
-                    {
-                        "Key": "Branch",
-                        "Value": { "Ref" : "Branch" }
-
-                    },
-                    {
-                        "Key": "Environment",
-                        "Value": { "Ref" : "Environment" }
-                    },
-                    {
-                        "Key": "Role",
-                        "Value": "svc-xgemail-internet-submit-elb"
-
-                    },
-                    {
-                        "Key": "Name",
-                        "Value": {
-                            "Fn::Join": [
-                                "",
-                                [
-                                    {
-                                        "Ref": "Environment"
-                                    },
-                                    "-",
-                                    {
-                                        "Ref": "Branch"
-                                    },
-                                    "-",
-                                    {
-                                        "Ref": "AWS::StackName"
-                                    },
-                                    "/sg/xgemail/internet/submit/elb"
-                                ]
-                            ]
-                        }
-                    }
-                ],
-                "SecurityGroupIngress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "25",
-                        "ToPort": "25",
-                        "CidrIp": { "Fn::If": [
-                            "IsProdOrQaEnvironment",
-                            "0.0.0.0/0",
-                            { "Ref": "ExternalIpAccess" }
-                        ]}
-                    },
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "587",
-                        "ToPort": "587",
-                        "CidrIp": { "Fn::If": [
-                            "IsProdOrQaEnvironment",
-                            "0.0.0.0/0",
-                            { "Ref": "ExternalIpAccess" }
-                        ]}
-                    }
-                ],
-                "VpcId": {
-                    "Ref": "Vpc"
-                }
-            },
-            "Type": "AWS::EC2::SecurityGroup"
-        },
-
-        "XgemailSubmitSecurityGroup": {
-            "Type": "AWS::EC2::SecurityGroup",
-            "Properties": {
-                "GroupDescription": "XGEMAIL Submit security group.",
-                "Tags": [{
-                    "Key": "Name",
-                    "Value": {
-                        "Fn::Join": [ "", [
-                            { "Ref": "Environment" }, "-",
-                            { "Ref": "Branch" }, "-",
-                            { "Ref": "AWS::StackName" }, "/sg/xgemail/internet/submit"
-                        ]]
-                    }
-                }],
-                "SecurityGroupIngress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "25",
-                        "ToPort": "25",
-                        "SourceSecurityGroupId": { "Ref": "XgemailSubmitSecurityGroupLb" }
-                    },
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "587",
-                        "ToPort": "587",
-                        "SourceSecurityGroupId": { "Ref": "XgemailSubmitSecurityGroupLb" }
-                    }
-                ],
-                "SecurityGroupEgress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "0",
-                        "ToPort": "65535",
-                        "CidrIp": "0.0.0.0/0"
-                    }
-                ],
-                "VpcId": { "Ref": "Vpc" }
-            }
-        },
-
-        "XgemailDeliverySecurityGroupLb": {
-            "Properties": {
-                "GroupDescription": "Controls access to public facing ELBs.",
-                "Tags": [
-                    {
-                        "Key": "Branch",
-                        "Value": { "Ref" : "Branch" }
-
-                    },
-                    {
-                        "Key": "Environment",
-                        "Value": { "Ref" : "Environment" }
-                    },
-                    {
-                        "Key": "Role",
-                        "Value": "svc-xgemail-customer-delivery-elb"
-
-                    },
-                    {
-                        "Key": "Name",
-                        "Value": {
-                            "Fn::Join": [
-                                "",
-                                [
-                                    {
-                                        "Ref": "Environment"
-                                    },
-                                    "-",
-                                    {
-                                        "Ref": "Branch"
-                                    },
-                                    "-",
-                                    {
-                                        "Ref": "AWS::StackName"
-                                    },
-                                    "/sg/xgemail/customer/delivery/elb"
-                                ]
-                            ]
-                        }
-                    }
-                ],
-                "SecurityGroupIngress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "2255",
-                        "ToPort": "2255",
-                        "CidrIp": "0.0.0.0/0"
-                    },
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "587",
-                        "ToPort": "587",
-                        "CidrIp": { "Ref": "ExternalIpAccess" }
-                    }
-                ],
-                "VpcId": {
-                    "Ref": "Vpc"
-                }
-            },
-            "Type": "AWS::EC2::SecurityGroup"
-        },
-
-        "XgemailDeliverySecurityGroup": {
-            "Type": "AWS::EC2::SecurityGroup",
-            "Properties": {
-                "GroupDescription": "Xgemail Submit security group.",
-                "Tags": [{
-                    "Key": "Name",
-                    "Value": {
-                        "Fn::Join": [ "", [
-                            { "Ref": "Environment" }, "-",
-                            { "Ref": "Branch" }, "-",
-                            { "Ref": "AWS::StackName" }, "/sg/xgemail/customer/delivery"
-                        ]]
-                    }
-                }],
-                "SecurityGroupIngress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "25",
-                        "ToPort": "25",
-                        "SourceSecurityGroupId": { "Ref": "XgemailDeliverySecurityGroupLb" }
-                    },
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "587",
-                        "ToPort": "587",
-                        "SourceSecurityGroupId": { "Ref": "XgemailDeliverySecurityGroupLb" }
-                    }
-                ],
-                "SecurityGroupEgress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "0",
-                        "ToPort": "65535",
-                        "CidrIp": "0.0.0.0/0"
-                    }
-                ],
-                "VpcId": { "Ref": "Vpc" }
-            }
-        },
-
-        "XgemailCustomerSubmitSecurityGroupLb": {
-            "Properties": {
-                "GroupDescription": "Controls access to public facing ELBs.",
-                "Tags": [
-                    {
-                        "Key": "Branch",
-                        "Value": { "Ref" : "Branch" }
-
-                    },
-                    {
-                        "Key": "Environment",
-                        "Value": { "Ref" : "Environment" }
-                    },
-                    {
-                        "Key": "Role",
-                        "Value": "svc-xgemail-customer-submit-elb"
-
-                    },
-                    {
-                        "Key": "Name",
-                        "Value": {
-                            "Fn::Join": [
-                                "",
-                                [
-                                    {
-                                        "Ref": "Environment"
-                                    },
-                                    "-",
-                                    {
-                                        "Ref": "Branch"
-                                    },
-                                    "-",
-                                    {
-                                        "Ref": "AWS::StackName"
-                                    },
-                                    "/sg/xgemail/customer/submit/elb"
-                                ]
-                            ]
-                        }
-                    }
-                ],
-                "SecurityGroupIngress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "25",
-                        "ToPort": "25",
-                        "CidrIp": { "Fn::If": [
-                            "IsProdOrQaEnvironment",
-                            "0.0.0.0/0",
-                            { "Ref": "ExternalIpAccess" }
-                        ]}
-                    },
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "587",
-                        "ToPort": "587",
-                        "CidrIp": { "Fn::If": [
-                            "IsProdOrQaEnvironment",
-                            "0.0.0.0/0",
-                            { "Ref": "ExternalIpAccess" }
-                        ]}
-                    }
-                ],
-                "VpcId": {
-                    "Ref": "Vpc"
-                }
-            },
-            "Type": "AWS::EC2::SecurityGroup"
-        },
-
-        "XgemailCustomerSubmitSecurityGroup": {
-            "Type": "AWS::EC2::SecurityGroup",
-            "Properties": {
-                "GroupDescription": "XGEMAIL Customer Submit security group.",
-                "Tags": [{
-                    "Key": "Name",
-                    "Value": {
-                        "Fn::Join": [ "", [
-                            { "Ref": "Environment" }, "-",
-                            { "Ref": "Branch" }, "-",
-                            { "Ref": "AWS::StackName" }, "/sg/xgemail/customer/submit"
-                        ]]
-                    }
-                }],
-                "SecurityGroupIngress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "25",
-                        "ToPort": "25",
-                        "SourceSecurityGroupId": { "Ref": "XgemailCustomerSubmitSecurityGroupLb" }
-                    },
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "587",
-                        "ToPort": "587",
-                        "SourceSecurityGroupId": { "Ref": "XgemailCustomerSubmitSecurityGroupLb" }
-                    }
-                ],
-                "SecurityGroupEgress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "0",
-                        "ToPort": "65535",
-                        "CidrIp": "0.0.0.0/0"
-                    }
-                ],
-                "VpcId": { "Ref": "Vpc" }
-            }
-        },
-
-        "XgemailInternetDeliverySecurityGroupLb": {
-            "Properties": {
-                "GroupDescription": "Controls access to public facing ELBs.",
-                "Tags": [
-                    {
-                        "Key": "Branch",
-                        "Value": { "Ref" : "Branch" }
-
-                    },
-                    {
-                        "Key": "Environment",
-                        "Value": { "Ref" : "Environment" }
-                    },
-                    {
-                        "Key": "Role",
-                        "Value": "svc-xgemail-internet-delivery-elb"
-
-                    },
-                    {
-                        "Key": "Name",
-                        "Value": {
-                            "Fn::Join": [
-                                "",
-                                [
-                                    {
-                                        "Ref": "Environment"
-                                    },
-                                    "-",
-                                    {
-                                        "Ref": "Branch"
-                                    },
-                                    "-",
-                                    {
-                                        "Ref": "AWS::StackName"
-                                    },
-                                    "/sg/xgemail/internet/delivery/elb"
-                                ]
-                            ]
-                        }
-                    }
-                ],
-                "SecurityGroupIngress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "2255",
-                        "ToPort": "2255",
-                        "CidrIp": "0.0.0.0/0"
-                    },
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "587",
-                        "ToPort": "587",
-                        "CidrIp": { "Ref": "ExternalIpAccess" }
-                    }
-                ],
-                "VpcId": {
-                    "Ref": "Vpc"
-                }
-            },
-            "Type": "AWS::EC2::SecurityGroup"
-        },
-        "XgemailInternetDeliverySecurityGroup": {
-            "Type": "AWS::EC2::SecurityGroup",
-            "Properties": {
-                "GroupDescription": "Xgemail Internet Delivery security group.",
-                "Tags": [{
-                    "Key": "Name",
-                    "Value": {
-                        "Fn::Join": [ "", [
-                            { "Ref": "Environment" }, "-",
-                            { "Ref": "Branch" }, "-",
-                            { "Ref": "AWS::StackName" }, "/sg/xgemail/internet/delivery"
-                        ]]
-                    }
-                }],
-                "SecurityGroupIngress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "25",
-                        "ToPort": "25",
-                        "SourceSecurityGroupId": { "Ref": "XgemailInternetDeliverySecurityGroupLb" }
-                    },
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "587",
-                        "ToPort": "587",
-                        "SourceSecurityGroupId": { "Ref": "XgemailInternetDeliverySecurityGroupLb" }
-                    }
-                ],
-                "SecurityGroupEgress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "0",
-                        "ToPort": "65535",
-                        "CidrIp": "0.0.0.0/0"
-                    }
-                ],
-                "VpcId": { "Ref": "Vpc" }
-            }
-        },
-        "XgemailXdeliverySecurityGroupLb": {
-            "Properties": {
-                "GroupDescription": "Controls access to internal facing Xdelivery ELB.",
-                "Tags": [
-                    {
-                        "Key": "Branch",
-                        "Value": {"Ref": "Branch"}
-
-                    },
-                    {
-                        "Key": "Environment",
-                        "Value": {"Ref": "Environment"}
-                    },
-                    {
-                        "Key": "Role",
-                        "Value": "svc-xgemail-xdelivery-elb"
-
-                    },
-                    {
-                        "Key": "Name",
-                        "Value": {
-                            "Fn::Join": [
-                                "",
-                                [
-                                    {
-                                        "Ref": "Environment"
-                                    },
-                                    "-",
-                                    {
-                                        "Ref": "Branch"
-                                    },
-                                    "-",
-                                    {
-                                        "Ref": "AWS::StackName"
-                                    },
-                                    "/sg/xgemail/xdelivery/elb"
-                                ]
-                            ]
-                        }
-                    }
-                ],
-                "VpcId": {
-                    "Ref": "Vpc"
-                }
-            },
-            "Type": "AWS::EC2::SecurityGroup"
-        },
-        "XgemailXdeliverySecurityGroup": {
-            "Type": "AWS::EC2::SecurityGroup",
-            "Properties": {
-                "GroupDescription": "Xgemail Xdelivery security group.",
-                "Tags": [
-                    {
-                        "Key": "Name",
-                        "Value": {
-                            "Fn::Join": [
-                                "", [
-                                    { "Ref": "Environment" }, "-",
-                                    { "Ref": "Branch" }, "-",
-                                    { "Ref": "AWS::StackName" }, "/sg/xgemail/xdelivery"
-                                ]
-                            ]
-                        }
-                    }
-                ],
-                "SecurityGroupIngress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "8025",
-                        "ToPort": "8025",
-                        "SourceSecurityGroupId": { "Ref": "XgemailXdeliverySecurityGroupLb" }
-                    }
-                ],
-                "SecurityGroupEgress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "0",
-                        "ToPort": "65535",
-                        "CidrIp": "0.0.0.0/0"
-                    }
-                ],
-                "VpcId": { "Ref": "Vpc" }
-            }
-        },
-        "XgemailInternetXdeliverySecurityGroupLb": {
-            "Properties": {
-                "GroupDescription": "Controls access to internal facing internet Xdelivery ELB.",
-                "Tags": [
-                    {
-                        "Key": "Branch",
-                        "Value": {"Ref": "Branch"}
-
-                    },
-                    {
-                        "Key": "Environment",
-                        "Value": {"Ref": "Environment"}
-                    },
-                    {
-                        "Key": "Role",
-                        "Value": "svc-xgemail-internet-xdelivery-elb"
-
-                    },
-                    {
-                        "Key": "Name",
-                        "Value": {
-                            "Fn::Join": [
-                                "",
-                                [
-                                    {
-                                        "Ref": "Environment"
-                                    },
-                                    "-",
-                                    {
-                                        "Ref": "Branch"
-                                    },
-                                    "-",
-                                    {
-                                        "Ref": "AWS::StackName"
-                                    },
-                                    "/sg/xgemail/internet/xdelivery/elb"
-                                ]
-                            ]
-                        }
-                    }
-                ],
-                "VpcId": {
-                    "Ref": "Vpc"
-                }
-            },
-            "Type": "AWS::EC2::SecurityGroup"
-        },
-        "XgemailInternetXdeliverySecurityGroup": {
-            "Type": "AWS::EC2::SecurityGroup",
-            "Properties": {
-                "GroupDescription": "Xgemail Internet Xdelivery security group.",
-                "Tags": [
-                    {
-                        "Key": "Name",
-                        "Value": {
-                            "Fn::Join": [
-                                "", [
-                                    { "Ref": "Environment" }, "-",
-                                    { "Ref": "Branch" }, "-",
-                                    { "Ref": "AWS::StackName" }, "/sg/xgemail/internet/xdelivery"
-                                ]
-                            ]
-                        }
-                    }
-                ],
-                "SecurityGroupIngress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "8025",
-                        "ToPort": "8025",
-                        "SourceSecurityGroupId": { "Ref": "XgemailInternetXdeliverySecurityGroupLb" }
-                    }
-                ],
-                "SecurityGroupEgress": [
-                    {
-                        "IpProtocol": "tcp",
-                        "FromPort": "0",
-                        "ToPort": "65535",
-                        "CidrIp": "0.0.0.0/0"
-                    }
-                ],
-                "VpcId": { "Ref": "Vpc" }
-            }
-        },
-        "XgemailXdeliverySecurityGroupLbIngressDeliverySmtp": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Properties": {
-                "GroupId": { "Ref": "XgemailXdeliverySecurityGroupLb" },
-                "SourceSecurityGroupId": { "Ref": "XgemailDeliverySecurityGroup" },
-                "IpProtocol": "tcp",
-                "FromPort": "8025",
-                "ToPort": "8025"
-            }
-        },
-        "XgemailInternetXdeliverySecurityGroupLbIngressDeliverySmtp": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Properties": {
-                "GroupId": { "Ref": "XgemailInternetXdeliverySecurityGroupLb" },
-                "SourceSecurityGroupId": { "Ref": "XgemailInternetDeliverySecurityGroup" },
-                "IpProtocol": "tcp",
-                "FromPort": "8025",
-                "ToPort": "8025"
-            }
-        },
-        "XgemailSubmitSecurityGroupIngressBastionSsh": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Properties": {
-                "GroupId": { "Ref": "XgemailSubmitSecurityGroup" },
-                "SourceSecurityGroupId": { "Ref": "SecurityGroupBastion" },
-                "IpProtocol": "tcp",
-                "FromPort": "22",
-                "ToPort": "22"
-            }
-        },
-        "XgemailCustomerSubmitSecurityGroupIngressBastionSsh": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Properties": {
-                "GroupId": { "Ref": "XgemailCustomerSubmitSecurityGroup" },
-                "SourceSecurityGroupId": { "Ref": "SecurityGroupBastion" },
-                "IpProtocol": "tcp",
-                "FromPort": "22",
-                "ToPort": "22"
-            }
-        },
-        "XgemailDeliverySecurityGroupIngressBastionSsh": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Properties": {
-                "GroupId": { "Ref": "XgemailDeliverySecurityGroup" },
-                "SourceSecurityGroupId": { "Ref": "SecurityGroupBastion" },
-                "IpProtocol": "tcp",
-                "FromPort": "22",
-                "ToPort": "22"
-            }
-        },
-        "XgemailInternetDeliverySecurityGroupIngressBastionSsh": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Properties": {
-                "GroupId": { "Ref": "XgemailInternetDeliverySecurityGroup" },
-                "SourceSecurityGroupId": { "Ref": "SecurityGroupBastion" },
-                "IpProtocol": "tcp",
-                "FromPort": "22",
-                "ToPort": "22"
-            }
-        },
-        "XgemailXdeliverySecurityGroupIngressBastionSsh": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Properties": {
-                "GroupId": {"Ref": "XgemailXdeliverySecurityGroup"},
-                "SourceSecurityGroupId": {"Ref": "SecurityGroupBastion"},
-                "IpProtocol": "tcp",
-                "FromPort": "22",
-                "ToPort": "22"
-            }
-        },
-        "XgemailInternetXdeliverySecurityGroupIngressBastionSsh": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Properties": {
-                "GroupId": {"Ref": "XgemailInternetXdeliverySecurityGroup"},
-                "SourceSecurityGroupId": {"Ref": "SecurityGroupBastion"},
-                "IpProtocol": "tcp",
-                "FromPort": "22",
-                "ToPort": "22"
-            }
-        }
-    },
-
-    "Outputs": {
-        "SecurityGroupBase": {
-            "Description": "ID of the base security group",
-            "Value": {
-                "Ref": "SecurityGroupBase"
-            }
-        },
-        "SecurityGroupJGroups" : {
-            "Description" : "Java service JGroups Security Group",
-            "Value": {
-                "Ref" : "SecurityGroupJGroups"
-            }
-        },
-        "SecurityGroupJavaSvcBaseLb": {
-            "Description": "Java Load Balancer Security Group",
-            "Value": {
-                "Ref": "SecurityGroupJavaSvcBaseLb"
-            }
-        },
-        "SecurityGroupJavaSvcBase": {
-            "Description": "Java instances base Security Group",
-            "Value": {
-                "Ref": "SecurityGroupJavaSvcBase"
-            }
-        },
-        "SecurityGroupBastion": {
-            "Description": "Bastion security group",
-            "Value": {
-                "Ref": "SecurityGroupBastion"
-            }
-        },
-        "SecurityGroupLogicMonitor": {
-            "Description": "LogicMonitor Security Group",
-            "Value": {
-                "Ref": "SecurityGroupLogicMonitor"
-            }
-        },
-        "XgemailSubmitSecurityGroupLb": {
-            "Description": "Xgemail Submit Load Balancer security group",
-            "Value": {
-                "Ref": "XgemailSubmitSecurityGroupLb"
-            }
-        },
-        "XgemailSubmitSecurityGroup": {
-            "Description": "Xgemail Submit security group",
-            "Value": {
-                "Ref": "XgemailSubmitSecurityGroup"
-            }
-        },
-        "XgemailDeliverySecurityGroupLb": {
-            "Description": "Xgemail Delivery Load Balancer security group",
-            "Value": {
-                "Ref": "XgemailDeliverySecurityGroupLb"
-            }
-        },
-        "XgemailDeliverySecurityGroup": {
-            "Description": "Xgemail Delivery security group",
-            "Value": {
-                "Ref": "XgemailDeliverySecurityGroup"
-            }
-        },
-        "XgemailCustomerSubmitSecurityGroupLb": {
-            "Description": "Xgemail Customer Submit Load Balancer security group",
-            "Value": {
-                "Ref": "XgemailCustomerSubmitSecurityGroupLb"
-            }
-        },
-        "XgemailCustomerSubmitSecurityGroup": {
-            "Description": "Xgemail Customer Submit security group",
-            "Value": {
-                "Ref": "XgemailCustomerSubmitSecurityGroup"
-            }
-        },
-        "XgemailInternetDeliverySecurityGroupLb": {
-            "Description": "Xgemail Internet Delivery Load Balancer security group",
-            "Value": {
-                "Ref": "XgemailInternetDeliverySecurityGroupLb"
-            }
-        },
-        "XgemailInternetDeliverySecurityGroup": {
-            "Description": "Xgemail Internet Delivery security group",
-            "Value": {
-                "Ref": "XgemailInternetDeliverySecurityGroup"
-            }
-        },
-        "XgemailXdeliverySecurityGroupLb": {
-            "Description": "Xgemail Xdelivery Load Balancer security group",
-            "Value": {
-                "Ref": "XgemailXdeliverySecurityGroupLb"
-            }
-        },
-        "XgemailInternetXdeliverySecurityGroupLb": {
-            "Description": "Xgemail Internet Xdelivery Load Balancer security group",
-            "Value": {
-                "Ref": "XgemailInternetXdeliverySecurityGroupLb"
-            }
-        },
-        "XgemailXdeliverySecurityGroup": {
-            "Description": "Xgemail Xdelivery security group",
-            "Value": {
-                "Ref": "XgemailXdeliverySecurityGroup"
-            }
-        },
-        "XgemailInternetXdeliverySecurityGroup": {
-            "Description": "Xgemail Internet Xdelivery security group",
-            "Value": {
-                "Ref": "XgemailInternetXdeliverySecurityGroup"
-            }
-        }
-
+    "Vpc": {
+      "Description": "Target VPC ID",
+      "Type": "AWS::EC2::VPC::Id"
     }
+  },
+
+  "Mappings": {
+    "RegionMap": {
+      "us-west-2": { "VpcCidrBlock": "172.17.0.0/16", "PublicSubnetCidrBlocks": "172.17.0.0/24" },
+      "us-east-1": { "VpcCidrBlock": "172.18.0.0/16", "PublicSubnetCidrBlocks": "172.18.0.0/24" },
+      "eu-west-1": {"VpcCidrBlock": "172.19.0.0/16", "PublicSubnetCidrBlocks": "172.19.0.0/24" },
+      "eu-central-1": {"VpcCidrBlock": "172.20.0.0/16", "PublicSubnetCidrBlocks": "172.20.0.0/24" },
+      "us-east-2": {"VpcCidrBlock": "172.21.0.0/16", "PublicSubnetCidrBlocks": "172.21.0.0/24" }
+    }
+  },
+
+  "Conditions": {
+    "IsProdOrQaEnvironment" : {
+      "Fn::Or": [
+        {
+          "Fn::Equals": [
+            {"Ref": "Environment"},
+            "prod"
+          ]
+        },
+        {
+          "Fn::Equals": [
+            {"Ref": "Environment"},
+            "qa"
+          ]
+        }
+      ]
+    }
+  },
+
+  "Resources": {
+    "SecurityGroupBase": {
+      "Properties": {
+        "GroupDescription": "The default security group used by all instances.",
+        "SecurityGroupEgress": {
+          "CidrIp": "0.0.0.0/0",
+          "IpProtocol": "-1"
+        },
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": { "Ref": "ExternalIpAccess" },
+            "FromPort": "22",
+            "IpProtocol": "tcp",
+            "ToPort": "22"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "161",
+            "ToPort": "161",
+            "SourceSecurityGroupId": { "Ref": "SecurityGroupLogicMonitor" }
+          },
+          {
+            "IpProtocol": "udp",
+            "FromPort": "161",
+            "ToPort": "161",
+            "SourceSecurityGroupId": { "Ref": "SecurityGroupLogicMonitor" }
+          },
+          {
+            "IpProtocol": "udp",
+            "FromPort": "123",
+            "ToPort": "123",
+            "SourceSecurityGroupId": { "Ref": "SecurityGroupLogicMonitor" }
+          },
+          {
+            "IpProtocol" : "icmp",
+            "FromPort" : "8",
+            "ToPort" : "-1",
+            "SourceSecurityGroupId": { "Ref": "SecurityGroupLogicMonitor" }
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "", [ {"Ref" : "Environment"}, "-", {"Ref" : "Branch"}, "-" ,{"Ref" : "AWS::StackName"} , "/sg/bastion" ] ] }
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      },
+      "Type": "AWS::EC2::SecurityGroup"
+    },
+
+    "SecurityGroupBaseIngress": {
+      "Properties": {
+        "GroupId": { "Ref": "SecurityGroupBase" },
+        "IpProtocol": "tcp",
+        "FromPort": "22",
+        "ToPort": "22",
+        "SourceSecurityGroupId": { "Ref": "SecurityGroupBase" }
+      },
+      "Type": "AWS::EC2::SecurityGroupIngress"
+    },
+
+    "SecurityGroupJGroups" :
+    {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription": "Enables JGroups communication.",
+        "SecurityGroupEgress": {
+          "CidrIp": "0.0.0.0/0",
+          "IpProtocol": "-1"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [ "", [
+                {
+                  "Ref": "Environment"
+                },
+                "-",
+                {
+                  "Ref": "Branch"
+                },
+                "-" ,
+                {
+                  "Ref": "AWS::StackName"
+                } ,
+                "/sg/svc/java/jgroups"
+              ] ]
+            }
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      }
+    },
+    "SecurityGroupJGroupsIngress": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": { "Ref": "SecurityGroupJGroups" },
+        "IpProtocol": "tcp",
+        "FromPort": "7800",
+        "ToPort": "7825",
+        "SourceSecurityGroupId": { "Ref": "SecurityGroupJGroups" }
+      }
+    },
+
+    "SecurityGroupJavaSvcBaseLb": {
+      "Properties": {
+        "GroupDescription": "Controls access to public facing ELBs.",
+        "Tags": [
+          {
+            "Key": "Branch",
+            "Value": { "Ref" : "Branch" }
+
+          },
+          {
+            "Key": "Environment",
+            "Value": { "Ref" : "Environment" }
+          },
+          {
+            "Key": "Role",
+            "Value": "svc-java-base-elb"
+
+          }
+        ],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "80",
+            "ToPort": "80",
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "443",
+            "ToPort": "443",
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "8444",
+            "ToPort": "8446",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "0",
+            "ToPort": "65535",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        },
+        "Tags" :  [
+          {
+            "Key" : "Name", "Value" : { "Fn::Join": [ "", [ {"Ref" : "Environment"}, "-", {"Ref" : "Branch"}, "-" ,{"Ref" : "AWS::StackName"} , "/sg/svc/java/elb" ] ] }
+          }
+        ]
+      },
+      "Type": "AWS::EC2::SecurityGroup"
+    },
+
+    "SecurityGroupJavaSvcBase": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "The default service security group controls access to all java services.",
+        "SecurityGroupEgress": {
+          "CidrIp": "0.0.0.0/0",
+          "IpProtocol": "-1"
+        },
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "22",
+            "ToPort": "22",
+            "SourceSecurityGroupId": { "Ref": "SecurityGroupBase" }
+          },
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "80",
+            "ToPort" : "80",
+            "SourceSecurityGroupId":{ "Ref": "SecurityGroupJavaSvcBaseLb" }
+          },
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "8080",
+            "ToPort" : "8080",
+            "SourceSecurityGroupId":{ "Ref": "SecurityGroupJavaSvcBaseLb" }
+          },
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "443",
+            "ToPort" : "443",
+            "SourceSecurityGroupId":{ "Ref": "SecurityGroupJavaSvcBaseLb" }
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        },
+        "Tags": [
+          {
+            "Key": "Branch",
+            "Value": { "Ref" : "Branch" }
+          },
+          {
+            "Key": "Environment",
+            "Value": { "Ref" : "Environment" }
+          },
+          {
+            "Key" : "Name",
+            "Value" : { "Fn::Join": [ "", [ {"Ref" : "Environment"}, "-", {"Ref" : "Branch"}, "-" ,{"Ref" : "AWS::StackName"} , "/sg/svc/java/base" ] ] }
+          }
+        ]
+      }
+    },
+
+    "SecurityGroupJavaSvcBaseJGroupsIngress": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": { "Ref": "SecurityGroupJavaSvcBase" },
+        "IpProtocol": "tcp",
+        "FromPort": "7800",
+        "ToPort": "7825",
+        "SourceSecurityGroupId": { "Ref": "SecurityGroupJavaSvcBase" }
+      }
+    },
+
+    "SecurityGroupBastion": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Bastion security group.",
+        "Tags": [{
+          "Key": "Name",
+          "Value": {
+            "Fn::Join": [ "", [
+              { "Ref": "Environment" }, "-",
+              { "Ref": "Branch" }, "-",
+              { "Ref": "AWS::StackName" }, "/sg/bastion"
+            ]]
+          }
+        }],
+        "VpcId": { "Ref": "Vpc" }
+      }
+    },
+
+    "SecurityGroupBastionEgress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": { "Ref": "SecurityGroupBastion" },
+        "CidrIp": "0.0.0.0/0",
+        "IpProtocol": "-1"
+      }
+    },
+
+    "SecurityGroupBastionIngressExternalSsh": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": { "Ref": "SecurityGroupBastion" },
+        "CidrIp": { "Ref": "BastionIngressExternalSshCidr" },
+        "IpProtocol": "tcp",
+        "FromPort": "22",
+        "ToPort": "22"
+      }
+    },
+
+    "SecurityGroupBastionIngressInternalSsh": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": { "Ref": "SecurityGroupBastion" },
+        "SourceSecurityGroupId": { "Ref": "SecurityGroupBastion" },
+        "IpProtocol": "tcp",
+        "FromPort": "22",
+        "ToPort": "22"
+      }
+    },
+
+    "SecurityGroupLogicMonitor": {
+      "Properties": {
+        "GroupDescription": "Controls the access to and from Logic Monitor.",
+        "SecurityGroupEgress": {
+          "CidrIp": "0.0.0.0/0",
+          "IpProtocol": "-1"
+        },
+
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "22",
+            "ToPort": "22",
+            "SourceSecurityGroupId": { "Ref": "SecurityGroupBastion" }
+          }
+        ],
+        "VpcId": { "Ref": "Vpc" },
+        "Tags": [
+          {
+            "Key": "Name", "Value": { "Fn::Join": [ "", [ { "Ref": "Environment" }, "-", { "Ref": "Branch" }, "-", { "Ref": "AWS::StackName" }, "/sg/logicmonitor" ] ] }
+          }
+        ]
+      },
+      "Type": "AWS::EC2::SecurityGroup"
+    },
+
+    "SecurityGroupBastionLogicMonitorSnmpTcpIngress": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": { "Ref": "SecurityGroupBastion" },
+        "IpProtocol": "tcp",
+        "FromPort": "161",
+        "ToPort": "162",
+        "SourceSecurityGroupId": { "Ref": "SecurityGroupLogicMonitor" }
+      }
+    },
+
+    "SecurityGroupBastionLogicMonitorSnmpUdpIngress": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": { "Ref": "SecurityGroupBastion" },
+        "IpProtocol": "udp",
+        "FromPort": "161",
+        "ToPort": "162",
+        "SourceSecurityGroupId": { "Ref": "SecurityGroupLogicMonitor" }
+      }
+    },
+
+    "SecurityGroupBastionLogicMonitorIcmpIngress": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": { "Ref": "SecurityGroupBastion" },
+        "IpProtocol": "icmp",
+        "FromPort": "-1",
+        "ToPort": "-1",
+        "SourceSecurityGroupId": { "Ref": "SecurityGroupLogicMonitor" }
+      }
+    },
+
+    "XgemailSubmitSecurityGroupLb": {
+      "Properties": {
+        "GroupDescription": "Controls access to public facing ELBs.",
+        "Tags": [
+          {
+            "Key": "Branch",
+            "Value": { "Ref" : "Branch" }
+
+          },
+          {
+            "Key": "Environment",
+            "Value": { "Ref" : "Environment" }
+          },
+          {
+            "Key": "Role",
+            "Value": "svc-xgemail-internet-submit-elb"
+
+          },
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "Environment"
+                  },
+                  "-",
+                  {
+                    "Ref": "Branch"
+                  },
+                  "-",
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "/sg/xgemail/internet/submit/elb"
+                ]
+              ]
+            }
+          }
+        ],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "25",
+            "ToPort": "25",
+            "CidrIp": { "Fn::If": [
+              "IsProdOrQaEnvironment",
+              "0.0.0.0/0",
+              { "Ref": "ExternalIpAccess" }
+            ]}
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "587",
+            "ToPort": "587",
+            "CidrIp": { "Fn::If": [
+              "IsProdOrQaEnvironment",
+              "0.0.0.0/0",
+              { "Ref": "ExternalIpAccess" }
+            ]}
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      },
+      "Type": "AWS::EC2::SecurityGroup"
+    },
+
+    "XgemailSubmitSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "XGEMAIL Submit security group.",
+        "Tags": [{
+          "Key": "Name",
+          "Value": {
+            "Fn::Join": [ "", [
+              { "Ref": "Environment" }, "-",
+              { "Ref": "Branch" }, "-",
+              { "Ref": "AWS::StackName" }, "/sg/xgemail/internet/submit"
+            ]]
+          }
+        }],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "25",
+            "ToPort": "25",
+            "SourceSecurityGroupId": { "Ref": "XgemailSubmitSecurityGroupLb" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "587",
+            "ToPort": "587",
+            "SourceSecurityGroupId": { "Ref": "XgemailSubmitSecurityGroupLb" }
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "0",
+            "ToPort": "65535",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "VpcId": { "Ref": "Vpc" }
+      }
+    },
+
+    "XgemailDeliverySecurityGroupLb": {
+      "Properties": {
+        "GroupDescription": "Controls access to public facing ELBs.",
+        "Tags": [
+          {
+            "Key": "Branch",
+            "Value": { "Ref" : "Branch" }
+
+          },
+          {
+            "Key": "Environment",
+            "Value": { "Ref" : "Environment" }
+          },
+          {
+            "Key": "Role",
+            "Value": "svc-xgemail-customer-delivery-elb"
+
+          },
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "Environment"
+                  },
+                  "-",
+                  {
+                    "Ref": "Branch"
+                  },
+                  "-",
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "/sg/xgemail/customer/delivery/elb"
+                ]
+              ]
+            }
+          }
+        ],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2255",
+            "ToPort": "2255",
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "587",
+            "ToPort": "587",
+            "CidrIp": { "Ref": "ExternalIpAccess" }
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      },
+      "Type": "AWS::EC2::SecurityGroup"
+    },
+
+    "XgemailDeliverySecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Xgemail Submit security group.",
+        "Tags": [{
+          "Key": "Name",
+          "Value": {
+            "Fn::Join": [ "", [
+              { "Ref": "Environment" }, "-",
+              { "Ref": "Branch" }, "-",
+              { "Ref": "AWS::StackName" }, "/sg/xgemail/customer/delivery"
+            ]]
+          }
+        }],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "25",
+            "ToPort": "25",
+            "SourceSecurityGroupId": { "Ref": "XgemailDeliverySecurityGroupLb" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "587",
+            "ToPort": "587",
+            "SourceSecurityGroupId": { "Ref": "XgemailDeliverySecurityGroupLb" }
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "0",
+            "ToPort": "65535",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "VpcId": { "Ref": "Vpc" }
+      }
+    },
+
+    "XgemailCustomerSubmitSecurityGroupLb": {
+      "Properties": {
+        "GroupDescription": "Controls access to public facing ELBs.",
+        "Tags": [
+          {
+            "Key": "Branch",
+            "Value": { "Ref" : "Branch" }
+
+          },
+          {
+            "Key": "Environment",
+            "Value": { "Ref" : "Environment" }
+          },
+          {
+            "Key": "Role",
+            "Value": "svc-xgemail-customer-submit-elb"
+
+          },
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "Environment"
+                  },
+                  "-",
+                  {
+                    "Ref": "Branch"
+                  },
+                  "-",
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "/sg/xgemail/customer/submit/elb"
+                ]
+              ]
+            }
+          }
+        ],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "25",
+            "ToPort": "25",
+            "CidrIp": { "Fn::If": [
+              "IsProdOrQaEnvironment",
+              "0.0.0.0/0",
+              { "Ref": "ExternalIpAccess" }
+            ]}
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "587",
+            "ToPort": "587",
+            "CidrIp": { "Fn::If": [
+              "IsProdOrQaEnvironment",
+              "0.0.0.0/0",
+              { "Ref": "ExternalIpAccess" }
+            ]}
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      },
+      "Type": "AWS::EC2::SecurityGroup"
+    },
+
+    "XgemailCustomerSubmitSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "XGEMAIL Customer Submit security group.",
+        "Tags": [{
+          "Key": "Name",
+          "Value": {
+            "Fn::Join": [ "", [
+              { "Ref": "Environment" }, "-",
+              { "Ref": "Branch" }, "-",
+              { "Ref": "AWS::StackName" }, "/sg/xgemail/customer/submit"
+            ]]
+          }
+        }],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "25",
+            "ToPort": "25",
+            "SourceSecurityGroupId": { "Ref": "XgemailCustomerSubmitSecurityGroupLb" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "587",
+            "ToPort": "587",
+            "SourceSecurityGroupId": { "Ref": "XgemailCustomerSubmitSecurityGroupLb" }
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "0",
+            "ToPort": "65535",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "VpcId": { "Ref": "Vpc" }
+      }
+    },
+
+    "XgemailInternetDeliverySecurityGroupLb": {
+      "Properties": {
+        "GroupDescription": "Controls access to public facing ELBs.",
+        "Tags": [
+          {
+            "Key": "Branch",
+            "Value": { "Ref" : "Branch" }
+
+          },
+          {
+            "Key": "Environment",
+            "Value": { "Ref" : "Environment" }
+          },
+          {
+            "Key": "Role",
+            "Value": "svc-xgemail-internet-delivery-elb"
+
+          },
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "Environment"
+                  },
+                  "-",
+                  {
+                    "Ref": "Branch"
+                  },
+                  "-",
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "/sg/xgemail/internet/delivery/elb"
+                ]
+              ]
+            }
+          }
+        ],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2255",
+            "ToPort": "2255",
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "587",
+            "ToPort": "587",
+            "CidrIp": { "Ref": "ExternalIpAccess" }
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      },
+      "Type": "AWS::EC2::SecurityGroup"
+    },
+    "XgemailInternetDeliverySecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Xgemail Internet Delivery security group.",
+        "Tags": [{
+          "Key": "Name",
+          "Value": {
+            "Fn::Join": [ "", [
+              { "Ref": "Environment" }, "-",
+              { "Ref": "Branch" }, "-",
+              { "Ref": "AWS::StackName" }, "/sg/xgemail/internet/delivery"
+            ]]
+          }
+        }],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "25",
+            "ToPort": "25",
+            "SourceSecurityGroupId": { "Ref": "XgemailInternetDeliverySecurityGroupLb" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "587",
+            "ToPort": "587",
+            "SourceSecurityGroupId": { "Ref": "XgemailInternetDeliverySecurityGroupLb" }
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "0",
+            "ToPort": "65535",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "VpcId": { "Ref": "Vpc" }
+      }
+    },
+    "XgemailXdeliverySecurityGroupLb": {
+      "Properties": {
+        "GroupDescription": "Controls access to internal facing Xdelivery ELB.",
+        "Tags": [
+          {
+            "Key": "Branch",
+            "Value": {"Ref": "Branch"}
+
+          },
+          {
+            "Key": "Environment",
+            "Value": {"Ref": "Environment"}
+          },
+          {
+            "Key": "Role",
+            "Value": "svc-xgemail-xdelivery-elb"
+
+          },
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "Environment"
+                  },
+                  "-",
+                  {
+                    "Ref": "Branch"
+                  },
+                  "-",
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "/sg/xgemail/xdelivery/elb"
+                ]
+              ]
+            }
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      },
+      "Type": "AWS::EC2::SecurityGroup"
+    },
+    "XgemailXdeliverySecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Xgemail Xdelivery security group.",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "", [
+                  { "Ref": "Environment" }, "-",
+                  { "Ref": "Branch" }, "-",
+                  { "Ref": "AWS::StackName" }, "/sg/xgemail/xdelivery"
+                ]
+              ]
+            }
+          }
+        ],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "8025",
+            "ToPort": "8025",
+            "SourceSecurityGroupId": { "Ref": "XgemailXdeliverySecurityGroupLb" }
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "0",
+            "ToPort": "65535",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "VpcId": { "Ref": "Vpc" }
+      }
+    },
+    "XgemailInternetXdeliverySecurityGroupLb": {
+      "Properties": {
+        "GroupDescription": "Controls access to internal facing internet Xdelivery ELB.",
+        "Tags": [
+          {
+            "Key": "Branch",
+            "Value": {"Ref": "Branch"}
+
+          },
+          {
+            "Key": "Environment",
+            "Value": {"Ref": "Environment"}
+          },
+          {
+            "Key": "Role",
+            "Value": "svc-xgemail-internet-xdelivery-elb"
+
+          },
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "Environment"
+                  },
+                  "-",
+                  {
+                    "Ref": "Branch"
+                  },
+                  "-",
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "/sg/xgemail/internet/xdelivery/elb"
+                ]
+              ]
+            }
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      },
+      "Type": "AWS::EC2::SecurityGroup"
+    },
+    "XgemailInternetXdeliverySecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Xgemail Internet Xdelivery security group.",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "", [
+                  { "Ref": "Environment" }, "-",
+                  { "Ref": "Branch" }, "-",
+                  { "Ref": "AWS::StackName" }, "/sg/xgemail/internet/xdelivery"
+                ]
+              ]
+            }
+          }
+        ],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "8025",
+            "ToPort": "8025",
+            "SourceSecurityGroupId": { "Ref": "XgemailInternetXdeliverySecurityGroupLb" }
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "0",
+            "ToPort": "65535",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "VpcId": { "Ref": "Vpc" }
+      }
+    },
+    "XgemailXdeliverySecurityGroupLbIngressDeliverySmtp": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailXdeliverySecurityGroupLb" },
+        "SourceSecurityGroupId": { "Ref": "XgemailDeliverySecurityGroup" },
+        "IpProtocol": "tcp",
+        "FromPort": "8025",
+        "ToPort": "8025"
+      }
+    },
+    "XgemailInternetXdeliverySecurityGroupLbIngressDeliverySmtp": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailInternetXdeliverySecurityGroupLb" },
+        "SourceSecurityGroupId": { "Ref": "XgemailInternetDeliverySecurityGroup" },
+        "IpProtocol": "tcp",
+        "FromPort": "8025",
+        "ToPort": "8025"
+      }
+    },
+    "XgemailSubmitSecurityGroupIngressBastionSsh": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailSubmitSecurityGroup" },
+        "SourceSecurityGroupId": { "Ref": "SecurityGroupBastion" },
+        "IpProtocol": "tcp",
+        "FromPort": "22",
+        "ToPort": "22"
+      }
+    },
+    "XgemailCustomerSubmitSecurityGroupIngressBastionSsh": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailCustomerSubmitSecurityGroup" },
+        "SourceSecurityGroupId": { "Ref": "SecurityGroupBastion" },
+        "IpProtocol": "tcp",
+        "FromPort": "22",
+        "ToPort": "22"
+      }
+    },
+    "XgemailDeliverySecurityGroupIngressBastionSsh": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailDeliverySecurityGroup" },
+        "SourceSecurityGroupId": { "Ref": "SecurityGroupBastion" },
+        "IpProtocol": "tcp",
+        "FromPort": "22",
+        "ToPort": "22"
+      }
+    },
+    "XgemailInternetDeliverySecurityGroupIngressBastionSsh": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailInternetDeliverySecurityGroup" },
+        "SourceSecurityGroupId": { "Ref": "SecurityGroupBastion" },
+        "IpProtocol": "tcp",
+        "FromPort": "22",
+        "ToPort": "22"
+      }
+    },
+    "XgemailXdeliverySecurityGroupIngressBastionSsh": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {"Ref": "XgemailXdeliverySecurityGroup"},
+        "SourceSecurityGroupId": {"Ref": "SecurityGroupBastion"},
+        "IpProtocol": "tcp",
+        "FromPort": "22",
+        "ToPort": "22"
+      }
+    },
+    "XgemailInternetXdeliverySecurityGroupIngressBastionSsh": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {"Ref": "XgemailInternetXdeliverySecurityGroup"},
+        "SourceSecurityGroupId": {"Ref": "SecurityGroupBastion"},
+        "IpProtocol": "tcp",
+        "FromPort": "22",
+        "ToPort": "22"
+      }
+    },
+    "XgemailPolicyEfsMountTargetSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "Tags": [{
+          "Key": "Name",
+          "Value": {
+            "Fn::Join": [ "", [
+              { "Ref": "Environment" }, "-",
+              { "Ref": "Branch" }, "-",
+              { "Ref": "AWS::StackName" }, "/sg/xgemail/efs/policymount"
+            ]]
+          }
+        }],
+        "VpcId": { "Ref": "Vpc" },
+        "GroupDescription": "Controls access to the policy EFS mount targets",
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
+            "SourceSecurityGroupId": { "Ref": "XgemailCustomerSubmitSecurityGroup" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
+            "SourceSecurityGroupId": { "Ref": "XgemailSubmitSecurityGroup" }
+          }
+        ]
+      }
+    }
+  },
+
+  "Outputs": {
+    "SecurityGroupBase": {
+      "Description": "ID of the base security group",
+      "Value": {
+        "Ref": "SecurityGroupBase"
+      }
+    },
+    "SecurityGroupJGroups" : {
+      "Description" : "Java service JGroups Security Group",
+      "Value": {
+        "Ref" : "SecurityGroupJGroups"
+      }
+    },
+    "SecurityGroupJavaSvcBaseLb": {
+      "Description": "Java Load Balancer Security Group",
+      "Value": {
+        "Ref": "SecurityGroupJavaSvcBaseLb"
+      }
+    },
+    "SecurityGroupJavaSvcBase": {
+      "Description": "Java instances base Security Group",
+      "Value": {
+        "Ref": "SecurityGroupJavaSvcBase"
+      }
+    },
+    "SecurityGroupBastion": {
+      "Description": "Bastion security group",
+      "Value": {
+        "Ref": "SecurityGroupBastion"
+      }
+    },
+    "SecurityGroupLogicMonitor": {
+      "Description": "LogicMonitor Security Group",
+      "Value": {
+        "Ref": "SecurityGroupLogicMonitor"
+      }
+    },
+    "XgemailSubmitSecurityGroupLb": {
+      "Description": "Xgemail Submit Load Balancer security group",
+      "Value": {
+        "Ref": "XgemailSubmitSecurityGroupLb"
+      }
+    },
+    "XgemailSubmitSecurityGroup": {
+      "Description": "Xgemail Submit security group",
+      "Value": {
+        "Ref": "XgemailSubmitSecurityGroup"
+      }
+    },
+    "XgemailDeliverySecurityGroupLb": {
+      "Description": "Xgemail Delivery Load Balancer security group",
+      "Value": {
+        "Ref": "XgemailDeliverySecurityGroupLb"
+      }
+    },
+    "XgemailDeliverySecurityGroup": {
+      "Description": "Xgemail Delivery security group",
+      "Value": {
+        "Ref": "XgemailDeliverySecurityGroup"
+      }
+    },
+    "XgemailCustomerSubmitSecurityGroupLb": {
+      "Description": "Xgemail Customer Submit Load Balancer security group",
+      "Value": {
+        "Ref": "XgemailCustomerSubmitSecurityGroupLb"
+      }
+    },
+    "XgemailCustomerSubmitSecurityGroup": {
+      "Description": "Xgemail Customer Submit security group",
+      "Value": {
+        "Ref": "XgemailCustomerSubmitSecurityGroup"
+      }
+    },
+    "XgemailInternetDeliverySecurityGroupLb": {
+      "Description": "Xgemail Internet Delivery Load Balancer security group",
+      "Value": {
+        "Ref": "XgemailInternetDeliverySecurityGroupLb"
+      }
+    },
+    "XgemailInternetDeliverySecurityGroup": {
+      "Description": "Xgemail Internet Delivery security group",
+      "Value": {
+        "Ref": "XgemailInternetDeliverySecurityGroup"
+      }
+    },
+    "XgemailXdeliverySecurityGroupLb": {
+      "Description": "Xgemail Xdelivery Load Balancer security group",
+      "Value": {
+        "Ref": "XgemailXdeliverySecurityGroupLb"
+      }
+    },
+    "XgemailInternetXdeliverySecurityGroupLb": {
+      "Description": "Xgemail Internet Xdelivery Load Balancer security group",
+      "Value": {
+        "Ref": "XgemailInternetXdeliverySecurityGroupLb"
+      }
+    },
+    "XgemailXdeliverySecurityGroup": {
+      "Description": "Xgemail Xdelivery security group",
+      "Value": {
+        "Ref": "XgemailXdeliverySecurityGroup"
+      }
+    },
+    "XgemailInternetXdeliverySecurityGroup": {
+      "Description": "Xgemail Internet Xdelivery security group",
+      "Value": {
+        "Ref": "XgemailInternetXdeliverySecurityGroup"
+      }
+    },
+    "XgemailPolicyEfsMountTargetSecurityGroup": {
+      "Description": "Xgemail EFS mount target security group",
+      "Value": {
+        "Ref": "XgemailPolicyEfsMountTargetSecurityGroup"
+      }
+    },
+    "XgemailPolicyEfsMountTargetSecurityGroupId": {
+      "Description": "Xgemail EFS mount target security group Id",
+      "Value": {
+        "Fn::GetAtt" : [ "XgemailPolicyEfsMountTargetSecurityGroup", "GroupId" ]
+      }
+    }
+  }
 }

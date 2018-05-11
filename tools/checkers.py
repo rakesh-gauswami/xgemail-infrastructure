@@ -147,6 +147,9 @@ class CloudFormationChecker(object):
         "AWS::EC2::VPCEndpoint",
         "AWS::EC2::VPCGatewayAttachment",
 
+        "AWS::EFS::FileSystem",
+        "AWS::EFS::MountTarget",
+        
         "AWS::EMR::Cluster",
 
         "AWS::ElastiCache::CacheCluster",
@@ -159,6 +162,8 @@ class CloudFormationChecker(object):
         "AWS::ElasticLoadBalancingV2::TargetGroup",
         "AWS::ElasticLoadBalancingV2::Listener",
         "AWS::ElasticLoadBalancingV2::ListenerRule",
+
+        "AWS::Elasticsearch::Domain",
 
         "AWS::Events::Rule",
 
@@ -198,6 +203,8 @@ class CloudFormationChecker(object):
 
         "AWS::SQS::Queue",
         "AWS::SQS::QueuePolicy",
+
+        "AWS::SSM::Document",
 
         "Custom::AcmCertificateRequest",
         "Custom::CloudFrontAcmAssociation",

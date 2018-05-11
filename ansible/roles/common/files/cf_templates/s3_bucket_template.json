@@ -5,7 +5,7 @@
 
     "Metadata": {
         "Copyright": [
-            "Copyright 2016, Sophos Limited. All rights reserved.",
+            "Copyright 2018, Sophos Limited. All rights reserved.",
             "",
             "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
             "Sophos Limited and Sophos Group.  All other product and company",
@@ -20,7 +20,7 @@
     },
 
     "Parameters": {
-        
+
         "AllowElbAccessLogs": {
             "Description": "Should we Allow access logs from the region to write to this bucket",
             "Type": "String",
@@ -33,10 +33,24 @@
             "Type": "String"
         },
 
+        "BucketEncryptionKmsKeyId" : {
+            "Description": "KeyId for default bucket encryption policy",
+            "Type": "String",
+            "Default": "NO VALUE"
+        },
+
         "CloudBillingTagValue": {
             "Description": "CloudBilling Tag Value for the Resource",
             "Type": "String",
             "Default": ""
+        },
+
+        "ElbGlacierTransitionInDays": {
+            "Description": "Number of Days before Transitioning ELB logs to Glacier",
+            "Type": "Number",
+            "MinValue": "0",
+            "MaxValue": "365",
+            "Default": "0"
         },
 
         "GlacierTransitionInDays": {
@@ -53,7 +67,14 @@
             "AllowedValues": [ "true", "false" ],
             "Default": "false"
         },
-        
+
+        "SubmitBucketPolicy": {
+            "Description": "Give Macro Detection team access to the xgemail submit bucket",
+            "Type": "String",
+            "AllowedValues": [ "true", "false" ],
+            "Default": "false"
+        },
+
         "RequireEncryptionForUploads": {
             "Description": "Require all objects uploaded to this bucket to be encrypted with the specified sse type or none.",
             "Type": "String",
@@ -65,8 +86,8 @@
             "Description": "Name of the S3 bucket",
             "Type": "String",
             "ConstraintDescription": "S3BucketName must be between 3 and 63 characters in length.",
-            "MinLength": 3,
-            "MaxLength": 63
+            "MinLength": "3",
+            "MaxLength": "63"
         },
 
         "S3BucketDestinationName": {
@@ -224,6 +245,7 @@
         },
         "EnableLifecycle": {
             "Fn::Or": [
+                { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "ElbGlacierTransitionInDays"},"0"]}]},
                 { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "GlacierTransitionInDays"},"0"]}]},
                 { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "S3LifeCycleDeleteVersioning"},"0"]}]},
                 { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "S3LifeCycleDelete"},"0"]}]}
@@ -242,28 +264,77 @@
                 { "Condition": "EnableMultipartUploadExpiration" }
             ]
         },
+        "EnableElbGlacierTransition": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "ElbGlacierTransitionInDays"},"0"]}]},
         "EnableGlacierTransition": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "GlacierTransitionInDays"},"0"]}]},
         "EnableQueueNotification": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "SQSNotificationQueue"},"NO VALUE"]}]},
         "EnableTopicNotification": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "SNSNotificationTopic"},"NO VALUE"]}]},
         "EnableVersioning": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "VersioningStatus"},"Ignore"]}]},
         "EnableReplicationConfiguration": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "S3ReplicationRole"},"NO VALUE"]}]},
+        "HasBucketEncryption": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "BucketEncryptionKmsKeyId"},"NO VALUE"]}]},
         "RequireKmsEncryptionForUploads": { "Fn::Equals": [ {"Ref": "RequireEncryptionForUploads"}, "kms" ]},
         "RequireS3EncryptionForUploads": { "Fn::Equals": [ {"Ref": "RequireEncryptionForUploads"}, "sse-s3" ]},
         "SetPrincipal": { "Fn::Not": [ {"Fn::Equals": [ {"Fn::Select": [0,{ "Ref": "S3PolicyPrincipalList"}]},"arn:aws:iam::############:role/build-system-<account> or canonical user id string"]}]},
         "UseAWSPolicyPrincipalList": { "Fn::Equals": [ { "Ref": "S3PolicyPrincipalListType" }, "AWS" ]},
-        "UseAWSPolicyPrincipalDenyList": { "Fn::Equals": [ { "Ref": "S3PolicyPrincipalDenyListType" }, "AWS" ]}
-   },
+        "UseAWSPolicyPrincipalDenyList": { "Fn::Equals": [ { "Ref": "S3PolicyPrincipalDenyListType" }, "AWS" ]},
+        "IsSubmitBucket": { "Fn::Equals": [ { "Ref": "SubmitBucketPolicy" }, "true" ]}
+    },
 
     "Resources": {
         "S3Bucket": {
             "Condition" : "CreateBucket",
             "Properties": {
                 "BucketName": { "Ref": "S3BucketName" },
+                "BucketEncryption" : {
+                    "Fn::If": [
+                        "HasBucketEncryption",
+                        {
+                            "ServerSideEncryptionConfiguration": [
+                                {
+                                    "ServerSideEncryptionByDefault": {
+                                        "KMSMasterKeyID" : { "Ref" : "BucketEncryptionKmsKeyId"},
+                                        "SSEAlgorithm" : "aws:kms"
+                                    }
+                                }
+                            ]
+                        },
+                        { "Ref" : "AWS::NoValue" }
+                    ]
+                },
                 "LifecycleConfiguration" : {
                     "Fn::If": [
                         "EnableLifecycle",
                         {
                             "Rules": [
+                                {
+                                    "Fn::If": [
+                                        "EnableElbGlacierTransition",
+                                        {
+                                            "Id": "elb-logs-glacier-transition",
+                                            "Prefix": "elb-logs/",
+                                            "Status": "Enabled",
+                                            "Transition": {
+                                                "StorageClass": "Glacier",
+                                                "TransitionInDays": { "Ref" : "ElbGlacierTransitionInDays" }
+                                            }
+                                        },
+                                        { "Ref" : "AWS::NoValue" }
+                                    ]
+                                },
+                                {
+                                    "Fn::If": [
+                                        "EnableElbGlacierTransition",
+                                        {
+                                            "Id": "mcs-logs-glacier-transition",
+                                            "Prefix": "mcs-logs/",
+                                            "Status": "Enabled",
+                                            "Transition": {
+                                                "StorageClass": "Glacier",
+                                                "TransitionInDays": { "Ref" : "ElbGlacierTransitionInDays" }
+                                            }
+                                        },
+                                        { "Ref" : "AWS::NoValue" }
+                                    ]
+                                },
                                 {
                                     "Fn::If": [
                                         "EnableGlacierTransition",
@@ -403,11 +474,57 @@
             "Condition" : "CreateLoggingBucket",
             "Properties": {
                 "BucketName": { "Ref": "S3BucketName" },
+                "BucketEncryption" : {
+                    "Fn::If": [
+                        "HasBucketEncryption",
+                        {
+                            "ServerSideEncryptionConfiguration": [
+                                {
+                                    "ServerSideEncryptionByDefault": {
+                                        "KMSMasterKeyID" : { "Ref" : "BucketEncryptionKmsKeyId"},
+                                        "SSEAlgorithm" : "aws:kms"
+                                    }
+                                }
+                            ]
+                        },
+                        { "Ref" : "AWS::NoValue" }
+                    ]
+                },
                 "LifecycleConfiguration" : {
                     "Fn::If": [
                         "EnableLifecycle",
                         {
                             "Rules": [
+                                {
+                                    "Fn::If": [
+                                        "EnableElbGlacierTransition",
+                                        {
+                                            "Id": "elb-logs-glacier-transition",
+                                            "Prefix": "elb-logs/",
+                                            "Status": "Enabled",
+                                            "Transition": {
+                                                "StorageClass": "Glacier",
+                                                "TransitionInDays": { "Ref" : "ElbGlacierTransitionInDays" }
+                                            }
+                                        },
+                                        { "Ref" : "AWS::NoValue" }
+                                    ]
+                                },
+                                {
+                                    "Fn::If": [
+                                        "EnableElbGlacierTransition",
+                                        {
+                                            "Id": "mcs-logs-glacier-transition",
+                                            "Prefix": "mcs-logs/",
+                                            "Status": "Enabled",
+                                            "Transition": {
+                                                "StorageClass": "Glacier",
+                                                "TransitionInDays": { "Ref" : "ElbGlacierTransitionInDays" }
+                                            }
+                                        },
+                                        { "Ref" : "AWS::NoValue" }
+                                    ]
+                                },
                                 {
                                     "Fn::If": [
                                         "EnableGlacierTransition",
@@ -584,6 +701,44 @@
                                 },
                                 { "Ref": "AWS::NoValue" }
                                 ]
+                        },
+                        {
+                            "Fn::If": [
+                                "IsSubmitBucket",
+                                {
+                                    "Sid": "Allow Macro Detection team access to submit bucket",
+                                    "Action": "s3:ListBucket",
+                                    "Effect": "Allow",
+                                    "Resource": {
+                                        "Fn::Join": ["", ["arn:aws:s3:::", {
+                                            "Ref": "S3Bucket"
+                                        } ]]
+                                    },
+                                    "Principal": {
+                                        "AWS": "arn:aws:iam::459806747212:role/dsml_processing"
+                                    }
+                                },
+                                { "Ref": "AWS::NoValue" }
+                                ]
+                        },
+                        {
+                            "Fn::If": [
+                                "IsSubmitBucket",
+                                {
+                                    "Sid": "Allow Macro Detection team access to submit bucket",
+                                    "Action": "s3:GetObject",
+                                    "Effect": "Allow",
+                                    "Resource": {
+                                        "Fn::Join": ["", ["arn:aws:s3:::", {
+                                            "Ref": "S3Bucket"
+                                        } , "/*" ]]
+                                    },
+                                    "Principal": {
+                                        "AWS": "arn:aws:iam::459806747212:role/dsml_processing"
+                                    }
+                                },
+                                { "Ref": "AWS::NoValue" }
+                                ]
                         }
                     ]
                 }
@@ -705,10 +860,22 @@
             "Value": { "Ref": "S3BucketName"}
         },
 
+        "S3BucketEncryptionKmsKeyId": {
+            "Description": "Key used for default bucket encryption",
+            "Condition": "HasBucketEncryption",
+            "Value": { "Ref": "BucketEncryptionKmsKeyId"}
+        },
+
         "S3BucketResourceName": {
             "Description": "Name of the S3 Bucket Resource",
             "Condition" : "CreateBucket",
             "Value": { "Ref": "S3Bucket"}
+        },
+
+        "S3BucketResourceArn": {
+            "Description": "Arn of the S3 Bucket Resource",
+            "Condition" : "CreateBucket",
+            "Value": { "Fn::GetAtt": ["S3Bucket", "Arn"]}
         },
 
         "S3BucketResourceName": {

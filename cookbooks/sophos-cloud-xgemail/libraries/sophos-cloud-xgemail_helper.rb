@@ -94,35 +94,85 @@ module SophosCloudXgemail
 
   end
   module AwsHelper
+    def associate_clean_ip ()
+      begin
+        ec2 = Aws::EC2::Client.new(region: node['sophos_cloud']['region'])
+        resp = ec2.describe_addresses({
+            filters: [
+                {
+                    name: 'tag:Name',
+                    values: [
+                        'xgemail-outbound'
+                    ]
+                },
+                {
+                    name: 'tag:blacklist',
+                    values: [
+                        '0'
+                    ]
+                }
+            ],
+        })[:addresses].select{ |addr| !addr.association_id }
+        Chef::Log.debug(resp)
+        resp.each do |a|
+          Chef::Log.debug(a)
+            association = ec2.associate_address({
+                allocation_id: a.allocation_id,
+                instance_id: node['ec2']['instance_id'],
+            })
+            Chef::Log.info("Associated EIP: #{a.public_ip} Association Id: #{association.association_id}")
+            return a.public_ip
+        end
+      rescue Aws::EC2::Errors::ResourceAlreadyAssociated => e
+        Chef::Log.warn("Try again. EIP already in use. #{e.code}: #{e.message}")
+          sleep(1)
+          retry
+      rescue Aws::EC2::Errors::RequestLimitExceeded => e
+        Chef::Log.warn("Rate Limited. #{e.code}: #{e.message}")
+          sleep(30)
+          retry
+      rescue Aws::EC2::Errors::ServiceError => e
+          Chef::Log.error("Unhandled ServiceError Exception: #{e.code}: #{e.message}")
+          exit 1
+      end
+    end
 
     def get_hostname ( type )
       region = node['sophos_cloud']['region']
       account = node['sophos_cloud']['environment']
-      if type == 'submit'
-        return "mx-01-#{region}.#{account}.hydra.sophos.com"
-      elsif type == 'customer-submit'
-        return "relay-#{region}.#{account}.hydra.sophos.com"
+      case type
+        when 'submit'
+          return "mx-01-#{region}.#{account}.hydra.sophos.com"
+        when 'customer-submit'
+          return "relay-#{region}.#{account}.hydra.sophos.com"
+        when 'internet-delivery'
+          return "delivery-#{associate_clean_ip().gsub('.', '-')}-#{region}.#{account}.hydra.sophos.com"
+        when 'internet-xdelivery'
+          return "delivery-#{associate_clean_ip().gsub('.', '-')}-#{region}.#{account}.hydra.sophos.com"
+        else
+          mac = node['macaddress'].downcase
+          subnet_id = node['ec2']['network_interfaces_macs'][mac]['subnet_id']
+          destination_cidr_block = '0.0.0.0/0'
+          begin
+            ec2 = Aws::EC2::Client.new(region: region)
+            resp = ec2.describe_route_tables({
+                filters:[{
+                    name:'association.subnet-id',
+                    values:[subnet_id]
+                }]
+            })
+            resp.route_tables[0].routes.each do |r|
+              if destination_cidr_block == r.destination_cidr_block
+                return "outbound-#{ec2.describe_nat_gateways({
+                    nat_gateway_ids: [r.nat_gateway_id],
+                }).nat_gateways[0].nat_gateway_addresses[0].public_ip.gsub('.','-')}-#{region}.#{account}.hydra.sophos.com"
+              end
+            end
+          rescue Aws::EC2::Errors::ServiceError => e
+            Chef::Log.error("ERROR: Unknown error #{e.message}. Cannot Continue. Exiting")
+            exit 1
+          end
       end
-      mac = node['macaddress'].downcase
-      subnet_id = node['ec2']['network_interfaces_macs'][mac]['subnet_id']
-      destination_cidr_block = '0.0.0.0/0'
-      ec2 = Aws::EC2::Client.new(region: region)
-      resp = ec2.describe_route_tables({
-          filters:[{
-              name:'association.subnet-id',
-              values:[subnet_id]
-          }]
-      })
-      resp.route_tables[0].routes.each do |r|
-        if destination_cidr_block == r.destination_cidr_block
-          return "outbound-#{ec2.describe_nat_gateways({
-              nat_gateway_ids: [r.nat_gateway_id],
-          }).nat_gateways[0].nat_gateway_addresses[0].public_ip.gsub('.','-')}-#{region}.#{account}.hydra.sophos.com"
-        end
-      end
-    rescue Aws::EC2::Errors::ServiceError => e
-      Chef::Log.warn("ERROR: Unknown error #{e.message}. Cannot Continue. Exiting")
     end
-
   end
 end

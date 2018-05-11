@@ -20,7 +20,7 @@ ValidBulkEnabled=0
 
 #SpamdServerEnabled - defines the spamd as the protocol by which the
 #Mail Server will be communication with ctasd
-SpamdServerEnabled=1
+SpamdServerEnabled=0
 
 # Outbound Spam - configures the ctasd daemon to detect outbound
 # spam as part of the Commtouch Outbound Spam Protection Service.
@@ -45,6 +45,7 @@ AsyncResolverRequests=0
 [Connectivity]
 License_key_code = <%= @CTASD_LICENSE_KEY %>
 Server_address = <%= @CTASD_SERVER_ADDRESS %>
+Additional=WebSecZeroLatencyMode=0;UseLibcurl=0;AsyncThreads=0;HttpConnPoolSize=50;
 
 #   This is the maximum number of records that will be
 #   stored in the local spam detection cache.
@@ -130,7 +131,7 @@ Concurrency=30
 #OlympusKey=xxxxxxxxxxxxxxxx
 
 [Stats]
-#Port=/tmp/ctasd.stats
+Port=/tmp/ctasd.stats
 #   If BindingAddress is empty (or commented), BindingAddress is set to INADDR_ANY.
 #BindingAddress=<IP Address>
 

@@ -20,7 +20,8 @@ class SqsMessage:
                  nonce,
                  message_key,
                  submit_message_type,
-                 receipt=None):
+                 receipt=None,
+                 policy_hash=None):
         self.schema_version = schema_version
         self.message_path = message_path
         self.accepting_server_ip = accepting_server_ip
@@ -30,6 +31,7 @@ class SqsMessage:
         self.message_key = message_key
         self.submit_message_type = submit_message_type
         self.receipt = receipt
+        self.policy_hash = policy_hash
 
     def __str__(self):
         sqs_printable = {
@@ -51,6 +53,7 @@ class SqsMessage:
             'akm_key': self.akm_key,
             'nonce': self.nonce,
             'message_key': self.message_key,
-            'submit_message_type': self.submit_message_type
+            'submit_message_type': self.submit_message_type,
+            'policy_hash': self.policy_hash
         }
         return sqs_json
