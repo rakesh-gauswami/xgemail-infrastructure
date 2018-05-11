@@ -32,3 +32,21 @@
   debug:
     msg: "{{ec2_ami_copy_poll_results}}"
     verbosity: 3
+
+- name: "EC2 AMI Update Launch Permissions on newly copied Images in regions {{ami.xgemail.ami_destination_regions}}"
+  ec2_ami:
+    image_id: "{{ item.image_id }}"
+    region: "{{item.item}}"
+    state: present
+    launch_permissions:
+      user_ids: "{{ami.xgemail.ami_launch_permissions}}"
+  with_items: "{{ec2_ami_copy_poll_results.results}}"
+  register: ec2_ami_permissions_output
+
+- name: "EC2 AMI Update Launch Permissions Result Check."
+  async_status:
+    jid: "{{item.ansible_job_id}}"
+  with_items: "{{ec2_ami_permissions_output.results}}"
+  register: ec2_ami_permissions_poll_results
+  until: "{{ec2_ami_permissions_poll_results.finished}}"
+  retries: 30
