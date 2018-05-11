@@ -3,6 +3,7 @@
 - name: "Gather {{stack.efs.policy_efs_volume}} CloudFormation Stack Output"
   cloudformation_facts:
     stack_name: "{{stack.efs.policy_efs_volume}}"
+    region: "{{account.region}}"
   register: cloud_email_efs_output
 
 - name: "Print {{stack.efs.policy_efs_volume}} CloudFormation Stack Output"
