@@ -1,9 +1,9 @@
 ---
 - name: Debug
   debug:
-    msg: "{{item.value.stack_name}} {{item.value.AutoScalingMinSize}} {{item.value.AvailabilityZoneIndex}} {{item.value.VolumeSetId}} {{cloud_email_iam_output.stack_outputs.AutoScalingInstanceRoleArn}} {{cloud_email_sg_output.stack_outputs.SecurityGroupBastion}} {{cloud_email_iam_output.stack_outputs.XgemailDeliveryInstanceProfile}} {{elb_stack_output.stack_outputs.LoadBalancerId}} {{cloud_email_sg_output.stack_outputs.XgemailDeliverySecurityGroup}},{{cloud_email_sg_output.stack_outputs.SecurityGroupBase}} {{cloud_email_vpc_output.stack_outputs.Vpc}} {{cloud_email_vpc_output.stack_outputs.PrivateSubnetDefaultA}},{{cloud_email_vpc_output.stack_outputs.PrivateSubnetDefaultB}},{{cloud_email_vpc_output.stack_outputs.PrivateSubnetDefaultC}}"
+    msg: "{{item.value.stack_name}} {{item.value.AutoScalingMinSize}} {{item.value.AvailabilityZoneIndex}} {{item.value.VolumeSetId}} {{cloud_email_iam_output.stack_outputs.AutoScalingInstanceRoleArn}}"
   with_dict: "{{aws.ec2.asg.cd}}"
-
+# {{cloud_email_sg_output.stack_outputs.SecurityGroupBastion}} {{cloud_email_iam_output.stack_outputs.XgemailDeliveryInstanceProfile}} {{elb_stack_output.stack_outputs.LoadBalancerId}} {{cloud_email_sg_output.stack_outputs.XgemailDeliverySecurityGroup}},{{cloud_email_sg_output.stack_outputs.SecurityGroupBase}} {{cloud_email_vpc_output.stack_outputs.Vpc}} {{cloud_email_vpc_output.stack_outputs.PrivateSubnetDefaultA}} {{cloud_email_vpc_output.stack_outputs.PrivateSubnetDefaultB}} {{cloud_email_vpc_output.stack_outputs.PrivateSubnetDefaultC}}
 - name: "Create Customer Delivery ASG Stacks in AWS"
   async: 100
   poll: 0
@@ -17,13 +17,13 @@
       AesDecryptionKey:                     "{{aes_decryption_key}}"
       AlarmTopicArn:                        "{{sns.arn_prefix}}{{sns.alarm_sns_topic}}"
       AmiId:                                "{{ami_parent_id}}"
-      AutoScalingInstanceRoleArn:           "{{cloud_email_iam_output.stack_outputs.AutoScalingInstanceRoleArn}}"
+      AutoScalingInstanceRoleArn:           "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.cloud_email_roles].stack_outputs.AutoScalingInstanceRoleArn}}"
       AutoScalingMinSize:                   "{{item.value.AutoScalingMinSize}}"
       AutoScalingMaxSize:                   1
       AutoScalingNotificationTopicARN:      "{{sns.arn_prefix}}{{sns.lifecycle_sqs_sns}}"
       AvailabilityZoneIndex:                "{{item.value.AvailabilityZoneIndex}}"
       AvailabilityZones:                    "{{account.region}}a, {{account.region}}b, {{account.region}}c"
-      BastionSecurityGroup:                 "{{cloud_email_sg_output.stack_outputs.SecurityGroupBastion}}"
+      BastionSecurityGroup:                 "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.SecurityGroupBastion}}"
       Branch:                               "{{build.branch}}"
       BuildVersion:                         "{{build.result_key}}"
       BundleVersion:                        "{{ami_build}}"
@@ -31,7 +31,7 @@
       Environment:                          "{{account.name}}"
       HealthCheckGracePeriod:               "{{health_check_grace_period_cd}}"
       HealthCheckType:                      ELB
-      InstanceProfile:                      "{{cloud_email_iam_output.stack_outputs.XgemailDeliveryInstanceProfile}}"
+      InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.cloud_email_roles].stack_outputs.XgemailDeliveryInstanceProfile}}"
       InstanceType:                         "{{instance_size_cd}}"
       KeyName:                              "private-{{account.region}}"
       LoadBalancerName:                     "{{elb_stack_output.stack_outputs.LoadBalancerId}}"
@@ -40,13 +40,13 @@
       ScaleDownOnWeekends:                  "{{weekend_scale_down}}"
       ScaleDownCron:                        "{{cron_scale_down}}"
       ScaleUpCron:                          "{{cron_scale_up}}"
-      SecurityGroups:                       "{{cloud_email_sg_output.stack_outputs.XgemailDeliverySecurityGroup}},{{cloud_email_sg_output.stack_outputs.SecurityGroupBase}}"
+      SecurityGroups:                       "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.XgemailDeliverySecurityGroup}},{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.SecurityGroupBase}}"
       SpotPrice:                            "{{instance_size_xgemail_spot_price}}"
       StationVpcName:                       "{{vpc.cloud_station.name}}"
       VolumeSetId:                          "{{item.value.VolumeSetId}}"
-      VolumeTrackerSimpleDbDomain:          "{{sdb.volume_tracker_sdb}}"
-      Vpc:                                  "{{cloud_email_vpc_output.stack_outputs.Vpc}}"
-      VpcZoneIdentifiers:                   "{{cloud_email_vpc_output.stack_outputs.PrivateSubnetDefaultA}},{{cloud_email_vpc_output.stack_outputs.PrivateSubnetDefaultB}},{{cloud_email_vpc_output.stack_outputs.PrivateSubnetDefaultC}}"
+      VolumeTrackerSimpleDbDomain:          "{{volume_tracker_sdb_output.ansible_facts.cloudformation[stack.sdb.volume_tracker_sdb].stack_outputs.SimpleDbDomain}}"
+      Vpc:                                  "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.Vpc}}"
+      VpcZoneIdentifiers:                   "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PrivateSubnetDefaultA}},{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PrivateSubnetDefaultB}},{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PrivateSubnetDefaultC}}"
       VpcName:                              "{{vpc.cloud_email.name}}"
       XgemailBucketName:                    "{{s3.customer_submit_bucket}}"
       XgemailMinSizeDataGB:                 "{{xgemail_size_data_gb}}"
