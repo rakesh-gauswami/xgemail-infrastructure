@@ -21,7 +21,7 @@
   with_items: "{{ec2_ami_copy_output.results}}"
   register: ec2_ami_copy_poll_results
   until: "{{ec2_ami_copy_poll_results.finished}}"
-  retries: 30
+  retries: 100
 
 - name: "Display Xgemail AMI Copy Output"
   debug:
