@@ -11,7 +11,7 @@
     source_image_id:      "{{ec2_ami_output.image_id}}"
     name:                 "{{ec2_ami_output.name}}"
     tags:                 "{{ec2_ami_output.tags}}"
-    wait:                 yes
+    wait:                 no
   with_items:             "{{ami.xgemail.ami_destination_regions}}"
   register: ec2_ami_copy_output
 
@@ -21,7 +21,7 @@
   with_items: "{{ec2_ami_copy_output.results}}"
   register: ec2_ami_copy_poll_results
   until: "{{ec2_ami_copy_poll_results.finished}}"
-  retries: 500
+  retries: 100
 
 - name: "Display Xgemail AMI Copy Output"
   debug:
