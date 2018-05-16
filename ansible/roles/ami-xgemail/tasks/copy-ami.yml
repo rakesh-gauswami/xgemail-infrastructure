@@ -2,8 +2,8 @@
 # Copy AMI to Destination Regions
 # http://docs.ansible.com/ansible/latest/ec2_ami_copy_module.html
 - name: "Copy AMI to Destination Regions {{ami.xgemail.ami_destination_regions}}"
-  async: 600
-  poll: 0
+  #async: 600
+  #poll: 0
   ec2_ami_copy:
     description:          "{{ec2_ami_output.description}}"
     source_region:        "{{ami.xgemail.region}}"
@@ -11,9 +11,15 @@
     source_image_id:      "{{ec2_ami_output.image_id}}"
     name:                 "{{ec2_ami_output.name}}"
     tags:                 "{{ec2_ami_output.tags}}"
-    wait:                 no
+    wait:                 yes
   with_items:             "{{ami.xgemail.ami_destination_regions}}"
   register: ec2_ami_copy_output
+
+- name: "Display Xgemail AMI Copy Output"
+  debug:
+    msg: "{{ec2_ami_copy_output}}"
+    verbosity: 3
+
 
 - name: "Display Xgemail AMI Copy Results Output"
   debug:
@@ -21,19 +27,19 @@
   with_items: "{{ec2_ami_copy_output.results}}"
   changed_when: false
 
-- name: "EC2 AMI Copy Result Check."
-  async_status:
-    jid: "{{item.ansible_job_id}}"
-  with_items: "{{ec2_ami_copy_output.results}}"
-  register: ec2_ami_copy_poll_results
-  until: "{{ec2_ami_copy_poll_results.finished}}"
-  retries: 100
+#- name: "EC2 AMI Copy Result Check."
+#  async_status:
+#    jid: "{{item.ansible_job_id}}"
+#  with_items: "{{ec2_ami_copy_output.results}}"
+#  register: ec2_ami_copy_poll_results
+#  until: "{{ec2_ami_copy_poll_results.finished}}"
+#  retries: 100
 
-- name: "Display Xgemail AMI Copy Output"
-  debug:
-    msg: "{{ec2_ami_copy_output}}"
-    verbosity: 3
-
+#- name: "Display Xgemail AMI Copy Output"
+#  debug:
+#    msg: "{{ec2_ami_copy_output}}"
+#    verbosity: 3
+#
 
 
 #- name: "Write info to Region-Ami.txt "
