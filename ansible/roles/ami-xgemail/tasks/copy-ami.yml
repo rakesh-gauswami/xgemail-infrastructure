@@ -15,6 +15,12 @@
   with_items:             "{{ami.xgemail.ami_destination_regions}}"
   register: ec2_ami_copy_output
 
+- name: "Display Xgemail AMI Copy Results Output"
+  debug:
+    msg: "AMI {{item.image_id}} copied in {{item.item}}"
+  with_items: "{{ec2_ami_copy_output.results}}"
+  changed_when: false
+
 - name: "EC2 AMI Copy Result Check."
   async_status:
     jid: "{{item.ansible_job_id}}"
@@ -28,10 +34,7 @@
     msg: "{{ec2_ami_copy_output}}"
     verbosity: 3
 
-- name: "Display Xgemail AMI Copy Results Output"
-  debug:
-    msg: "{{ec2_ami_copy_poll_results.results}}"
-    verbosity: 3
+
 
 #- name: "Write info to Region-Ami.txt "
 #  lineinfile:
@@ -46,23 +49,35 @@
 #    - { key: 'aws_region', value: "{{ ec2_ami_copy_output.results[2].item }}" }
 #    - { key: 'AMI-ID', value: "{{ ec2_ami_copy_output.results[2].image_id }}" }
 
-- name: "EC2 AMI Update Launch Permissions on newly copied Images in regions {{ami.xgemail.ami_destination_regions}}"
-  async: 600
-  poll: 0
+#- name: "EC2 AMI Update Launch Permissions on newly copied Images in regions {{ami.xgemail.ami_destination_regions}}"
+#  async: 600
+#  poll: 0
+#  ec2_ami:
+#    image_id: "{{ item.image_id }}"
+#    region: "{{item.invocation.module_args.region}}"
+#    state: present
+#    wait: no
+#    launch_permissions:
+#      user_ids: "{{ami.xgemail.ami_launch_permissions}}"
+#  with_items: "{{ec2_ami_copy_poll_results.results}}"
+#  register: ec2_ami_permissions_output
+#
+#- name: "EC2 AMI Update Launch Permissions Result Check."
+#  async_status:
+#    jid: "{{item.ansible_job_id}}"
+#  with_items: "{{ec2_ami_permissions_output.results}}"
+#  register: ec2_ami_permissions_poll_results
+#  until: "{{ec2_ami_permissions_poll_results.finished}}"
+#  retries: 30
+#
+
+- name: "EC2 AMI Update Launch Permissions on newly copied Images."
   ec2_ami:
+    name: "{{ec2_ami_output.name}}"
     image_id: "{{ item.image_id }}"
-    region: "{{item.invocation.module_args.region}}"
+    region: "{{item.item}}"
     state: present
-    wait: no
     launch_permissions:
       user_ids: "{{ami.xgemail.ami_launch_permissions}}"
-  with_items: "{{ec2_ami_copy_poll_results.results}}"
+  with_items: "{{ec2_ami_copy_output.results}}"
   register: ec2_ami_permissions_output
-
-- name: "EC2 AMI Update Launch Permissions Result Check."
-  async_status:
-    jid: "{{item.ansible_job_id}}"
-  with_items: "{{ec2_ami_permissions_output.results}}"
-  register: ec2_ami_permissions_poll_results
-  until: "{{ec2_ami_permissions_poll_results.finished}}"
-  retries: 30
