@@ -20,13 +20,13 @@
     msg: "{{ec2_ami_copy_output}}"
     verbosity: 3
 
-- name: "Display Xgemail AMI Copy Results Output"
+- name: "Display Xgemail AMI IDs and their Region"
   debug:
     msg: "AMI {{item.image_id}} copied in {{item.item}}"
-  with_items: "{{ec2_ami_copy_output.results}}"
+  with_items: "{{ec2_ami_copy_output}}"
   changed_when: false
 
-- name: "EC2 AMI Copy Result Check."
+- name: "EC2 AMI Copy Result Poll."
   async_status:
     jid: "{{item.ansible_job_id}}"
   with_items: "{{ec2_ami_copy_output.results}}"
@@ -86,5 +86,5 @@
     launch_permissions:
       user_ids: "{{ami.xgemail.ami_launch_permissions}}"
   ignore_errors: yes
-  with_items: "{{ec2_ami_copy_output.results}}"
+  with_items: "{{ec2_ami_copy_output}}"
   register: ec2_ami_permissions_output
