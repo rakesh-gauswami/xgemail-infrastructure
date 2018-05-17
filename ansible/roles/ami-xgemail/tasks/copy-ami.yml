@@ -60,7 +60,7 @@
     image_id: "{{ item.image_id }}"
     region: "{{item.invocation.module_args.region}}"
     state: present
-    wait: no
+    wait: yes
     launch_permissions:
       user_ids: "{{ami.xgemail.ami_launch_permissions}}"
   ignore_errors: yes
