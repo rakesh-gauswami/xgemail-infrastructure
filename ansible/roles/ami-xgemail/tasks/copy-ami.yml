@@ -11,7 +11,7 @@
     source_image_id:      "{{ec2_ami_output.image_id}}"
     name:                 "{{ec2_ami_output.name}}"
     tags:                 "{{ec2_ami_output.tags}}"
-    wait:                 no
+    wait:                 yes
   with_items:             "{{ami.xgemail.ami_destination_regions}}"
   register: ec2_ami_copy_output
 
