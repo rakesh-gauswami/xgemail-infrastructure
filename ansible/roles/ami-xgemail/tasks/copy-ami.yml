@@ -2,8 +2,8 @@
 # Copy AMI to Destination Regions
 # http://docs.ansible.com/ansible/latest/ec2_ami_copy_module.html
 - name: "Copy AMI to Destination Regions {{ami.xgemail.ami_destination_regions}}"
-  async: 600
-  poll: 0
+  #async: 600
+  #poll: 0
   ec2_ami_copy:
     description:          "{{ec2_ami_output.description}}"
     source_region:        "{{ami.xgemail.region}}"
@@ -15,30 +15,36 @@
   with_items:             "{{ami.xgemail.ami_destination_regions}}"
   register: ec2_ami_copy_output
 
-- name: "Display Xgemail AMI Copy Output"
-  debug:
-    msg: "{{ec2_ami_copy_output}}"
-    verbosity: 3
-
-- name: "EC2 AMI Copy Result Check."
-  async_status:
-    jid: "{{item.ansible_job_id}}"
-  with_items: "{{ec2_ami_copy_output.results}}"
-  register: ec2_ami_copy_poll_results
-  until: ec2_ami_copy_poll_results.image_id is defined
-  delay: 10
-  retries: 100
-
-- name: "Display Xgemail AMI Copy Results"
-  debug:
-    msg: "{{ec2_ami_copy_poll_results.results}}"
-    verbosity: 3
+#- name: "Display Xgemail AMI Copy Output"
+#  debug:
+#    msg: "{{ec2_ami_copy_output}}"
+#    verbosity: 3
 
 - name: "Display Xgemail AMI IDs and their Region"
   debug:
     msg: "AMI {{item.image_id}} copied in {{item.item}}"
-  with_items: "{{ec2_ami_copy_poll_results.results}}"
+  with_items: "{{ec2_ami_copy_output.results}}"
   changed_when: false
+
+#- name: "EC2 AMI Copy Result Check."
+#  async_status:
+#    jid: "{{item.ansible_job_id}}"
+#  with_items: "{{ec2_ami_copy_output.results}}"
+#  register: ec2_ami_copy_poll_results
+#  until: ec2_ami_copy_poll_results.image_id is defined
+#  delay: 10
+#  retries: 100
+#
+#- name: "Display Xgemail AMI Copy Results"
+#  debug:
+#    msg: "{{ec2_ami_copy_poll_results.results}}"
+#    verbosity: 3
+#
+#- name: "Display Xgemail AMI IDs and their Region"
+#  debug:
+#    msg: "AMI {{item.image_id}} copied in {{item.item}}"
+#  with_items: "{{ec2_ami_copy_poll_results.results}}"
+#  changed_when: false
 
 #- name: "Write info to Region-Ami.txt "
 #  lineinfile:
@@ -54,24 +60,22 @@
 #    - { key: 'AMI-ID', value: "{{ ec2_ami_copy_output.results[2].image_id }}" }
 
 - name: "EC2 AMI Update Launch Permissions on newly copied Images in regions {{ami.xgemail.ami_destination_regions}}"
-  async: 600
-  poll: 0
+  #async: 600
+  #poll: 0
   ec2_ami:
     image_id: "{{ item.image_id }}"
-    region: "{{item.invocation.module_args.region}}"
+    region: "{{item.item}}"
     state: present
-    wait: no
     launch_permissions:
       user_ids: "{{ami.xgemail.ami_launch_permissions}}"
-  ignore_errors: yes
-  with_items: "{{ec2_ami_copy_poll_results.results}}"
+  with_items: "{{ec2_ami_copy_output.results}}"
   register: ec2_ami_permissions_output
 
-- name: "EC2 AMI Update Launch Permissions Result Check."
-  async_status:
-    jid: "{{item.ansible_job_id}}"
-  with_items: "{{ec2_ami_permissions_output.results}}"
-  register: ec2_ami_permissions_poll_results
-  until: "{{ec2_ami_permissions_poll_results.finished}}"
-  ignore_errors: yes
-  retries: 30
+#- name: "EC2 AMI Update Launch Permissions Result Check."
+#  async_status:
+#    jid: "{{item.ansible_job_id}}"
+#  with_items: "{{ec2_ami_permissions_output.results}}"
+#  register: ec2_ami_permissions_poll_results
+#  until: "{{ec2_ami_permissions_poll_results.finished}}"
+#  ignore_errors: yes
+#  retries: 30
