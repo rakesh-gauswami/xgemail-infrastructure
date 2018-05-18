@@ -49,11 +49,7 @@ file "#{node['sophos_cloud']['tmp']}/hammer-connections.tar.gz" do
   action :delete
 end
 
-# Retrieve and install smtp client key and certificate...
-
-include_recipe "sophos-cloud-tomcat::deploy_email_cert"
-
-# Add MongoDB connection cert to Tomcat truststore
+# Add MongoDB connection cert to Certificate truststore
 
 bash "add_mongodb_to_keystore" do
 user "root"
@@ -67,7 +63,7 @@ code <<-EOH
 EOH
 end
 
-# Add IAPI connection cert to Tomcat truststore
+# Add IAPI connection cert to Certificate truststore
 bash "add_iapi_to_keystore" do
   user "root"
   cwd "/tmp"
@@ -80,7 +76,7 @@ bash "add_iapi_to_keystore" do
   EOH
 end
 
-# Add HUB connection cert to Tomcat truststore
+# Add HUB connection cert to Certificate truststore
 bash "add_hub_to_keystore" do
   user "root"
   cwd "/tmp"
@@ -93,7 +89,7 @@ bash "add_hub_to_keystore" do
   EOH
 end
 
-# Add hmr-bsintegration cert to Tomcat truststore
+# Add hmr-bsintegration cert to Certificate truststore
 bash "add_hmr-bsintegration_to_keystore" do
   user "root"
   cwd "/tmp"
@@ -106,7 +102,7 @@ bash "add_hmr-bsintegration_to_keystore" do
   EOH
 end
 
-# Add hmr-infrastructure cert to Tomcat truststore
+# Add hmr-infrastructure cert to Certificate truststore
 bash "add_hmr-infrastructure_to_keystore" do
   user "root"
   cwd "/tmp"
@@ -120,7 +116,7 @@ bash "add_hmr-infrastructure_to_keystore" do
 end
 
 #TODO with this code we can stop using the default JAVA keystore and actually specify CAs we want to trust
-# Add 3rd party certificate authorities to Tomcat truststore
+# Add 3rd party certificate authorities to Certificate truststore
 # There is a 'global-sign' directory inside 3rdparty that contains GlobalSign's root
 # and intermediary signing certificates.
 bash "add_3rdparty_certificate_authorities_to_keystore" do
