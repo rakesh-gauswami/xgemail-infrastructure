@@ -1,0 +1,16 @@
+---
+
+- name: "Include Internet Delivery ELB Creation Task."
+  include_tasks: id-elb-deploy.yml
+  tags:
+    - asg
+
+- name: "Include Internet Delivery Route53 Creation Task."
+  include_tasks: id-route53-deploy.yml
+  tags:
+    - asg
+
+- name: "Include Internet Delivery EC2 Instance Creation Task."
+  include_tasks: id-instance-deploy.yml
+  tags:
+    - asg

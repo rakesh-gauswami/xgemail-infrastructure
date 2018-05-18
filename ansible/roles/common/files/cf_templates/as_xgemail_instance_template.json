@@ -536,6 +536,22 @@
         "HealthCheckGracePeriod": { "Ref": "HealthCheckGracePeriod" },
         "HealthCheckType": { "Ref": "HealthCheckType" },
         "LaunchConfigurationName": { "Ref": "JavaAutoScalingLaunchConfig" },
+        "LifecycleHookSpecificationList": [
+          {
+            "LifecycleHookName": {
+              "Fn::Join":  ["-",[
+                { "Ref": "VpcName"},
+                { "Ref": "XgemailServiceType" },
+                "Terminating-LifeCycleHook"
+              ]]
+            },
+            "DefaultResult": "CONTINUE",
+            "HeartbeatTimeout": "300",
+            "LifecycleTransition": "autoscaling:EC2_INSTANCE_TERMINATING",
+            "NotificationTargetARN": { "Ref": "AutoScalingNotificationTopicARN" },
+            "RoleARN": { "Ref": "AutoScalingInstanceRoleArn" }
+          }
+        ],
         "LoadBalancerNames": { "Ref": "LoadBalancerName" },
         "MinSize": { "Ref": "AutoScalingMinSize"},
         "MaxSize": { "Ref": "AutoScalingMaxSize"},
@@ -598,18 +614,6 @@
       }
     },
 
-    "Ec2InstanceTerminatingLifecycleHook": {
-      "Type": "AWS::AutoScaling::LifecycleHook",
-      "Properties": {
-        "AutoScalingGroupName": { "Ref": "JavaAutoScalingGroup" },
-        "DefaultResult" : "CONTINUE",
-        "HeartbeatTimeout" : "300",
-        "LifecycleTransition": "autoscaling:EC2_INSTANCE_TERMINATING",
-        "NotificationTargetARN": { "Ref": "AutoScalingNotificationTopicARN" },
-        "RoleARN": { "Ref": "AutoScalingInstanceRoleArn" }
-      }
-    },
-
     "JavaAutoScalingLaunchConfig": {
       "Type": "AWS::AutoScaling::LaunchConfiguration",
       "Metadata": {
@@ -641,13 +645,8 @@
                     "    \"vpc_id\"                           : \"{{vpc_id}}\",\n",
                     "    \"vpc_name\"                         : \"{{vpc_name}}\"\n",
                     "  },\n",
-                    "  \"tomcat\" : {\n",
-                    "    \"max_header_size\"                  : \"{{tomcat_max_header_size}}\",\n",
-                    "    \"heap_max\"                         : \"{{tomcat_heap_max}}\",\n",
-                    "    \"thread_max\"                       : \"{{tomcat_thread_max}}\",\n",
-                    "    \"should_update_keystore\"           : \"false\"\n",
-                    "  },\n",
                     "  \"cert\" : {\n",
+                    "    \"mx\"                               : \"mx\",\n",
                     "    \"should_install_mx\"                : \"true\"\n",
                     "  },\n",
                     "  \"volumes\" : {\n",
@@ -859,13 +858,13 @@
                     "recipe[sophos-cloud-ntpd::default],",
                     "recipe[sophos-cloud-xgemail::configure_logging],",
                     "recipe[sophos-cloud-snmpd::configure],",
-                    "recipe[sophos-cloud-tomcat::deploy_certs],",
+                    "recipe[sophos-cloud-xgemail::deploy_certs],",
                     "recipe[sophos-cloud-xgemail::setup_xgemail_utils_structure],",
                     "recipe[sophos-cloud-xgemail::configure-postfix],",
                     "recipe[sophos-cloud-xgemail::configure_postfix_snmp_logicmonitor],",
                     "recipe[sophos-cloud-xgemail::setup_xgemail_sqs_lifecycle_poller_cron],",
                     "recipe[sophos-cloud-xgemail::configure_monit],",
-                    "recipe[sophos-cloud-common::run_install_cleanup]",
+                    "recipe[sophos-cloud-xgemail::run_install_cleanup]",
                     "\""
                   ]]
                 },
@@ -994,6 +993,17 @@
           }
         }
       }
+    }
+  },
+
+  "Outputs": {
+    "AutoScalingGroup": {
+      "Description": "Auto Scaling Group Name.",
+      "Value": { "Ref": "JavaAutoScalingGroup" }
+    },
+    "LaunchConfig": {
+      "Description": "Auto Scaling Launch Configuration Name.",
+      "Value": { "Ref": "JavaAutoScalingLaunchConfig" }
     }
   }
 }

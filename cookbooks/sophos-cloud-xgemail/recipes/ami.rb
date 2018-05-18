@@ -8,6 +8,7 @@
 #
 sophos_script_path = node['sophos_cloud']['script_path']
 sophos_tmp_path = node['sophos_cloud']['tmp']
+sophos_thirdparty = node['sophos_cloud']['thirdparty']
 
 directory sophos_script_path do
   mode '0755'
@@ -114,7 +115,7 @@ execute 'download_jilter_inbound' do
   user 'root'
   cwd "#{PACKAGES_DIR}"
   command <<-EOH
-      aws --region us-west-2 s3 cp s3://cloud-applications-3rdparty/xgemail/#{JILTER_INBOUND_PACKAGE_NAME}.tar .
+      aws --region us-west-2 s3 cp s3://#{sophos_thirdparty}/xgemail/#{JILTER_INBOUND_PACKAGE_NAME}.tar .
   EOH
 end
 
@@ -122,7 +123,7 @@ execute 'download_jilter_outbound' do
   user 'root'
   cwd "#{PACKAGES_DIR}"
   command <<-EOH
-      aws --region us-west-2 s3 cp s3://cloud-applications-3rdparty/xgemail/#{JILTER_OUTBOUND_PACKAGE_NAME}.tar .
+      aws --region us-west-2 s3 cp s3://#{sophos_thirdparty}/xgemail/#{JILTER_OUTBOUND_PACKAGE_NAME}.tar .
   EOH
 end
 
@@ -135,7 +136,7 @@ execute 'download_postfix3-sophos-rpm' do
   user 'root'
   cwd "#{PACKAGES_DIR}"
   command <<-EOH
-      aws --region us-west-2 s3 cp s3://cloud-applications-3rdparty/xgemail/postfix3-sophos/output/#{POSTFIX3_RPM} .
+      aws --region us-west-2 s3 cp s3://#{sophos_thirdparty}/xgemail/postfix3-sophos/output/#{POSTFIX3_RPM} .
   EOH
 end
 
