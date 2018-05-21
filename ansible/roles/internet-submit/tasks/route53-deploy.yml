@@ -1,25 +1,49 @@
 ---
 
-- name: "Deploy {{stack.route53.internet_submit_route53}} to {{account.name}} {{account.region}}"
+- name: "Deploy {{stack.route53.mx_01_route53}} to {{account.name}} {{account.region}}"
   cloudformation:
-    stack_name: "{{stack.route53.internet_submit_route53}}"
+    stack_name: "{{stack.route53.mx_01_route53}}"
     state: present
     region: "{{account.region}}"
     disable_rollback: true
-    template: "{{template.route53.route53_record_template}}"
+    template: "{{template.route53.route53_record_basic_template}}"
     template_parameters:
       Environment:                   "{{account.name}}"
-      RecordType:                    CNAME
-      ResourceRecords:               "{{elb_stack_output.stack_outputs.LoadBalancerDnsName}}"
-      ServiceName:                   submit
-      Vpc:                           "{{vpc.cloud_email.name}}"
-  register: route53_stack_output
+      RecordType:                    ALIAS
+      DnsName:                       "{{elb_stack_output.stack_outputs.LoadBalancerDnsName}}"
+      HostedZoneId:                  "{{elb_stack_output.stack_outputs.CanonicalHostedZoneNameID}}"
+      ServiceName:                   "mx-01"
+  register: mx_01_stack_output
 
 - debug:
-    var: route53_stack_output
+    var: mx_01_stack_output
     verbosity: 3
 
-- name: "Display Route53 Stack Output"
+- name: "Display MX-01 Route53 Stack Output"
   debug:
-    msg: "{{route53_stack_output.stack_outputs}}"
+    msg: "{{mx_01_stack_output.stack_outputs}}"
+    verbosity: 2
+
+- name: "Deploy {{stack.route53.mx_02_route53}} to {{account.name}} {{account.region}}"
+  cloudformation:
+    stack_name: "{{stack.route53.mx_02_route53}}"
+    state: present
+    region: "{{account.region}}"
+    disable_rollback: true
+    template: "{{template.route53.route53_record_basic_template}}"
+    template_parameters:
+      Environment:                   "{{account.name}}"
+      RecordType:                    ALIAS
+      DnsName:                       "{{elb_stack_output.stack_outputs.LoadBalancerDnsName}}"
+      HostedZoneId:                  "{{elb_stack_output.stack_outputs.CanonicalHostedZoneNameID}}"
+      ServiceName:                   "mx-02"
+  register: mx_02_stack_output
+
+- debug:
+    var: mx_02_stack_output
+    verbosity: 3
+
+- name: "Display MX-02 Route53 Stack Output"
+  debug:
+    msg: "{{mx_02_stack_output.stack_outputs}}"
     verbosity: 2

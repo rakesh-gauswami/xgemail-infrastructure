@@ -90,8 +90,8 @@ stack:
       internet_submit_asg:                              "{{vpc.cloud_email.name}}-xgemail-submit-0000-"
       internet_xdelivery_asg:                           "{{vpc.cloud_email.name}}-xgemail-internet-xdelivery-0000-"
     elb:
-      internet_submit_elb:                              "{{vpc.cloud_email.name}}-XGEMAIL-submit-ELB"
       customer_submit_elb:                              "{{vpc.cloud_email.name}}-XGEMAIL-customer-submit-ELB"
+      internet_submit_elb:                              "{{vpc.cloud_email.name}}-XGEMAIL-submit-ELB"
       customer_delivery_elb:                            "{{vpc.cloud_email.name}}-XGEMAIL-delivery-ELB"
       internet_delivery_elb:                            "{{vpc.cloud_email.name}}-XGEMAIL-internet-delivery-ELB"
       customer_xdelivery_elb:                           "{{vpc.cloud_email.name}}-XGEMAIL-xdelivery-ELB"
@@ -105,6 +105,8 @@ stack:
     eip_monitor_lambda_function:                        "{{vpc.cloud_email.name}}-Lambda-XgemailEipMonitor"
     eip_rotation_lambda_function:                       "{{vpc.cloud_email.name}}-Lambda-XgemailEipRotation"
   route53:
+    mx_01_route53:                                      "{{vpc.cloud_email.name}}-XGEmailMX01-Cname"
+    mx_02_route53:                                      "{{vpc.cloud_email.name}}-XGEmailMX02-Cname"
     customer_delivery_route53:                          "{{vpc.cloud_email.name}}-XGEMAIL-delivery-ROUTE53"
     internet_delivery_route53:                          "{{vpc.cloud_email.name}}-XGEMAIL-internet-delivery-ROUTE53"
     customer_xdelivery_route53:                         "{{vpc.cloud_email.name}}-XGEMAIL-xdelivery-ROUTE53"
@@ -164,6 +166,7 @@ template:
     vpc_template:                                       "{{tmp_artifacts_dir}}/vpc_template.json"
   ec2:
     elb:
+      elb_advanced_template:                            "{{tmp_artifacts_dir}}/elb_advanced_template.json"
       elb_public_xgemail_template:                      "{{tmp_artifacts_dir}}/elb_public_xgemail_template.json"
     sg:
       sg_xgemail_template:                              "{{tmp_artifacts_dir}}/sg_xgemail_template.json"

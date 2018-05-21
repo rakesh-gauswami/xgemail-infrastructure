@@ -11,7 +11,7 @@
       Environment:                   "{{account.name}}"
       RecordType:                    CNAME
       ResourceRecords:               "{{elb_stack_output.stack_outputs.LoadBalancerDnsName}}"
-      ServiceName:                   delivery
+      ServiceName:                   internet-delivery
       Vpc:                           "{{vpc.cloud_email.name}}"
   register: route53_stack_output
 
