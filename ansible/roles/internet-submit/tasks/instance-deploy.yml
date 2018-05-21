@@ -56,6 +56,7 @@
       XgemailPolicyArn:                     "{{sns.arn_prefix}}{{sns.policy_sns_topic}}"
       XgemailPolicyBucketName:              "{{s3.policy_bucket}}"
       XgemailPolicyEfsFileSystemId:         "{{cloud_email_efs_output.ansible_facts.cloudformation[stack.efs.policy_efs_volume].stack_outputs.FileSystemId}}"
+      XgemailQueueUrl:                      "{{sqs.url_prefix}}{{sqs.internet_submit_sqs_queue}}"
       XgemailServiceType:                   submit
       XgemailSxlDbl:                        "{{xgemail_sxl_dbl}}"
       XgemailSxlRbl:                        "{{xgemail_sxl_rbl}}"

@@ -108,7 +108,7 @@
       "Default" : "t2.large"
     },
     "XgemailServiceType": {
-      "Description": "Service type for the java instance (Defaults to unknown so not to break builds)",
+      "Description": "Service type for the Xgemail instance (Defaults to unknown so not to break builds)",
       "Type": "String",
       "Default" : "unknown"
     },
@@ -173,11 +173,6 @@
       "Type": "String",
       "Default": "CloudStation"
     },
-    "TomcatMaxHeaderSize": {
-      "Description": "Max Header size Tomcat will allow",
-      "Type": "String",
-      "Default": "16384"
-    },
     "Vpc": {
       "Description": "ID of an existing VPC",
       "Type": "AWS::EC2::VPC::Id"
@@ -185,7 +180,7 @@
     "VpcName": {
       "Description": "Name of an existing VPC",
       "Type": "String",
-      "Default": "CloudStation"
+      "Default": "CloudEmail"
     },
     "VpcZoneIdentifiers": {
       "Type": "List<AWS::EC2::Subnet::Id>",
@@ -276,118 +271,6 @@
   },
 
   "Mappings": {
-    "InstanceTypeMap": {
-      "t2.micro": {
-        "TomcatHeapSize": "1024m",
-        "TomcatThreadSize": "150"
-      },
-      "t2.small": {
-        "TomcatHeapSize": "1024m",
-        "TomcatThreadSize": "150"
-      },
-      "t2.medium": {
-        "TomcatHeapSize": "1024m",
-        "TomcatThreadSize": "150"
-      },
-      "t2.large": {
-        "TomcatHeapSize": "2048m",
-        "TomcatThreadSize": "150"
-      },
-
-      "m3.medium": {
-        "TomcatHeapSize": "2048m",
-        "TomcatThreadSize": "1000"
-      },
-      "m3.large": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "1500"
-      },
-      "m3.xlarge": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "2000"
-      },
-      "m3.2xlarge": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "2000"
-      },
-
-      "m4.large": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "1500"
-      },
-      "m4.xlarge": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "2000"
-      },
-      "m4.2xlarge": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "2000"
-      },
-      "m4.4xlarge": {
-        "TomcatHeapSize": "4096m",
-        "TomcatThreadSize": "2000"
-      },
-      "m4.10xlarge": {
-        "TomcatHeapSize": "4096m",
-        "TomcatThreadSize": "2500"
-      },
-
-      "c3.large": {
-        "TomcatHeapSize": "2048m",
-        "TomcatThreadSize": "1500"
-      },
-      "c3.xlarge": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "2000"
-      },
-      "c3.2xlarge": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "2500"
-      },
-      "c3.4xlarge": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "2500"
-      },
-      "c3.8xlarge": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "2500"
-      },
-
-      "c4.large": {
-        "TomcatHeapSize": "2048m",
-        "TomcatThreadSize": "1500"
-      },
-      "c4.xlarge": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "2000"
-      },
-      "c4.2xlarge": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "2500"
-      },
-      "c4.4xlarge": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "2500"
-      },
-      "c4.8xlarge": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "2500"
-      },
-
-      "g2.2xlarge": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "2500"
-      },
-
-      "r3.large": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "2500"
-      },
-      "r3.xlarge": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "2500"
-      }
-    },
     "RegionConfigMap": {
       "ap-northeast-1": {
         "Name": "Asia Pacific (Tokyo)",
@@ -572,17 +455,17 @@
                 { "Ref": "Environment" }
               ]]
             },
-            "PropagateAtLaunch": true
+            "PropagateAtLaunch": "true"
           },
           {
             "Key": "BuildResultKey",
             "Value": { "Ref": "BuildVersion"},
-            "PropagateAtLaunch": true
+            "PropagateAtLaunch": "true"
           },
           {
             "Key": "BundleVersion",
             "Value": { "Ref": "BundleVersion"},
-            "PropagateAtLaunch": true
+            "PropagateAtLaunch": "true"
           }
         ]
       },
@@ -599,7 +482,7 @@
       "Condition": "EnableScaleDownOnWeekends",
       "Properties": {
         "AutoScalingGroupName": {"Ref": "JavaAutoScalingGroup"},
-        "MinSize": 0,
+        "MinSize": "0",
         "Recurrence": {"Ref": "ScaleDownCron"}
       }
     },
@@ -700,9 +583,6 @@
                   "station_vpc_name":                         { "Ref": "StationVpcName" },
                   "sxl_dbl":                                  { "Ref": "XgemailSxlDbl" },
                   "sxl_rbl":                                  { "Ref": "XgemailSxlRbl" },
-                  "tomcat_heap_max":                          { "Fn::FindInMap": [ "InstanceTypeMap", { "Ref": "InstanceType" }, "TomcatHeapSize" ] },
-                  "tomcat_max_header_size":                   { "Ref": "TomcatMaxHeaderSize" },
-                  "tomcat_thread_max":                        { "Fn::FindInMap": [ "InstanceTypeMap", { "Ref": "InstanceType" }, "TomcatThreadSize" ] },
                   "vpc_id":                                   { "Ref": "Vpc" },
                   "vpc_name":                                 { "Ref": "VpcName" },
                   "volume_min_iops":                          { "Ref": "EbsMinIops" },
