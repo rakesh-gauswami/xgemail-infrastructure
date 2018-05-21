@@ -29,10 +29,10 @@
       BundleVersion:                        "{{ami_build}}"
       EbsMinIops:                           "{{xgemail_iops_data_gb}}"
       Environment:                          "{{account.name}}"
-      HealthCheckGracePeriod:               "{{health_check_grace_period_is}}"
+      HealthCheckGracePeriod:               "{{health_check_grace_period_cs}}"
       HealthCheckType:                      ELB
-      InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.cloud_email_roles].stack_outputs.XgemailSubmitInstanceProfile}}"
-      InstanceType:                         "{{instance_size_is}}"
+      InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.cloud_email_roles].stack_outputs.XgemailCustomerSubmitInstanceProfile}}"
+      InstanceType:                         "{{instance_size_cs}}"
       KeyName:                              "public-{{account.region}}"
       LoadBalancerName:                     "{{elb_stack_output.stack_outputs.LoadBalancerId}}"
       PublicIpAddressEnabled:               "false"
@@ -40,7 +40,7 @@
       ScaleDownOnWeekends:                  "{{weekend_scale_down}}"
       ScaleDownCron:                        "{{cron_scale_down}}"
       ScaleUpCron:                          "{{cron_scale_up}}"
-      SecurityGroups:                       "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.XgemailSubmitSecurityGroup}},{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.SecurityGroupBase}}"
+      SecurityGroups:                       "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.XgemailCustomerSubmitSecurityGroup}},{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.SecurityGroupBase}}"
       SpotPrice:                            "{{instance_size_xgemail_spot_price}}"
       StationVpcId:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}"
       StationVpcName:                       "{{vpc.cloud_station.name}}"
@@ -49,22 +49,23 @@
       Vpc:                                  "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.Vpc}}"
       VpcZoneIdentifiers:                   "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PublicSubnetDefaultA}},{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PublicSubnetDefaultB}},{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PublicSubnetDefaultC}}"
       VpcName:                              "{{vpc.cloud_email.name}}"
-      XgemailBucketName:                    "{{s3.submit_bucket}}"
+      XgemailBucketName:                    "{{s3.customer_submit_bucket}}"
       XgemailMinSizeDataGB:                 "{{xgemail_size_data_gb}}"
       XgemailMsgHistoryBucketName:          "{{s3.msg_history_bucket}}"
       XgemailMsgHistoryQueueUrl:            "{{sqs.url_prefix}}{{sqs.msg_history_sqs_queue}}"
-      XgemailPolicyArn:                     "{{sns.arn_prefix}}{{sns.policy_sns_topic}}"
+      XgemailPolicyArn:                     "{{sns.arn_prefix}}{{sns.relay_control_sns_topic}}"
       XgemailPolicyBucketName:              "{{s3.policy_bucket}}"
       XgemailPolicyEfsFileSystemId:         "{{cloud_email_efs_output.ansible_facts.cloudformation[stack.efs.policy_efs_volume].stack_outputs.FileSystemId}}
-      XgemailServiceType:                   submit
+      XgemailQueueUrl:                      "{{sqs.url_prefix}}{{sqs.customer_submit_sqs_queue}}"
+      XgemailServiceType:                   customer-submit
       XgemailSxlDbl:                        "{{xgemail_sxl_dbl}}"
       XgemailSxlRbl:                        "{{xgemail_sxl_rbl}}"
-  with_dict: "{{aws.ec2.asg.is}}"
-  register: is_stack_async_results
+  with_dict: "{{aws.ec2.asg.cs}}"
+  register: cs_stack_async_results
 
 - async_status:
     jid: "{{item.ansible_job_id}}"
-  with_items: "{{is_stack_async_results.results}}"
-  register: is_stack_async_poll_results
-  until: "{{is_stack_async_poll_results.finished}}"
+  with_items: "{{cs_stack_async_results.results}}"
+  register: cs_stack_async_poll_results
+  until: "{{cs_stack_async_poll_results.finished}}"
   retries: 30
