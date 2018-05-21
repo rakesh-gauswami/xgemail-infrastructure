@@ -6,13 +6,12 @@
     state: present
     region: "{{account.region}}"
     disable_rollback: true
-    template: "{{template.route53.route53_record_template}}"
+    template: "{{template.route53.route53_record_basic_template}}"
     template_parameters:
       Environment:                   "{{account.name}}"
       RecordType:                    CNAME
       ResourceRecords:               "{{elb_stack_output.stack_outputs.LoadBalancerDnsName}}"
-      ServiceName:                   customer-submit
-      Vpc:                           "{{vpc.cloud_email.name}}"
+      ServiceName:                   relay
   register: route53_stack_output
 
 - debug:
