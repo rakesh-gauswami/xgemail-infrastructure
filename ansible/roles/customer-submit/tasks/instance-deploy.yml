@@ -35,7 +35,7 @@
       InstanceType:                         "{{instance_size_cs}}"
       KeyName:                              "public-{{account.region}}"
       LoadBalancerName:                     "{{elb_stack_output.stack_outputs.LoadBalancerId}}"
-      PublicIpAddressEnabled:               "false"
+      PublicIpAddressEnabled:               "true"
       S3CookbookRepositoryURL:              "//cloud-{{account.name}}-templates/{{build.branch}}/cookbooks.enc"
       ScaleDownOnWeekends:                  "{{weekend_scale_down}}"
       ScaleDownCron:                        "{{cron_scale_down}}"
