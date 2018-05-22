@@ -8,7 +8,7 @@
   async: 100
   poll: 0
   cloudformation:
-    stack_name: "{{item.value.stack_name}}"
+    stack_name: "{{vpc.cloud_email.name}}-xgemail-xdelivery-0000-{{item.0}}"
     state: present
     region:  "{{account.region}}"
     disable_rollback: true
@@ -19,7 +19,7 @@
       AutoScalingMinSize:                   "1"
       AutoScalingMaxSize:                   "1"
       AutoScalingNotificationTopicARN:      "{{sns.arn_prefix}}{{sns.lifecycle_sqs_sns}}"
-      AvailabilityZoneIndex:                "{{item.value.AvailabilityZoneIndex}}"
+      AvailabilityZoneIndex:                "{{item.2}}"
       AvailabilityZones:                    "{{account.region}}a, {{account.region}}b, {{account.region}}c"
       Branch:                               "{{build.branch}}"
       BuildVersion:                         "{{build.result_key}}"
@@ -38,14 +38,16 @@
       SecurityGroups:                       "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.XgemailXdeliverySecurityGroup}},{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.SecurityGroupBase}}"
       SpotPrice:                            "{{instance_size_xgemail_spot_price}}"
       StationVpcName:                       "{{vpc.cloud_station.name}}"
-      VolumeSetId:                          "{{item.value.VolumeSetId}}"
+      VolumeSetId:                          "xdelivery-{{item.0}}"
       VolumeTrackerSimpleDbDomain:          "{{volume_tracker_sdb_output.ansible_facts.cloudformation[stack.sdb.volume_tracker_sdb].stack_outputs.SimpleDbDomain}}"
       Vpc:                                  "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.Vpc}}"
       VpcZoneIdentifiers:                   "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PrivateSubnetDefaultA}},{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PrivateSubnetDefaultB}},{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PrivateSubnetDefaultC}}"
       VpcName:                              "{{vpc.cloud_email.name}}"
       XgemailMinSizeDataGB:                 "{{xgemail_size_data_gb}}"
       XgemailServiceType:                   "xdelivery"
-  with_dict: "{{aws.ec2.asg.cx}}"
+  with_together:
+    - "{{stack_number}}"
+    - "{{zone_index}}"
   register: cx_stack_async_results
 
 - async_status:
