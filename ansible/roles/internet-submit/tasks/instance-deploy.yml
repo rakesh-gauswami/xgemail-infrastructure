@@ -62,9 +62,9 @@
       XgemailSxlRbl:                        "{{xgemail_sxl_rbl}}"
   #with_dict: "{{aws.ec2.asg.is}}"
   with_together:
-    - stacks_index
-    - asg_min_size
-    - zone_index
+    - {{stacks_index}}
+    - {{asg_min_size}}
+    - {{zone_index}}
   register: is_stack_async_results
 
 - async_status:
