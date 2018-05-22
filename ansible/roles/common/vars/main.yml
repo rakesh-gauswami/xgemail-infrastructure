@@ -99,10 +99,21 @@ aws:
           AvailabilityZoneIndex:                2
           VolumeSetId:                          customer-submit-6
       cx:
-        stack_name:                             something
-        template:                               something
-        template_parameters:
-          AesDecryptionKey:                     something
+        1a:
+          stack_name:                           "{{vpc.cloud_email.name}}-xgemail-xdelivery-0000-1"
+          AutoScalingMinSize:                   1
+          AvailabilityZoneIndex:                0
+          VolumeSetId:                          xdelivery-1
+        1b:
+          stack_name:                           "{{vpc.cloud_email.name}}-xgemail-xdelivery-0000-2"
+          AutoScalingMinSize:                   1
+          AvailabilityZoneIndex:                1
+          VolumeSetId:                          xdelivery-2
+        1c:
+          stack_name:                           "{{vpc.cloud_email.name}}-xgemail-xdelivery-0000-3"
+          AutoScalingMinSize:                   1
+          AvailabilityZoneIndex:                2
+          VolumeSetId:                          xdelivery-3
       id:
         1a:
           stack_name:                           "{{vpc.cloud_email.name}}-xgemail-internet-delivery-0000-1"
@@ -456,6 +467,7 @@ aws:
 aes_decryption_key:                             "{{lookup('env','AES_KEY') | default('EFB0D00E7B34527A6CFE3CD804A53312C5A7AF129650A9793D2CEF3A3C6B3741')}}"
 ami_parent_id:                                  "{{ami_id}}"
 as_min_cap_bastion:                             1
+elb_security_policy:                            "ELBSecurityPolicy-2016-08"
 hostedzone:                                     hydra.sophos.com
 cron_scale_down:                                "0 1 * * 6"
 cron_scale_up:                                  "0 4 * * 1"
@@ -464,8 +476,8 @@ health_check_grace_period_cd:                   600
 health_check_grace_period_id:                   600
 health_check_grace_period_cs:                   600
 health_check_grace_period_is:                   600
-health_check_grace_period_cd:                   600
-health_check_grace_period_cd:                   600
+health_check_grace_period_cx:                   600
+health_check_grace_period_ix:                   600
 hopper_public_ip:                               "198.144.101.106/32"
 instance_size_elasticsearch:                    t2.medium
 instance_size_id:                               t2.small
