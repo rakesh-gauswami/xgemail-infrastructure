@@ -9,10 +9,10 @@
     template_parameters:
       Branch:                        "{{build.branch}}"
       Environment:                   "{{account.name}}"
-      InstancePort:                  "8025"
-      HealthCheckInterval:           "60"
       HealthCheckTarget:             "TCP:8025"
       HostAlarmTopicARN:             "{{sns.arn_prefix}}{{sns.alarm_sns_topic}}"
+      InstancePort:                  "8025"
+      InstanceProtocol:              "TCP"
       InternetFacing:                "internal"
       LoadBalancerName:              "{{ec2.elb.cx}}"
       LoadbalancerPort:              "8025"
