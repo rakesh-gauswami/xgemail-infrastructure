@@ -7,6 +7,13 @@
 # All rights reserved - Do Not Redistribute
 #
 
+$SYSWIDE_ACCOUNT_NAM = node['sophos_cloud']['account'] || 'inf'
+shcmd_h = Mixlib::ShellOut.new('echo -n $(runlevel 2>&1)')
+runlevel = shcmd_h.run_command.stdout
+
+MANUAL_TEST_RUN = ($SYSWIDE_ACCOUNT_NAM != 'hmr-core')
+log "runlevel='#{runlevel}', $SYSWIDE_ACCOUNT_NAM=#{$SYSWIDE_ACCOUNT_NAM}, MANUAL_TEST_RUN=#{MANUAL_TEST_RUN}" do level :info end
+
 sophos_script_path = node['sophos_cloud']['script_path']
 sophos_tmp_path = node['sophos_cloud']['tmp']
 sophos_thirdparty = node['sophos_cloud']['thirdparty']
@@ -57,13 +64,6 @@ chef_gem 'aws-sdk' do
   action [:install, :upgrade]
   compile_time false
 end
-
-$SYSWIDE_ACCOUNT_NAM = node['sophos_cloud']['account'] || 'inf'
-shcmd_h = Mixlib::ShellOut.new('echo -n $(runlevel 2>&1)')
-runlevel = shcmd_h.run_command.stdout
-
-MANUAL_TEST_RUN = ($SYSWIDE_ACCOUNT_NAM != 'hmr-core')
-log "runlevel='#{runlevel}', $SYSWIDE_ACCOUNT_NAM=#{$SYSWIDE_ACCOUNT_NAM}, MANUAL_TEST_RUN=#{MANUAL_TEST_RUN}" do level :info end
 
 # Install packages for all supported file systems.
 

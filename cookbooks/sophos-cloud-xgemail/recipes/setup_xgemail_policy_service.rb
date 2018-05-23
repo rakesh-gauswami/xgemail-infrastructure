@@ -93,7 +93,6 @@ POLICY_SQS_MESSAGE_RETENTION_PERIOD     = node['xgemail']['sqs_policy_poller_mes
 POLICY_SQS_MESSAGE_VISIBILITY_TIMEOUT   = node['xgemail']['sqs_policy_sqs_message_visibility_timeout']
 POLICY_POLLER_SERVICE_NAME              = node['xgemail']['sqs_policy_poller_service_name']
 
-
 #directory for policy services
 directory PACKAGE_DIR do
   mode '0755'

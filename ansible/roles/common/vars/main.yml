@@ -5,21 +5,21 @@
 aws:
   es:
     toc_elasticsearch_domain:
-      ebs_volume_size:                          10
+      ebs_volume_size:                          "10"
       master_node_type:                         't2.small.elasticsearch'
-      node_type:                                t2.medium.elasticsearch
-      instance_number:                          1
-      master_instance_number:                   2
-      snapshot_start_hour:                      0
+      node_type:                                "t2.medium.elasticsearch"
+      instance_number:                          "1"
+      master_instance_number:                   "2"
+      snapshot_start_hour:                      "0"
   s3:
     customer_submit_bucket:
       stack_name:                               "{{stack.s3.customer_submit_bucket}}"
       template:                                 "{{template.s3.s3_bucket_template}}"
       template_parameters:
         Environment:                            "{{account.name}}"
-        RequireEncryptionForUploads:            sse-s3
+        RequireEncryptionForUploads:            "sse-s3"
         S3BucketName:                           "{{s3.customer_submit_bucket}}"
-        S3LifeCycleDelete:                      14
+        S3LifeCycleDelete:                      "14"
         S3PolicyCreate:                         "true"
         S3PolicyPrincipalList:                  "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
     emergency_inbox_bucket:
@@ -27,9 +27,9 @@ aws:
       template:                                 "{{template.s3.s3_bucket_template}}"
       template_parameters:
         Environment:                            "{{account.name}}"
-        RequireEncryptionForUploads:            sse-s3
+        RequireEncryptionForUploads:            "sse-s3"
         S3BucketName:                           "{{s3.emergency_inbox_bucket}}"
-        S3LifeCycleDelete:                      14
+        S3LifeCycleDelete:                      "14"
         S3PolicyCreate:                         "true"
         S3PolicyPrincipalList:                  "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
     msg_history_bucket:
@@ -37,7 +37,7 @@ aws:
       template:                                 "{{template.s3.s3_bucket_template}}"
       template_parameters:
         Environment:                            "{{account.name}}"
-        RequireEncryptionForUploads:            sse-s3
+        RequireEncryptionForUploads:            "sse-s3"
         S3BucketName:                           "{{s3.msg_history_bucket}}"
         S3PolicyCreate:                         "true"
         S3PolicyPrincipalList:                  "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
@@ -46,9 +46,9 @@ aws:
       template:                                 "{{template.s3.s3_bucket_template}}"
       template_parameters:
         Environment:                            "{{account.name}}"
-        RequireEncryptionForUploads:            sse-s3
+        RequireEncryptionForUploads:            "sse-s3"
         S3BucketName:                           "{{s3.msg_stats_bucket}}"
-        S3LifeCycleDelete:                      365
+        S3LifeCycleDelete:                      "365"
         S3PolicyCreate:                         "true"
         S3PolicyPrincipalList:                  "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
     quarantine_bucket:
@@ -56,9 +56,9 @@ aws:
       template:                                 "{{template.s3.s3_bucket_template}}"
       template_parameters:
         Environment:                            "{{account.name}}"
-        RequireEncryptionForUploads:            sse-s3
+        RequireEncryptionForUploads:            "sse-s3"
         S3BucketName:                           "{{s3.quarantine_bucket}}"
-        S3LifeCycleDelete:                      30
+        S3LifeCycleDelete:                      "30"
         S3PolicyCreate:                         "true"
         S3PolicyPrincipalList:                  "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
     submit_bucket:
@@ -66,9 +66,9 @@ aws:
       template:                                 "{{template.s3.s3_bucket_template}}"
       template_parameters:
         Environment:                            "{{account.name}}"
-        RequireEncryptionForUploads:            sse-s3
+        RequireEncryptionForUploads:            "sse-s3"
         S3BucketName:                           "{{s3.submit_bucket}}"
-        S3LifeCycleDelete:                      14
+        S3LifeCycleDelete:                      "14"
         S3PolicyCreate:                         "true"
         S3PolicyPrincipalList:                  "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
     lambda_bucket:
@@ -93,8 +93,8 @@ aws:
       stack_name:                               "{{stack.sns.alarm_sns_topic}}"
       template:                                 "{{template.sns.sns_template}}"
       template_parameters:
-        SNSTopicEndpointProtocol:               email
-        SNSTopicEndpointValue:                  cloud-inf-aws-alerts@sophos.com
+        SNSTopicEndpointProtocol:               "email"
+        SNSTopicEndpointValue:                  "cloud-inf-aws-alerts@sophos.com"
         SNSTopicName:                           "{{sns.alarm_sns_topic}}"
     delay_sns_topic:
       stack_name:                               "{{stack.sns.delay_sns_topic}}"
@@ -151,7 +151,7 @@ aws:
       template_parameters:
         Branch:                                 "{{build.branch}}"
         Environment:                            "{{account.name}}"
-        SubscriptionName:                       xgemail-lifecycle
+        SubscriptionName:                       "xgemail-lifecycle"
     customer_delivery_sqs_queue:
       stack_name:                               "{{stack.sqs.customer_delivery_sqs_queue}}"
       state:                                    "absent"
@@ -258,31 +258,31 @@ aws:
 
 aes_decryption_key:                             "{{lookup('env','AES_KEY') | default('EFB0D00E7B34527A6CFE3CD804A53312C5A7AF129650A9793D2CEF3A3C6B3741')}}"
 ami_parent_id:                                  "{{ami_id}}"
-as_min_cap_bastion:                             1
+as_min_cap_bastion:                             "1"
 elb_security_policy:                            "ELBSecurityPolicy-2016-08"
-hostedzone:                                     hydra.sophos.com
+hostedzone:                                     "hydra.sophos.com"
 cron_scale_down:                                "0 1 * * 6"
 cron_scale_up:                                  "0 4 * * 1"
 nat_eip_a:                                      "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.NatEipA}}"
-health_check_grace_period_cd:                   600
-health_check_grace_period_id:                   600
-health_check_grace_period_cs:                   600
-health_check_grace_period_is:                   600
-health_check_grace_period_cx:                   600
-health_check_grace_period_ix:                   600
+health_check_grace_period_cd:                   "600"
+health_check_grace_period_id:                   "600"
+health_check_grace_period_cs:                   "600"
+health_check_grace_period_is:                   "600"
+health_check_grace_period_cx:                   "600"
+health_check_grace_period_ix:                   "600"
 hopper_public_ip:                               "198.144.101.106/32"
-instance_size_elasticsearch:                    t2.medium
-instance_size_id:                               t2.small
-instance_size_cd:                               t2.small
-instance_size_is:                               t2.small
-instance_size_cs:                               t2.small
-instance_size_ix:                               t2.small
-instance_size_cx:                               t2.small
-instance_size_xgemail_spot_price:               -1
+instance_size_elasticsearch:                    "t2.medium"
+instance_size_id:                               "t2.small"
+instance_size_cd:                               "t2.small"
+instance_size_is:                               "t2.small"
+instance_size_cs:                               "t2.small"
+instance_size_ix:                               "t2.small"
+instance_size_cx:                               "t2.small"
+instance_size_xgemail_spot_price:               "-1"
 weekend_scale_down:                             "false"
-xgemail_sxl_dbl:                                uri.cal1.sophosxl.com
-xgemail_sxl_rbl:                                fur.cal1.sophosxl.com
-xgemail_iops_data_gb:                           0
-xgemail_size_data_gb:                           40
+xgemail_sxl_dbl:                                "uri.cal1.sophosxl.com"
+xgemail_sxl_rbl:                                "fur.cal1.sophosxl.com"
+xgemail_iops_data_gb:                           "0"
+xgemail_size_data_gb:                           "40"
 
 

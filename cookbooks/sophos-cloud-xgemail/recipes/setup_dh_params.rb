@@ -59,7 +59,6 @@ cron CRON_SCRIPT_PATH do
   command "source /etc/profile && '#{CRON_SCRIPT_PATH}' >/dev/null 2>&1"
 end
 
-
 [
   'smtpd_tls_dh512_param_file = $config_directory/dh512.pem',
 

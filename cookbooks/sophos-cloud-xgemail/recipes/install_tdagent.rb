@@ -9,7 +9,6 @@
 # Description
 #
 
-
 # TD-Agent
 TDAGENT_PACKAGE_VERSION = "#{node['xgemail']['tdagent_version']}"
 TDAGENT_PACKAGE_NAME = "td-agent-#{TDAGENT_PACKAGE_VERSION}"

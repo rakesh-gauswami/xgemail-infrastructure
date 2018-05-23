@@ -9,7 +9,7 @@
     template: "{{template.route53.route53_record_basic_template}}"
     template_parameters:
       Environment:                   "{{account.name}}"
-      RecordType:                    ALIAS
+      RecordType:                    "ALIAS"
       DnsName:                       "{{elb_stack_output.stack_outputs.LoadBalancerDnsName}}"
       HostedZoneId:                  "{{elb_stack_output.stack_outputs.CanonicalHostedZoneNameID}}"
       ServiceName:                   "mx-01"
@@ -33,7 +33,7 @@
     template: "{{template.route53.route53_record_basic_template}}"
     template_parameters:
       Environment:                   "{{account.name}}"
-      RecordType:                    ALIAS
+      RecordType:                    "ALIAS"
       DnsName:                       "{{elb_stack_output.stack_outputs.LoadBalancerDnsName}}"
       HostedZoneId:                  "{{elb_stack_output.stack_outputs.CanonicalHostedZoneNameID}}"
       ServiceName:                   "mx-02"

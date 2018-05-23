@@ -42,7 +42,6 @@ RELAY_DOMAINS_FILENAME = 'relay_domains'
 MAIL_PIC_API_RESPONSE_TIMEOUT = node['xgemail']['mail_pic_apis_response_timeout_seconds']
 MAIL_PIC_API_AUTH = node['xgemail']['mail_pic_api_auth']
 
-
 directory XGEMAIL_FILES_DIR do
   mode '0755'
   owner 'root'

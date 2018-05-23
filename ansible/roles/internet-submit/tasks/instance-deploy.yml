@@ -19,7 +19,7 @@
       AmiId:                                "{{ami_parent_id}}"
       AutoScalingInstanceRoleArn:           "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.cloud_email_roles].stack_outputs.AutoScalingInstanceRoleArn}}"
       AutoScalingMinSize:                   "{{item.1}}"
-      AutoScalingMaxSize:                   1
+      AutoScalingMaxSize:                   "1"
       AutoScalingNotificationTopicARN:      "{{sns.arn_prefix}}{{sns.lifecycle_sqs_sns}}"
       AvailabilityZoneIndex:                "{{item.2}}"
       AvailabilityZones:                    "{{account.region}}a, {{account.region}}b, {{account.region}}c"
@@ -30,7 +30,7 @@
       EbsMinIops:                           "{{xgemail_iops_data_gb}}"
       Environment:                          "{{account.name}}"
       HealthCheckGracePeriod:               "{{health_check_grace_period_is}}"
-      HealthCheckType:                      ELB
+      HealthCheckType:                      "ELB"
       InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.cloud_email_roles].stack_outputs.XgemailSubmitInstanceProfile}}"
       InstanceType:                         "{{instance_size_is}}"
       KeyName:                              "public-{{account.region}}"
@@ -57,7 +57,7 @@
       XgemailPolicyBucketName:              "{{s3.policy_bucket}}"
       XgemailPolicyEfsFileSystemId:         "{{cloud_email_efs_output.ansible_facts.cloudformation[stack.efs.policy_efs_volume].stack_outputs.FileSystemId}}"
       XgemailQueueUrl:                      "{{sqs.url_prefix}}{{sqs.internet_submit_sqs_queue}}"
-      XgemailServiceType:                   submit
+      XgemailServiceType:                   "submit"
       XgemailSxlDbl:                        "{{xgemail_sxl_dbl}}"
       XgemailSxlRbl:                        "{{xgemail_sxl_rbl}}"
   with_together:

@@ -84,7 +84,6 @@ template MULTI_POLICY_CONSUMER_UTILS_SCRIPT_PATH do
   )
 end
 
-
 # Write poller script to poller script path on an instance
 template MULTI_POLLER_SCRIPT_PATH do
   source "#{POLLER_SCRIPT}.erb"
