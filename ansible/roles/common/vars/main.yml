@@ -146,7 +146,7 @@ aws:
   sqs:
     lifecycle_sqs_sns:
       stack_name:                               "{{stack.sqs.lifecycle_sqs_sns}}"
-      state:                                    "present"
+      state:                                    present
       template:                                 "{{template.sqs.sqs_sns_subscription_template}}"
       template_parameters:
         Branch:                                 "{{build.branch}}"
@@ -154,104 +154,104 @@ aws:
         SubscriptionName:                       "xgemail-lifecycle"
     customer_delivery_sqs_queue:
       stack_name:                               "{{stack.sqs.customer_delivery_sqs_queue}}"
-      state:                                    "absent"
+      state:                                    absent
       template:                                 "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                              "{{sqs.customer_delivery_sqs_queue}}"
     customer_submit_sqs_queue:
       stack_name:                               "{{stack.sqs.customer_submit_sqs_queue}}"
-      state:                                    "present"
+      state:                                    present
       template:                                 "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                              "{{sqs.customer_submit_sqs_queue}}"
     customer_delivery_sqs_queue_sns_listener:
       stack_name:                               "{{stack.sqs.customer_delivery_sqs_queue_sns_listener}}"
-      state:                                    "present"
+      state:                                    present
       template:                                 "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                              "{{sqs.customer_delivery_sqs_queue_sns_listener}}"
     internet_delivery_sqs_queue_sns_listener:
       stack_name:                               "{{stack.sqs.internet_delivery_sqs_queue_sns_listener}}"
-      state:                                    "present"
+      state:                                    present
       template:                                 "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                              "{{sqs.internet_delivery_sqs_queue_sns_listener}}"
     dqs_sqs_queue:
       stack_name:                               "{{stack.sqs.dqs_sqs_queue}}"
-      state:                                    "present"
+      state:                                    present
       template:                                 "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                              "{{sqs.dqs_sqs_queue}}"
     delay_sqs_queue:
       stack_name:                               "{{stack.sqs.delay_sqs_queue}}"
-      state:                                    "present"
+      state:                                    present
       template:                                 "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                              "{{sqs.delay_sqs_queue}}"
         DelaySeconds:                           "600"
     emergency_inbox_sqs_queue:
       stack_name:                               "{{stack.sqs.emergency_inbox_sqs_queue}}"
-      state:                                    "absent"
+      state:                                    absent
       template:                                 "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                              "{{sqs.emergency_inbox_sqs_queue}}"
     emergency_inbox_sqs_queue_sns_listener:
       stack_name:                               "{{stack.sqs.emergency_inbox_sqs_queue_sns_listener}}"
-      state:                                    "present"
+      state:                                    present
       template:                                 "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                              "{{sqs.emergency_inbox_sqs_queue_sns_listener}}"
     internet_delivery_sqs_queue:
       stack_name:                               "{{stack.sqs.internet_delivery_sqs_queue}}"
-      state:                                    "absent"
+      state:                                    absent
       template:                                 "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                              "{{sqs.internet_delivery_sqs_queue}}"
     internet_submit_sqs_queue:
       stack_name:                               "{{stack.sqs.internet_submit_sqs_queue}}"
-      state:                                    "present"
+      state:                                    present
       template:                                 "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                              "{{sqs.internet_submit_sqs_queue}}"
     msg_history_sqs_queue:
       stack_name:                               "{{stack.sqs.msg_history_sqs_queue}}"
-      state:                                    "present"
+      state:                                    present
       template:                                 "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                              "{{sqs.msg_history_sqs_queue}}"
     msg_history_sqs_queue_sns_listener:
       stack_name:                               "{{stack.sqs.msg_history_sqs_queue_sns_listener}}"
-      state:                                    "present"
+      state:                                    present
       template:                                 "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                              "{{sqs.msg_history_sqs_queue_sns_listener}}"
     msg_statistics_sqs_queue:
       stack_name:                               "{{stack.sqs.msg_statistics_sqs_queue}}"
-      state:                                    "absent"
+      state:                                    absent
       template:                                 "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                              "{{sqs.msg_statistics_sqs_queue}}"
     multi_policy_sqs_queue:
       stack_name:                               "{{stack.sqs.multi_policy_sqs_queue}}"
-      state:                                    "present"
+      state:                                    present
       template:                                 "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                              "{{sqs.multi_policy_sqs_queue}}"
     msg_statistics_sqs_queue_sns_listener:
       stack_name:                               "{{stack.sqs.msg_statistics_sqs_queue_sns_listener}}"
-      state:                                    "present"
+      state:                                    present
       template:                                 "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                              "{{sqs.msg_statistics_sqs_queue_sns_listener}}"
     quarantine_sqs_queue:
       stack_name:                               "{{stack.sqs.quarantine_sqs_queue}}"
-      state:                                    "absent"
+      state:                                    absent
       template:                                 "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                              "{{sqs.quarantine_sqs_queue}}"
     quarantine_sqs_queue_sns_listener:
       stack_name:                               "{{stack.sqs.quarantine_sqs_queue_sns_listener}}"
-      state:                                    "present"
+      state:                                    present
       template:                                 "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                              "{{sqs.quarantine_sqs_queue_sns_listener}}"

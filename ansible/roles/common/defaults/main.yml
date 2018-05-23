@@ -12,16 +12,16 @@ vpc:
 # CloudEmail EC2 ELB Names:
 ec2:
   elb:
-    cd:                                                 XGEMAIL-DELIVERY
-    cs:                                                 XGEMAIL-CUSTOMER-SUBMIT
-    cx:                                                 XGEMAIL-XDELIVERY
-    id:                                                 XGEMAIL-INTERNET-DELIVERY
-    is:                                                 XGEMAIL-SUBMIT
-    ix:                                                 XGEMAIL-INTERNET-XDELIVERY
+    cd:                                                 "XGEMAIL-DELIVERY"
+    cs:                                                 "XGEMAIL-CUSTOMER-SUBMIT"
+    cx:                                                 "XGEMAIL-XDELIVERY"
+    id:                                                 "XGEMAIL-INTERNET-DELIVERY"
+    is:                                                 "XGEMAIL-SUBMIT"
+    ix:                                                 "XGEMAIL-INTERNET-XDELIVERY"
 # CloudEmail Lambda Function Names:
 lambda:
-  eip_monitor_lambda_function:                          Xgemail-Eip-Monitor
-  eip_rotation_lambda_function:                         Xgemail-Eip-Rotation
+  eip_monitor_lambda_function:                          "Xgemail-Eip-Monitor"
+  eip_rotation_lambda_function:                         "Xgemail-Eip-Rotation"
 # CloudEmail S3 Bucket Names.
 s3:
   customer_submit_bucket:                               "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-cust-submit"
@@ -159,7 +159,7 @@ stack:
   msg:
     xgemail_messaging:                                  "{{vpc.cloud_email.name}}-XGEMAIL-messaging"
   sdb:
-    volume_tracker_sdb:                                 SDBVolumeTracker
+    volume_tracker_sdb:                                 "SDBVolumeTracker"
 # CloudEmail CloudFormation Template Names and Paths
 template:
   vpc:
