@@ -17,17 +17,22 @@ import io
 import json
 import logging
 import os
+import re
+import copy
 import formatterutils
 import gziputils
 import messageformatter
 import metadataformatter
 import messagehistoryformatter
+import multipolicyreaderutils
 from awshandler import AwsHandler
 from common.metadata import Metadata
 from common.sqsmessage import SqsMessage
 from common.messagehistoryevent import MessageHistoryEvent
 from datetime import datetime
 from datetime import timedelta
+from email.parser import Parser
+from email.utils import parseaddr
 from logging.handlers import SysLogHandler
 
 # Constants
@@ -65,11 +70,16 @@ logger.addHandler(handler)
 AKM_KEY = "akm_key"
 MESSAGE_KEY = "message_key"
 NONCE = "nonce"
+DOMAIN_NAME_REGEX_PATTERN = "[a-zA-Z0-9][-a-zA-Z0-9]*(\\.[-a-zA-Z0-9]+)*\\.[a-zA-Z]{2,}"
 
 # Other constants
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
 MESSAGE_HISTORY_UNKNOWN_DESIGNATION = "UNKNOWN"
 MESSAGE_HISTORY_ACCEPTED_EVENT = "ACCEPTED"
+INBOUND_MESSAGE_DIRECTION = "INBOUND"
+OUTBOUND_MESSAGE_DIRECTION = "OUTBOUND"
+POLICY_ID_PATH_VALUE = "/00/"
+SQS_BATCH_SIZE = 10
 
 awshandler = AwsHandler(AWS_REGION)
 
@@ -111,39 +121,6 @@ def get_metadata():
         logger.exception("Failed in preparing metadata [{0}]".format(e))
         exit(EX_TEMPFAIL)
 
-# Accepts input email and gzip it
-def get_gzipped_email_body():
-    stdin_no = sys.stdin.fileno()
-
-    compressed_bytes = None
-
-    bytes_io = io.BytesIO()
-
-    try:
-        gzip_file = gzip.GzipFile(fileobj=bytes_io, mode='wb')
-
-        try:
-            while True:
-                try:
-                    new_bytes = os.read(stdin_no, BUFFER_SIZE)
-                    if not new_bytes:
-                        break
-                    gzip_file.write(new_bytes)
-                except EOFError:
-                    break
-                except Exception as e:
-                    logger.exception("Failed in parsing input email [{0}]".format(e))
-                    exit(EX_TEMPFAIL)
-        finally:
-            gzip_file.close()
-
-        compressed_bytes = bytes_io.getvalue()
-
-    finally:
-        bytes_io.close()
-
-    return compressed_bytes
-
 def add_to_sqs(sqs_url, sqs_json):
     return awshandler.add_to_sqs(
         sqs_url,
@@ -160,7 +137,7 @@ def upload_to_s3(bucket_name, file_path, formatted_data, expires):
     )
 
 # uploads message file to S3
-def upload_message_to_s3(s3_file_path, expires):
+def upload_message_to_s3(s3_file_path, expires, compressed_message):
     try:
         message_file_path = messageformatter.get_s3_message_path(
             s3_file_path
@@ -170,7 +147,7 @@ def upload_message_to_s3(s3_file_path, expires):
         #TODO: Encrypt mime message bytes after V1
 
         formatted_email_data = messageformatter.get_formatted_email_data(
-            get_gzipped_email_body()
+            compressed_message
         )
 
         # upload message to the submit bucket
@@ -252,7 +229,7 @@ def upload_msg_history_to_s3(s3_file_path, expires, metadata):
 
 
 # Send an accepted message history event to msg history SQS
-def send_msg_history_event(s3_file_path, metadata, sqs_message):
+def prepare_msg_history_event(s3_file_path, metadata, sqs_message, direction, sender):
     try:
         # create a message history event object
         msg_history_event = MessageHistoryEvent(
@@ -268,32 +245,39 @@ def send_msg_history_event(s3_file_path, metadata, sqs_message):
             MESSAGE_HISTORY_UNKNOWN_DESIGNATION,
             None,
             metadata.recipients,
-            False
+            False,
+            direction,
+            sender
         )
 
-        sqs_json = msg_history_event.get_sqs_json()
-        logger.info("Processing message history event SQS job [{0}]".format(sqs_json))
-        logger.info("Added message history event SQS job response [{0}]".format
-            (add_to_sqs(
-                MSG_HISTORY_SQS_URL,
-                sqs_json)
-            )
-        )
+        return msg_history_event
 
     except Exception as e:
         logger.exception("Failed in uploading message history event to SQS [{0}]".format(e))
         exit(EX_TEMPFAIL)
 
-
-# uploads message history parent file to S3
-def send_msg_processing_sqs_message(sqs_message):
+def send_msg_history_sqs_event(sqs_history_json):
     try:
-        sqs_json = sqs_message.get_sqs_json()
-        logger.info("Processing SQS job [{0}]".format(sqs_json))
+        logger.info("Processing message history event SQS job [{0}]".format(sqs_history_json))
+        logger.info("Added message history event SQS job response [{0}]".format
+            (add_to_sqs(
+            MSG_HISTORY_SQS_URL,
+            sqs_history_json)
+        )
+        )
+
+    except Exception as e:
+        logger.exception("Failed in uploading message processing SQS job [{0}]".format(e))
+        exit(EX_TEMPFAIL)
+
+# sends msg processing sqs messages to sqs
+def send_msg_processing_sqs_message(sqs_message_json):
+    try:
+        logger.info("Processing SQS job [{0}]".format(sqs_message_json))
         logger.info("Added SQS job response [{0}]".format
             (add_to_sqs(
                 SUBMIT_SQS_URL,
-                sqs_json)
+                sqs_message_json)
             )
         )
 
@@ -302,66 +286,287 @@ def send_msg_processing_sqs_message(sqs_message):
         exit(EX_TEMPFAIL)
 
 
-# accepts data from postfix and send message and metadata to S3 and
-# a json object to SQS which provides pointer to the message in S3
-def main():
+def get_messages(submit_type):
+    stdin_no = sys.stdin.fileno()
+
+    compressed_bytes = None
+    uncompressed_bytes = None
+    bytes_io = io.BytesIO()
+    plain_email_bytes_io = io.BytesIO()
+
     try:
-        metadata = get_metadata()
-        logger.info("Metadata json info [{0}]".format(metadata))
+        gzip_file = gzip.GzipFile(fileobj=bytes_io, mode='wb')
+        try:
+            while True:
+                try:
+                    new_bytes = os.read(stdin_no, BUFFER_SIZE)
+                    if not new_bytes:
+                        break
+                    if 'CUSTOMER' == submit_type:
+                        plain_email_bytes_io.write(new_bytes)
+                    gzip_file.write(new_bytes)
+                except EOFError:
+                    break
+                except Exception as e:
+                    logger.exception("Failed in parsing input email [{0}]".format(e))
+                    exit(EX_TEMPFAIL)
+                except BaseException as e:
+                    logger.exception("Unexpected error in parsing input email: [{0}]".format(e))
+                    exit(EX_TEMPFAIL)
+        finally:
+            gzip_file.close()
+
+        compressed_bytes = bytes_io.getvalue()
+        uncompressed_bytes = plain_email_bytes_io.getvalue()
+
+    finally:
+        bytes_io.close()
+        plain_email_bytes_io.close()
+
+    return compressed_bytes, uncompressed_bytes
+
+
+def get_metadata_for_outbound(metadata, message):
+    headers = Parser().parsestr(message, headersonly=True)
+
+    from_header = headers['from']
+    if from_header is None:
+        raise Exception("Invalid from header in message with queue_id: [{0}]".format(
+            metadata.get_queue_id())
+        )
+
+    # parseaddr always result into 2 tuple ['username', 'email address']
+    # if parse fails then result will be ['','']
+    parsed_from_address = parseaddr(from_header.strip())
+
+    if parsed_from_address is None or len(parsed_from_address) != 2:
+        raise Exception("Invalid parsed_from_address tuple: [{0}]".format(parsed_from_address))
+
+    from_sender = parsed_from_address[1]
+    logger.info("Parsed from header sender: [{0}]".format(from_sender))
+
+    if from_sender is None or not from_sender:
+        raise Exception("From header cannot be null or empty in outbound")
+
+    return Metadata(
+        metadata.get_schema_version(),
+        metadata.get_sender_ip(),
+        from_sender,
+        metadata.get_accepting_server_ip(),
+        metadata.get_queue_id(),
+        metadata.get_date_recorded(),
+        metadata.get_recipient_domain(),
+        metadata.get_recipients()
+    )
+
+
+def get_from_sender_domain(metadata):
+    try:
+        sender = metadata.get_sender_address()
         queue_id = metadata.get_queue_id()
-        s3_file_path = formatterutils.get_s3_path(
-            ROOT_DIR,
-            TIMESTAMP_FORMAT,
-            SUBMIT_HOST_IP,
-            queue_id,
-            metadata.get_recipient_domain()
+        if sender is None or not sender:
+            raise Exception("Invalid from header sender [{0}] for queue_id [{1}]".format(
+                sender, queue_id)
+            )
+
+        domain = sender.split('@')[1]
+        matched_string = re.match(DOMAIN_NAME_REGEX_PATTERN, domain)
+
+        if matched_string is None or not matched_string:
+            raise Exception("Invalid from sender [{0}] for queue_id [{1}]".format(
+                sender, queue_id)
+            )
+
+        return domain
+    except:
+        raise Exception("Error in retrieving domain from from sender [{0}] for queue_id [{1}]".format(
+            sender, queue_id)
         )
 
-        # prepared expiration date based on ttl_in_days
-        now = datetime.now()
-        expires = now + timedelta(days=TTL_IN_DAYS)
 
-        upload_message_to_s3(
-            s3_file_path,
-            expires
-        )
+def upload_documents(metadata, compressed_message, s3_file_path):
 
-        upload_metadata_to_s3(
-            s3_file_path,
-            expires,
-            metadata
-        )
+    # prepared expiration date based on ttl_in_days
+    expires = datetime.now() + timedelta(days=TTL_IN_DAYS)
 
-        # create a sqs object
+    upload_message_to_s3(
+        s3_file_path,
+        expires,
+        compressed_message
+    )
+
+    upload_metadata_to_s3(
+        s3_file_path,
+        expires,
+        metadata
+    )
+
+    upload_msg_history_to_s3(
+        s3_file_path,
+        expires,
+        metadata
+    )
+
+def base_policy_flow(metadata, direction, domain, sender, compressed_message):
+    queue_id = metadata.get_queue_id()
+
+    s3_file_path = formatterutils.get_s3_path(
+        ROOT_DIR,
+        TIMESTAMP_FORMAT,
+        SUBMIT_HOST_IP,
+        queue_id,
+        domain
+    )
+
+    # create a sqs object
+    sqs_message = SqsMessage(
+        messageformatter.SCHEMA_VERSION,
+        s3_file_path,
+        SUBMIT_HOST_IP,
+        queue_id,
+        AKM_KEY,
+        NONCE.encode('base64','strict'),
+        MESSAGE_KEY.encode('base64','strict'),
+        SUBMIT_TYPE
+    )
+
+    upload_documents(
+        metadata,
+        compressed_message,
+        s3_file_path
+    )
+
+    send_msg_processing_sqs_message(
+        sqs_message.get_sqs_json()
+    )
+
+    sqs_history = prepare_msg_history_event(
+        s3_file_path,
+        metadata,
+        sqs_message,
+        direction,
+        sender
+    )
+
+    send_msg_history_sqs_event(
+        sqs_history.get_sqs_json()
+    )
+
+# Mail flow goes through multi_policy_flow if multi-policy flag is enabled
+# but if there are error conditions such as file read error etc, the mail
+# fall back to base_policy_flow.
+def multi_policy_flow(metadata, direction, domain, sender, compressed_message):
+    recipients = metadata.get_recipients()
+    policy_list = multipolicyreaderutils.build_policy_map(recipients)
+    if not policy_list:
+        return base_policy_flow(metadata, direction, domain, sender, compressed_message)
+
+    queue_id = metadata.get_queue_id()
+    s3_file_path = formatterutils.get_s3_path(
+        ROOT_DIR,
+        TIMESTAMP_FORMAT,
+        SUBMIT_HOST_IP,
+        queue_id,
+        domain
+    )
+
+    sqs_message_json_queue = []
+    sqs_history_json_queue = []
+
+    for policy_id, value in policy_list.items():
+        this_policy_metadata = copy.deepcopy(metadata)
+        this_policy_metadata.set_recipients(value)
+
+        policy_id_path = "/" + policy_id + "/"
+        new_s3_file_path = s3_file_path.replace(POLICY_ID_PATH_VALUE, policy_id_path)
+        # create a sqs message with policy_id
         sqs_message = SqsMessage(
             messageformatter.SCHEMA_VERSION,
-            s3_file_path,
+            new_s3_file_path,
             SUBMIT_HOST_IP,
             queue_id,
             AKM_KEY,
             NONCE.encode('base64','strict'),
             MESSAGE_KEY.encode('base64','strict'),
-            SUBMIT_TYPE
+            SUBMIT_TYPE,
+            None,
+            policy_id
         )
 
-        send_msg_processing_sqs_message(
-            sqs_message
+        upload_documents(
+            this_policy_metadata,
+            compressed_message,
+            new_s3_file_path)
+
+        #batch SQS job - every 10 jobs as a batch
+        sqs_message_json_queue.append(sqs_message.get_sqs_json())
+        if len(sqs_message_json_queue) == SQS_BATCH_SIZE:
+            for processing_job in sqs_message_json_queue:
+                send_msg_processing_sqs_message(
+                    processing_job
+                )
+            sqs_message_json_queue = []
+
+        # batch history sqs
+        sqs_history = prepare_msg_history_event(
+            new_s3_file_path,
+            this_policy_metadata,
+            sqs_message,
+            direction,
+            sender
         )
+        sqs_history_json_queue.append(sqs_history.get_sqs_json())
+        if len(sqs_history_json_queue) == SQS_BATCH_SIZE:
+            for history_job in sqs_history_json_queue:
+                send_msg_history_sqs_event(
+                    history_job
+                )
+            sqs_history_json_queue = []
 
-        if SUBMIT_TYPE == 'INTERNET':
-            upload_msg_history_to_s3(
-                s3_file_path,
-                expires,
-                metadata
+    #send the remaining if any
+    if len(sqs_message_json_queue) > 0:
+        for processing_job in sqs_message_json_queue:
+            send_msg_processing_sqs_message(
+                processing_job
             )
 
-            send_msg_history_event(
-                s3_file_path,
-                metadata,
-                sqs_message
+    if len(sqs_history_json_queue) > 0:
+        for history_job in sqs_history_json_queue:
+            send_msg_history_sqs_event(
+                history_job
             )
 
-    except Exception as e:
+# accepts data from postfix and send message and metadata to S3 and
+# a json object to SQS which provides pointer to the message in S3
+def main():
+    try:
+        metadata = get_metadata()
+        domain = None
+        direction = None
+        sender = None
+
+        compressed_message, uncompressed_message = get_messages(SUBMIT_TYPE)
+
+        if 'INTERNET' == SUBMIT_TYPE:
+            domain = metadata.get_recipient_domain()
+            direction = INBOUND_MESSAGE_DIRECTION
+            sender = metadata.get_sender_address()
+            if multipolicyreaderutils.get_multi_policy_enabled():
+                return multi_policy_flow(metadata, direction, domain, sender, compressed_message)
+
+        elif 'CUSTOMER' == SUBMIT_TYPE:
+            direction = OUTBOUND_MESSAGE_DIRECTION
+            metadata = get_metadata_for_outbound(metadata, uncompressed_message)
+            sender = metadata.get_sender_address()
+            domain = get_from_sender_domain(metadata)
+        else:
+            raise ("Wrong submit type [{0}]".format(SUBMIT_TYPE))
+
+        logger.info("Metadata json info [{0}]".format(metadata))
+
+        base_policy_flow(metadata, direction, domain, sender, compressed_message)
+
+    except BaseException as e:
         logger.exception("Failed in processing email [{0}]".format(e))
         exit(EX_TEMPFAIL)
 

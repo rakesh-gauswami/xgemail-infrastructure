@@ -9,11 +9,6 @@
 # This recipe installs a service to poll xgemail policy sqs queues for policy file updates in S3
 #
 
-
-chef_gem 'aws-sdk' do
-  action [:install]
-end
-
 require 'aws-sdk'
 require 'json'
 

@@ -15,17 +15,12 @@ PACKAGES_DIR = '/opt/sophos/packages'
 LIBSPF2_VERSION = node['xgemail']['libspf2_version']
 LIBSPF2_PACKAGE_NAME = "libspf2-#{LIBSPF2_VERSION}"
 
-# Install Java before we install Jilter
-include_recipe 'sophos-cloud-java::oracle'
-
-
 directory DEPLOYMENT_DIR do
   mode '0755'
   owner 'root'
   group 'root'
   recursive true
 end
-
 
 # Extract libspf2 files, these were downloaded to the AMI by the download_libspf2 recipe
 execute 'extract libspf2 files' do
@@ -35,7 +30,6 @@ execute 'extract libspf2 files' do
     tar xzf #{LIBSPF2_PACKAGE_NAME}.tar.gz
   EOH
 end
-
 
 # Install libspf2
 rpm_package 'install libspf2' do

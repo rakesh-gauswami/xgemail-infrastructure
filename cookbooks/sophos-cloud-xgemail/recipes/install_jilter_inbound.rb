@@ -31,9 +31,7 @@ LIBSPF_JNI_VERSION = node['xgemail']['libspfjni']
 LIBDKIM_JNI_VERSION = node['xgemail']['libdkimjni']
 
 JILTER_SERVICE_NAME = node['xgemail']['jilter_service_name']
-JILTER_VERSION = node['xgemail']['jilter_inbound_version']
-JILTER_PACKAGE_PREFIX = 'xgemail-jilter-inbound'
-JILTER_PACKAGE_NAME = "#{JILTER_PACKAGE_PREFIX}-#{JILTER_VERSION}"
+JILTER_PACKAGE_NAME = 'xgemail-jilter-inbound'
 JILTER_SCRIPT_DIR = "#{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}/scripts"
 JILTER_SCRIPT_PATH = "#{JILTER_SCRIPT_DIR}/xgemail.jilter.service.sh"
 
@@ -44,7 +42,6 @@ SERVICE_USER = node['xgemail']['jilter_user']
 
 include_recipe 'sophos-cloud-xgemail::install_jilter_common'
 
-
 # Modify /etc/rsyslog.conf
 execute 'modify_rsyslog.conf' do
   user 'root'
@@ -54,15 +51,13 @@ execute 'modify_rsyslog.conf' do
   EOH
 end
 
-
 # Add rsyslog config file to redirect jilter messages to its own log file.
-file "/etc/rsyslog.d/00-#{JILTER_PACKAGE_PREFIX}.conf" do
-  content "if $syslogtag == '[#{JILTER_PACKAGE_PREFIX}]' and $syslogseverity <= '6' then /var/log/xgemail/jilter.log\n& ~"
+file "/etc/rsyslog.d/00-#{JILTER_PACKAGE_NAME}.conf" do
+  content "if $syslogtag == '[#{JILTER_PACKAGE_NAME}]' and $syslogseverity <= '6' then /var/log/xgemail/jilter.log\n& ~"
   mode '0600'
   owner 'root'
   group 'root'
 end
-
 
 # Add fluentd config file to monitor log file and submit to S3 for Logz.io.
 template '/etc/td-agent.d/20-source-jilter.conf' do
@@ -75,24 +70,6 @@ template '/etc/td-agent.d/20-source-jilter.conf' do
   )
 end
 
-
-# Restart syslog
-service 'rsyslog' do
-  action :restart
-end
-
-
-# Extract the jilter package to /opt/sophos/xgemail/JILTER_PACKAGE_NAME
-# This was downloaded from S3 while building the AMI
-execute 'extract_jilter_package' do
-  user 'root'
-  cwd PACKAGES_DIR
-  command <<-EOH
-      tar xf #{JILTER_PACKAGE_NAME}.tar -C #{DEPLOYMENT_DIR}
-  EOH
-end
-
-
 # Move libspfjni to not have a version so Java can find it
 execute 'move_jilter_jni' do
   user 'root'
@@ -101,7 +78,6 @@ execute 'move_jilter_jni' do
       mv #{JILTER_PACKAGE_NAME}/lib/libspfjni-#{LIBSPF_JNI_VERSION}.so #{JILTER_PACKAGE_NAME}/lib/libspfjni.so
   EOH
 end
-
 
 # Install libopendkim package via yum
 execute "execute_yum_dkim_install" do
@@ -113,7 +89,6 @@ execute "execute_yum_dkim_install" do
       yum-config-manager --disable epel
   EOH
 end
-
 
 # dkim jni movement
 src = "#{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}/lib/libdkimjni-#{LIBDKIM_JNI_VERSION}.so"
@@ -131,11 +106,6 @@ remote_file "move_dkim_jni" do
   source src_url
   owner 'root'
   action :create
-end
-
-# Cleanup the deployment package
-file "#{PACKAGES_DIR}/#{JILTER_PACKAGE_NAME}.tar" do
-  action :delete
 end
 
 # Remove the dkim library
@@ -165,7 +135,6 @@ template 'xgemail.jilter.service.sh' do
   owner SERVICE_USER
   group SERVICE_USER
   variables(
-      :jilter_version => JILTER_VERSION,
       :deployment_dir => DEPLOYMENT_DIR
   )
 end
@@ -190,11 +159,11 @@ service 'xgemail-jilter-service' do
   subscribes :enable, 'template[xgemail-jilter-service]', :immediately
 end
 
-
 # Update postfix to call jilter
 [
     'smtpd_milters = inet:localhost:9876',
-    'milter_connect_macros = {client_addr}, {j}'
+    'milter_connect_macros = {client_addr}, {j}',
+    'milter_end_of_data_macros = {i}'
 ].each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
 end

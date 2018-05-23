@@ -9,10 +9,6 @@
 # This recipe installs cron job to poll xgemail sqs lifecycle events queue for termination notifications
 #
 
-chef_gem "aws-sdk" do
-  action [:install]
-end
-
 require 'aws-sdk'
 require 'json'
 

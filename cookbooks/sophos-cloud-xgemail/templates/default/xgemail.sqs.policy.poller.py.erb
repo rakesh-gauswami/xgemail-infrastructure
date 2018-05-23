@@ -130,13 +130,18 @@ def sync_file(s3_file_path):
                 break
 
         if to_file_dir is None:
-            logger.debug("No match found for file path [{0}] in config".format(s3_file_path))
+            logger.info("No match found for file path [{0}] in config".format(s3_file_path))
             return
 
         # S3 file key is url encoded so we need to make sure to decode it first
         # to perform download and key exists check
         s3_path_prefix = os.path.dirname(s3_file_path) + '/'
         s3_filename = os.path.basename(s3_file_path)
+
+        if not s3_filename:
+            logger.info("Cannot sync an empty filename [{0}]".format(s3_filename))
+            return
+
         new_s3_file_path = s3_path_prefix + policyconsumerutils.decode_url_encoded(s3_filename)
 
         #verify if file exists in S3

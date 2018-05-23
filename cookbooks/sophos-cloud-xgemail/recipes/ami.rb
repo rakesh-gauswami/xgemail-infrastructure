@@ -2,10 +2,11 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: ami
 #
-# Copyright 2016, Sophos
+# Copyright 2018, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
+
 sophos_script_path = node['sophos_cloud']['script_path']
 sophos_tmp_path = node['sophos_cloud']['tmp']
 sophos_thirdparty = node['sophos_cloud']['thirdparty']
@@ -57,32 +58,6 @@ chef_gem 'aws-sdk' do
   compile_time false
 end
 
-# Download the application
-# bash 'download_war' do
-#   user 'root'
-#   cwd '/tmp'
-#   code <<-EOH
-#     aws --region us-west-2 s3 cp s3:#{node['sophos_cloud']['application']}/ /tmp/ --recursive
-#
-#     # Rename encrypted mobile WAR
-#     mv mob*-services.enc mob-services.enc
-#
-#     # Copy encrypted hub WAR to dep WAR
-#     cp hub-services.enc dep-services.enc
-#   EOH
-# end
-#
-# # Decrypt the application
-# bash 'decrypt_war' do
-#   user 'root'
-#   cwd '/tmp'
-#   code <<-EOH
-#       for war in *-services.enc; do
-#         war_name=${war%-services.enc}
-#         openssl enc -aes-256-cbc -d -in /tmp/$war -out /tmp/"$war_name".war -pass pass:#{node['sophos_cloud']['aeskey']}
-#       done
-#   EOH
-# end
 $SYSWIDE_ACCOUNT_NAM = node['sophos_cloud']['account'] || 'inf'
 shcmd_h = Mixlib::ShellOut.new('echo -n $(runlevel 2>&1)')
 runlevel = shcmd_h.run_command.stdout
@@ -97,14 +72,24 @@ yum_package 'xfsprogs' do
 end
 
 PACKAGES_DIR = '/opt/sophos/packages'
+DEPLOYMENT_DIR = '/opt/sophos/xgemail'
+
 JILTER_INBOUND_VERSION = node['xgemail']['jilter_inbound_version']
 JILTER_INBOUND_PACKAGE_NAME = "xgemail-jilter-inbound-#{JILTER_INBOUND_VERSION}"
 
 JILTER_OUTBOUND_VERSION = node['xgemail']['jilter_outbound_version']
 JILTER_OUTBOUND_PACKAGE_NAME = "xgemail-jilter-outbound-#{JILTER_OUTBOUND_VERSION}"
+
 POSTFIX3_RPM = "postfix3-sophos-#{node['xgemail']['postfix3_version']}.el6.x86_64.rpm"
 
 directory PACKAGES_DIR do
+  mode '0755'
+  owner 'root'
+  group 'root'
+  recursive true
+end
+
+directory DEPLOYMENT_DIR do
   mode '0755'
   owner 'root'
   group 'root'
@@ -119,12 +104,38 @@ execute 'download_jilter_inbound' do
   EOH
 end
 
+execute 'extract_jilter_inbound_package' do
+  user 'root'
+  cwd "#{PACKAGES_DIR}"
+  command <<-EOH
+      tar xf #{JILTER_INBOUND_PACKAGE_NAME}.tar -C #{DEPLOYMENT_DIR}
+  EOH
+end
+
+# Create a sym link to xgemail-jilter-inbound
+link "#{DEPLOYMENT_DIR}/xgemail-jilter-inbound" do
+   to "#{DEPLOYMENT_DIR}/#{JILTER_INBOUND_PACKAGE_NAME}"
+end
+
 execute 'download_jilter_outbound' do
   user 'root'
   cwd "#{PACKAGES_DIR}"
   command <<-EOH
       aws --region us-west-2 s3 cp s3://#{sophos_thirdparty}/xgemail/#{JILTER_OUTBOUND_PACKAGE_NAME}.tar .
   EOH
+end
+
+execute 'extract_jilter_outbound_package' do
+  user 'root'
+  cwd "#{PACKAGES_DIR}"
+  command <<-EOH
+      tar xf #{JILTER_OUTBOUND_PACKAGE_NAME}.tar -C #{DEPLOYMENT_DIR}
+  EOH
+end
+
+# Create a sym link to xgemail-jilter-outbound
+link "#{DEPLOYMENT_DIR}/xgemail-jilter-outbound" do
+  to "#{DEPLOYMENT_DIR}/#{JILTER_OUTBOUND_PACKAGE_NAME}"
 end
 
 execute 'remove_postfix_package' do

@@ -82,7 +82,12 @@ CONFIGURATION_COMMANDS.each do | cur |
 end
 
 if NODE_TYPE == 'xdelivery'
+  include_recipe 'sophos-cloud-xgemail::configure-bounce-message-customer-delivery-queue'
   include_recipe 'sophos-cloud-xgemail::setup_customer_delivery_transport_updater_cron'
+end
+
+if NODE_TYPE == 'internet-xdelivery'
+  include_recipe 'sophos-cloud-xgemail::configure-bounce-message-internet-delivery-queue'
 end
 
 MANAGED_SERVICES_IN_START_ORDER.each do | cur |
