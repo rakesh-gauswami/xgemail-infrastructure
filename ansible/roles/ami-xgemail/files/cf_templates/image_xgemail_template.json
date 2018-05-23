@@ -367,6 +367,8 @@
                   "build":                                      { "Ref": "Build" },
                   "environment":                                { "Ref": "Environment" },
                   "java_branch":                                { "Ref": "JavaBranch" },
+                  "jilter_inbound_version":                     { "Ref": "JilterInboundVersion"},
+                  "jilter_outbound_version":                    { "Ref": "JilterOutboundVersion"},
                   "region":                                     { "Ref": "AWS::Region" },
                   "s3_3rdparty_repo_url":                       { "Ref": "S3Sophos3rdPartyRepositoryUrl" },
                   "s3_app_repo_url":                            { "Ref": "S3SophosAppRepositoryUrl" },
@@ -385,9 +387,10 @@
                       "knife node run_list add -z `knife node list -z` \"",
                       "recipe[sophos-cloud-xgemail::install_tdagent],",
                       "recipe[sophos-cloud-xgemail::install_monit_service],",
-                      "recipe[sophos-cloud-xgemail::ami],",
                       "recipe[sophos-cloud-java::oracle],",
-                      "recipe[sophos-cloud-xgemail::download_libspf2]",
+                      "recipe[sophos-cloud-xgemail::download_libspf2],",
+                      "recipe[sophos-cloud-xgemail::ami]",
+
                       "\""
                     ]
                   ]
