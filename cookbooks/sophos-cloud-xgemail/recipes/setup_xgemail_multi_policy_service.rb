@@ -118,7 +118,7 @@ end
 
 # Add rsyslog config file to redirect policy messages to its own log file.
 file '/etc/rsyslog.d/00-xgemail-multi-policy.conf' do
-  content "if $syslogtag contains 'policy-' and $syslogseverity <= '5' then /var/log/xgemail/multi_policy.log\n& ~"
+  content "if $syslogtag contains 'policy-' and $syslogseverity <= '5' then /var/log/xgemail/multi-policy.log\n& ~"
   mode '0600'
   owner 'root'
   group 'root'
