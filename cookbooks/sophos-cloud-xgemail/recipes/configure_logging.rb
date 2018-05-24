@@ -55,7 +55,8 @@ template 'fluentd-filter-transform.conf' do
   variables(
     :application_name => NODE_TYPE,
     :region => REGION,
-    :account => ACCOUNT
+    :account => ACCOUNT,
+    :instance_id => INSTANCE_ID
   )
 end
 

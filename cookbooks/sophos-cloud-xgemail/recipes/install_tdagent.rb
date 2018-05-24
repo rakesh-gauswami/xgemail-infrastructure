@@ -71,6 +71,27 @@ cookbook_file '/etc/td-agent/td-agent.conf' do
   group 'root'
 end
 
+# Temporary to update td-agent to latest version until 3rdparty package script can be updated in cloud-infrastructure
+execute 'import td-agent repo key' do
+  user 'root'
+  command <<-EOH
+      rpm --import https://packages.treasuredata.com/GPG-KEY-td-agent
+  EOH
+end
+cookbook_file '/etc/yum.repos.d/td.repo' do
+  path '/etc/yum.repos.d/td.repo'
+  source 'td.repo'
+  mode '0644'
+  owner 'root'
+  group 'root'
+end
+
+yum_package 'td-agent' do
+  action :upgrade
+  flush_cache [ :before ]
+end
+# End Temporary block
+#
 service 'td-agent' do
   supports :restart => true, :start => true, :stop => true, :reload => true
   action [ :disable, :stop ]
