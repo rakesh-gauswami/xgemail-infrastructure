@@ -78,6 +78,7 @@ execute 'import td-agent repo key' do
       rpm --import https://packages.treasuredata.com/GPG-KEY-td-agent
   EOH
 end
+
 cookbook_file '/etc/yum.repos.d/td.repo' do
   path '/etc/yum.repos.d/td.repo'
   source 'td.repo'
@@ -89,6 +90,13 @@ end
 yum_package 'td-agent' do
   action :upgrade
   flush_cache [ :before ]
+end
+
+execute 'install td-agent multi-format plugin' do
+  user 'root'
+  command <<-EOH
+      td-agent-gem install fluent-plugin-multi-format-parser
+  EOH
 end
 # End Temporary block
 #
