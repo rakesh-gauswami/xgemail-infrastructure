@@ -27,3 +27,17 @@
   debug:
     msg: "{{ec2_ami_output}}"
     verbosity: 3
+
+- lineinfile:
+    path: "{{playbook_dir}}/image_id.ini"
+    line: 'image_id={{ec2_ami_output.image_id}}'
+    state: present
+    create: yes
+  when: ec2_ami_output.failed == false
+
+- lineinfile:
+    path: "{{playbook_dir}}/image_name.ini"
+    line: 'image_name={{ec2_ami_output.image_name}}'
+    state: present
+    create: yes
+  when: ec2_ami_output.failed == false

@@ -8,7 +8,7 @@
     description:          "{{ec2_ami_output.description}}"
     source_region:        "{{ami.xgemail.region}}"
     region:               "{{item}}"
-    source_image_id:      "{{ec2_ami_output.image_id}}"
+    source_image_id:      "{{image_id}}"
     name:                 "{{ec2_ami_output.name}}"
     tags:                 "{{ec2_ami_output.tags}}"
     wait:                 true
@@ -47,7 +47,7 @@
     state: present
     create: yes
   with_items:
-    - "Region: {{ami.xgemail.region}} AmiId: {{ec2_ami_output.image_id}}"
+    - "Region: {{ami.xgemail.region}} AmiId: {{image_id}}"
     - "Region: {{ec2_ami_copy_poll_results.results[0].item}} AmiId: {{ec2_ami_copy_poll_results.results[0].image_id}}"
     - "Region: {{ec2_ami_copy_poll_results.results[1].item}} AmiId: {{ec2_ami_copy_poll_results.results[1].image_id}}"
     - "Region: {{ec2_ami_copy_poll_results.results[2].item}} AmiId: {{ec2_ami_copy_poll_results.results[2].image_id}}"
@@ -56,11 +56,16 @@
   #async: 600
   #poll: 0
   ec2_ami:
-    name: "{{ec2_ami_output.name}}"
-    tags: "{{ec2_ami_output.tags}}"
+    name: "{{image_name}}"
     image_id: "{{ item.image_id }}"
     region: "{{item}}"
     state: present
+    tags:
+      Name:         "{{image_name}}"
+      branch:       "{{ami.xgemail.branch}}"
+      build:        "{{ami.xgemail.build}}"
+      build_id:     "{{ami.xgemail.build_id}}"
+      ami_type:     "{{ami.xgemail.ami_type}}"
     launch_permissions:
       user_ids: "{{ami.xgemail.ami_launch_permissions}}"
   with_items: "{{ec2_ami_copy_poll_results.results}}"
