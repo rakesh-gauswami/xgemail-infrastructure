@@ -246,16 +246,13 @@ NUM_DOCKER_FILES=$(shell echo $(DOCKER_FILES) | wc -w)
 	@touch $@
 
 JSON_FILES := $(shell find ./cookbooks -name '*.json')
-JSON_FILES += $(shell find ./templates -name '*.json')
-JSON_FILES += $(shell find ./parameters -name '*.json')
-JSON_FILES += $(shell find ./workers -name '*.json')
-JSON_FILES += $(shell find ./ww -name '*.json')
+JSON_FILES += $(shell find ./cf_templates -name '*.json')
 
 NUM_JSON_FILES=$(shell echo $(JSON_FILES) | wc -w)
 
-.check.packer:
-	@echo Checking Packer Files
-	cd packer && ./check_packer_files.sh
+#.check.packer:
+#	@echo Checking Packer Files
+#	cd packer && ./check_packer_files.sh
 
 .check.json: $(JSON_FILES) ./tools/check_json
 	@echo Checking $(NUM_JSON_FILES) json files ...
@@ -263,12 +260,12 @@ NUM_JSON_FILES=$(shell echo $(JSON_FILES) | wc -w)
 	@touch $@
 
 PYTHON_FILES := $(shell find ./cookbooks -name '*.py')
-PYTHON_FILES += $(shell find ./hopper -name '*.py')
-PYTHON_FILES += $(shell find ./workers -name '*.py')
-PYTHON_FILES += $(shell find ./ww -name '*.py')
-PYTHON_FILES += ./hopper/create-logicmonitor-config
-PYTHON_FILES += ./hopper/create-mongo-config
-PYTHON_FILES += ./hopper/upload-mongo-config
+#PYTHON_FILES += $(shell find ./hopper -name '*.py')
+#PYTHON_FILES += $(shell find ./workers -name '*.py')
+#PYTHON_FILES += $(shell find ./ww -name '*.py')
+#PYTHON_FILES += ./hopper/create-logicmonitor-config
+#PYTHON_FILES += ./hopper/create-mongo-config
+#PYTHON_FILES += ./hopper/upload-mongo-config
 
 NUM_PYTHON_FILES=$(shell echo $(PYTHON_FILES) | wc -w)
 
