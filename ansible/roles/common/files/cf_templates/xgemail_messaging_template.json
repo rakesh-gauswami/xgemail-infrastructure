@@ -87,6 +87,18 @@
       "Description": "Endpoint URL for message statistics SQS queue",
       "Type": "String"
     },
+    "MessageStatisticsRejectionTopicArn": {
+      "Description": "Endpoint for message statistics rejection SNS",
+      "Type": "String"
+    },
+    "MessageStatisticsRejectionQueueArn": {
+      "Description": "Endpoint for message statistics rejection SQS queue",
+      "Type": "String"
+    },
+    "MessageStatisticsRejectionQueueUrl": {
+      "Description": "Endpoint URL for message statistics rejection SQS queue",
+      "Type": "String"
+    },
     "QuarantineQueueArn": {
       "Description": "Endpoint for quarantine SQS queue",
       "Type": "String"
@@ -228,6 +240,14 @@
         "Endpoint": { "Ref": "MessageStatisticsQueueArn" },
         "Protocol": "sqs",
         "TopicArn": { "Ref": "SuccessEventsTopicArn"}
+      }
+    },
+    "MessageStatisticsRejectionQueueToMessageStatisticsRejectionSnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "MessageStatisticsRejectionQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "MessageStatisticsRejectionTopicArn"}
       }
     },
     "MultiPolicyQueueToMultiPolicySnsSubsciption": {
@@ -452,6 +472,30 @@
           ]
         },
         "Queues": [{ "Ref": "MessageStatisticsQueueUrl" }]
+      }
+    },
+    "MessageStatisticsRejectionQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "MsgStatisticsRejectionQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-MsgStatisticsRejectionTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "MessageStatisticsRejectionTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{ "Ref": "MessageStatisticsRejectionQueueUrl" }]
       }
     },
     "QuarantineQueuePolicy": {
