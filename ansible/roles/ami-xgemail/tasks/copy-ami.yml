@@ -12,6 +12,7 @@
     wait:                 true
     wait_timeout:         1200
   with_items:             "{{ami.xgemail.ami_destination_regions}}"
+  ignore_errors: yes
   register: ec2_ami_copy_output
 
 - name: "Display Xgemail AMI IDs and their Region"
