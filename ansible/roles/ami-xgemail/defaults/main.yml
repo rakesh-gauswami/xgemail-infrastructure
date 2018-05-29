@@ -1,27 +1,29 @@
 ami:
   xgemail:
     stack_name:                                             "ami-build-xgemail-{{build.plan_key}}-{{build.number}}"
-    ami_bucket:                                             sophos-cloud-amis
+    ami_bucket:                                             "sophos-cloud-amis"
     ami_build_timeout_minutes:                              "{{lookup('env','AMI_BUILD_TIMEOUT_MINUTES') | default('20')}}"
     ami_type:                                               "{{lookup('env','AMI_TYPE') | default('xgemail')}}"
     region:                                                 "{{account.region}}"
     aes_decryption_key:                                     "{{lookup('env','AES_KEY')}}"
-    ami_destination_regions:                                ['eu-west-1', 'us-east-2', 'eu-central-1']
+    ami_destination_regions:                                ['eu-west-1', 'eu-central-1', 'us-east-2']
     ami_launch_permissions:                                 ['750199083801', '855146673459', '769208163330', '050963334367', '455082247759', '283871543274', '382702281923', '859103266070', '202058678495', '843638552935']
-    application_name:                                       xgemail
+    application_name:                                       "xgemail"
     block_device_mappings_xvdf:                             "{{lookup('env','blockDeviceMappingsXvdf') | default('40')}}"
     block_device_mappings_xvdg:                             "{{lookup('env','blockDeviceMappingsXvdg') | default('50')}}"
     block_device_mappings_xvdh:                             "{{lookup('env','blockDeviceMappingsXvdh') | default('20')}}"
     branch:                                                 "{{build.branch}}"
     build:                                                  "{{build.number}}"
     build_id:                                               "{{build.result_key}}"
-    environment:                                            hmr-core
-    iam_profile:                                            sophos-cloud-image-setup
-    instance_type:                                          t2.large
-    key_pair_name:                                          ami-builder-key
+    environment:                                            "hmr-core"
+    iam_profile:                                            "sophos-cloud-image-setup"
+    instance_type:                                          "t2.xlarge"
+    jilter_inbound_version:                                 "{{lookup('env','JILTER_INBOUND_VERSION')}}"
+    jilter_outbound_version:                                "{{lookup('env','JILTER_OUTBOUND_VERSION')}}"
+    key_pair_name:                                          "ami-builder-key"
     s3_cookbook_repository_url:                             "//cloud-applications/{{build.branch}}/cookbooks.enc"
-    s3_sophos_3rdparty_repository_url:                      //cloud-applications-3rdparty
-    s3_sophos_apprepository_url:                            //cloud-applications
+    s3_sophos_3rdparty_repository_url:                      "//cloud-applications-3rdparty"
+    s3_sophos_apprepository_url:                            "//cloud-applications"
     vpc_security_group:                                     "{{lookup('env','VPC_SECURITYGROUPID') | default('sg-1b470e7e')}}"
     vpc_subnet_id:                                          "{{lookup('env','VPC_SUBNETID') | default('subnet-c5bb00a0')}}"
     image_name:                                             "hmr-core-{{build.branch}}-xgemail"

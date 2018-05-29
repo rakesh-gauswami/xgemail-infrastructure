@@ -1,11 +1,12 @@
 #!/bin/sh
 
-exec java -Dlogback.configurationFile=./logback.xml \
-    -Dcom.sun.management.jmxremote.port=6007 \
+# Add -Dlogging.config=./[LOCATION OF]logback.xml to manage logging
+
+exec java -Dcom.sun.management.jmxremote.port=6007 \
     -Dcom.sun.management.jmxremote.authenticate=false \
     -Dcom.sun.management.jmxremote.ssl=false \
-    -Djava.library.path=<%= @deployment_dir %>/xgemail-jilter-inbound-<%= @jilter_version %>/lib \
+    -Djava.library.path=<%= @deployment_dir %>/xgemail-jilter-inbound/lib \
     -Xms256m \
     -Xmx256m \
-    -cp "<%= @deployment_dir %>/xgemail-jilter-inbound-<%= @jilter_version %>/lib/*" \
-    com.sophos.xgemail.jilter.Application
+    -cp "<%= @deployment_dir %>/xgemail-jilter-inbound/lib/*" \
+    com.sophos.xgemail.jilt

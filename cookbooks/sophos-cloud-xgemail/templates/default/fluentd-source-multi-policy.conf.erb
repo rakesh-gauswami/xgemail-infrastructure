@@ -1,0 +1,8 @@
+<source>
+  @type tail
+  format /^(?<time>(?:\S+\s+){2}\S+) (?<host>[^ ]+) (?<process>[^ ]+) (?<pid>[^ ]+) (?<level>[^ ]+) (?<message>.*)/
+  time_format %b %d %H:%M:%S
+  path /var/log/xgemail/multi-policy.log
+  tag sophos.xgemail.<%= @application_name %>.policy
+  pos_file /var/log/td-agent/multi-policy.pos
+</source>

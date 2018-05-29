@@ -46,13 +46,16 @@ WELCOME_MSG_SENDER = node['xgemail']['welcome_msg_sender']
 SXL_DBL = node["xgemail"]["sxl_dbl"]
 raise "SXL_DBL was nil" if SXL_DBL.nil?
 
+SXL_DBL_RESPONSE_CODES = node["xgemail"]["sxl_dbl_response_codes"]
+raise "SXL_DBL_RESPONSE_CODES was nil" if SXL_DBL_RESPONSE_CODES.nil?
+
 # IP blacklists
 SXL_RBL = node["xgemail"]["sxl_rbl"]
 raise "SXL_RBL was nil" if SXL_RBL.nil?
 
-# SXL returns different return codes and only some of them will be considered
-# when making a spam/not spam decision. The following response codes will be
-# considered:
+# SXL returns different codes for IP reputation lookup. The following response codes
+# are considered spam, causing the email to be rejected:
+#
 #  - 127.0.4.1:  SXL_IP_SPAM (Received via a known spam network (SXL lookup))
 #  - 127.0.4.5:  SXL_IP_TFX_CS (Received via a known spam network (SXL lookup))
 #  - 127.0.4.6:  SXL_IP_TFX_EM (Received via a known exploited mail server (SXL lookup))
@@ -155,9 +158,9 @@ CONFIGURATION_COMMANDS =
 
     # Recipient restrictions
     'smtpd_recipient_restrictions = ' +
-      "reject_rhsbl_reverse_client #{SXL_DBL}, " +
-      "reject_rhsbl_sender #{SXL_DBL}, " +
-      "reject_rhsbl_client #{SXL_DBL}, " +
+      "reject_rhsbl_reverse_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
+      "reject_rhsbl_sender #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
+      "reject_rhsbl_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
       "reject_rbl_client #{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES}, " +
       "check_recipient_access hash:$config_directory/#{RECIPIENT_ACCESS_FILENAME}, " +
       "check_sender_access hash:$config_directory/#{SOFT_RETRY_SENDERS_MAP_FILENAME}, " +
@@ -166,7 +169,7 @@ CONFIGURATION_COMMANDS =
     # Sender restrictions
     'smtpd_sender_restrictions = ' +
       "reject_non_fqdn_sender",
-      
+
     # RBL response configuration
     "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_FILENAME}",
 
@@ -182,7 +185,9 @@ end
 
 include_recipe 'sophos-cloud-xgemail::setup_dh_params'
 include_recipe 'sophos-cloud-xgemail::install_jilter_inbound'
+include_recipe 'sophos-cloud-xgemail::setup_xgemail_multi_policy_flag_toggle'
 include_recipe 'sophos-cloud-xgemail::setup_internet_submit_domain_updater_cron'
 include_recipe 'sophos-cloud-xgemail::setup_internet_submit_recipient_updater_cron'
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_policy_service'
+include_recipe 'sophos-cloud-xgemail::setup_xgemail_multi_policy_service'

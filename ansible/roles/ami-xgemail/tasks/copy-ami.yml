@@ -2,8 +2,6 @@
 # Copy AMI to Destination Regions
 # http://docs.ansible.com/ansible/latest/ec2_ami_copy_module.html
 - name: "Copy AMI to Destination Regions {{ami.xgemail.ami_destination_regions}}"
-  async: 600
-  poll: 0
   ec2_ami_copy:
     description:          "{{ec2_ami_output.description}}"
     source_region:        "{{ami.xgemail.region}}"
@@ -11,18 +9,36 @@
     source_image_id:      "{{ec2_ami_output.image_id}}"
     name:                 "{{ec2_ami_output.name}}"
     tags:                 "{{ec2_ami_output.tags}}"
-    wait:                 no
+    wait:                 true
   with_items:             "{{ami.xgemail.ami_destination_regions}}"
   register: ec2_ami_copy_output
 
-- async_status:
-    jid: "{{item.ansible_job_id}}"
-  with_items: "{{ec2_ami_copy_output.results}}"
-  register: ec2_ami_copy_poll_results
-  until: "{{ec2_ami_copy_poll_results.finished}}"
-  retries: 30
-
-- name: "Display Xgemail AMI Find Output"
+- name: "Display Xgemail AMI IDs and their Region"
   debug:
-    msg: "{{ec2_ami_copy_output}}"
-    verbosity: 3
+    msg: "AMI {{item.image_id}} copied in {{item.item}}"
+  with_items: "{{ec2_ami_copy_output.results}}"
+  changed_when: false
+
+- name: "Write info to Region-Ami.txt "
+  lineinfile:
+    dest: "{{playbook_dir}}/Region-Ami.txt"
+    line: "{{item}}"
+    state: present
+    create: yes
+  with_items:
+    - "Region: {{ami.xgemail.region}} AmiId: {{ec2_ami_output.image_id}}"
+    - "Region: {{ec2_ami_copy_output.results[0].item}} AmiId: {{ec2_ami_copy_output.results[0].image_id}}"
+    - "Region: {{ec2_ami_copy_output.results[1].item}} AmiId: {{ec2_ami_copy_output.results[1].image_id}}"
+    - "Region: {{ec2_ami_copy_output.results[2].item}} AmiId: {{ec2_ami_copy_output.results[2].image_id}}"
+
+- name: "EC2 AMI Update Launch Permissions on newly copied Images in regions {{ami.xgemail.ami_destination_regions}}"
+  ec2_ami:
+    name: "{{ec2_ami_output.name}}"
+    tags: "{{ec2_ami_output.tags}}"
+    image_id: "{{ item.image_id }}"
+    region: "{{item.item}}"
+    state: present
+    launch_permissions:
+      user_ids: "{{ami.xgemail.ami_launch_permissions}}"
+  with_items: "{{ec2_ami_copy_output.results}}"
+  register: ec2_ami_permissions_output

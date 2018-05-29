@@ -21,6 +21,7 @@ ACCOUNT = node['sophos_cloud']['context']
 AWS_REGION = node['sophos_cloud']['region']
 LOCAL_CERT_PATH = node['sophos_cloud']['local_cert_path']
 STATION_VPC_NAME = node['xgemail']['station_vpc_name']
+CONNECTIONS_BUCKET = node['sophos_cloud']['connections']
 
 XGEMAIL_UTILS_DIR                       = node['xgemail']['xgemail_utils_files_dir']
 SQS_MESSAGE_CONSUMER_WAIT_TIME_SECONDS  = node['xgemail']['sqs_message_consumer_wait_time_seconds']
@@ -30,6 +31,8 @@ SQS_MESSAGE_CONSUMER_INJECT_MTA_HOST    = node['xgemail']['sqs_message_consumer_
 SQS_MESSAGE_PROCESSOR_DIR               = node['xgemail']['sqs_message_processor_dir']
 XGEMAIL_BUCKET_NAME                     = node['xgemail']['xgemail_bucket_name']
 XGEMAIL_SNS_SQS_URL                     = node['xgemail']['xgemail_sns_sqs_url']
+MAIL_PIC_API_RESPONSE_TIMEOUT           = node['xgemail']['mail_pic_apis_response_timeout_seconds']
+MAIL_PIC_API_AUTH                       = node['xgemail']['mail_pic_api_auth']
 
 XGEMAIL_PIC_CA_PATH = "#{LOCAL_CERT_PATH}/hmr-infrastructure-ca.crt"
 XGEMAIL_PIC_FQDN = "mail-#{STATION_VPC_NAME.downcase}-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com"
@@ -42,6 +45,16 @@ CONSUMER_SERVICE_NAME = node['xgemail']['sqs_message_consumer_service_name']
 CONSUMER_SCRIPT_PATH = "#{SQS_MESSAGE_PROCESSOR_DIR}/#{CONSUMER_SCRIPT}"
 
 SERVICE_USER = node['xgemail']['sqs_message_processor_user']
+
+
+# Configs use by sqsmsgconsumer
+if NODE_TYPE == 'delivery' or NODE_TYPE == 'xdelivery'
+  MESSAGE_DIRECTION = 'INBOUND'
+elsif NODE_TYPE == 'internet-delivery' or NODE_TYPE = 'internet-xdelivery'
+  MESSAGE_DIRECTION = 'OUTBOUND'
+else
+  raise "Unsupported node type to setup sqsmsgproducer [#{NODE_TYPE}]"
+end
 
 template CONSUMER_SCRIPT_PATH do
   source 'xgemail.sqs.message.consumer.py.erb'
@@ -59,7 +72,11 @@ template CONSUMER_SCRIPT_PATH do
     :sqs_wait_time_seconds => SQS_MESSAGE_CONSUMER_WAIT_TIME_SECONDS,
     :xgemail_pic_ca_path => XGEMAIL_PIC_CA_PATH,
     :xgemail_pic_fqdn => XGEMAIL_PIC_FQDN,
-    :xgemail_utils_path => XGEMAIL_UTILS_DIR
+    :mail_pic_api_response_timeout => MAIL_PIC_API_RESPONSE_TIMEOUT,
+    :xgemail_utils_path => XGEMAIL_UTILS_DIR,
+    :mail_pic_api_auth => MAIL_PIC_API_AUTH,
+    :connections_bucket => CONNECTIONS_BUCKET,
+    :message_direction => MESSAGE_DIRECTION
   )
 end
 

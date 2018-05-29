@@ -4,8 +4,8 @@ exec java -Dlogback.configurationFile=./logback.xml \
     -Dcom.sun.management.jmxremote.port=6007 \
     -Dcom.sun.management.jmxremote.authenticate=false \
     -Dcom.sun.management.jmxremote.ssl=false \
-    -Djava.library.path=<%= @deployment_dir %>/xgemail-jilter-outbound-<%= @jilter_version %>/lib \
+    -Djava.library.path=<%= @deployment_dir %>/xgemail-jilter-outbound/lib \
     -Xms256m \
     -Xmx256m \
-    -cp "<%= @deployment_dir %>/xgemail-jilter-outbound-<%= @jilter_version %>/lib/*" \
+    -cp "<%= @deployment_dir %>/xgemail-jilter-outbound/lib/*" \
     com.sophos.xgemail.jilter.OutboundApplication

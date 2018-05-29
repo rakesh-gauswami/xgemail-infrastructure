@@ -1,0 +1,71 @@
+#!/usr/bin/env python
+# vim: autoindent expandtab filetype=python shiftwidth=4 softtabstop=4 tabstop=4
+#
+# Copyright 2018, Sophos Limited. All rights reserved.
+#
+# 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
+# Sophos Limited and Sophos Group.  All other product and company
+# names mentioned are trademarks or registered trademarks of their
+# respective owners.
+#
+
+import argparse
+import json
+import logging
+import os
+from logging.handlers import SysLogHandler
+
+#Constants
+POLICY_STORAGE_PATH = "<%= @policy_storage_path %>"
+MULTI_POLICY_CONFIG_PATH = POLICY_STORAGE_PATH + '/config/inbound-relay-control/multi-policy/'
+MULTI_POLICY_CONFIG_FILE = MULTI_POLICY_CONFIG_PATH + 'global.CONFIG'
+
+logger = logging.getLogger('multi-policy-flag')
+logger.setLevel(logging.INFO)
+syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
+formatter = logging.Formatter(
+    '[%(name)s] %(process)d %(levelname)s %(message)s'
+)
+syslog_handler.formatter = formatter
+logger.addHandler(syslog_handler)
+
+parser = argparse.ArgumentParser(description='Parses multi policy flag input')
+parser.add_argument('-g', '--get', action='store_true', help='Get the current multi policy flag setting')
+parser.add_argument('-s', '--set', nargs=1, choices=['true', 'false'], help='Set the multi policy flag setting')
+
+args = parser.parse_args()
+
+
+def get_multi_policy_enabled():
+    try:
+        with open(MULTI_POLICY_CONFIG_FILE) as config_file:
+            config_data = json.load(config_file)
+            print 'multi.policy.enabled: ' + config_data['multi.policy.enabled']
+    except IOError as e:
+        print "Unable to read config, file may not exist. Multi policy will be OFF"
+
+
+def set_multi_policy_enabled():
+    config_dir = os.path.dirname(MULTI_POLICY_CONFIG_PATH)
+    if not os.path.exists(config_dir):
+        os.makedirs(config_dir)
+
+    config_data = {}
+    config_data['multi.policy.enabled'] = args.set[0]
+    temp_file = MULTI_POLICY_CONFIG_FILE + '.tmp'
+
+    with open(temp_file, 'w') as config_file:
+        json.dump(config_data, config_file)
+
+    os.rename(temp_file, MULTI_POLICY_CONFIG_FILE)
+
+    logger.info('Set multi.policy.enabled to {0} in file {1}'.format(args.set[0], MULTI_POLICY_CONFIG_FILE))
+    print 'multi.policy.enabled set to ' + args.set[0]
+
+
+if args.get:
+    get_multi_policy_enabled()
+elif args.set:
+    set_multi_policy_enabled()
+else:
+    parser.print_help()

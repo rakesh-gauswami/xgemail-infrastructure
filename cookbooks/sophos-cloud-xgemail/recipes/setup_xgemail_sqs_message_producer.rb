@@ -21,6 +21,9 @@ raise "Unsupported node type [#{NODE_TYPE}]" if INSTANCE_DATA.nil?
 INSTANCE_NAME = INSTANCE_DATA[:instance_name]
 raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 
+SMTPD_PORT = INSTANCE_DATA[:port]
+raise "Invalid smtpd port for node type [#{NODE_TYPE}]" if SMTPD_PORT.nil?
+
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_processors_structure'
 
 AWS_REGION                              = node['sophos_cloud']['region']
@@ -38,15 +41,20 @@ XGEMAIL_UTILS_DIR                       = node['xgemail']['xgemail_utils_files_d
 PRODUCER_SCRIPT_PATH                    ="#{SQS_MESSAGE_PROCESSOR_DIR}/#{PRODUCER_SCRIPT}"
 XGEMAIL_BUCKET_NAME                     = node['xgemail']['xgemail_bucket_name']
 XGEMAIL_QUEUE_URL                       = node['xgemail']['xgemail_queue_url']
+XGEMAIL_MESSAGE_HISTORY_BUCKET_NAME     = node['xgemail']['msg_history_bucket_name']
+XGEMAIL_MESSAGE_HISTORY_QUEUE_URL       = node['xgemail']['msg_history_queue_url']
 
-if NODE_TYPE == 'submit'
-  XGEMAIL_MESSAGE_HISTORY_BUCKET_NAME   = node['xgemail']['msg_history_bucket_name']
-  XGEMAIL_MESSAGE_HISTORY_QUEUE_URL     = node['xgemail']['msg_history_queue_url']
+#constants to use
+SUBMIT = 'submit'
+CUSTOMER_SUBMIT = 'customer-submit'
+
+# Configs use by sqsmsgproducer
+if NODE_TYPE == SUBMIT
   XGEMAIL_SUBMIT_TYPE                   = 'INTERNET'
-else #customer-submit configs
-  XGEMAIL_MESSAGE_HISTORY_BUCKET_NAME   = ''
-  XGEMAIL_MESSAGE_HISTORY_QUEUE_URL     = ''
+elsif NODE_TYPE == CUSTOMER_SUBMIT
   XGEMAIL_SUBMIT_TYPE                   = 'CUSTOMER'
+else
+  raise "Unsupported node type to setup sqsmsgproducer [#{NODE_TYPE}]"
 end
 
 template PRODUCER_SCRIPT_PATH do
@@ -99,14 +107,29 @@ PIPE_COMMAND='pipe ' +
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf -M '#{cur}'" )
 end
 
-# Update transports to use new pipe service
-[
-  "default_transport = #{SERVICE_NAME}",
-  "relay_transport = #{SERVICE_NAME}",
-  "#{SERVICE_NAME}_destination_concurrency_limit = #{SUBMIT_DESTINATION_CONCUR_LIMIT}",
-  "#{SERVICE_NAME}_initial_destination_concurrency = #{SUBMIT_DESTINATION_CONCUR_LIMIT}"
-].each do | cur |
-  execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+# Activate new service by postfix configs
+if NODE_TYPE == SUBMIT
+  # Update transports to use new pipe service
+  [
+      "default_transport = #{SERVICE_NAME}",
+      "relay_transport = #{SERVICE_NAME}",
+      "#{SERVICE_NAME}_destination_concurrency_limit = #{SUBMIT_DESTINATION_CONCUR_LIMIT}",
+      "#{SERVICE_NAME}_initial_destination_concurrency = #{SUBMIT_DESTINATION_CONCUR_LIMIT}"
+  ].each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+  end
+
+elsif NODE_TYPE == CUSTOMER_SUBMIT
+  #update master.cf with content filter setting
+  [
+      # Configure assigned SMTPD port
+      "#{SMTPD_PORT}/inet = #{SMTPD_PORT} inet n - n - - smtpd -o content_filter=#{SERVICE_NAME}:dummy"
+  ].each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf -M '#{cur}'" )
+  end
+
+else
+  raise "Unsupported node type to setup postfix config [#{NODE_TYPE}]"
 end
 
 # Add rsyslog config file to redirect sqsmsgproducer messages to its own log file.

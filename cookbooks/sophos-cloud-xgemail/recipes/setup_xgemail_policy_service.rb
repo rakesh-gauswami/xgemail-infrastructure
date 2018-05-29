@@ -9,11 +9,6 @@
 # This recipe installs a service to poll xgemail policy sqs queues for policy file updates in S3
 #
 
-
-chef_gem 'aws-sdk' do
-  action [:install]
-end
-
 require 'aws-sdk'
 require 'json'
 
@@ -97,7 +92,6 @@ POLICY_SQS_VISIBILITY_TIMEOUT           = node['xgemail']['sqs_policy_poller_vis
 POLICY_SQS_MESSAGE_RETENTION_PERIOD     = node['xgemail']['sqs_policy_poller_message_retention_period']
 POLICY_SQS_MESSAGE_VISIBILITY_TIMEOUT   = node['xgemail']['sqs_policy_sqs_message_visibility_timeout']
 POLICY_POLLER_SERVICE_NAME              = node['xgemail']['sqs_policy_poller_service_name']
-
 
 #directory for policy services
 directory PACKAGE_DIR do

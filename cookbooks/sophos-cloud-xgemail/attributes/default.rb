@@ -85,8 +85,6 @@ default['xgemail']['savdid_version'] = '2.4'
 default['xgemail']['savdid_cxmail_version'] = 'Cloud:Email:1.0.0'
 
 # Jilter settings
-default['xgemail']['jilter_inbound_version'] = '0.7.0-SNAPSHOT'
-default['xgemail']['jilter_outbound_version'] = '0.4.1-SNAPSHOT'
 default['xgemail']['libspfjni'] = '0.1.0-SNAPSHOT'
 default['xgemail']['libspf2_version'] = '1.2.10-9'
 default['xgemail']['jilter_user'] = 'jilter'

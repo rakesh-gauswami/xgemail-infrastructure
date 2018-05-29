@@ -108,7 +108,7 @@
       "Default" : "t2.large"
     },
     "XgemailServiceType": {
-      "Description": "Service type for the java instance (Defaults to unknown so not to break builds)",
+      "Description": "Service type for the Xgemail instance (Defaults to unknown so not to break builds)",
       "Type": "String",
       "Default" : "unknown"
     },
@@ -173,11 +173,6 @@
       "Type": "String",
       "Default": "CloudStation"
     },
-    "TomcatMaxHeaderSize": {
-      "Description": "Max Header size Tomcat will allow",
-      "Type": "String",
-      "Default": "16384"
-    },
     "Vpc": {
       "Description": "ID of an existing VPC",
       "Type": "AWS::EC2::VPC::Id"
@@ -185,7 +180,7 @@
     "VpcName": {
       "Description": "Name of an existing VPC",
       "Type": "String",
-      "Default": "CloudStation"
+      "Default": "CloudEmail"
     },
     "VpcZoneIdentifiers": {
       "Type": "List<AWS::EC2::Subnet::Id>",
@@ -276,118 +271,6 @@
   },
 
   "Mappings": {
-    "InstanceTypeMap": {
-      "t2.micro": {
-        "TomcatHeapSize": "1024m",
-        "TomcatThreadSize": "150"
-      },
-      "t2.small": {
-        "TomcatHeapSize": "1024m",
-        "TomcatThreadSize": "150"
-      },
-      "t2.medium": {
-        "TomcatHeapSize": "1024m",
-        "TomcatThreadSize": "150"
-      },
-      "t2.large": {
-        "TomcatHeapSize": "2048m",
-        "TomcatThreadSize": "150"
-      },
-
-      "m3.medium": {
-        "TomcatHeapSize": "2048m",
-        "TomcatThreadSize": "1000"
-      },
-      "m3.large": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "1500"
-      },
-      "m3.xlarge": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "2000"
-      },
-      "m3.2xlarge": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "2000"
-      },
-
-      "m4.large": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "1500"
-      },
-      "m4.xlarge": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "2000"
-      },
-      "m4.2xlarge": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "2000"
-      },
-      "m4.4xlarge": {
-        "TomcatHeapSize": "4096m",
-        "TomcatThreadSize": "2000"
-      },
-      "m4.10xlarge": {
-        "TomcatHeapSize": "4096m",
-        "TomcatThreadSize": "2500"
-      },
-
-      "c3.large": {
-        "TomcatHeapSize": "2048m",
-        "TomcatThreadSize": "1500"
-      },
-      "c3.xlarge": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "2000"
-      },
-      "c3.2xlarge": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "2500"
-      },
-      "c3.4xlarge": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "2500"
-      },
-      "c3.8xlarge": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "2500"
-      },
-
-      "c4.large": {
-        "TomcatHeapSize": "2048m",
-        "TomcatThreadSize": "1500"
-      },
-      "c4.xlarge": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "2000"
-      },
-      "c4.2xlarge": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "2500"
-      },
-      "c4.4xlarge": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "2500"
-      },
-      "c4.8xlarge": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "2500"
-      },
-
-      "g2.2xlarge": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "2500"
-      },
-
-      "r3.large": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "2500"
-      },
-      "r3.xlarge": {
-        "TomcatHeapSize": "3072m",
-        "TomcatThreadSize": "2500"
-      }
-    },
     "RegionConfigMap": {
       "ap-northeast-1": {
         "Name": "Asia Pacific (Tokyo)",
@@ -536,6 +419,22 @@
         "HealthCheckGracePeriod": { "Ref": "HealthCheckGracePeriod" },
         "HealthCheckType": { "Ref": "HealthCheckType" },
         "LaunchConfigurationName": { "Ref": "JavaAutoScalingLaunchConfig" },
+        "LifecycleHookSpecificationList": [
+          {
+            "LifecycleHookName": {
+              "Fn::Join":  ["-",[
+                { "Ref": "VpcName"},
+                { "Ref": "XgemailServiceType" },
+                "Terminating-LifeCycleHook"
+              ]]
+            },
+            "DefaultResult": "CONTINUE",
+            "HeartbeatTimeout": "300",
+            "LifecycleTransition": "autoscaling:EC2_INSTANCE_TERMINATING",
+            "NotificationTargetARN": { "Ref": "AutoScalingNotificationTopicARN" },
+            "RoleARN": { "Ref": "AutoScalingInstanceRoleArn" }
+          }
+        ],
         "LoadBalancerNames": { "Ref": "LoadBalancerName" },
         "MinSize": { "Ref": "AutoScalingMinSize"},
         "MaxSize": { "Ref": "AutoScalingMaxSize"},
@@ -553,20 +452,20 @@
                 { "Ref": "VpcName"},
                 { "Ref": "XgemailServiceType" },
                 { "Ref": "Branch" },
-                { "Ref": "Environment" }
+                { "Ref": "BundleVersion" }
               ]]
             },
-            "PropagateAtLaunch": true
+            "PropagateAtLaunch": "true"
           },
           {
             "Key": "BuildResultKey",
             "Value": { "Ref": "BuildVersion"},
-            "PropagateAtLaunch": true
+            "PropagateAtLaunch": "true"
           },
           {
             "Key": "BundleVersion",
             "Value": { "Ref": "BundleVersion"},
-            "PropagateAtLaunch": true
+            "PropagateAtLaunch": "true"
           }
         ]
       },
@@ -583,7 +482,7 @@
       "Condition": "EnableScaleDownOnWeekends",
       "Properties": {
         "AutoScalingGroupName": {"Ref": "JavaAutoScalingGroup"},
-        "MinSize": 0,
+        "MinSize": "0",
         "Recurrence": {"Ref": "ScaleDownCron"}
       }
     },
@@ -595,18 +494,6 @@
         "AutoScalingGroupName": {"Ref": "JavaAutoScalingGroup"},
         "MinSize": {"Ref": "AutoScalingMinSize"},
         "Recurrence": {"Ref": "ScaleUpCron"}
-      }
-    },
-
-    "Ec2InstanceTerminatingLifecycleHook": {
-      "Type": "AWS::AutoScaling::LifecycleHook",
-      "Properties": {
-        "AutoScalingGroupName": { "Ref": "JavaAutoScalingGroup" },
-        "DefaultResult" : "CONTINUE",
-        "HeartbeatTimeout" : "300",
-        "LifecycleTransition": "autoscaling:EC2_INSTANCE_TERMINATING",
-        "NotificationTargetARN": { "Ref": "AutoScalingNotificationTopicARN" },
-        "RoleARN": { "Ref": "AutoScalingInstanceRoleArn" }
       }
     },
 
@@ -641,19 +528,9 @@
                     "    \"vpc_id\"                           : \"{{vpc_id}}\",\n",
                     "    \"vpc_name\"                         : \"{{vpc_name}}\"\n",
                     "  },\n",
-                    "  \"tomcat\" : {\n",
-                    "    \"max_header_size\"                  : \"{{tomcat_max_header_size}}\",\n",
-                    "    \"heap_max\"                         : \"{{tomcat_heap_max}}\",\n",
-                    "    \"thread_max\"                       : \"{{tomcat_thread_max}}\",\n",
-                    "    \"should_update_keystore\"           : \"false\"\n",
-                    "  },\n",
                     "  \"cert\" : {\n",
+                    "    \"mx\"                               : \"mx\",\n",
                     "    \"should_install_mx\"                : \"true\"\n",
-                    "  },\n",
-                    "  \"email\" : {\n",
-                    "    \"install\"                          : \"{{email_install}}\",\n",
-                    "    \"mail_domain\"                      : \"{{mail_domain}}\",\n",
-                    "    \"mail_version\"                     : \"{{mail_version}}\"\n",
                     "  },\n",
                     "  \"volumes\" : {\n",
                     "    \"volume_min_iops\"                  : \"{{volume_min_iops}}\",\n",
@@ -692,32 +569,26 @@
                                                                 { "Ref": "AvailabilityZones" }
                                                               ] },
                   "branch":                                   { "Ref": "Branch" },
-                  "cluster":                                  { "Ref": "JavaServiceType" },
-                  "cluster_type":                             { "Ref": "JavaServiceType" },
-                  "email_install":                            { "Ref": "PostfixInstall" },
+                  "cluster":                                  { "Ref": "XgemailServiceType" },
+                  "cluster_type":                             { "Ref": "XgemailServiceType" },
                   "environment":                              { "Ref": "Environment" },
                   "lifecycle_topic_arn":                      { "Ref": "AutoScalingNotificationTopicARN" },
-                  "mail_domain":                              { "Ref": "MailDomain" },
-                  "mail_version":                             { "Ref": "PostfixMailVersion" },
                   "msg_history_bucket_name":                  { "Ref": "XgemailMsgHistoryBucketName" },
                   "msg_history_queue_url":                    { "Ref": "XgemailMsgHistoryQueueUrl" },
                   "msg_notifier_queue_url":                   { "Ref": "XgemailNotifierQueueUrl" },
                   "policy_efs_file_system_id":                { "Ref": "XgemailPolicyEfsFileSystemId" },
                   "region":                                   { "Ref": "AWS::Region" },
                   "stack":                                    { "Ref": "AWS::StackName" },
+                  "station_vpc_id":                           { "Ref": "StationVpcId" },
                   "station_vpc_name":                         { "Ref": "StationVpcName" },
                   "sxl_dbl":                                  { "Ref": "XgemailSxlDbl" },
                   "sxl_rbl":                                  { "Ref": "XgemailSxlRbl" },
-                  "tomcat_heap_max":                          { "Fn::FindInMap": [ "InstanceTypeMap", { "Ref": "InstanceType" }, "TomcatHeapSize" ] },
-                  "tomcat_max_header_size":                   { "Ref": "TomcatMaxHeaderSize" },
-                  "tomcat_thread_max":                        { "Fn::FindInMap": [ "InstanceTypeMap", { "Ref": "InstanceType" }, "TomcatThreadSize" ] },
                   "vpc_id":                                   { "Ref": "Vpc" },
                   "vpc_name":                                 { "Ref": "VpcName" },
                   "volume_min_iops":                          { "Ref": "EbsMinIops" },
                   "volume_min_size_data_gb":                  { "Ref": "XgemailMinSizeDataGB" },
                   "volume_set_id":                            { "Ref": "VolumeSetId" },
                   "volume_tracker_sdb_domain":                { "Ref": "VolumeTrackerSimpleDbDomain" },
-                  "station_vpc_id":                           { "Ref": "StationVpcId" },
                   "xgemail_policy_bucket_name":               { "Ref": "XgemailPolicyBucketName" },
                   "xgemail_bucket_name":                      { "Ref": "XgemailBucketName" },
                   "xgemail_policy_arn":                       { "Ref": "XgemailPolicyArn" },
@@ -867,13 +738,13 @@
                     "recipe[sophos-cloud-ntpd::default],",
                     "recipe[sophos-cloud-xgemail::configure_logging],",
                     "recipe[sophos-cloud-snmpd::configure],",
-                    "recipe[sophos-cloud-tomcat::deploy_certs],",
+                    "recipe[sophos-cloud-xgemail::deploy_certs],",
                     "recipe[sophos-cloud-xgemail::setup_xgemail_utils_structure],",
                     "recipe[sophos-cloud-xgemail::configure-postfix],",
                     "recipe[sophos-cloud-xgemail::configure_postfix_snmp_logicmonitor],",
                     "recipe[sophos-cloud-xgemail::setup_xgemail_sqs_lifecycle_poller_cron],",
                     "recipe[sophos-cloud-xgemail::configure_monit],",
-                    "recipe[sophos-cloud-common::run_install_cleanup]",
+                    "recipe[sophos-cloud-xgemail::run_install_cleanup]",
                     "\""
                   ]]
                 },
@@ -1002,6 +873,17 @@
           }
         }
       }
+    }
+  },
+
+  "Outputs": {
+    "AutoScalingGroup": {
+      "Description": "Auto Scaling Group Name.",
+      "Value": { "Ref": "JavaAutoScalingGroup" }
+    },
+    "LaunchConfig": {
+      "Description": "Auto Scaling Launch Configuration Name.",
+      "Value": { "Ref": "JavaAutoScalingLaunchConfig" }
     }
   }
 }

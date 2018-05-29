@@ -24,19 +24,22 @@ raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 ACCOUNT               = node['sophos_cloud']['context']
 LOCAL_CERT_PATH       = node['sophos_cloud']['local_cert_path']
 REGION                = node['sophos_cloud']['region']
+CONNECTIONS_BUCKET    = node['sophos_cloud']['connections']
 
 CRON_JOB_TIMEOUT      = node['xgemail']['cron_job_timeout']
 CRON_MINUTE_FREQUENCY = node['xgemail']['internet_submit_domain_cron_minute_frequency']
 STATION_VPC_NAME      = node['xgemail']['station_vpc_name']
 XGEMAIL_FILES_DIR     = node['xgemail']['xgemail_files_dir']
 
-PACKAGE_DIR = "#{XGEMAIL_FILES_DIR}/internet-submit-domain-cron"
-CRON_SCRIPT = 'internet.submit.domain.updater.py'
-CRON_SCRIPT_PATH = "#{PACKAGE_DIR}/#{CRON_SCRIPT}"
+PACKAGE_DIR           = "#{XGEMAIL_FILES_DIR}/internet-submit-domain-cron"
+CRON_SCRIPT           = 'internet.submit.domain.updater.py'
+CRON_SCRIPT_PATH      = "#{PACKAGE_DIR}/#{CRON_SCRIPT}"
 
-XGEMAIL_PIC_CA_PATH = "#{LOCAL_CERT_PATH}/hmr-infrastructure-ca.crt"
-XGEMAIL_PIC_FQDN = "mail-#{STATION_VPC_NAME.downcase}-#{REGION}.#{ACCOUNT}.hydra.sophos.com"
-RELAY_DOMAINS_FILENAME = 'relay_domains'
+XGEMAIL_PIC_CA_PATH     = "#{LOCAL_CERT_PATH}/hmr-infrastructure-ca.crt"
+XGEMAIL_PIC_FQDN        = "mail-#{STATION_VPC_NAME.downcase}-#{REGION}.#{ACCOUNT}.hydra.sophos.com"
+RELAY_DOMAINS_FILENAME  = 'relay_domains'
+MAIL_PIC_API_RESPONSE_TIMEOUT = node['xgemail']['mail_pic_apis_response_timeout_seconds']
+MAIL_PIC_API_AUTH = node['xgemail']['mail_pic_api_auth']
 
 CONFIGURATION_COMMANDS =
   [
@@ -72,7 +75,10 @@ template CRON_SCRIPT_PATH do
     :xgemail_pic_ca_path => XGEMAIL_PIC_CA_PATH,
     :xgemail_pic_fqdn => XGEMAIL_PIC_FQDN,
     :postfix_instance_name => instance_name( INSTANCE_NAME ),
-    :relay_domains_filename => RELAY_DOMAINS_FILENAME
+    :relay_domains_filename => RELAY_DOMAINS_FILENAME,
+    :mail_pic_api_response_timeout => MAIL_PIC_API_RESPONSE_TIMEOUT,
+    :mail_pic_api_auth => MAIL_PIC_API_AUTH,
+    :connections_bucket => CONNECTIONS_BUCKET
   )
   notifies :run, "execute[#{CRON_SCRIPT_PATH}]", :immediately
 end

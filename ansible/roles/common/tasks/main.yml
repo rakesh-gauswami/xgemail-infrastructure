@@ -48,3 +48,8 @@
   include_tasks: get-simpledb-domain.yml
   tags:
     - asg
+
+- name: "Include {{stack.efs.policy_efs_volume}} CloudFormation Stack Output."
+  include_tasks: get-efs-volume-filesystem-id.yml
+  tags:
+    - asg

@@ -17,6 +17,8 @@
       IamProfile:                  "{{ami.xgemail.iam_profile}}"
       ImageId:                     "{{ec2_ami_image_id}}"
       InstanceType:                "{{ami.xgemail.instance_type}}"
+      JilterInboundVersion:        "{{ami.xgemail.jilter_inbound_version}}"
+      JilterOutboundVersion:       "{{ami.xgemail.jilter_outbound_version}}"
       S3CookbookRepositoryUrl:     "{{ami.xgemail.s3_cookbook_repository_url}}"
       VpcSecurityGroup:            "{{ami.xgemail.vpc_security_group}}"
       VpcSubnetId:                 "{{ami.xgemail.vpc_subnet_id}}"
@@ -27,7 +29,7 @@
     msg: "{{ami_stack_output.stack_outputs.InstanceId}}"
 
 - debug:
-    var: ami_stack
+    var: ami_stack_output
     verbosity: 3
 
 - name: "Display AMI Stack Output"

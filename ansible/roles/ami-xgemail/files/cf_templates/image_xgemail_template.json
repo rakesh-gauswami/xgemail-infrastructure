@@ -99,6 +99,8 @@
         "t2.small",
         "t2.medium",
         "t2.large",
+        "t2.xlarge",
+        "t2.2xlarge",
         "m4.large",
         "m4.xlarge",
         "m4.2xlarge",
@@ -117,6 +119,16 @@
       "Description": "(Develop, CPLAT-XXXX, etc...)",
       "Type": "String",
       "Default": "develop"
+    },
+
+    "JilterInboundVersion": {
+      "Description": "Inbound Jilter version",
+      "Type": "String"
+    },
+
+    "JilterOutboundVersion": {
+      "Description": "Outbound Jilter version",
+      "Type": "String"
     },
 
     "KeyPairName": {
@@ -324,21 +336,25 @@
                     "\n", [
                       "{",
                       "    \"ami\": {",
-                      "        \"ami_bucket\"                   :\"{{ami_bucket}}\",",
-                      "        \"application_name\"             :\"{{application_name}}\",",
-                      "        \"branch\"                       :\"{{branch}}\",",
-                      "        \"build\"                        :\"{{build}}\",",
-                      "        \"environment\"                  :\"{{environment}}\",",
-                      "        \"region\"                       :\"{{region}}\"",
+                      "        \"ami_bucket\":                  \"{{ami_bucket}}\",",
+                      "        \"application_name\":            \"{{application_name}}\",",
+                      "        \"branch\":                      \"{{branch}}\",",
+                      "        \"build\":                       \"{{build}}\",",
+                      "        \"environment\":                 \"{{environment}}\",",
+                      "        \"region\":                      \"{{region}}\"",
                       "    },",
-                      "    \"sophos_cloud\" : {",
-                      "        \"application\"                  :\"{{s3_app_repo_url}}/{{java_branch}}\",",
-                      "        \"aeskey\"                       :\"{{aes_decryption_key}}\",",
-                      "        \"context\"                      :\"{{environment}}\",",
-                      "        \"environment\"                  :\"{{environment}}\",",
-                      "        \"cookbooks\"                    :\"{{s3_cookbook_repo_url}}\",",
-                      "        \"savi\"                         :\"{{s3_3rdparty_repo_url}}/savi-install.tar.gz\",",
-                      "        \"thirdparty\"                   :\"{{s3_3rdparty_repo_url}}\"",
+                      "    \"sophos_cloud\": {",
+                      "        \"application\":                 \"{{s3_app_repo_url}}/{{java_branch}}\",",
+                      "        \"aeskey\":                      \"{{aes_decryption_key}}\",",
+                      "        \"context\":                     \"{{environment}}\",",
+                      "        \"environment\":                 \"{{environment}}\",",
+                      "        \"cookbooks\":                   \"{{s3_cookbook_repo_url}}\",",
+                      "        \"savi\":                        \"{{s3_3rdparty_repo_url}}/savi-install.tar.gz\",",
+                      "        \"thirdparty\":                  \"{{s3_3rdparty_repo_url}}\"",
+                      "    },",
+                      "    \"xgemail\": {",
+                      "        \"jilter_inbound_version\":      \"{{jilter_inbound_version}}\",",
+                      "        \"jilter_outbound_version\":     \"{{jilter_outbound_version}}\"",
                       "    }",
                       "}",
                       ""
@@ -353,6 +369,8 @@
                   "build":                                      { "Ref": "Build" },
                   "environment":                                { "Ref": "Environment" },
                   "java_branch":                                { "Ref": "JavaBranch" },
+                  "jilter_inbound_version":                     { "Ref": "JilterInboundVersion"},
+                  "jilter_outbound_version":                    { "Ref": "JilterOutboundVersion"},
                   "region":                                     { "Ref": "AWS::Region" },
                   "s3_3rdparty_repo_url":                       { "Ref": "S3Sophos3rdPartyRepositoryUrl" },
                   "s3_app_repo_url":                            { "Ref": "S3SophosAppRepositoryUrl" },
@@ -371,9 +389,10 @@
                       "knife node run_list add -z `knife node list -z` \"",
                       "recipe[sophos-cloud-xgemail::install_tdagent],",
                       "recipe[sophos-cloud-xgemail::install_monit_service],",
-                      "recipe[sophos-cloud-xgemail::ami],",
                       "recipe[sophos-cloud-java::oracle],",
-                      "recipe[sophos-cloud-xgemail::download_libspf2]",
+                      "recipe[sophos-cloud-xgemail::download_libspf2],",
+                      "recipe[sophos-cloud-xgemail::ami]",
+
                       "\""
                     ]
                   ]
