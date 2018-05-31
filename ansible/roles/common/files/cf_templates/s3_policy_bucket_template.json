@@ -5,7 +5,7 @@
 
   "Metadata": {
     "Copyright": [
-      "Copyright 2017, Sophos Limited. All rights reserved.",
+      "Copyright 2018, Sophos Limited. All rights reserved.",
       "",
       "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
       "Sophos Limited and Sophos Group.  All other product and company",
@@ -37,6 +37,10 @@
     },
     "SnsRelayControlTopic": {
       "Description": "The Relay Control Topic Notification ARN",
+      "Type": "String"
+    },
+    "SnsMultiPolicyTopic": {
+      "Description": "The Multi policy Topic Notification ARN",
       "Type": "String"
     }
   },
@@ -99,6 +103,34 @@
                     {
                       "Name": "prefix",
                       "Value": "config/outbound-relay-control/"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "Topic": { "Ref": "SnsMultiPolicyTopic" },
+              "Event": "s3:ObjectCreated:*",
+              "Filter": {
+                "S3Key": {
+                  "Rules": [
+                    {
+                      "Name": "prefix",
+                      "Value": "config/policies/"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "Topic": { "Ref": "SnsMultiPolicyTopic" },
+              "Event": "s3:ObjectRemoved:*",
+              "Filter": {
+                "S3Key": {
+                  "Rules": [
+                    {
+                      "Name": "prefix",
+                      "Value": "config/policies/"
                     }
                   ]
                 }

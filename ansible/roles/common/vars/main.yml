@@ -10,7 +10,8 @@ aws:
       node_type:                                "t2.medium.elasticsearch"
       instance_number:                          "1"
       master_instance_number:                   "2"
-      snapshot_start_hour:                      "0"
+      snapshot_start_hour:                      "4"
+      zone_awareness:                           "false"
   s3:
     customer_submit_bucket:
       stack_name:                               "{{stack.s3.customer_submit_bucket}}"
@@ -70,6 +71,7 @@ aws:
         S3BucketName:                           "{{s3.submit_bucket}}"
         S3LifeCycleDelete:                      "14"
         S3PolicyCreate:                         "true"
+        SubmitBucketPolicy:                     "true"
         S3PolicyPrincipalList:                  "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
     lambda_bucket:
       stack_name:                               "{{stack.s3.lambda_bucket}}"
@@ -87,6 +89,7 @@ aws:
         S3BucketName:                           "{{s3.policy_bucket}}"
         SnsPolicyTopic:                         "{{sns.arn_prefix}}{{sns.policy_sns_topic}}"
         SnsRelayControlTopic:                   "{{sns.arn_prefix}}{{sns.relay_control_sns_topic}}"
+        SnsMultiPolicyTopic:                    "{{sns.arn_prefix}}{{sns.multi_policy_sns_topic}}"
 
   sns:
     alarm_sns_topic:
