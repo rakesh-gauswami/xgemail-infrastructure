@@ -20,7 +20,7 @@
       AutoScalingMaxSize:                   "1"
       AutoScalingNotificationTopicARN:      "{{sns.arn_prefix}}{{sns.lifecycle_sqs_sns}}"
       AvailabilityZoneIndex:                "{{item.1}}"
-      AvailabilityZones:                    "{{account.region}}a, {{account.region}}b, {{account.region}}c"
+      AvailabilityZones:                    "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.AvailabilityZoneA}},{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.AvailabilityZoneB}},{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.AvailabilityZoneC}}"
       Branch:                               "{{build.branch}}"
       BuildVersion:                         "{{build.result_key}}"
       BundleVersion:                        "{{ami_build}}"

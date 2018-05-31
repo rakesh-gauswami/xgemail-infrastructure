@@ -70,6 +70,12 @@
     "VpcNameLowerCase": {
       "Description": "Name of the current VPC in lower case",
       "Type": "String"
+    },
+    "ZoneAwareness":{
+      "Description": "Amazon ES allocates the nodes and replica index shards across two Availability Zones in the same region to prevent data loss and minimize downtime in the event of node or data center failure.",
+      "Type": "String",
+      "AllowedValues": [ "true", "false"],
+      "Default": "false"
     }
   },
 
@@ -81,7 +87,7 @@
         "ElasticsearchClusterConfig": {
           "DedicatedMasterEnabled": "true",
           "InstanceCount": { "Ref": "NumberOfInstances" },
-          "ZoneAwarenessEnabled": "false",
+          "ZoneAwarenessEnabled": {"Ref": "ZoneAwareness"},
           "InstanceType": { "Ref": "NodeType" },
           "DedicatedMasterType": { "Ref": "MasterNodeType" },
           "DedicatedMasterCount": { "Ref": "NumberOfMasterInstances" }
