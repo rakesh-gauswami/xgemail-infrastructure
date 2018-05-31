@@ -2,11 +2,12 @@ aws:
   es:
     toc_elasticsearch_domain:
       ebs_volume_size:                          "100"
-      master_node_type:                         "m4.large.elasticsearch"
+      master_node_type:                         "t2.medium.elasticsearch"
       node_type:                                "m4.xlarge.elasticsearch"
-      instance_number:                          "5"
+      instance_number:                          "2"
       master_instance_number:                   "3"
-      snapshot_start_hour:                      "0"
+      snapshot_start_hour:                      "4"
+      zone_awareness:                           "true"
 account: qa
 as_min_cap_bastion: "1"
 aws_account_id: 382702281923
