@@ -313,14 +313,15 @@
               "01_reset_cookbooks": {
                 "command": {
                   "Fn::Join": [
-                    " ", [
-                      "/opt/sophos/bin/reset_cookbooks.py",
-                      "-r us-west-2",
-                      "-f",
+                    "", [
+                      "/opt/sophos/bin/reset_cookbooks.py ",
+                      "-r us-west-2 ",
+                      "-f ",
                       { "Ref": "Branch" },
-                      "-p",
+                      "xgemail-infrastructure ",
+                      "-p ",
                       { "Ref": "AesDecryptionKey" },
-                      "> /var/log/sophos/reset_cookbooks.output 2>&1"
+                      " > /var/log/sophos/reset_cookbooks.output 2>&1"
                     ]
                   ]
                 }
