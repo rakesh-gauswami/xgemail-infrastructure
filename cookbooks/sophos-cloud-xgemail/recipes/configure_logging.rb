@@ -32,6 +32,20 @@ template 'fluentd-source-maillog.conf' do
   not_if { NODE_TYPE == 'elasticsearch' }
 end
 
+template 'fluentd-filter-msg-stats.conf' do
+  path '/etc/td-agent.d/20-filter-msg-stats.conf'
+  source 'fluentd-filter-msg-stats.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :application_name => NODE_TYPE,
+    :region => REGION,
+    :account => ACCOUNT,
+    :instance_id => INSTANCE_ID
+  )
+end
+
 template 'fluentd-source-elasticsearch.conf' do
   path '/etc/td-agent.d/00-source-elasticsearch.conf'
   source 'fluentd-source-elasticsearch.conf.erb'
