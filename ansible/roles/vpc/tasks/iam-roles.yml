@@ -6,7 +6,7 @@
     mode:               put
     region:             "{{account.region}}"
     bucket:             "{{cloud_applications}}"
-    object:             "{{build.branch}}/roles_xgemail_template.json"
+    object:             "{{build.branch}}/xgemail-infrastructure/roles_xgemail_template.json"
     src:                "{{template.iam.roles_xgemail_template}}"
     overwrite:          always
 
@@ -16,7 +16,7 @@
     state:                                      present
     region:                                     "{{account.region}}"
     disable_rollback:                           true
-    template_url:                               "https://s3.amazonaws.com/{{cloud_applications}}/{{build.branch}}/roles_xgemail_template.json"
+    template_url:                               "https://s3.amazonaws.com/{{cloud_applications}}/{{build.branch}}/xgemail-infrastructure/roles_xgemail_template.json"
     template_parameters:
       Environment:                              "{{account.name}}"
       XgemailMsgHistoryBucketName:              "{{s3.msg_history_bucket}}"
