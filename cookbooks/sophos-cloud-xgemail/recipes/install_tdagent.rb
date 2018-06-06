@@ -113,12 +113,20 @@ execute 'install td-agent fluent-plugin-sns' do
   EOH
 end
 
-execute 'install td-agent multi-format plugin' do
+execute 'install td-agent fluent-plugin-grok-parser' do
+  user 'root'
+  command <<-EOH
+      td-agent-gem install fluent-plugin-grok-parser
+  EOH
+end
+
+execute 'install td-agent fluent-plugin-multi-format-parser' do
   user 'root'
   command <<-EOH
       td-agent-gem install fluent-plugin-multi-format-parser
   EOH
 end
+
 # End Temporary block
 #
 service 'td-agent' do

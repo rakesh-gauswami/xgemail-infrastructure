@@ -1,14 +1,16 @@
-<match sophos.xgemail.<%= @application_name %>.maillog>
-  @type copy
-  <store>
-    @type rewrite_tag_filter
-    <rule>
-      key message
-      pattern /milter-reject/
-      tag sns.reject
-    </rule>
-  </store>
-</match>
+### This isn't complete yet...Commenting out for now until PR is merged.
+
+#<match sophos.xgemail.<%= @application_name %>.maillog>
+#  @type copy
+#  <store>
+#    @type rewrite_tag_filter
+#    <rule>
+#      key message
+#      pattern /milter-reject/
+#      tag sns.reject
+#    </rule>
+#  </store>
+#</match>
 
 #<filter sns.reject>
 #    @type record_transformer

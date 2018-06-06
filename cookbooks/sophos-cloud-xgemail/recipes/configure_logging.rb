@@ -18,6 +18,7 @@ NODE_TYPE             = node['xgemail']['cluster_type']
 ACCOUNT               = node['sophos_cloud']['environment']
 REGION                = node['sophos_cloud']['region']
 INSTANCE_ID           = node['ec2']['instance_id']
+SNS_TOPIC             = "#{node['xgemail']['station_vpc_id']}-xgemail-msg-statistics-rejection-SNS"
 
 template 'fluentd-source-maillog.conf' do
   path '/etc/td-agent.d/10-source-maillog.conf'
@@ -32,19 +33,19 @@ template 'fluentd-source-maillog.conf' do
   not_if { NODE_TYPE == 'elasticsearch' }
 end
 
-template 'fluentd-filter-msg-stats.conf' do
-  path '/etc/td-agent.d/20-filter-msg-stats.conf'
-  source 'fluentd-filter-msg-stats.conf.erb'
-  mode '0644'
-  owner 'root'
-  group 'root'
-  variables(
-    :application_name => NODE_TYPE,
-    :region => REGION,
-    :account => ACCOUNT,
-    :instance_id => INSTANCE_ID
-  )
-end
+#template 'fluentd-filter-msg-stats.conf' do
+#  path '/etc/td-agent.d/20-filter-msg-stats.conf'
+#  source 'fluentd-filter-msg-stats.conf.erb'
+#  mode '0644'
+#  owner 'root'
+#  group 'root'
+#  variables(
+#    :application_name => NODE_TYPE,
+#    :region => REGION,
+#    :sns_topic => SNS_TOPIC
+#  )
+#  only_if { NODE_TYPE == 'submit' }
+#end
 
 template 'fluentd-source-elasticsearch.conf' do
   path '/etc/td-agent.d/00-source-elasticsearch.conf'
