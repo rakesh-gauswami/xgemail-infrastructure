@@ -74,6 +74,16 @@
       "Default": ""
     },
 
+    "ScheduleState": {
+      "Description": "The state of the scheduled event. ENABLED or DISABLED",
+      "Type": "String",
+      "Default": "DISABLED",
+      "AllowedValues": [
+        "ENABLED",
+        "DISABLED"
+      ]
+    },
+
     "SsmPostfixService": {
       "Description": "The SSM Document to Start or Stop Postfix.",
       "Type": "String"
@@ -99,9 +109,6 @@
     },
     "HasSchedule": {
       "Fn::Not": [{ "Fn::Equals": [ { "Ref": "ScheduleExpression" }, "" ] }]
-    },
-    "IsProduction": {
-      "Fn::Equals": [ { "Ref": "Environment" }, "prod" ]
     }
   },
 
@@ -156,13 +163,7 @@
       "Properties": {
         "Description": "ScheduledRule",
         "ScheduleExpression": { "Ref": "ScheduleExpression" },
-        "State": {
-          "Fn::If": [
-            "IsProduction",
-            "ENABLED",
-            "DISABLED"
-          ]
-        },
+        "State": { "Ref": "ScheduleState" },
         "Targets": [
           {
             "Arn": {
