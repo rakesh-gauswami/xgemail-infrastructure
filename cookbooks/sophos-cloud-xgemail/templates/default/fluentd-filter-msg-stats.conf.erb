@@ -1,0 +1,35 @@
+### This isn't complete yet...Commenting out for now until PR is merged.
+
+#<match sophos.xgemail.<%= @application_name %>.maillog>
+#  @type copy
+#  <store>
+#    @type rewrite_tag_filter
+#    <rule>
+#      key message
+#      pattern /milter-reject/
+#      tag sns.reject
+#    </rule>
+#  </store>
+#</match>
+
+#<filter sns.reject>
+#    @type record_transformer
+#    <record>
+#      type
+#      recipient
+#      timestamp
+#    </record>
+#</filter>
+
+<match sns.reject>
+
+  @type sns
+
+  sns_topic_name <%= @sns_topic %>
+
+  sns_region <%= @region %>
+
+  sns_subject_key process
+  sns_body_key message
+
+</match>
