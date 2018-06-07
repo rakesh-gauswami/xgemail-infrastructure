@@ -221,6 +221,12 @@ aws:
       template:                                 "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                              "{{sqs.internet_submit_sqs_queue}}"
+    msg_history_fluentd_sqs_queue:
+          stack_name:                               "{{stack.sqs.msg_history_fluentd_sqs_queue}}"
+          state:                                    present
+          template:                                 "{{template.sqs.sqs_simple_template}}"
+          template_parameters:
+            QueueName:                              "{{sqs.msg_history_fluentd_sqs_queue}}"
     msg_history_sqs_queue:
       stack_name:                               "{{stack.sqs.msg_history_sqs_queue}}"
       state:                                    present

@@ -71,6 +71,18 @@
       "Description": "Endpoint URL for Internet delivery SQS queue",
       "Type": "String"
     },
+    "MessageHistoryFluentdQueueArn": {
+      "Description": "Endpoint for message history fluentd SQS queue",
+      "Type": "String"
+    },
+    "MessageHistoryFluentdQueueUrl": {
+      "Description": "Endpoint URL for message history fluentd SQS queue",
+      "Type": "String"
+    },
+    "MessageHistoryFluentdTopicArn": {
+      "Description": "Endpoint for message history fluentd SNS",
+      "Type": "String"
+    },
     "MessageHistoryQueueArn": {
       "Description": "Endpoint for message history SQS queue",
       "Type": "String"
@@ -208,6 +220,14 @@
         "Endpoint": { "Ref": "InternetDeliveryQueueArn" },
         "Protocol": "sqs",
         "TopicArn": { "Ref": "InternetDeliveryTopicArn"}
+      }
+    },
+    "MessageHistoryFluentdQueueToMessageHistoryFlunetdSnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "MessageHistoryFluentdQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "MessageHistoryFluentdTopicArn"}
       }
     },
     "MessageHistoryQueueToInternetDeliverySnsSubscription": {
@@ -352,6 +372,30 @@
           ]
         },
         "Queues": [{ "Ref": "InternetDeliveryQueueUrl" }]
+      }
+    },
+    "MessageHistoryFluentdQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "MessageHistoryFluentdQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-MessageHistoryFluentdTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "MessageHistoryFluentdTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{ "Ref": "MultiPolicyQueueUrl" }]
       }
     },
     "MessageHistoryQueuePolicy": {
