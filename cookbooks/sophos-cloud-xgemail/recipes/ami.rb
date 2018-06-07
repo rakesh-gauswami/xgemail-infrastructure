@@ -14,6 +14,9 @@ runlevel = shcmd_h.run_command.stdout
 MANUAL_TEST_RUN = ($SYSWIDE_ACCOUNT_NAM != 'hmr-core')
 log "runlevel='#{runlevel}', $SYSWIDE_ACCOUNT_NAM=#{$SYSWIDE_ACCOUNT_NAM}, MANUAL_TEST_RUN=#{MANUAL_TEST_RUN}" do level :info end
 
+# Ruby characters in strings can be referenced by their index number.
+# This node attribute, coming in as jdk-1.8*, is selecting the seventh index which is 8 in this example.
+java_version = "#{node['sophos_cloud']['jdk_version']}"[6]
 sophos_script_path = node['sophos_cloud']['script_path']
 sophos_tmp_path = node['sophos_cloud']['tmp']
 sophos_thirdparty = node['sophos_cloud']['thirdparty']
@@ -43,6 +46,27 @@ bash 'edit_etc_hosts' do
   EOH
 end
 
+# Install Oracle JDK
+bash "Install Oracle JDK" do
+  user "root"
+  cwd "/tmp"
+  code <<-EOH
+    set -e
+
+    mkdir -p /usr/lib/tmp /usr/lib/jvm/
+    aws --region us-west-2 s3 cp s3:#{node['sophos_cloud']['java']}/#{node['sophos_cloud']['jdk_version']}.tar.gz /usr/lib/tmp
+    tar -xvf /usr/lib/tmp/#{node['sophos_cloud']['jdk_version']}.tar.gz -C /usr/lib/jvm/
+
+    rm -rf /usr/lib/tmp
+
+    # Items after keytool are not strictly required but may be helpful for debugging.
+    for CMD in java javac keytool jar jcmd jdb jhat jinfo jmap jps jstack jstat; do
+      update-alternatives --install "/usr/bin/${CMD}" "${CMD}" "/usr/lib/jvm/java-#{java_version}-oracle/bin/${CMD}" 20000
+      chmod a+x "/usr/bin/${CMD}"
+    done
+  EOH
+end
+
 # Uninstall OpenJDK.
 bash 'remove_openjdk' do
   user 'root'
@@ -51,6 +75,16 @@ bash 'remove_openjdk' do
     for p in $(yum list installed | awk '/openjdk/ {print $1}'); do
       yum remove -y $p
     done
+  EOH
+end
+
+# Replace default-java symlink.
+bash 'replace_java_symlink' do
+  user 'root'
+  cwd '/tmp'
+  code <<-EOH
+    rm -rf /usr/lib/jvm/default-java
+    ln -s /usr/lib/jvm/java-#{java_version}-oracle /usr/lib/jvm/default-java
   EOH
 end
 
