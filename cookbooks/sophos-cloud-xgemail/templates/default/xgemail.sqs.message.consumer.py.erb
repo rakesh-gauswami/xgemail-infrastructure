@@ -22,10 +22,13 @@ import metadataformatter
 import requests
 import smtplib
 import urllib
+import re
 from awshandler import AwsHandler
 from common.sqsmessage import SqsMessage
 from logging.handlers import SysLogHandler
 from smtplib import SMTPException
+from smtplib import SMTPException
+from smtplib import SMTPRecipientsRefused
 
 # general constants
 AWS_REGION = "<%= @aws_region %>"
@@ -114,6 +117,70 @@ def attempt_to_retrieve_headers(message_path):
 
     return headers
 
+# Fixes up EOL characters, taken from smtplib
+def fix_eols(data):
+    return  re.sub(r'(?:\r\n|\n|\r(?!\n))', "\r\n", data)
+
+# Accepts a postfix response in the form "2.0.0 Ok: queued as 412TZQ0wl9z1S"
+# parses out and returns the queue id
+def parse_postfix_queue_id_from_response(full_postfix_response):
+    return re.sub('2.0.0\sOk:\squeued\sas\s', '', full_postfix_response)
+
+
+# A recreation of the sendmail function from smtplib. This function does exactly the same thing
+# as the sendmail function, however it returns a tuple of (failed_recipients, postfix_response) instead
+# of just the failed recipients.
+# See: https://github.com/python/cpython/blob/master/Lib/smtplib.py for the original code
+def sendmail_to_postfix(server, from_addr, to_addrs, msg, mail_options=[], rcpt_options=[]):
+    server.ehlo_or_helo_if_needed()
+    esmtp_opts = []
+
+    if isinstance(msg, str):
+        msg = fix_eols(msg).encode('ascii')
+
+    if server.does_esmtp:
+        if server.has_extn('size'):
+            esmtp_opts.append("size=%d" % len(msg))
+        for option in mail_options:
+            esmtp_opts.append(option)
+
+    (code, resp) = server.mail(from_addr, esmtp_opts)
+    if code != 250:
+        if code == 421:
+            server.close()
+        else:
+            server._rset()
+        raise SMTPSenderRefused(code, resp, from_addr)
+
+    senderrs = {}
+    if isinstance(to_addrs, str):
+        to_addrs = [to_addrs]
+
+    for each in to_addrs:
+        (code, resp) = server.rcpt(each, rcpt_options)
+        if (code != 250) and (code != 251):
+            senderrs[each] = (code, resp)
+        if code == 421:
+            server.close()
+            raise SMTPRecipientsRefused(senderrs)
+
+    if len(senderrs) == len(to_addrs):
+        # the server refused all our recipients
+        server._rset()
+        raise SMTPRecipientsRefused(senderrs)
+    (code, resp) = server.data(msg)
+
+    postfix_resp = resp
+
+    if code != 250:
+        if code == 421:
+            server.close()
+        else:
+            server._rset()
+        raise SMTPDataError(code, resp)
+    #if we got here then somebody got our mail
+    return senderrs, postfix_resp
+
 
 # Adds headers to the provided message object.
 # Returns the updated message object if successful. If any issues occurred with
@@ -153,12 +220,27 @@ def add_headers(message, message_path, headers):
 
 # attempts to inject email into Postfix and
 # returns True if successful, False otherwise.
-def inject_email(sender, recipients, email):
+def inject_email(sender, recipients, email, message_path, submit_queue_id):
     sendmail_errors = {}
     try:
         server = smtplib.SMTP(MTA_HOST, MTA_PORT)
-        # TODO: record queue_id to stitch submit and delivery
-        sendmail_recipients_refused = server.sendmail(sender, recipients, email)
+
+        (sendmail_recipients_refused, raw_postfix_response) = sendmail_to_postfix(
+            server,
+            sender,
+            recipients,
+            email
+        )
+
+        delivery_queue_id = parse_postfix_queue_id_from_response(raw_postfix_response)
+
+        logger.info(
+            'Submit server queue id [%s] queued for delivery as [%s], message path [%s]',
+            submit_queue_id,
+            delivery_queue_id,
+            message_path
+        )
+
     except SMTPException:
         logger.exception("Errors during email injection")
         return False
@@ -215,10 +297,10 @@ while True:
                 logger.exception("failed to retrieve headers at message path {0}, retry times: {1}. "
                                  "Retrying at most {2} times"
                     .format(
-                        sqs_message.message_path,
-                        no_of_times_received,
-                        MAX_NUMBER_OF_RETRIES
-                    ))
+                    sqs_message.message_path,
+                    no_of_times_received,
+                    MAX_NUMBER_OF_RETRIES
+                ))
 
                 if no_of_times_received <= MAX_NUMBER_OF_RETRIES:
                     continue
@@ -235,7 +317,7 @@ while True:
                 if e.response["Error"]["Code"] == "NoSuchKey":
                     logger.exception(
                         "Email or metadata [{0}] not found."
-                        .format(sqs_message.message_path)
+                            .format(sqs_message.message_path)
                     )
                 else:
                     logger.exception("Unexpected error during S3 object download.")
@@ -252,12 +334,12 @@ while True:
             recipients = metadata["recipients"]
 
             logger.info(
-                "Email and metadata retrieved from S3. " \
+                "Email and metadata retrieved from S3. "
                 "QueueId: {0} - sender: {1} - recipients: [<{2}>]"
-                .format(
-                  queue_id.encode('utf-8'),
-                  None if sender is None else sender.encode('utf-8'),
-                  '>, <'.join(r.encode('utf-8') for r in recipients)
+                    .format(
+                    queue_id.encode('utf-8'),
+                    None if sender is None else sender.encode('utf-8'),
+                    '>, <'.join(r.encode('utf-8') for r in recipients)
                 )
             )
 
@@ -271,7 +353,9 @@ while True:
             is_injection_success = inject_email(
                 sender,
                 recipients,
-                message_binary_with_headers
+                message_binary_with_headers,
+                sqs_message.message_path,
+                queue_id.encode('utf-8')
             )
 
             if is_injection_success:
