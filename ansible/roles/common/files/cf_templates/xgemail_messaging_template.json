@@ -71,16 +71,16 @@
       "Description": "Endpoint URL for Internet delivery SQS queue",
       "Type": "String"
     },
-    "MessageHistoryConsumerQueueArn": {
-      "Description": "Endpoint for message history Consumer SQS queue",
+    "MessageHistoryStatusQueueArn": {
+      "Description": "Endpoint for message history Delivery Status SQS queue",
       "Type": "String"
     },
-    "MessageHistoryConsumerQueueUrl": {
-      "Description": "Endpoint URL for message history Consumer SQS queue",
+    "MessageHistoryStatusQueueUrl": {
+      "Description": "Endpoint URL for message history Delivery Status SQS queue",
       "Type": "String"
     },
-    "MessageHistoryConsumerTopicArn": {
-      "Description": "Endpoint for message history Consumer SNS",
+    "MessageHistoryStatusQueueTopicArn": {
+      "Description": "Endpoint for message history Delivery Status SNS",
       "Type": "String"
     },
     "MessageHistoryQueueArn": {
@@ -222,12 +222,12 @@
         "TopicArn": { "Ref": "InternetDeliveryTopicArn"}
       }
     },
-    "MessageHistoryConsumerQueueToMessageHistoryConsumerSnsSubscription": {
+    "MessageHistoryDeliveryStatusQueueToMessageHistoryDeliveryStatusSnsSubscription": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
-        "Endpoint": { "Ref": "MessageHistoryConsumerQueueArn" },
+        "Endpoint": { "Ref": "MessageHistoryStatusQueueArn" },
         "Protocol": "sqs",
-        "TopicArn": { "Ref": "MessageHistoryConsumerTopicArn"}
+        "TopicArn": { "Ref": "MessageHistoryStatusQueueTopicArn"}
       }
     },
     "MessageHistoryQueueToInternetDeliverySnsSubscription": {
@@ -374,28 +374,28 @@
         "Queues": [{ "Ref": "InternetDeliveryQueueUrl" }]
       }
     },
-    "MessageHistoryConsumerQueuePolicy": {
+    "MessageHistoryDeliveryStatusQueuePolicy": {
       "Type": "AWS::SQS::QueuePolicy",
       "Properties": {
         "PolicyDocument": {
           "Version": "2012-10-17",
-          "Id": "MessageHistoryConsumerQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Id": "MessageHistoryDeliveryStatusQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
           "Statement": [
             {
-              "Sid": "Allow-MessageHistoryConsumerTopicArn",
+              "Sid": "Allow-MessageHistoryStatusQueueTopicArn",
               "Effect": "Allow",
               "Principal": "*",
               "Action": ["sqs:SendMessage"],
               "Resource": "*",
               "Condition": {
                 "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "MessageHistoryConsumerTopicArn"}
+                  "aws:SourceArn": {"Ref": "MessageHistoryStatusQueueTopicArn"}
                 }
               }
             }
           ]
         },
-        "Queues": [{ "Ref": "MessageHistoryConsumerQueueUrl" }]
+        "Queues": [{ "Ref": "MessageHistoryStatusQueueUrl" }]
       }
     },
     "MessageHistoryQueuePolicy": {

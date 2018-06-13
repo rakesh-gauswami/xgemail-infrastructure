@@ -243,6 +243,12 @@
       "MaxValue": "16384"
     },
 
+    "XgemailMsgHistoryDeliveryStatusQueueUrl" : {
+      "Description" : "URL for the SQS Queue where Message History delivery status events are sent",
+      "Type" : "String",
+      "Default": ""
+    },
+
     "XgemailNotifierQueueUrl" : {
       "Description" : "URL for the SQS Queue where XGEMAIL messages are sent",
       "Type" : "String",
@@ -488,6 +494,7 @@
                       "  },\n",
                       "  \"xgemail\" : {\n",
                       "    \"cluster_type\"                   : \"{{cluster_type}}\",\n",
+                      "    \"msg_history_status_queue_url\"   : \"{{msg_history_delivery_status_queue_url}}\",\n",
                       "    \"msg_notifier_queue_url\"         : \"{{msg_notifier_queue_url}}\",\n",
                       "    \"station_vpc_name\"               : \"{{station_vpc_name}}\"\n",
                       "  }\n",
@@ -513,6 +520,7 @@
                   "volume_tracker_sdb_domain":                { "Ref": "VolumeTrackerSimpleDbDomain" },
                   "vpc_id":                                   { "Ref": "Vpc" },
                   "vpc_name":                                 { "Ref": "VpcName" },
+                  "msg_history__status_queue_url":            { "Ref": "XgemailMsgHistoryDeliveryStatusQueueUrl" },
                   "msg_notifier_queue_url":                   { "Ref": "XgemailNotifierQueueUrl" }
                 },
                 "owner": "root",
