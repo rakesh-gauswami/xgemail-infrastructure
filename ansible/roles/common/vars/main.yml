@@ -124,11 +124,11 @@ aws:
       template:                                 "{{template.sns.sns_simple_template}}"
       template_parameters:
         TopicName:                              "{{sns.success_events_sns_topic}}"
-    msg_history_fluentd_sns_topic:
-      stack_name:                               "{{stack.sns.msg_history_fluentd_sns_topic}}"
+    msg_history_consumer_sns_topic:
+      stack_name:                               "{{stack.sns.msg_history_consumer_sns_topic}}"
       template:                                 "{{template.sns.sns_simple_template}}"
       template_parameters:
-        TopicName:                              "{{sns.msg_history_fluentd_sns_topic}}"
+        TopicName:                              "{{sns.msg_history_consumer_sns_topic}}"
     msg_statistics_rejection_sns_topic:
       stack_name:                               "{{stack.sns.msg_statistics_rejection_sns_topic}}"
       template:                                 "{{template.sns.sns_simple_template}}"
@@ -226,12 +226,12 @@ aws:
       template:                                 "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                              "{{sqs.internet_submit_sqs_queue}}"
-    msg_history_fluentd_sqs_queue:
-      stack_name:                               "{{stack.sqs.msg_history_fluentd_sqs_queue}}"
+    msg_history_consumer_sqs_queue:
+      stack_name:                               "{{stack.sqs.msg_history_consumer_sqs_queue}}"
       state:                                    present
       template:                                 "{{template.sqs.sqs_simple_template}}"
       template_parameters:
-        QueueName:                              "{{sqs.msg_history_fluentd_sqs_queue}}"
+        QueueName:                              "{{sqs.msg_history_consumer_sqs_queue}}"
     msg_history_sqs_queue:
       stack_name:                               "{{stack.sqs.msg_history_sqs_queue}}"
       state:                                    present

@@ -71,16 +71,16 @@
       "Description": "Endpoint URL for Internet delivery SQS queue",
       "Type": "String"
     },
-    "MessageHistoryFluentdQueueArn": {
-      "Description": "Endpoint for message history fluentd SQS queue",
+    "MessageHistoryConsumerQueueArn": {
+      "Description": "Endpoint for message history Consumer SQS queue",
       "Type": "String"
     },
-    "MessageHistoryFluentdQueueUrl": {
-      "Description": "Endpoint URL for message history fluentd SQS queue",
+    "MessageHistoryConsumerQueueUrl": {
+      "Description": "Endpoint URL for message history Consumer SQS queue",
       "Type": "String"
     },
-    "MessageHistoryFluentdTopicArn": {
-      "Description": "Endpoint for message history fluentd SNS",
+    "MessageHistoryConsumerTopicArn": {
+      "Description": "Endpoint for message history Consumer SNS",
       "Type": "String"
     },
     "MessageHistoryQueueArn": {
@@ -222,12 +222,12 @@
         "TopicArn": { "Ref": "InternetDeliveryTopicArn"}
       }
     },
-    "MessageHistoryFluentdQueueToMessageHistoryFlunetdSnsSubscription": {
+    "MessageHistoryConsumerQueueToMessageHistoryConsumerSnsSubscription": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
-        "Endpoint": { "Ref": "MessageHistoryFluentdQueueArn" },
+        "Endpoint": { "Ref": "MessageHistoryConsumerQueueArn" },
         "Protocol": "sqs",
-        "TopicArn": { "Ref": "MessageHistoryFluentdTopicArn"}
+        "TopicArn": { "Ref": "MessageHistoryConsumerTopicArn"}
       }
     },
     "MessageHistoryQueueToInternetDeliverySnsSubscription": {
@@ -374,28 +374,28 @@
         "Queues": [{ "Ref": "InternetDeliveryQueueUrl" }]
       }
     },
-    "MessageHistoryFluentdQueuePolicy": {
+    "MessageHistoryConsumerQueuePolicy": {
       "Type": "AWS::SQS::QueuePolicy",
       "Properties": {
         "PolicyDocument": {
           "Version": "2012-10-17",
-          "Id": "MessageHistoryFluentdQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Id": "MessageHistoryConsumerQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
           "Statement": [
             {
-              "Sid": "Allow-MessageHistoryFluentdTopicArn",
+              "Sid": "Allow-MessageHistoryConsumerTopicArn",
               "Effect": "Allow",
               "Principal": "*",
               "Action": ["sqs:SendMessage"],
               "Resource": "*",
               "Condition": {
                 "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "MessageHistoryFluentdTopicArn"}
+                  "aws:SourceArn": {"Ref": "MessageHistoryConsumerTopicArn"}
                 }
               }
             }
           ]
         },
-        "Queues": [{ "Ref": "MultiPolicyQueueUrl" }]
+        "Queues": [{ "Ref": "MessageHistoryConsumerQueueUrl" }]
       }
     },
     "MessageHistoryQueuePolicy": {

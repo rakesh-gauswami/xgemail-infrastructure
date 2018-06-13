@@ -218,8 +218,8 @@
       "Type" : "String",
       "Default": ""
     },
-    "XgemailMsgHistoryFluentdQueueUrl" : {
-      "Description" : "URL for the SQS Queue where XGEMAIL messages are sent",
+    "XgemailMsgHistoryConsumerQueueUrl" : {
+      "Description" : "URL for the SQS Queue where Message History Consumer events are sent",
       "Type" : "String",
       "Default": ""
     },
@@ -579,7 +579,7 @@
                   "environment":                              { "Ref": "Environment" },
                   "lifecycle_topic_arn":                      { "Ref": "AutoScalingNotificationTopicARN" },
                   "msg_history_bucket_name":                  { "Ref": "XgemailMsgHistoryBucketName" },
-                  "msg_history_fluentd_queue_url":            { "Ref": "XgemailMsgHistoryFluentdQueueUrl" },
+                  "msg_history_consumer_queue_url":           { "Ref": "XgemailMsgHistoryFluentdQueueUrl" },
                   "msg_history_queue_url":                    { "Ref": "XgemailMsgHistoryQueueUrl" },
                   "msg_notifier_queue_url":                   { "Ref": "XgemailNotifierQueueUrl" },
                   "policy_efs_file_system_id":                { "Ref": "XgemailPolicyEfsFileSystemId" },
