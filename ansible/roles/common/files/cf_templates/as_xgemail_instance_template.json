@@ -218,13 +218,13 @@
       "Type" : "String",
       "Default": ""
     },
-    "XgemailMsgHistoryStatusQueueUrl" : {
-      "Description" : "URL for the SQS Queue where Message History delivery status events are sent",
+    "XgemailMsgHistoryQueueUrl" : {
+      "Description" : "URL for the SQS Queue where XGEMAIL messages are sent",
       "Type" : "String",
       "Default": ""
     },
-    "XgemailMsgHistoryQueueUrl" : {
-      "Description" : "URL for the SQS Queue where XGEMAIL messages are sent",
+    "XgemailMsgHistoryStatusQueueUrl" : {
+      "Description" : "URL for the SQS Queue where Message History delivery status events are sent",
       "Type" : "String",
       "Default": ""
     },
@@ -551,8 +551,8 @@
                     "    \"cluster_type\"                     : \"{{cluster_type}}\",\n",
                     "    \"lifecycle_topic_arn\"              : \"{{lifecycle_topic_arn}}\",\n",
                     "    \"msg_history_bucket_name\"          : \"{{msg_history_bucket_name}}\",\n",
-                    "    \"msg_history_status_queue_url\"     : \"{{msg_history_delivery_status_queue_url}}\",\n",
                     "    \"msg_history_queue_url\"            : \"{{msg_history_queue_url}}\",\n",
+                    "    \"msg_history_status_queue_url\"     : \"{{msg_history_delivery_status_queue_url}}\",\n",
                     "    \"msg_notifier_queue_url\"           : \"{{msg_notifier_queue_url}}\",\n",
                     "    \"policy_efs_file_system_id\"        : \"{{policy_efs_file_system_id}}\",\n",
                     "    \"sxl_dbl\"                          : \"{{sxl_dbl}}\",\n",
@@ -580,8 +580,8 @@
                   "environment":                              { "Ref": "Environment" },
                   "lifecycle_topic_arn":                      { "Ref": "AutoScalingNotificationTopicARN" },
                   "msg_history_bucket_name":                  { "Ref": "XgemailMsgHistoryBucketName" },
-                  "msg_history_status_queue_url":             { "Ref": "XgemailMsgHistoryStatusQueueUrl" },
                   "msg_history_queue_url":                    { "Ref": "XgemailMsgHistoryQueueUrl" },
+                  "msg_history_status_queue_url":             { "Ref": "XgemailMsgHistoryStatusQueueUrl" },
                   "msg_notifier_queue_url":                   { "Ref": "XgemailNotifierQueueUrl" },
                   "policy_efs_file_system_id":                { "Ref": "XgemailPolicyEfsFileSystemId" },
                   "region":                                   { "Ref": "AWS::Region" },

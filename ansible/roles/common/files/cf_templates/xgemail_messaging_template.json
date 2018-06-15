@@ -71,24 +71,24 @@
       "Description": "Endpoint URL for Internet delivery SQS queue",
       "Type": "String"
     },
-    "MessageHistoryStatusQueueArn": {
-      "Description": "Endpoint for message history Delivery Status SQS queue",
-      "Type": "String"
-    },
-    "MessageHistoryStatusQueueUrl": {
-      "Description": "Endpoint URL for message history Delivery Status SQS queue",
-      "Type": "String"
-    },
-    "MessageHistoryStatusQueueTopicArn": {
-      "Description": "Endpoint for message history Delivery Status SNS",
-      "Type": "String"
-    },
     "MessageHistoryQueueArn": {
       "Description": "Endpoint for message history SQS queue",
       "Type": "String"
     },
     "MessageHistoryQueueUrl": {
       "Description": "Endpoint URL for message history SQS queue",
+      "Type": "String"
+    },
+    "MessageHistoryStatusQueueArn": {
+      "Description": "Endpoint for message history Delivery Status SQS queue",
+      "Type": "String"
+    },
+    "MessageHistoryStatusQueueTopicArn": {
+      "Description": "Endpoint for message history Delivery Status SNS",
+      "Type": "String"
+    },
+    "MessageHistoryStatusQueueUrl": {
+      "Description": "Endpoint URL for message history Delivery Status SQS queue",
       "Type": "String"
     },
     "MessageStatisticsQueueArn": {
@@ -111,24 +111,24 @@
       "Description": "Endpoint URL for message statistics rejection SQS queue",
       "Type": "String"
     },
-    "QuarantineQueueArn": {
-      "Description": "Endpoint for quarantine SQS queue",
-      "Type": "String"
-    },
-    "QuarantineQueueUrl": {
-      "Description": "Endpoint URL for quarantine SQS queue",
+    "MultiPolicyQueueArn": {
+      "Description": "Endpoint for multi Policy queue",
       "Type": "String"
     },
     "MultiPolicyQueueUrl": {
       "Description": "Endpoint URL for multi policy queue",
       "Type": "String"
     },
-    "MultiPolicyQueueArn": {
-      "Description": "Endpoint for multi Policy queue",
-      "Type": "String"
-    },
     "MultiPolicyTopicArn": {
       "Description": "Endpoint for multi policy arn",
+      "Type": "String"
+    },
+    "QuarantineQueueArn": {
+      "Description": "Endpoint for quarantine SQS queue",
+      "Type": "String"
+    },
+    "QuarantineQueueUrl": {
+      "Description": "Endpoint URL for quarantine SQS queue",
       "Type": "String"
     }
   },
@@ -374,30 +374,6 @@
         "Queues": [{ "Ref": "InternetDeliveryQueueUrl" }]
       }
     },
-    "MessageHistoryStatusQueuePolicy": {
-      "Type": "AWS::SQS::QueuePolicy",
-      "Properties": {
-        "PolicyDocument": {
-          "Version": "2012-10-17",
-          "Id": "MessageHistoryStatusQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
-          "Statement": [
-            {
-              "Sid": "Allow-MessageHistoryStatusQueueTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "MessageHistoryStatusQueueTopicArn"}
-                }
-              }
-            }
-          ]
-        },
-        "Queues": [{ "Ref": "MessageHistoryStatusQueueUrl" }]
-      }
-    },
     "MessageHistoryQueuePolicy": {
       "Type": "AWS::SQS::QueuePolicy",
       "Properties": {
@@ -456,6 +432,30 @@
           ]
         },
         "Queues": [{ "Ref": "MessageHistoryQueueUrl" }]
+      }
+    },
+    "MessageHistoryStatusQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "MessageHistoryStatusQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-MessageHistoryStatusQueueTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "MessageHistoryStatusQueueTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{ "Ref": "MessageHistoryStatusQueueUrl" }]
       }
     },
     "MessageStatisticsQueuePolicy": {
