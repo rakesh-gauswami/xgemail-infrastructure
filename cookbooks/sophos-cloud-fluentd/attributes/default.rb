@@ -28,4 +28,4 @@
 default['fluentd']['tdagent_version']         = '2.3.5-0'
 default['fluentd']['main_dir']                = '/etc/td-agent'
 default['fluentd']['conf_dir']                = '/etc/td-agent.d'
-default['fluentd'][['patterns_dir']           = "#{node['fluentd']['main_dir']}/patterns"
+default['fluentd']['patterns_dir']           = "#{node['fluentd']['main_dir']}/patterns"
