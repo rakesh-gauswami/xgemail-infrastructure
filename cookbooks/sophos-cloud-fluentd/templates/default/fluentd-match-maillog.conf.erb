@@ -1,0 +1,17 @@
+<match raw.postfix.maillog>
+  @type rewrite_tag_filter
+  <rule>
+    key message
+    pattern  (\.<%= @region %>.compute\.internal|table hash:|sm-msp-queue)
+    tag clear
+  </rule>
+  <rule>
+    key message
+    pattern .+
+    tag sophos.xgemail.<%= @application_name %>.maillog
+  </rule>
+</match>
+
+<match clear>
+  @type null
+</match>

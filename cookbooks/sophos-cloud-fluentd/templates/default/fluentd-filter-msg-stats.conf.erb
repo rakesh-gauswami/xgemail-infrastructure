@@ -1,0 +1,30 @@
+<filter sns.reject.rbl_reject>
+  @type parser
+  key_name message
+  reserve_data true
+  reserve_time true
+  <parse>
+    @type regexp
+    expression /^(?<host>[^ ]+) (?<process>[^\/]+\/smtpd\[\d+\]): (?<queue_id>[^ ]+): (?<action>reject): (?<msg>(RCPT from (?<sender_host>[^ ]+)\[(?<sender_ip>[^ ]+)\]:) (?<code>554 5.7.1 Service unavailable); (?<reason>Client host \S* is blacklisted). (?<delist>([^;]+)); from=<(?<sender_address>([^>]+)(@(?<sender_domain>\S*)))> to=<(?<rcpt_address>([^>]+)(@(?<rcpt_domain>\S*)))> proto=(?<proto>[^ ]+) helo=<(?<helo_address>([^>]+))>)/
+  </parse>
+</filter>
+<filter sns.reject.enterprise_blocked>
+  @type parser
+  key_name message
+  reserve_data true
+  reserve_time true
+  <parse>
+    @type regexp
+    expression /^(?<host>[^ ]+) (?<process>[^\/]+\/smtpd\[\d+\]): (?<queue_id>[^ ]+): (?<action>reject): (?<msg>(RCPT from (?<sender_host>[^ ]+)\[(?<sender_ip>[^ ]+)\]:) (?<code>554 5.7.1 Service unavailable); (?<reason>Sender address \S* blocked using \S*.sophosxl.com); from=<(?<sender_address>([^>]+)(@(?<sender_domain>\S*)))> to=<(?<rcpt_address>([^>]+)(@(?<rcpt_domain>\S*)))> proto=(?<proto>[^ ]+) helo=<(?<helo_address>([^>]+))>)/
+  </parse>
+</filter>
+<filter sns.reject.auth_failure>
+  @type parser
+  key_name message
+  reserve_data true
+  reserve_time true
+  <parse>
+    @type regexp
+    expression /^(?<host>[^ ]+) (?<process>[^ ]+): (?<queue_id>[^ ]+): (?<action>milter-reject): (?<msg>RCPT from (?<sender_host>[^ ]+)\[(?<sender_ip>[^ ]+)\]: (?<code>550 5.7.1 Command rejected); from=<(?<sender_address>(?<sender>[^>]+)@(?<sender_domain>\S*))> to=<(?<rcpt_address>(?<rcpt>[^>]+)@(?<rcpt_domain>\S*))> proto=(?<proto>[^ ]+) helo=<(?<helo_address>[^>]+)>)/
+  </parse>
+</filter>

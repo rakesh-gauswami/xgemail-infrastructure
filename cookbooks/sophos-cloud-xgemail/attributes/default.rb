@@ -120,6 +120,9 @@ default['xgemail']['sxl_dbl_response_codes'] = "127.0.1.[1;3;4;5]"
 ## IP blacklist settings
 default['xgemail']['sxl_rbl'] = nil
 
+## SNS Topics
+default['xgemail']['msg_statistics_rejection_sns_topic'] = "#{node['xgemail']['station_vpc_id']}-xgemail-msg-statistics-rejection-SNS"
+
 ## Policy service/poller settings
 default['xgemail']['sqs_policy_poller_max_number_of_messages'] = 10
 default['xgemail']['sqs_policy_poller_wait_time_seconds'] = 20
@@ -205,8 +208,6 @@ default['xgemail']['sysctl_tcp_max_tw_buckets'] = 2000000
 default['xgemail']['sysctl_tcp_slow_start_after_idle'] = 0
 default['xgemail']['sysctl_tcp_tw_reuse'] = 1
 default['xgemail']['sysctl_tcp_window_scaling'] = 1
-
-default['xgemail']['tdagent_version'] = '2.3.5-0'
 
 ## Postfix configuration
 SUBMIT_MESSAGE_SIZE_LIMIT_BYTES = 52428800
