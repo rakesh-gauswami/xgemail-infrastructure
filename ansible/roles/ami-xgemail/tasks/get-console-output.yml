@@ -1,0 +1,11 @@
+---
+- name: "Get Console Output from AMI EC2 Instance"
+  shell: aws ec2 get-console-output --instance-id {{ami_stack_output.stack_outputs.InstanceId}} --output text
+  register: console_output
+  until: console_output.stdout|length
+  delay: 30
+  retries: 30
+
+- name: "Print Console Output."
+  debug:
+    var: console_output
