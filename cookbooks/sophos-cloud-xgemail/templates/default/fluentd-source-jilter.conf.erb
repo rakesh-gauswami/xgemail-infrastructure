@@ -1,21 +1,22 @@
 <source>
-  @type tail
-  path /var/log/xgemail/jilter.log
-  time_format %b %d %H:%M:%S
-  pos_file /var/log/td-agent/jilter.pos
-  tag sophos.xgemail.<%= @application_name %>.jilter
+@type tail
+path /var/log/xgemail/jilter.log
+time_format %b %d %H:%M:%S
+pos_file /var/log/td-agent/jilter.pos
+tag sophos.xgemail.<%= @application_name %>.jilter
 <parse>
-    @type multi_format
-    <pattern>
-        format regexp
-        expression /^(?<time>(?:\S+\s+){2}\S+) (?<host>[^ ]+) (?<process>[^ ]+) (?<module>\[.*\]) (?<level>[^ ]+) (?<message>.*)/
-        time_format %b %d %H:%M:%S
-    </pattern>
-    <pattern>
-        format regexp
-        expression /^(?<time>(?:\S+\s+){2}\S+) (?<host>[^ ]+) (?<process>[^\/]+) (?<module>\[.*\]+) (?<level>[^ ]+) [(?<thread>.*)\] (?<message>(.*))/
-        time_key time
-        time_format %b %d %H:%M:%S
-    </pattern>
-  </parse>
+  @type multi_format
+  <pattern>
+    format regexp
+    expression /^(?<time>(?:\S+\s+){2}\S+) (?<host>[^ ]+) (?<process>[^\/]+) (?<module>\[.*?\]+) (?<level>[^ ]+) \[(?<thread>.*)\] (?<message>(.*))/
+    time_key time
+    time_format %b %d %H:%M:%S
+  </pattern>
+  <pattern>
+    format regexp
+    expression /^(?<time>(?:\S+\s+){2}\S+) (?<host>[^ ]+) (?<process>[^\/]+) (?<module>\[.*\]+) (?<level>[^ ]+) (?<message>(.*))/
+    time_key time
+    time_format %b %d %H:%M:%S
+  </pattern>
+</parse>
 </source>
