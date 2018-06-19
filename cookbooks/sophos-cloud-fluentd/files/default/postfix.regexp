@@ -1,8 +1,7 @@
 # Syslog stuff
 COMPONENT ([\w._\/%-]+)
-COMPID postfix-[a-z]{2,}\/%{COMPONENT:component}(?:\[%{NUMBER:pid}\])?
-#POSTFIX (?:%{SYSLOGTIMESTAMP:time}|%{TIMESTAMP_ISO8601:timestamp8601}) (?:%{SYSLOGFACILITY} )?%{SYSLOGHOST:logsource} %{COMPID}:
-POSTFIX %{SYSLOGHOST:logsource} %{COMPID}:
+COMPID postfix-[a-z]{2,}\/%{COMPONENT:process}(?:\[%{NUMBER:pid}\])?
+POSTFIX %{SYSLOGHOST:host} %{COMPID}:
 
 # Milter
 HELO (?:\[%{IP:helo}\]|%{HOSTNAME:helo}|%{DATA:helo})
@@ -17,7 +16,6 @@ MILTERENDOFMESSAGE %{QUEUEID:qid}: milter-reject: END-OF-MESSAGE from %{RELAY:re
 
 # Postfix stuff
 HELO (?:\[%{IP:helo}\]|%{HOSTNAME:helo}|%{DATA:helo})
-#QUEUEID (?:[A-F0-9]+|NOQUEUE)
 QUEUEID ([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)
 EMAILADDRESSPART [a-zA-Z0-9_.+-=:~]+
 EMAILADDRESS %{EMAILADDRESSPART:local}@%{EMAILADDRESSPART:remote}
@@ -81,6 +79,5 @@ DOVEAUTH auth-worker\(%{NUMBER:pid}\): pam\((?:%{USERNAME:user}|%{EMAILADDRESS:u
 DOVECOT (?:%{SYSLOGTIMESTAMP:time}|%{TIMESTAMP_ISO8601:timestamp8601}) (?:%{SYSLOGFACILITY} )?%{SYSLOGHOST:logsource} dovecot: (%{DOVEIMAP}|%{DOVELOGIN}|%{DOVELDA}|%{DOVEAUTH}|%{DOVEMISC})
 
 # Postfix wrap em up
-#PF %{SYSLOGHOST:host} %{SYSLOGPROG:process}(?:%{POSTFIXSMTP}|%{POSTFIXANVIL}|%{POSTFIXQMGR}|%{POSTFIXBOUNCE}|%{POSTFIXCLEANUP}|%{POSTFIXSMTPD}|%{POSTFIXREWRITE})
 PF %{POSTFIX} (?:%{POSTFIXSMTP}|%{POSTFIXANVIL}|%{POSTFIXQMGR}|%{POSTFIXBOUNCE}|%{POSTFIXCLEANUP}|%{POSTFIXSMTPD}|%{POSTFIXREWRITE})
 
