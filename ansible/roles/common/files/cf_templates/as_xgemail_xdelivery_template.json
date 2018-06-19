@@ -243,6 +243,12 @@
       "MaxValue": "16384"
     },
 
+    "XgemailMsgHistoryStatusQueueUrl" : {
+      "Description" : "URL for the SQS Queue where Message History delivery status events are sent",
+      "Type" : "String",
+      "Default": ""
+    },
+
     "XgemailNotifierQueueUrl" : {
       "Description" : "URL for the SQS Queue where XGEMAIL messages are sent",
       "Type" : "String",
@@ -488,6 +494,7 @@
                       "  },\n",
                       "  \"xgemail\" : {\n",
                       "    \"cluster_type\"                   : \"{{cluster_type}}\",\n",
+                      "    \"msg_history_status_queue_url\"   : \"{{msg_history_status_queue_url}}\",\n",
                       "    \"msg_notifier_queue_url\"         : \"{{msg_notifier_queue_url}}\",\n",
                       "    \"station_vpc_name\"               : \"{{station_vpc_name}}\"\n",
                       "  }\n",
@@ -504,6 +511,8 @@
                   "cluster":                                  { "Ref": "XgemailServiceType" },
                   "cluster_type":                             { "Ref": "XgemailServiceType" },
                   "environment":                              { "Ref": "Environment" },
+                  "msg_history__status_queue_url":            { "Ref": "XgemailMsgHistoryStatusQueueUrl" },
+                  "msg_notifier_queue_url":                   { "Ref": "XgemailNotifierQueueUrl" },
                   "region":                                   { "Ref": "AWS::Region" },
                   "stack":                                    { "Ref": "AWS::StackName" },
                   "station_vpc_name":                         { "Ref": "StationVpcName" },
@@ -512,8 +521,7 @@
                   "volume_set_id":                            { "Ref": "VolumeSetId" },
                   "volume_tracker_sdb_domain":                { "Ref": "VolumeTrackerSimpleDbDomain" },
                   "vpc_id":                                   { "Ref": "Vpc" },
-                  "vpc_name":                                 { "Ref": "VpcName" },
-                  "msg_notifier_queue_url":                   { "Ref": "XgemailNotifierQueueUrl" }
+                  "vpc_name":                                 { "Ref": "VpcName" }
                 },
                 "owner": "root",
                 "mode": "000444"
