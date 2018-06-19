@@ -92,12 +92,41 @@ yum_package 'td-agent' do
   flush_cache [ :before ]
 end
 
-execute 'install td-agent multi-format plugin' do
+execute 'uninstall td-agent fluent-plugin-s3' do
+  user 'root'
+  command <<-EOH
+      td-agent-gem uninstall fluent-plugin-s3
+  EOH
+end
+
+execute 'install td-agent fluent-plugin-s3' do
+  user 'root'
+  command <<-EOH
+      td-agent-gem install fluent-plugin-s3 -v 1.0.0
+  EOH
+end
+
+execute 'install td-agent fluent-plugin-sns' do
+  user 'root'
+  command <<-EOH
+      td-agent-gem install fluent-plugin-sns
+  EOH
+end
+
+execute 'install td-agent fluent-plugin-grok-parser' do
+  user 'root'
+  command <<-EOH
+      td-agent-gem install fluent-plugin-grok-parser
+  EOH
+end
+
+execute 'install td-agent fluent-plugin-multi-format-parser' do
   user 'root'
   command <<-EOH
       td-agent-gem install fluent-plugin-multi-format-parser
   EOH
 end
+
 # End Temporary block
 #
 service 'td-agent' do

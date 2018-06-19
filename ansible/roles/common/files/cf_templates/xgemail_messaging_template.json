@@ -79,6 +79,18 @@
       "Description": "Endpoint URL for message history SQS queue",
       "Type": "String"
     },
+    "MessageHistoryStatusQueueArn": {
+      "Description": "Endpoint for message history Delivery Status SQS queue",
+      "Type": "String"
+    },
+    "MessageHistoryStatusQueueTopicArn": {
+      "Description": "Endpoint for message history Delivery Status SNS",
+      "Type": "String"
+    },
+    "MessageHistoryStatusQueueUrl": {
+      "Description": "Endpoint URL for message history Delivery Status SQS queue",
+      "Type": "String"
+    },
     "MessageStatisticsQueueArn": {
       "Description": "Endpoint for message statistics SQS queue",
       "Type": "String"
@@ -87,24 +99,36 @@
       "Description": "Endpoint URL for message statistics SQS queue",
       "Type": "String"
     },
-    "QuarantineQueueArn": {
-      "Description": "Endpoint for quarantine SQS queue",
+    "MessageStatisticsRejectionTopicArn": {
+      "Description": "Endpoint for message statistics rejection SNS",
       "Type": "String"
     },
-    "QuarantineQueueUrl": {
-      "Description": "Endpoint URL for quarantine SQS queue",
+    "MessageStatisticsRejectionQueueArn": {
+      "Description": "Endpoint for message statistics rejection SQS queue",
       "Type": "String"
     },
-    "MultiPolicyQueueUrl": {
-      "Description": "Endpoint URL for multi policy queue",
+    "MessageStatisticsRejectionQueueUrl": {
+      "Description": "Endpoint URL for message statistics rejection SQS queue",
       "Type": "String"
     },
     "MultiPolicyQueueArn": {
       "Description": "Endpoint for multi Policy queue",
       "Type": "String"
     },
+    "MultiPolicyQueueUrl": {
+      "Description": "Endpoint URL for multi policy queue",
+      "Type": "String"
+    },
     "MultiPolicyTopicArn": {
       "Description": "Endpoint for multi policy arn",
+      "Type": "String"
+    },
+    "QuarantineQueueArn": {
+      "Description": "Endpoint for quarantine SQS queue",
+      "Type": "String"
+    },
+    "QuarantineQueueUrl": {
+      "Description": "Endpoint URL for quarantine SQS queue",
       "Type": "String"
     }
   },
@@ -198,6 +222,14 @@
         "TopicArn": { "Ref": "InternetDeliveryTopicArn"}
       }
     },
+    "MessageHistoryDeliveryStatusQueueToMessageHistoryDeliveryStatusSnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "MessageHistoryStatusQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "MessageHistoryStatusQueueTopicArn"}
+      }
+    },
     "MessageHistoryQueueToInternetDeliverySnsSubscription": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
@@ -228,6 +260,14 @@
         "Endpoint": { "Ref": "MessageStatisticsQueueArn" },
         "Protocol": "sqs",
         "TopicArn": { "Ref": "SuccessEventsTopicArn"}
+      }
+    },
+    "MessageStatisticsRejectionQueueToMessageStatisticsRejectionSnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "MessageStatisticsRejectionQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "MessageStatisticsRejectionTopicArn"}
       }
     },
     "MultiPolicyQueueToMultiPolicySnsSubsciption": {
@@ -394,6 +434,30 @@
         "Queues": [{ "Ref": "MessageHistoryQueueUrl" }]
       }
     },
+    "MessageHistoryStatusQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "MessageHistoryStatusQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-MessageHistoryStatusQueueTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "MessageHistoryStatusQueueTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{ "Ref": "MessageHistoryStatusQueueUrl" }]
+      }
+    },
     "MessageStatisticsQueuePolicy": {
       "Type": "AWS::SQS::QueuePolicy",
       "Properties": {
@@ -452,6 +516,30 @@
           ]
         },
         "Queues": [{ "Ref": "MessageStatisticsQueueUrl" }]
+      }
+    },
+    "MessageStatisticsRejectionQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "MsgStatisticsRejectionQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-MsgStatisticsRejectionTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "MessageStatisticsRejectionTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{ "Ref": "MessageStatisticsRejectionQueueUrl" }]
       }
     },
     "QuarantineQueuePolicy": {

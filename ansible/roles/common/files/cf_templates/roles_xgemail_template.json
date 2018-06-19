@@ -1185,6 +1185,7 @@
             {
               "Action": [
                 "sns:ListSubscriptionsByTopic",
+                "sns:ListTopics",
                 "sns:Publish",
                 "sns:Subscribe",
                 "sns:Unsubscribe"
@@ -1627,6 +1628,44 @@
               "Resource": [
                 "*"
               ]
+            },
+            {
+              "Action": [
+                "sns:ListSubscriptionsByTopic",
+                "sns:Publish",
+                "sns:Subscribe",
+                "sns:Unsubscribe"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    ":",
+                    [
+                      "arn:aws:sns",
+                      { "Ref": "AWS::Region" },
+                      { "Ref": "AWS::AccountId" },
+                      "*"
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Action": [
+                "sqs:ChangeMessageVisibility",
+                "sqs:CreateQueue",
+                "sqs:DeleteMessage",
+                "sqs:DeleteQueue",
+                "sqs:GetQueueAttributes",
+                "sqs:GetQueueUrl",
+                "sqs:ListQueues",
+                "sqs:SendMessage",
+                "sqs:SetQueueAttributes",
+                "sqs:ReceiveMessage"
+              ],
+              "Effect": "Allow",
+              "Resource": [ "*" ]
             }
 
           ]
