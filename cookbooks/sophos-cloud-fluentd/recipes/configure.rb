@@ -177,6 +177,16 @@ template 'fluentd-match-msg-stats' do
   only_if { NODE_TYPE == 'submit' }
 end
 
+# Only internet-submit  - Start Order: 70
+template 'fluentd-filter-msg-stats' do
+  path "#{CONF_DIR}/70-filter-msg-stats.conf"
+  source 'fluentd-filter-msg-stats.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  only_if { NODE_TYPE == 'submit' }
+end
+
 # All instances - Start Order: 70
 template 'fluentd-filter-transform' do
   path "#{CONF_DIR}/70-filter-transform.conf"
@@ -214,8 +224,8 @@ template 'fluentd-match-sns-reject' do
   owner 'root'
   group 'root'
   variables(
+    :main_dir => MAIN_DIR,
     :region => REGION,
-    :account => ACCOUNT,
     :sns_topic => SNS_TOPIC
   )
   only_if { NODE_TYPE == 'submit' }
