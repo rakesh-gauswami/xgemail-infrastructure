@@ -9,14 +9,14 @@
 # This recipe configures fluentd (td-agent)
 #
 
-ACCOUNT               = node['sophos_cloud']['environment']
-CONF_DIR              = node['fluentd']['conf_dir']
-INSTANCE_ID           = node['ec2']['instance_id']
-MAIN_DIR              = node['fluentd']['main_dir']
-NODE_TYPE             = node['xgemail']['cluster_type']
-PATTERNS_DIR          = node['fluentd']['patterns_dir']
-REGION                = node['sophos_cloud']['region']
-SNS_TOPIC             = node['xgemail']['msg_statistics_rejection_sns_topic']
+ACCOUNT                       = node['sophos_cloud']['environment']
+CONF_DIR                      = node['fluentd']['conf_dir']
+INSTANCE_ID                   = node['ec2']['instance_id']
+MAIN_DIR                      = node['fluentd']['main_dir']
+NODE_TYPE                     = node['xgemail']['cluster_type']
+PATTERNS_DIR                  = node['fluentd']['patterns_dir']
+REGION                        = node['sophos_cloud']['region']
+MSG_STATS_REJECT_SNS_TOPIC    = node['xgemail']['msg_statistics_rejection_sns_topic']
 
 # All instances - Start Order: 10
 template 'fluentd-source-maillog' do
@@ -106,9 +106,7 @@ template 'fluentd-source-sqsmsgconsumer' do
     :application_name => NODE_TYPE
   )
   only_if { NODE_TYPE == 'delivery' }
-  only_if { NODE_TYPE == 'xdelivery' }
   only_if { NODE_TYPE == 'internet-delivery' }
-  only_if { NODE_TYPE == 'internet-xdelivery' }
 end
 
 # internet-submit and customer-submit - Start Order: 10
@@ -164,9 +162,9 @@ template 'fluentd-filter-maillog' do
 end
 
 # Only internet-submit  - Start Order: 60
-template 'fluentd-match-msg-stats' do
-  path "#{CONF_DIR}/60-match-msg-stats.conf"
-  source 'fluentd-match-msg-stats.conf.erb'
+template 'fluentd-match-msg-stats-reject' do
+  path "#{CONF_DIR}/60-match-msg-stats-reject.conf"
+  source 'fluentd-match-msg-stats-reject.conf.erb'
   mode '0644'
   owner 'root'
   group 'root'
@@ -178,9 +176,9 @@ template 'fluentd-match-msg-stats' do
 end
 
 # Only internet-submit  - Start Order: 70
-template 'fluentd-filter-msg-stats' do
-  path "#{CONF_DIR}/70-filter-msg-stats.conf"
-  source 'fluentd-filter-msg-stats.conf.erb'
+template 'fluentd-filter-msg-stats-reject' do
+  path "#{CONF_DIR}/70-filter-msg-stats-reject.conf"
+  source 'fluentd-filter-msg-stats-reject.conf.erb'
   mode '0644'
   owner 'root'
   group 'root'
@@ -217,16 +215,16 @@ template 'fluentd-match-s3' do
 end
 
 # Only internet-submit - Start Order: 99
-template 'fluentd-match-sns-reject' do
-  path "#{CONF_DIR}/99-match-sns-reject.conf"
-  source 'fluentd-match-sns-reject.conf.erb'
+template 'fluentd-match-sns-msg-stats-reject' do
+  path "#{CONF_DIR}/99-match-sns-msg-stats-reject.conf"
+  source 'fluentd-match-sns-msg-stats-reject.conf.erb'
   mode '0644'
   owner 'root'
   group 'root'
   variables(
     :main_dir => MAIN_DIR,
     :region => REGION,
-    :sns_topic => SNS_TOPIC
+    :sns_topic => MSG_STATS_REJECT_SNS_TOPIC
   )
   only_if { NODE_TYPE == 'submit' }
 end
@@ -240,9 +238,9 @@ cookbook_file 'postfix grok patterns' do
   action :create
 end
 
-cookbook_file 'sns_reject_template' do
-  path "#{MAIN_DIR}/sns_reject_template.erb"
-  source 'fluentd_sns_reject_template.erb'
+cookbook_file 'sns_msg_stats_reject_template' do
+  path "#{MAIN_DIR}/sns_msg_stats_reject_template.erb"
+  source 'fluentd_sns_msg_stats_reject_template.erb'
   mode '0644'
   owner 'root'
   group 'root'

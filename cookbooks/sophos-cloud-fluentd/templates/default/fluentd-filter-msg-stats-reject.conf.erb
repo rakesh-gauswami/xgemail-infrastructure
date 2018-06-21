@@ -1,4 +1,16 @@
-<filter sns.reject.rbl_reject>
+# XGEMAIL_0004
+# Mar  9 03:59:43 ip-172-20-0-4 postfix-is/smtpd[1237]: NOQUEUE: reject: RCPT from unknown[91.216.61.22]: 554 5.7.1 Service unavailable; Client host [91.216.61.22] is blacklisted. Visit https://www.sophos.com/en-us/threat-center/ip-lookup.aspx?ip=91.216.61.22 to request delisting; from=<badguy@bad-domain.com> to=<recipient@sophos-email-customer.com> proto=ESMTP helo=<[91.216.61.22]>
+# XGEMAIL_0005
+# Mar  9 03:59:43 ip-172-20-0-4 postfix-is/smtpd[1237]: NOQUEUE: reject: RCPT from unknown[192.210.213.76]: 554 5.7.1 Service unavailable; Sender address [badguy@bad-domain.com] blocked using uri.ire1.sophosxl.com; from=<badguy@bad-domain.com> to=<recipient@sophos-email-customer.com> proto=ESMTP helo=<bad-domain.com>
+# XGEMAIL_0001 XGEMAIL_0003 XGEMAIL_0003
+# Mar  9 03:59:43 ip-172-20-0-4 postfix-is/smtpd[1237]: NOQUEUE: milter-reject: RCPT from unknown[183.23.75.53]: 550 5.7.1 Command rejected; from=<badguy@bad-domain.com> to=<recipient@sophos-email-customer.com> proto=SMTP helo=<bad-domain.com>
+# XGEMAIL_0001 XGEMAIL_0002 XGEMAIL_0003
+# Mar  9 03:59:43 ip-172-20-0-4 postfix-is/smtpd[1237]: NOQUEUE: milter-reject: RCPT from unknown[183.23.75.53]: 550 5.7.1 XEMAIL_000X Command rejected; from=<badguy@bad-domain.com> to=<recipient@sophos-email-customer.com> proto=SMTP helo=<bad-domain.com>
+#
+# TODO: Update to use grok patterns
+#
+
+<filter sns.msg_stats_reject.XGEMAIL_0004>
   @type parser
   key_name message
   reserve_data true
@@ -8,7 +20,7 @@
     expression /^(?<host>[^ ]+) (?<process>[^\/]+\/smtpd\[\d+\]): (?<qid>[^ ]+): (?<action>reject): (?<msg>(RCPT from (?<sender_host>[^ ]+)\[(?<sender_ip>[^ ]+)\]:) (?<code>554 5.7.1 Service unavailable); (?<reason>Client host \S* is blacklisted). (?<delist>([^;]+)); from=<(?<sender_address>([^>]+)(@(?<sender_domain>\S*)))> to=<(?<rcpt_address>([^>]+)(@(?<rcpt_domain>\S*)))> proto=(?<proto>[^ ]+) helo=<(?<helo_address>([^>]+))>)/
   </parse>
 </filter>
-<filter sns.reject.enterprise_blocked>
+<filter sns.msg_stats_reject.XGEMAIL_0005>
   @type parser
   key_name message
   reserve_data true
@@ -18,7 +30,7 @@
     expression /^(?<host>[^ ]+) (?<process>[^\/]+\/smtpd\[\d+\]): (?<qid>[^ ]+): (?<action>reject): (?<msg>(RCPT from (?<sender_host>[^ ]+)\[(?<sender_ip>[^ ]+)\]:) (?<code>554 5.7.1 Service unavailable); (?<reason>Sender address \S* blocked using \S*.sophosxl.com); from=<(?<sender_address>([^>]+)(@(?<sender_domain>\S*)))> to=<(?<rcpt_address>([^>]+)(@(?<rcpt_domain>\S*)))> proto=(?<proto>[^ ]+) helo=<(?<helo_address>([^>]+))>)/
   </parse>
 </filter>
-<filter sns.reject.auth_failure>
+<filter sns.msg_stats_reject.XGEMAIL_0001 sns.msg_stats_reject.XGEMAIL_0002 sns.msg_stats_reject.XGEMAIL_0003>
   @type parser
   key_name message
   reserve_data true
@@ -29,7 +41,7 @@
   </parse>
 </filter>
 
-<filter sns.reject.*>
+<filter sns.msg_stats_reject.*>
   @type record_transformer
   <record>
     message_rejection_code ${tag_suffix[2]}
