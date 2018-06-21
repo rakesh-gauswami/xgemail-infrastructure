@@ -1,6 +1,13 @@
 ---
 # Copy AMI to Destination Regions
 # http://docs.ansible.com/ansible/latest/ec2_ami_copy_module.html
+- name: "Update AWS Software"
+  shell: pip install awscli botocore boto3 -U
+  register: update_output
+  until: update_output.stdout|length
+  delay: 10
+  retries: 3
+
 - name: "Copy AMI to Destination Regions {{ami.xgemail.ami_destination_regions}}"
   ec2_ami_copy:
     description:          "{{ec2_ami_output.description}}"
@@ -10,6 +17,7 @@
     name:                 "{{ec2_ami_output.name}}"
     tags:                 "{{ec2_ami_output.tags}}"
     wait:                 true
+    wait_timeout:         1200
   with_items:             "{{ami.xgemail.ami_destination_regions}}"
   register: ec2_ami_copy_output
 
