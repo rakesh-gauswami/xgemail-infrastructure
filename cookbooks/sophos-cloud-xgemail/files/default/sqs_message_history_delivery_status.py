@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # vim: autoindent expandtab filetype=python shiftwidth=4 softtabstop=4 tabstop=4
 #
-# Copyright 2016, Sophos Limited. All rights reserved.
+# Copyright 2018    , Sophos Limited. All rights reserved.
 #
 # 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
 # Sophos Limited and Sophos Group.  All other product and company
@@ -10,7 +10,6 @@
 #
 # Representation of a message to be sent to Message History Delivery Status queue
 from queue_log import QueueLog
-import json
 
 
 class SqsMessageHistoryDeliveryStatus:
