@@ -10,7 +10,7 @@
 #
 # Representation of the response obtain after injecting a message into postfix for delivery
 
-class PostFixInjectionResponse:
+class PostfixInjectionResponse:
     def __init__(self,
                  isSuccessfullyInjected,
                  nullableDeliveryQueueId):

@@ -28,7 +28,7 @@ from common.sqsmessage import SqsMessage
 from datetime import datetime
 from queue_log import QueueLog
 from sqs_message_history_delivery_status import SqsMessageHistoryDeliveryStatus
-from postfix_injection_response import PostFixInjectionResponse
+from postfix_injection_response import PostfixInjectionResponse
 from logging.handlers import SysLogHandler
 from smtplib import SMTPException
 from smtplib import SMTPException
@@ -256,7 +256,7 @@ def inject_email(sender, recipients, email, message_path, submit_queue_id):
         logger.exception("Errors during email injection for message with queue_id [%s] and message path [%s]",
                          submit_queue_id,
                          message_path)
-        return PostFixInjectionResponse(False, None)
+        return PostfixInjectionResponse(False, None)
     finally:
         server.quit()
 
@@ -266,8 +266,8 @@ def inject_email(sender, recipients, email, message_path, submit_queue_id):
     # we will log the rejected recipients and remove the message from SQS.
     if sendmail_recipients_refused:
         logger.error("Errors during email injection: {0}".format(sendmail_errors))
-        return PostFixInjectionResponse(True, delivery_queue_id)
-    return PostFixInjectionResponse(True, delivery_queue_id)
+        return PostfixInjectionResponse(True, delivery_queue_id)
+    return PostfixInjectionResponse(True, delivery_queue_id)
 
 def create_and_send_message_history_delivery_status_sqs_job(sqs_message, postfix_injection_response, recipients):
     queue_log = QueueLog(
@@ -295,9 +295,6 @@ def create_and_send_message_history_delivery_status_sqs_job(sqs_message, postfix
 
         logger.debug("Job <{0}> sent to message history delivery status sqs queue"
                      .format(sqs_message_history_delivery_status_job))
-
-        print("Job <{0}> sent to message history delivery status sqs queue"
-              .format(sqs_message_history_delivery_status_job))
 
     except Exception as e:
         logger.exception("Failed to send event <{0}> to message history delivery status sqs queue"
