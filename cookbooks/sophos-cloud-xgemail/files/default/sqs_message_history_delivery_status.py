@@ -35,6 +35,7 @@ class SqsMessageHistoryDeliveryStatus:
                                 if self.__nullable_next_queue_log is not None else 'null',
             'recipient_address': self.__recipient_address
         }
+    
     @property
     def direction(self):
         return self.__direction
