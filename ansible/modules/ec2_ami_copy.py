@@ -131,7 +131,7 @@ from ansible.module_utils.ec2 import (boto3_conn, ec2_argument_spec, get_aws_con
 import traceback
 
 try:
-    from botocore.exceptions import ClientError, NoCredentialsError, WaiterError
+    from botocore.exceptions import BotoCoreError, ClientError, NoCredentialsError, WaiterError
     HAS_BOTO3 = True
 except ImportError:
     HAS_BOTO3 = False
@@ -167,6 +167,18 @@ def copy_image(module, ec2):
                 Resources=[image_id],
                 Tags=[{'Key': k, 'Value': v} for k, v in module.params.get('tags').items()]
             )
+        if module.params.get('launch_permissions'):
+            launch_permissions = module.params.get('launch_permissions')
+            try:
+                params = dict(Attribute='LaunchPermission', ImageId=image_id, LaunchPermission=dict(Add=list()))
+                for group_name in launch_permissions.get('group_names', []):
+                    params['LaunchPermission']['Add'].append(dict(Group=group_name))
+                for user_id in launch_permissions.get('user_ids', []):
+                    params['LaunchPermission']['Add'].append(dict(UserId=str(user_id)))
+                if params['LaunchPermission']['Add']:
+                    ec2.modify_image_attribute(**params)
+            except (BotoCoreError, ClientError) as e:
+                module.fail_json(e, msg="Error setting launch permissions for image %s" % image_id)
 
         module.exit_json(changed=True, image_id=image_id)
     except WaiterError as we:
