@@ -56,7 +56,7 @@ NODE_IP = '<%= @node_ip %>'
 
 # headers API constants
 PIC_HEADERS_URL = 'https://%s/mail/api/xgemail/headers' % (PIC_FQDN)
-DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
+DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 
 # logging to syslog setup
@@ -276,7 +276,7 @@ def create_and_send_message_history_delivery_status_sqs_job(sqs_message, postfix
         NODE_IP,
         postfix_injection_response.nullable_delivery_queue_id,
         None,
-        datetime.now().strftime(DATETIME_FORMAT)
+        datetime.utcnow().strftime(DATETIME_FORMAT)
     )
 
     sqs_message_history_delivery_status_job = SqsMessageHistoryDeliveryStatus(
