@@ -484,7 +484,7 @@
                 "  EXIT_CODE=$?\n",
                 "",
                 "  # Upload logs before reporting failure to avoid race against termination.\n",
-                "  LOG_DIR=/tmp/create-", { "Ref": "ApplicationName" }, "-ami-build", { "Ref": "Build" }, "\n",
+                "  LOG_DIR=/tmp/create_", { "Ref": "ApplicationName" }, "_ami_build", { "Ref": "Build" }, "\n",
                 "",
                 "  cd /tmp\n",
                 "  rm -rf ${LOG_DIR}\n",
@@ -502,7 +502,7 @@
                 "",
                 "  aws s3 cp --region us-west-2 ${LOG_DIR}.zip",
                 " s3://", { "Ref": "AmiBucket" }, "/", { "Ref": "Branch" },
-                "/build-", { "Ref": "Build" }, "/\n",
+                "/build_", { "Ref": "Build" }, "/\n",
                 "",
                 "  # Now we can safely emit the signal.\n",
                 "  /opt/aws/bin/cfn-signal -e $EXIT_CODE",
@@ -532,12 +532,12 @@
 
                 "# Push the Public IP of the instance to S3 for artifact retrieval via Bamboo.\n",
 
-                "PUBLIC_IP=ip-address-", { "Ref": "ApplicationName" }, "-ami-build", { "Ref": "Build" }, "\n",
+                "PUBLIC_IP=ip_address_", { "Ref": "ApplicationName" }, "_ami_build", { "Ref": "Build" }, "\n",
                 "wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4 > /tmp/${PUBLIC_IP}.txt\n",
 
                 "aws s3 cp --debug --region us-west-2 /tmp/${PUBLIC_IP}.txt",
                 " s3://", { "Ref": "AmiBucket" }, "/", { "Ref": "Branch" },
-                "/build-", { "Ref": "Build" }, "/\n",
+                "/build_", { "Ref": "Build" }, "/\n",
 
                 "# Install all security and aws updates.\n",
 
