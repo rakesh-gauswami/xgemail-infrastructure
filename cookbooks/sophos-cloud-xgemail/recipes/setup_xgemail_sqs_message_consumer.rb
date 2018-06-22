@@ -101,17 +101,6 @@ file '/etc/rsyslog.d/00-xgemail-sqsmsgconsumer.conf' do
   group 'root'
 end
 
-# Add fluentd config file to monitor log file and submit to S3 for Logz.io.
-template '/etc/td-agent.d/00-source-sqsmsgconsumer.conf' do
-  source 'fluentd-source-sqsmsgconsumer.conf.erb'
-  mode '0644'
-  owner 'root'
-  group 'root'
-  variables(
-    :application_name => NODE_TYPE
-  )
-end
-
 service 'xgemail-sqs-consumer' do
   service_name CONSUMER_SERVICE_NAME
   init_command "/etc/init.d/#{CONSUMER_SERVICE_NAME}"

@@ -144,17 +144,6 @@ if NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'internet-xdelivery'
    group 'root'
  end
 
- # Add fluentd config file to monitor log file and submit to S3 for Logz.io.
- template '/etc/td-agent.d/00-source-messagebouncer.conf' do
-   source 'fluentd-source-messagebouncer.conf.erb'
-   mode '0644'
-   owner 'root'
-   group 'root'
-   variables(
-     :application_name => NODE_TYPE
-   )
- end
-
  template BOUNCE_HANDLER_SCRIPT_PATH do
  source 'xgemail.message.bouncer.py.erb'
  mode  '0700'
