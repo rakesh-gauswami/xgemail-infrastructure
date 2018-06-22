@@ -12,17 +12,17 @@
     @type rewrite_tag_filter
     <rule>
       key message
-      pattern ^(?<time>[\S ]+) ip-(?<server_ip>[\S ]+) (?<process>[^\/]+\/smtpd\[\d+\]): (?<queue_id>[^ ]+): to=<(?<rcpt_address>[\S ]+)>, relay=(?<relay>[^ ]+), delay=(?<delay>[^ ]+), delays=(?<delays>[^ ]+), dsn=(?<dsn_code>[^ ]+), status=sent (?<sent>[\S ]+)Queued mail for delivery
+      pattern ^(?<time>[\S ]+) ip-(?<server_ip>[\S ]+) (?<process>[^\/]+\/smtpd\[\d+\]): (?<queue_id>[^ ]+): to=<(?<recipient_address>[\S ]+)>, relay=(?<relay>[^ ]+), delay=(?<delay>[^ ]+), delays=(?<delays>[^ ]+), dsn=(?<dsn_code>[^ ]+), status=sent (?<sent>[\S ]+)Queued mail for delivery
       tag sns.msg.delivery.succeeded
     </rule>
     <rule>
       key message
-      pattern ^(?<time>[\S ]+) ip-(?<server_ip>[\S ]+) (?<process>[^\/]+\/smtpd\[\d+\]): (?<queue_id>[^ ]+): to=<(?<rcpt_address>[\S ]+)>, relay=(?<relay>[^ ]+), delay=(?<delay>[^ ]+), delays=(?<delays>[^ ]+), dsn=(?<dsn_code>[^ ]+), status=deferred(?<sent>[\S ]+)
+      pattern ^(?<time>[\S ]+) ip-(?<server_ip>[\S ]+) (?<process>[^\/]+\/smtpd\[\d+\]): (?<queue_id>[^ ]+): to=<(?<recipient_address>[\S ]+)>, relay=(?<relay>[^ ]+), delay=(?<delay>[^ ]+), delays=(?<delays>[^ ]+), dsn=(?<dsn_code>[^ ]+), status=deferred(?<sent>[\S ]+)
       tag sns.msg.delivery.failed
     </rule>
     <rule>
       key message
-      pattern ^(?<time>[\S ]+) ip-(?<server_ip>[\S ]+) (?<process>[^\/]+\/smtpd\[\d+\]): to=<(?<rcpt_address>[\S ]+)>, relay=(?<relay>[^ ]+), delay=(?<delay>[^ ]+), delays=(?<delays>[^ ]+), dsn=(?<dsn_code>[^ ]+), status=sent(?<sent>[\S ]+queued as (?<queue_id_xDelivery>[^ ]+))
+      pattern ^(?<time>[\S ]+) ip-(?<server_ip>[\S ]+) (?<process>[^\/]+\/smtpd\[\d+\]): to=<(?<recipient_address>[\S ]+)>, relay=(?<relay>[^ ]+), delay=(?<delay>[^ ]+), delays=(?<delays>[^ ]+), dsn=(?<dsn_code>[^ ]+), status=sent(?<sent>[\S ]+queued as (?<queue_id_xDelivery>[^ ]+))
       tag sns.msg.redirected
     </rule>
    </store>
