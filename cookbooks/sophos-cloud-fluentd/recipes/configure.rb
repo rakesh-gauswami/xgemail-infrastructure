@@ -17,6 +17,7 @@ NODE_TYPE                     = node['xgemail']['cluster_type']
 PATTERNS_DIR                  = node['fluentd']['patterns_dir']
 REGION                        = node['sophos_cloud']['region']
 MSG_STATS_REJECT_SNS_TOPIC    = node['xgemail']['msg_statistics_rejection_sns_topic']
+DELIVERY_STATUS_SNS_TOPIC     = node['xgemail']['msg_history_status_sns_topic']
 
 # All instances - Start Order: 10
 template 'fluentd-source-maillog' do
@@ -245,6 +246,110 @@ cookbook_file 'sns_msg_stats_reject_template' do
   owner 'root'
   group 'root'
   action :create
+end
+
+cookbook_file 'sns_msg_delivery_template' do
+  path "#{MAIN_DIR}/sns_msg_delivery_template.erb"
+  source 'fluentd_sns_msg_delivery_template.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  action :create
+end
+
+cookbook_file 'sns_msg_to_xdelivery_template' do
+  path "#{MAIN_DIR}/sns_msg_to_xdelivery_template.erb"
+  source 'fluentd_sns_msg_to_xdelivery_template.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  action :create
+end
+
+# Message delivery status on all delivery and x delivery servers - to capture success or failure of message status
+template 'fluentd-match-sns-msg-delivery' do
+  path "#{CONF_DIR}/match-sns-msg-delivery.conf"
+  source 'fluentd-match-sns-msg-delivery.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :region => REGION,
+    :account => ACCOUNT,
+    :sns_topic => DELIVERY_STATUS_SNS_TOPIC
+  )
+  only_if { NODE_TYPE == 'delivery' }
+  only_if { NODE_TYPE == 'xdelivery' }
+  only_if { NODE_TYPE == 'internet-delivery' }
+  only_if { NODE_TYPE == 'internet-xdelivery' }
+end
+
+
+# Message delivery status on all delivery servers - for capturing redirection to xdelivery
+template 'fluentd-match-sns-msg-to-xdelivery.conf' do
+  path "#{CONF_DIR}/match-sns-msg-to-xdelivery.conf"
+  source 'fluentd-match-sns-msg-to-xdelivery.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :region => REGION,
+    :account => ACCOUNT,
+    :sns_topic => DELIVERY_STATUS_SNS_TOPIC
+  )
+  only_if { NODE_TYPE == 'delivery' }
+  only_if { NODE_TYPE == 'internet-delivery' }
+end
+
+#  - Start Order: 65
+template 'fluentd-match-msg-delivery' do
+  path "#{CONF_DIR}/65-match-msg-delivery.conf"
+  source 'fluentd-match-msg-delivery.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :application_name => NODE_TYPE,
+    :region => REGION
+  )
+   only_if { NODE_TYPE == 'delivery' }
+   only_if { NODE_TYPE == 'xdelivery' }
+   only_if { NODE_TYPE == 'internet-delivery' }
+   only_if { NODE_TYPE == 'internet-xdelivery' }
+end
+
+
+#  Start Order: 70
+template 'fluentd-filter-msg-delivery' do
+  path "#{CONF_DIR}/70-filter-msg-delivery.conf"
+  source 'fluentd-filter-msg-delivery.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+   only_if { NODE_TYPE == 'delivery' }
+   only_if { NODE_TYPE == 'xdelivery' }
+   only_if { NODE_TYPE == 'internet-delivery' }
+   only_if { NODE_TYPE == 'internet-xdelivery' }
+end
+
+# Start Order: 70
+template 'fluentd-filter-transform-msg-delivery' do
+  path "#{CONF_DIR}/70-filter-transform-msg-delivery.conf"
+  source 'fluentd-filter-transform-msg-delivery.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :account => ACCOUNT,
+    :application_name => NODE_TYPE,
+    :application_name => NODE_TYPE,
+    :instance_id => INSTANCE_ID,
+    :region => REGION
+  )
+ only_if { NODE_TYPE == 'delivery' }
+ only_if { NODE_TYPE == 'xdelivery' }
+ only_if { NODE_TYPE == 'internet-delivery' }
+ only_if { NODE_TYPE == 'internet-xdelivery' }
 end
 
 service 'td-agent' do

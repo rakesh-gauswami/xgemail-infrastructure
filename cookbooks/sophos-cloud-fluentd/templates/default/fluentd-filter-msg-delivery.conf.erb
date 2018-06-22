@@ -1,0 +1,30 @@
+<filter sns.msg.delivery.success>
+  @type parser
+  key_name message
+  reserve_data true
+  reserve_time true
+  <parse>
+    @type regexp
+    expression /^(?<time>[\S ]+) ip-(?<server_ip>[\S ]+) (?<process>[^\/]+\/smtpd\[\d+\]): (?<queue_id>[^ ]+): to=<(?<rcpt_address>[\S ]+)>, relay=(?<relay>[^ ]+), delay=(?<delay>[^ ]+), delays=(?<delays>[^ ]+), dsn=(?<dsn_code>[^ ]+), status=sent (?<sent>[\S ]+)Queued mail for delivery/
+  </parse>
+</filter>
+<filter sns.msg.delivery.failure>
+  @type parser
+  key_name message
+  reserve_data true
+  reserve_time true
+  <parse>
+    @type regexp
+    expression /^(?<time>[\S ]+) ip-(?<server_ip>[\S ]+) (?<process>[^\/]+\/smtpd\[\d+\]): (?<queue_id>[^ ]+): to=<(?<rcpt_address>[\S ]+)>, relay=(?<relay>[^ ]+), delay=(?<delay>[^ ]+), delays=(?<delays>[^ ]+), dsn=(?<dsn_code>[^ ]+), status=deferred(?<sent>[\S ]+)/
+  </parse>
+</filter>
+<filter sns.msg.redirect.xdelivery>
+  @type parser
+  key_name message
+  reserve_data true
+  reserve_time true
+  <parse>
+    @type regexp
+    expression /^(?<time>[\S ]+) ip-(?<server_ip>[\S ]+) (?<process>[^\/]+\/smtpd\[\d+\]): to=<(?<rcpt_address>[\S ]+)>, relay=(?<relay>[^ ]+), delay=(?<delay>[^ ]+), delays=(?<delays>[^ ]+), dsn=(?<dsn_code>[^ ]+), status=sent(?<sent>[\S ]+queued as (?<queue_id_xDelivery>[^ ]+))/
+  </parse>
+</filter>

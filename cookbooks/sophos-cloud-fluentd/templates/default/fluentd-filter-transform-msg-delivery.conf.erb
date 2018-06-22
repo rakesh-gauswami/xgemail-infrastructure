@@ -1,0 +1,33 @@
+<filter sophos.xgemail.<%= @application_name %>.*>
+  @type record_transformer
+  enable_ruby true
+  <record>
+    account <%= @account %>
+    region <%= @region %>
+    application_name ${
+                        case xgemail.<%= @application_name %>
+                            when "xgemail.delivery"
+                                return "INTERNET_DELIVERY"
+                            when "xgemail.delivery"
+                                return "INTERNET_XDELIVERY"
+                            when "xgemail.delivery"
+                                return "CUSTOMER_DELIVERY"
+                            when "xgemail.delivery"
+                                return "CUSTOMER_XDELIVERY"
+                            else
+                            return <%= @application_name %>
+                        }
+    direction ${
+                  case xgemail.<%= @application_name %>
+                      when "xgemail.delivery"
+                      when "xgemail.xdelivery"
+                          return "INBOUND"
+                      when "xgemail.internet-xdelivery
+                      when "xgemail.internet-delivery"
+                          return "OUTBOUND"
+                      else
+                      return ""
+                  }
+    instance_id <%= @instance_id %>
+  </record>
+</filter>
