@@ -17,23 +17,18 @@ class SqsMessageHistoryDeliveryStatus:
                  direction,
                  message_path,
                  queue_log,
-                 nullable_next_queue_log,
-                 recipient_address):
+                 nullable_next_queue_log):
         self.__direction = direction
         self.__message_path = message_path
         self.__queue_log = queue_log
         self.__nullable_next_queue_log = nullable_next_queue_log
-        self.__recipient_address = recipient_address
 
     def get_sqs_message_history_delivery_status_json(self):
         return {
             'direction': self.__direction,
             'message_path': self.__message_path,
-            'queue_log': self.__queue_log.get_queue_log_json()
-                            if self.__queue_log is not None else 'null',
-            'next_queue_log': self.__nullable_next_queue_log.get_queue_log_json()
-                                if self.__nullable_next_queue_log is not None else 'null',
-            'recipient_address': self.__recipient_address
+            'queue_log': self.__queue_log.get_queue_log_json() if self.__queue_log is not None else 'null',
+            'next_queue_log': self.__nullable_next_queue_log.get_queue_log_json() if self.__nullable_next_queue_log is not None else 'null'
         }
 
     @property
@@ -51,10 +46,6 @@ class SqsMessageHistoryDeliveryStatus:
     @property
     def nullable_next_queue_log(self):
         return self.__nullable_next_queue_log
-
-    @property
-    def recipient_address(self):
-        return self.__recipient_address
 
     def __str__(self):
         json_format = self.get_sqs_message_history_delivery_status_json()

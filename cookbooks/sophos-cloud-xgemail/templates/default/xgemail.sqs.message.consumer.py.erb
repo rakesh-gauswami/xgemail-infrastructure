@@ -50,7 +50,7 @@ MAIL_PIC_RESPONSE_TIMEOUT = <%= @mail_pic_api_response_timeout %>
 MAIL_PIC_API_AUTH = '<%= @mail_pic_api_auth %>'
 CONNECTIONS_BUCKET = '<%= @connections_bucket %>'
 MESSAGE_DIRECTION = '<%= @message_direction %>'
-MESSAGE_HISTORY_DELIVERY_STATUS_SQS_URL = "<%= @message_history_delivery_status_sqs_url %>"
+MESSAGE_HISTORY_DELIVERY_STATUS_SQS_URL = '<%= @message_history_delivery_status_sqs_url %>'
 NODE_TYPE = '<%= @node_type %>'
 NODE_IP = '<%= @node_ip %>'
 
@@ -283,8 +283,7 @@ def create_and_send_message_history_delivery_status_sqs_job(sqs_message, postfix
         MESSAGE_DIRECTION,
         sqs_message.message_path,
         queue_log,
-        None,
-        recipients
+        None
     )
 
     try:

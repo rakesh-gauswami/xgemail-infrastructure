@@ -8,7 +8,7 @@
 # names mentioned are trademarks or registered trademarks of their
 # respective owners.
 #
-# Representation of the response obtain after injecting a message into postfix for delivery
+# Representation of the response obtained after injecting a message into postfix for delivery
 
 class PostfixInjectionResponse:
     def __init__(self,

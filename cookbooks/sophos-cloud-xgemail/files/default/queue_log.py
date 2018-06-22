@@ -35,8 +35,7 @@ class QueueLog:
             'server_type': self.__server_type,
             'server_ip': self.__server_ip,
             'queue_id': self.__queue_id,
-            'dsn_code': self.__nullable_dsn_code
-            if self.__nullable_dsn_code is not None else 'null',
+            'dsn_code': self.__nullable_dsn_code if self.__nullable_dsn_code is not None else 'null',
             'timestamp': self.__timestamp
         }
 

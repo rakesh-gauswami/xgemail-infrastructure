@@ -43,11 +43,7 @@ end
     'metadataformatter.py',
     'nonrecoverableexception.py',
     'recoverableexception.py',
-    'multipolicyreaderutils.py',
-    'postfix_injection_response.py',
-    'queue_log.py',
-    'sqs_message_history_delivery_status.py',
-    ''
+    'multipolicyreaderutils.py'
 ].each do | cur |
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{cur}" do
     source cur
@@ -73,4 +69,20 @@ elsif NODE_TYPE == 'customer-submit'
   end
 else
   #do nothing
+end
+
+if NODE_TYPE == 'delivery' or NODE_TYPE == 'internet-delivery' or
+    NODE_TYPE == 'xdelivery' or NODE_TYPE == 'internet-xdelivery'
+  [
+      'postfix_injection_response.py',
+      'queue_log.py',
+      'sqs_message_history_delivery_status.py'
+  ].each do | cur |
+    cookbook_file "#{XGEMAIL_UTILS_DIR}/#{cur}" do
+      source cur
+      mode '0644'
+      owner 'root'
+      group 'root'
+    end
+  end
 end
