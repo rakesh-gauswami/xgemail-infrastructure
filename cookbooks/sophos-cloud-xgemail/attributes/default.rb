@@ -122,6 +122,7 @@ default['xgemail']['sxl_rbl'] = nil
 
 ## SNS Topics
 default['xgemail']['msg_statistics_rejection_sns_topic'] = "#{node['xgemail']['station_vpc_id']}-xgemail-msg-statistics-rejection-SNS"
+default['xgemail']['msg_history_status_sns_topic'] = "#{node['xgemail']['station_vpc_id']}-xgemail-msg-history-delivery-status-SNS"
 
 ## Policy service/poller settings
 default['xgemail']['sqs_policy_poller_max_number_of_messages'] = 10
