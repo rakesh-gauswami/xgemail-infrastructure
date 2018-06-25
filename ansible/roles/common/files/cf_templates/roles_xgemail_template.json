@@ -712,6 +712,8 @@
             },
             {
               "Action": [
+                "sns:ListSubscriptionsByTopic",
+                "sns:ListTopics",
                 "sns:Publish",
                 "sns:Subscribe",
                 "sns:Unsubscribe"
@@ -934,6 +936,8 @@
             },
             {
               "Action": [
+                "sns:ListSubscriptionsByTopic",
+                "sns:ListTopics",
                 "sns:Publish",
                 "sns:Subscribe",
                 "sns:Unsubscribe"
@@ -1429,6 +1433,7 @@
             {
               "Action": [
                 "sns:ListSubscriptionsByTopic",
+                "sns:ListTopics",
                 "sns:Publish",
                 "sns:Subscribe",
                 "sns:Unsubscribe"
@@ -1632,6 +1637,7 @@
             {
               "Action": [
                 "sns:ListSubscriptionsByTopic",
+                "sns:ListTopics",
                 "sns:Publish",
                 "sns:Subscribe",
                 "sns:Unsubscribe"
@@ -1827,6 +1833,29 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
+              ]
+            },
+            {
+              "Action": [
+                "sns:ListSubscriptionsByTopic",
+                "sns:ListTopics",
+                "sns:Publish",
+                "sns:Subscribe",
+                "sns:Unsubscribe"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    ":",
+                    [
+                      "arn:aws:sns",
+                      { "Ref": "AWS::Region" },
+                      { "Ref": "AWS::AccountId" },
+                      "*"
+                    ]
+                  ]
+                }
               ]
             },
             {
