@@ -268,7 +268,7 @@ end
 
 # Message delivery status on all delivery and x delivery servers - to capture success or failure of message status
 template 'fluentd-match-sns-msg-delivery' do
-  path "#{CONF_DIR}/match-sns-msg-delivery.conf"
+  path "#{CONF_DIR}/97-match-sns-msg-delivery.conf"
   source 'fluentd-match-sns-msg-delivery.conf.erb'
   mode '0644'
   owner 'root'
@@ -287,7 +287,7 @@ end
 
 # Message delivery status on all delivery servers - for capturing redirection to xdelivery
 template 'fluentd-match-sns-msg-to-xdelivery.conf' do
-  path "#{CONF_DIR}/match-sns-msg-to-xdelivery.conf"
+  path "#{CONF_DIR}/98-match-sns-msg-to-xdelivery.conf"
   source 'fluentd-match-sns-msg-to-xdelivery.conf.erb'
   mode '0644'
   owner 'root'
@@ -332,16 +332,15 @@ template 'fluentd-filter-msg-delivery' do
    only_if { NODE_TYPE == 'internet-xdelivery' }
 end
 
-# Start Order: 70
+# Start Order: 75
 template 'fluentd-filter-transform-msg-delivery' do
-  path "#{CONF_DIR}/70-filter-transform-msg-delivery.conf"
+  path "#{CONF_DIR}/75-filter-transform-msg-delivery.conf"
   source 'fluentd-filter-transform-msg-delivery.conf.erb'
   mode '0644'
   owner 'root'
   group 'root'
   variables(
     :account => ACCOUNT,
-    :application_name => NODE_TYPE,
     :application_name => NODE_TYPE,
     :instance_id => INSTANCE_ID,
     :region => REGION
