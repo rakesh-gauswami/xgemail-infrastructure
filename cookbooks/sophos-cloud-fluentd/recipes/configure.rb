@@ -278,10 +278,7 @@ template 'fluentd-match-sns-msg-delivery' do
     :account => ACCOUNT,
     :sns_topic => DELIVERY_STATUS_SNS_TOPIC
   )
-  only_if { NODE_TYPE == 'delivery' }
-  only_if { NODE_TYPE == 'xdelivery' }
-  only_if { NODE_TYPE == 'internet-delivery' }
-  only_if { NODE_TYPE == 'internet-xdelivery' }
+  only_if { NODE_TYPE == 'delivery' || NODE_TYPE == 'xdelivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'internet-xdelivery' }
 end
 
 
@@ -297,8 +294,7 @@ template 'fluentd-match-sns-msg-to-xdelivery.conf' do
     :account => ACCOUNT,
     :sns_topic => DELIVERY_STATUS_SNS_TOPIC
   )
-  only_if { NODE_TYPE == 'delivery' }
-  only_if { NODE_TYPE == 'internet-delivery' }
+  only_if { NODE_TYPE == 'delivery' || NODE_TYPE == 'internet-delivery' }
 end
 
 #  - Start Order: 65
@@ -312,10 +308,7 @@ template 'fluentd-match-msg-delivery' do
     :application_name => NODE_TYPE,
     :region => REGION
   )
-   only_if { NODE_TYPE == 'delivery' }
-   only_if { NODE_TYPE == 'xdelivery' }
-   only_if { NODE_TYPE == 'internet-delivery' }
-   only_if { NODE_TYPE == 'internet-xdelivery' }
+   only_if { NODE_TYPE == 'delivery' ||  NODE_TYPE == 'xdelivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'internet-xdelivery' }
 end
 
 
@@ -326,10 +319,7 @@ template 'fluentd-filter-msg-delivery' do
   mode '0644'
   owner 'root'
   group 'root'
-   only_if { NODE_TYPE == 'delivery' }
-   only_if { NODE_TYPE == 'xdelivery' }
-   only_if { NODE_TYPE == 'internet-delivery' }
-   only_if { NODE_TYPE == 'internet-xdelivery' }
+   only_if { NODE_TYPE == 'delivery' || NODE_TYPE == 'xdelivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'internet-xdelivery' }
 end
 
 # Start Order: 75
@@ -345,10 +335,7 @@ template 'fluentd-filter-transform-msg-delivery' do
     :instance_id => INSTANCE_ID,
     :region => REGION
   )
- only_if { NODE_TYPE == 'delivery' }
- only_if { NODE_TYPE == 'xdelivery' }
- only_if { NODE_TYPE == 'internet-delivery' }
- only_if { NODE_TYPE == 'internet-xdelivery' }
+ only_if { NODE_TYPE == 'delivery' || NODE_TYPE == 'xdelivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'internet-xdelivery' }
 end
 
 service 'td-agent' do
