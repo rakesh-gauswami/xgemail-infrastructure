@@ -33,6 +33,9 @@ elsif NODE_TYPE == 'internet-xdelivery'
 elsif NODE_TYPE == 'internet-delivery'
   SERVER_TYPE   = 'INTERNET_DELIVERY'
   DIRECTION     = 'OUTBOUND'
+else
+  SERVER_TYPE   = 'UNKNOWN'
+  DIRECTION     = 'UNKNOWN'
 end
 
 # All instances - Start Order: 10
