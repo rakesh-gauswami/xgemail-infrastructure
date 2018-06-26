@@ -57,8 +57,7 @@ template 'fluentd-source-jilter' do
   variables(
       :application_name => NODE_TYPE
   )
-  only_if { NODE_TYPE == 'submit' }
-  only_if { NODE_TYPE == 'customer-submit' }
+  only_if { NODE_TYPE == 'submit' || NODE_TYPE == 'customer-submit' }
 end
 
 # All instances except extended delivery - Start Order: 10
@@ -71,8 +70,7 @@ template 'fluentd-source-lifecycle' do
   variables(
     :application_name => NODE_TYPE
   )
-  not_if { NODE_TYPE == 'xdelivery' }
-  not_if { NODE_TYPE == 'internet-xdelivery' }
+  not_if { NODE_TYPE == 'xdelivery' || NODE_TYPE == 'internet-xdelivery' }
 end
 
 # internet-delivery - Start Order: 10
@@ -111,8 +109,7 @@ template 'fluentd-source-policy' do
   variables(
     :application_name => NODE_TYPE
   )
-  only_if { NODE_TYPE == 'submit' }
-  only_if { NODE_TYPE == 'customer-submit' }
+  only_if { NODE_TYPE == 'submit' || NODE_TYPE == 'customer-submit' }
 end
 
 # All delivery instances - Start Order: 10
@@ -125,8 +122,7 @@ template 'fluentd-source-sqsmsgconsumer' do
   variables(
     :application_name => NODE_TYPE
   )
-  only_if { NODE_TYPE == 'delivery' }
-  only_if { NODE_TYPE == 'internet-delivery' }
+  only_if { NODE_TYPE == 'delivery' || NODE_TYPE == 'internet-delivery' }
 end
 
 # internet-submit and customer-submit - Start Order: 10
@@ -138,8 +134,7 @@ template '/etc/td-agent.d/10-source-sqsmsgproducer.conf' do
   variables(
     :application_name => NODE_TYPE
   )
-  only_if { NODE_TYPE == 'submit' }
-  only_if { NODE_TYPE == 'customer-submit' }
+  only_if { NODE_TYPE == 'submit' || NODE_TYPE == 'customer-submit' }
 end
 
 # All instances - Start Order: 10

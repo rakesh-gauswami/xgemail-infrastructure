@@ -155,6 +155,10 @@ default['xgemail']['sqs_message_producer_ttl_in_days'] = 30
 default['xgemail']['sqs_message_producer_email_root_dir'] = 'messages'
 default['xgemail']['sqs_message_producer_buffer_size'] = 102400
 
+# Postfix's command_time_limit is set to 1000 seconds by default, so make sure
+# the timeout used here is less than that default
+default['xgemail']['sqs_message_producer_process_timeout_seconds'] = 900
+
 ## SQS Message Consumer settings
 default['xgemail']['sqs_message_consumer_inject_mta_host'] = '127.0.0.1'
 default['xgemail']['sqs_message_consumer_max_number_of_messages'] = 1
