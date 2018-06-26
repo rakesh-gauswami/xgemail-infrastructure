@@ -20,7 +20,7 @@ aws:
         Environment:                            "{{account.name}}"
         RequireEncryptionForUploads:            "sse-s3"
         S3BucketName:                           "{{s3.customer_submit_bucket}}"
-        S3LifeCycleDelete:                      "14"
+        S3LifeCycleDelete:                      "30"
         S3PolicyCreate:                         "true"
         S3PolicyPrincipalList:                  "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
     emergency_inbox_bucket:
@@ -69,7 +69,7 @@ aws:
         Environment:                            "{{account.name}}"
         RequireEncryptionForUploads:            "sse-s3"
         S3BucketName:                           "{{s3.submit_bucket}}"
-        S3LifeCycleDelete:                      "14"
+        S3LifeCycleDelete:                      "30"
         S3PolicyCreate:                         "true"
         SubmitBucketPolicy:                     "true"
         S3PolicyPrincipalList:                  "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
