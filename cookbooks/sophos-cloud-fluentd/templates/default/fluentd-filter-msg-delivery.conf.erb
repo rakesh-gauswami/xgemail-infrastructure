@@ -5,7 +5,7 @@
   reserve_time true
   <parse>
     @type regexp
-    expression /^(?<time>[\S ]+) ip-(?<server_ip>[\S ]+) (?<process>[^\/]+\/smtpd\[\d+\]): (?<queue_id>[^ ]+): to=<(?<recipient_address>[\S ]+)>, relay=(?<relay>[^ ]+), delay=(?<delay>[^ ]+), delays=(?<delays>[^ ]+), dsn=(?<dsn_code>[^ ]+), status=sent (?<sent>[\S ]+)Queued mail for delivery/
+    expression /^ip-(?<server_ip>[\S ]+) (?<process>[^\/]+\/smtpd\[\d+\]): (?<queue_id>[^ ]+): to=<(?<recipient_address>[\S ]+)>, relay=(?<relay>[^ ]+), delay=(?<delay>[^ ]+), delays=(?<delays>[^ ]+), dsn=(?<dsn_code>[^ ]+), status=sent (?<sent>[\S ]+)Queued mail for delivery/
   </parse>
 </filter>
 <filter sns.msg.delivery.failure>
@@ -15,16 +15,16 @@
   reserve_time true
   <parse>
     @type regexp
-    expression /^(?<time>[\S ]+) ip-(?<server_ip>[\S ]+) (?<process>[^\/]+\/smtpd\[\d+\]): (?<queue_id>[^ ]+): to=<(?<recipient_address>[\S ]+)>, relay=(?<relay>[^ ]+), delay=(?<delay>[^ ]+), delays=(?<delays>[^ ]+), dsn=(?<dsn_code>[^ ]+), status=deferred(?<sent>[\S ]+)/
+    expression /^ip-(?<server_ip>[\S ]+) (?<process>[^\/]+\/smtpd\[\d+\]): (?<queue_id>[^ ]+): to=<(?<recipient_address>[\S ]+)>, relay=(?<relay>[^ ]+), delay=(?<delay>[^ ]+), delays=(?<delays>[^ ]+), dsn=(?<dsn_code>[^ ]+), status=deferred(?<sent>[\S ]+)/
   </parse>
 </filter>
-<filter sns.msg.redirect.xdelivery>
+<filter sns.msg.delivery.redirected>
   @type parser
   key_name message
   reserve_data true
   reserve_time true
   <parse>
     @type regexp
-    expression /^(?<time>[\S ]+) ip-(?<server_ip>[\S ]+) (?<process>[^\/]+\/smtpd\[\d+\]): to=<(?<recipient_address>[\S ]+)>, relay=(?<relay>[^ ]+), delay=(?<delay>[^ ]+), delays=(?<delays>[^ ]+), dsn=(?<dsn_code>[^ ]+), status=sent(?<sent>[\S ]+queued as (?<queue_id_xDelivery>[^ ]+))/
+    expression /^ip-(?<server_ip>[\S ]+) (?<process>[^\/]+\/smtpd\[\d+\]): to=<(?<recipient_address>[\S ]+)>, relay=(?<relay>[^ ]+), delay=(?<delay>[^ ]+), delays=(?<delays>[^ ]+), dsn=(?<dsn_code>[^ ]+), status=sent(?<sent>[\S ]+queued as (?<queue_id_xDelivery>[^ ]+))/
   </parse>
 </filter>
