@@ -12,19 +12,20 @@
 import sys
 sys.path.append("<%= @xgemail_utils_path %>")
 
+import copy
+import formatterutils
 import gzip
+import gziputils
 import io
 import json
 import logging
+import messageformatter
+import messagehistoryformatter
+import metadataformatter
+import multipolicyreaderutils
 import os
 import re
-import copy
-import formatterutils
-import gziputils
-import messageformatter
-import metadataformatter
-import messagehistoryformatter
-import multipolicyreaderutils
+import signal
 from awshandler import AwsHandler
 from common.metadata import Metadata
 from common.sqsmessage import SqsMessage
@@ -39,6 +40,7 @@ from logging.handlers import SysLogHandler
 AWS_REGION = "<%= @sqs_msg_producer_aws_region %>"
 MSG_HISTORY_BUCKET_NAME = "<%= @sqs_msg_producer_msg_history_s3_bucket_name %>"
 MSG_HISTORY_SQS_URL = "<%= @sqs_msg_producer_msg_history_sqs_url %>"
+PROCESS_TIMEOUT_SECONDS = "<%= @sqs_msg_producer_process_timeout_seconds %>"
 SUBMIT_TYPE = "<%= @xgemail_submit_type %>"
 S3_ENCRYPTION_ALGORITHM = "<%= @s3_encryption_algorithm %>"
 SUBMIT_BUCKET_NAME = "<%= @sqs_msg_producer_s3_bucket_name %>"
@@ -565,11 +567,28 @@ def main():
         logger.info("Metadata json info [{0}]".format(metadata))
 
         base_policy_flow(metadata, direction, domain, sender, compressed_message)
-
     except BaseException as e:
         logger.exception("Failed in processing email [{0}]".format(e))
         exit(EX_TEMPFAIL)
+    finally:
+        # disable any previously set alarm
+        signal.alarm(0)
 
+# Method is called when an alarm goes off. If that happens, then
+# we temporarily fail processing which in turn will make Postfix
+# queue the email for a later delivery attempt.
+def signal_handler(signum, frame):
+    logger.info('Handling signal <{0}>. Processing took longer than {1}s to complete'.format(signum, PROCESS_TIMEOUT_SECONDS))
+    exit(EX_TEMPFAIL)
 
 if __name__ == "__main__":
+    # The signal library is used to force a timeout on this producer script if needed.
+    # See https://docs.python.org/2/library/signal.html for more information.
+    # A timed out process will return the proper EX_TEMPFAIL back to Postfix
+    # which will then properly retry the message at a later time.
+    signal.signal(signal.SIGALRM, signal_handler)
+
+    # set an alarm to go off after PROCESS_TIMEOUT_SECONDS
+    signal.alarm(PROCESS_TIMEOUT_SECONDS)
+
     main()
