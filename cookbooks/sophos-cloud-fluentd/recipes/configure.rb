@@ -160,7 +160,7 @@ template 'fluentd-match-maillog' do
     :application_name => NODE_TYPE,
     :region => REGION
   )
-  if { NODE_TYPE == 'customer-submit' }
+  only_if { NODE_TYPE == 'customer-submit' }
 end
 
 # All instances - Start Order: 50
