@@ -1,4 +1,4 @@
-<filter sns.msg.delivery.success>
+<filter sns.msg.delivery.succeeded>
   @type parser
   key_name message
   reserve_data true
@@ -8,7 +8,7 @@
     expression /^ip-(?<server_ip>[\S ]+) (?<process>[^\/]+\/smtpd\[\d+\]): (?<queue_id>[^ ]+): to=<(?<recipient_address>[\S ]+)>, relay=(?<relay>[^ ]+), delay=(?<delay>[^ ]+), delays=(?<delays>[^ ]+), dsn=(?<dsn_code>[^ ]+), status=sent (?<sent>[\S ]+)Queued mail for delivery/
   </parse>
 </filter>
-<filter sns.msg.delivery.failure>
+<filter sns.msg.delivery.failed>
   @type parser
   key_name message
   reserve_data true

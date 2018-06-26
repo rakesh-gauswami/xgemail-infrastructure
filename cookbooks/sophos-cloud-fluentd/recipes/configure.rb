@@ -160,7 +160,7 @@ template 'fluentd-match-maillog' do
     :application_name => NODE_TYPE,
     :region => REGION
   )
-  not_if { NODE_TYPE == 'submit' }
+  if { NODE_TYPE == 'customer-submit' }
 end
 
 # All instances - Start Order: 50
@@ -280,7 +280,7 @@ cookbook_file 'sns_msg_to_xdelivery_template' do
   action :create
 end
 
-# Message delivery status on all delivery and x delivery servers - to capture success or failure of message status
+# Message delivery status on all delivery and x delivery servers
 template 'fluentd-match-sns-msg-delivery' do
   path "#{CONF_DIR}/97-match-sns-msg-delivery.conf"
   source 'fluentd-match-sns-msg-delivery.conf.erb'
@@ -300,25 +300,6 @@ template 'fluentd-match-sns-msg-delivery' do
          }
 end
 
-
-# Message delivery status on all delivery servers - for capturing redirection to xdelivery
-template 'fluentd-match-sns-msg-to-xdelivery.conf' do
-  path "#{CONF_DIR}/98-match-sns-msg-to-xdelivery.conf"
-  source 'fluentd-match-sns-msg-to-xdelivery.conf.erb'
-  mode '0644'
-  owner 'root'
-  group 'root'
-  variables(
-    :region => REGION,
-    :account => ACCOUNT,
-    :sns_topic => DELIVERY_STATUS_SNS_TOPIC
-  )
- only_if {
-            NODE_TYPE == 'delivery' ||
-            NODE_TYPE == 'internet-delivery'
-         }
-
-end
 
 #  - Start Order: 65
 template 'fluentd-match-msg-delivery' do

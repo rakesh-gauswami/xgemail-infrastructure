@@ -1,6 +1,21 @@
-<match sns.msg.delivery.*>
+<match sns.msg.delivery.succeeded>
   @type sns
   sns_topic_name <%= @sns_topic %>
   sns_region <%= @region %>
   sns_body_template /etc/td-agent/sns_msg_delivery_template.erb
 </match>
+
+<match sns.msg.delivery.failed>
+  @type sns
+  sns_topic_name <%= @sns_topic %>
+  sns_region <%= @region %>
+  sns_body_template /etc/td-agent/sns_msg_delivery_template.erb
+</match>
+
+<match sns.msg.delivery.redirected>
+  @type sns
+  sns_topic_name <%= @sns_topic %>
+  sns_region <%= @region %>
+  sns_body_template /etc/td-agent/sns_msg_to_xdelivery_template.erb
+</match>
+
