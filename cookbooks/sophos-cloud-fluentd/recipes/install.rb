@@ -1,8 +1,8 @@
 #
-# Cookbook Name:: ophos-cloud-xgemail
-# Recipe:: install_fluentd.rb
+# Cookbook Name:: sophos-cloud-fluentd
+# Recipe:: install
 #
-# Copyright 2017, Sophos
+# Copyright 2018, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -10,7 +10,10 @@
 #
 
 # TD-Agent
-TDAGENT_PACKAGE_VERSION = "#{node['xgemail']['tdagent_version']}"
+CONF_DIR              = node['fluentd']['conf_dir']
+MAIN_DIR              = node['fluentd']['main_dir']
+PATTERNS_DIR          = node['fluentd']['patterns_dir']
+TDAGENT_PACKAGE_VERSION = "#{node['fluentd']['tdagent_version']}"
 TDAGENT_PACKAGE_NAME = "td-agent-#{TDAGENT_PACKAGE_VERSION}"
 
 yum_package 'redhat-lsb-core' do
@@ -47,7 +50,14 @@ rpm_package 'install td-agent' do
   source "/opt/sophos/packages/#{TDAGENT_PACKAGE_NAME}.el6.x86_64.rpm"
 end
 
-directory '/etc/td-agent.d' do
+directory CONF_DIR do
+  owner 'root'
+  group 'root'
+  mode '0755'
+  action :create
+end
+
+directory PATTERNS_DIR do
   owner 'root'
   group 'root'
   mode '0755'
@@ -63,12 +73,15 @@ cookbook_file '/etc/sysconfig/td-agent' do
   action :create
 end
 
-cookbook_file '/etc/td-agent/td-agent.conf' do
-  path '/etc/td-agent/td-agent.conf'
+template 'td-agent.conf' do
+  path "#{MAIN_DIR}/td-agent.conf"
   source 'td-agent.conf'
   mode '0644'
   owner 'root'
   group 'root'
+  variables(
+    :conf_dir => CONF_DIR
+  )
 end
 
 # Temporary to update td-agent to latest version until 3rdparty package script can be updated in cloud-infrastructure

@@ -26,23 +26,24 @@ raise "Invalid smtpd port for node type [#{NODE_TYPE}]" if SMTPD_PORT.nil?
 
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_processors_structure'
 
-AWS_REGION                              = node['sophos_cloud']['region']
-MESSAGEPROCESSOR_USER                   = node['xgemail']['sqs_message_processor_user']
-NODE_IP                                 = node['ipaddress']
-PRODUCER_SCRIPT                         = 'xgemail.sqs.message.producer.py'
-S3_ENCRYPTION_ALGORITHM                 = node['xgemail']['s3_encryption_algorithm']
-SQS_MESSAGE_PRODUCER_BUFFER_SIZE        = node['xgemail']['sqs_message_producer_buffer_size']
-SQS_MESSAGE_PROCESSOR_DIR               = node['xgemail']['sqs_message_processor_dir']
-SQS_MESSAGE_PRODUCER_EMAIL_ROOT_DIR     = node['xgemail']['sqs_message_producer_email_root_dir']
-SQS_MESSAGE_PRODUCER_TEMP_FAILURE_CODE  = node['xgemail']['temp_failure_code']
-SQS_MESSAGE_PRODUCER_TTL_IN_DAYS        = node['xgemail']['sqs_message_producer_ttl_in_days']
-SUBMIT_DESTINATION_CONCUR_LIMIT         = node['xgemail']['submit_destination_concurrency_limit']
-XGEMAIL_UTILS_DIR                       = node['xgemail']['xgemail_utils_files_dir']
-PRODUCER_SCRIPT_PATH                    ="#{SQS_MESSAGE_PROCESSOR_DIR}/#{PRODUCER_SCRIPT}"
-XGEMAIL_BUCKET_NAME                     = node['xgemail']['xgemail_bucket_name']
-XGEMAIL_QUEUE_URL                       = node['xgemail']['xgemail_queue_url']
-XGEMAIL_MESSAGE_HISTORY_BUCKET_NAME     = node['xgemail']['msg_history_bucket_name']
-XGEMAIL_MESSAGE_HISTORY_QUEUE_URL       = node['xgemail']['msg_history_queue_url']
+AWS_REGION                                   = node['sophos_cloud']['region']
+MESSAGEPROCESSOR_USER                        = node['xgemail']['sqs_message_processor_user']
+NODE_IP                                      = node['ipaddress']
+PRODUCER_SCRIPT                              = 'xgemail.sqs.message.producer.py'
+S3_ENCRYPTION_ALGORITHM                      = node['xgemail']['s3_encryption_algorithm']
+SQS_MESSAGE_PRODUCER_BUFFER_SIZE             = node['xgemail']['sqs_message_producer_buffer_size']
+SQS_MESSAGE_PROCESSOR_DIR                    = node['xgemail']['sqs_message_processor_dir']
+SQS_MESSAGE_PRODUCER_EMAIL_ROOT_DIR          = node['xgemail']['sqs_message_producer_email_root_dir']
+SQS_MESSAGE_PRODUCER_TEMP_FAILURE_CODE       = node['xgemail']['temp_failure_code']
+SQS_MESSAGE_PRODUCER_PROCESS_TIMEOUT_SECONDS = node['xgemail']['sqs_message_producer_process_timeout_seconds']
+SQS_MESSAGE_PRODUCER_TTL_IN_DAYS             = node['xgemail']['sqs_message_producer_ttl_in_days']
+SUBMIT_DESTINATION_CONCUR_LIMIT              = node['xgemail']['submit_destination_concurrency_limit']
+XGEMAIL_UTILS_DIR                            = node['xgemail']['xgemail_utils_files_dir']
+PRODUCER_SCRIPT_PATH                         = "#{SQS_MESSAGE_PROCESSOR_DIR}/#{PRODUCER_SCRIPT}"
+XGEMAIL_BUCKET_NAME                          = node['xgemail']['xgemail_bucket_name']
+XGEMAIL_QUEUE_URL                            = node['xgemail']['xgemail_queue_url']
+XGEMAIL_MESSAGE_HISTORY_BUCKET_NAME          = node['xgemail']['msg_history_bucket_name']
+XGEMAIL_MESSAGE_HISTORY_QUEUE_URL            = node['xgemail']['msg_history_queue_url']
 
 #constants to use
 SUBMIT = 'submit'
@@ -72,6 +73,7 @@ template PRODUCER_SCRIPT_PATH do
       :sqs_msg_producer_ex_temp_failure_code => SQS_MESSAGE_PRODUCER_TEMP_FAILURE_CODE,
       :sqs_msg_producer_msg_history_s3_bucket_name => XGEMAIL_MESSAGE_HISTORY_BUCKET_NAME,
       :sqs_msg_producer_msg_history_sqs_url => XGEMAIL_MESSAGE_HISTORY_QUEUE_URL,
+      :sqs_msg_producer_process_timeout_seconds => SQS_MESSAGE_PRODUCER_PROCESS_TIMEOUT_SECONDS,
       :sqs_msg_producer_s3_bucket_name => XGEMAIL_BUCKET_NAME,
       :sqs_msg_producer_sqs_url => XGEMAIL_QUEUE_URL,
       :sqs_msg_producer_submit_ip => NODE_IP,
@@ -138,15 +140,4 @@ file '/etc/rsyslog.d/00-xgemail-sqsmsgproducer.conf' do
   mode '0600'
   owner 'root'
   group 'root'
-end
-
-# Add fluentd config file to monitor log file and submit to S3 for Logz.io.
-template '/etc/td-agent.d/00-source-sqsmsgproducer.conf' do
-  source 'fluentd-source-sqsmsgproducer.conf.erb'
-  mode '0644'
-  owner 'root'
-  group 'root'
-  variables(
-    :application_name => NODE_TYPE
-  )
 end

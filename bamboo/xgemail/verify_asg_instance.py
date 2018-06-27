@@ -23,6 +23,7 @@ import argparse
 import boto3
 import time
 import os
+import botocore
 
 
 # Argument Parser
@@ -49,19 +50,33 @@ def main():
     # session = boto3.Session(aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key) # Option C for running outside of Bamboo
     # Add the names of the associated CloudFormation Stack(s) to perform termination on.
     cfn_stacks = args.asg
-    cf_client = session.client('cloudformation')
+    cf_resource = session.resource('cloudformation')
     asg_client = session.client('autoscaling')
     ec2_client = session.client('ec2')
 
     # Get the Ec2 Instances State and Status.
     def describe_instance_status(instance):
-        return ec2_client.describe_instance_status(InstanceIds=[instance])['InstanceStatuses'][0]
+        try:
+            return ec2_client.describe_instance_status(InstanceIds=[instance])['InstanceStatuses'][0]
+        except botocore.exceptions.ClientError as e:
+            if e.response['Error']['Code'] == 'Throttling':
+                time.sleep(60)
+                pass
+            else:
+                raise e
 
     # Using the CloudFormation Stack name derive the AutoScaling Group name from the Logical Resource ID.
     for stack_name in cfn_stacks:
-        stack_resource = cf_client.describe_stack_resource(StackName=stack_name, LogicalResourceId=args.resource)
-        asg_name = stack_resource['StackResourceDetail']['PhysicalResourceId']
-        print "AutoScalingGroupName: %s" % asg_name
+        try:
+            stack_resource = cf_resource.StackResource(stack_name=stack_name, logical_id=args.resource)
+            asg_name = stack_resource.physical_resource_id
+            print "AutoScalingGroupName: %s" % asg_name
+        except botocore.exceptions.ClientError as e:
+            if e.response['Error']['Code'] == 'Throttling':
+                time.sleep(60)
+                pass
+            else:
+                raise e
 
         # Check the status of the AutoScaling Group and get the new instance-id
         for asg in asg_client.describe_auto_scaling_groups(AutoScalingGroupNames=[asg_name], MaxRecords=1)['AutoScalingGroups']:
@@ -74,22 +89,36 @@ def main():
 
             # Keep checking Lifecycle State until it equals InService
             while lifecycle_state != 'InService':
-                time.sleep(5)
-                lifecycle_state = asg_client.describe_auto_scaling_instances(InstanceIds=[instance_id], MaxRecords=1)['AutoScalingInstances'][0]['LifecycleState']
-                print "LifecycleState: %s" % lifecycle_state
+                time.sleep(60)
+                try:
+                    lifecycle_state = asg_client.describe_auto_scaling_instances(InstanceIds=[instance_id], MaxRecords=1)['AutoScalingInstances'][0]['LifecycleState']
+                    print "LifecycleState: %s" % lifecycle_state
+                except botocore.exceptions.ClientError as e:
+                    if e.response['Error']['Code'] == 'Throttling':
+                        time.sleep(60)
+                        pass
+                    else:
+                        raise e
             print "AutoScalingGroup is InService. Now getting Instance Status"
             instance_state = ''
             instance_status = ''
 
             # Using the describe_instance_status function, continually check the instances' state and status until State is running and Status is Passed.
             while not (instance_state == 'running' and instance_status == 'passed'):
-                time.sleep(10)
-                ec2_status = describe_instance_status(instance_id)
-                instance_state = ec2_status['InstanceState']['Name']
-                instance_status = ec2_status['InstanceStatus']['Details'][0]['Status']
-                print "InstanceState: %s - InstanceStatus: %s" % (instance_state, instance_status)
-            print "Instance Deployment Complete!"
+                time.sleep(60)
+                try:
+                    ec2_status = describe_instance_status(instance_id)
+                    instance_state = ec2_status['InstanceState']['Name']
+                    instance_status = ec2_status['InstanceStatus']['Details'][0]['Status']
+                    print "InstanceState: %s - InstanceStatus: %s" % (instance_state, instance_status)
+                    print "Instance Deployment Complete!"
+                except botocore.exceptions.ClientError as e:
+                    if e.response['Error']['Code'] == 'Throttling':
+                        time.sleep(60)
+                        pass
+                    else:
+                        raise e
+
 
 if __name__ == "__main__":
     main()
-

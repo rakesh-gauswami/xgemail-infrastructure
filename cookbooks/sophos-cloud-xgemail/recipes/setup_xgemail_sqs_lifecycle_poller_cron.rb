@@ -151,17 +151,6 @@ file '/etc/rsyslog.d/00-xgemail-lifecycle.conf' do
   group 'root'
 end
 
-# Add fluentd config file to monitor log file and submit to S3 for Logz.io.
-template '/etc/td-agent.d/00-source-lifecycle.conf' do
-  source 'fluentd-source-lifecycle.conf.erb'
-  mode '0644'
-  owner 'root'
-  group 'root'
-  variables(
-    :application_name => NODE_TYPE
-  )
-end
-
 # Add script to crontab
 cron "#{INSTANCE_NAME}-lifecycle-cron" do
   minute "1-59/#{CRON_MINUTE_FREQUENCY}"

@@ -176,16 +176,6 @@ file '/etc/rsyslog.d/00-xgemail-policy.conf' do
   group 'root'
 end
 
-# Add fluentd config file to monitor log file and submit to S3 for Logz.io.
-template '/etc/td-agent.d/00-source-policy.conf' do
-  source 'fluentd-source-policy.conf.erb'
-  mode '0644'
-  owner 'root'
-  group 'root'
-  variables(
-    :application_name => NODE_TYPE
-  )
-end
 
 service POLICY_POLLER_SERVICE_NAME do
   service_name POLICY_POLLER_SERVICE_NAME
