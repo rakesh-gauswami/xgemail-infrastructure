@@ -19,8 +19,8 @@ REGION                        = node['sophos_cloud']['region']
 MSG_STATS_REJECT_SNS_TOPIC    = node['xgemail']['msg_statistics_rejection_sns_topic']
 DELIVERY_STATUS_SNS_TOPIC     = node['xgemail']['msg_history_status_sns_topic']
 SERVER_IP                     = node['ipaddress']
-# Configs
 
+# Configs
 if NODE_TYPE    == 'delivery'
   SERVER_TYPE   = 'CUSTOMER_DELIVERY'
   DIRECTION     = 'INBOUND'
