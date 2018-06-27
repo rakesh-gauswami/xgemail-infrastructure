@@ -261,10 +261,6 @@ template 'fluentd-filter-transform-msg-delivery' do
   owner 'root'
   group 'root'
   variables(
-    :account => ACCOUNT,
-    :application_name => NODE_TYPE,
-    :instance_id => INSTANCE_ID,
-    :region => REGION,
     :server_type => SERVER_TYPE,
     :server_ip => SERVER_IP,
     :direction => DIRECTION
@@ -286,7 +282,6 @@ template 'fluentd-match-sns-msg-delivery' do
   group 'root'
   variables(
     :region => REGION,
-    :account => ACCOUNT,
     :sns_topic => DELIVERY_STATUS_SNS_TOPIC
   )
  only_if {
