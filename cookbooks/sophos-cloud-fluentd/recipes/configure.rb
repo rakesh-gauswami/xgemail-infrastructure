@@ -12,14 +12,13 @@
 ACCOUNT                       = node['sophos_cloud']['environment']
 CONF_DIR                      = node['fluentd']['conf_dir']
 INSTANCE_ID                   = node['ec2']['instance_id']
-SERVER_IP                     = node['ec2']['local_ipv4']
 MAIN_DIR                      = node['fluentd']['main_dir']
 NODE_TYPE                     = node['xgemail']['cluster_type']
 PATTERNS_DIR                  = node['fluentd']['patterns_dir']
 REGION                        = node['sophos_cloud']['region']
 MSG_STATS_REJECT_SNS_TOPIC    = node['xgemail']['msg_statistics_rejection_sns_topic']
 DELIVERY_STATUS_SNS_TOPIC     = node['xgemail']['msg_history_status_sns_topic']
-
+SERVER_IP                     = node['ipaddress']
 # Configs
 
 if NODE_TYPE    == 'delivery'
