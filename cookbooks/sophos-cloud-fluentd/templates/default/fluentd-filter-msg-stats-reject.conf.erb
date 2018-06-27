@@ -43,6 +43,7 @@
 
 <filter sns.msg_stats_reject.*>
   @type record_transformer
+  enable_ruby true
   <record>
     timestamp ${time.strftime("%Y-%m-%dT%H:%M:%S%z")}
     message_rejection_code ${tag_suffix[2]}
