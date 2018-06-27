@@ -12,6 +12,7 @@
 ACCOUNT                       = node['sophos_cloud']['environment']
 CONF_DIR                      = node['fluentd']['conf_dir']
 INSTANCE_ID                   = node['ec2']['instance_id']
+SERVER_IP                     = node['ec2']['local_ipv4']
 MAIN_DIR                      = node['fluentd']['main_dir']
 NODE_TYPE                     = node['xgemail']['cluster_type']
 PATTERNS_DIR                  = node['fluentd']['patterns_dir']
@@ -266,6 +267,7 @@ template 'fluentd-filter-transform-msg-delivery' do
     :instance_id => INSTANCE_ID,
     :region => REGION,
     :server_type => SERVER_TYPE,
+    :server_ip => SERVER_IP,
     :direction => DIRECTION
   )
  only_if {
