@@ -1,0 +1,10 @@
+<filter sns.msg.delivery.**>
+  @type record_transformer
+  enable_ruby
+  <record>
+    server_type <%= @server_type %>
+    server_ip <%= @server_ip %>
+    direction <%= @direction %>
+    timestamp ${time.strftime("%Y-%m-%dT%H:%M:%S%z")}
+  </record>
+</filter>

@@ -17,6 +17,26 @@ NODE_TYPE                     = node['xgemail']['cluster_type']
 PATTERNS_DIR                  = node['fluentd']['patterns_dir']
 REGION                        = node['sophos_cloud']['region']
 MSG_STATS_REJECT_SNS_TOPIC    = node['xgemail']['msg_statistics_rejection_sns_topic']
+DELIVERY_STATUS_SNS_TOPIC     = node['xgemail']['msg_history_status_sns_topic']
+SERVER_IP                     = node['ipaddress']
+
+# Configs
+if NODE_TYPE    == 'delivery'
+  SERVER_TYPE   = 'CUSTOMER_DELIVERY'
+  DIRECTION     = 'INBOUND'
+elsif NODE_TYPE == 'xdelivery'
+  SERVER_TYPE   = 'CUSTOMER_XDELIVERY'
+  DIRECTION     = 'INBOUND'
+elsif NODE_TYPE == 'internet-xdelivery'
+  SERVER_TYPE   = 'INTERNET_XDELIVERY'
+  DIRECTION     = 'OUTBOUND'
+elsif NODE_TYPE == 'internet-delivery'
+  SERVER_TYPE   = 'INTERNET_DELIVERY'
+  DIRECTION     = 'OUTBOUND'
+else
+  SERVER_TYPE   = 'UNKNOWN'
+  DIRECTION     = 'UNKNOWN'
+end
 
 # All instances - Start Order: 10
 template 'fluentd-source-maillog' do
@@ -140,7 +160,7 @@ template 'fluentd-match-maillog' do
     :application_name => NODE_TYPE,
     :region => REGION
   )
-  not_if { NODE_TYPE == 'submit' }
+  only_if { NODE_TYPE == 'customer-submit' }
 end
 
 # All instances - Start Order: 50
@@ -170,6 +190,44 @@ template 'fluentd-match-msg-stats-reject' do
   only_if { NODE_TYPE == 'submit' }
 end
 
+
+#  - Start Order: 65
+template 'fluentd-match-msg-delivery' do
+  path "#{CONF_DIR}/65-match-msg-delivery.conf"
+  source 'fluentd-match-msg-delivery.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :application_name => NODE_TYPE,
+    :region => REGION
+  )
+ only_if {
+            NODE_TYPE == 'delivery' ||
+            NODE_TYPE == 'xdelivery' ||
+            NODE_TYPE == 'internet-delivery' ||
+            NODE_TYPE == 'internet-xdelivery'
+         }
+
+end
+
+
+#  Start Order: 70
+template 'fluentd-filter-msg-delivery' do
+  path "#{CONF_DIR}/70-filter-msg-delivery.conf"
+  source 'fluentd-filter-msg-delivery.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  only_if {
+            NODE_TYPE == 'delivery' ||
+            NODE_TYPE == 'xdelivery' ||
+            NODE_TYPE == 'internet-delivery' ||
+            NODE_TYPE == 'internet-xdelivery'
+         }
+  end
+
+
 # Only internet-submit  - Start Order: 70
 template 'fluentd-filter-msg-stats-reject' do
   path "#{CONF_DIR}/70-filter-msg-stats-reject.conf"
@@ -194,6 +252,47 @@ template 'fluentd-filter-transform' do
     :region => REGION
   )
 end
+
+# Start Order: 75
+template 'fluentd-filter-transform-msg-delivery' do
+  path "#{CONF_DIR}/75-filter-transform-msg-delivery.conf"
+  source 'fluentd-filter-transform-msg-delivery.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :server_type => SERVER_TYPE,
+    :server_ip => SERVER_IP,
+    :direction => DIRECTION
+  )
+ only_if {
+            NODE_TYPE == 'delivery' ||
+            NODE_TYPE == 'xdelivery' ||
+            NODE_TYPE == 'internet-delivery' ||
+            NODE_TYPE == 'internet-xdelivery'
+         }
+end
+
+# Message delivery status on all delivery and x delivery servers
+template 'fluentd-match-sns-msg-delivery' do
+  path "#{CONF_DIR}/97-match-sns-msg-delivery.conf"
+  source 'fluentd-match-sns-msg-delivery.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :region => REGION,
+    :sns_topic => DELIVERY_STATUS_SNS_TOPIC
+  )
+ only_if {
+            NODE_TYPE == 'delivery' ||
+            NODE_TYPE == 'xdelivery' ||
+            NODE_TYPE == 'internet-delivery' ||
+            NODE_TYPE == 'internet-xdelivery'
+         }
+end
+
+
 
 # All instances - Start Order: 99
 template 'fluentd-match-s3' do
@@ -236,6 +335,24 @@ end
 cookbook_file 'sns_msg_stats_reject_template' do
   path "#{MAIN_DIR}/sns_msg_stats_reject_template.erb"
   source 'fluentd_sns_msg_stats_reject_template.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  action :create
+end
+
+cookbook_file 'sns_msg_delivery_template' do
+  path "#{MAIN_DIR}/sns_msg_delivery_template.erb"
+  source 'fluentd_sns_msg_delivery_template.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  action :create
+end
+
+cookbook_file 'sns_msg_to_xdelivery_template' do
+  path "#{MAIN_DIR}/sns_msg_to_xdelivery_template.erb"
+  source 'fluentd_sns_msg_to_xdelivery_template.erb'
   mode '0644'
   owner 'root'
   group 'root'
