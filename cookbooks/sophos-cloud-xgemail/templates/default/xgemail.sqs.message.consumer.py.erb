@@ -27,7 +27,7 @@ from awshandler import AwsHandler
 from common.sqsmessage import SqsMessage
 from datetime import datetime
 from queue_log import QueueLog
-from sqs_message_history_delivery_status import SqsMessageHistoryDeliveryStatus
+from sns_message_history_delivery_status import SnsMessageHistoryDeliveryStatus
 from postfix_injection_response import PostfixInjectionResponse
 from logging.handlers import SysLogHandler
 from smtplib import SMTPException
@@ -50,7 +50,7 @@ MAIL_PIC_RESPONSE_TIMEOUT = <%= @mail_pic_api_response_timeout %>
 MAIL_PIC_API_AUTH = '<%= @mail_pic_api_auth %>'
 CONNECTIONS_BUCKET = '<%= @connections_bucket %>'
 MESSAGE_DIRECTION = '<%= @message_direction %>'
-MESSAGE_HISTORY_DELIVERY_STATUS_SQS_URL = '<%= @message_history_delivery_status_sqs_url %>'
+MESSAGE_HISTORY_DELIVERY_STATUS_SNS_TOPIC = '<%= @message_history_status_sns_topic_arn %>'
 NODE_TYPE = '<%= @node_type %>'
 NODE_IP = '<%= @node_ip %>'
 
@@ -269,7 +269,7 @@ def inject_email(sender, recipients, email, message_path, submit_queue_id):
         return PostfixInjectionResponse(True, delivery_queue_id)
     return PostfixInjectionResponse(True, delivery_queue_id)
 
-def create_and_send_message_history_delivery_status_sqs_job(sqs_message, postfix_injection_response, recipients):
+def create_and_publish_message_history_delivery_status_sns_job(sqs_message, postfix_injection_response):
     queue_log = QueueLog(
         sqs_message.schema_version,
         NODE_TYPE,
@@ -279,7 +279,7 @@ def create_and_send_message_history_delivery_status_sqs_job(sqs_message, postfix
         datetime.utcnow().strftime(DATETIME_FORMAT)
     )
 
-    sqs_message_history_delivery_status_job = SqsMessageHistoryDeliveryStatus(
+    sns_message_history_delivery_status_job = SnsMessageHistoryDeliveryStatus(
         MESSAGE_DIRECTION,
         sqs_message.message_path,
         queue_log,
@@ -287,17 +287,17 @@ def create_and_send_message_history_delivery_status_sqs_job(sqs_message, postfix
     )
 
     try:
-        awshandler.add_to_sqs(
-            MESSAGE_HISTORY_DELIVERY_STATUS_SQS_URL,
-            json.dumps(sqs_message_history_delivery_status_job.get_sqs_message_history_delivery_status_json())
+        awshandler.publish_to_sns_topic(
+            MESSAGE_HISTORY_DELIVERY_STATUS_SNS_TOPIC,
+            json.dumps(sns_message_history_delivery_status_job.get_sns_message_history_delivery_status_json())
         )
 
-        logger.debug("Job <{0}> sent to message history delivery status sqs queue"
-                     .format(sqs_message_history_delivery_status_job))
+        logger.debug("Job <{0}> published to message history delivery status sns queue"
+                     .format(sns_message_history_delivery_status_job))
 
     except Exception as e:
-        logger.exception("Failed to send event <{0}> to message history delivery status sqs queue"
-                     .format(sqs_message_history_delivery_status_job))
+        logger.exception("Failed to publish event <{0}> to message history delivery status sqs queue"
+                     .format(sns_message_history_delivery_status_job))
 
 
 while True:
@@ -413,10 +413,9 @@ while True:
                     "Removed message [{0}] from SQS".format(sqs_message.message_path)
                 )
 
-                create_and_send_message_history_delivery_status_sqs_job(
+                create_and_publish_message_history_delivery_status_sns_job(
                     sqs_message,
-                    postfix_injection_response,
-                    recipients
+                    postfix_injection_response
                 )
 
     except Exception:

@@ -12,7 +12,7 @@
 from queue_log import QueueLog
 
 
-class SqsMessageHistoryDeliveryStatus:
+class SnsMessageHistoryDeliveryStatus:
     def __init__(self,
                  direction,
                  message_path,
@@ -23,7 +23,7 @@ class SqsMessageHistoryDeliveryStatus:
         self.__queue_log = queue_log
         self.__nullable_next_queue_log = nullable_next_queue_log
 
-    def get_sqs_message_history_delivery_status_json(self):
+    def get_sns_message_history_delivery_status_json(self):
         return {
             'direction': self.__direction,
             'message_path': self.__message_path,
@@ -48,5 +48,5 @@ class SqsMessageHistoryDeliveryStatus:
         return self.__nullable_next_queue_log
 
     def __str__(self):
-        json_format = self.get_sqs_message_history_delivery_status_json()
+        json_format = self.get_sns_message_history_delivery_status_json()
         return ', '.join('%s=%s' % (key, value) for (key, value) in json_format.iteritems())

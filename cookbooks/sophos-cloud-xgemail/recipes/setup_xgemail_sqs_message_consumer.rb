@@ -33,7 +33,7 @@ XGEMAIL_BUCKET_NAME                     = node['xgemail']['xgemail_bucket_name']
 XGEMAIL_SNS_SQS_URL                     = node['xgemail']['xgemail_sns_sqs_url']
 MAIL_PIC_API_RESPONSE_TIMEOUT           = node['xgemail']['mail_pic_apis_response_timeout_seconds']
 MAIL_PIC_API_AUTH                       = node['xgemail']['mail_pic_api_auth']
-MESSAGE_HISTORY_DELIVERY_STATUS_SQS_URL = node['xgemail']['msg_history_delivery_status_queue_url']
+MESSAGE_HISTORY_DELIVERY_STATUS_SNS_TOPIC = node['xgemail']['msg_history_status_sns_topic']
 NODE_IP                                 = node['ipaddress']
 
 XGEMAIL_PIC_CA_PATH = "#{LOCAL_CERT_PATH}/hmr-infrastructure-ca.crt"
@@ -79,7 +79,7 @@ template CONSUMER_SCRIPT_PATH do
     :mail_pic_api_auth => MAIL_PIC_API_AUTH,
     :connections_bucket => CONNECTIONS_BUCKET,
     :message_direction => MESSAGE_DIRECTION,
-    :message_history_delivery_status_sqs_url => MESSAGE_HISTORY_DELIVERY_STATUS_SQS_URL,
+    :message_history_status_sns_topic_arn => MESSAGE_HISTORY_DELIVERY_STATUS_SNS_TOPIC,
     :node_type => NODE_TYPE,
     :node_ip => NODE_IP
   )

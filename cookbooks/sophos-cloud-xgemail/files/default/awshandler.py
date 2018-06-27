@@ -19,6 +19,7 @@ class AwsHandler(object):
         self.aws_region = aws_region
         self.s3_client = boto3.client("s3", region_name=aws_region)
         self.sqs_client = boto3.client("sqs", region_name=aws_region)
+        self.sns_client = boto3.client("sns", region_name=aws_region)
 
     # puts data into S3 bucket
     def upload_data_in_s3(self, bucket, key, data, expires, encryption):
@@ -36,6 +37,13 @@ class AwsHandler(object):
         return self.sqs_client.send_message(
             QueueUrl=queue_url,
             MessageBody=message_body)
+
+    # publishes data to sns topic
+    def publish_to_sns_topic(self, topic_arn, message_body):
+        return self.sns_client.publish(
+            TargetArn=topic_arn,
+            Message=message_body
+        )
 
     def download_message_from_s3(self, bucket, sqs_message):
         # remove leading slash and append proper data type

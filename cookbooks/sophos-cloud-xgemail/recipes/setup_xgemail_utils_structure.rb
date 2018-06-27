@@ -76,7 +76,7 @@ if NODE_TYPE == 'delivery' or NODE_TYPE == 'internet-delivery' or
   [
       'postfix_injection_response.py',
       'queue_log.py',
-      'sqs_message_history_delivery_status.py'
+      'sns_message_history_delivery_status.py'
   ].each do | cur |
     cookbook_file "#{XGEMAIL_UTILS_DIR}/#{cur}" do
       source cur
