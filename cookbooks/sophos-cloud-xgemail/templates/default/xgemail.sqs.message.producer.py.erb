@@ -75,7 +75,7 @@ NONCE = "nonce"
 DOMAIN_NAME_REGEX_PATTERN = "[a-zA-Z0-9][-a-zA-Z0-9]*(\\.[-a-zA-Z0-9]+)*\\.[a-zA-Z]{2,}"
 
 # Other constants
-DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
+DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 MESSAGE_HISTORY_UNKNOWN_DESIGNATION = "UNKNOWN"
 MESSAGE_HISTORY_ACCEPTED_EVENT = "ACCEPTED"
 INBOUND_MESSAGE_DIRECTION = "INBOUND"
@@ -100,7 +100,7 @@ def get_metadata():
         queue_id = sys.argv[4]
         recipient_domain = sys.argv[5]
         # TODO: see if we can pipe arrival date from postfix
-        date_recorded = datetime.now().strftime(DATETIME_FORMAT)
+        date_recorded = datetime.utcnow().strftime(DATETIME_FORMAT)
         recipient_list = [ ]
         for i in range (6,len(sys.argv)):
             recipient_list.append(sys.argv[i])
@@ -242,7 +242,7 @@ def prepare_msg_history_event(s3_file_path, metadata, sqs_message, direction, se
             sqs_message.akm_key,
             sqs_message.nonce,
             sqs_message.message_key,
-            datetime.now().strftime(DATETIME_FORMAT),
+            datetime.utcnow().strftime(DATETIME_FORMAT),
             MESSAGE_HISTORY_ACCEPTED_EVENT,
             MESSAGE_HISTORY_UNKNOWN_DESIGNATION,
             None,

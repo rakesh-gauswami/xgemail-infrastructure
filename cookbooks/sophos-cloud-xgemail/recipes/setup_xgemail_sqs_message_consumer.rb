@@ -33,6 +33,8 @@ XGEMAIL_BUCKET_NAME                     = node['xgemail']['xgemail_bucket_name']
 XGEMAIL_SNS_SQS_URL                     = node['xgemail']['xgemail_sns_sqs_url']
 MAIL_PIC_API_RESPONSE_TIMEOUT           = node['xgemail']['mail_pic_apis_response_timeout_seconds']
 MAIL_PIC_API_AUTH                       = node['xgemail']['mail_pic_api_auth']
+MESSAGE_HISTORY_DELIVERY_STATUS_SNS_TOPIC = node['xgemail']['msg_history_status_sns_topic']
+NODE_IP                                 = node['ipaddress']
 
 XGEMAIL_PIC_CA_PATH = "#{LOCAL_CERT_PATH}/hmr-infrastructure-ca.crt"
 XGEMAIL_PIC_FQDN = "mail-#{STATION_VPC_NAME.downcase}-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com"
@@ -76,7 +78,10 @@ template CONSUMER_SCRIPT_PATH do
     :xgemail_utils_path => XGEMAIL_UTILS_DIR,
     :mail_pic_api_auth => MAIL_PIC_API_AUTH,
     :connections_bucket => CONNECTIONS_BUCKET,
-    :message_direction => MESSAGE_DIRECTION
+    :message_direction => MESSAGE_DIRECTION,
+    :message_history_status_sns_topic_arn => MESSAGE_HISTORY_DELIVERY_STATUS_SNS_TOPIC,
+    :node_type => NODE_TYPE,
+    :node_ip => NODE_IP
   )
 end
 
