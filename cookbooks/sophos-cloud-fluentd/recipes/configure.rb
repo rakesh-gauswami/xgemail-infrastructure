@@ -190,7 +190,6 @@ template 'fluentd-match-msg-stats-reject' do
   only_if { NODE_TYPE == 'submit' }
 end
 
-
 #  - Start Order: 65
 template 'fluentd-match-msg-delivery' do
   path "#{CONF_DIR}/65-match-msg-delivery.conf"
@@ -211,7 +210,6 @@ template 'fluentd-match-msg-delivery' do
 
 end
 
-
 #  Start Order: 70
 template 'fluentd-filter-msg-delivery' do
   path "#{CONF_DIR}/70-filter-msg-delivery.conf"
@@ -226,7 +224,6 @@ template 'fluentd-filter-msg-delivery' do
             NODE_TYPE == 'internet-xdelivery'
          }
   end
-
 
 # Only internet-submit  - Start Order: 70
 template 'fluentd-filter-msg-stats-reject' do
