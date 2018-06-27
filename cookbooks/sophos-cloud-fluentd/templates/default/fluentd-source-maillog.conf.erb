@@ -1,6 +1,8 @@
 <source>
   @type tail
   format /^(?<time>[\w]+\s+[\d]+\s[\d:]+)\s+(?<message>.*)/
+  time_key time
+  keep_time_key true
   time_format %b %d %H:%M:%S
   path /var/log/maillog
   pos_file /var/log/td-agent/maillog.pos
