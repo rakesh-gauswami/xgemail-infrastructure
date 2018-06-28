@@ -45,6 +45,7 @@
       VpcName:                              "{{vpc.cloud_email.name}}"
       XgemailMinSizeDataGB:                 "{{xgemail_size_data_gb}}"
       XgemailMsgHistoryStatusQueueUrl:      "{{sqs.url_prefix}}{{sqs.msg_history_status_sqs_queue}}"
+      XgemailMsgHistoryStatusSNSArn:        "{{sns.arn_prefix}}{{sqs.msg_history_status_sns_topic}}"
       XgemailServiceType:                   "xdelivery"
   with_together:
     - "{{stack_number}}"
