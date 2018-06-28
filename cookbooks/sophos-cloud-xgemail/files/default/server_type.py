@@ -22,16 +22,16 @@ class ServerType(Enum):
     CUSTOMER_XDELIVERY = 'customer-xdelivery'
 
     @staticmethod
-    def from_string(string):
-        string = string.lower()
+    def from_string(input):
+        input = input.lower()
         for server_type in ServerType:
-            if server_type.value.lower() == string:
+            if server_type.value.lower() == input:
                 return server_type
-        if string == 'delivery':
+        if input == 'delivery':
             return ServerType.CUSTOMER_DELIVERY
-        elif string == 'submit':
+        elif input == 'submit':
             return ServerType.INTERNET_SUBMIT
         else:
-            raise ValueError('Cannot create ServerType enum from input string <{}>'.format(string))
+            raise ValueError('Cannot create ServerType enum from input string <{}>'.format(input))
 
 
