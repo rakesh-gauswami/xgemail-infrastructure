@@ -23,6 +23,8 @@ class ServerType(Enum):
 
     @staticmethod
     def from_string(input):
+        if input is None:
+            raise TypeError('Input cannot be null')
         input = input.lower()
         for server_type in ServerType:
             if server_type.value.lower() == input:
