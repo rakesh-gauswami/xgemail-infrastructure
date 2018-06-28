@@ -139,13 +139,21 @@ def parse_postfix_queue_id_from_response(full_postfix_response):
 # A recreation of the sendmail function from smtplib. This function does exactly the same thing
 # as the sendmail function, however it returns a tuple of (failed_recipients, postfix_response) instead
 # of just the failed recipients.
-# See: https://github.com/python/cpython/blob/master/Lib/smtplib.py for the original code
+# You can view the original code by running the following on any CloudEmail instances that is running
+# Postfix:
+#
+############################################
+# import smtplib
+# import inspect
+#
+# server = smtplib.SMTP('127.0.0.1', 25)
+# lines = inspect.getsource(server.sendmail)
+# print lines
+############################################
+#
 def sendmail_to_postfix(server, from_addr, to_addrs, msg, mail_options=[], rcpt_options=[]):
     server.ehlo_or_helo_if_needed()
     esmtp_opts = []
-
-    if isinstance(msg, str):
-        msg = fix_eols(msg).encode('ascii')
 
     if server.does_esmtp:
         if server.has_extn('size'):
@@ -155,41 +163,32 @@ def sendmail_to_postfix(server, from_addr, to_addrs, msg, mail_options=[], rcpt_
 
     (code, resp) = server.mail(from_addr, esmtp_opts)
     if code != 250:
-        if code == 421:
-            server.close()
-        else:
-            server._rset()
+        server.rset()
         raise SMTPSenderRefused(code, resp, from_addr)
 
     senderrs = {}
-    if isinstance(to_addrs, str):
+    if isinstance(to_addrs, basestring):
         to_addrs = [to_addrs]
 
     for each in to_addrs:
         (code, resp) = server.rcpt(each, rcpt_options)
         if (code != 250) and (code != 251):
             senderrs[each] = (code, resp)
-        if code == 421:
-            server.close()
-            raise SMTPRecipientsRefused(senderrs)
 
     if len(senderrs) == len(to_addrs):
         # the server refused all our recipients
-        server._rset()
+        server.rset()
         raise SMTPRecipientsRefused(senderrs)
+
     (code, resp) = server.data(msg)
 
-    postfix_resp = resp
+    postfix_response = resp
 
     if code != 250:
-        if code == 421:
-            server.close()
-        else:
-            server._rset()
+        server.rset()
         raise SMTPDataError(code, resp)
     #if we got here then somebody got our mail
-    return senderrs, postfix_resp
-
+    return senderrs, postfix_response
 
 # Adds headers to the provided message object.
 # Returns the updated message object if successful. If any issues occurred with
