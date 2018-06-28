@@ -126,10 +126,6 @@ def attempt_to_retrieve_headers(message_path):
 
     return headers
 
-# Fixes up EOL characters, taken from smtplib
-def fix_eols(data):
-    return  re.sub(r'(?:\r\n|\n|\r(?!\n))', "\r\n", data)
-
 # Accepts a postfix response in the form "2.0.0 Ok: queued as 412TZQ0wl9z1S"
 # parses out and returns the queue id
 def parse_postfix_queue_id_from_response(full_postfix_response):
