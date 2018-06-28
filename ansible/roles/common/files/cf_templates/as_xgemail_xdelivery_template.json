@@ -194,6 +194,12 @@
       "Default": "-1"
     },
 
+    "StationVpcId" : {
+      "Description" : "Cloud Station VPC id ",
+      "Type" : "String",
+      "Default": ""
+    },
+
     "StationVpcName": {
       "Description": "Name of the CloudStation VPC",
       "Type": "String",
@@ -496,6 +502,7 @@
                       "    \"cluster_type\"                   : \"{{cluster_type}}\",\n",
                       "    \"msg_history_status_queue_url\"   : \"{{msg_history_status_queue_url}}\",\n",
                       "    \"msg_notifier_queue_url\"         : \"{{msg_notifier_queue_url}}\",\n",
+                      "    \"station_vpc_id\"                 : \"{{station_vpc_id}}\",\n",
                       "    \"station_vpc_name\"               : \"{{station_vpc_name}}\"\n",
                       "  }\n",
                       "}\n"
@@ -514,6 +521,7 @@
                   "msg_history__status_queue_url":            { "Ref": "XgemailMsgHistoryStatusQueueUrl" },
                   "msg_notifier_queue_url":                   { "Ref": "XgemailNotifierQueueUrl" },
                   "region":                                   { "Ref": "AWS::Region" },
+                  "station_vpc_id":                           { "Ref": "StationVpcId" },
                   "stack":                                    { "Ref": "AWS::StackName" },
                   "station_vpc_name":                         { "Ref": "StationVpcName" },
                   "volume_min_iops":                          { "Ref": "EbsMinIops" },
