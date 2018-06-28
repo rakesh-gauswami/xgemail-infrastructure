@@ -29,6 +29,7 @@ from datetime import datetime
 from queue_log import QueueLog
 from sns_message_history_delivery_status import SnsMessageHistoryDeliveryStatus
 from postfix_injection_response import PostfixInjectionResponse
+from server_type import ServerType
 from logging.handlers import SysLogHandler
 from smtplib import SMTPException
 from smtplib import SMTPException
@@ -272,7 +273,7 @@ def inject_email(sender, recipients, email, message_path, submit_queue_id):
 def create_and_publish_message_history_delivery_status_sns_job(sqs_message, postfix_injection_response):
     queue_log = QueueLog(
         sqs_message.schema_version,
-        NODE_TYPE,
+        ServerType.from_string(NODE_TYPE).name,
         NODE_IP,
         postfix_injection_response.nullable_delivery_queue_id,
         None,
@@ -292,7 +293,7 @@ def create_and_publish_message_history_delivery_status_sns_job(sqs_message, post
             json.dumps(sns_message_history_delivery_status_job.get_sns_message_history_delivery_status_json())
         )
 
-        logger.debug("Job <{0}> published to message history delivery status sns queue"
+        logger.debug("Job <{0}> published to message history delivery status sns topic"
                      .format(sns_message_history_delivery_status_job))
 
     except Exception as e:
