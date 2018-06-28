@@ -59,17 +59,6 @@ file "/etc/rsyslog.d/00-#{JILTER_PACKAGE_NAME}.conf" do
   group 'root'
 end
 
-# Add fluentd config file to monitor log file and submit to S3 for Logz.io.
-template '/etc/td-agent.d/20-source-jilter.conf' do
-  source 'fluentd-source-jilter.conf.erb'
-  mode '0644'
-  owner 'root'
-  group 'root'
-  variables(
-      :application_name => NODE_TYPE
-  )
-end
-
 # Move libspfjni to not have a version so Java can find it
 execute 'move_jilter_jni' do
   user 'root'

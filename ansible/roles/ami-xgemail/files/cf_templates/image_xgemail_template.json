@@ -397,7 +397,7 @@
                   "Fn::Join": [
                     "", [
                       "knife node run_list add -z `knife node list -z` \"",
-                      "recipe[sophos-cloud-xgemail::install_tdagent],",
+                      "recipe[sophos-cloud-fluentd::install],",
                       "recipe[sophos-cloud-xgemail::install_monit_service],",
                       "recipe[sophos-cloud-xgemail::download_libspf2],",
                       "recipe[sophos-cloud-xgemail::ami]",
@@ -484,7 +484,7 @@
                 "  EXIT_CODE=$?\n",
                 "",
                 "  # Upload logs before reporting failure to avoid race against termination.\n",
-                "  LOG_DIR=/tmp/create-", { "Ref": "ApplicationName" }, "-ami-build", { "Ref": "Build" }, "\n",
+                "  LOG_DIR=/tmp/create_", { "Ref": "ApplicationName" }, "_ami_build", { "Ref": "Build" }, "\n",
                 "",
                 "  cd /tmp\n",
                 "  rm -rf ${LOG_DIR}\n",
@@ -500,9 +500,14 @@
                 "  cd /tmp\n",
                 "  zip -r ${LOG_DIR}.zip $(basename ${LOG_DIR})\n",
                 "",
-                "  aws s3 cp --region us-west-2 ${LOG_DIR}.zip",
-                " s3://", { "Ref": "AmiBucket" }, "/", { "Ref": "Branch" },
-                "/build-", { "Ref": "Build" }, "/\n",
+                "  n=0\n",
+                "  until [ $n -ge 5 ]\n",
+                "  do\n",
+                "    aws s3 cp --debug --region us-west-2 ${LOG_DIR}.zip s3://", { "Ref": "AmiBucket" }, "/", { "Ref": "Branch" }, "/build_", { "Ref": "Build" }, "/ && break\n",
+                "      ",
+                "    n=$[$n+1]\n",
+                "    sleep 5\n",
+                "   done\n",
                 "",
                 "  # Now we can safely emit the signal.\n",
                 "  /opt/aws/bin/cfn-signal -e $EXIT_CODE",
@@ -532,12 +537,12 @@
 
                 "# Push the Public IP of the instance to S3 for artifact retrieval via Bamboo.\n",
 
-                "PUBLIC_IP=ip-address-", { "Ref": "ApplicationName" }, "-ami-build", { "Ref": "Build" }, "\n",
+                "PUBLIC_IP=ip_address_", { "Ref": "ApplicationName" }, "_ami_build", { "Ref": "Build" }, "\n",
                 "wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4 > /tmp/${PUBLIC_IP}.txt\n",
 
-                "aws s3 cp --region us-west-2 /tmp/${PUBLIC_IP}.txt",
+                "aws s3 cp --debug --region us-west-2 /tmp/${PUBLIC_IP}.txt",
                 " s3://", { "Ref": "AmiBucket" }, "/", { "Ref": "Branch" },
-                "/build-", { "Ref": "Build" }, "/\n",
+                "/build_", { "Ref": "Build" }, "/\n",
 
                 "# Install all security and aws updates.\n",
 

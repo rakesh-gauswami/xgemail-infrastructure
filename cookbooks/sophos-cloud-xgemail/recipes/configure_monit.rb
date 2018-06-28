@@ -55,16 +55,6 @@ template '/etc/monit.d/delivery.conf' do
   only_if { NODE_TYPE == 'delivery' || NODE_TYPE == 'internet-delivery' }
 end
 
-template '/etc/td-agent.d/00-source-monit.conf' do
-  source 'fluentd-source-monit.conf.erb'
-  mode '0644'
-  owner 'root'
-  group 'root'
-  variables(
-    :application_name => NODE_TYPE
-  )
-end
-
 # Restart rsyslog service
 service 'rsyslog' do
     action :restart

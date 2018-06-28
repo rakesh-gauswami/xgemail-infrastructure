@@ -139,14 +139,3 @@ file '/etc/rsyslog.d/00-xgemail-sqsmsgproducer.conf' do
   owner 'root'
   group 'root'
 end
-
-# Add fluentd config file to monitor log file and submit to S3 for Logz.io.
-template '/etc/td-agent.d/00-source-sqsmsgproducer.conf' do
-  source 'fluentd-source-sqsmsgproducer.conf.erb'
-  mode '0644'
-  owner 'root'
-  group 'root'
-  variables(
-    :application_name => NODE_TYPE
-  )
-end

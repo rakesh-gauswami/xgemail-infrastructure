@@ -1,6 +1,13 @@
 ---
 # Copy AMI to Destination Regions
 # http://docs.ansible.com/ansible/latest/ec2_ami_copy_module.html
+- name: "Update AWS Software"
+  shell: pip install awscli botocore boto3 -U
+  register: update_output
+  until: update_output.stdout|length
+  delay: 10
+  retries: 3
+
 - name: "Copy AMI to Destination Regions {{ami.xgemail.ami_destination_regions}}"
   ec2_ami_copy:
     description:          "{{ec2_ami_output.description}}"
@@ -10,6 +17,9 @@
     name:                 "{{ec2_ami_output.name}}"
     tags:                 "{{ec2_ami_output.tags}}"
     wait:                 true
+    wait_timeout:         1200
+    launch_permissions:
+      user_ids: "{{ami.xgemail.ami_launch_permissions}}"
   with_items:             "{{ami.xgemail.ami_destination_regions}}"
   register: ec2_ami_copy_output
 
@@ -31,14 +41,14 @@
     - "Region: {{ec2_ami_copy_output.results[1].item}} AmiId: {{ec2_ami_copy_output.results[1].image_id}}"
     - "Region: {{ec2_ami_copy_output.results[2].item}} AmiId: {{ec2_ami_copy_output.results[2].image_id}}"
 
-- name: "EC2 AMI Update Launch Permissions on newly copied Images in regions {{ami.xgemail.ami_destination_regions}}"
-  ec2_ami:
-    name: "{{ec2_ami_output.name}}"
-    tags: "{{ec2_ami_output.tags}}"
-    image_id: "{{ item.image_id }}"
-    region: "{{item.item}}"
-    state: present
-    launch_permissions:
-      user_ids: "{{ami.xgemail.ami_launch_permissions}}"
-  with_items: "{{ec2_ami_copy_output.results}}"
-  register: ec2_ami_permissions_output
+#- name: "EC2 AMI Update Launch Permissions on newly copied Images in regions {{ami.xgemail.ami_destination_regions}}"
+#  ec2_ami:
+#    name: "{{ec2_ami_output.name}}"
+#    tags: "{{ec2_ami_output.tags}}"
+#    image_id: "{{ item.image_id }}"
+#    region: "{{item.item}}"
+#    state: present
+#    launch_permissions:
+#      user_ids: "{{ami.xgemail.ami_launch_permissions}}"
+#  with_items: "{{ec2_ami_copy_output.results}}"
+#  register: ec2_ami_permissions_output
