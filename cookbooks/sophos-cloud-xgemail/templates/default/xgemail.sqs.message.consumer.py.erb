@@ -292,7 +292,7 @@ def create_and_publish_message_history_delivery_status_sns_job(sqs_message, post
             json.dumps(sns_message_history_delivery_status_job.get_sns_message_history_delivery_status_json())
         )
 
-        logger.debug("Job <{0}> published to message history delivery status sns queue"
+        logger.debug("Job <{0}> published to message history delivery status sns topic"
                      .format(sns_message_history_delivery_status_job))
 
     except Exception as e:
