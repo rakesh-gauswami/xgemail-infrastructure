@@ -1,0 +1,83 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "IAM policy for Read-Only Access to an S3 Bucket",
+
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2018, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ]
+  },
+
+  "Parameters": {
+    "AllowedResources": {
+      "Description" : "Resources in bucket to allow RO access to",
+      "Type" : "String"
+    },
+    "BucketArn": {
+      "Description" : "Arn of the S3 Bucket for RO access",
+      "Type" : "String"
+    },
+    "PolicyName" : {
+      "Description" : "Policy name (unique per role) which should be attached to the role",
+      "Type" : "String"
+    },
+    "RoleNames" : {
+      "Description" : "Roles to which this policy should be attached",
+      "Type" : "CommaDelimitedList"
+    }
+  },
+
+  "Resources": {
+    "Policy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid":"BucketReadPermissions",
+              "Effect": "Allow",
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:ListBucket"
+              ],
+              "Resource": [
+                { "Ref":"BucketArn" }
+              ]
+            },
+            {
+              "Sid":"ObjectReadPermissions",
+              "Effect": "Allow",
+              "Action": [
+                "s3:ListObjects",
+                "s3:GetObject",
+                "s3:GetObjectVersion"
+              ],
+              "Resource": {
+                "Fn::Join":[ "/", [
+                  { "Ref":"BucketArn" },
+                  { "Ref":"AllowedResources" }
+                ]]
+              }
+            }
+          ]
+        },
+        "PolicyName": { "Ref": "PolicyName" },
+        "Roles": { "Ref": "RoleNames" }
+      }
+    }
+  },
+
+  "Outputs": {
+    "Name": {
+      "Description": "Resource name",
+      "Value": { "Ref": "Policy" }
+    }
+  }
+}
