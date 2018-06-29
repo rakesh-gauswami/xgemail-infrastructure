@@ -26,7 +26,7 @@
       XgemailCustomerSubmitBucketName:          "{{s3.customer_submit_bucket}}"
   register: iam_stack
 
-  - name: "Deploy {{stack.iam.cloud_station_region_roles}} to {{account.name}} {{account.region}}"
+- name: "Deploy {{stack.iam.cloud_station_region_roles}} to {{account.name}} {{account.region}}"
   cloudformation:
     stack_name:                                 "{{stack.iam.cloud_station_region_roles}}"
     state:                                      present
