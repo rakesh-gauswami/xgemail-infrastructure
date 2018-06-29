@@ -93,7 +93,7 @@
     "InstanceType": {
       "Description": "Amazon EC2 instance type",
       "Type": "String",
-      "Default": "t2.large",
+      "Default": "t2.small",
       "AllowedValues" : [
         "t2.micro",
         "t2.small",
@@ -503,7 +503,7 @@
                 "  n=0\n",
                 "  until [ $n -ge 5 ]\n",
                 "  do\n",
-                "    aws s3 cp --debug --region us-west-2 ${LOG_DIR}.zip s3://", { "Ref": "AmiBucket" }, "/", { "Ref": "Branch" }, "/build_", { "Ref": "Build" }, "/ && break\n",
+                "    aws s3 cp --debug --region us-west-2 ${LOG_DIR}.zip s3://", { "Ref": "AmiBucket" }, "/", { "Ref": "Branch" }, "/build-", { "Ref": "Build" }, "/ && break\n",
                 "      ",
                 "    n=$[$n+1]\n",
                 "    sleep 5\n",
@@ -542,7 +542,7 @@
 
                 "aws s3 cp --debug --region us-west-2 /tmp/${PUBLIC_IP}.txt",
                 " s3://", { "Ref": "AmiBucket" }, "/", { "Ref": "Branch" },
-                "/build_", { "Ref": "Build" }, "/\n",
+                "/build-", { "Ref": "Build" }, "/\n",
 
                 "# Install all security and aws updates.\n",
 
