@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Library:: sophos-cloud-xgemail_helper
 #
-# Copyright 2016, Sophos
+# Copyright 2018, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -11,6 +11,7 @@
 
 require 'fileutils'
 require 'chef/mixin/shell_out'
+require 'resolv'
 
 module SophosCloudXgemail
   module Helper
@@ -133,7 +134,7 @@ module SophosCloudXgemail
           retry
       rescue Aws::EC2::Errors::ServiceError => e
           Chef::Log.error("Unhandled ServiceError Exception: #{e.code}: #{e.message}")
-          exit 1
+          raise "ERROR: Unhandled ServiceError Exception: #{e.code}: #{e.message}"
       end
     end
 
@@ -145,10 +146,20 @@ module SophosCloudXgemail
           return "mx-01-#{region}.#{account}.hydra.sophos.com"
         when 'customer-submit'
           return "relay-#{region}.#{account}.hydra.sophos.com"
-        when 'internet-delivery'
-          return "delivery-#{associate_clean_ip().gsub('.', '-')}-#{region}.#{account}.hydra.sophos.com"
-        when 'internet-xdelivery'
-          return "delivery-#{associate_clean_ip().gsub('.', '-')}-#{region}.#{account}.hydra.sophos.com"
+        when 'internet-delivery', 'internet-xdelivery'
+          # Get a clean EIP from the pool and associate to the instance, errors are handled within the function
+          eip = associate_clean_ip()
+          begin
+            # Lookup the reverse DNS record of the EIP and use it as postfix hostname
+            Chef::Log.info("Getting reverse DNS of EIP: #{eip}")
+            hostname = Resolv.getname "#{eip}"
+            raise "Resolved hostname is empty for EIP <#{eip}>" if hostname.nil?
+            Chef::Log.info("Setting postfix hostname: #{hostname}")
+            return hostname
+          rescue
+            Chef::Log.error("ERROR: Cannot resolve hostname from EIP <#{eip}>. Cannot Continue. Exiting")
+            raise "ERROR: Cannot resolve hostname from EIP <#{eip}>. Cannot Continue."
+          end
         else
           mac = node['macaddress'].downcase
           subnet_id = node['ec2']['network_interfaces_macs'][mac]['subnet_id']
@@ -170,7 +181,7 @@ module SophosCloudXgemail
             end
           rescue Aws::EC2::Errors::ServiceError => e
             Chef::Log.error("ERROR: Unknown error #{e.message}. Cannot Continue. Exiting")
-            exit 1
+            raise "ERROR: Unknown error #{e.message}. Cannot Continue. Exiting"
           end
       end
     end

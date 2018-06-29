@@ -11,6 +11,17 @@
 # Representation of a delivery status queue log
 
 class QueueLog:
+    server_type_dictionary = {
+        'internet-submit': 'INTERNET_SUBMIT',
+        'internet-delivery': 'INTERNET_DELIVERY',
+        'internet-xdelivery': 'INTERNET_XDELIVERY',
+        'customer-submit': 'CUSTOMER_SUBMIT',
+        'customer-delivery': 'CUSTOMER_DELIVERY',
+        'customer-xdelivery': 'CUSTOMER_XDELIVERY',
+        'delivery': 'CUSTOMER_DELIVERY',
+        'submit': 'INTERNET_SUBMIT'
+    }
+
     def __init__(self,
                  schema_version,
                  server_type,
@@ -19,7 +30,7 @@ class QueueLog:
                  nullable_dsn_code,
                  timestamp):
         self.__schema_version = schema_version
-        self.__server_type = server_type
+        self.__server_type = self.server_type_dictionary[server_type]
         self.__server_ip = server_ip
         self.__queue_id = queue_id
         self.__nullable_dsn_code = nullable_dsn_code
@@ -35,7 +46,7 @@ class QueueLog:
             'server_type': self.__server_type,
             'server_ip': self.__server_ip,
             'queue_id': self.__queue_id,
-            'dsn_code': self.__nullable_dsn_code if self.__nullable_dsn_code is not None else 'null',
+            'dsn_code': self.__nullable_dsn_code,
             'timestamp': self.__timestamp
         }
 
