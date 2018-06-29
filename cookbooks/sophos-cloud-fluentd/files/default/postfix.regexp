@@ -6,20 +6,20 @@ POSTFIX %{SYSLOGHOST:host} %{COMPID}:
 # Milter
 HELO (?:\[%{IP:helo}\]|%{HOSTNAME:helo}|%{DATA:helo})
 
-MILTERCONNECT %{QUEUEID:qid}: milter-reject: CONNECT from %{RELAY:relay}: %{GREEDYDATA:milter_reason}; proto=%{WORD:proto}
-MILTERUNKNOWN %{QUEUEID:qid}: milter-reject: UNKNOWN from %{RELAY:relay}: %{GREEDYDATA:milter_reason}; proto=%{WORD:proto}
-MILTEREHLO %{QUEUEID:qid}: milter-reject: EHLO from %{RELAY:relay}: %{GREEDYDATA:milter_reason}; proto=%{WORD:proto} helo=<%{HELO}>
-MILTERMAIL %{QUEUEID:qid}: milter-reject: MAIL from %{RELAY:relay}: %{GREEDYDATA:milter_reason}; from=<%{EMAILADDRESS:from}> proto=%{WORD:proto} helo=<%{HELO}>
-MILTERHELO %{QUEUEID:qid}: milter-reject: HELO from %{RELAY:relay}: %{GREEDYDATA:milter_reason}; proto=%{WORD:proto} helo=<%{HELO}>
-MILTERRCPT %{QUEUEID:qid}: milter-reject: RCPT from %{RELAY:relay}: %{GREEDYDATA:milter_reason}; from=<%{EMAILADDRESS:from}> to=<%{EMAILADDRESS:to}> proto=%{WORD:proto} helo=<%{HELO}>
-MILTERENDOFMESSAGE %{QUEUEID:qid}: milter-reject: END-OF-MESSAGE from %{RELAY:relay}: %{GREEDYDATA:milter_reason}; from=<%{EMAILADDRESS:from}> to=<%{EMAILADDRESS:to}> proto=%{WORD:proto} helo=<%{HELO}>
+MILTERCONNECT %{QUEUEID:queue_id}: milter-reject: CONNECT from %{RELAY:relay}: %{GREEDYDATA:milter_reason}; proto=%{WORD:proto}
+MILTERUNKNOWN %{QUEUEID:queue_id}: milter-reject: UNKNOWN from %{RELAY:relay}: %{GREEDYDATA:milter_reason}; proto=%{WORD:proto}
+MILTEREHLO %{QUEUEID:queue_id}: milter-reject: EHLO from %{RELAY:relay}: %{GREEDYDATA:milter_reason}; proto=%{WORD:proto} helo=<%{HELO}>
+MILTERMAIL %{QUEUEID:queue_id}: milter-reject: MAIL from %{RELAY:relay}: %{GREEDYDATA:milter_reason}; from=<%{EMAILADDRESS:from}> proto=%{WORD:proto} helo=<%{HELO}>
+MILTERHELO %{QUEUEID:queue_id}: milter-reject: HELO from %{RELAY:relay}: %{GREEDYDATA:milter_reason}; proto=%{WORD:proto} helo=<%{HELO}>
+MILTERRCPT %{QUEUEID:queue_id}: milter-reject: RCPT from %{RELAY:relay}: %{GREEDYDATA:milter_reason}; from=<%{EMAILADDRESS:from}> to=<%{EMAILADDRESS:to}> proto=%{WORD:proto} helo=<%{HELO}>
+MILTERENDOFMESSAGE %{QUEUEID:queue_id}: milter-reject: END-OF-MESSAGE from %{RELAY:relay}: %{GREEDYDATA:milter_reason}; from=<%{EMAILADDRESS:from}> to=<%{EMAILADDRESS:to}> proto=%{WORD:proto} helo=<%{HELO}>
 
 # Postfix stuff
 HELO (?:\[%{IP:helo}\]|%{HOSTNAME:helo}|%{DATA:helo})
 QUEUEID ([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)
 EMAILADDRESSPART [a-zA-Z0-9_.+-=:~]+
 EMAILADDRESS %{EMAILADDRESSPART:local}@%{EMAILADDRESSPART:remote}
-RELAY (?:%{HOSTNAME:relayhost}(?:\[%{IP:relayip}\](?::[0-9]+(.[0-9]+)?)?)?)
+RELAY (?:%{HOSTNAME:relay_host}(?:\[%{IP:relay_ip}\](?::[0-9]+(.[0-9]+)?)?)?)
 POSREAL [0-9]+(.[0-9]+)?
 DSN %{NONNEGINT}.%{NONNEGINT}.%{NONNEGINT}
 STATUS sent|deferred|bounced|expired
@@ -31,35 +31,35 @@ POSTFIXACTION discard|dunno|filter|hold|ignore|info|prepend|redirect|replace|rej
 
 # postfix/smtp and postfix/lmtp, postfix/local and postfix/error
 POSTFIXSMTP %{POSTFIXSMTPRELAY}|%{POSTFIXSMTPCONNECT}|%{POSTFIXSMTP5XX}|%{POSTFIXSMTPREFUSAL}|%{POSTFIXSMTPLOSTCONNECTION}|%{POSTFIXSMTPTIMEOUT}
-POSTFIXSMTPRELAY %{QUEUEID:qid}: to=<%{DATA:to}>,(?:\sorig_to=<%{DATA:orig_to}>,)? relay=%{RELAY},(?: delay=%{POSREAL:delay},)?(?: delays=%{DATA:delays}?,)?(?: conn_use=%{POSREAL:conn_use},)?( %{WORD}=%{DATA},)+? dsn=%{DSN:dsn}, status=%{STATUS:result} %{GREEDYDATA:reason}
+POSTFIXSMTPRELAY %{QUEUEID:queue_id}: to=<%{DATA:to}>,(?:\sorig_to=<%{DATA:orig_to}>,)? relay=%{RELAY},(?: delay=%{POSREAL:delay},)?(?: delays=%{DATA:delays}?,)?(?: conn_use=%{POSREAL:conn_use},)?( %{WORD}=%{DATA},)+? dsn=%{DSN:dsn}, status=%{STATUS:result} %{GREEDYDATA:reason}
 POSTFIXSMTPCONNECT connect to %{RELAY}: %{GREEDYDATA:reason}
-POSTFIXSMTP5XX %{QUEUEID:qid}: to=<%{EMAILADDRESS:to}>,(?:\sorig_to=<%{EMAILADDRESS:orig_to}>,)? relay=%{RELAY}, (%{WORD}=%{DATA},)+ dsn=%{DSN:dsn}, status=%{STATUS:result} \(host %{HOSTNAME}\[%{IP}\] said: %{PERMERROR:responsecode} %{DATA:smtp_response} \(in reply to %{DATA:command} command\)\)
-POSTFIXSMTPREFUSAL %{QUEUEID:qid}: host %{RELAY} refused to talk to me: %{GREEDYDATA:reason}
-POSTFIXSMTPLOSTCONNECTION %{QUEUEID:qid}: lost connection with %{RELAY} while %{GREEDYDATA:reason}
-POSTFIXSMTPTIMEOUT %{QUEUEID:qid}: conversation with %{RELAY} timed out while %{GREEDYDATA:reason}
+POSTFIXSMTP5XX %{QUEUEID:queue_id}: to=<%{EMAILADDRESS:to}>,(?:\sorig_to=<%{EMAILADDRESS:orig_to}>,)? relay=%{RELAY}, (%{WORD}=%{DATA},)+ dsn=%{DSN:dsn}, status=%{STATUS:result} \(host %{HOSTNAME}\[%{IP}\] said: %{PERMERROR:response_code} %{DATA:smtp_response} \(in reply to %{DATA:command} command\)\)
+POSTFIXSMTPREFUSAL %{QUEUEID:queue_id}: host %{RELAY} refused to talk to me: %{GREEDYDATA:reason}
+POSTFIXSMTPLOSTCONNECTION %{QUEUEID:queue_id}: lost connection with %{RELAY} while %{GREEDYDATA:reason}
+POSTFIXSMTPTIMEOUT %{QUEUEID:queue_id}: conversation with %{RELAY} timed out while %{GREEDYDATA:reason}
 
 # postfix/smtpd
 POSTFIXSMTPD %{POSTFIXSMTPDCONNECTS}|%{POSTFIXSMTPDMILTER}|%{POSTFIXSMTPDACTIONS}|%{POSTFIXSMTPDTIMEOUTS}|%{POSTFIXSMTPDLOGIN}|%{POSTFIXSMTPDCLIENT}|%{POSTFIXSMTPDNOQUEUE}|%{POSTFIXSMTPDWARNING}|%{POSTFIXSMTPDLOSTCONNECTION}
 POSTFIXSMTPDCONNECTS (?:dis)?connect from %{RELAY}
 POSTFIXSMTPDMILTER %{MILTERCONNECT}|%{MILTERUNKNOWN}|%{MILTEREHLO}|%{MILTERMAIL}|%{MILTERHELO}|%{MILTERRCPT}
-POSTFIXSMTPDACTIONS %{QUEUEID:qid}: %{POSTFIXACTION:postfix_action}: %{DATA:command} from %{RELAY}: %{PERMERROR:responsecode} %{DSN:dsn} %{DATA}: %{DATA:reason}; from=<%{EMAILADDRESS:from}> to=<%{EMAILADDRESS:to}> proto=%{DATA:proto} helo=<%{HELO}>
+POSTFIXSMTPDACTIONS %{QUEUEID:queue_id}: %{POSTFIXACTION:postfix_action}: %{DATA:command} from %{RELAY}: %{PERMERROR:response_code} %{DSN:dsn} %{DATA}: %{DATA:reason}; from=<%{EMAILADDRESS:from}> to=<%{EMAILADDRESS:to}> proto=%{DATA:proto} helo=<%{HELO}>
 POSTFIXSMTPDTIMEOUTS timeout after %{DATA:command} from %{RELAY}
-POSTFIXSMTPDLOGIN %{QUEUEID:qid}: client=%{DATA:client}, sasl_method=%{DATA:saslmethod}, sasl_username=%{GREEDYDATA:saslusername}
-POSTFIXSMTPDCLIENT %{QUEUEID:qid}: client=%{GREEDYDATA:client}
+POSTFIXSMTPDLOGIN %{QUEUEID:queue_id}: client=%{DATA:client}, sasl_method=%{DATA:saslmethod}, sasl_username=%{GREEDYDATA:sasl_username}
+POSTFIXSMTPDCLIENT %{QUEUEID:queue_id}: client=%{GREEDYDATA:client}
 POSTFIXSMTPDNOQUEUE NOQUEUE: %{POSTFIXACTION:postfix_action}: %{DATA:command} from %{RELAY}: %{GREEDYDATA:reason}
 POSTFIXSMTPDWARNING warning:( %{IP}: | hostname %{HOSTNAME} )?%{GREEDYDATA:reason}
 POSTFIXSMTPDLOSTCONNECTION (?:lost connection after %{DATA:smtp_response} from %{RELAY}|improper command pipelining after HELO from %{GREEDYDATA:reason})
 
 # postfix/cleanup
 POSTFIXCLEANUP %{POSTFIXCLEANUPMESSAGE}|%{POSTFIXCLEANUPMILTER}
-POSTFIXCLEANUPMESSAGE %{QUEUEID:qid}: (resent-)?message-id=(<)?%{GREEDYDATA:messageid}(>)?
+POSTFIXCLEANUPMESSAGE %{QUEUEID:queue_id}: (resent-)?message-id=(<)?%{GREEDYDATA:message_id}(>)?
 POSTFIXCLEANUPMILTER %{MILTERENDOFMESSAGE}
 
 # postfix/bounce
-POSTFIXBOUNCE %{QUEUEID:qid}: sender (non-)?delivery( status)? notification: %{QUEUEID:bouncequeueid}
+POSTFIXBOUNCE %{QUEUEID:queue_id}: sender (non-)?delivery( status)? notification: %{QUEUEID:bounce_queue_id}
 
 # postfix/qmgr and postfix/pickup
-POSTFIXQMGR %{QUEUEID:qid}: (?:removed|from=<(?:%{DATA:from})?>(?:, size=%{NUMBER:size}, nrcpt=%{NUMBER:nrcpt} \(%{GREEDYDATA:queuestatus}\))?)
+POSTFIXQMGR %{QUEUEID:queue_id}: (?:removed|from=<(?:%{DATA:from})?>(?:, size=%{NUMBER:size}, nrcpt=%{NUMBER:nrcpt} \(%{GREEDYDATA:queue_status}\))?)
 
 # postfix/anvil
 POSTFIXANVIL statistics: %{GREEDYDATA:reason}
@@ -68,10 +68,10 @@ POSTFIXANVIL statistics: %{GREEDYDATA:reason}
 POSTFIXREWRITE warning: do not list domain %{DATA:domain} in BOTH mydestination and virtual_alias_domains
 
 # Dovecot
-DOVEIMAP imap\(%{DATA:user}\): %{DATA:reason} in=%{NUMBER:inbytes} out=%{NUMBER:outbytes}
+DOVEIMAP imap\(%{DATA:user}\): %{DATA:reason} in=%{NUMBER:in_bytes} out=%{NUMBER:out_bytes}
 DOVECMD anvil|auth|config|log|master
 DOVEMISC %{DOVECMD:command}: %{GREEDYDATA:reason}
-DOVELOGIN imap-login: %{DATA:action}:(?: user=<(%{DATA:user})?>, (method=%{DATA:loginmethod}, )?rip=%{IP:rip}, lip=%{IP:lip},( mpid=%{NUMBER:mpid},( %{DATA:sectype},)?| %{DATA:securesession},)? session=<%{DATA:session}>| %{GREEDYDATA:reason})
+DOVELOGIN imap-login: %{DATA:action}:(?: user=<(%{DATA:user})?>, (method=%{DATA:login_method}, )?rip=%{IP:rip}, lip=%{IP:lip},( mpid=%{NUMBER:mpid},( %{DATA:sec_type},)?| %{DATA:secure_session},)? session=<%{DATA:session}>| %{GREEDYDATA:reason})
 DOVELDA lda\((%{DATA:user})?\):( %{DATA:action}:)? msgid=(?:<%{DATA:mesgid}@%{DATA:domain}>|%{DATA:mesgid}):( saved mail to| stored mail into mailbox) .*?%{DATA:folder}.*?
 DOVEAUTH auth-worker\(%{NUMBER:pid}\): pam\((?:%{USERNAME:user}|%{EMAILADDRESS:user}),%{IP:ip}\): %{GREEDYDATA:reason}
 
