@@ -1,12 +1,12 @@
 ---
 
-- name: "Gather {{stack.iam.cloud_station_roles}} CloudFormation Stack Output"
+- name: "Gather {{stack.iam.cloud_station_region_roles}} CloudFormation Stack Output"
   cloudformation_facts:
-    stack_name: "{{stack.iam.cloud_station_roles}}"
+    stack_name: "{{stack.iam.cloud_station_region_roles}}"
     region: "{{account.region}}"
   register: cloud_station_iam_output
 
-- name: "Print {{stack.iam.cloud_station_roles}} CloudFormation Stack Output"
+- name: "Print {{stack.iam.cloud_station_region_roles}} CloudFormation Stack Output"
   debug:
     var: cloud_station_iam_output
     verbosity: 3
