@@ -283,7 +283,6 @@ aws:
 
 aes_decryption_key:                             "{{lookup('env','AES_KEY') | default('EFB0D00E7B34527A6CFE3CD804A53312C5A7AF129650A9793D2CEF3A3C6B3741')}}"
 ami_parent_id:                                  "{{ami_id}}"
-ApiInstRole:                                    "{{ lookup('cloudformation', '{{ account.region }}/{{ vpc.name }}-RegionIAMRoles/output/ApiInstRole', 'default=ApiInstRole-not-found') }}"
 as_min_cap_bastion:                             "1"
 elb_security_policy:                            "ELBSecurityPolicy-2016-08"
 hostedzone:                                     "hydra.sophos.com"
