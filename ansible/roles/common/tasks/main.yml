@@ -44,6 +44,11 @@
   tags:
     - asg
 
+- name: "Include {{stack.region.iam.cloud_station_roles}} CloudFormation Stack Output."
+  include_tasks: get-cloudstation-region-iam-output.yml
+  tags:
+    - asg
+
 - name: "Include {{stack.sdb.volume_tracker_sdb}} CloudFormation Stack Output."
   include_tasks: get-simpledb-domain.yml
   tags:
