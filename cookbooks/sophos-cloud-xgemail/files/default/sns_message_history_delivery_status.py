@@ -27,8 +27,8 @@ class SnsMessageHistoryDeliveryStatus:
         return {
             'direction': self.__direction,
             'message_path': self.__message_path,
-            'queue_log': self.__queue_log.get_queue_log_json(),
-            'next_queue_log': self.__nullable_next_queue_log.get_queue_log_json()
+            'queue_log': self.__queue_log.get_queue_log_json() if self.__queue_log is not None else None,
+            'next_queue_log': self.__nullable_next_queue_log.get_queue_log_json() if self.__nullable_next_queue_log is not None else None
         }
 
     @property
