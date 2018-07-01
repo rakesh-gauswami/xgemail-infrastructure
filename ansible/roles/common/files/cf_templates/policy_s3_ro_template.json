@@ -19,17 +19,17 @@
       "Description" : "Resources in bucket to allow RO access to",
       "Type" : "String"
     },
-    "BucketArn": {
-      "Description" : "Arn of the S3 Bucket for RO access",
-      "Type" : "String"
+    "XgemailCustomerSubmitBucketName": {
+      "Description": "Name of the customer submit bucket",
+      "Type": "String"
     },
     "PolicyName" : {
       "Description" : "Policy name (unique per role) which should be attached to the role",
       "Type" : "String"
     },
-    "RoleNames" : {
-      "Description" : "Roles to which this policy should be attached",
-      "Type" : "CommaDelimitedList"
+    "ApiInstRole" : {
+      "Description" : "API Role to which this policy should be attached",
+      "Type" : "String"
     }
   },
 
@@ -47,9 +47,8 @@
                 "s3:GetBucketLocation",
                 "s3:ListBucket"
               ],
-              "Resource": [
-                { "Ref":"BucketArn" }
-              ]
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailCustomerSubmitBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailCustomerSubmitBucketName" }]]}]
             },
             {
               "Sid":"ObjectReadPermissions",
@@ -60,16 +59,13 @@
                 "s3:GetObjectVersion"
               ],
               "Resource": {
-                "Fn::Join":[ "/", [
-                  { "Ref":"BucketArn" },
-                  { "Ref":"AllowedResources" }
-                ]]
+                "Fn::Join":[ "/", [["arn:aws:s3:::", { "Ref" : "XgemailCustomerSubmitBucketName" }, "/*"], { "Ref":"AllowedResources" }]]
               }
             }
           ]
         },
         "PolicyName": { "Ref": "PolicyName" },
-        "Roles": { "Ref": "RoleNames" }
+        "Roles": { "Ref": "ApiInstRole" }
       }
     }
   },
