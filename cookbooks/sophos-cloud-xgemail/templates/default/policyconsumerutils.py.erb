@@ -11,6 +11,7 @@
 
 import sys
 sys.path.append("<%= @xgemail_utils_path %>")
+import diskutils
 import os
 import logging
 import urllib
@@ -73,10 +74,16 @@ def remove_file(s3_file_path, local_path_prefix):
         os.unlink(local_file)
         logger.info("Successfully removed file [{0}]".format(local_file))
 
-        #remove an empty directory
-        if not os.listdir(local_dir):
-            os.rmdir(local_dir)
-            logger.debug("Removed dir [{0}]".format(local_dir))
+        # remove an empty directory
+        try:
+            if diskutils.is_directory_empty(local_dir):
+                os.rmdir(local_dir)
+                logger.debug("Removed dir [{0}]".format(local_dir))
+        except Exception as ex:
+            logger.exception(
+                'Exception while attempting to remove directory {0}'.format(local_dir),
+                ex
+            )
     else:
         logger.info("File [{0}] doesn't exist to delete.".format(local_file))
 
