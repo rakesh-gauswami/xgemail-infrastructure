@@ -26,18 +26,18 @@
       XgemailCustomerSubmitBucketName:          "{{s3.customer_submit_bucket}}"
   register: iam_stack
 
-- name: "Upload the config file for {{stack.iam.cloud_station_region_roles}} to the config bucket {{cloud_applications}}"
+- name: "Upload the config file for {{cloud_station_api_role}} to the config bucket {{cloud_applications}}"
   s3:
     mode:               put
     region:             "{{account.region}}"
     bucket:             "{{cloud_applications}}"
     object:             "{{build.branch}}/xgemail-infrastructure/policy_s3_ro_template.json"
-    src:                "{{template.iam.policy_s3_ro_template}}"
+    src:                "{{template.iam.roles_s3_ro_template}}"
     overwrite:          always
 
-- name: "Deploy {{stack.iam.cloud_station_region_roles}} to {{account.name}} {{account.region}}"
+- name: "Create  {{cloud_station_api_role}} to {{account.name}} {{account.region}}"
   cloudformation:
-    stack_name:                                 "{{stack.iam.cloud_station_region_roles}}"
+    stack_name:                                 "{{stack.iam.cloud_station_api_role}}"
     state:                                      present
     region:                                     "{{account.region}}"
     disable_rollback:                           true
@@ -60,9 +60,4 @@
 - name: "Display IAM Stack Output"
   debug:
     msg: "{{iam_stack.stack_outputs}}"
-    verbosity: 2
-
-- name: "Display Region IAM Stack Output"
-  debug:
-    msg: "{{region_iam_stack.stack_outputs}}"
     verbosity: 2

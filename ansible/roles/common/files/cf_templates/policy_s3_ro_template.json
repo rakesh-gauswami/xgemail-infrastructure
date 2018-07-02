@@ -47,8 +47,10 @@
                 "s3:GetBucketLocation",
                 "s3:ListBucket"
               ],
-              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailCustomerSubmitBucketName" }, "/*"]]},
-                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailCustomerSubmitBucketName" }]]}]
+              "Resource" : [
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailCustomerSubmitBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailCustomerSubmitBucketName" }]]}
+              ]
             },
             {
               "Sid":"ObjectReadPermissions",
@@ -58,9 +60,10 @@
                 "s3:GetObject",
                 "s3:GetObjectVersion"
               ],
-              "Resource": {
-                "Fn::Join":[ "/", [["arn:aws:s3:::", { "Ref" : "XgemailCustomerSubmitBucketName" }, "/*"]]]
-              }
+              "Resource" : [
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailCustomerSubmitBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailCustomerSubmitBucketName" }]]}
+              ]
             }
           ]
         },
