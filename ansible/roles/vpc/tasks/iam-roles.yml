@@ -35,7 +35,7 @@
     template_url:                               "https://s3.amazonaws.com/{{cloud_applications}}/{{build.branch}}/xgemail-infrastructure/policy_s3_ro_template.json"
     template_parameters:
       Environment:                              "{{account.name}}"
-      ApiInstRole:                              "{{ lookup('cloudformation', '{{ account.region }}/{{ vpc.name }}-RegionIAMRoles/output/ApiInstRole', 'default=ApiInstRole-not-found') }}"
+      ApiInstRole:                              "{{cloud_station_iam_region_output.ansible_facts.cloudformation[stack.iam.cloud_station_region_roles].stack_outputs.ApiInstRole}}"
       PolicyName:                               "ApiPolicyCustBucketROAccess"
       XgemailCustomerSubmitBucketName:          "{{s3.customer_submit_bucket}}"
   register: region_iam_stack
