@@ -26,6 +26,15 @@
       XgemailCustomerSubmitBucketName:          "{{s3.customer_submit_bucket}}"
   register: iam_stack
 
+- name: "Upload the config file for {{stack.iam.cloud_station_region_roles}} to the config bucket {{cloud_applications}}"
+  s3:
+    mode:               put
+    region:             "{{account.region}}"
+    bucket:             "{{cloud_applications}}"
+    object:             "{{build.branch}}/xgemail-infrastructure/policy_s3_ro_template.json"
+    src:                "{{template.iam.policy_s3_ro_template}}"
+    overwrite:          always
+
 - name: "Deploy {{stack.iam.cloud_station_region_roles}} to {{account.name}} {{account.region}}"
   cloudformation:
     stack_name:                                 "{{stack.iam.cloud_station_region_roles}}"
