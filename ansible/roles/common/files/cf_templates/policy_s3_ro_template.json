@@ -15,6 +15,10 @@
   },
 
   "Parameters": {
+    "Environment": {
+      "Description": "Name of the AWS account. inf, dev, qa, prod",
+      "Type": "String"
+    },
     "XgemailCustomerSubmitBucketName": {
       "Description": "Name of the customer submit bucket",
       "Type": "String"
@@ -24,6 +28,10 @@
       "Type" : "String"
     },
     "ApiInstRole" : {
+      "Description" : "API Role to which this policy should be attached",
+      "Type" : "String"
+    },
+    "RoleName" : {
       "Description" : "API Role to which this policy should be attached",
       "Type" : "String"
     }
@@ -61,7 +69,7 @@
           ]
         },
         "PolicyName": { "Ref": "PolicyName" },
-        "Roles": { "Ref": "ApiInstRole" }
+        "Roles": { "Ref": "RoleName" }
       }
     }
   },
@@ -70,6 +78,10 @@
     "Name": {
       "Description": "Resource name",
       "Value": { "Ref": "Policy" }
+    },
+    "RoleName": {
+      "Description": "JAVA ApiInst role",
+      "Value": { "Ref": "ApiInstRole" }
     }
   }
 }
