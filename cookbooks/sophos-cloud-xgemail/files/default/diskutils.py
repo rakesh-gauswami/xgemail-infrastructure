@@ -15,7 +15,7 @@ import os
 from notadirectoryexception import NotADirectoryException
 
 def is_directory_empty(directory_path):
-    """A performant way of determining if a directory is empty or not. Use
+    """An efficient way of determining if a directory is empty or not. Use
     this rather than os.listdir() if the directory you are checking potentially
     has a large number of files in it.
     """
