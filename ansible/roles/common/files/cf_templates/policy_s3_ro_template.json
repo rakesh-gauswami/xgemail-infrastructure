@@ -19,8 +19,8 @@
       "Description": "Name of the AWS account. inf, dev, qa, prod",
       "Type": "String"
     },
-    "XgemailCustomerSubmitBucketName": {
-      "Description": "Name of the customer submit bucket",
+    "XgemailBucketName": {
+      "Description": "Name of the XGEMAIL S3 bucket",
       "Type": "String"
     },
     "PolicyName" : {
@@ -48,8 +48,7 @@
                 "s3:ListBucket"
               ],
               "Resource" : [
-                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailCustomerSubmitBucketName" }, "/*"]]},
-                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailCustomerSubmitBucketName" }]]}
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailBucketName" }]]}
               ]
             },
             {
@@ -61,13 +60,12 @@
                 "s3:GetObjectVersion"
               ],
               "Resource" : [
-                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailCustomerSubmitBucketName" }, "/*"]]},
-                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailCustomerSubmitBucketName" }]]}
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailBucketName" }, "/*"]]}
               ]
             }
           ]
         },
-        "PolicyName": "ApiPolicyCustBucketROAccess",
+        "PolicyName": "ApiPolicyS3BucketROAccess",
         "Roles": [
           {
             "Ref": "ApiInstRole"
