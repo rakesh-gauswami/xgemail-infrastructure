@@ -15,10 +15,6 @@
   },
 
   "Parameters": {
-    "AllowedResources": {
-      "Description" : "Resources in bucket to allow RO access to",
-      "Type" : "String"
-    },
     "XgemailCustomerSubmitBucketName": {
       "Description": "Name of the customer submit bucket",
       "Type": "String"
@@ -59,7 +55,7 @@
                 "s3:GetObjectVersion"
               ],
               "Resource": {
-                "Fn::Join":[ "/", [["arn:aws:s3:::", { "Ref" : "XgemailCustomerSubmitBucketName" }, "/*"], { "Ref":"AllowedResources" }]]
+                "Fn::Join":[ "/", [["arn:aws:s3:::", { "Ref" : "XgemailCustomerSubmitBucketName" }, "/*"]]]
               }
             }
           ]

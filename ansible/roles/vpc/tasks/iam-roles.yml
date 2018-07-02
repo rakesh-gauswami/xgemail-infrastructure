@@ -35,7 +35,6 @@
     template_url:                               "https://s3.amazonaws.com/{{cloud_applications}}/{{build.branch}}/xgemail-infrastructure/policy_s3_ro_template.json"
     template_parameters:
       ApiInstRole:                              "{{ lookup('cloudformation', '{{ account.region }}/{{ vpc.name }}-RegionIAMRoles/output/ApiInstRole', 'default=ApiInstRole-not-found') }}"
-      Environment:                              "{{account.name}}"
       PolicyName:                               "ApiPolicyCustBucketROAccess"
       XgemailCustomerSubmitBucketName:          "{{s3.customer_submit_bucket}}"
   register: region_iam_stack
@@ -55,5 +54,5 @@
 
 - name: "Display Region IAM Stack Output"
   debug:
-    msg: "{{iam_stack.stack_outputs}}"
+    msg: "{{region_iam_stack.stack_outputs}}"
     verbosity: 2
