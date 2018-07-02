@@ -26,8 +26,35 @@
       XgemailCustomerSubmitBucketName:          "{{s3.customer_submit_bucket}}"
   register: iam_stack
 
+- name: "Upload the config file for {{cloud_station_api_role}} to the config bucket {{cloud_applications}}"
+  s3:
+    mode:               put
+    region:             "{{account.region}}"
+    bucket:             "{{cloud_applications}}"
+    object:             "{{build.branch}}/xgemail-infrastructure/policy_s3_ro_template.json"
+    src:                "{{template.iam.policy_s3_ro_template}}"
+    overwrite:          always
+
+- name: "Create  {{cloud_station_api_role}} to {{account.name}} {{account.region}}"
+  cloudformation:
+    stack_name:                                 "{{stack.iam.cloud_station_api_role}}"
+    state:                                      present
+    region:                                     "{{account.region}}"
+    disable_rollback:                           true
+    template_url:                               "https://s3.amazonaws.com/{{cloud_applications}}/{{build.branch}}/xgemail-infrastructure/policy_s3_ro_template.json"
+    template_parameters:
+      Environment:                              "{{account.name}}"
+      ApiInstRole:                              "{{cloud_station_iam_region_output.ansible_facts.cloudformation[stack.iam.cloud_station_region_roles].stack_outputs.ApiInstRole}}"
+      PolicyName:                               "ApiPolicyCustSubmitBucketROAccess"
+      XgemailBucketName:                        "{{s3.customer_submit_bucket}}"
+  register: region_iam_stack
+
 - debug:
     var: iam_stack
+    verbosity: 3
+
+- debug:
+    var: region_iam_stack
     verbosity: 3
 
 - name: "Display IAM Stack Output"

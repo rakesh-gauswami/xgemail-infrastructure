@@ -82,6 +82,8 @@ stack:
     cloud_station_vpc:                                  "{{vpc.cloud_station.name}}-VPC"
   iam:
     cloud_email_roles:                                  "{{vpc.cloud_email.name}}-IAMRoles"
+    cloud_station_api_role:                             "{{vpc.cloud_station.name}}-ApiRole"
+    cloud_station_region_roles:                         "{{vpc.cloud_station.name}}-RegionIAMRoles"
     cloud_station_roles:                                "{{vpc.cloud_station.name}}-IAMRoles"
   ec2:
     sg:
@@ -189,6 +191,7 @@ template:
   es:
     es_domain_template:                                 "{{tmp_artifacts_dir}}/es_domain_template.json"
   iam:
+    policy_s3_ro_template:                               "{{tmp_artifacts_dir}}/policy_s3_ro_template.json"
     roles_xgemail_template:                             "{{tmp_artifacts_dir}}/roles_xgemail_template.json"
   lambda:
     lambda_xgemail_eip_monitor_template:                "{{tmp_artifacts_dir}}/lambda_xgemail_eip_monitor_template.json"

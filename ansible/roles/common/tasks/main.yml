@@ -22,12 +22,19 @@
 - name: "Dump all variables."
   debug:
     var: vars
+  tags:
+      - always
 
 - name: "Include {{stack.vpc.cloud_station_vpc}} CloudFormation Stack Output."
   include_tasks: get-cloudstation-vpc-output.yml
   tags:
     - vpc
     - asg
+
+- name: "Include {{stack.iam.cloud_station_region_roles}} CloudFormation Stack Output."
+  include_tasks: get-cloudstation-region-iam-output.yml
+  tags:
+      - vpc
 
 - name: "Include {{stack.vpc.cloud_email_vpc}} CloudFormation Stack Output."
   include_tasks: get-cloudemail-vpc-output.yml
