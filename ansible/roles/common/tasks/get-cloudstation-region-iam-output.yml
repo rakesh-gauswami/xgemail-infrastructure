@@ -11,4 +11,8 @@
     var: cloud_station_iam_region_output
     verbosity: 3
 
--name: "Print {{ lookup('cloudformation', '{{ account.region }}/{{ vpc.name }}-RegionIAMRoles/output/ApiInstRole' ) }} ApiInstRole Name"
+- name: "Print {{ lookup('cloudformation', '{{ account.region }}/{{ vpc.name }}-RegionIAMRoles/output/ApiInstRole') }} ApiInstRole Name"
+  cloudformation_facts:
+      region: "{{account.region}}"
+      station_vpc_name: "{{station_vpc_name}}"
+
