@@ -67,8 +67,16 @@
             }
           ]
         },
-        "PolicyName": "ApiPolicyCustBucketROAccess",
-        "Roles": { "Ref": "ApiInstRole" }
+        "PolicyName": [
+          {
+            "Ref": "PolicyName"
+          }
+        ],
+        "Roles": [
+          {
+            "Ref": "ApiInstRole"
+          }
+        ]
       }
     }
   },
@@ -76,11 +84,7 @@
   "Outputs": {
     "Name": {
       "Description": "Resource name",
-      "Value": { "Ref": "PolicyName" }
-    },
-    "RoleName": {
-      "Description": "JAVA ApiInst role",
-      "Value": { "Ref": "ApiInstRole" }
+      "Value": { "Ref": "Policy" }
     }
   }
 }
