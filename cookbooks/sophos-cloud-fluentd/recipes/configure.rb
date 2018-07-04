@@ -19,7 +19,6 @@ REGION                        = node['sophos_cloud']['region']
 MSG_STATS_REJECT_SNS_TOPIC    = node['xgemail']['msg_statistics_rejection_sns_topic']
 DELIVERY_STATUS_SNS_TOPIC     = node['xgemail']['msg_history_status_sns_topic']
 SERVER_IP                     = node['ipaddress']
-SERVER_IP_XDELIVERY           = node['ipaddress']
 
 # Configs
 if NODE_TYPE    == 'delivery'
@@ -267,7 +266,6 @@ template 'fluentd-filter-transform-msg-delivery' do
     :server_type => SERVER_TYPE,
     :server_ip => SERVER_IP,
     :server_type_xdelivery => SERVER_TYPE_XDELIVERY,
-    :server_ip_xdelivery => SERVER_IP_XDELIVERY,
     :direction => DIRECTION
   )
  only_if {
