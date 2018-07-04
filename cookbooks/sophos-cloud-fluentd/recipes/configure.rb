@@ -19,23 +19,29 @@ REGION                        = node['sophos_cloud']['region']
 MSG_STATS_REJECT_SNS_TOPIC    = node['xgemail']['msg_statistics_rejection_sns_topic']
 DELIVERY_STATUS_SNS_TOPIC     = node['xgemail']['msg_history_status_sns_topic']
 SERVER_IP                     = node['ipaddress']
+SERVER_IP_XDELIVERY           = node['ipaddress']
 
 # Configs
 if NODE_TYPE    == 'delivery'
-  SERVER_TYPE   = 'CUSTOMER_DELIVERY'
-  DIRECTION     = 'INBOUND'
+  SERVER_TYPE           = 'CUSTOMER_DELIVERY'
+  SERVER_TYPE_XDELIVERY = 'CUSTOMER_XDELIVERY'
+  DIRECTION             = 'INBOUND'
 elsif NODE_TYPE == 'xdelivery'
-  SERVER_TYPE   = 'CUSTOMER_XDELIVERY'
-  DIRECTION     = 'INBOUND'
+  SERVER_TYPE           = 'CUSTOMER_XDELIVERY'
+  SERVER_TYPE_XDELIVERY = 'UNKNOWN'
+  DIRECTION             = 'INBOUND'
 elsif NODE_TYPE == 'internet-xdelivery'
-  SERVER_TYPE   = 'INTERNET_XDELIVERY'
-  DIRECTION     = 'OUTBOUND'
+  SERVER_TYPE           = 'INTERNET_XDELIVERY'
+  SERVER_TYPE_XDELIVERY = 'UNKNOWN'
+  DIRECTION             = 'OUTBOUND'
 elsif NODE_TYPE == 'internet-delivery'
-  SERVER_TYPE   = 'INTERNET_DELIVERY'
-  DIRECTION     = 'OUTBOUND'
+  SERVER_TYPE_XDELIVERY = 'INTERNET_XDELIVERY'
+  SERVER_TYPE           = 'INTERNET_DELIVERY'
+  DIRECTION             = 'OUTBOUND'
 else
-  SERVER_TYPE   = 'UNKNOWN'
-  DIRECTION     = 'UNKNOWN'
+  SERVER_TYPE           = 'UNKNOWN'
+  SERVER_TYPE_XDELIVERY = 'UNKNOWN'
+  DIRECTION             = 'UNKNOWN'
 end
 
 # All instances - Start Order: 10
@@ -260,6 +266,8 @@ template 'fluentd-filter-transform-msg-delivery' do
   variables(
     :server_type => SERVER_TYPE,
     :server_ip => SERVER_IP,
+    :server_type_xdelivery => SERVER_TYPE_XDELIVERY,
+    :server_ip_xdelivery => SERVER_IP_XDELIVERY,
     :direction => DIRECTION
   )
  only_if {
