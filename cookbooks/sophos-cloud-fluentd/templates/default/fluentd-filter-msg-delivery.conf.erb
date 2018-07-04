@@ -23,7 +23,7 @@
   reserve_time true
   <parse>
     @type regexp
-    expression /(?<host>[^ ]+) (?<process>[^ ]+): (?<queue_id>[^ ]+): to=<(?<recipient_address>[\S ]+)>, relay=(?<relay>[^ ]+), delay=(?<delay>[^ ]+), delays=(?<delays>[^ ]+), dsn=(?<dsn_code>[^ ]+), status=deferred(?<sent>[\S ]+)/
+    expression /(?<host>[^ ]+) (?<process>[^ ]+): (?<queue_id>[^ ]+): to=<(?<recipient_address>[\S ]+)>, relay=(?<relay>[^ ]+), delay=(?<delay>[^ ]+), delays=(?<delays>[^ ]+), dsn=(?<dsn_code>[^ ]+), status=(?<status>[(deferred|bounced|expired)]+) (?<sent>[\S ]+)/
   </parse>
 </filter>
 <filter sns.msg.delivery.redirected>
