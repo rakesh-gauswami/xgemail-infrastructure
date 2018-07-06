@@ -34,7 +34,6 @@ class MessageHistoryEvent(object):
         else:
             raise ("Wrong direction type [{0}]".format(direction))
 
-        logger.info("submit_type submit_type submit_type [{0}]".format(submit_type))
 
         self.schema_version = schema_version
         self.message_path = message_path
