@@ -33,6 +33,6 @@
   reserve_time true
   <parse>
     @type regexp
-    expression /^(?<host>[^ ]+) (?<process>[^ ]+): (?<queue_id>[^ ]+): to=<(?<recipient_address>[\S ]+)>, relay=(?<relay>[^ ]+), delay=(?<delay>[^ ]+), delays=(?<delays>[^ ]+), dsn=(?<dsn_code>[^ ]+), status=sent(?<sent>[\S ]+queued as (?<queue_id_xdelivery>[^ ]+)[)])/
+    expression /^(?<host>[^ ]+) (?<process>[^ ]+): (?<queue_id>[^ ]+): to=<(?<recipient_address>[\S ]+)>, relay=(?<relay>[^ ]+)\[(?<server_ip_xdelivery>[^ ]+)\]:(?<port>[^ ]+), delay=(?<delay>[^ ]+), delays=(?<delays>[^ ]+), dsn=(?<dsn_code>[^ ]+), status=sent(?<sent>[\S ]+queued as (?<queue_id_xdelivery>[^ ]+)[)])/
   </parse>
 </filter>

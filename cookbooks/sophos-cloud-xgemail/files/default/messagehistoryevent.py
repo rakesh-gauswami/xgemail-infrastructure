@@ -27,6 +27,14 @@ class MessageHistoryEvent(object):
                  direction,
                  sender):
 
+        if "INBOUND" == direction:
+          submit_type = 'INTERNET'
+        elif "OUTBOUND" == direction:
+          submit_type = 'CUSTOMER'
+        else:
+            raise ("Wrong direction type [{0}]".format(direction))
+
+
         self.schema_version = schema_version
         self.message_path = message_path
         self.accepting_server_ip = accepting_server_ip
@@ -42,6 +50,7 @@ class MessageHistoryEvent(object):
         self.reindex = reindex
         self.direction = direction
         self.sender = sender
+        self.submit_type = submit_type
 
     def __str__(self):
         sqs_printable = {
@@ -59,7 +68,8 @@ class MessageHistoryEvent(object):
             'mailboxes': self.mailboxes,
             'reindex': self.reindex,
             'direction': self.direction,
-            'sender': self.sender
+            'sender': self.sender,
+            'submit_message_type' : self.submit_type
         }
         return ', '.join('%s=%s' % (key, value) for (key, value) in sqs_printable.iteritems())
 
@@ -80,6 +90,7 @@ class MessageHistoryEvent(object):
             'mailboxes': self.mailboxes,
             'reindex': self.reindex,
             'direction': self.direction,
-            'sender': self.sender
+            'sender': self.sender,
+            'submit_message_type' : self.submit_type
         }
         return sqs_json
