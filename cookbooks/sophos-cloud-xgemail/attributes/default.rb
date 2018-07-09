@@ -117,6 +117,12 @@ default['xgemail']['sxl_dbl'] = nil
 #  - 127.0.1.5: SXL_URI_SHD (Contains a known spam URL (SXL lookup))
 default['xgemail']['sxl_dbl_response_codes'] = "127.0.1.[1;3;4;5]"
 
+# The third-party product VBSpam is allowed to use the Postfix XCLIENT
+# extension in order to spoof the source IP of the messages its sending.
+# More information can be found at
+# https://wiki.sophos.net/display/NSG/VBSpam+Integration+into+Sophos+Email
+default['xgemail']['smtpd_authorized_xclient_hosts'] = "81.136.243.94"
+
 ## IP blacklist settings
 default['xgemail']['sxl_rbl'] = nil
 
