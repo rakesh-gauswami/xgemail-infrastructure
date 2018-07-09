@@ -66,6 +66,9 @@ raise "SXL_RBL was nil" if SXL_RBL.nil?
 #  - 127.0.4.21: SXL_IP_TFX_PSH (Received via a known source of phishing (SXL lookup))
 SXL_RBL_RESPONSE_CODES = "127.0.4.[1;5;6;8;13;14;18;21]"
 
+# Hosts authorized to make use of the XCLIENT extension
+SMTP_AUTHORIZED_XCLIENT_HOSTS = node["xgemail"]["smtp_authorized_xclient_hosts"]
+
 GLOBAL_SIGN_DIR = "#{LOCAL_CERT_PATH}/3rdparty/global-sign"
 GLOBAL_SIGN_INTERMEDIARY = "#{GLOBAL_SIGN_DIR}/global-sign-sha256-intermediary.crt"
 GLOBAL_SIGN_ROOT = "#{GLOBAL_SIGN_DIR}/global-sign-root.crt"
@@ -176,7 +179,9 @@ CONFIGURATION_COMMANDS =
     'smtpd_relay_restrictions = ' +
       'permit_auth_destination, ' +
       "check_sender_access hash:$config_directory/#{SOFT_RETRY_SENDERS_MAP_FILENAME}, " +
-      'reject'
+      'reject',
+
+    "smtpd_authorized_xclient_hosts = #{SMTP_AUTHORIZED_XCLIENT_HOSTS}"
   ]
 
 CONFIGURATION_COMMANDS.each do | cur |
