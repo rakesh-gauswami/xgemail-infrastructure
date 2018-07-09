@@ -121,7 +121,7 @@ default['xgemail']['sxl_dbl_response_codes'] = "127.0.1.[1;3;4;5]"
 # extension in order to spoof the source IP of the messages its sending.
 # More information can be found at
 # https://wiki.sophos.net/display/NSG/VBSpam+Integration+into+Sophos+Email
-default['xgemail']['smtp_authorized_xclient_hosts'] = "81.136.243.94"
+default['xgemail']['smtpd_authorized_xclient_hosts'] = "81.136.243.94"
 
 ## IP blacklist settings
 default['xgemail']['sxl_rbl'] = nil

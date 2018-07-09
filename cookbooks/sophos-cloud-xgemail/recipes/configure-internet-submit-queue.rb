@@ -67,7 +67,7 @@ raise "SXL_RBL was nil" if SXL_RBL.nil?
 SXL_RBL_RESPONSE_CODES = "127.0.4.[1;5;6;8;13;14;18;21]"
 
 # Hosts authorized to make use of the XCLIENT extension
-SMTP_AUTHORIZED_XCLIENT_HOSTS = node["xgemail"]["smtp_authorized_xclient_hosts"]
+SMTPD_AUTHORIZED_XCLIENT_HOSTS = node["xgemail"]["smtpd_authorized_xclient_hosts"]
 
 GLOBAL_SIGN_DIR = "#{LOCAL_CERT_PATH}/3rdparty/global-sign"
 GLOBAL_SIGN_INTERMEDIARY = "#{GLOBAL_SIGN_DIR}/global-sign-sha256-intermediary.crt"
@@ -181,7 +181,7 @@ CONFIGURATION_COMMANDS =
       "check_sender_access hash:$config_directory/#{SOFT_RETRY_SENDERS_MAP_FILENAME}, " +
       'reject',
 
-    "smtpd_authorized_xclient_hosts = #{SMTP_AUTHORIZED_XCLIENT_HOSTS}"
+    "smtpd_authorized_xclient_hosts = #{SMTPD_AUTHORIZED_XCLIENT_HOSTS}"
   ]
 
 CONFIGURATION_COMMANDS.each do | cur |
