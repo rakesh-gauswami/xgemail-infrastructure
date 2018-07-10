@@ -25,7 +25,7 @@
     @type rewrite_tag_filter
     <rule>
       key message
-      pattern .+ status=sent .+ Queued mail for delivery
+      pattern .+, relay=(?!.*xdelivery.).+status=sent .+
       tag sns.msg.delivery.succeeded
     </rule>
     <rule>
