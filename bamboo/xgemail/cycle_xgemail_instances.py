@@ -32,8 +32,18 @@ import argparse
 import boto3
 import os
 import time
+import logging
 from botocore.exceptions import ClientError, WaiterError
 
+# logging to syslog setup
+logger = logging.getLogger('cycle-instances')
+logger.setLevel(logging.INFO)
+console_handler = logging.StreamHandler()
+formatter = logging.Formatter(
+    '[%(name)s] %(process)d %(levelname)s %(message)s'
+)
+console_handler.setFormatter(formatter)
+logger.addHandler(console_handler)
 
 # Argument Parser
 def parse_command_line():
@@ -64,22 +74,22 @@ class XgemailInstance(object):
             return False
 
     def terminate_asg_instance(self):
-        print('===>    Terminate instance')
+        logger.info('===>    Terminate instance')
         try:
             terminate_response = asg_client.terminate_instance_in_auto_scaling_group(InstanceId=self.instance_id, ShouldDecrementDesiredCapacity=False)
-            print(terminate_response)
+            logger.info(terminate_response)
         except ClientError as ce:
-            print("Client Error terminating the ASG Instance. {}".format(ce))
+            logger.info("Client Error terminating the ASG Instance. {}".format(ce))
 
     def get_new_instance(self):
-        print('===>    New Instance IDs')
+        logger.info('===>    New Instance IDs')
         try:
             for asg in asg_client.describe_auto_scaling_groups(AutoScalingGroupNames=[self.asg], MaxRecords=1)['AutoScalingGroups']:
                 self.instance_id = asg['Instances'][0]['InstanceId']
                 self.elb = asg['LoadBalancerNames'][0]
-                print('===>    New Instance ID: {}'.format(self.instance_id))
+                logger.info('===>    New Instance ID: {}'.format(self.instance_id))
         except ClientError as ce:
-            print("Client Error describing AutoScaling Groups. {}".format(ce))
+            logger.info("Client Error describing AutoScaling Groups. {}".format(ce))
 
 
 def get_instances(name):
@@ -99,6 +109,73 @@ def get_instances(name):
 def termination_control(l, n):
     for i in range(0, len(l), n):
         yield l[i:i + n]
+
+
+def wait_for_instance_terminated(instance_list):
+    try:
+        ec2_client.get_waiter('instance_terminated').wait(
+            InstanceIds=[i.instance_id for i in instance_list],
+            WaiterConfig={
+                'Delay': delay_default,
+                'MaxAttempts': max_attempts_default
+            })
+    except WaiterError as we:
+        logger.info("Waiter Error instance_terminated. {}".format(we))
+        return False
+
+    return True
+
+
+def wait_for_instance_running(instance_list):
+    time.sleep(5)
+    try:
+        ec2_client.get_waiter('instance_running').wait(
+            InstanceIds=[i.instance_id for i in instance_list],
+            WaiterConfig={
+                'Delay': delay_default,
+                'MaxAttempts': max_attempts_default
+            }
+        )
+    except WaiterError as we:
+        logger.info("Waiter Error instance_running. {}".format(we))
+        return False
+
+    return True
+
+
+def wait_for_instance_status_ok(instance_list):
+    time.sleep(5)
+    try:
+        ec2_client.get_waiter('instance_status_ok').wait(
+            InstanceIds=[i.instance_id for i in instance_list],
+            WaiterConfig={
+                'Delay': delay_default,
+                'MaxAttempts': max_attempts_default
+            }
+        )
+    except WaiterError as we:
+        logger.info("Waiter Error instance_status_ok. {}".format(we))
+        return False
+
+    return True
+
+
+def wait_for_instance_in_service(instance_list):
+    time.sleep(5)
+    try:
+        elb_client.get_waiter('instance_in_service').wait(
+            LoadBalancerName=elb_name,
+            Instances=[{'InstanceId': i.instance_id} for i in instance_list],
+            WaiterConfig={
+                'Delay': delay_instance_in_service,
+                'MaxAttempts': max_attempts_default
+            }
+        )
+    except WaiterError as we:
+        logger.info("Waiter Error instance_in_service. {}".format(we))
+        return False
+
+    return True
 
 
 if __name__ == "__main__":
@@ -140,57 +217,17 @@ if __name__ == "__main__":
             for tq in list(termination_control(termination_queue, args.termination_control)):
                 for x in tq:
                     x.terminate_asg_instance()
-                try:
-                    ec2_client.get_waiter('instance_terminated').wait(
-                        InstanceIds=[i.instance_id for i in tq],
-                        WaiterConfig={
-                            'Delay': delay_default,
-                            'MaxAttempts': max_attempts_default
-                        })
-                except WaiterError as we:
-                    print("Waiter Error instance_terminated. {}".format(we))
-                print('===>    Instances terminated')
-                for x in tq:
-                    x.get_new_instance()
-                elb_name = tq[0].elb
-                time.sleep(5)
-                try:
-                    ec2_client.get_waiter('instance_running').wait(
-                        InstanceIds=[i.instance_id for i in tq],
-                        WaiterConfig={
-                            'Delay': delay_default,
-                            'MaxAttempts': max_attempts_default
-                        }
-                    )
-                except WaiterError as we:
-                    print("Waiter Error instance_running. {}".format(we))
-                time.sleep(5)
-                print('===>    Instances running')
-                try:
-
-                    ec2_client.get_waiter('instance_status_ok').wait(
-                        InstanceIds=[i.instance_id for i in tq],
-                        WaiterConfig={
-                            'Delay': delay_default,
-                            'MaxAttempts': max_attempts_default
-                        }
-                    )
-                except WaiterError as we:
-                    print("Waiter Error instance_status_ok. {}".format(we))
-                print('===>    Instances status OK')
-                time.sleep(5)
-                try:
-                    elb_client.get_waiter('instance_in_service').wait(
-                        LoadBalancerName=elb_name,
-                        Instances=[{'InstanceId': i.instance_id} for i in tq],
-                        WaiterConfig={
-                            'Delay': delay_instance_in_service,
-                            'MaxAttempts': max_attempts_default
-                        }
-                    )
-                except WaiterError as we:
-                    print("Waiter Error instance_in_service. {}".format(we))
-                print('===>    Instances in service')
+                if wait_for_instance_terminated(tq):
+                    logger.info('===>    Instances terminated')
+                    for x in tq:
+                        x.get_new_instance()
+                    elb_name = tq[0].elb
+                    if wait_for_instance_running(tq):
+                        logger.info('===>    Instances running')
+                        if wait_for_instance_status_ok(tq):
+                            logger.info('===>    Instances status OK')
+                            if wait_for_instance_in_service(tq):
+                                logger.info('===>    Instances in service')
             break
         break
-    print('Cycling Xgemail Instances Complete!')
+    logger.info('Cycling Xgemail Instances Complete!')
