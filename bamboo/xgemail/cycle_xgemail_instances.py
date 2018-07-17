@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # vim: autoindent expandtab tabstop=4 softtabstop=4 shiftwidth=4 filetype=python
 
-# Copyright 2016, Sophos Limited. All rights reserved.
+# Copyright 2018, Sophos Limited. All rights reserved.
 #
 # 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
 # Sophos Limited and Sophos Group.  All other product and company
@@ -9,16 +9,20 @@
 # respective owners.
 
 """
-This script is part 1 of 2 Bamboo Script steps used to terminate Xgemail Ec2 Instances.
+This script is used to terminate Xgemail Ec2 Instances.
 This script deals with the termination of Ec2 Instances in Xgemail AutoScaling Groups, and monitoring the full termination of the instance.
-This step was separated as its own Bamboo Script step to better separate the processes within Bamboo. (Termination & Creation)
 Xgemail Ec2 Instances need to use persistent Ebs volumes. Current Infrastructure Scaling is done manually.
 For every 1 EC2 instance and its associated Ebs Volume there is 1 AutoScaling Group and they are all part of 1 CloudFormation Stack.
 1 CloudFormation Stack -> 1 AutoScaling Group -> 1 Ec2 Instance -> 1 Ebs Volume
-After a CloudFormation Stack update this script will run and gather the AutoScaling Group name from the CloudFormation Stack Resource.
-Next Using the AutoScaling Group name it will then find the instance id of the single instance in the AutoScaling Group.
-It will then terminate the single instance in the AutoScaling Group.
-Last use the termination response to monitor the AutoScaling Activity to ensure that the instance was properly terminated.
+After a CloudFormation Stack update this script will run in the following order.
+1. Gather all the instances from a given type of Xgemail instances
+2. Determine which instances are out of date and need to be cycled.
+3. Terminate the instance in each AutoScaling Group.
+4. Wait for termination to complete.
+5. Gather new instance ids from each AutoScaling Group.
+6. Wait for Instances to become "Running".
+7. Wait for status to be OK.
+8. Wait for associated ELB state to be "In Service"
 Else it will fail, causing the Bamboo step to fail.
 """
 
@@ -26,7 +30,7 @@ import argparse
 import boto3
 import os
 import time
-import botocore
+from botocore.exceptions import ClientError, WaiterError
 
 
 # Argument Parser
@@ -161,7 +165,3 @@ if __name__ == "__main__":
         )
         print('===>    Instances in service')
         break
-        #while len(termination_queue) != 0:
-         #   for x in termination_queue:
-
-
