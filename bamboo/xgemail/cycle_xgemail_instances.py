@@ -231,7 +231,6 @@ if __name__ == "__main__":
     delay_default = 30
     delay_instance_in_service = 120
     termination_queue = list()
-    running_queue = list()
     instance_type = 'CloudEmail:' + args.itype + ':*'
     elb_name = ''
 
