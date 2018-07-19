@@ -271,7 +271,8 @@ template 'fluentd-filter-transform-msg-delivery' do
     :server_type => SERVER_TYPE,
     :server_ip => SERVER_IP,
     :server_type_xdelivery => SERVER_TYPE_XDELIVERY,
-    :direction => DIRECTION
+    :direction => DIRECTION,
+    :redirection_dsn => REDIRECTION_DSN
   )
  only_if {
             NODE_TYPE == 'delivery' ||
@@ -290,8 +291,7 @@ template 'fluentd-match-sns-msg-delivery' do
   group 'root'
   variables(
     :region => REGION,
-    :sns_topic => DELIVERY_STATUS_SNS_TOPIC,
-    :redirection_dsn => REDIRECTION_DSN
+    :sns_topic => DELIVERY_STATUS_SNS_TOPIC
   )
  only_if {
             NODE_TYPE == 'delivery' ||
