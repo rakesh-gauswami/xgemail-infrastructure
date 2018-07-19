@@ -290,7 +290,8 @@ template 'fluentd-match-sns-msg-delivery' do
   group 'root'
   variables(
     :region => REGION,
-    :sns_topic => DELIVERY_STATUS_SNS_TOPIC
+    :sns_topic => DELIVERY_STATUS_SNS_TOPIC,
+    :redirection_dsn => REDIRECTION_DSN
   )
  only_if {
             NODE_TYPE == 'delivery' ||
