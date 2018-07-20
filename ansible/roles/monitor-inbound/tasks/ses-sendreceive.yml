@@ -1,0 +1,27 @@
+---
+- name: "Deploy Inbound and Outbound Monitor Receive Lambda Function {{stack.inbound_outbound_ses}} to {{account.name}}-{{account.region}}"
+  cloudformation:
+    stack_name:                             "{{stack.ses.inbound_outbound_ses}}"
+    state:                                  present
+    region:                                 "{{account.region}}"
+    disable_rollback:                       true
+    template:                               "{{template.ses.ses_template}}"
+    template_parameters:
+      Environment:                          "{{account.name}}"
+      LambdaExecutionRole:
+      RuleName:                             "xgemail-monitor-rule"
+      OutboundRuleName:                     "xgemail-outbound-monitor-rule"
+      RuleSetName:                          "us-west-2-rule-set"
+    with_items:
+      - Domains
+      - InboundMailRecipients
+      - OutboundMailRecipients
+
+- debug:
+    var: ssm_stack
+    verbosity: 3
+
+- name: "Display SSM Docuuments Stack Output"
+  debug:
+    msg: "{{ssm_stack.stack_outputs}}"
+    verbosity: 2

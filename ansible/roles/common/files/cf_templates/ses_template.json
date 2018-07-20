@@ -1,0 +1,374 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "SES Cloud Formation template",
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2018, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ],
+    "Comments": [
+      "Amazon's Simple Email Service (SES) This template uses a Lambda CloudFormation",
+      "Custom Resource and CloudFormation to give an option for automated deployment.",
+      "Domains, Rules, Actions, and Filters are lists which can easily",
+      "be modified for a fully customized and automated deployment."
+    ]
+  },
+  "Parameters": {
+
+    "Domains": {
+      "Type": "CommaDelimitedList",
+      "Description": "List of Domains to add to SES",
+      "ConstraintDescription": "must be a comma-separated list of valid domain names."
+    },
+    "InboundMailRecipients": {
+      "Type": "CommaDelimitedList",
+      "Description": "List of email addresses to add to SES",
+      "ConstraintDescription": "must be a comma-separated list of valid email addresses."
+    },
+    "OutboundMailRecipients": {
+      "Type": "CommaDelimitedList",
+      "Description": "List of email addresses to add to SES",
+      "ConstraintDescription": "must be a comma-separated list of valid email addresses."
+    },
+    "InboundRuleName": {
+      "Description": "The name of the Inbound SES receiving rule.",
+      "Type": "String"
+    },
+    "OutboundRuleName": {
+      "Description": "The name of the Outbound SES receiving rule.",
+      "Type": "String"
+    },
+    "RuleName": {
+      "Description": "The name of the SES receiving rule.",
+      "Type": "String"
+    },
+    "Rules": {
+      "Description": "The name of the SES receiving rule.",
+      "Type": "String"
+    },
+    "RuleSetName": {
+      "Description": "The name of the SES rule set.",
+      "Type": "String",
+      "Default": "us-west-2-rule-set"
+    },
+    "SesInvokeLambdaFunctionArn": {
+      "Description": "The ARN of the Lambda Function SES will invoke.",
+      "Type": "String"
+    },
+    "SesInvokeOutboundLambdaFunctionArn": {
+      "Description": "The ARN of the Outbound Lambda Function SES will invoke.",
+      "Type": "String"
+    }
+  },
+
+  "Resources": {
+    "SesReceiptRuleSet": {
+      "Type": "AWS::SES::ReceiptRuleSet",
+      "Properties": {
+        "RuleSetName": {
+          "Ref": "RuleSetName"
+        }
+      }
+    },
+
+    "SesConfigSet": {
+      "Type": "AWS::SES::ConfigurationSet",
+      "Properties": {
+        "Name": [
+          {
+            "Name": {"Ref": "RuleName"},
+            "Recipients": {"Ref": "InboundMailRecipients"},
+            "Enabled": "True",
+            "ScanEnabled": "False",
+            "Actions": [
+              {
+                "LambdaAction": {
+                  "FunctionArn": {"Ref": "SesInvokeLambdaFunctionArn"},
+                  "InvocationType": "Event"
+                }
+              }
+            ]
+          },
+          {
+            "Name": {"Ref": "OutboundRuleName"},
+            "Recipients": {"Ref": "OutboundMailRecipients"},
+            "Enabled": "True",
+            "ScanEnabled": "False",
+            "Actions": [
+              {
+                "LambdaAction": {
+                  "FunctionArn": {"Ref": "SesInvokeOutboundLambdaFunctionArn"},
+                  "InvocationType": "Event"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+
+    "LambdaExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": { "Service": [ "lambda.amazonaws.com" ] },
+              "Action": [ "sts:AssumeRole" ]
+            }
+          ]
+        },
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "root",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": "arn:aws:logs:*:*:*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ses:CreateReceiptFilter",
+                    "ses:CreateReceiptRule",
+                    "ses:CreateReceiptRuleSet",
+                    "ses:DeleteIdentity",
+                    "ses:DeleteReceiptFilter",
+                    "ses:DeleteReceiptRule",
+                    "ses:DeleteReceiptRuleSet",
+                    "ses:DescribeActiveReceiptRuleSet",
+                    "ses:GetIdentityVerificationAttributes",
+                    "ses:ListIdentities",
+                    "ses:ListReceiptFilters",
+                    "ses:ListReceiptRuleSets",
+                    "ses:ListVerifiedEmailAddresses",
+                    "ses:ReorderReceiptRuleSet",
+                    "ses:SetActiveReceiptRuleSet",
+                    "ses:UpdateReceiptRule",
+                    "ses:VerifyDomainIdentity",
+                    "ses:VerifyEmailAddress",
+                    "ses:VerifyEmailIdentity"
+                  ],
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "route53:ChangeResourceRecordSets",
+                    "route53:GetHostedZone",
+                    "route53:ListHostedZones",
+                    "route53:ListResourceRecordSets"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+
+    "SesDomainLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "DependsOn": "LambdaExecutionRole",
+      "Properties": {
+        "Code": {
+          "ZipFile": {
+            "Fn::Join": [
+              "", [
+                "import boto3\n",
+                "import botocore\n",
+                "import logging\n",
+                "import cfnresponse\n",
+                "logger = logging.getLogger()\n",
+                "logger.setLevel(logging.INFO)\n",
+                "session = boto3.Session()\n",
+                "route53 = session.client('route53')\n",
+                "ses = session.client('ses', region_name='",{ "Ref": "AWS::Region" },"')\n",
+                "\n",
+                "def domain_handler(event, context):\n",
+                "    response_data = {}\n",
+                "    try:\n",
+                "        logger.info('Event: %s' % str(event))\n",
+                "        logger.info('Context: %s'% str(context))\n",
+                "        request_type = event['RequestType']\n",
+                "        logger.info('Type: %s' % request_type)\n",
+                "        domains = event['ResourceProperties']['Domains']\n",
+                "        if request_type in ['Create', 'Update']:\n",
+                "            for domain in domains:\n",
+                "                hosted_zone_id = find_zone_id_for_domain(domain)\n",
+                "                verification_token = ses.verify_domain_identity(Domain=domain)['VerificationToken']\n",
+                "                logger.info('HostedZoneId: %s Domain: %s VerificationToken: %s' % (hosted_zone_id, domain, verification_token))\n",
+                "                change_route53_record(zone_id=hosted_zone_id, action='UPSERT', domain=domain, value=verification_token)\n",
+                "            response_data['Identities'] = ', '.join(ses.list_identities()['Identities'])\n",
+                "        elif request_type == 'Delete':\n",
+                "            for domain in domains:\n",
+                "                logger.info('Deleting Route53 TXT Verification Record for domain: %s' % domain)\n",
+                "                change_route53_record(\n",
+                "                    zone_id=find_zone_id_for_domain(domain),\n",
+                "                    action='DELETE',\n",
+                "                    domain=domain,\n",
+                "                    value=ses.get_identity_verification_attributes(\n",
+                "                        Identities=[domain]\n",
+                "                    )['VerificationAttributes'][domain]['VerificationToken']\n",
+                "                )\n",
+                "                logger.info('Deleting Identity: %s' % domain)\n",
+                "                ses.delete_identity(Identity=domain)\n",
+                "        logger.info(response_data)\n",
+                "        cfnresponse.send(event, context, cfnresponse.SUCCESS, response_data)\n",
+                "    except Exception as e:\n",
+                "        logger.info('Exception occured: %s' % str(e))\n",
+                "        cfnresponse.send(event, context, cfnresponse.FAILED, response_data)\n",
+                "        raise e\n",
+                "\n",
+                "def find_zone_id_for_domain(domain):\n",
+                "    for page in route53.get_paginator('list_hosted_zones').paginate():\n",
+                "        for zone in page['HostedZones']:\n",
+                "            if (domain.endswith(zone['Name']) or (domain + '.').endswith(zone['Name'])):\n",
+                "                return zone['Id']\n",
+                "\n",
+                "def get_domain(hosted_zone_id):\n",
+                "    hosted_zone = route53.get_hosted_zone(Id=hosted_zone_id)\n",
+                "    return hosted_zone['HostedZone']['Name'][:-1]\n",
+                "\n",
+                "def change_route53_record(zone_id, action, domain, value):\n",
+                "    route53.change_resource_record_sets(\n",
+                "        HostedZoneId=zone_id,\n",
+                "        ChangeBatch={\n",
+                "            'Changes': [\n",
+                "                {\n",
+                "                    'Action': action,\n",
+                "                    'ResourceRecordSet': {\n",
+                "                        'Name': '_amazonses.%s' % domain,\n",
+                "                        'Type': 'TXT',\n",
+                "                        'TTL': 1800,\n",
+                "                        'ResourceRecords': [\n",
+                "                            {'Value': '\"%s\"' % value}\n",
+                "                        ],\n",
+                "                    }\n",
+                "                }\n",
+                "            ]\n",
+                "        }\n",
+                "    )\n",
+                ""
+              ]
+            ]
+          }
+        },
+        "Handler": "index.domain_handler",
+        "Runtime": "python2.7",
+        "Timeout": "30",
+        "Role": { "Fn::GetAtt": [ "LambdaExecutionRole", "Arn" ] }
+      }
+    },
+
+    "SesDomains": {
+      "Type": "Custom::SesDomain",
+       "Properties": {
+        "ServiceToken": { "Fn::GetAtt": [ "SesDomainLambdaFunction", "Arn" ] },
+        "Domains": { "Ref": "Domains" }
+      }
+    },
+
+    "ReceiptFilter": {
+      "Type": "AWS::SES::ReceiptFilter",
+      "Properties": {
+        "Filter": [
+          {
+            "Name": "prod-us-east-2a",
+            "IpFilter": {
+              "Policy": "Allow",
+              "Cidr": "18.220.12.142/32"
+            }
+          },
+          {
+            "Name": "prod-us-east-2b",
+            "IpFilter": {
+              "Policy": "Allow",
+              "Cidr": "18.216.7.10/32"
+            }
+          },
+          {
+            "Name": "prod-us-west-2a",
+            "IpFilter": {
+              "Policy": "Allow",
+              "Cidr": "50.112.39.248/32"
+            }
+          },
+          {
+            "Name": "prod-us-west-2b",
+            "IpFilter": {
+              "Policy": "Allow",
+              "Cidr": "52.41.236.76/32"
+            }
+          },
+          {
+            "Name": "prod-eu-west-1a",
+            "IpFilter": {
+              "Policy": "Allow",
+              "Cidr": "52.31.106.198/32"
+            }
+          },
+          {
+            "Name": "prod-eu-west-1b",
+            "IpFilter": {
+              "Policy": "Allow",
+              "Cidr": "52.208.126.243/32"
+            }
+          },
+          {
+            "Name": "prod-eu-central-1a",
+            "IpFilter": {
+              "Policy": "Allow",
+              "Cidr": "52.29.100.147/32"
+            }
+          },
+          {
+            "Name": "prod-eu-central-1b",
+            "IpFilter": {
+              "Policy": "Allow",
+              "Cidr": "52.58.166.242/32"
+            }
+          }
+        ]
+      }
+    }
+  },
+
+  "Outputs": {
+    "SesDomains": {
+      "Description": "SES Domains.",
+      "Value": { "Fn::GetAtt": [ "SesDomains", "Identities" ] }
+    },
+
+    "SesReceiptRuleSet": {
+      "Description": "SES Receipt Rule Set Name.",
+      "Value": { "Ref": "SesReceiptRuleSet" }
+    },
+
+    "SesConfigSet": {
+      "Description": "Ses Receipt Rules.",
+      "Value": { "Ref": "SesConfigSet" }
+    },
+
+    "SesFilterNames": {
+      "Description": "SES Filter Names.",
+      "Value": { "Ref": "ReceiptFilter" }
+    }
+  }
+}
+
