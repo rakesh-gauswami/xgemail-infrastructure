@@ -30,8 +30,6 @@ BAMBOO_TARGETS = .check.python \
 
 # These tests work when run locally:
 
-# TODO: Put .check.docker back into this list once the fluentd Dockerfile passes again or is removed.
-
 LOCAL_TARGETS = .check.ansible \
 		.check.bash \
 		.check.cloudformation \
@@ -71,14 +69,8 @@ GROUP_3 = 	.check.ansible \
 
 PYUNIT_LOCAL_DIRS := ./ansible/roles/vault/files \
 		./bamboo \
-		./bamboo/mcs-push \
-		./cookbooks/sophos-central-border-patrol/files/borderpatrol/tests \
-		./cookbooks/sophos-cloud-build-tools/files/default/test/testinfra \
-		./cookbooks/sophos-cloud-mongo/files/default \
 		./lambda \
 		./tools \
-		./ww/variables-test \
-		./ww/ww_lib \
 		$(EOL)
 
 # Use this target to run all checks.
@@ -260,12 +252,13 @@ NUM_JSON_FILES=$(shell echo $(JSON_FILES) | wc -w)
 	@touch $@
 
 PYTHON_FILES := $(shell find ./cookbooks -name '*.py')
-#PYTHON_FILES += $(shell find ./hopper -name '*.py')
-#PYTHON_FILES += $(shell find ./workers -name '*.py')
-#PYTHON_FILES += $(shell find ./ww -name '*.py')
-#PYTHON_FILES += ./hopper/create-logicmonitor-config
-#PYTHON_FILES += ./hopper/create-mongo-config
-#PYTHON_FILES += ./hopper/upload-mongo-config
+PYTHON_FILES += $(shell find ./hopper -name '*.py')
+PYTHON_FILES += $(shell find ./bamboo -name '*.py')
+PYTHON_FILES += $(shell find ./bamboo/xgemail -name '*.py')
+PYTHON_FILES += ./hopper/xgemail_send_eml.py
+PYTHON_FILES += ./hopper/xgemail_terminate_instance.py
+PYTHON_FILES += ./lambda/xgemail_eip_monitor.py
+PYTHON_FILES += ./lambda/xgemail_eip_rotation.py
 
 NUM_PYTHON_FILES=$(shell echo $(PYTHON_FILES) | wc -w)
 
@@ -293,7 +286,6 @@ NUM_PYUNIT_LOCAL_DIRS=$(shell echo $(PYUNIT_LOCAL_DIRS) | wc -w)
 	@touch $@
 
 RUBY_FILES := $(shell find ./cookbooks -name '*.rb')
-RUBY_FILES += $(shell find ./workers -name '*.rb')
 
 NUM_RUBY_FILES=$(shell echo $(RUBY_FILES) | wc -w)
 
@@ -323,9 +315,8 @@ NUM_YAML_FILES=$(shell echo $(YAML_FILES) | wc -w)
 	@./tools/check_yaml $(YAML_FILES)
 	@touch $@
 
-CLOUDFORMATION_TEMPLATE_FILES  := $(shell find templates/vpc -name '*.json')
-CLOUDFORMATION_PARAMETER_FILES := $(shell find parameters/vpc -name '*.json')
-CLOUDFORMATION_PARAMETER_FILES += $(shell find ww/parameters -name '*.json')
+CLOUDFORMATION_TEMPLATE_FILES  := $(shell find ansible/roles/ami-xgemail/files/cf_templates -name '*.json')
+CLOUDFORMATION_TEMPLATE_FILES += $(shell find ansible/roles/common/files/cf_templates -name '*.json')
 
 # TODO: See comment in tools/check_cloudformation re scanning to find template and parameter files.
 .check.cloudformation: $(CLOUDFORMATION_TEMPLATE_FILES) $(CLOUDFORMATION_PARAMETER_FILES)
@@ -388,7 +379,7 @@ NUM_CHEFSPEC_FILES=$(shell echo $(CHEFSPEC_FILES) | wc -w)
 
 COPYRIGHT_FILES := $(shell find ./cookbooks/sophos-cloud* -name '*.rb' \! -name 'metadata.rb')
 COPYRIGHT_FILES += $(shell find ./ -name '*.js')
-COPYRIGHT_FILES += $(shell find ./templates -name '*.json')
+COPYRIGHT_FILES += $(shell find ./ -name '*_template.json')
 COPYRIGHT_FILES += $(shell find ./ -name '*.sh')
 COPYRIGHT_FILES += $(shell find ./ -name '*.py' \! \( -name '__init__.py' \
 	-or -name 'ec2.py' \

@@ -150,8 +150,11 @@ def main():
         if not check_ansible(path):
             failed = True
 
-    if not check_ansible_inheritance(paths):
-        failed = True
+    # 06.29.2018 ASP Removing this check as the configuration now is
+    # to mash dictionaries together
+
+    #if not check_ansible_inheritance(paths):
+    #    failed = True
 
     sys.exit(1 if failed else 0)
 
