@@ -1,12 +1,12 @@
 <match sophos.xgemail.**>
   @type s3
 
-  s3_bucket logs-sophos-central-<%= @account %>-<%= @region %>
+  s3_bucket logs-sophos-msg-<%= @account %>-<%= @region %>
   s3_region <%= @region %>
 
   # Bucket must exist
   auto_create_bucket false
-  path logs/
+  path msg-logs/
   s3_object_key_format %{path}%{time_slice}_<%= @instance_id %>_%{index}.%{file_extension}
   store_as json
 
