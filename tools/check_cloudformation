@@ -1,94 +1,44 @@
 #!/usr/bin/env python
 # vim: autoindent expandtab tabstop=4 softtabstop=4 shiftwidth=4 filetype=python
 
-# Copyright 2016, Sophos Limited. All rights reserved.
+# Copyright 2018, Sophos Limited. All rights reserved.
 #
 # 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
 # Sophos Limited and Sophos Group.  All other product and company
 # names mentioned are trademarks or registered trademarks of their
 # respective owners.
 
-# check_cloudformation: Check CloudFormation template and parameter files.
+# check_cloudformation: Check syntax of each cloudformation file listed on the command line.
 
-
-import json
-import optparse
-import os
 import sys
+import boto3
+from botocore.exceptions import BotoCoreError, ClientError
 
-from checkers import CloudFormationChecker
-
-
-def parse_command_line():
-    parser = optparse.OptionParser(
-            usage="%prog <template-file> <parameter-file>")
-
-    # TODO: Provide a way to process ALL the template and parameter files.
-    # Perhaps add an option to detect matching template and parameter files
-    # based on file name with overriding matches specified on the command line.
-    # Then we can complain if any files are not accounted for.
-    # That way we can catch newly added template and parameter files.
-
-    parser.add_option("-b", "--bamboo", action="store_true", default=False,
-        help="add templates/<template-type> and parameters/vpc prefixes to arguments")
-
-    parser.add_option("-w", "--weather-wizard", action="store_true", default=False,
-        help="add templates/<template-type> and ww/parameters prefixes to arguments")
-
-    parser.add_option("-t", "--template-type", default="vpc",
-        help="set template type used with -b and -w options")
-
-    options, args = parser.parse_args()
-
-    if len(args) == 0:
-        parser.error("missing required template-file argument")
-    if len(args) == 1:
-        parser.error("missing required parameter-file argument")
-    if len(args) > 2:
-        parser.error("too many arguments")
-
-    return options, args
+cfn = boto3.client('cloudformation')
 
 
-def json_load(fp, path):
+def check_cloudformation(path):
     try:
-        return json.load(fp)
-    except ValueError as e:
+        with open(path, 'r') as fp:
+            cfn.validate_template(TemplateBody=fp.read())
+        return True
+    except (BotoCoreError, ClientError) as e:
         print >> sys.stderr, "%s: %s" % (path, e)
-        sys.exit(1)
-
-
-def check(options, template_path, parameter_path):
-    checker = CloudFormationChecker()
-    checker.set_weather_wizard(options.weather_wizard)
-
-    if template_path != "-":
-        if options.bamboo:
-            template_path = os.path.join("templates", options.template_type, template_path)
-        elif options.weather_wizard:
-            template_path = os.path.join("templates", options.template_type, template_path)
-        with open(template_path) as fp:
-            template_data = json_load(fp, template_path)
-            checker.set_template_data(template_data, template_path)
-
-    if parameter_path != "-":
-        if options.bamboo:
-            parameter_path = os.path.join("parameters/vpc", parameter_path)
-        elif options.weather_wizard:
-            parameter_path = os.path.join("ww/parameters", parameter_path)
-        with open(parameter_path) as fp:
-            parameter_data = json_load(fp, parameter_path)
-            checker.set_parameter_data(parameter_data, parameter_path)
-
-    return checker.check_all()
+        return False
 
 
 def main():
-    options, args = parse_command_line()
+    paths = sys.argv[1:]
 
-    template_path, parameter_path = args
-    if not check(options, template_path, parameter_path):
-        sys.exit(1)
+    failed = False
+    for path in paths:
+        #TODO: This file exceeds the maximum length of 51,200 bytes. Implement a way to include this in the check
+        if 'roles_xgemail_template.json' in path:
+            continue
+        if not check_cloudformation(path):
+            failed = True
+
+    sys.exit(1 if failed else 0)
 
 
 if __name__ == "__main__":

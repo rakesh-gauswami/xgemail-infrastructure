@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # vim: autoindent expandtab tabstop=4 softtabstop=4 shiftwidth=4 filetype=python
 
-# Copyright 2017, Sophos Limited. All rights reserved.
+# Copyright 2018, Sophos Limited. All rights reserved.
 #
 # 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
 # Sophos Limited and Sophos Group.  All other product and company
@@ -9,137 +9,21 @@
 # respective owners.
 
 """
-Check ansible files for common errors.
+Check ansible playbooks files for common errors.
 """
 
-import collections
-import os
-import re
 import sys
-import yaml
+import os
+from subprocess import Popen, PIPE
+
+root_prefix = 'ansible/playbooks'
 
 
-def check_ansible(path):
-    failed = False
-
-    with open(path) as fp:
-        top_level_dict_linenos = {}
-
-        for i, line in enumerate(fp.readlines()):
-            lineno = i + 1
-            line = line.rstrip()
-
-            if re.match(r"^\w+:", line):
-                dict_name = line.split(":")[0]
-                dict_line = top_level_dict_linenos.get(dict_name)
-                if dict_line is not None:
-                    print >> sys.stderr, "%s:%d: dict %r already defined at line %d." % (path, lineno, dict_name, dict_line)
-                    failed = True
-                else:
-                    top_level_dict_linenos[dict_name] = lineno
-
-            if re.search(r"lookup.*[, ]default *= *[\'\"]", line):
-                print >> sys.stderr, "%s:%d: incorrect use of default in lookup function, put default= INSIDE quotes." % (path, lineno)
-                failed = True
-
-    return not failed
-
-
-def check_ansible_inheritance(paths):
-    failed = False
-
-    # Look at files under ansible/common/roles/vars.
-    # Look for files having the same basename (e.g. infrastructure.properties.yml).
-    # Verify top-level dictionaries defined in each have the same set of keys.
-
-    # Whitelist lists tuples of (basename, dictname) that we can't enforce this check on.
-
-    whitelist = [
-        # The following dictionaries are whitelisted because they failed this check
-        # at the time it was written and I lack sufficient time and/or knowledge
-        # to correct them all.  If someone else can address these and remove some
-        # of these whitelist entries that would be great.  Or we just live with it
-        # until the Next New Thing comes along :)
-        ("infrastructure.properties.yml", "awsApiGatewayUtil"),
-        ("infrastructure.properties.yml", "offBusinessHour"),
-        ("infrastructure.properties.yml", "saml"),
-        ("infrastructure.properties.yml", "sfActionsExternalLinks"),
-        ("infrastructure.properties.yml", "uiSupport"),
-        ("infrastructure.properties.yml", "vpc"),
-        ("infrastructure.properties.yml", "wireless"),
-
-        # The following dictionaries are whitelisted because their keys are
-        # determined by which services deploy to a given account and region,
-        # so they are expected to vary from file to file.
-        ("infrastructure.properties.yml", "deployment"),
-        ("service.properties.yml", "service_properties")
-    ]
-
-    root_prefix = "ansible/roles/common/vars"
-
-    dirnames_by_basename = collections.defaultdict(list)
-    for path in paths:
-        if root_prefix in path:
-            dirname = os.path.dirname(path)
-            basename = os.path.basename(path)
-
-            # We can't check vaulted files.
-            # We drop the "v" because someone misspelled vaulted as faulted for one file.
-            if basename.endswith(("aulted.yml", "aulted.yaml")):
-                continue
-
-            dirnames_by_basename[basename].append(dirname)
-
-    for basename, dirnames in dirnames_by_basename.items():
-        # There's nothing to check if a file is seen only once.
-        if len(dirnames) == 1:
-            continue
-
-        # For each top-level dict, track the dirname and keys for the
-        # first occurrence we come across.
-        dirname_and_keys_by_dictname = {}
-
-        # Sorting like this will put the root dirname, if any, up front,
-        # so comparisons can be against the root file, if there is one.
-        dirnames.sort(key=lambda d: (len(d.split("/")), d))
-
-        for dirname in dirnames:
-            path = os.path.join(dirname, basename)
-            with open(path) as fp:
-                data = yaml.load(fp)
-                for dictname, v in data.items():
-                    # Whitelist certain entries.
-                    if (basename, dictname) in whitelist:
-                        continue
-
-                    keys = set(v.keys())
-
-                    if dictname not in dirname_and_keys_by_dictname:
-                        dirname_and_keys_by_dictname[dictname] = (dirname, keys)
-                        continue
-
-                    root_dirname, root_keys = dirname_and_keys_by_dictname[dictname]
-                    if keys != root_keys:
-                        # Output looks like this:
-                        #   ansible/roles/common/vars/prod/eu-west-1/hub/infrastructure.properties.yml: dict 'saml' has inconsistent key set
-                        #   +--- ansible/roles/common/vars/infrastructure.properties.yml:
-                        #   | +- ansible/roles/common/vars/prod/eu-west-1/hub/infrastructure.properties.yml:
-                        #   Y Y contextProvider
-                        #   Y - jksKeyManager
-                        #   Y Y logoutFilter
-                        #   Y Y metaDataGenerator
-                        #   Y Y metaDataManager
-                        #   Y Y successHandler
-                        print >> sys.stderr, "%s: dict %r has inconsistent key set" % (path, dictname)
-                        print >> sys.stderr, "  +--- %s:" % os.path.join(root_dirname, basename)
-                        print >> sys.stderr, "  | +- %s:" % path
-                        for key in sorted(list(keys.union(root_keys))):
-                            in_root = "Y" if key in root_keys else "-"
-                            in_curr = "Y" if key in keys else "-"
-                            print >> sys.stderr, "  %s %s %s" % (in_root, in_curr, key)
-                        failed = True
-
-    return not failed
+def check_ansible(playbook):
+    p = Popen(["ansible-playbook", "--syntax-check", "-i", "localhost", '-vvv', playbook], stdin=PIPE, stdout=PIPE, stderr=PIPE, cwd='ansible')
+    output, err = p.communicate()
+    rc = p.returncode
+    return True if rc == 0 else False
 
 
 def main():
@@ -147,17 +31,15 @@ def main():
 
     failed = False
     for path in paths:
-        if not check_ansible(path):
-            failed = True
-
-    # 06.29.2018 ASP Removing this check as the configuration now is
-    # to mash dictionaries together
-
-    #if not check_ansible_inheritance(paths):
-    #    failed = True
+        print path
+        if root_prefix in path:
+            basename = os.path.basename(path)
+            playbook = 'playbooks/' + basename
+            if not check_ansible(playbook):
+                failed = True
 
     sys.exit(1 if failed else 0)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

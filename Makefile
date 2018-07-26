@@ -24,7 +24,6 @@ top: $(TARGET)
 # These tests only work when run in Bamboo:
 
 BAMBOO_TARGETS = .check.python \
-		.check.pyunit.bamboo \
 		.check.ruby \
 		$(EOL)
 
@@ -35,39 +34,30 @@ LOCAL_TARGETS = .check.ansible \
 		.check.cloudformation \
 		.check.copyright \
 		.check.erb \
-		.check.json \
-		.check.pyunit.local \
-		.check.unvaulted \
 		.check.yaml \
-		.check.vaulted \
 		$(EOL)
 
 # Build Group 1 - Python Bamboo
 GROUP_1 =   .check.python \
-			.check.pyunit.bamboo \
 			$(EOL)
 
 # Build Group 2 - Python Local
-GROUP_2 =   .check.pyunit.local \
+GROUP_2 =   .check.cloudformation \
 			$(EOL)
 
 # Build Group 3 - Everything else
 GROUP_3 = 	.check.ansible \
 			.check.bash \
-			.check.cloudformation \
 			.check.copyright \
 			.check.erb \
-			.check.json \
 			.check.ruby \
-			.check.unvaulted \
 			.check.yaml \
-			.check.vaulted \
 			$(EOL)
 
 # These directories contains python unit tests that can run locally.
 # The python unit tests in other directories might not work locally.
 
-PYUNIT_LOCAL_DIRS := ./ansible/roles/vault/files \
+PYUNIT_LOCAL_DIRS :=  \
 		./bamboo \
 		./lambda \
 		./tools \
@@ -210,7 +200,7 @@ retest.yaml: clean.yaml test.yaml
 
 ##############################################################################
 
-ANSIBLE_FILES := $(shell find ./ansible -name '*.yml' -o -name '*.yaml')
+ANSIBLE_FILES := $(shell find ./ansible/playbooks -name '*.yml' -o -name '*.yaml' -maxdepth 1)
 
 NUM_ANSIBLE_FILES=$(shell echo $(ANSIBLE_FILES) | wc -w)
 
@@ -228,28 +218,28 @@ NUM_BASH_FILES=$(shell echo $(BASH_FILES) | wc -w)
 	@./tools/check_bash $(BASH_FILES)
 	@touch $@
 
-DOCKER_FILES := $(shell find ./docker -name 'Dockerfile')
+#DOCKER_FILES := $(shell find ./docker -name 'Dockerfile')
+#
+#NUM_DOCKER_FILES=$(shell echo $(DOCKER_FILES) | wc -w)
+#
+#.check.docker: $(DOCKER_FILES) ./tools/check_docker
+#	@echo Checking $(NUM_DOCKER_FILES) docker files ...
+#	@./tools/check_docker $(DOCKER_FILES)
+#	@touch $@
 
-NUM_DOCKER_FILES=$(shell echo $(DOCKER_FILES) | wc -w)
+#JSON_FILES := $(shell find ./ansible/roles/ami-xgemail/files/cf_templates -name '*.json')
+#JSON_FILES += $(shell find ./ansible/roles/common/files/cf_templates  -name '*.json')
 
-.check.docker: $(DOCKER_FILES) ./tools/check_docker
-	@echo Checking $(NUM_DOCKER_FILES) docker files ...
-	@./tools/check_docker $(DOCKER_FILES)
-	@touch $@
-
-JSON_FILES := $(shell find ./cookbooks -name '*.json')
-JSON_FILES += $(shell find ./cf_templates -name '*.json')
-
-NUM_JSON_FILES=$(shell echo $(JSON_FILES) | wc -w)
+#NUM_JSON_FILES=$(shell echo $(JSON_FILES) | wc -w)
 
 #.check.packer:
 #	@echo Checking Packer Files
 #	cd packer && ./check_packer_files.sh
 
-.check.json: $(JSON_FILES) ./tools/check_json
-	@echo Checking $(NUM_JSON_FILES) json files ...
-	@./tools/check_json $(JSON_FILES)
-	@touch $@
+#.check.json: $(JSON_FILES) ./tools/check_json
+	#@echo Checking $(NUM_JSON_FILES) json files ...
+	#@./tools/check_json $(JSON_FILES)
+	#@touch $@
 
 PYTHON_FILES := $(shell find ./cookbooks -name '*.py')
 PYTHON_FILES += $(shell find ./hopper -name '*.py')
@@ -315,57 +305,12 @@ NUM_YAML_FILES=$(shell echo $(YAML_FILES) | wc -w)
 	@./tools/check_yaml $(YAML_FILES)
 	@touch $@
 
-CLOUDFORMATION_TEMPLATE_FILES  := $(shell find ansible/roles/ami-xgemail/files/cf_templates -name '*.json')
-CLOUDFORMATION_TEMPLATE_FILES += $(shell find ansible/roles/common/files/cf_templates -name '*.json')
+CLOUDFORMATION_TEMPLATE_FILES  := $(shell find ./ansible/roles/ami-xgemail/files/cf_templates -name '*.json')
+CLOUDFORMATION_TEMPLATE_FILES += $(shell find ./ansible/roles/common/files/cf_templates -name '*.json')
 
-# TODO: See comment in tools/check_cloudformation re scanning to find template and parameter files.
-.check.cloudformation: $(CLOUDFORMATION_TEMPLATE_FILES) $(CLOUDFORMATION_PARAMETER_FILES)
-	@echo Checking CloudFormation template and parameter files ...
-
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/delivery/xgemail_1a_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/delivery/xgemail_1b_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/delivery/xgemail_1c_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/delivery/xgemail_2a_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/delivery/xgemail_2b_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/delivery/xgemail_2c_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/delivery/xgemail_3a_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/delivery/xgemail_3b_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/delivery/xgemail_3c_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/delivery/xgemail_4a_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/delivery/xgemail_4b_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/delivery/xgemail_4c_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/internet-delivery/xgemail_1a_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/internet-delivery/xgemail_1b_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/internet-delivery/xgemail_1c_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/internet-delivery/xgemail_2a_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/internet-delivery/xgemail_2b_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/internet-delivery/xgemail_2c_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/internet-delivery/xgemail_3a_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/internet-delivery/xgemail_3b_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/internet-delivery/xgemail_3c_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/internet-delivery/xgemail_4a_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/internet-delivery/xgemail_4b_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/internet-delivery/xgemail_4c_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/submit/xgemail_1a_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/submit/xgemail_1b_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/submit/xgemail_1c_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/submit/xgemail_2a_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/submit/xgemail_2b_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/submit/xgemail_2c_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/customer-submit/xgemail_1a_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/customer-submit/xgemail_1b_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/customer-submit/xgemail_1c_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/customer-submit/xgemail_2a_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/customer-submit/xgemail_2b_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_instance_template.json email/customer-submit/xgemail_2c_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_xdelivery_template.json email/xdelivery/xgemail_1a_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_xdelivery_template.json email/xdelivery/xgemail_1b_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_xdelivery_template.json email/xdelivery/xgemail_1c_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_xdelivery_template.json email/internet-xdelivery/xgemail_1a_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_xdelivery_template.json email/internet-xdelivery/xgemail_1b_parameters.json
-	@./tools/check_cloudformation -w as_xgemail_xdelivery_template.json email/internet-xdelivery/xgemail_1c_parameters.json
-	@./tools/check_cloudformation -w vpc_template.json -
-	@./tools/check_cloudformation -w xgemail_messaging_template.json email/xgemail_messaging_parameters.json
+.check.cloudformation: $(CLOUDFORMATION_TEMPLATE_FILES)
+	@echo Checking CloudFormation template files ...
+	@./tools/check_cloudformation $(CLOUDFORMATION_TEMPLATE_FILES)
 	@touch $@
 
 CHEFSPEC_FILES := $(shell find ./cookbooks -name '*_spec.rb')
@@ -377,21 +322,16 @@ NUM_CHEFSPEC_FILES=$(shell echo $(CHEFSPEC_FILES) | wc -w)
 	@./tools/check_chefspec $(CHEFSPEC_FILES)
 	@touch $@
 
-COPYRIGHT_FILES := $(shell find ./cookbooks/sophos-cloud* -name '*.rb' \! -name 'metadata.rb')
-COPYRIGHT_FILES += $(shell find ./ -name '*.js')
-COPYRIGHT_FILES += $(shell find ./ -name '*_template.json')
-COPYRIGHT_FILES += $(shell find ./ -name '*.sh')
-COPYRIGHT_FILES += $(shell find ./ -name '*.py' \! \( -name '__init__.py' \
-	-or -name 'ec2.py' \
-	-or -name 'acm_handler.py' \
-	-or -name 'cfn_resource.py' \
-	-or -name 'cloudfront_cert_handler.py' \
-	-or -name 'kms_dba_script.py'\
-	-or -name 'admin_dba_script.py'\
-	-or -name 'aws_regions.py'\
-	-or -name 'cloudformation.py'\
-	-or -name 'elasticache_replica_group.py'\
-	\) )
+#COPYRIGHT_FILES := $(shell find ./cookbooks/sophos-cloud* -name '*.rb' \! -name 'metadata.rb')
+#COPYRIGHT_FILES += $(shell find ./ -name '*.js')
+#COPYRIGHT_FILES += $(shell find ./ -name '*_template.json')
+#COPYRIGHT_FILES += $(shell find ./ -name '*.sh')
+#COPYRIGHT_FILES += $(shell find ./ -name '*.py' \! \( -name '__init__.py' \
+#	-or -name 'ec2.py' \
+#	-or -name 'cfn_resource.py' \
+#	-or -name 'aws_regions.py'\
+#	-or -name 'cloudformation.py'\
+#	\) )
 
 NUM_COPYRIGHT_FILES=$(shell echo $(COPYRIGHT_FILES) | wc -w)
 
@@ -399,24 +339,6 @@ NUM_COPYRIGHT_FILES=$(shell echo $(COPYRIGHT_FILES) | wc -w)
 	@echo Checking $(NUM_COPYRIGHT_FILES) files for copyright ...
 	@./tools/check_copyright.py $(COPYRIGHT_FILES)
 	@touch $@
-
-#VAULTED_FILES := $(shell find ./ansible -iname \*_vaulted.yml -or -iname \*_vaulted.yaml)
-
-#NUM_VAULTED_FILES=$(shell echo "$(VAULTED_FILES)" | wc -w)
-
-#UNVAULTED_FILES := $(shell find ./ansible -iname \*.yml)
-
-#NUM_UNVAULTED_FILES=$(shell echo "$(UNVAULTED_FILES)" | wc -w)
-
-#.check.vaulted: $(VAULTED_FILES) ./tools/check_vaulted.py
-#	@echo Checking $(NUM_VAULTED_FILES) vaulted files to make sure they are encrypted ...
-#	@./tools/check_vaulted.py $(VAULTED_FILES)
-#	@touch $@
-
-#.check.unvaulted: $(UNVAULTED_FILES) ./tools/check_unvaulted.py
-#	@echo Checking $(NUM_UNVAULTED_FILES) files for leaking secrets or password ...
-#	@./tools/check_unvaulted.py $(UNVAULTED_FILES)
-#	@touch $@
 
 clean:
 	rm -f .check.*
