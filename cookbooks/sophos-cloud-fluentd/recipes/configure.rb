@@ -25,27 +25,27 @@ if NODE_TYPE    == 'delivery'
   SERVER_TYPE           = 'CUSTOMER_DELIVERY'
   SERVER_TYPE_XDELIVERY = 'CUSTOMER_XDELIVERY'
   DIRECTION             = 'INBOUND'
-  REDIRECTION_DSN       = '5.4.7'
+  NON_DELIVERY_DSN      = '5.4.7'
 elsif NODE_TYPE == 'xdelivery'
   SERVER_TYPE           = 'CUSTOMER_XDELIVERY'
   SERVER_TYPE_XDELIVERY = 'UNKNOWN'
   DIRECTION             = 'INBOUND'
-  REDIRECTION_DSN       = '5.4.7'
+  NON_DELIVERY_DSN       = '5.4.7'
 elsif NODE_TYPE == 'internet-xdelivery'
   SERVER_TYPE           = 'INTERNET_XDELIVERY'
   SERVER_TYPE_XDELIVERY = 'UNKNOWN'
   DIRECTION             = 'OUTBOUND'
-  REDIRECTION_DSN       = '5.4.7'
+  NON_DELIVERY_DSN       = '5.4.7'
 elsif NODE_TYPE == 'internet-delivery'
   SERVER_TYPE_XDELIVERY = 'INTERNET_XDELIVERY'
   SERVER_TYPE           = 'INTERNET_DELIVERY'
   DIRECTION             = 'OUTBOUND'
-  REDIRECTION_DSN       = '5.4.7'
+  NON_DELIVERY_DSN       = '5.4.7'
 else
   SERVER_TYPE           = 'UNKNOWN'
   SERVER_TYPE_XDELIVERY = 'UNKNOWN'
   DIRECTION             = 'UNKNOWN'
-  REDIRECTION_DSN       = 'UNKNOWN'
+  NON_DELIVERY_DSN       = 'UNKNOWN'
 end
 
 # All instances - Start Order: 10
@@ -272,7 +272,7 @@ template 'fluentd-filter-transform-msg-delivery' do
     :server_ip => SERVER_IP,
     :server_type_xdelivery => SERVER_TYPE_XDELIVERY,
     :direction => DIRECTION,
-    :redirection_dsn => REDIRECTION_DSN
+    :non_delivery_dsn => NON_DELIVERY_DSN
   )
  only_if {
             NODE_TYPE == 'delivery' ||
@@ -290,6 +290,7 @@ template 'fluentd-match-sns-msg-delivery' do
   owner 'root'
   group 'root'
   variables(
+    :main_dir => MAIN_DIR,
     :region => REGION,
     :sns_topic => DELIVERY_STATUS_SNS_TOPIC
   )
