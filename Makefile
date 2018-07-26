@@ -12,7 +12,7 @@
 # We should add checks for shell scripts, python files, js files,
 # and run unit tests too.
 
-.PHONY: top check local clean group1 group2 group3
+.PHONY: top check local clean group1 group2 group3 group4
 
 # Make the default target on laptops the local one that does not have Bamboo
 # dependencies.  Hopefully this won't lead to unpleasant surprises.
@@ -23,13 +23,13 @@ top: $(TARGET)
 
 # These tests only work when run in Bamboo:
 
-BAMBOO_TARGETS = .check.python \
+BAMBOO_TARGETS = 	.check.python \
 		.check.ruby \
 		$(EOL)
 
 # These tests work when run locally:
 
-LOCAL_TARGETS = .check.ansible \
+LOCAL_TARGETS = 	.check.ansible \
 		.check.bash \
 		.check.cloudformation \
 		.check.copyright \
@@ -38,12 +38,11 @@ LOCAL_TARGETS = .check.ansible \
 		$(EOL)
 
 # Build Group 1 - Python Bamboo
-GROUP_1 =   .check.python \
+GROUP_1 = 	.check.python \
 			$(EOL)
 
 # Build Group 2 - Python Local
-GROUP_2 =   .check.cloudformation \
-      .check.ansible \
+GROUP_2 = 	.check.cloudformation \
 			$(EOL)
 
 # Build Group 3 - Everything else
@@ -52,6 +51,10 @@ GROUP_3 = 	.check.bash \
 			.check.erb \
 			.check.ruby \
 			.check.yaml \
+			$(EOL)
+
+# Build Group 4 - Ansible
+GROUP_4 = 	.check.ansible \
 			$(EOL)
 
 # These directories contains python unit tests that can run locally.
@@ -76,6 +79,9 @@ group2: clean $(GROUP_2)
 	@echo OK
 
 group3: clean $(GROUP_3)
+	@echo OK
+
+group4: clean $(GROUP_4)
 	@echo OK
 
 # Use this target to run checks that don't depend on Bamboo.
