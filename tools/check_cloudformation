@@ -14,7 +14,8 @@ import sys
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 
-cfn = boto3.client('cloudformation')
+cfn = boto3.client('cloudformation', region_name='us-west-2')
+""":type: pyboto3.cloudformation """
 
 
 def check_cloudformation(path):
