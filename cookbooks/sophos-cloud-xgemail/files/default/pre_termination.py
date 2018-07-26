@@ -231,7 +231,7 @@ def main():
     postfix_instance = get_postfix_instance()
     logger.info("Postfix Instance: %s" % postfix_instance)
     if postfix_instance == 'postfix-cd':
-        if stop_sqs_consumer(args.service) is False:
+        if stop_sqs_consumer(args.service, args.alarm_topic_arn) is False:
             logger.error("Unable to continue. There is a problem with the Xgemail SQS Consumer Service.")
             sys.exit(1)
     queue_check = check_postfix_queue(postfix_instance)
