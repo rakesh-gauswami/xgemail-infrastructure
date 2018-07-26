@@ -43,11 +43,11 @@ GROUP_1 =   .check.python \
 
 # Build Group 2 - Python Local
 GROUP_2 =   .check.cloudformation \
+      .check.ansible \
 			$(EOL)
 
 # Build Group 3 - Everything else
-GROUP_3 = 	.check.ansible \
-			.check.bash \
+GROUP_3 = 	.check.bash \
 			.check.copyright \
 			.check.erb \
 			.check.ruby \
