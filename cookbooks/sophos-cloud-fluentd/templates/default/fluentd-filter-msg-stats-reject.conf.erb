@@ -37,7 +37,7 @@
   reserve_time true
   <parse>
     @type regexp
-    expression /^(?<host>[^ ]+) (?<process>[^ ]+): (?<qid>[^ ]+): (?<action>[^ ]+): (?<msg>[^ ]+ from (?<sender_host>[^ ]+)\[(?<sender_ip>[^ ]+)\]: (?<code>[^;]+); from=<(?<sender_address>(?<sender>[^>]+)@(?<sender_domain>\S*))> to=<(?<rcpt_address>(?<rcpt>[^>]+)@(?<rcpt_domain>\S*))> proto=(?<proto>[^ ]+) helo=<(?<helo_address>[^>]+)>)/
+    expression /^(?<host>[^ ]+) (?<process>[^ ]+): (?<qid>[^ ]+): (?<action>[^ ]+): (?<msg>[^ ]+ from (?<sender_host>[^ ]+)\[(?<sender_ip>[^ ]+)\]: (?<code>[^;]+); from=<(?<sender_address>((?<sender>[^>]+)@(?<sender_domain>\S*))|.*)> to=<(?<rcpt_address>(?<rcpt>[^>]+)@(?<rcpt_domain>\S*))> proto=(?<proto>[^ ]+) helo=<(?<helo_address>[^>]+)>)/
   </parse>
 </filter>
 
