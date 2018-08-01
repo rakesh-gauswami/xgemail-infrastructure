@@ -1,0 +1,26 @@
+---
+- name: "Deploy Kinesis Firehose Log Shipper {{stack.kinesis.ssm_documents}} to {{account.name}}-{{account.region}}"
+  cloudformation:
+    stack_name:              "{{stack.ssm.ssm_documents}}"
+    state:                   present
+    region:                  "{{account.region}}"
+    disable_rollback:        true
+    template:                "{{template.ssm.ssm_xgemail_document_template}}"
+    template_parameters:
+      BufferingHintIntervalInSeconds:         "60"
+      BufferingHintSizeInMBs:                 "50"
+      CompressionFormat:                      "UNCOMPRESSED"
+      DeliveryRoleArn:                        "{{iam.role.arn_prefix}}{{iam.role.firehose_log_shipper_stream}}"
+      DeliveryStreamName:                     "{{iam.role.firehose_log_shipper_stream}}"
+      S3BucketName:                           "{{s3.logs_bucket}}"
+      S3BucketPrefix:                         "msg-logs"
+  register: log_shipper_firehose_stack
+
+- debug:
+    var: log_shipper_firehose_stack
+    verbosity: 3
+
+- name: "Display Kinesis Firehose Log Shipper Stack Output"
+  debug:
+    msg: "{{log_shipper_firehose_stack.stack_outputs}}"
+    verbosity: 2

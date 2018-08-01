@@ -1,0 +1,78 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "IAM policy for firehose to publish to S3.",
+
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2018, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ]
+  },
+
+  "Parameters": {
+    "BucketName": {
+      "Description" : "S3 Bucket to which to grant Firehose stream access",
+      "Type" : "String"
+    },
+    "RoleNames" : {
+      "Description" : "Roles to which this policy should be attached",
+      "Type" : "CommaDelimitedList"
+    }
+  },
+
+  "Resources": {
+    "Policy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid":"BucketPermissions",
+              "Effect": "Allow",
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:ListBucket",
+                "s3:ListBucketMultipartUploads"
+              ],
+              "Resource": [
+                {"Fn::Join": ["", ["arn:aws:s3:::", { "Ref":"BucketName" }]]}
+              ]
+            },
+            {
+              "Sid":"ObjectPermissions",
+              "Effect": "Allow",
+              "Action": [
+                "s3:AbortMultipartUpload",
+                "s3:GetObject",
+                "s3:PutObject"
+              ],
+              "Resource": [
+                {"Fn::Join": ["", ["arn:aws:s3:::", { "Ref":"BucketName" }, "/*"]]}
+              ]
+            }
+          ]
+        },
+        "PolicyName": {
+          "Fn::Join": ["-", [
+            "FirehosePublishToS3",
+            {"Ref": "AWS::Region"}
+          ]]
+        },
+        "Roles": { "Ref": "RoleNames" }
+      }
+    }
+  },
+
+  "Outputs": {
+    "Name": {
+      "Description": "Resource name",
+      "Value": { "Ref": "Policy" }
+    }
+  }
+}

@@ -10,6 +10,7 @@
     src:                "{{template.iam.roles_xgemail_template}}"
     overwrite:          always
 
+# CloudEmail IAM Roles
 - name: "Deploy {{stack.iam.cloud_email_roles}} to {{account.name}} {{account.region}}"
   cloudformation:
     stack_name:                                 "{{stack.iam.cloud_email_roles}}"
@@ -26,6 +27,16 @@
       XgemailCustomerSubmitBucketName:          "{{s3.customer_submit_bucket}}"
   register: iam_stack
 
+  - debug:
+    var: iam_stack
+    verbosity: 3
+
+  - name: "Display IAM Stack Output"
+  debug:
+    msg: "{{iam_stack.stack_outputs}}"
+    verbosity: 2
+
+# IAM Policy for read only access to Customer Submit S3 Bucket
 - name: "Upload the config file for {{stack.iam.cloud_station_api_cs_s3_ro_policy}} to the config bucket {{cloud_applications}}"
   s3:
     mode:               put
@@ -50,14 +61,55 @@
   register: region_iam_stack
 
 - debug:
-    var: iam_stack
-    verbosity: 3
-
-- debug:
     var: region_iam_stack
     verbosity: 3
 
-- name: "Display IAM Stack Output"
+- name: "Display Region IAM Stack Output"
   debug:
-    msg: "{{iam_stack.stack_outputs}}"
+    msg: "{{region_iam_stack.stack_outputs}}"
+    verbosity: 2
+
+# IAM Role for Kinesis Firehose Delivery Stream
+- name: "Deploy Kinesis Firehose Log Shipper IAM Role {{stack.iam.firehose_log_shipper_stream}} to {{account.name}}-{{account.region}}"
+  cloudformation:
+    stack_name:              "{{stack.iam.firehose_log_shipper_stream}}"
+    state:                   present
+    region:                  "{{account.region}}"
+    disable_rollback:        true
+    template:                "{{template.iam.roles_simple_template}}"
+    template_parameters:
+      RoleName:              "{{iam.role.firehose_log_shipper_stream}}"
+      RolePath:              "/"
+      TrustedServices:       "firehose.amazonaws.com"
+  register: log_shipper_role_stack
+
+- debug:
+    var: log_shipper_role_stack
+    verbosity: 3
+
+- name: "Display Kinesis Firehose Log Shipper IAM Role Stack Output"
+  debug:
+    msg: "{{log_shipper_role_stack.stack_outputs}}"
+    verbosity: 2
+
+# IAM Policy for Kinesis Firehose Delivery Stream
+- name: "Deploy Kinesis Firehose Log Shipper IAM Policy {{stack.iam.policies.firehose_log_shipper_stream}} to {{account.name}}-{{account.region}}"
+  cloudformation:
+    stack_name:              "{{stack.iam.policies.firehose_log_shipper_stream}}"
+    state:                   present
+    region:                  "{{account.region}}"
+    disable_rollback:        true
+    template:                "{{template.iam.policy_firehose_publish_to_s3_template}}"
+    template_parameters:
+      BucketName:            "{{s3.logs_bucket}}"
+      RoleNames:             "{{iam.role.firehose_log_shipper_stream}}"
+  register: log_shipper_policy_stack
+
+- debug:
+    var: log_shipper_policy_stack
+    verbosity: 3
+
+- name: "Display Kinesis Firehose Log Shipper IAM Policy Stack Output"
+  debug:
+    msg: "{{log_shipper_policy_stack.stack_outputs}}"
     verbosity: 2

@@ -1,0 +1,131 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Firehose stream to S3",
+
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2018, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ]
+  },
+
+  "Parameters": {
+
+    "BufferingHintIntervalInSeconds" : {
+      "Description": "The length of time, in seconds, that Kinesis Firehose buffers incoming data before delivering it to the destination.",
+      "Type": "Number",
+      "MinValue": "60",
+      "MaxValue": "900"
+    },
+
+    "BufferingHintSizeInMBs" : {
+      "Description": "Buffer incoming data to the specified size, in MBs, before delivering it to the destination.",
+      "Type": "Number",
+      "MinValue": "1",
+      "MaxValue": "128"
+    },
+
+    "CompressionFormat" : {
+      "Description": "The compression format.",
+      "Type": "String",
+      "AllowedValues" : [
+        "UNCOMPRESSED",
+        "GZIP",
+        "ZIP",
+        "Snappy"
+      ],
+      "Default": "UNCOMPRESSED"
+    },
+
+    "DeliveryRoleArn" : {
+      "Description": "Role that allows Firehose to dump files to S3 bucket",
+      "Type": "String"
+    },
+
+    "DeliveryStreamName" : {
+      "Description": "Stream name",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "64"
+    },
+
+    "S3BucketName" : {
+      "Description": "Name of S3 bucket where messages are dumped",
+      "Type": "String"
+    },
+
+    "S3BucketPrefix" : {
+      "Description": "Path inside S3 where firehose will dump files",
+      "Type": "String"
+    },
+
+    "TransformLambdaArn" : {
+      "Description": "Optional Lambda to transform raw events",
+      "Type": "String",
+      "Default": ""
+    }
+  },
+
+  "Conditions": {
+    "HasTransformLambda": {
+      "Fn::Not": [
+        { "Fn::Equals": [ { "Ref": "TransformLambdaArn" }, "" ] }
+      ]
+    }
+  },
+
+  "Resources": {
+    "DeliveryStream": {
+      "Type": "AWS::KinesisFirehose::DeliveryStream",
+      "Properties": {
+        "DeliveryStreamName" : { "Ref": "DeliveryStreamName" },
+        "ExtendedS3DestinationConfiguration" : {
+          "BucketARN": {"Fn::Join": ["", ["arn:aws:s3:::", { "Ref":"S3BucketName" }]]},
+          "BufferingHints": {
+            "IntervalInSeconds": { "Ref": "BufferingHintIntervalInSeconds" },
+            "SizeInMBs": { "Ref": "BufferingHintSizeInMBs" }
+          },
+          "CompressionFormat": { "Ref": "CompressionFormat" },
+          "Prefix": { "Ref": "S3BucketPrefix" },
+          "RoleARN": { "Ref" : "DeliveryRoleArn" },
+          "ProcessingConfiguration" : {
+            "Fn::If": [
+              "HasTransformLambda",
+              {
+                "Enabled": "true",
+                "Processors": [
+                  {
+                    "Parameters": [
+                      {
+                        "ParameterName": "LambdaArn",
+                        "ParameterValue": { "Ref":"TransformLambdaArn" }
+                      }
+                    ],
+                    "Type": "Lambda"
+                  }
+                ]
+              },
+              { "Ref": "AWS::NoValue" }
+            ]
+          }
+        }
+      }
+    }
+  },
+
+  "Outputs": {
+    "Name": {
+      "Description": "Name of this delivery stream",
+      "Value": { "Ref" : "DeliveryStreamName" }
+    },
+    "PhysicalId": {
+      "Description": "Ref returns the delivery stream physical id",
+      "Value": { "Ref" : "DeliveryStream" }
+    }
+  }
+}

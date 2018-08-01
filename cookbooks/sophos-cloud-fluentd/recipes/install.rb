@@ -133,10 +133,10 @@ execute 'install td-agent fluent-plugin-grok-parser' do
   EOH
 end
 
-execute 'install td-agent fluent-plugin-multi-format-parser' do
+execute 'install td-agent fluent-plugin-kinesis' do
   user 'root'
   command <<-EOH
-      td-agent-gem install fluent-plugin-multi-format-parser
+      td-agent-gem install fluent-plugin-kinesis
   EOH
 end
 

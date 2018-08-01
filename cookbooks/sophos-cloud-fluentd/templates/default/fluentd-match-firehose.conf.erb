@@ -1,0 +1,12 @@
+<match match sophos.xgemail.**>
+  @type kinesis_firehose
+  region <%= @region %>
+  delivery_stream_name <%= @firehose_stream %>
+  <format>
+    @type json
+  </format>
+  <inject>
+    time_key time
+    tag_key tag
+  </inject>
+</match>
