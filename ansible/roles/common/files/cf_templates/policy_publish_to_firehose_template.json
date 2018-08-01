@@ -1,0 +1,68 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "IAM policy to publish to firehose.",
+
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2018, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ]
+  },
+
+  "Parameters": {
+    "FirehoseStreamArn": {
+      "Description" : "Arn of the Firehose stream",
+      "Type" : "String"
+    },
+    "RoleNames" : {
+      "Description" : "Roles to which this policy should be attached",
+      "Type" : "CommaDelimitedList"
+    },
+    "PolicyName" : {
+      "Description" : "IAM Policy Name",
+      "Type" : "String"
+    }
+  },
+
+  "Resources": {
+    "Policy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": [
+                "firehose:DescribeDeliveryStream"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            },
+            {
+              "Action": [
+                "firehose:PutRecord",
+                "firehose:PutRecordBatch"
+              ],
+              "Effect": "Allow",
+              "Resource": { "Ref": "FirehoseStreamArn" }
+            }
+          ]
+        },
+        "PolicyName": { "Ref": "PolicyName" },
+        "Roles": { "Ref": "RoleNames" }
+      }
+    }
+  },
+
+  "Outputs": {
+    "Name": {
+      "Description": "Resource name",
+      "Value": { "Ref": "Policy" }
+    }
+  }
+}

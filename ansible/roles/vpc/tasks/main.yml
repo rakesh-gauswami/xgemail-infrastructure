@@ -35,6 +35,11 @@
   tags:
     - vpc
 
+- name: "Include CloudEmail VPC IAM Policies Creation Task."
+  include_tasks: iam-policies.yml
+  tags:
+    - vpc
+
 - name: "Include CloudEmail VPC SQS Queues Creation Task."
   include_tasks: sqs-queues.yml
   tags:

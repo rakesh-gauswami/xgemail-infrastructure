@@ -1,19 +1,19 @@
 ---
-- name: "Deploy Kinesis Firehose Log Shipper {{stack.kinesis.firehose_log_shipper_stream}} to {{account.name}}-{{account.region}}"
+- name: "Deploy Kinesis Firehose Log Shipper {{stack.kinesis.firehose.firehose_log_shipper_stream}} to {{account.name}}-{{account.region}}"
   cloudformation:
-    stack_name:              "{{stack.kinesis.firehose_log_shipper_stream}}"
+    stack_name:              "{{stack.kinesis.firehose.firehose_log_shipper_stream}}"
     state:                   present
     region:                  "{{account.region}}"
     disable_rollback:        true
-    template:                "{{template.kinesis.firehose_log_to_s3_template}}"
+    template:                "{{template.kinesis.firehose.firehose_log_to_s3_template}}"
     template_parameters:
       BufferingHintIntervalInSeconds:         "60"
       BufferingHintSizeInMBs:                 "50"
       CompressionFormat:                      "UNCOMPRESSED"
       DeliveryRoleArn:                        "{{iam.role.arn_prefix}}{{iam.role.firehose_log_shipper_stream}}"
-      DeliveryStreamName:                     "{{kinesis.firehose_log_shipper_stream}}"
+      DeliveryStreamName:                     "{{kinesis.firehose.firehose.firehose_log_shipper_stream}}"
       S3BucketName:                           "{{s3.logs_bucket}}"
-      S3BucketPrefix:                         "msg-logs"
+      S3BucketPrefix:                         "msg-logs/"
   register: log_shipper_firehose_stack
 
 - debug:
