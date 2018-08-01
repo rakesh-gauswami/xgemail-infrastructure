@@ -11,7 +11,7 @@
       BufferingHintSizeInMBs:                 "50"
       CompressionFormat:                      "UNCOMPRESSED"
       DeliveryRoleArn:                        "{{iam.role.arn_prefix}}{{iam.role.firehose_log_shipper_stream}}"
-      DeliveryStreamName:                     "{{kinesis.firehose.firehose.firehose_log_shipper_stream}}"
+      DeliveryStreamName:                     "{{kinesis.firehose.firehose_log_shipper_stream}}"
       S3BucketName:                           "{{s3.logs_bucket}}"
       S3BucketPrefix:                         "msg-logs/"
   register: log_shipper_firehose_stack
