@@ -95,7 +95,7 @@ def load_multi_policy_file_from_S3(aws_region, policy_bucket_name, file_name):
         awshandler = AwsHandler(aws_region)
         s3_data = awshandler.download_data_from_s3(policy_bucket_name, file_name)
         decompressed_content = policyformatter.get_policy_binary(s3_data)
-        logger.debug("Successfully retrieved policy file from S3 bucket [{0}] for file [{2}]".format(
+        logger.debug("Successfully retrieved policy file from S3 bucket [{0}] for file [{1}]".format(
             policy_bucket_name,
             file_name
         ))
