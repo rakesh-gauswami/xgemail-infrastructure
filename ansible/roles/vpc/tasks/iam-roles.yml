@@ -27,11 +27,11 @@
       XgemailCustomerSubmitBucketName:          "{{s3.customer_submit_bucket}}"
   register: iam_stack
 
-  - debug:
-    var: iam_stack
-    verbosity: 3
+- debug:
+  var: iam_stack
+  verbosity: 3
 
-  - name: "Display IAM Stack Output"
+- name: "Display IAM Stack Output"
   debug:
     msg: "{{iam_stack.stack_outputs}}"
     verbosity: 2
