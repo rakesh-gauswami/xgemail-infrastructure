@@ -40,6 +40,7 @@ from logging.handlers import SysLogHandler
 AWS_REGION = "<%= @sqs_msg_producer_aws_region %>"
 MSG_HISTORY_BUCKET_NAME = "<%= @sqs_msg_producer_msg_history_s3_bucket_name %>"
 MSG_HISTORY_SQS_URL = "<%= @sqs_msg_producer_msg_history_sqs_url %>"
+POLCIY_S3_BUCKET_NAME = "<%= @sqs_msg_producer_policy_s3_bucket_name %>"
 PROCESS_TIMEOUT_SECONDS = <%= @sqs_msg_producer_process_timeout_seconds %>
 SUBMIT_TYPE = "<%= @xgemail_submit_type %>"
 S3_ENCRYPTION_ALGORITHM = "<%= @s3_encryption_algorithm %>"
@@ -459,7 +460,7 @@ def base_policy_flow(metadata, direction, domain, sender, compressed_message):
 # fall back to base_policy_flow.
 def multi_policy_flow(metadata, direction, domain, sender, compressed_message):
     recipients = metadata.get_recipients()
-    policy_list = multipolicyreaderutils.build_policy_map(recipients)
+    policy_list = multipolicyreaderutils.build_policy_map(recipients, AWS_REGION, POLCIY_S3_BUCKET_NAME)
     if not policy_list:
         return base_policy_flow(metadata, direction, domain, sender, compressed_message)
 
