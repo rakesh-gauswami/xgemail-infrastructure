@@ -305,16 +305,15 @@ end
 
 
 # All instances - Start Order: 99
-template 'fluentd-match-s3' do
-  path "#{CONF_DIR}/99-match-s3.conf"
-  source 'fluentd-match-s3.conf.erb'
+template 'fluentd-match-firehose' do
+  path "#{CONF_DIR}/99-match-firehose.conf"
+  source 'fluentd-match-firehose.conf.erb'
   mode '0644'
   owner 'root'
   group 'root'
   variables(
     :account => ACCOUNT,
-    :region => REGION,
-    :instance_id => INSTANCE_ID
+    :region => REGION
   )
 end
 
