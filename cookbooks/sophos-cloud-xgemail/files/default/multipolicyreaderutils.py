@@ -22,7 +22,7 @@ MULTI_POLICY_DOMAINS_PATH = 'config/policies/domains/'
 EFS_MULTI_POLICY_DOMAINS_PATH = EFS_POLICY_STORAGE_PATH + MULTI_POLICY_DOMAINS_PATH
 EFS_MULTI_POLICY_CONFIG_PATH = EFS_POLICY_STORAGE_PATH + 'config/inbound-relay-control/multi-policy/'
 EFS_MULTI_POLICY_CONFIG_FILE = EFS_MULTI_POLICY_CONFIG_PATH + 'global.CONFIG'
-FLAG_TO_READ_POLICY_FROM_S3_FILE = EFS_MULTI_POLICY_CONFIG_PATH + 'read_policy_from_s3_global.CONFIG'
+FLAG_TO_READ_POLICY_FROM_S3_FILE = EFS_MULTI_POLICY_CONFIG_PATH + 'msg_producer_read_policy_from_s3_global.CONFIG'
 
 logger = logging.getLogger('multi-policy-reader-utils')
 logger.setLevel(logging.INFO)
