@@ -1,7 +1,7 @@
 <match match sophos.xgemail.**>
   @type kinesis_firehose
   region <%= @region %>
-  delivery_stream_name <%= @firehose_stream %>
+  delivery_stream_name firehose-log-shipper-stream-<%= @region %>-CloudEmail
   <format>
     @type json
   </format>

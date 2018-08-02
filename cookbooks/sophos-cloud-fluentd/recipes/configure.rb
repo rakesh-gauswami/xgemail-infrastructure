@@ -312,7 +312,6 @@ template 'fluentd-match-firehose' do
   owner 'root'
   group 'root'
   variables(
-    :account => ACCOUNT,
     :region => REGION
   )
 end
