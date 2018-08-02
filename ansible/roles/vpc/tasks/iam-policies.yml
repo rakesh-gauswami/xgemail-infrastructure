@@ -54,16 +54,16 @@
     template:                "{{template.iam.policy.policy_publish_to_firehose_template}}"
     template_parameters:
       FirehoseStreamArn:     "{{kinesis.firehose.arn_prefix}}{{kinesis.firehose.firehose_log_shipper_stream}}"
-      RoleNames:             |
-                             "{{cloud_station_iam_region_output.ansible_facts.cloudformation[stack.iam.role.cloud_station_region_roles].stack_outputs.XgemailInstRole}},
-                              {{cloud_station_iam_region_output.ansible_facts.cloudformation[stack.iam.role.cloud_station_region_roles].stack_outputs.XgemailInboundInstRole}},
-                              {{cloud_station_iam_region_output.ansible_facts.cloudformation[stack.iam.role.cloud_station_region_roles].stack_outputs.XgemailOutboundInstRole}},
-                              {{iam_stack.stack_outputs.XgemailSubmitInstanceRole}},
-                              {{iam_stack.stack_outputs.XgemailCustomerSubmitInstanceRole}},
-                              {{iam_stack.stack_outputs.XgemailDeliveryInstanceRole}},
-                              {{iam_stack.stack_outputs.XgemailInternetDeliveryInstanceRole}},
-                              {{iam_stack.stack_outputs.XgemailXdeliveryInstanceRole}},
-                              {{iam_stack.stack_outputs.XgemailInternetXdeliveryInstanceRole}}"
+      RoleNames:             >
+                             {{cloud_station_iam_region_output.ansible_facts.cloudformation[stack.iam.role.cloud_station_region_roles].stack_outputs.XgemailInstRole}},
+                             {{cloud_station_iam_region_output.ansible_facts.cloudformation[stack.iam.role.cloud_station_region_roles].stack_outputs.XgemailInboundInstRole}},
+                             {{cloud_station_iam_region_output.ansible_facts.cloudformation[stack.iam.role.cloud_station_region_roles].stack_outputs.XgemailOutboundInstRole}},
+                             {{iam_stack.stack_outputs.XgemailSubmitInstanceRole}},
+                             {{iam_stack.stack_outputs.XgemailCustomerSubmitInstanceRole}},
+                             {{iam_stack.stack_outputs.XgemailDeliveryInstanceRole}},
+                             {{iam_stack.stack_outputs.XgemailInternetDeliveryInstanceRole}},
+                             {{iam_stack.stack_outputs.XgemailXdeliveryInstanceRole}},
+                             {{iam_stack.stack_outputs.XgemailInternetXdeliveryInstanceRole}}
       PolicyName:            "{{iam.policy.policy_publish_to_firehose}}"
   register: log_shipper_policy_stack
 
