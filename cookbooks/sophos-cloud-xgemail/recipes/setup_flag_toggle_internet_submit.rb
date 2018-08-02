@@ -18,6 +18,11 @@ end
 POLICY_STORAGE_PATH = node['xgemail']['policy_efs_mount_dir']
 XGEMAIL_FILES_DIR     = node['xgemail']['xgemail_files_dir']
 
+
+=begin
+setup script used to toggle 'multi policy' toggle
+=end
+
 MULTI_POLICY_TOGGLE_PACKAGE_DIR = "#{XGEMAIL_FILES_DIR}/multi-policy-flag-toggle"
 MULTI_POLICY_TOGGLE_SCRIPT_NAME = 'xgemail.multi.policy.flag.toggle.py'
 MULTI_POLICY_TOGGLE_SCRIPT_PATH = "#{MULTI_POLICY_TOGGLE_PACKAGE_DIR}/#{MULTI_POLICY_TOGGLE_SCRIPT_NAME}"
