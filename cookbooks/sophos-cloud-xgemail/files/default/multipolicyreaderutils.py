@@ -14,6 +14,7 @@ import logging
 import base64
 from awshandler import AwsHandler
 import policyformatter
+import time
 from logging.handlers import SysLogHandler
 
 #Constants
@@ -41,10 +42,17 @@ it will read the policy from s3. Otherwise policy will be read locally via mount
 def build_policy_map(recipients, awsregion = None, policy_bucket_name = None, policies = {}):
     read_from_s3 = get_read_from_s3_enabled()
     policy_list = policies.copy()
+
     if (awsregion and policy_bucket_name and read_from_s3):
         logger.debug("Reading policy for [{0}] directly from s3".format(recipients))
         for recipient in recipients:
+            begin_time = time.time()
             customer_policy = read_policy_from_S3(recipient, awsregion, policy_bucket_name)
+            
+            elapsed_time = time.time() - begin_time
+            elapsed_time = elapsed_time * 1000
+
+            logger.debug("Policy_Read result returned in {0} ms".format(elapsed_time))
             if not customer_policy:
                 return None
 
@@ -54,7 +62,15 @@ def build_policy_map(recipients, awsregion = None, policy_bucket_name = None, po
     else:
         logger.debug("Reading policy for [{0}] directly from EFS".format(recipients))
         for recipient in recipients:
+            begin_time = time.time()
+
             customer_policy = read_policy_from_EFS(recipient)
+
+            elapsed_time = time.time() - begin_time
+            elapsed_time = elapsed_time * 1000
+
+            logger.debug("Policy_Read result returned in {0} ms".format(elapsed_time))
+
             if not customer_policy:
                 return None
 
