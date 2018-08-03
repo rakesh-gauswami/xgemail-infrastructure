@@ -1,0 +1,77 @@
+# IAM Policy for read only access to Customer Submit S3 Bucket.
+- name: "Create {{stack.iam.policy.cloud_station_api_cs_s3_ro_policy}} to {{account.name}} {{account.region}}"
+  cloudformation:
+    stack_name:                                 "{{stack.iam.policy.cloud_station_api_cs_s3_ro_policy}}"
+    state:                                      present
+    region:                                     "{{account.region}}"
+    disable_rollback:                           true
+    template:                                   "{{template.iam.policy.policy_s3_ro_template}}"
+    template_parameters:
+      Environment:                              "{{account.name}}"
+      ApiInstRole:                              "{{cloud_station_iam_region_output.ansible_facts.cloudformation[stack.iam.role.cloud_station_region_roles].stack_outputs.ApiInstRole}}"
+      PolicyName:                               "{{iam.policy.cloud_station_api_cs_s3_ro_policy}}"
+      XgemailBucketName:                        "{{s3.customer_submit_bucket}}"
+  register: api_cs_s3_ro_policy_stack
+
+- debug:
+    var: api_cs_s3_ro_policy_stack
+    verbosity: 3
+
+- name: "Display Api Customer Submit Bucket Read Only Policy Stack Output"
+  debug:
+    msg: "{{api_cs_s3_ro_policy_stack.stack_outputs}}"
+    verbosity: 2
+
+# IAM Policy for Kinesis Firehose Delivery Stream to S3
+- name: "Deploy Kinesis Firehose Log Shipper to S3 IAM Policy {{stack.iam.policy.firehose_log_shipper_stream}} to {{account.name}}-{{account.region}}"
+  cloudformation:
+    stack_name:              "{{stack.iam.policy.firehose_log_shipper_stream}}"
+    state:                   present
+    region:                  "{{account.region}}"
+    disable_rollback:        true
+    template:                "{{template.iam.policy.policy_firehose_publish_to_s3_template}}"
+    template_parameters:
+      BucketName:            "{{s3.logs_bucket}}"
+      RoleNames:             "{{iam.role.firehose_log_shipper_stream}}"
+  register: log_shipper_policy_stack
+
+- debug:
+    var: log_shipper_policy_stack
+    verbosity: 3
+
+- name: "Display Kinesis Firehose Log Shipper IAM Policy Stack Output"
+  debug:
+    msg: "{{log_shipper_policy_stack.stack_outputs}}"
+    verbosity: 2
+
+# IAM Policy for EC2 Instances to Kinesis Firehose Delivery Stream
+- name: "Deploy EC2 Instances to Kinesis Firehose Log Shipper IAM Policy {{stack.iam.policy.policy_publish_to_firehose}} to {{account.name}}-{{account.region}}"
+  cloudformation:
+    stack_name:              "{{stack.iam.policy.policy_publish_to_firehose}}"
+    state:                   present
+    region:                  "{{account.region}}"
+    disable_rollback:        true
+    template:                "{{template.iam.policy.policy_publish_to_firehose_template}}"
+    template_parameters:
+      FirehoseStreamArn:     "{{kinesis.firehose.arn_prefix}}{{kinesis.firehose.firehose_log_shipper_stream}}"
+      RoleNames:             >
+                             {{cloud_station_iam_region_output.ansible_facts.cloudformation[stack.iam.role.cloud_station_region_roles].stack_outputs.XgemailInstRole}},
+                             {{cloud_station_iam_region_output.ansible_facts.cloudformation[stack.iam.role.cloud_station_region_roles].stack_outputs.XgemailInboundInstRole}},
+                             {{cloud_station_iam_region_output.ansible_facts.cloudformation[stack.iam.role.cloud_station_region_roles].stack_outputs.XgemailOutboundInstRole}},
+                             {{iam_stack.stack_outputs.XgemailSubmitInstanceRole}},
+                             {{iam_stack.stack_outputs.XgemailCustomerSubmitInstanceRole}},
+                             {{iam_stack.stack_outputs.XgemailDeliveryInstanceRole}},
+                             {{iam_stack.stack_outputs.XgemailInternetDeliveryInstanceRole}},
+                             {{iam_stack.stack_outputs.XgemailXdeliveryInstanceRole}},
+                             {{iam_stack.stack_outputs.XgemailInternetXdeliveryInstanceRole}}
+      PolicyName:            "{{iam.policy.policy_publish_to_firehose}}"
+  register: log_shipper_policy_stack
+
+- debug:
+    var: log_shipper_policy_stack
+    verbosity: 3
+
+- name: "Display Kinesis Firehose Log Shipper IAM Policy Stack Output"
+  debug:
+    msg: "{{log_shipper_policy_stack.stack_outputs}}"
+    verbosity: 2

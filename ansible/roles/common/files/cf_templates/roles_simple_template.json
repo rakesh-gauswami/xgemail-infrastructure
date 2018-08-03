@@ -1,0 +1,69 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Creates IAM role.",
+
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2018, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ]
+  },
+
+  "Parameters": {
+    "RoleName": {
+      "Description": "A name for the IAM role",
+      "Type": "String"
+    },
+    "RolePath": {
+      "Description": "The path associated with this role",
+      "Type": "String",
+      "Default": "/"
+    },
+    "TrustedServices" : {
+      "Description" : "Trusted services that are allowed to assume this role",
+      "Type" : "CommaDelimitedList"
+    }
+  },
+
+  "Resources": {
+
+    "Role": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": { "Ref": "TrustedServices" }
+              }
+            }
+          ]
+        },
+        "Path": { "Ref": "RolePath" },
+        "RoleName": { "Ref": "RoleName" }
+      }
+    }
+  },
+
+  "Outputs": {
+    "Arn": {
+      "Description": "IAM role ARN.",
+      "Value": {
+        "Fn::GetAtt": [ "Role", "Arn" ]
+      }
+    },
+    "Name": {
+      "Description": "IAM Role",
+      "Value": { "Ref": "Role" }
+    }
+  }
+}

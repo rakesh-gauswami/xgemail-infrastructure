@@ -28,7 +28,7 @@
       Environment:                          "{{account.name}}"
       HealthCheckGracePeriod:               "{{health_check_grace_period_ix}}"
       HealthCheckType:                      "ELB"
-      InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.cloud_email_roles].stack_outputs.XgemailInternetXdeliveryInstanceProfile}}"
+      InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.XgemailInternetXdeliveryInstanceProfile}}"
       InstanceType:                         "{{instance_size_ix}}"
       KeyName:                              "public-{{account.region}}"
       LoadBalancerName:                     "{{elb_stack_output.stack_outputs.LoadBalancerId}}"
