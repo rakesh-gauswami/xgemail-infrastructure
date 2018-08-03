@@ -19,6 +19,7 @@ REGION                        = node['sophos_cloud']['region']
 MSG_STATS_REJECT_SNS_TOPIC    = node['xgemail']['msg_statistics_rejection_sns_topic']
 DELIVERY_STATUS_SNS_TOPIC     = node['xgemail']['msg_history_status_sns_topic']
 SERVER_IP                     = node['ipaddress']
+MAILLOG_FILTER_PATTERNS       = "(\.#{REGION}\.compute\.internal|table\shash:|sm-msp-queue|:\sstatistics:\s)"
 
 # Configs
 if NODE_TYPE    == 'delivery'
@@ -168,6 +169,7 @@ template 'fluentd-match-maillog' do
   group 'root'
   variables(
     :application_name => NODE_TYPE,
+    :maillog_filter_patterns => MAILLOG_FILTER_PATTERNS,
     :region => REGION
   )
   only_if { NODE_TYPE == 'customer-submit' }
@@ -195,6 +197,7 @@ template 'fluentd-match-msg-stats-reject' do
   group 'root'
   variables(
     :application_name => NODE_TYPE,
+    :maillog_filter_patterns => MAILLOG_FILTER_PATTERNS,
     :region => REGION
   )
   only_if { NODE_TYPE == 'submit' }
@@ -209,6 +212,7 @@ template 'fluentd-match-msg-delivery' do
   group 'root'
   variables(
     :application_name => NODE_TYPE,
+    :maillog_filter_patterns => MAILLOG_FILTER_PATTERNS,
     :region => REGION
   )
  only_if {

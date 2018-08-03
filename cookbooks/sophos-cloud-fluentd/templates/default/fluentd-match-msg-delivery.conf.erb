@@ -12,7 +12,7 @@
     @type rewrite_tag_filter
     <rule>
       key message
-      pattern  (\.<%= @region %>.compute\.internal|table hash:|sm-msp-queue)
+      pattern  <%= @maillog_filter_patterns %>
       tag clear
     </rule>
     <rule>
