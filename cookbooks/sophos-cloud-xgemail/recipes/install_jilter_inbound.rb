@@ -143,7 +143,7 @@ end
 # Create the jilter application properties
 template 'xgemail.jilter.properties' do
   path JILTER_APPLICATION_PROPERTIES_PATH
-  source 'jilter-application.properties.erb'
+  source 'jilter-inbound-application.properties.erb'
   mode '0700'
   owner SERVICE_USER
   group SERVICE_USER

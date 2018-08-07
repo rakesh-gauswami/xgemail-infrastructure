@@ -90,6 +90,19 @@ template 'xgemail.jilter.service.sh' do
   )
 end
 
+
+# Create the jilter application properties
+template 'xgemail.jilter.properties' do
+  path JILTER_APPLICATION_PROPERTIES_PATH
+  source 'jilter-outbound-application.properties.erb'
+  mode '0700'
+  owner SERVICE_USER
+  group SERVICE_USER
+  variables(
+      :policy_bucket => POLICY_BUCKET_NAME
+  )
+end
+
 template 'xgemail-jilter-service' do
   path "/etc/init.d/#{JILTER_SERVICE_NAME}"
   source 'xgemail.jilter.service.init.erb'
