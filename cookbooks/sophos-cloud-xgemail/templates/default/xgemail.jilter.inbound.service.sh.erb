@@ -6,6 +6,7 @@ exec java -Dcom.sun.management.jmxremote.port=6007 \
     -Dcom.sun.management.jmxremote.authenticate=false \
     -Dcom.sun.management.jmxremote.ssl=false \
     -Djava.library.path=<%= @deployment_dir %>/xgemail-jilter-inbound/lib \
+    -Dconf.dir=<%= @deployment_dir %>/xgemail-jilter-inbound/conf \
     -Xms256m \
     -Xmx256m \
     -Dspring.config.location=<%= @property_path %>,classpath:/application.properties \
