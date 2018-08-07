@@ -48,11 +48,11 @@ def build_policy_map(recipients, awsregion = None, policy_bucket_name = None, po
         for recipient in recipients:
             begin_time = time.time()
             customer_policy = read_policy_from_S3(recipient, awsregion, policy_bucket_name)
-            
+
             elapsed_time = time.time() - begin_time
             elapsed_time = elapsed_time * 1000
 
-            logger.debug("Policy_Read result returned in {0} ms".format(elapsed_time))
+            logger.debug("Policy_Read_MSG_PRODUCER result returned in {0} ms".format(elapsed_time))
             if not customer_policy:
                 return None
 
@@ -69,7 +69,7 @@ def build_policy_map(recipients, awsregion = None, policy_bucket_name = None, po
             elapsed_time = time.time() - begin_time
             elapsed_time = elapsed_time * 1000
 
-            logger.debug("Policy_Read result returned in {0} ms".format(elapsed_time))
+            logger.debug("Policy_Read_MSG_PRODUCER result returned in {0} ms".format(elapsed_time))
 
             if not customer_policy:
                 return None
