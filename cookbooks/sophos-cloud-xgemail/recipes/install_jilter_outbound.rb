@@ -80,7 +80,9 @@ execute "execute_yum_dkim_install" do
 end
 
 # dkim jni movement
-src = "#{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}/lib/libdkimjni-#{LIBDKIM_JNI_VERSION}.so"
+# temporarily hard-coded the xgemail-jilter-inbound path. As part of XGE-6573 the
+# jilter-outbound service will build the libdkimjni itself
+src = "#{DEPLOYMENT_DIR}/xgemail-jilter-inbound/lib/libdkimjni-#{LIBDKIM_JNI_VERSION}.so"
 
 log "filename_information" do
   message "dkim jni library is: #{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}/lib/libdkimjni-#{LIBDKIM_JNI_VERSION}.so"
