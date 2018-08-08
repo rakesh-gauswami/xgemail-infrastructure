@@ -339,7 +339,7 @@ def get_metadata_for_outbound(metadata, message):
 
     # parseaddr always result into 2 tuple ['username', 'email address']
     # if parse fails then result will be ['','']
-    parsed_from_address = parseaddr(from_header.strip())
+    parsed_from_address = parseaddr(from_header.strip().replace(',', ''))
 
     if parsed_from_address is None or len(parsed_from_address) != 2:
         raise Exception("Invalid parsed_from_address tuple: [{0}]".format(parsed_from_address))
