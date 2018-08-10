@@ -1,0 +1,73 @@
+#!/usr/bin/env python
+# vim: autoindent expandtab filetype=python shiftwidth=4 softtabstop=4 tabstop=4
+#
+# Copyright 2018, Sophos Limited. All rights reserved.
+#
+# 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
+# Sophos Limited and Sophos Group.  All other product and company
+# names mentioned are trademarks or registered trademarks of their
+# respective owners.
+#
+#
+#  This script is used to create and set the flag used to toggle reading policy from s3 on or off.
+#  This script can also be used to get this setting
+#
+import argparse
+import json
+import logging
+import os
+from logging.handlers import SysLogHandler
+
+#Constants
+POLICY_STORAGE_PATH = "<%= @policy_storage_path %>"
+MULTI_POLICY_CONFIG_PATH = POLICY_STORAGE_PATH + '/config/inbound-relay-control/multi-policy/'
+READ_FROM_S3_POLICY_CONFIG_FILE = MULTI_POLICY_CONFIG_PATH + 'msg_producer_read_policy_from_s3_global.CONFIG'
+
+logger = logging.getLogger('read-from-s3-toggle')
+logger.setLevel(logging.INFO)
+syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
+formatter = logging.Formatter(
+  '[%(name)s] %(process)d %(levelname)s %(message)s'
+)
+syslog_handler.formatter = formatter
+logger.addHandler(syslog_handler)
+
+parser = argparse.ArgumentParser(description='Used to set or get "read from s3" toggle value')
+parser.add_argument('-g', '--get', action='store_true', help='Get the current read from s3 flag setting')
+parser.add_argument('-s', '--set', nargs=1, choices=['true', 'false'], help='Set the read from s3 flag setting')
+
+args = parser.parse_args()
+
+def get_read_from_s3_enabled():
+  try:
+    with open(READ_FROM_S3_POLICY_CONFIG_FILE) as config_file:
+      config_data = json.load(config_file)
+      print 'msg producer read policy from s3: ' + config_data['read.from.s3']
+  except IOError as e:
+    print "Unable to read config, file may not exist. Read from S3 will be OFF"
+
+
+def set_read_from_s3_enabled():
+  config_dir = os.path.dirname(MULTI_POLICY_CONFIG_PATH)
+  if not os.path.exists(config_dir):
+    os.makedirs(config_dir)
+
+  config_data = {}
+  config_data['read.from.s3'] = args.set[0]
+  temp_file = READ_FROM_S3_POLICY_CONFIG_FILE + '.tmp'
+
+  with open(temp_file, 'w') as config_file:
+    json.dump(config_data, config_file)
+
+  os.rename(temp_file, READ_FROM_S3_POLICY_CONFIG_FILE)
+
+  logger.info('Set read.from.s3 to {0} in file {1}'.format(args.set[0], READ_FROM_S3_POLICY_CONFIG_FILE))
+  print 'read.from.s3 set to ' + args.set[0]
+
+
+if args.get:
+  get_read_from_s3_enabled()
+elif args.set:
+  set_read_from_s3_enabled()
+else:
+  parser.print_help()
