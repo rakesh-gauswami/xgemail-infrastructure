@@ -30,7 +30,7 @@ regionalInfo['USWEST2'] = {'client_id': process.env.XGEMAIL_US_WEST_2_CLIENT_ID,
     'private_key_location': process.env.XGEMAIL_US_WEST_2_PRIVATE_KEY_LOCATION, 'public_key_thumbprint_location': process.env.XGEMAIL_US_WEST_2_PUBLIC_KEY_THUMBPRINT_LOCATION};
 regionalInfo['EUWEST1'] = {'client_id': process.env.XGEMAIL_EU_WEST_1_CLIENT_ID, 'sender_address': 'eu.west.1.prod@sophos-email-monitor.org',
     'private_key_location': process.env.XGEMAIL_EU_WEST_1_PRIVATE_KEY_LOCATION, 'public_key_thumbprint_location': process.env.XGEMAIL_EU_WEST_1_PUBLIC_KEY_THUMBPRINT_LOCATION};
-regionalInfo['USEAST2'] = {'client_id': process.env.XGEMAIL_US_EAST_2_CLIENT_ID, 'sender_address': 'us.east.2.prod@sophos-email-monitor.us',
+regionalInfo['USEAST2'] = {'client_id': process.env.XGEMAIL_US_EAST_2_CLIENT_ID, 'sender_address': 'us.e2.prod@sophos-email-monitor.us',
     'private_key_location': process.env.XGEMAIL_US_EAST_2_PRIVATE_KEY_LOCATION, 'public_key_thumbprint_location': process.env.XGEMAIL_US_EAST_2_PUBLIC_KEY_THUMBPRINT_LOCATION};
 
 exports.handler = (event, context, callback) => {
