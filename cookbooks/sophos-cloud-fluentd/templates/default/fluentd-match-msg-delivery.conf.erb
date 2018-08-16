@@ -25,7 +25,7 @@
     @type rewrite_tag_filter
     <rule>
       key message
-      pattern .+, relay=(?!.*xdelivery.).+status=sent .+
+      pattern ^(?=.*?status=sent)((?!bounce-handler|relay=xdelivery|postfix\/smtp).)*$
       tag sns.msg.delivery.succeeded
     </rule>
     <rule>
@@ -40,7 +40,7 @@
     </rule>
     <rule>
       key message
-      pattern .+relay=.*xdelivery.+status=sent .+ queued as.+
+      pattern ^(?=.*?status=sent)(?=.*?relay=xdelivery)((?!bounce-handler|postfix\/smtp).)*$
       tag sns.msg.delivery.redirected
     </rule>
    </store>
