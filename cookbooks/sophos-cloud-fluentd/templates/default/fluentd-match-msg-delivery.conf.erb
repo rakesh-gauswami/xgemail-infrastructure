@@ -35,7 +35,7 @@
     </rule>
     <rule>
       key message
-      pattern .+status=expired.+
+      pattern ^(?=.*?status=(expired))((?!compute\.internal).)*$
       tag sns.msg.returned
     </rule>
     <rule>
