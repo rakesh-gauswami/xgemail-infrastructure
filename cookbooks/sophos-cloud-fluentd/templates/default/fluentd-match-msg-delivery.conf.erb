@@ -30,7 +30,7 @@
     </rule>
     <rule>
       key message
-      pattern .+status=(deferred|bounced).+
+      pattern ^(?=.*?status=(deferred|bounced))((?!bounce-handler).)*$
       tag sns.msg.delivery.failed
     </rule>
     <rule>
