@@ -1,9 +1,7 @@
 FROM centos:7
 
-LABEL maintainer="Sophos Inc. <www.sophos.com>"
-LABEL description="Sandbox base image"
-
-ENV container docker
+LABEL maintainer="Sophos Inc. <www.sophos.com>" \
+      description="Sandbox base image"
 
 RUN yum -y update \
   && yum install -y \
