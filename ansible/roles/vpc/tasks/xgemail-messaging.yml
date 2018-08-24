@@ -34,6 +34,9 @@
       MultiPolicyQueueArn:                    "{{sqs.arn_prefix}}{{sqs.multi_policy_sqs_queue}}"
       MultiPolicyQueueUrl:                    "{{sqs.url_prefix}}{{sqs.multi_policy_sqs_queue}}"
       MultiPolicyTopicArn:                    "{{sns.arn_prefix}}{{sns.multi_policy_sns_topic}}"
+      NotifierTopicArn:                       "{{sns.arn_prefix}}{{sns.notification_sns_topic}}"
+      NotifierQueueArn:                       "{{sqs.arn_prefix}}{{sqs.notifier_request_sqs_queue_sns_listener}}"
+      NotifierQueueUrl:                       "{{sqs.url_prefix}}{{sqs.notifier_request_sqs_queue_sns_listener}}"
   register: messaging_stack
 
 - debug:

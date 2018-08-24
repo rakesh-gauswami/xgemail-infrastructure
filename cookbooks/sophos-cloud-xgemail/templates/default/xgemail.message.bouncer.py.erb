@@ -10,11 +10,9 @@ import sys
 sys.path.append("<%= @utils_dir %>")
 import email
 import json
-import formatterutils
 import re
 import string
 from dateutil import parser
-from datetime import datetime
 from awshandler import AwsHandler
 from common.notificationsubmitinfo import NotificationSubmitInfo
 import logging
@@ -22,7 +20,7 @@ from logging.handlers import SysLogHandler
 
 AWS_REGION = "<%= @aws_region %>"
 EX_TEMPFAIL = <%= @ex_tempfail_code %>
-XGEMAIL_NOTIFIER_QUEUE = "<%= @notifier_sqs_url %>"
+NOTIFICATION_SNS_TOPIC = '<%= @notification_sns_topic %>'
 EMAIL_REGEX = "[#\w\.-]+@[\w\.-]+"
 NOTIFICATION_TYPE = "FAILURE_NDR"
 NOT_AVAILABLE_STR = "Not Available"
@@ -61,7 +59,7 @@ def add_to_sqs(sqs_url, sqs_json):
         json.dumps(sqs_json)
     )
 
-def submit_notification_info_to_sqs(sender, recipients, subject, hostname, failure_txt, sent_timestamp):
+def create_and_publish_notification_info(sender, recipients, subject, hostname, failure_txt, sent_timestamp):
     # Create a notification submit info object and submit it to Notifier listener SQS for processing
     notification_submit_info = NotificationSubmitInfo(
         NOTIFICATION_TYPE,
@@ -73,13 +71,18 @@ def submit_notification_info_to_sqs(sender, recipients, subject, hostname, failu
         sent_timestamp
     )
     sqs_json = notification_submit_info.get_sqs_json()
-    logger.info("Added notification submit info SQS job response [{0}] [{1}]]".format
-        (add_to_sqs(
-            XGEMAIL_NOTIFIER_QUEUE,
-            sqs_json
-            ),sqs_json
+
+    try:
+        awshandler.publish_to_sns_topic(
+            NOTIFICATION_SNS_TOPIC,
+            json.dumps(sqs_json)
         )
-    )
+
+        logger.debug("Job <{0}> published to notification sns topic".format(sqs_json))
+
+    except BaseException as e:
+        logger.exception("Failed to publish message <{0}> to notification sns topic <{1}>".format(sqs_json, e))
+
 
 
 def main():
@@ -122,7 +125,7 @@ def main():
             logger.debug("Hostname = {0}".format(hostname))
             logger.debug("Failure Reason = {0}".format(failure_reason))
 
-        submit_notification_info_to_sqs(
+        create_and_publish_notification_info(
             original_sender,
             recipient,
             subject,

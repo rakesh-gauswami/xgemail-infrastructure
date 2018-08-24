@@ -69,6 +69,7 @@ sqs:
   msg_statistics_sqs_queue_sns_listener:                "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Message_Statistics_SNS_Listener"
   multi_policy_sqs_queue:                               "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_multi_policy"
   notifier_request_sqs_queue:                           "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Notifier_Request"
+  notifier_request_sqs_queue_sns_listener:              "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Notifier_Request_SNS_Listener"
   quarantine_sqs_queue:                                 "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Quarantine_Delivery"
   quarantine_sqs_queue_sns_listener:                    "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Quarantine_Delivery_SNS_Listener"
 
@@ -87,6 +88,7 @@ sns:
   quarantined_events_sns_topic:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-quarantined-events-SNS"
   relay_control_sns_topic:                              "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-relay-control-SNS"
   success_events_sns_topic:                             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-success-events-SNS"
+  notification_sns_topic:                               "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-notifiation-SNS"
 sdb:
   volume_tracker_sdb:                                   "{{volume_tracker_sdb_output.ansible_facts.cloudformation[stack.sdb.volume_tracker_sdb].stack_outputs.SimpleDbDomain}}"
 
@@ -174,6 +176,7 @@ stack:
     msg_statistics_sqs_queue_sns_listener:              "{{vpc.cloud_email.name}}-XGEMAIL-msg-statistics-SQS-SNS-listener"
     msg_statistics_rejection_sqs_queue:                 "{{vpc.cloud_email.name}}-XGEMAIL-msg-statistics-rejection-SQS"
     notifier_request_sqs_queue:                         "{{vpc.cloud_email.name}}-XGEMAIL-notifier-request-SQS"
+    notifier_request_sqs_queue_sns_listener:            "{{vpc.cloud_email.name}}-XGEMAIL-notifier-request-SQS-SNS-listener"
     multi_policy_sqs_queue:                             "{{vpc.cloud_email.name}}-XGEMAIL-multi-policy-SQS"
     quarantine_sqs_queue:                               "{{vpc.cloud_email.name}}-XGEMAIL-quarantine-SQS"
     quarantine_sqs_queue_sns_listener:                  "{{vpc.cloud_email.name}}-XGEMAIL-quarantine-SQS-SNS-listener"
@@ -189,6 +192,7 @@ stack:
     internet_delivery_sns_topic:                        "{{vpc.cloud_email.name}}-xgemail-internet-delivery-SNS"
     quarantined_events_sns_topic:                       "{{vpc.cloud_email.name}}-xgemail-quarantined-events-SNS"
     success_events_sns_topic:                           "{{vpc.cloud_email.name}}-xgemail-success-events-SNS"
+    notification_sns_topic:                             "{{vpc.cloud_email.name}}-xgemail-notifiation-SNS"
   ssm:
     ssm_documents:                                      "{{vpc.cloud_email.name}}-SSM-Documents"
   msg:

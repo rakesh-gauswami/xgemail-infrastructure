@@ -233,6 +233,11 @@
       "Type" : "String",
       "Default": ""
     },
+    "XgemailNotificationSnsArn": {
+      "Description" : "ARN for the SNS Topic where notifications are published",
+      "Type" : "String",
+      "Default": ""
+    },
     "XgemailNotifierQueueUrl" : {
       "Description" : "URL for the SQS Queue where XGEMAIL messages are sent",
       "Type" : "String",
@@ -560,6 +565,7 @@
                     "    \"msg_history_status_queue_url\"     : \"{{msg_history_delivery_status_queue_url}}\",\n",
                     "    \"msg_history_status_sns_arn\"       : \"{{msg_history_delivery_status_sns_arn}}\",\n",
                     "    \"msg_notifier_queue_url\"           : \"{{msg_notifier_queue_url}}\",\n",
+                    "    \"notification_sns_arn\"             : \"{{notification_sns_arn}}\",\n",
                     "    \"policy_efs_file_system_id\"        : \"{{policy_efs_file_system_id}}\",\n",
                     "    \"sxl_dbl\"                          : \"{{sxl_dbl}}\",\n",
                     "    \"sxl_rbl\"                          : \"{{sxl_rbl}}\",\n",
@@ -590,6 +596,7 @@
                   "msg_history_delivery_status_queue_url":    { "Ref": "XgemailMsgHistoryStatusQueueUrl" },
                   "msg_history_delivery_status_sns_arn":      { "Ref": "XgemailMsgHistoryStatusSnsArn"},
                   "msg_notifier_queue_url":                   { "Ref": "XgemailNotifierQueueUrl" },
+                  "notification_sns_arn":                     { "Ref": "XgemailNotificationSnsArn" },
                   "policy_efs_file_system_id":                { "Ref": "XgemailPolicyEfsFileSystemId" },
                   "region":                                   { "Ref": "AWS::Region" },
                   "stack":                                    { "Ref": "AWS::StackName" },
