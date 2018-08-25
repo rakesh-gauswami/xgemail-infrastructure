@@ -7,8 +7,6 @@ services:
     domainname: sandbox.sophos
     ports:
       - '25:25' #SMTP
-    logging:
-      driver: json-file
     environment:
       - HOSTNAME_EXTERNAL=postfix
       - DEFAULT_REGION=local
@@ -16,7 +14,6 @@ services:
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
       - /var/run/docker.sock:/var/run/docker.sock
-      - /opt/sophos/xgemail/sqs-message-processor:/opt/sophos/xgemail/sqs-message-processor:rw
       - ~/g/email/xgemail-infrastructure/docker/postfix/etc/postfix-is:/etc/postfix-is:rw
       - ~/g/email/xgemail-infrastructure/docker/postfix/etc/ssl:/etc/ssl:ro
 networks:

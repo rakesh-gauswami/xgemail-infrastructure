@@ -3,6 +3,8 @@ postfix Docker Image
 
 Requirements
 ------------
+#### Base Image
+- `xgemail-base` - Base to construct postfix image.
 
 #### Local Filesystem Mounts
 - `/opt/sophos/xgemail/sqs-message-processor:/opt/sophos/xgemail/sqs-message-processor:rw` - MessageProcessor python source.
@@ -17,4 +19,6 @@ Please refer [postfix3-sophos](https://git.cloud.sophos/projects/EMAIL/repos/thi
 Usage
 -----
 Run build.sh script
+```
 ./build.sh
+```
