@@ -39,7 +39,6 @@ EX_TEMPFAIL = node['xgemail']['temp_failure_code']
 
 XGEMAIL_UTILS_DIR = node['xgemail']['xgemail_utils_files_dir']
 XGEMAIL_NOTIFIER_QUEUE_URL = node['xgemail']['msg_notifier_queue_url']
-XGEMAIL_NOTIFICATION_SNS_TOPIC = node['xgemail']['notification_sns_arn']
 
 if NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'internet-xdelivery'
 
@@ -154,8 +153,7 @@ if NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'internet-xdelivery'
    :aws_region => AWS_REGION,
    :ex_tempfail_code => EX_TEMPFAIL,
    :utils_dir => XGEMAIL_UTILS_DIR,
-   :notifier_sqs_url => XGEMAIL_NOTIFIER_QUEUE_URL,
-   :notification_sns_topic => XGEMAIL_NOTIFICATION_SNS_TOPIC
+   :notifier_sqs_url => XGEMAIL_NOTIFIER_QUEUE_URL
  )
  end
 end
