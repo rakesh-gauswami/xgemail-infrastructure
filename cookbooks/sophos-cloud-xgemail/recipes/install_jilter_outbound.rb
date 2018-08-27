@@ -33,6 +33,7 @@ JILTER_SERVICE_NAME = node['xgemail']['jilter_service_name']
 JILTER_PACKAGE_NAME = 'xgemail-jilter-outbound'
 JILTER_SCRIPT_DIR = "#{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}/scripts"
 JILTER_SCRIPT_PATH = "#{JILTER_SCRIPT_DIR}/xgemail.jilter.service.sh"
+JILTER_APPLICATION_PROPERTIES_PATH = "#{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}/conf"
 
 SERVICE_USER = node['xgemail']['jilter_user']
 
