@@ -33,10 +33,11 @@ JILTER_SERVICE_NAME = node['xgemail']['jilter_service_name']
 JILTER_PACKAGE_NAME = 'xgemail-jilter-outbound'
 JILTER_SCRIPT_DIR = "#{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}/scripts"
 JILTER_SCRIPT_PATH = "#{JILTER_SCRIPT_DIR}/xgemail.jilter.service.sh"
-JILTER_APPLICATION_PROPERTIES_PATH = "#{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}/conf/jilter-application.properties"
-POLICY_BUCKET_NAME   = node['xgemail']['xgemail_policy_bucket_name']
+JILTER_CONF_DIR = "#{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}/conf"
+JILTER_APPLICATION_PROPERTIES_PATH = "#{JILTER_CONF_DIR}/jilter-application.properties"
 
 SERVICE_USER = node['xgemail']['jilter_user']
+POLICY_BUCKET_NAME   = node['xgemail']['xgemail_policy_bucket_name']
 
 include_recipe 'sophos-cloud-xgemail::install_jilter_common'
 
@@ -73,6 +74,15 @@ directory JILTER_SCRIPT_DIR do
   group 'root'
   recursive true
 end
+
+# Create the jilter application properties directory
+directory JILTER_CONF_DIR do
+  mode '0755'
+  owner 'root'
+  group 'root'
+  recursive true
+end
+
 
 # Create jilter user
 user SERVICE_USER do
