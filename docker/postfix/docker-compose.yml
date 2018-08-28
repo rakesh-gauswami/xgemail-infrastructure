@@ -7,12 +7,6 @@ services:
     domainname: sandbox.sophos
     ports:
       - '25:25' #SMTP
-    logging:
-      driver: syslog
-      options:
-        syslog-address: "udp://127.0.0.1:514"
-        syslog-format: rfc3164
-        tag: postfix
     environment:
       - HOSTNAME_EXTERNAL=postfix
       - DEFAULT_REGION=local
