@@ -1,4 +1,4 @@
-FROM xgemail-base
+FROM xgemail-base 
 
 LABEL maintainer="Sophos Inc. <www.sophos.com>" \
       description="Postfix base image"
@@ -6,7 +6,8 @@ LABEL maintainer="Sophos Inc. <www.sophos.com>" \
 RUN mkdir -p /var/lib/xgemail/thirdparty
 
 #Add files
-ADD rsyslog.conf /etc
+ADD rsyslog.conf /etc/rsyslog.conf
+Add etc/sysconfig/network /etc/sysconfig/network
 ADD postfix.sh /etc/init.d/postfix3-sophos
 ADD thirdparty /var/lib/xgemail/thirdparty
 
