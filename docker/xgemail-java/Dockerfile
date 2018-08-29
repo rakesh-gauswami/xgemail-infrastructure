@@ -1,7 +1,7 @@
 FROM xgemail-base
 
 LABEL maintainer="Sophos Inc. <www.sophos.com>" \
-      description="Postfix JDK base image"
+      description="Sandbox JDK base image"
 
 ENV JAVA_VERSION=${BUILD_JAVA_VERSION:-8} \
     JAVA_UPDATE=${BUILD_JAVA_UPDATE:-101} \
