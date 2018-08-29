@@ -1,4 +1,4 @@
-FROM xgemail-base 
+FROM xgemail-java 
 
 LABEL maintainer="Sophos Inc. <www.sophos.com>" \
       description="Postfix base image"
