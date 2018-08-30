@@ -261,6 +261,12 @@
       "Default": ""
     },
 
+    "XgemailNotificationSnsArn": {
+      "Description" : "ARN for the SNS Topic where notifications are published",
+      "Type" : "String",
+      "Default": ""
+    },
+
     "XgemailNotifierQueueUrl" : {
       "Description" : "URL for the SQS Queue where XGEMAIL messages are sent",
       "Type" : "String",
@@ -509,6 +515,7 @@
                       "    \"msg_history_status_queue_url\"   : \"{{msg_history_status_queue_url}}\",\n",
                       "    \"msg_history_status_sns_arn\"     : \"{{msg_history_delivery_status_sns_arn}}\",\n",
                       "    \"msg_notifier_queue_url\"         : \"{{msg_notifier_queue_url}}\",\n",
+                      "    \"notification_sns_arn\"           : \"{{notification_sns_arn}}\",\n",
                       "    \"station_vpc_id\"                 : \"{{station_vpc_id}}\",\n",
                       "    \"station_vpc_name\"               : \"{{station_vpc_name}}\"\n",
                       "  }\n",
@@ -528,6 +535,7 @@
                   "msg_history_status_queue_url":             { "Ref": "XgemailMsgHistoryStatusQueueUrl" },
                   "msg_history_delivery_status_sns_arn":      { "Ref": "XgemailMsgHistoryStatusSnsArn"},
                   "msg_notifier_queue_url":                   { "Ref": "XgemailNotifierQueueUrl" },
+                  "notification_sns_arn":                     { "Ref": "XgemailNotificationSnsArn" },
                   "region":                                   { "Ref": "AWS::Region" },
                   "station_vpc_id":                           { "Ref": "StationVpcId" },
                   "stack":                                    { "Ref": "AWS::StackName" },

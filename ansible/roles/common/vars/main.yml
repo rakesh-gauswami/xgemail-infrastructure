@@ -155,6 +155,12 @@ aws:
         TopicName:                              "{{sns.relay_control_sns_topic}}"
         SnsS3TopicPolicyBucket:                 "{{s3.policy_bucket}}"
         SnsS3TopicPolicyCreate:                 "true"
+    notification_sns_topic:
+      stack_name:                               "{{stack.sns.notification_sns_topic}}"
+      template:                                 "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                              "{{sns.notification_sns_topic}}"
+
 
   sqs:
     lifecycle_sqs_sns:
@@ -276,6 +282,12 @@ aws:
       template:                                 "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                              "{{sqs.msg_statistics_sqs_queue_sns_listener}}"
+    notifier_request_sqs_queue_sns_listener:
+      stack_name:                               "{{stack.sqs.notifier_request_sqs_queue_sns_listener}}"
+      state:                                    present
+      template:                                 "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                              "{{sqs.notifier_request_sqs_queue_sns_listener}}"
     quarantine_sqs_queue:
       stack_name:                               "{{stack.sqs.quarantine_sqs_queue}}"
       state:                                    absent
