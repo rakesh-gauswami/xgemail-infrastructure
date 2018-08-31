@@ -30,7 +30,7 @@ start()
     fi
 
     # prepare postmaps
-    exec "/etc/postfix-is/build_maps.sh"
+    (exec "/etc/postfix-is/build_maps.sh")
 
     # enable and start
     postmulti -i postfix-is -e enable
