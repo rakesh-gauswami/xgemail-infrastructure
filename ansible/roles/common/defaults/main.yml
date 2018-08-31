@@ -70,6 +70,7 @@ sqs:
   multi_policy_sqs_queue:                               "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_multi_policy"
   notifier_request_sqs_queue:                           "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Notifier_Request"
   notifier_request_sqs_queue_sns_listener:              "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Notifier_Request_SNS_Listener"
+  outbound_malware_protection_queue_sns_listener:       "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Outbound_Malware_Protection_SNS_Listener"
   quarantine_sqs_queue:                                 "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Quarantine_Delivery"
   quarantine_sqs_queue_sns_listener:                    "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Quarantine_Delivery_SNS_Listener"
 
@@ -178,6 +179,7 @@ stack:
     notifier_request_sqs_queue:                         "{{vpc.cloud_email.name}}-XGEMAIL-notifier-request-SQS"
     notifier_request_sqs_queue_sns_listener:            "{{vpc.cloud_email.name}}-XGEMAIL-notifier-request-SQS-SNS-listener"
     multi_policy_sqs_queue:                             "{{vpc.cloud_email.name}}-XGEMAIL-multi-policy-SQS"
+    outbound_malware_protection_queue_sns_listener:     "{{vpc.cloud_email.name}}-XGEMAIL-outbound-malware-protection-SQS-SNS-listener"
     quarantine_sqs_queue:                               "{{vpc.cloud_email.name}}-XGEMAIL-quarantine-SQS"
     quarantine_sqs_queue_sns_listener:                  "{{vpc.cloud_email.name}}-XGEMAIL-quarantine-SQS-SNS-listener"
   sns:
