@@ -123,6 +123,34 @@
       "Description": "Endpoint for multi policy arn",
       "Type": "String"
     },
+    "NotifierQueueArn": {
+      "Description": "Endpoint for notifier SQS queue",
+      "Type": "String"
+    },
+    "NotifierQueueTopicArn": {
+      "Description": "TopicArn of notifications SNS",
+      "Type": "String"
+    },
+    "NotifierQueueUrl": {
+      "Description": "Endpoint URL for notifier SQS queue",
+      "Type": "String"
+    },
+    "OutboundMalwareProtectionQueueArn": {
+      "Description": "Endpoint for outbound malware protection SQS queue",
+      "Type": "String"
+    },
+    "OutboundMalwareProtectionQueueUrl": {
+      "Description": "Endpoint URL for outbound malware protection SQS queue",
+      "Type": "String"
+    },
+    "OutboundMalwareProtectionUnblockSenderQueueArn": {
+      "Description": "Endpoint for outbound malware protection unblock sender SQS queue",
+      "Type": "String"
+    },
+    "OutboundMalwareProtectionUnblockSenderQueueUrl": {
+      "Description": "Endpoint URL for outbound malware protection unblock sender SQS queue",
+      "Type": "String"
+    },
     "QuarantineQueueArn": {
       "Description": "Endpoint for quarantine SQS queue",
       "Type": "String"
@@ -278,6 +306,23 @@
         "TopicArn": { "Ref": "MultiPolicyTopicArn"}
       }
     },
+    "NotifierQueueToNotificationSnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "NotifierQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "NotifierQueueTopicArn"}
+      }
+    },
+    "OutboundMalwareProtectionQueueToNotificationSnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "OutboundMalwareProtectionQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "NotifierQueueTopicArn"}
+      }
+    },
+
     "DeliveryQueuePolicy": {
       "Type": "AWS::SQS::QueuePolicy",
       "Properties": {
@@ -588,6 +633,33 @@
           ]
         },
         "Queues": [{ "Ref": "MultiPolicyQueueUrl" }]
+      }
+    },
+    "NotifierQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "NotifierQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-NotifierTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "NotifierQueueTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [
+          { "Ref": "NotifierQueueUrl" },
+          { "Ref": "OutboundMalwareProtectionQueueUrl" }
+        ]
       }
     }
   }
