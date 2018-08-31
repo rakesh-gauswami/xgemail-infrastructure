@@ -29,6 +29,9 @@ start()
         patch -p0 -N ${original} ${patch}
     fi
 
+    # prepare postmaps
+    /etc/postfix-is/build_maps.sh
+
     # enable and start
     postmulti -i postfix-is -e enable
     postfix start
