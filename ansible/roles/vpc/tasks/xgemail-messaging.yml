@@ -39,6 +39,8 @@
       NotifierQueueUrl:                       "{{sqs.url_prefix}}{{sqs.notifier_request_sqs_queue_sns_listener}}"
       OutboundMalwareProtectionQueueArn:      "{{sqs.arn_prefix}}{{sqs.outbound_malware_protection_queue_sns_listener}}"
       OutboundMalwareProtectionQueueUrl:      "{{sqs.url_prefix}}{{sqs.outbound_malware_protection_queue_sns_listener}}"
+      OutboundMalwareProtectionUnblockSenderQueueArn:   "{{sqs.arn_prefix}}{{sqs.outbound_malware_protection_unblock_sender_queue}}"
+      OutboundMalwareProtectionUnblockSenderQueueUrl:   "{{sqs.url_prefix}}{{sqs.outbound_malware_protection_unblock_sender_queue}}"
   register: messaging_stack
 
 - debug:
