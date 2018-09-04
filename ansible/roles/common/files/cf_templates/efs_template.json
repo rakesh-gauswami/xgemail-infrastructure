@@ -40,7 +40,7 @@
     "ProvisionedThroughputInMibps": {
       "Description": "The throughput, measured in MiB/s, that you want to provision for a file system that you're creating.",
       "Type": "Number",
-      "Default": "generalPurpose",
+      "Default": "0"
     },
 
     "ThroughputMode": {
@@ -49,6 +49,10 @@
       "Default": "bursting",
       "AllowedValues": ["bursting", "provisioned"]
     }
+  },
+
+  "Conditions": {
+    "ProvisionedThroughput" :{ "Fn::Not": [ {"Fn::Equals": [{ "Ref": "ProvisionedThroughputInMibps"},"0"]}]}
   },
 
   "Resources": {
@@ -60,13 +64,21 @@
           {
             "Key" : "Name",
             "Value" : {
-              "Fn::Join": ["-",
-                [
-                  { "Ref": "EfsNameTag" }, { "Ref": "AWS::Region" }]]}
+              "Fn::Join": ["-", [
+                { "Ref": "EfsNameTag" },
+                { "Ref": "AWS::Region" }
+              ]]
+            }
           }
         ],
         "PerformanceMode": { "Ref": "PerformanceMode" },
-        "ProvisionedThroughputInMibps" : { "Ref": "ProvisionedThroughputInMibps" },
+        "ProvisionedThroughputInMibps" : {
+          "Fn::If": [
+            "ProvisionedThroughput",
+            { "Ref": "ProvisionedThroughputInMibps" },
+            { "Ref": "AWS::NoValue" }
+          ]
+        },
         "ThroughputMode" : { "Ref": "ThroughputMode" }
       }
     }
