@@ -18,6 +18,11 @@
 
   "Parameters": {
 
+    "EfsNameTag": {
+      "Description": "Tag (Name) to associate with the file system.",
+      "Type": "String"
+    },
+
     "Encrypted": {
       "Description": "If true, the file system will be encrypted",
       "Type": "String",
@@ -26,11 +31,28 @@
     },
 
     "PerformanceMode": {
-      "Description": "The performance mode to be used for the EGS volume",
+      "Description": "The performance mode to be used for the EFS volume",
       "Type": "String",
       "Default": "generalPurpose",
       "AllowedValues": ["generalPurpose", "maxIO"]
+    },
+
+    "ProvisionedThroughputInMibps": {
+      "Description": "The throughput, measured in MiB/s, that you want to provision for a file system that you're creating.",
+      "Type": "Number",
+      "Default": "0"
+    },
+
+    "ThroughputMode": {
+      "Description": "The throughput mode for the file system to be created.",
+      "Type": "String",
+      "Default": "bursting",
+      "AllowedValues": ["bursting", "provisioned"]
     }
+  },
+
+  "Conditions": {
+    "ProvisionedThroughput": {"Fn::Equals": [{ "Ref": "ThroughputMode"},"provisioned"]}
   },
 
   "Resources": {
@@ -38,7 +60,26 @@
       "Type": "AWS::EFS::FileSystem",
       "Properties": {
         "Encrypted": { "Ref": "Encrypted" },
-        "PerformanceMode": { "Ref": "PerformanceMode" }
+        "FileSystemTags" : [
+          {
+            "Key" : "Name",
+            "Value" : {
+              "Fn::Join": ["-", [
+                { "Ref": "EfsNameTag" },
+                { "Ref": "AWS::Region" }
+              ]]
+            }
+          }
+        ],
+        "PerformanceMode": { "Ref": "PerformanceMode" },
+        "ProvisionedThroughputInMibps" : {
+          "Fn::If": [
+            "ProvisionedThroughput",
+            { "Ref": "ProvisionedThroughputInMibps" },
+            { "Ref": "AWS::NoValue" }
+          ]
+        },
+        "ThroughputMode" : { "Ref": "ThroughputMode" }
       }
     }
   },
