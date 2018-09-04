@@ -52,7 +52,7 @@
   },
 
   "Conditions": {
-    "ProvisionedThroughput" :{ "Fn::Not": [ {"Fn::Equals": [{ "Ref": "ProvisionedThroughputInMibps"},"0"]}]}
+    "ProvisionedThroughput": {"Fn::Equals": [{ "Ref": "ThroughputMode"},"provisioned"]}
   },
 
   "Resources": {
