@@ -1,0 +1,36 @@
+version: "3"
+services:
+  localstack-xgemail:
+    image: localstack/localstack
+    container_name: localstack-xgemail
+    ports:
+      - '4567:4567' #API Gateway
+      - '4568:4568' #Kinesis
+      - '4569:4569' #DynamoDB
+      - '4570:4570' #DynamoDB Streams
+      - '4571:4571' #ElasticSearch
+      - '4572:4572' #S3
+      - '4574:4574' #Lambda
+      - '4575:4575' #SNS
+      - '4576:4576' #SQS
+      - '4578:4578' #Elasticsearch Service
+      - '8081:8081' #WebUI
+    environment:
+      - PORT_WEB_UI=8081
+      - HOSTNAME_EXTERNAL=localstack-xgemail
+      - SERVICES=apigateway,kinesis,dynamodb,dynamodbstreams,s3,sns,sqs,es,lambda
+      - DEFAULT_REGION=us-east-1
+      - LAMBDA_EXECUTOR=docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/localstack:/tmp/localstack
+    networks:
+      - novanet
+      - default
+
+networks:
+  default:
+    driver: bridge
+  novanet:
+    external:
+      name: nova_novanet
