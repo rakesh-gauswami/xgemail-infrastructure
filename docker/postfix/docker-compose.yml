@@ -1,0 +1,23 @@
+version: '3'
+services:
+  postfix:
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:latest
+    container_name: postfix
+    hostname: submit 
+    domainname: sandbox.sophos
+    ports:
+      - '25:25' #SMTP
+    environment:
+      - HOSTNAME_EXTERNAL=postfix
+      - DEFAULT_REGION=local
+      - DEBUG=1
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /opt/sophos/xgemail:/opt/sophos/xgemail
+      - ~/g/email/xgemail-infrastructure/docker/postfix/etc/postfix-is:/etc/postfix-is:rw
+      - ~/g/email/xgemail-infrastructure/docker/postfix/etc/ssl:/etc/ssl:ro
+networks:
+  default:
+    external:
+      name: nova_novanet
