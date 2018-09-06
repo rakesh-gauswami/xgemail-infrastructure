@@ -52,8 +52,10 @@ end
 
 include_recipe 'sophos-cloud-xgemail::configure-internet-submit-queue'
 include_recipe 'sophos-cloud-xgemail::configure-customer-submit-queue'
+include_recipe 'sophos-cloud-xgemail::configure-encryption-submit-queue'
 include_recipe 'sophos-cloud-xgemail::configure-customer-delivery-queue'
 include_recipe 'sophos-cloud-xgemail::configure-internet-delivery-queue'
+include_recipe 'sophos-cloud-xgemail::configure-encryption-delivery-queue'
 
 MANAGED_SERVICES_IN_START_ORDER =
   [
@@ -62,14 +64,14 @@ MANAGED_SERVICES_IN_START_ORDER =
 
 NODE_TYPE = node['xgemail']['cluster_type']
 
-if NODE_TYPE == 'delivery' || NODE_TYPE == 'internet-delivery'
+if NODE_TYPE == 'delivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'encryption-delivery'
   MANAGED_SERVICES_IN_START_ORDER = [
   'postfix',
   SQS_MESSAGE_CONSUMER_SERVICE_NAME
 ]
 end
 
-if NODE_TYPE == 'submit' || NODE_TYPE == 'customer-submit'
+if NODE_TYPE == 'submit' || NODE_TYPE == 'customer-submit' || NODE_TYPE == 'encryption-submit'
   MANAGED_SERVICES_IN_START_ORDER = [
       JILTER_SERVICE_NAME,
       'postfix'
