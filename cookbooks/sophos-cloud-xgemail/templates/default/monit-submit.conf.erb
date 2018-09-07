@@ -3,6 +3,7 @@ check process xgemail-jilter-service with pidfile /var/run/xgemail-jilter-servic
   start program = "/etc/init.d/xgemail-jilter-service start"
   stop  program = "/etc/init.d/xgemail-jilter-service stop"
   if failed port 9876 type tcp then restart
+  if 2 restarts within 3 cycles then exec "/etc/init.d/xgemail-jilter-service force-restart"
 
 check process xgemail-sqs-policy-poller with pidfile /var/run/xgemail-sqs-policy-poller.pid
   group mail
