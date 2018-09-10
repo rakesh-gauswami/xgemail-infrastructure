@@ -130,8 +130,8 @@ CONFIGURATION_COMMANDS =
     'smtpd_tls_mandatory_ciphers = high',
     'smtpd_tls_loglevel = 1',
     'smtpd_tls_received_header = yes',
-    "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
-    "smtpd_tls_key_file = #{KEY_FILE}",
+    'smtpd_tls_cert_file = #{SERVER_PEM_FILE}',
+    'smtpd_tls_key_file = #{KEY_FILE}',
 
     # Recipient restrictions
     #'smtpd_recipient_restrictions = ' +

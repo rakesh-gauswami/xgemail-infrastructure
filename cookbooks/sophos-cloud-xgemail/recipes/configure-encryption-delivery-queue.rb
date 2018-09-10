@@ -41,14 +41,14 @@ SMTP_FALLBACK_RELAY = "encryption-xdelivery-cloudemail-#{AWS_REGION}.#{SOPHOS_AC
 CONFIGURATION_COMMANDS =
   [
     # This is a host on the Echoworx side, we don't have it now, will be updated
-    #'relayhost'=[???echoworx.com]:587,
+    #'relayhost'=[???echoworx.com]:587',
 
-    'queue_directory=/storage/postfix-cd
-    'command_directory=/usr/sbin'
-    'daemon_directory=/usr/libexec/postfix'
-    'data_directory=/var/lib/postfix-cd'
-    'mail_owner=postfix'
-    'unknown_local_recipient_reject_code=550'
+    'queue_directory=/storage/postfix-cd',
+    'command_directory=/usr/sbin',
+    'daemon_directory=/usr/libexec/postfix',
+    'data_directory=/var/lib/postfix-cd',
+    'mail_owner=postfix',
+    'unknown_local_recipient_reject_code=550',
     'bounce_queue_lifetime=0',
     'smtp_fallback_relay=#{SMTP_FALLBACK_RELAY}'',
     'smtp_tls_security_level=encrypt',
