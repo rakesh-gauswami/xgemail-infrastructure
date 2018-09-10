@@ -11,7 +11,7 @@ ENV JAVA_VERSION=${BUILD_JAVA_VERSION:-8} \
 COPY jce_policy-8.zip /tmp/jce_policy-8.zip
 
 RUN yum update -y && \
-    yum install -y wget unzip && \
+    yum install -y unzip && \
     cd "/tmp" && \
     wget https://nexus.sophos-tools.com/repository/build-assets/jdk-${JAVA_VERSION}u${JAVA_UPDATE}-linux-x64.tar.gz && \
     tar -xzf "jdk-${JAVA_VERSION}u${JAVA_UPDATE}-linux-x64.tar.gz" && \
