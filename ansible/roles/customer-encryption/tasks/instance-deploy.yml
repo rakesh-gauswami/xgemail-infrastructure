@@ -4,11 +4,11 @@
 #    msg: "{{item.value.stack_name}} {{item.value.AutoScalingMinSize}} {{item.value.AvailabilityZoneIndex}} {{item.value.VolumeSetId}} {{cloud_email_iam_output.stack_outputs.AutoScalingInstanceRoleArn}}"
 #  with_dict: "{{aws.ec2.asg.cd}}"
 
-- name: "Create ASG Stacks in AWS"
+- name: "Create Customer Delivery ASG Stacks in AWS"
   async: 100
   poll: 0
   cloudformation:
-    stack_name: "{{vpc.cloud_email.name}}-xgemail-encryption-submit-0000-{{item.0}}"
+    stack_name: "{{vpc.cloud_email.name}}-xgemail-delivery-0000-{{item.0}}"
     state: present
     region:  "{{account.region}}"
     disable_rollback: true
@@ -29,46 +29,45 @@
       BundleVersion:                        "{{ami_build}}"
       EbsMinIops:                           "{{xgemail_iops_data_gb}}"
       Environment:                          "{{account.name}}"
-      HealthCheckGracePeriod:               "{{health_check_grace_period_cs}}"
+      HealthCheckGracePeriod:               "{{health_check_grace_period_cd}}"
       HealthCheckType:                      "ELB"
-      InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.XgemailCustomerSubmitInstanceProfile}}"
-      InstanceType:                         "{{instance_size_cs}}"
-      KeyName:                              "public-{{account.region}}"
+      InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.XgemailDeliveryInstanceProfile}}"
+      InstanceType:                         "{{instance_size_cd}}"
+      KeyName:                              "private-{{account.region}}"
       LoadBalancerName:                     "{{elb_stack_output.stack_outputs.LoadBalancerId}}"
-      PublicIpAddressEnabled:               "true"
+      PublicIpAddressEnabled:               "false"
       S3CookbookRepositoryURL:              "//cloud-{{account.name}}-templates/{{build.branch}}/xgemail-infrastructure/cookbooks.enc"
       ScaleDownOnWeekends:                  "{{weekend_scale_down}}"
       ScaleDownCron:                        "{{cron_scale_down}}"
       ScaleUpCron:                          "{{cron_scale_up}}"
-      SecurityGroups:                       "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.XgemailCustomerSubmitSecurityGroup}},{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.SecurityGroupBase}}"
+      SecurityGroups:                       "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.XgemailDeliverySecurityGroup}},{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.SecurityGroupBase}}"
       SpotPrice:                            "{{instance_size_xgemail_spot_price}}"
-      StationVpcId:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}"
       StationVpcName:                       "{{vpc.cloud_station.name}}"
-      VolumeSetId:                          "encryption-submit-{{item.0}}"
+      StationVpcId:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}"
+      VolumeSetId:                          "delivery-{{item.0}}"
       VolumeTrackerSimpleDbDomain:          "{{volume_tracker_sdb_output.ansible_facts.cloudformation[stack.sdb.volume_tracker_sdb].stack_outputs.SimpleDbDomain}}"
       Vpc:                                  "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.Vpc}}"
-      VpcZoneIdentifiers:                   "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PublicSubnetA}},{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PublicSubnetB}},{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PublicSubnetC}}"
+      VpcZoneIdentifiers:                   "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PrivateSubnetDefaultA}},{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PrivateSubnetDefaultB}},{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PrivateSubnetDefaultC}}"
       VpcName:                              "{{vpc.cloud_email.name}}"
-      XgemailBucketName:                    "{{s3.encryption_submit_bucket}}"
+      XgemailBucketName:                    "{{s3.submit_bucket}}"
       XgemailMinSizeDataGB:                 "{{xgemail_size_data_gb}}"
       XgemailMsgHistoryBucketName:          "{{s3.msg_history_bucket}}"
       XgemailMsgHistoryQueueUrl:            "{{sqs.url_prefix}}{{sqs.msg_history_sqs_queue}}"
-      XgemailPolicyArn:                     "{{sns.arn_prefix}}{{sns.relay_control_sns_topic}}"
-      XgemailPolicyBucketName:              "{{s3.policy_bucket}}"
-      XgemailPolicyEfsFileSystemId:         "{{cloud_email_efs_output.ansible_facts.cloudformation[stack.efs.policy_efs_volume].stack_outputs.FileSystemId}}"
-      XgemailQueueUrl:                      "{{sqs.url_prefix}}{{sqs.encryption_submit_sqs_queue}}"
-      XgemailServiceType:                   "encryption-submit"
+      XgemailMsgHistoryStatusQueueUrl:      "{{sqs.url_prefix}}{{sqs.msg_history_status_sqs_queue_sns_listener}}"
+      XgemailMsgHistoryStatusSnsArn:        "{{sns.arn_prefix}}{{sns.msg_history_status_sns_topic}}"
+      XgemailSnsSqsQueueUrl:                "{{sqs.url_prefix}}{{sqs.customer_encryption_sqs_queue_sns_listener}}"
+      XgemailServiceType:                   "delivery"
       XgemailSxlDbl:                        "{{xgemail_sxl_dbl}}"
       XgemailSxlRbl:                        "{{xgemail_sxl_rbl}}"
   with_together:
     - "{{stack_number}}"
     - "{{asg_min_size}}"
     - "{{zone_index}}"
-  register: cs_stack_async_results
+  register: cd_stack_async_results
 
 - async_status:
     jid: "{{item.ansible_job_id}}"
-  with_items: "{{cs_stack_async_results.results}}"
-  register: cs_stack_async_poll_results
-  until: "{{cs_stack_async_poll_results.finished}}"
+  with_items: "{{cd_stack_async_results.results}}"
+  register: cd_stack_async_poll_results
+  until: "{{cd_stack_async_poll_results.finished}}"
   retries: 50
