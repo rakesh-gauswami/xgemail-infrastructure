@@ -1,0 +1,73 @@
+#!/usr/bin/env python
+# vim: autoindent expandtab filetype=python shiftwidth=4 softtabstop=4 tabstop=4
+#
+# Copyright 2018, Sophos Limited. All rights reserved.
+#
+# 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
+# Sophos Limited and Sophos Group.  All other product and company
+# names mentioned are trademarks or registered trademarks of their
+# respective owners.
+#
+#
+#  This script is used to create and set the flag used to toggle user based scanning split on or off for ToC.
+#  This script can also be used to get this setting
+#
+import argparse
+import json
+import logging
+import os
+from logging.handlers import SysLogHandler
+
+#Constants
+POLICY_STORAGE_PATH = "<%= @policy_storage_path %>"
+EFS_MULTI_POLICY_CONFIG_PATH = POLICY_STORAGE_PATH + '/config/inbound-relay-control/multi-policy/'
+TOC_USER_BASED_SPLIT_CONFIG_FILE = EFS_MULTI_POLICY_CONFIG_PATH + 'msg_producer_toc_user_based_split_global.CONFIG'
+
+logger = logging.getLogger('user-based-split-toggle')
+logger.setLevel(logging.INFO)
+syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
+formatter = logging.Formatter(
+  '[%(name)s] %(process)d %(levelname)s %(message)s'
+)
+syslog_handler.formatter = formatter
+logger.addHandler(syslog_handler)
+
+parser = argparse.ArgumentParser(description='Used to set or get "ToC user based split" toggle value')
+parser.add_argument('-g', '--get', action='store_true', help='Get the current toc user based split flag setting')
+parser.add_argument('-s', '--set', nargs=1, choices=['true', 'false'], help='Set the toc user based split flag setting')
+
+args = parser.parse_args()
+
+def get_user_based_split_enabled():
+  try:
+    with open(TOC_USER_BASED_SPLIT_CONFIG_FILE) as config_file:
+      config_data = json.load(config_file)
+      print 'msg producer user based split for ToC : ' + config_data['toc.user.based.split.enabled']
+  except IOError as e:
+    print "Unable to read config, file may not exist. User based split for ToC is OFF"
+
+
+def set_user_based_split_enabled():
+  config_dir = os.path.dirname(TOC_USER_BASED_SPLIT_CONFIG_FILE)
+  if not os.path.exists(config_dir):
+    os.makedirs(config_dir)
+
+  config_data = {}
+  config_data['toc.user.based.split.enabled'] = args.set[0]
+  temp_file = TOC_USER_BASED_SPLIT_CONFIG_FILE + '.tmp'
+
+  with open(temp_file, 'w') as config_file:
+    json.dump(config_data, config_file)
+
+  os.rename(temp_file, TOC_USER_BASED_SPLIT_CONFIG_FILE)
+
+  logger.info('Set toc.user.based.split.enabled to {0} in file {1}'.format(args.set[0], TOC_USER_BASED_SPLIT_CONFIG_FILE))
+  print 'toc.user.based.split.enabled set to ' + args.set[0]
+
+
+if args.get:
+  get_user_based_split_enabled()
+elif args.set:
+  set_user_based_split_enabled()
+else:
+  parser.print_help()

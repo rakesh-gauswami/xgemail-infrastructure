@@ -24,7 +24,7 @@ EFS_MULTI_POLICY_DOMAINS_PATH = EFS_POLICY_STORAGE_PATH + MULTI_POLICY_DOMAINS_P
 EFS_MULTI_POLICY_CONFIG_PATH = EFS_POLICY_STORAGE_PATH + 'config/inbound-relay-control/multi-policy/'
 EFS_MULTI_POLICY_CONFIG_FILE = EFS_MULTI_POLICY_CONFIG_PATH + 'global.CONFIG'
 FLAG_TO_READ_POLICY_FROM_S3_FILE = EFS_MULTI_POLICY_CONFIG_PATH + 'msg_producer_read_policy_from_s3_global.CONFIG'
-FLAG_TO_USER_BASED_SPLIT = EFS_MULTI_POLICY_CONFIG_PATH + 'msg_producer_user_based_split_global.CONFIG'
+FLAG_TO_TOC_USER_BASED_SPLIT = EFS_MULTI_POLICY_CONFIG_PATH + 'msg_producer_toc_user_based_split_global.CONFIG'
 
 logger = logging.getLogger('multi-policy-reader-utils')
 logger.setLevel(logging.INFO)
@@ -46,13 +46,18 @@ def build_policy_map(recipients, awsregion = None, policy_bucket_name = None, po
     isToCEnabled = "false"
     policy_list = policies.copy()
 
-    if (user_based_split and awsregion and policy_bucket_name and read_from_s3):
-        logger.debug("Reading policy for [{0}] directly from s3".format(recipients))
-
+    if (user_based_split):
+        logger.debug("user split enabled, checking isToCEnabled for recipients".format(recipients))
         customer_policy = {}
+
         for recipient in recipients:
             begin_time = time.time()
-            customer_policy = read_policy_from_S3(recipient, awsregion, policy_bucket_name)
+
+            if (awsregion and policy_bucket_name and read_from_s3):
+                logger.debug("ToC User based Split, Reading policy for [{0}] directly from s3".format(recipients))
+                customer_policy = read_policy_from_S3(recipient, awsregion, policy_bucket_name)
+            else
+                customer_policy = read_policy_from_EFS(recipient)
 
             elapsed_time = time.time() - begin_time
             elapsed_time = elapsed_time * 1000
@@ -77,6 +82,7 @@ def build_policy_map(recipients, awsregion = None, policy_bucket_name = None, po
         logger.debug("Reading policy for [{0}] directly from s3".format(recipients))
         for recipient in recipients:
             begin_time = time.time()
+
             customer_policy = read_policy_from_S3(recipient, awsregion, policy_bucket_name)
 
             elapsed_time = time.time() - begin_time
@@ -191,8 +197,8 @@ def get_read_from_s3_enabled():
 
 def get_user_based_split_enabled():
     try:
-        with open(FLAG_TO_USER_BASED_SPLIT) as flag_file:
+        with open(FLAG_TO_TOC_USER_BASED_SPLIT) as flag_file:
             flag_data = json.load(flag_file)
-            return flag_data['user.based.split.enabled'] == "true"
+            return flag_data['toc.user.based.split.enabled'] == "true"
     except IOError:
         return False
