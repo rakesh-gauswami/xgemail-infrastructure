@@ -1,4 +1,4 @@
-#instructions to build and push image to aws ECR
+#instructions to build and push xgemail/cyren image to aws ECR
 # step 1 - login: 
 $(aws ecr get-login --no-include-email --region us-east-2)
 

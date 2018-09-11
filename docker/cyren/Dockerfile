@@ -1,4 +1,5 @@
-FROM 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/xgemail-base:latest
+FROM centos:6
+#FROM 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/xgemail-base:latest
 
 # variables
 ARG USER=filter

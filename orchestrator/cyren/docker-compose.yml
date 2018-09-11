@@ -1,0 +1,17 @@
+version: "3"
+services:
+  cyren:
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/cyren:latest
+    container_name: cyren
+    ports:
+      - '8088:8088' #cyren port
+    networks:
+      - novanet
+      - default
+
+networks:
+  default:
+    driver: bridge
+  novanet:
+    external:
+      name: nova_novanet
