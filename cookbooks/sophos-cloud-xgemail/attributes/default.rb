@@ -265,7 +265,13 @@ default['xgemail']['postfix_instance_data'] = {
     :port => 8025,
     # Give delivery queues extra padding because extra content may be created during processing
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600)
-  }
+  },
+  # customer-encryption
+  'customer-encryption' => {
+      :instance_name => 'ce',
+      :port => 25,
+      # Give delivery queues extra padding because extra content may be created during processing
+      :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800)
 }
 
 default['xgemail']['common_instance_config_params'] = [

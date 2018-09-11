@@ -759,6 +759,35 @@
         ]
       }
     },
+    "XgemailCustomerEncryptionInstanceProfile": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Path": "/",
+        "Roles": [
+          {
+            "Ref": "XgemailXdeliveryInstanceRole"
+          }
+        ]
+      }
+    },
+    "XgemailCustomerEncryptionInstanceRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "ManagedPolicyArns": [ "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM" ],
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": [ "sts:AssumeRole" ],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [ "ec2.amazonaws.com" ]
+              }
+            }
+          ]
+        },
+        "Path": "/"
+      }
+    },
     "XgemailInternetDeliveryInstanceProfile" : {
       "Type" : "AWS::IAM::InstanceProfile",
       "Properties" : {
