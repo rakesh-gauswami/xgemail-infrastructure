@@ -1,4 +1,4 @@
-FROM xgemail-base
+FROM 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/xgemail-base:latest
 
 LABEL maintainer="Sophos Inc. <www.sophos.com>" \
       description="Sandbox JDK base image"
@@ -11,7 +11,6 @@ ENV JAVA_VERSION=${BUILD_JAVA_VERSION:-8} \
 COPY jce_policy-8.zip /tmp/jce_policy-8.zip
 
 RUN yum update -y && \
-    yum install -y wget unzip && \
     cd "/tmp" && \
     wget https://nexus.sophos-tools.com/repository/build-assets/jdk-${JAVA_VERSION}u${JAVA_UPDATE}-linux-x64.tar.gz && \
     tar -xzf "jdk-${JAVA_VERSION}u${JAVA_UPDATE}-linux-x64.tar.gz" && \
