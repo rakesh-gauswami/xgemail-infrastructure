@@ -38,6 +38,15 @@ services:
       networks:
         - novanet
         - default
+  savi:
+    image: xgemail/savi:latest
+    container_name: savi
+    hostname: savi
+    domainname: sandbox.sophos
+    ports:
+      - '4010:4010' #cyren port
+    networks:
+      - novanet
 
 networks:
   default:

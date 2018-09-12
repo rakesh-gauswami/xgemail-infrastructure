@@ -1,0 +1,16 @@
+version: "3"
+services:
+  savi:
+    image: xgemail/savi:latest
+    container_name: savi
+    hostname: savi
+    domainname: sandbox.sophos
+    ports:
+      - '4010:4010' #cyren port
+    networks:
+      - novanet
+
+networks:
+  novanet:
+    external:
+      name: nova_novanet
