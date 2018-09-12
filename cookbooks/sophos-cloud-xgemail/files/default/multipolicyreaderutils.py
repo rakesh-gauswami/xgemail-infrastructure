@@ -56,7 +56,7 @@ def build_policy_map(recipients, awsregion = None, policy_bucket_name = None, po
             if (awsregion and policy_bucket_name and read_from_s3):
                 logger.debug("ToC User based Split, Reading policy for [{0}] directly from s3".format(recipients))
                 customer_policy = read_policy_from_S3(recipient, awsregion, policy_bucket_name)
-            else
+            else:
                 customer_policy = read_policy_from_EFS(recipient)
 
             elapsed_time = time.time() - begin_time
