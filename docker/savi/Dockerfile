@@ -22,10 +22,8 @@ ARG SAVDID_CONF_FILE=savdid.conf
 RUN mkdir -p $INSTALL_DIR && \
 		mkdir -p $SAV_DIR && \
 		mkdir -p $SAV_SIG_DIR && \
-		mkdir -p $SAV_LOG_DIR
-
-# install required packages
-RUN yum install -y \
+		mkdir -p $SAV_LOG_DIR && \
+		yum install -y \
     curl \
     file \
     python \
@@ -43,18 +41,13 @@ COPY sav-download.py $INSTALL_DIR
 WORKDIR $INSTALL_DIR
 
 # download IDE and VDL packages
-RUN python $INSTALL_DIR/sav-download.py -p $SAV_PACKAGE -U $USER -P $PASSWORD
-
-RUN unzip -o vdl.zip -d $INSTALL_DIR/sav-install && \
-		unzip -o ide_*.zip -d $SAV_SIG_DIR/
-
-RUN	tar xf $SAV_PACKAGE -C $INSTALL_DIR && \
-		tar xf $SAVDI_PACKAGE -C $INSTALL_DIR
-
-# install SAV and SAVDI
-RUN $INSTALL_DIR/sav-install/install.sh && \
-    $INSTALL_DIR/savdi-install/savdi_install.sh
-
-RUN	cp -f $INSTALL_DIR/savdi-install/savdid /usr/sbin/
+RUN python $INSTALL_DIR/sav-download.py -p $SAV_PACKAGE -U $USER -P $PASSWORD &&\
+		unzip -o vdl.zip -d $INSTALL_DIR/sav-install && \
+		unzip -o ide_*.zip -d $SAV_SIG_DIR/ &&\
+		tar xf $SAV_PACKAGE -C $INSTALL_DIR && \
+		tar xf $SAVDI_PACKAGE -C $INSTALL_DIR && \
+		$INSTALL_DIR/sav-install/install.sh && \
+    $INSTALL_DIR/savdi-install/savdi_install.sh && \
+		cp -f $INSTALL_DIR/savdi-install/savdid /usr/sbin/
 
 ENTRYPOINT ["sh", "-c", "/usr/sbin/savdid -s -f /var/run/savdid.pid -c /usr/local/savdi/savdid.conf"]
