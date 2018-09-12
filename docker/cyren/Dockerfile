@@ -1,5 +1,8 @@
 FROM 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/xgemail-base:latest
 
+LABEL maintainer="Sophos Inc. <www.sophos.com>" \
+      description="Cyren service image"
+
 # variables
 ARG USER=filter
 ARG INSTALL_DIR=/tmp/cyren-install
@@ -17,8 +20,6 @@ RUN mkdir -p $INSTALL_DIR && \
 
 # install required packages
 RUN yum install -y \
-    wget \
-    tar \
     net-snmp-perl \
     perl-Time-HiRes \
     perl-Sys-Syslog
@@ -30,10 +31,10 @@ RUN useradd -r $USER
 COPY $PROVIDED_CTASD_FILE $INSTALL_DIR
 COPY $CONF_FILE $ETC_DIR
 # change work directory
-WORKDIR $INSTALL_DIR
+RUN cd $INSTALL_DIR
 
 # extract ctasd file
-RUN tar -xf $PROVIDED_CTASD_FILE
+RUN tar -xf $INSTALL_DIR/$PROVIDED_CTASD_FILE
 
 # copy binaries to proper location
 RUN cp -f  "ctasd-${VERSION}-linux-x86_64/bin/ctasd" $CTASD_DIR && \
