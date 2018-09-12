@@ -26,10 +26,8 @@ RUN mkdir -p $INSTALL_DIR && \
 		yum install -y \
     curl \
     file \
-    python \
-    unzip \
-    wget \
-    tar
+    python
+    
 
 # copy library and config file to appropriate location
 COPY $SAVDI_PACKAGE $INSTALL_DIR
