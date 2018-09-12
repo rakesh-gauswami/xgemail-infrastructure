@@ -33,8 +33,6 @@ WORKDIR "$INSTALL_DIR"
 # copy file from host and extract
 COPY $PROVIDED_CTASD_FILE $INSTALL_DIR
 COPY $CONF_FILE $ETC_DIR
-# change work directory
-WORKDIR $INSTALL_DIR
 
 # extract ctasd file
 RUN tar -xf $PROVIDED_CTASD_FILE
