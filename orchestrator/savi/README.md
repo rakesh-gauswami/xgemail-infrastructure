@@ -16,6 +16,7 @@ SSSP/1.0  should get a response: ACC 5B992B5C/1
 
 QUERY ENGINE should get a list of response
 
+#Ctrl+] to exit to telnet>, type quit to exit telnet
 
 # Check following wiki link for more information
 https://wiki.sophos.net/display/NSG/SAVI+Integration

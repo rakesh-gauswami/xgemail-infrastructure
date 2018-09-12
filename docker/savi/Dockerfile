@@ -29,7 +29,9 @@ RUN yum install -y \
     curl \
     file \
     python \
-    unzip
+    unzip \
+    wget \
+    tar
 
 # copy library and config file to appropriate location
 COPY $SAVDI_PACKAGE $INSTALL_DIR
@@ -38,10 +40,10 @@ COPY $SAVDID_CONF_FILE $SAV_DIR
 COPY sav-download.py $INSTALL_DIR
 
 # change work directory
-WORKDIR "$INSTALL_DIR"
+WORKDIR $INSTALL_DIR
 
 # download IDE and VDL packages
-RUN python sav-download.py -p $SAV_PACKAGE -U $USER -P $PASSWORD
+RUN python $INSTALL_DIR/sav-download.py -p $SAV_PACKAGE -U $USER -P $PASSWORD
 
 RUN unzip -o vdl.zip -d $INSTALL_DIR/sav-install && \
 		unzip -o ide_*.zip -d $SAV_SIG_DIR/
@@ -55,4 +57,4 @@ RUN $INSTALL_DIR/sav-install/install.sh && \
 
 RUN	cp -f $INSTALL_DIR/savdi-install/savdid /usr/sbin/
 
-ENTRYPOINT ["sh", "-c", "/usr/sbin/savdid -d -s -f /var/run/savdid.pid -c /usr/local/savdi/savdid.conf"]
+ENTRYPOINT ["sh", "-c", "/usr/sbin/savdid -s -f /var/run/savdid.pid -c /usr/local/savdi/savdid.conf"]
