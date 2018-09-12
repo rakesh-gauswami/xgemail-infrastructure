@@ -6,6 +6,7 @@ LABEL maintainer="Sophos Inc. <www.sophos.com>" \
 RUN yum -y update && \
     yum install -y \
             wget \
+            unzip \
             logrotate \
             patch \
             rsyslog && \

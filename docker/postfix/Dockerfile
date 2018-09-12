@@ -1,4 +1,4 @@
-FROM xgemail-base 
+FROM 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/xgemail-base:latest
 
 LABEL maintainer="Sophos Inc. <www.sophos.com>" \
       description="Postfix base image"
