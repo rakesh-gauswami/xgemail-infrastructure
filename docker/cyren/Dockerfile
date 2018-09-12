@@ -1,5 +1,4 @@
-FROM centos:6
-#FROM 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/xgemail-base:latest
+FROM 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/xgemail-base:latest
 
 # variables
 ARG USER=filter
@@ -47,4 +46,4 @@ RUN rm -rf "ctasd-${VERSION}-linux-x86_64" && \
     rm -f $PROVIDED_CTASD_FILE
 
 # Run CYREN in interactive mode (-i)
-CMD /usr/lib/ctasd/ctasd.bin -i -l /usr/lib/ctasd -c /etc/ctasd/ctasd.conf
+ENTRYPOINT ["sh", "-c", "/usr/lib/ctasd/ctasd.bin -i -l /usr/lib/ctasd -c /etc/ctasd/ctasd.conf"]

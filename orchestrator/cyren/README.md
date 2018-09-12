@@ -6,7 +6,7 @@
 perl cyren_test.pl --stream msg_spam.eml
 
 # you should expect response similar to following:
-=== /Users/kentyu/g/email/xgemail-infrastructure/orchestrator/cyren/./msg_spam.eml [200 OK]
+~/g/email/xgemail-infrastructure/orchestrator/cyren/./msg_spam.eml [200 OK]
 X-CTCH-PVer: 0000001
 X-CTCH-Spam: Confirmed
 X-CTCH-VOD: Unknown
