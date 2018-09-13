@@ -24,7 +24,7 @@ CONFIGURATION_COMMANDS =
   ]
 
 SQS_MESSAGE_CONSUMER_SERVICE_NAME = node['xgemail']['sqs_message_consumer_service_name']
-JILTER_SERVICE_NAME = node['xgemail']['jilter_service_name']
+#JILTER_SERVICE_NAME = node['xgemail']['jilter_service_name']
 
 service 'postfix' do
   supports :restart => true, :start => true, :stop => true, :reload => true
@@ -71,7 +71,7 @@ end
 
 if NODE_TYPE == 'submit' || NODE_TYPE == 'customer-submit'
   MANAGED_SERVICES_IN_START_ORDER = [
-      JILTER_SERVICE_NAME,
+      #JILTER_SERVICE_NAME,
       'postfix'
   ]
 end
