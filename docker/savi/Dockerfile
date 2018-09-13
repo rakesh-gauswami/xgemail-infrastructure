@@ -1,4 +1,4 @@
-FROM xgemail/xgemail-base:latest
+FROM 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/xgemail-base:latest
 
 LABEL maintainer="Sophos Inc. <www.sophos.com>" \
       description="Savi service image"
@@ -22,11 +22,8 @@ ARG SAVDID_CONF_FILE=savdid.conf
 RUN mkdir -p $INSTALL_DIR && \
 		mkdir -p $SAV_DIR && \
 		mkdir -p $SAV_SIG_DIR && \
-		mkdir -p $SAV_LOG_DIR && \
-		yum install -y \
-    tar
+		mkdir -p $SAV_LOG_DIR
     
-
 # copy library and config file to appropriate location
 COPY $SAVDI_PACKAGE $INSTALL_DIR
 COPY libssp.so.0 /usr/local/lib
