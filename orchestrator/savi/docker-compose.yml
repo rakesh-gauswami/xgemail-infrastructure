@@ -1,0 +1,18 @@
+version: "3"
+services:
+  savi:
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/savi:latest
+    container_name: sophos_savi
+
+    ports:
+      - '4010:4010'
+    networks:
+      - novanet
+      - default
+
+networks:
+  default:
+    driver: bridge
+  novanet:
+    external:
+      name: nova_novanet
