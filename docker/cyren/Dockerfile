@@ -23,7 +23,6 @@ RUN mkdir -p $INSTALL_DIR && \
     perl-Sys-Syslog && \
     useradd -r $USER
 
-
 # copy file from host and extract
 COPY $PROVIDED_CTASD_FILE $INSTALL_DIR
 COPY $CONF_FILE $ETC_DIR
