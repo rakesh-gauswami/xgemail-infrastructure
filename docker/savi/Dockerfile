@@ -1,4 +1,4 @@
-FROM 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/xgemail-base:latest
+FROM xgemail/xgemail-base:latest
 
 LABEL maintainer="Sophos Inc. <www.sophos.com>" \
       description="Savi service image"
@@ -24,9 +24,7 @@ RUN mkdir -p $INSTALL_DIR && \
 		mkdir -p $SAV_SIG_DIR && \
 		mkdir -p $SAV_LOG_DIR && \
 		yum install -y \
-    curl \
-    file \
-    python
+    tar
     
 
 # copy library and config file to appropriate location
@@ -44,7 +42,7 @@ RUN python $INSTALL_DIR/sav-download.py -p $SAV_PACKAGE -U $USER -P $PASSWORD &&
 		unzip -o ide_*.zip -d $SAV_SIG_DIR/ &&\
 		tar xf $SAV_PACKAGE -C $INSTALL_DIR && \
 		tar xf $SAVDI_PACKAGE -C $INSTALL_DIR && \
-		$INSTALL_DIR/sav-install/install.sh && \
+    $INSTALL_DIR/sav-install/install.sh && \
     $INSTALL_DIR/savdi-install/savdi_install.sh && \
 		cp -f $INSTALL_DIR/savdi-install/savdid /usr/sbin/
 
