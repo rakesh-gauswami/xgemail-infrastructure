@@ -54,7 +54,6 @@ def build_policy_map(recipients, awsregion = None, policy_bucket_name = None, po
 
     if (user_based_split and len(recipients) > 1):
         logger.debug("ToC user based split block for recipients [{0}]".format(recipients))
-        customer_policy = {}
 
         for recipient in recipients:
             begin_time = time.time()
