@@ -6,6 +6,8 @@ if sandbox_env == "sandbox"
   default['sophos_cloud']['environment'] = ENV['DEFAULT_ENVIRONMENT']
   default['xgemail']['cluster_type']     = ENV['INSTANCE_TYPE']
 
+  default['xgemail']['xgemail_bucket_name']        = 'xgemail-submit'
+  default['xgemail']['xgemail_queue_url']          = 'http://localstack-xgemail:4576/queue/Xgemail_Internet_Submit'
   default['xgemail']['msg_history_bucket_name']    = 'xgemail-msg-history'
   default['xgemail']['msg_history_queue_url']      = 'http://localstack-xgemail:4576/queue/Xgemail_MessageHistoryEvent_Delivery'
   default['xgemail']['xgemail_policy_bucket_name'] = 'xgemail-policy'
