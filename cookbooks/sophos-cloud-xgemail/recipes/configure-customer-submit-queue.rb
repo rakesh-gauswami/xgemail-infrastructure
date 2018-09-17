@@ -10,6 +10,7 @@
 #
 
 NODE_TYPE = node['xgemail']['cluster_type']
+account =  node['sophos_cloud']['environment']
 
 if NODE_TYPE != 'customer-submit'
   return
@@ -65,20 +66,23 @@ GLOBAL_SIGN_DIR = "#{LOCAL_CERT_PATH}/3rdparty/global-sign"
 GLOBAL_SIGN_INTERMEDIARY = "#{GLOBAL_SIGN_DIR}/global-sign-sha256-intermediary.crt"
 GLOBAL_SIGN_ROOT = "#{GLOBAL_SIGN_DIR}/global-sign-root.crt"
 
-# Add xgemail certificate
-remote_file "/etc/ssl/certs/#{CERT_NAME}.crt" do
-  source "file:///tmp/sophos/certificates/api-mcs-mob-prod.crt"
-  owner 'root'
-  group 'root'
-  mode 0444
-end
+if account != 'sandbox'
+  # Add xgemail certificate
+  remote_file "/etc/ssl/certs/#{CERT_NAME}.crt" do
+    source "file:///tmp/sophos/certificates/api-mcs-mob-prod.crt"
+    owner 'root'
+    group 'root'
+    mode 0444
+  end
 
-# Add xgemail key
-remote_file "/etc/ssl/private/#{CERT_NAME}.key" do
-  source "file:///tmp/sophos/certificates/appserver.key"
-  owner 'root'
-  group 'root'
-  mode 0440
+  # Add xgemail key
+  remote_file "/etc/ssl/private/#{CERT_NAME}.key" do
+    source "file:///tmp/sophos/certificates/appserver.key"
+    owner 'root'
+    group 'root'
+    mode 0440
+  end
+
 end
 
 CREATE_SERVER_PEM_COMMAND = 'cat ' +
@@ -94,7 +98,9 @@ file SERVER_PEM_FILE do
   action :create
 end
 
-execute CREATE_SERVER_PEM_COMMAND
+if account != 'sandbox'
+  execute CREATE_SERVER_PEM_COMMAND
+end
 
 RBL_REPLY_MAPS_FILENAME = 'rbl_reply_maps'
 
@@ -156,7 +162,11 @@ CONFIGURATION_COMMANDS.each do | cur |
 end
 
 
-include_recipe 'sophos-cloud-xgemail::setup_dh_params'
-include_recipe 'sophos-cloud-xgemail::install_jilter_outbound'
-include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
-include_recipe 'sophos-cloud-xgemail::setup_xgemail_policy_service'
+if account != 'sandbox'
+  include_recipe 'sophos-cloud-xgemail::setup_dh_params'
+  include_recipe 'sophos-cloud-xgemail::install_jilter_outbound'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_policy_service'
+else
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
+end
