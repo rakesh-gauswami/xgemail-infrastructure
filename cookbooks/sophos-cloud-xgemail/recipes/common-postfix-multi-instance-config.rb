@@ -26,7 +26,6 @@ require 'aws-sdk'
 ::Chef::Resource.send(:include, ::SophosCloudXgemail::Helper)
 ::Chef::Recipe.send(:include, ::SophosCloudXgemail::AwsHelper)
 
-ACCOUNT = node['sophos_cloud']['environment']
 NODE_TYPE = node['xgemail']['cluster_type']
 
 INSTANCE_DATA = node['xgemail']['postfix_instance_data'][NODE_TYPE]
@@ -112,7 +111,7 @@ else
 end
 
 CONFIGURATION_COMMANDS.each do | cur |
-  execute print_postmulti_cmd( INSTANCE_NAME, "postconf -e '#{cur}'" )
+  execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
 end
 
 [
