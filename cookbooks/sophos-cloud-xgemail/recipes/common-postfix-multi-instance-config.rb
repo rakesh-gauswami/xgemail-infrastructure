@@ -11,6 +11,14 @@
 # It will usually be included from the recipe that defines that non-default instance
 #
 
+ACCOUNT =  node['sophos_cloud']['environment']
+
+if ACCOUNT == 'sandbox'
+  chef_gem 'aws-sdk' do
+    action [:install]
+  end
+end
+
 require 'aws-sdk'
 
 # Include Helper library
@@ -36,7 +44,12 @@ FILE_CACHE_DIR = ::Chef::Config[:file_cache_path]
 
 TLS_HIGH_CIPHERLIST = node['xgemail']['tls_high_cipherlist']
 
-INSTANCE_HOST_NAME = get_hostname(NODE_TYPE)
+if ACCOUNT == 'sandbox'
+  INSTANCE_HOST_NAME = get_hostname_sandbox()
+else
+  INSTANCE_HOST_NAME = get_hostname(NODE_TYPE)
+end
+
 
 CONFIGURATION_COMMANDS =
   node['xgemail']['common_instance_config_params'] +
@@ -55,11 +68,20 @@ CONFIGURATION_COMMANDS =
     'notify_classes ='
   ]
 
+if ACCOUNT == 'sandbox'
+  [
+      'inet_interfaces = all'
+  ].each do | cur |
+    execute print_postconf( 'cs', "'#{cur}'")
+  end
+end
+
 # Create new instance
 MULTI_CREATE_GUARD = ::File.join( FILE_CACHE_DIR, ".create-postfix-instance-#{INSTANCE_NAME}" )
 execute "#{print_postmulti_create( INSTANCE_NAME )} && touch #{MULTI_CREATE_GUARD}" do
   creates MULTI_CREATE_GUARD
 end
+
 
 CONFIGURATION_COMMANDS.each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
