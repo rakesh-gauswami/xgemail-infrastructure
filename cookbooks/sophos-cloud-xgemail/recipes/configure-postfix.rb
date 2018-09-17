@@ -26,15 +26,16 @@ CONFIGURATION_COMMANDS =
 
 CONFIGURATION_COMMANDS_SANDBOX =
     node['xgemail']['common_instance_config_params'] +
-        [
-            'inet_protocols = ipv4'
-        ]
-
+    [
+        # Disable inet services for default instance
+        'master_service_disable = inet',
+        'inet_protocols = ipv4'
+    ]
 
 SQS_MESSAGE_CONSUMER_SERVICE_NAME = node['xgemail']['sqs_message_consumer_service_name']
-JILTER_SERVICE_NAME = node['xgemail']['jilter_service_name']
 
 if ACCOUNT != 'sandbox'
+  JILTER_SERVICE_NAME = node['xgemail']['jilter_service_name']
   # First configure default instance
   CONFIGURATION_COMMANDS.each do | cur |
     execute "postconf '#{cur}'"
