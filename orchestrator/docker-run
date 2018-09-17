@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-#docker-compose up -d
-#sleep 5
+docker-compose up -d
+sleep 5
 
 for container in $(docker ps --filter='ancestor=postfix' --format {{.Names}})
   do
