@@ -68,3 +68,28 @@ template MSG_PRODUCER_READ_FROM_S3_TOGGLE_SCRIPT_PATH do
       :policy_storage_path => POLICY_STORAGE_PATH
   )
 end
+
+=begin
+setup script used to toggle 'user based split when ToC Enabled for any of the recipients' toggle
+=end
+
+TOC_USER_BASED_SPLIT_PACKAGE_DIR = "#{XGEMAIL_FILES_DIR}/toc-user-based-split-flag-toggle"
+TOC_USER_BASED_SPLIT_TOGGLE_SCRIPT_NAME = 'xgemail.toc.user.based.split.flag.toggle.py'
+TOC_USER_BASED_SPLIT_TOGGLE_SCRIPT_PATH = "#{TOC_USER_BASED_SPLIT_PACKAGE_DIR}/#{TOC_USER_BASED_SPLIT_TOGGLE_SCRIPT_NAME}"
+
+directory TOC_USER_BASED_SPLIT_PACKAGE_DIR do
+  mode '0755'
+  owner 'root'
+  group 'root'
+  recursive true
+end
+
+template TOC_USER_BASED_SPLIT_TOGGLE_SCRIPT_PATH do
+  source "#{TOC_USER_BASED_SPLIT_TOGGLE_SCRIPT_NAME}.erb"
+  mode '0750'
+  owner 'root'
+  group 'root'
+  variables(
+      :policy_storage_path => POLICY_STORAGE_PATH
+  )
+end
