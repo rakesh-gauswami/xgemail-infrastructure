@@ -48,21 +48,22 @@ it will read the policy from s3. Otherwise policy will be read locally via mount
 def build_policy_map(recipients, awsregion = None, policy_bucket_name = None, policies = {}):
     read_from_s3 = get_read_from_s3_enabled()
     user_based_split = get_user_based_split_enabled()
-    isToCEnabled = "false"
+    is_toc_enabled = "false"
     policy_list = policies.copy()
     user_list = policies.copy()
 
     if (user_based_split):
-        logger.debug("user split enabled, checking isToCEnabled for recipients".format(recipients))
+        logger.debug("ToC user based split enabled".format(recipients))
         customer_policy = {}
 
         for recipient in recipients:
             begin_time = time.time()
 
             if (awsregion and policy_bucket_name and read_from_s3):
-                logger.debug("ToC User based Split, Reading policy for [{0}] directly from s3".format(recipient))
+                logger.debug("ToC user based split, Reading policy for {0} directly from s3".format(recipient))
                 customer_policy = read_policy_from_S3(recipient, awsregion, policy_bucket_name)
             else:
+                logger.debug("ToC user based split, Reading policy for {0} from EFS".format(recipient))
                 customer_policy = read_policy_from_EFS(recipient)
 
             elapsed_time = time.time() - begin_time
@@ -72,18 +73,22 @@ def build_policy_map(recipients, awsregion = None, policy_bucket_name = None, po
             if not customer_policy:
                 return None
 
-            if (isToCEnabled != "true"):
+            if (is_toc_enabled != "true"):
+                userid = customer_policy['userId']
+                logger.debug("Reading endpoint policy for recipient {0} and userid {1}".format(recipient,userid))
                 if (awsregion and policy_bucket_name and read_from_s3):
-                    endpoint_config = read_policy_endpoint_from_S3(customer_policy['userId'])
+                    endpoint_config = read_policy_endpoint_from_S3(userid)
                 else:
-                    endpoint_config = read_policy_endpoint_from_EFS(customer_policy['userId'])
+                    endpoint_config = read_policy_endpoint_from_EFS(userid)
                 policy_attributes = endpoint_config['policyAttributes']
-                isToCEnabled = policy_attributes['xgemail/toc/enabled']
+                is_toc_enabled = policy_attributes['xgemail/toc/enabled']
+                logger.debug("Recipient {0} has ToC on : {1}".format(recipient,is_toc_enabled))
 
             retrieve_policy_id_and_add_to_policy_list(customer_policy, policy_list, recipient)
             retrieve_user_id_and_add_to_user_list(customer_policy, user_list, recipient)
 
-        if (isToCEnabled == "true"):
+        if (is_toc_enabled == "true"):
+            logger.debug("ToC is enabled so returning user list : [{0}]".format(user_list))
             return user_list
 
     elif (awsregion and policy_bucket_name and read_from_s3):
