@@ -5,6 +5,7 @@ LABEL maintainer="Sophos Inc. <www.sophos.com>" \
 
 #Add files
 ADD thirdparty /tmp
+ADD run.sh /opt/run.sh
 
 #Perform update
 RUN yum clean all && \

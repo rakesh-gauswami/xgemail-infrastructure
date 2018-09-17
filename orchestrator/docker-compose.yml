@@ -26,11 +26,26 @@ services:
       - /tmp/localstack:/tmp/localstack
     networks:
       - novanet
-      - default
+
+  internet-submit:
+    image: postfix:latest
+    container_name: internet-submit
+    hostname: internet-submit
+    domainname: local.sandbox.hydra.sophos.com
+    ports:
+    - '6025:25' #SMTP
+    environment:
+    - HOSTNAME_EXTERNAL=internet-submit
+    - INSTANCE_TYPE=submit
+    - DEFAULT_REGION=local
+    - DEFAULT_ENVIRONMENT=sandbox
+    volumes:
+    - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    - ~/g/email/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
+    networks:
+      - novanet
 
 networks:
-  default:
-    driver: bridge
   novanet:
     external:
       name: nova_novanet

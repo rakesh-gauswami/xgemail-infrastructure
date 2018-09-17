@@ -22,6 +22,7 @@ require 'aws-sdk'
 ::Chef::Resource.send(:include, ::SophosCloudXgemail::Helper)
 ::Chef::Recipe.send(:include, ::SophosCloudXgemail::AwsHelper)
 
+ACCOUNT = node['sophos_cloud']['environment']
 NODE_TYPE = node['xgemail']['cluster_type']
 
 INSTANCE_DATA = node['xgemail']['postfix_instance_data'][NODE_TYPE]
@@ -56,35 +57,49 @@ CONFIGURATION_COMMANDS =
     'mynetworks_style=subnet',
 
     'smtpd_discard_ehlo_keywords = silent-discard, dsn',
-    'notify_classes =',
-
-    # Sandbox setup for inet_interfaces = all
-    'inet_interfaces = all'
+    'notify_classes ='
   ]
 
-# Create new instance
-MULTI_CREATE_GUARD = ::File.join( FILE_CACHE_DIR, ".create-postfix-instance-#{INSTANCE_NAME}" )
-execute "#{print_postmulti_create( INSTANCE_NAME )} && touch #{MULTI_CREATE_GUARD}" do
-  creates MULTI_CREATE_GUARD
-  ignore_failure true
-end
-
 # Sandbox only
-# Modify stock main.cf for newly created INSTANCE_NAME
-execute 'modify_main.cf' do
-  user 'root'
-  command <<-EOH
-      sed -i -e 's/\inet_interfaces = localhost/\inet_interfaces = all/' /etc/#{instance_name(INSTANCE_NAME)}/main.cf
-  EOH
-end
+if ACCOUNT == 'sandbox'
+  # Create and ignore errors in case of sandbox
+  MULTI_CREATE_GUARD = ::File.join( FILE_CACHE_DIR, ".create-postfix-instance-#{INSTANCE_NAME}" )
+  execute "#{print_postmulti_create( INSTANCE_NAME )} && touch #{MULTI_CREATE_GUARD}" do
+    creates MULTI_CREATE_GUARD
+    ignore_failure true
+  end
 
-# Sandbox only
-# Change ownership tp postfix user
-execute 'change_ownership_to_postfix' do
-  user 'root'
-  command <<-EOH
-      chown -R postfix /var/lib/#{instance_name(INSTANCE_NAME)}
-  EOH
+  # Modify stock main.cf for newly created INSTANCE_NAME
+  execute 'modify_main.cf' do
+    user 'root'
+    command <<-EOH
+        sed -i -e 's/\inet_interfaces = localhost/\inet_interfaces = all/' /etc/#{instance_name(INSTANCE_NAME)}/main.cf
+    EOH
+  end
+
+  # Change ownership tp postfix user
+  execute 'change_ownership_to_postfix' do
+    user 'root'
+    command <<-EOH
+        chown -R postfix /var/lib/#{instance_name(INSTANCE_NAME)}
+    EOH
+  end
+
+  # Update postfix to call jilter as external service
+  [
+      'smtpd_milters = inet:localhost:9876',
+      'milter_connect_macros = {client_addr}, {j}',
+      'milter_end_of_data_macros = {i}'
+  ].each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+  end
+
+else
+  # Create new instance
+  MULTI_CREATE_GUARD = ::File.join( FILE_CACHE_DIR, ".create-postfix-instance-#{INSTANCE_NAME}" )
+  execute "#{print_postmulti_create( INSTANCE_NAME )} && touch #{MULTI_CREATE_GUARD}" do
+    creates MULTI_CREATE_GUARD
+  end
 end
 
 CONFIGURATION_COMMANDS.each do | cur |

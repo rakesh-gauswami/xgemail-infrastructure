@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+#docker-compose up -d
+#sleep 5
+
+for container in $(docker ps --filter='ancestor=postfix' --format {{.Names}})
+  do
+    echo "Running configurations for ${container}"
+    docker exec ${container} sh -c '/opt/run.sh'
+  done
+
+echo Done
