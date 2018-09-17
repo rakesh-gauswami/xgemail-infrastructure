@@ -74,35 +74,35 @@ GLOBAL_SIGN_INTERMEDIARY = "#{GLOBAL_SIGN_DIR}/global-sign-sha256-intermediary.c
 GLOBAL_SIGN_ROOT = "#{GLOBAL_SIGN_DIR}/global-sign-root.crt"
 
 # Add xgemail certificate
-remote_file "/etc/ssl/certs/#{CERT_NAME}.crt" do
-  source "file:///tmp/sophos/certificates/api-mcs-mob-prod.crt"
-  owner 'root'
-  group 'root'
-  mode 0444
-end
+#remote_file "/etc/ssl/certs/#{CERT_NAME}.crt" do
+#  source "file:///tmp/sophos/certificates/api-mcs-mob-prod.crt"
+#  owner 'root'
+#  group 'root'
+#  mode 0444
+#end
 
 # Add xgemail key
-remote_file "/etc/ssl/private/#{CERT_NAME}.key" do
-  source "file:///tmp/sophos/certificates/appserver.key"
-  owner 'root'
-  group 'root'
-  mode 0440
-end
+#remote_file "/etc/ssl/private/#{CERT_NAME}.key" do
+#  source "file:///tmp/sophos/certificates/appserver.key"
+#  owner 'root'
+#  group 'root'
+#  mode 0440
+#end
 
-CREATE_SERVER_PEM_COMMAND = 'cat ' +
-  "'#{CERT_FILE}' " +
-  "'#{GLOBAL_SIGN_INTERMEDIARY}' " +
-  "'#{GLOBAL_SIGN_ROOT}' " +
-  "> '#{SERVER_PEM_FILE}'"
+#CREATE_SERVER_PEM_COMMAND = 'cat ' +
+#  "'#{CERT_FILE}' " +
+#  "'#{GLOBAL_SIGN_INTERMEDIARY}' " +
+#  "'#{GLOBAL_SIGN_ROOT}' " +
+#  "> '#{SERVER_PEM_FILE}'"
 
-file SERVER_PEM_FILE do
-  owner 'root'
-  group 'root'
-  mode '0444'
-  action :create
-end
+#file SERVER_PEM_FILE do
+#  owner 'root'
+#  group 'root'
+#  mode '0444'
+#  action :create
+#end
 
-execute CREATE_SERVER_PEM_COMMAND
+#execute CREATE_SERVER_PEM_COMMAND
 
 RBL_REPLY_MAPS_FILENAME = 'rbl_reply_maps'
 
@@ -148,26 +148,30 @@ end
 
 CONFIGURATION_COMMANDS =
   [
-    'smtpd_upstream_proxy_protocol = haproxy',
+    #'smtpd_upstream_proxy_protocol = haproxy',
 
     # Server side TLS configuration
-    'smtpd_tls_security_level = may',
-    'smtpd_tls_ciphers = high',
-    'smtpd_tls_mandatory_ciphers = high',
-    'smtpd_tls_loglevel = 1',
-    'smtpd_tls_received_header = yes',
-    "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
-    "smtpd_tls_key_file = #{KEY_FILE}",
+    #'smtpd_tls_security_level = may',
+    #'smtpd_tls_ciphers = high',
+    #'smtpd_tls_mandatory_ciphers = high',
+    #'smtpd_tls_loglevel = 1',
+    #'smtpd_tls_received_header = yes',
+    #"smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
+    #"smtpd_tls_key_file = #{KEY_FILE}",
 
     # Recipient restrictions
+    #'smtpd_recipient_restrictions = ' +
+    #  "reject_rhsbl_reverse_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
+    #  "reject_rhsbl_sender #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
+    #  "reject_rhsbl_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
+    #  "reject_rbl_client #{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES}, " +
+    #  "check_recipient_access hash:$config_directory/#{RECIPIENT_ACCESS_FILENAME}, " +
+    #  "check_sender_access hash:$config_directory/#{SOFT_RETRY_SENDERS_MAP_FILENAME}, " +
+    #  'reject',
+
     'smtpd_recipient_restrictions = ' +
-      "reject_rhsbl_reverse_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
-      "reject_rhsbl_sender #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
-      "reject_rhsbl_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
-      "reject_rbl_client #{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES}, " +
-      "check_recipient_access hash:$config_directory/#{RECIPIENT_ACCESS_FILENAME}, " +
-      "check_sender_access hash:$config_directory/#{SOFT_RETRY_SENDERS_MAP_FILENAME}, " +
-      'reject',
+        "check_recipient_access hash:$config_directory/recipient_access, " +
+        'reject',
 
     # Sender restrictions
     'smtpd_sender_restrictions = ' +
@@ -188,11 +192,11 @@ CONFIGURATION_COMMANDS.each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
 end
 
-include_recipe 'sophos-cloud-xgemail::setup_dh_params'
-include_recipe 'sophos-cloud-xgemail::install_jilter_inbound'
+#include_recipe 'sophos-cloud-xgemail::setup_dh_params'
+#include_recipe 'sophos-cloud-xgemail::install_jilter_inbound'
 include_recipe 'sophos-cloud-xgemail::setup_flag_toggle_internet_submit'
-include_recipe 'sophos-cloud-xgemail::setup_internet_submit_domain_updater_cron'
-include_recipe 'sophos-cloud-xgemail::setup_internet_submit_recipient_updater_cron'
+#include_recipe 'sophos-cloud-xgemail::setup_internet_submit_domain_updater_cron'
+#include_recipe 'sophos-cloud-xgemail::setup_internet_submit_recipient_updater_cron'
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
-include_recipe 'sophos-cloud-xgemail::setup_xgemail_policy_service'
-include_recipe 'sophos-cloud-xgemail::setup_xgemail_multi_policy_service'
+#include_recipe 'sophos-cloud-xgemail::setup_xgemail_policy_service'
+#include_recipe 'sophos-cloud-xgemail::setup_xgemail_multi_policy_service'

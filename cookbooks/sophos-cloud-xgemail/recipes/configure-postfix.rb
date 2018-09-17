@@ -27,16 +27,14 @@ CONFIGURATION_COMMANDS =
 CONFIGURATION_COMMANDS_SANDBOX =
     node['xgemail']['common_instance_config_params'] +
         [
-            # Disable inet services for default instance
-            'master_service_disable = inet',
             'inet_protocols = ipv4'
         ]
 
 
 SQS_MESSAGE_CONSUMER_SERVICE_NAME = node['xgemail']['sqs_message_consumer_service_name']
+JILTER_SERVICE_NAME = node['xgemail']['jilter_service_name']
 
 if ACCOUNT != 'sandbox'
-  JILTER_SERVICE_NAME = node['xgemail']['jilter_service_name']
   # First configure default instance
   CONFIGURATION_COMMANDS.each do | cur |
     execute "postconf '#{cur}'"
@@ -53,10 +51,7 @@ service 'postfix' do
   action :stop
 end
 
-
-
 # Enable multi-instance support
-# Create new instance
 POSTMULTI_INIT_GUARD = ::File.join( FILE_CACHE_DIR, ".postfix-postmulti-init" )
 execute "#{print_postmulti_init()} && touch #{POSTMULTI_INIT_GUARD}" do
   creates POSTMULTI_INIT_GUARD
@@ -87,18 +82,18 @@ if NODE_TYPE == 'delivery' || NODE_TYPE == 'internet-delivery'
   'postfix',
   SQS_MESSAGE_CONSUMER_SERVICE_NAME
 ]
-end
-
-if NODE_TYPE == 'submit' || NODE_TYPE == 'customer-submit'
-  if ACCOUNT != 'sandbox'
-     MANAGED_SERVICES_IN_START_ORDER = [
-        JILTER_SERVICE_NAME,
-        'postfix'
-    ]
-  else
-    MANAGED_SERVICES_IN_START_ORDER = [
-        'postfix'
-    ]
+else
+  if NODE_TYPE == 'submit' || NODE_TYPE == 'customer-submit'
+    if ACCOUNT != 'sandbox'
+       MANAGED_SERVICES_IN_START_ORDER = [
+          JILTER_SERVICE_NAME,
+          'postfix'
+      ]
+    else
+      MANAGED_SERVICES_IN_START_ORDER = [
+          'postfix'
+      ]
+    end
   end
 end
 
