@@ -85,13 +85,11 @@ if ACCOUNT == 'sandbox'
   end
 
   # Change ownership tp postfix user
-  if INSTANCE_NAME == 'is'
-    execute 'change_ownership_to_postfix' do
+  execute 'change_ownership_to_postfix' do
       user 'root'
       command <<-EOH
           chown -R postfix /var/lib/#{instance_name(INSTANCE_NAME)}
       EOH
-    end
   end
 
   # Update postfix to call jilter as external service
