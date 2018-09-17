@@ -1,6 +1,8 @@
 # Sandbox settings
-sandbox_env = ENV['DEFAULT_ENVIRONMENT']
-if sandbox_env == "sandbox"
+ENVIRONMENT = ENV['DEFAULT_ENVIRONMENT']
+INSTANCE_TYPE = ENV['INSTANCE_TYPE']
+
+if ENVIRONMENT == "sandbox"
     default['ipaddress']                   = '127.0.0.1'
     default['sophos_cloud']['region']      = ENV['DEFAULT_REGION']
     default['sophos_cloud']['environment'] = ENV['DEFAULT_ENVIRONMENT']
@@ -15,4 +17,8 @@ if sandbox_env == "sandbox"
 
     default['xgemail']['sxl_dbl']          = 'fake-domain.com'
     default['xgemail']['sxl_rbl']          = 'fake-domain.com'
+
+    if INSTANCE_TYPE == "customer-submit"
+        default['ec2']['instance_id']          = ENV['INSTANCE_ID']
+    end
 end

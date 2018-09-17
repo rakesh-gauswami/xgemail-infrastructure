@@ -72,20 +72,41 @@ if ACCOUNT == 'sandbox'
   [
       'inet_interfaces = all'
   ].each do | cur |
-    execute print_postconf( 'cs', "'#{cur}'")
+    execute print_postconf_init( "'#{cur}'")
   end
 end
+
+if ACCOUNT == 'sandbox' && INSTANCE_NAME == 'is'
+  execute 'change_ownership_to_postfix' do
+    user 'root'
+    command <<-EOH
+      chown -R postfix /var/lib/#{instance_name(INSTANCE_NAME)}
+    EOH
+  end
+end
+
 
 # Create new instance
 MULTI_CREATE_GUARD = ::File.join( FILE_CACHE_DIR, ".create-postfix-instance-#{INSTANCE_NAME}" )
 execute "#{print_postmulti_create( INSTANCE_NAME )} && touch #{MULTI_CREATE_GUARD}" do
   creates MULTI_CREATE_GUARD
+  ignore_failure true
 end
 
+
+if ACCOUNT == 'sandbox'
+  [
+      'inet_interfaces = all'
+  ].each do | cur |
+    execute print_postconf( 'cs', "'#{cur}'")
+  end
+end
 
 CONFIGURATION_COMMANDS.each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
 end
+
+
 
 [
   # Revert to default value for 'master_service_disable'
