@@ -34,12 +34,20 @@ CONFIGURATION_COMMANDS_SANDBOX =
 
 SQS_MESSAGE_CONSUMER_SERVICE_NAME = node['xgemail']['sqs_message_consumer_service_name']
 
+
+service 'postfix' do
+  supports :restart => true, :start => true, :stop => true, :reload => true
+  action :stop
+end
+
 if ACCOUNT != 'sandbox'
   JILTER_SERVICE_NAME = node['xgemail']['jilter_service_name']
+
   # First configure default instance
   CONFIGURATION_COMMANDS.each do | cur |
     execute "postconf '#{cur}'"
-    end
+  end
+
 else
   # First configure default instance
   CONFIGURATION_COMMANDS_SANDBOX.each do | cur |
@@ -47,12 +55,10 @@ else
   end
 end
 
-service 'postfix' do
-  supports :restart => true, :start => true, :stop => true, :reload => true
-  action :stop
-end
+
 
 # Enable multi-instance support
+# Create new instance
 POSTMULTI_INIT_GUARD = ::File.join( FILE_CACHE_DIR, ".postfix-postmulti-init" )
 execute "#{print_postmulti_init()} && touch #{POSTMULTI_INIT_GUARD}" do
   creates POSTMULTI_INIT_GUARD
