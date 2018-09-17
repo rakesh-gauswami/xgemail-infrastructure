@@ -14,6 +14,7 @@
 ::Chef::Recipe.send(:include, ::SophosCloudXgemail::Helper)
 ::Chef::Resource.send(:include, ::SophosCloudXgemail::Helper)
 
+ACCOUNT = node['sophos_cloud']['environment']
 FILE_CACHE_DIR = ::Chef::Config[:file_cache_path]
 
 CONFIGURATION_COMMANDS =
@@ -27,7 +28,10 @@ CONFIGURATION_COMMANDS =
   ]
 
 SQS_MESSAGE_CONSUMER_SERVICE_NAME = node['xgemail']['sqs_message_consumer_service_name']
-#JILTER_SERVICE_NAME = node['xgemail']['jilter_service_name']
+
+if ACCOUNT != 'sandbox'
+  JILTER_SERVICE_NAME = node['xgemail']['jilter_service_name']
+end
 
 service 'postfix' do
   supports :restart => true, :start => true, :stop => true, :reload => true
@@ -71,11 +75,19 @@ if NODE_TYPE == 'delivery' || NODE_TYPE == 'internet-delivery'
 ]
 end
 
-if NODE_TYPE == 'submit' || NODE_TYPE == 'customer-submit'
-  MANAGED_SERVICES_IN_START_ORDER = [
-      #JILTER_SERVICE_NAME,
-      'postfix'
-  ]
+if ACCOUNT != 'sandbox'
+  if NODE_TYPE == 'submit' || NODE_TYPE == 'customer-submit'
+    MANAGED_SERVICES_IN_START_ORDER = [
+        JILTER_SERVICE_NAME,
+        'postfix'
+    ]
+  end
+else
+  if NODE_TYPE == 'submit' || NODE_TYPE == 'customer-submit'
+    MANAGED_SERVICES_IN_START_ORDER = [
+        'postfix'
+    ]
+  end
 end
 
 MANAGED_SERVICES_IN_START_ORDER.each do | cur |
