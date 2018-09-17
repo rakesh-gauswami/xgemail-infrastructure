@@ -20,7 +20,10 @@ CONFIGURATION_COMMANDS =
   node['xgemail']['common_instance_config_params'] +
   [
     # Disable inet services for default instance
-    'master_service_disable = inet'
+    'master_service_disable = inet',
+
+    # Sandbox setup for inet_protocols = ipv4
+    'inet_protocols = ipv4'
   ]
 
 SQS_MESSAGE_CONSUMER_SERVICE_NAME = node['xgemail']['sqs_message_consumer_service_name']
@@ -33,11 +36,10 @@ end
 
 # First configure default instance
 CONFIGURATION_COMMANDS.each do | cur |
-  execute "postconf '#{cur}'"
+  execute "postconf -e '#{cur}'"
 end
 
 # Enable multi-instance support
-# Create new instance
 POSTMULTI_INIT_GUARD = ::File.join( FILE_CACHE_DIR, ".postfix-postmulti-init" )
 execute "#{print_postmulti_init()} && touch #{POSTMULTI_INIT_GUARD}" do
   creates POSTMULTI_INIT_GUARD

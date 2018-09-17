@@ -1,22 +1,20 @@
 version: '3'
 services:
-  postfix:
-    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:latest
-    container_name: postfix
-    hostname: submit 
-    domainname: sandbox.sophos
+  internet-submit:
+    image: postfix:latest
+    container_name: internet-submit
+    hostname: internet-submit 
+    domainname: local.sandbox.hydra.sophos.com
     ports:
       - '25:25' #SMTP
     environment:
-      - HOSTNAME_EXTERNAL=postfix
+      - HOSTNAME_EXTERNAL=internet-submit
+      - INSTANCE_TYPE=submit
       - DEFAULT_REGION=local
-      - DEBUG=1
+      - DEFAULT_ENVIRONMENT=sandbox
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /opt/sophos/xgemail:/opt/sophos/xgemail
-      - ~/g/email/xgemail-infrastructure/docker/postfix/etc/postfix-is:/etc/postfix-is:rw
-      - ~/g/email/xgemail-infrastructure/docker/postfix/etc/ssl:/etc/ssl:ro
+      - ~/g/email/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
 networks:
   default:
     external:

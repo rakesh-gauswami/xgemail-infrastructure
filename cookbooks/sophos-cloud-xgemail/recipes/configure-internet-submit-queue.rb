@@ -148,26 +148,30 @@ end
 
 CONFIGURATION_COMMANDS =
   [
-    'smtpd_upstream_proxy_protocol = haproxy',
+    #'smtpd_upstream_proxy_protocol = haproxy',
 
     # Server side TLS configuration
-    'smtpd_tls_security_level = may',
-    'smtpd_tls_ciphers = high',
-    'smtpd_tls_mandatory_ciphers = high',
-    'smtpd_tls_loglevel = 1',
-    'smtpd_tls_received_header = yes',
-    "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
-    "smtpd_tls_key_file = #{KEY_FILE}",
+    #'smtpd_tls_security_level = may',
+    #'smtpd_tls_ciphers = high',
+    #'smtpd_tls_mandatory_ciphers = high',
+    #'smtpd_tls_loglevel = 1',
+    #'smtpd_tls_received_header = yes',
+    #"smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
+    #"smtpd_tls_key_file = #{KEY_FILE}",
 
     # Recipient restrictions
+    #'smtpd_recipient_restrictions = ' +
+    #  "reject_rhsbl_reverse_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
+    #  "reject_rhsbl_sender #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
+    #  "reject_rhsbl_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
+    #  "reject_rbl_client #{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES}, " +
+    #  "check_recipient_access hash:$config_directory/#{RECIPIENT_ACCESS_FILENAME}, " +
+    #  "check_sender_access hash:$config_directory/#{SOFT_RETRY_SENDERS_MAP_FILENAME}, " +
+    #  'reject',
+
     'smtpd_recipient_restrictions = ' +
-      "reject_rhsbl_reverse_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
-      "reject_rhsbl_sender #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
-      "reject_rhsbl_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
-      "reject_rbl_client #{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES}, " +
-      "check_recipient_access hash:$config_directory/#{RECIPIENT_ACCESS_FILENAME}, " +
-      "check_sender_access hash:$config_directory/#{SOFT_RETRY_SENDERS_MAP_FILENAME}, " +
-      'reject',
+        "check_recipient_access hash:$config_directory/recipient_access, " +
+        'reject',
 
     # Sender restrictions
     'smtpd_sender_restrictions = ' +

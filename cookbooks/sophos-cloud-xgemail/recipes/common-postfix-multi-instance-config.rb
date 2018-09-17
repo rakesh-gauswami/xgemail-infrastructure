@@ -11,6 +11,10 @@
 # It will usually be included from the recipe that defines that non-default instance
 #
 
+chef_gem 'aws-sdk' do
+  action [:install]
+end
+
 require 'aws-sdk'
 
 # Include Helper library
@@ -52,17 +56,39 @@ CONFIGURATION_COMMANDS =
     'mynetworks_style=subnet',
 
     'smtpd_discard_ehlo_keywords = silent-discard, dsn',
-    'notify_classes ='
+    'notify_classes =',
+
+    # Sandbox setup for inet_interfaces = all
+    'inet_interfaces = all'
   ]
 
 # Create new instance
-#MULTI_CREATE_GUARD = ::File.join( FILE_CACHE_DIR, ".create-postfix-instance-#{INSTANCE_NAME}" )
-#execute "#{print_postmulti_create( INSTANCE_NAME )} && touch #{MULTI_CREATE_GUARD}" do
-#  creates MULTI_CREATE_GUARD
-#end
+MULTI_CREATE_GUARD = ::File.join( FILE_CACHE_DIR, ".create-postfix-instance-#{INSTANCE_NAME}" )
+execute "#{print_postmulti_create( INSTANCE_NAME )} && touch #{MULTI_CREATE_GUARD}" do
+  creates MULTI_CREATE_GUARD
+  ignore_failure true
+end
+
+# Sandbox only
+# Modify stock main.cf for newly created INSTANCE_NAME
+execute 'modify_main.cf' do
+  user 'root'
+  command <<-EOH
+      sed -i -e 's/\inet_interfaces = localhost/\inet_interfaces = all/' /etc/#{instance_name(INSTANCE_NAME)}/main.cf
+  EOH
+end
+
+# Sandbox only
+# Change ownership tp postfix user
+execute 'change_ownership_to_postfix' do
+  user 'root'
+  command <<-EOH
+      chown -R postfix /var/lib/#{instance_name(INSTANCE_NAME)}
+  EOH
+end
 
 CONFIGURATION_COMMANDS.each do | cur |
-  execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+  execute print_postmulti_cmd( INSTANCE_NAME, "postconf -e '#{cur}'" )
 end
 
 [
