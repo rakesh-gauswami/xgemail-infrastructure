@@ -35,7 +35,7 @@ services:
     ports:
       - '4010:4010'
     networks:
-    - novanet
+      - novanet
 
   internet-submit:
     image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:1.0.0
@@ -43,15 +43,15 @@ services:
     hostname: internet-submit
     domainname: local.sandbox.hydra.sophos.com
     ports:
-    - '6025:25' #SMTP
+      - '6025:25' #SMTP
     environment:
-    - HOSTNAME_EXTERNAL=internet-submit
-    - INSTANCE_TYPE=submit
-    - DEFAULT_REGION=local
-    - DEFAULT_ENVIRONMENT=sandbox
+      - HOSTNAME_EXTERNAL=internet-submit
+      - INSTANCE_TYPE=submit
+      - DEFAULT_REGION=local
+      - DEFAULT_ENVIRONMENT=sandbox
     volumes:
-    - /sys/fs/cgroup:/sys/fs/cgroup:ro
-    - ~/g/email/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - ~/g/email/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
     networks:
       - novanet
 
