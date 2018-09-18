@@ -72,7 +72,7 @@ def build_policy_map(recipients, awsregion = None, policy_bucket_name = None, po
             if not customer_policy:
                 return None
 
-            if (is_toc_enabled != "true"):
+            if (is_toc_enabled != "true"): #Not to read endpoint policy for ToC config if found enabled for processed recipients
                 userid = customer_policy['userId']
                 logger.debug("Reading endpoint policy for recipient {0} and userid {1}".format(recipient,userid))
                 if (awsregion and policy_bucket_name and read_from_s3):
@@ -83,10 +83,11 @@ def build_policy_map(recipients, awsregion = None, policy_bucket_name = None, po
                 is_toc_enabled = policy_attributes['xgemail/toc/enabled']
                 logger.debug("Recipient {0} has ToC on : {1}".format(recipient,is_toc_enabled))
 
-            retrieve_policy_id_and_add_to_policy_list(customer_policy, policy_list, recipient)
-            retrieve_user_id_and_add_to_user_list(customer_policy, user_list, recipient)
+            if (is_toc_enabled != "true"): #Not to build polcy map if ToC found enabled for processing / processed recipient
+                retrieve_policy_id_and_add_to_policy_list(customer_policy, policy_list, recipient) #Required to build policy map as ToC may disbale for all recipients to avoid reiteration
+            retrieve_user_id_and_add_to_user_list(customer_policy, user_list, recipient) #user map will have one to one key (userid), value (recipient) mapping
 
-        if (is_toc_enabled == "true"):
+        if (is_toc_enabled == "true"): # Return user map when ToC found enable.
             logger.debug("ToC is enabled so returning user list : [{0}]".format(user_list))
             return user_list
 
