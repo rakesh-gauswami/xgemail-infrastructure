@@ -50,12 +50,10 @@ services:
         - DEFAULT_REGION=local
         - DEFAULT_ENVIRONMENT=sandbox
         - DEBUG=1
-        - repoRoot=~/g/email
       volumes:
         - /sys/fs/cgroup:/sys/fs/cgroup:ro
         - /var/run/docker.sock:/var/run/docker.sock
-        - /opt/sophos/xgemail:/opt/sophos/xgemail
-        - ~/g/email/xgemail-infrastructure/:/etc/email/xgemail-infrastructure
+        - ~/g/email/xgemail-infrastructure/:/opt/sophos/xgemail
       networks:
         - novanet
 networks:
