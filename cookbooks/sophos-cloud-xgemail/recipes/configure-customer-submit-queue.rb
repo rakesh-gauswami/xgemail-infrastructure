@@ -169,4 +169,5 @@ if account != 'sandbox'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_policy_service'
 else
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_utils_structure'
 end
