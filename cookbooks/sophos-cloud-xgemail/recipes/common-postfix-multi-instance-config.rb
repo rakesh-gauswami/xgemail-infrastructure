@@ -26,7 +26,6 @@ require 'aws-sdk'
 ::Chef::Resource.send(:include, ::SophosCloudXgemail::Helper)
 ::Chef::Recipe.send(:include, ::SophosCloudXgemail::AwsHelper)
 
-ACCOUNT = node['sophos_cloud']['environment']
 NODE_TYPE = node['xgemail']['cluster_type']
 
 INSTANCE_DATA = node['xgemail']['postfix_instance_data'][NODE_TYPE]
@@ -86,13 +85,11 @@ if ACCOUNT == 'sandbox'
   end
 
   # Change ownership tp postfix user
-  if INSTANCE_NAME == 'is'
-    execute 'change_ownership_to_postfix' do
+  execute 'change_ownership_to_postfix' do
       user 'root'
       command <<-EOH
           chown -R postfix /var/lib/#{instance_name(INSTANCE_NAME)}
       EOH
-    end
   end
 
   # Update postfix to call jilter as external service
@@ -112,7 +109,7 @@ else
 end
 
 CONFIGURATION_COMMANDS.each do | cur |
-  execute print_postmulti_cmd( INSTANCE_NAME, "postconf -e '#{cur}'" )
+  execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
 end
 
 [
