@@ -44,11 +44,11 @@ FILE_CACHE_DIR = ::Chef::Config[:file_cache_path]
 
 TLS_HIGH_CIPHERLIST = node['xgemail']['tls_high_cipherlist']
 
-if ACCOUNT == 'sandbox'
+#if ACCOUNT == 'sandbox'
   INSTANCE_HOST_NAME = get_hostname_sandbox()
-else
-  INSTANCE_HOST_NAME = get_hostname(NODE_TYPE)
-end
+#else
+#  INSTANCE_HOST_NAME = get_hostname(NODE_TYPE)
+#end
 
 
 CONFIGURATION_COMMANDS =
@@ -94,7 +94,8 @@ if ACCOUNT == 'sandbox'
 
   # Update postfix to call jilter as external service
   [
-      'smtpd_milters = inet:jilter.sandbox.sophos:9876',
+      # TO DO: To be decided where jilter instances are functional
+      #'smtpd_milters = inet:jilter.sandbox.sophos:9876',
       'milter_connect_macros = {client_addr}, {j}',
       'milter_end_of_data_macros = {i}'
   ].each do | cur |
