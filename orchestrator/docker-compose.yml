@@ -37,6 +37,27 @@ services:
     networks:
     - novanet
 
+
+  postfix-cd:
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:1.0.0
+    container_name: postfix-cd
+    hostname: customer-delivery
+    domainname: sandbox.sophos
+    ports:
+      - '25:25' #SMTP
+    environment:
+      - HOSTNAME_EXTERNAL=customer-delivery
+      - INSTANCE_TYPE=customer-delivery
+      - DEFAULT_REGION=local
+      - DEFAULT_ENVIRONMENT=sandbox
+      - DEBUG=1
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ~/g/email/xgemail-infrastructure/:/opt/sophos/xgemail
+    networks:
+      - novanet
+
 networks:
   novanet:
     external:
