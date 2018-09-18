@@ -17,16 +17,9 @@ import json
 class AwsHandler(object):
     def __init__(self, aws_region):
         self.aws_region = aws_region
-        if aws_region != local:
-
-            self.s3_client = boto3.client("s3", region_name=aws_region)
-            self.sqs_client = boto3.client("sqs", region_name=aws_region)
-            self.sns_client = boto3.client("sns", region_name=aws_region)
-        else:
-            self.s3_client  = boto3.client("s3", region_name=aws_region, aws_access_key_id='', aws_secret_access_key='', endpoint_url='http://localstack-xgemail:4572')
-            self.sqs_client = boto3.client("sqs", region_name=aws_region, aws_access_key_id='', aws_secret_access_key='', endpoint_url='http://localstack-xgemail:4576')
-            self.sns_client = boto3.client("sns", region_name=aws_region, aws_access_key_id='', aws_secret_access_key='', endpoint_url='http://localstack-xgemail:4575')
-
+        self.s3_client = boto3.client("s3", region_name=aws_region)
+        self.sqs_client = boto3.client("sqs", region_name=aws_region)
+        self.sns_client = boto3.client("sns", region_name=aws_region)
 
     # puts data into S3 bucket
     def upload_data_in_s3(self, bucket, key, data, expires, encryption):
