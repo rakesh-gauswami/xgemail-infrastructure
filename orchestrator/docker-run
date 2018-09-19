@@ -6,13 +6,35 @@
 # names mentioned are trademarks or registered trademarks of their
 # respective owners.
 
-docker-compose up -d
-sleep 5
+function up()
+{
+    docker-compose up -d
+    sleep 5
 
-for container in $(docker ps --filter='ancestor=postfix' --format {{.Names}})
-  do
-    echo "Running configurations for ${container}"
-    docker exec ${container} sh -c '/opt/run.sh'
-  done
+    for container in $(docker ps --filter='ancestor=postfix' --format {{.Names}})
+      do
+        echo "Running configurations for ${container}"
+        docker exec ${container} sh -c '/opt/run.sh'
+      done
 
-echo Done
+    echo Done
+}
+
+function setup_profile()
+{
+    # Check if profile exists, create otherwise
+    if [[ $(aws configure --profile docker-amzn list) && $? -ne 0 ]]; then
+        echo "Creating AWS profile to pull docker images"
+        $(
+            aws configure set aws_secret_access_key AltCuzTgU27TnYmRIQoJ7iJhwrqwY4WB0xZ2ovO4 --profile docker-amzn &&
+            aws configure set aws_access_key_id AKIAIMKUB4FSRCN5MECQ --profile docker-amzn &&
+            aws configure set region us-east-2 --profile docker-amzn
+        ) || exit 1
+    fi
+
+    # Login using the profile
+    $(aws ecr get-login --no-include-email --region us-east-2 --profile docker-amzn) || exit 1
+}
+
+setup_profile
+up
