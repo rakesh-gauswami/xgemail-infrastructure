@@ -86,13 +86,13 @@ MANAGED_SERVICES_IN_START_ORDER =
 
 NODE_TYPE = node['xgemail']['cluster_type']
 
-if NODE_TYPE == 'delivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'encryption-delivery'
+if NODE_TYPE == 'delivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'customer-encryption'
   MANAGED_SERVICES_IN_START_ORDER = [
   'postfix',
   SQS_MESSAGE_CONSUMER_SERVICE_NAME
 ]
 else
-  if NODE_TYPE == 'submit' || NODE_TYPE == 'customer-submit'
+  if NODE_TYPE == 'submit' || NODE_TYPE == 'customer-submit' || NODE_TYPE == 'customer-encryption'
     if ACCOUNT != 'sandbox'
        MANAGED_SERVICES_IN_START_ORDER = [
           JILTER_SERVICE_NAME,
