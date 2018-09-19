@@ -27,6 +27,16 @@ services:
     networks:
       - novanet
 
+  cyren:
+      image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/cyren:latest
+      container_name: cyren
+      hostname: cyren
+      domainname: sandbox.sophos
+      ports:
+        - '8088:8088' #cyren port
+      networks:
+        - novanet
+
   savi:
     image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/savi:latest
     container_name: savi
@@ -37,6 +47,25 @@ services:
     networks:
     - novanet
 
+ postfix-cs:
+      image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:1.0.0
+      container_name: postfix-cs
+      hostname: customer-submit
+      domainname: local.sandbox.hydra.sophos.com
+      ports:
+        - '4025:25' #SMTP
+      environment:
+        - HOSTNAME_EXTERNAL=customer-submit
+        - INSTANCE_TYPE=customer-submit
+        - DEFAULT_REGION=local
+        - DEFAULT_ENVIRONMENT=sandbox
+        - DEBUG=1
+      volumes:
+        - /sys/fs/cgroup:/sys/fs/cgroup:ro
+        - /var/run/docker.sock:/var/run/docker.sock
+        - $XGEMAIL_HOME/xgemail-infrastructure/:/opt/sophos/xgemail
+      networks:
+        - novanet
 
   postfix-cd:
     image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:1.0.0
@@ -57,6 +86,7 @@ services:
       - $XGEMAIL_HOME/xgemail-infrastructure/:/opt/sophos/xgemail
     networks:
       - novanet
+
 
 networks:
   novanet:

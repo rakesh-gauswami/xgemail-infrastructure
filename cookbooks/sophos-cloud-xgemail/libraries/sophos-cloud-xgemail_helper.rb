@@ -43,11 +43,6 @@ module SophosCloudXgemail
       return "postconf -c /etc/#{instance_name(instance)} -e #{param}"
     end
 
-
-    def print_postconf_init (param )
-      return "postconf -e #{param}"
-    end
-
     def print_postmulti_create ( instance )
       return \
         "postmulti -I '#{instance_name(instance)}'" \
@@ -195,7 +190,7 @@ module SophosCloudXgemail
       end
     end
 
-    def get_hostname_sandbox ( )
+    def get_hostname_sandbox ()
       return 'localhost'
     end
 
