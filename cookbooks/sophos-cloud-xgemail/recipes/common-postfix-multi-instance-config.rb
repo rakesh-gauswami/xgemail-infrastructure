@@ -44,12 +44,7 @@ FILE_CACHE_DIR = ::Chef::Config[:file_cache_path]
 
 TLS_HIGH_CIPHERLIST = node['xgemail']['tls_high_cipherlist']
 
-#if ACCOUNT == 'sandbox'
-  INSTANCE_HOST_NAME = get_hostname_sandbox()
-#else
-#  INSTANCE_HOST_NAME = get_hostname(NODE_TYPE)
-#end
-
+INSTANCE_HOST_NAME = get_hostname(NODE_TYPE)
 
 CONFIGURATION_COMMANDS =
   node['xgemail']['common_instance_config_params'] +
