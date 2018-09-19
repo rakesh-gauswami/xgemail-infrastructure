@@ -6,6 +6,9 @@
 
 * The orchestrator is part of the xgemail repo
 * 
+# Environment variables 
+export XGEMAIL_HOME={path up to email repo}
+example: export XGEMAIL_HOME=~/g/email
 
 # For Integration Tests to work
 1. Add to /etc/hosts

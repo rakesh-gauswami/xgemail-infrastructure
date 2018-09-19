@@ -10,6 +10,7 @@
 #
 
 NODE_TYPE = node['xgemail']['cluster_type']
+account =  node['sophos_cloud']['environment']
 
 if NODE_TYPE != 'customer-submit'
   return
@@ -65,20 +66,23 @@ GLOBAL_SIGN_DIR = "#{LOCAL_CERT_PATH}/3rdparty/global-sign"
 GLOBAL_SIGN_INTERMEDIARY = "#{GLOBAL_SIGN_DIR}/global-sign-sha256-intermediary.crt"
 GLOBAL_SIGN_ROOT = "#{GLOBAL_SIGN_DIR}/global-sign-root.crt"
 
-# Add xgemail certificate
-remote_file "/etc/ssl/certs/#{CERT_NAME}.crt" do
-  source "file:///tmp/sophos/certificates/api-mcs-mob-prod.crt"
-  owner 'root'
-  group 'root'
-  mode 0444
-end
+if account != 'sandbox'
+  # Add xgemail certificate
+  remote_file "/etc/ssl/certs/#{CERT_NAME}.crt" do
+    source "file:///tmp/sophos/certificates/api-mcs-mob-prod.crt"
+    owner 'root'
+    group 'root'
+    mode 0444
+  end
 
-# Add xgemail key
-remote_file "/etc/ssl/private/#{CERT_NAME}.key" do
-  source "file:///tmp/sophos/certificates/appserver.key"
-  owner 'root'
-  group 'root'
-  mode 0440
+  # Add xgemail key
+  remote_file "/etc/ssl/private/#{CERT_NAME}.key" do
+    source "file:///tmp/sophos/certificates/appserver.key"
+    owner 'root'
+    group 'root'
+    mode 0440
+  end
+
 end
 
 CREATE_SERVER_PEM_COMMAND = 'cat ' +
@@ -94,7 +98,9 @@ file SERVER_PEM_FILE do
   action :create
 end
 
-execute CREATE_SERVER_PEM_COMMAND
+if account != 'sandbox'
+  execute CREATE_SERVER_PEM_COMMAND
+end
 
 RBL_REPLY_MAPS_FILENAME = 'rbl_reply_maps'
 
@@ -120,43 +126,55 @@ file RBL_REPLY_MAPS_FILENAME do
   notifies :run, "execute[#{RBL_REPLY_MAPS_FILENAME}]", :immediately
 end
 
-CONFIGURATION_COMMANDS =
+if account != 'sandbox'
+
+  CONFIGURATION_COMMANDS =
+      [
+          'smtpd_upstream_proxy_protocol = haproxy',
+
+          # Server side TLS configuration
+          'smtpd_tls_security_level = may',
+          'smtpd_tls_ciphers = high',
+          'smtpd_tls_mandatory_ciphers = high',
+          'smtpd_tls_loglevel = 1',
+          'smtpd_tls_received_header = yes',
+          "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
+          "smtpd_tls_key_file = #{KEY_FILE}",
+
+          # Recipient restrictions
+          'smtpd_recipient_restrictions = ' +
+              "reject_rhsbl_reverse_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
+              "reject_rhsbl_sender #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
+              "reject_rhsbl_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
+              "reject_rbl_client #{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES}, " +
+              'permit',
+
+          'relay_domains = static:ALL',
+
+          # Sender restrictions
+          'smtpd_sender_restrictions = ' +
+              "reject_non_fqdn_sender",
+
+          # RBL response configuration
+          "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_FILENAME}"
+      ]
+
+  CONFIGURATION_COMMANDS.each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+  end
+
+  include_recipe 'sophos-cloud-xgemail::setup_dh_params'
+  include_recipe 'sophos-cloud-xgemail::install_jilter_outbound'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_policy_service'
+else
+
   [
-    'smtpd_upstream_proxy_protocol = haproxy',
+      # RBL response configuration
+      "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_FILENAME}"
+  ] .each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+  end
 
-    # Server side TLS configuration
-    'smtpd_tls_security_level = may',
-    'smtpd_tls_ciphers = high',
-    'smtpd_tls_mandatory_ciphers = high',
-    'smtpd_tls_loglevel = 1',
-    'smtpd_tls_received_header = yes',
-    "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
-    "smtpd_tls_key_file = #{KEY_FILE}",
-
-    # Recipient restrictions
-    'smtpd_recipient_restrictions = ' +
-      "reject_rhsbl_reverse_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
-      "reject_rhsbl_sender #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
-      "reject_rhsbl_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
-      "reject_rbl_client #{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES}, " +
-      'permit',
-
-    'relay_domains = static:ALL',
-
-    # Sender restrictions
-    'smtpd_sender_restrictions = ' +
-      "reject_non_fqdn_sender",
-
-    # RBL response configuration
-    "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_FILENAME}"
-  ]
-
-CONFIGURATION_COMMANDS.each do | cur |
-  execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
 end
-
-
-include_recipe 'sophos-cloud-xgemail::setup_dh_params'
-include_recipe 'sophos-cloud-xgemail::install_jilter_outbound'
-include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
-include_recipe 'sophos-cloud-xgemail::setup_xgemail_policy_service'
