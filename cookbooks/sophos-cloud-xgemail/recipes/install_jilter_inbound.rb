@@ -12,7 +12,6 @@
 package 'tar'
 
 NODE_TYPE = node['xgemail']['cluster_type']
-ENVIRONMENT = ENV['DEFAULT_ENVIRONMENT']
 
 # Make sure we're on an internet submit node
 if NODE_TYPE != 'submit'
@@ -143,29 +142,15 @@ template 'xgemail.jilter.service.sh' do
 end
 
 # Create the jilter application properties
-
-if ENVIRONMENT == "sandbox"
-  template 'xgemail.jilter.properties' do
-    path JILTER_APPLICATION_PROPERTIES_PATH
-    source 'jilter-inbound-application.properties.erb'
-    mode '0700'
-    owner SERVICE_USER
-    group SERVICE_USER
-    variables(
-        :policy_bucket => POLICY_BUCKET_NAME,
-        :active_profile => ACTIVE_PROFILE
-  end
-
-else
-  template 'xgemail.jilter.properties' do
-    path JILTER_APPLICATION_PROPERTIES_PATH
-    source 'jilter-inbound-application.properties.erb'
-    mode '0700'
-    owner SERVICE_USER
-    group SERVICE_USER
-    variables(
-        :policy_bucket => POLICY_BUCKET_NAME
-  end
+template 'xgemail.jilter.properties' do
+  path JILTER_APPLICATION_PROPERTIES_PATH
+  source 'jilter-inbound-application.properties.erb'
+  mode '0700'
+  owner SERVICE_USER
+  group SERVICE_USER
+  variables(
+      :policy_bucket => POLICY_BUCKET_NAME,
+      :active_profile => ACTIVE_PROFILE
 end
 
 template 'xgemail-jilter-service' do
