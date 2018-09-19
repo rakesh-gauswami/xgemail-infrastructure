@@ -53,7 +53,7 @@ services:
     hostname: internet-submit
     domainname: local.sandbox.hydra.sophos.com
     ports:
-      - '6025:25' #SMTP
+      - '5225:25' #SMTP
     environment:
       - HOSTNAME_EXTERNAL=internet-submit
       - INSTANCE_TYPE=submit
@@ -61,7 +61,7 @@ services:
       - DEFAULT_ENVIRONMENT=sandbox
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
-      - ~/g/email/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
+      - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
     networks:
       - novanet
 
@@ -80,8 +80,7 @@ services:
         - DEBUG=1
       volumes:
         - /sys/fs/cgroup:/sys/fs/cgroup:ro
-        - /var/run/docker.sock:/var/run/docker.sock
-        - $XGEMAIL_HOME/xgemail-infrastructure/:/opt/sophos/xgemail
+        - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
       networks:
         - novanet
 
@@ -100,8 +99,7 @@ services:
       - DEBUG=1
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
-      - /var/run/docker.sock:/var/run/docker.sock
-      - $XGEMAIL_HOME/xgemail-infrastructure/:/opt/sophos/xgemail
+      - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
     networks:
       - novanet
 
