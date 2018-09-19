@@ -126,47 +126,55 @@ file RBL_REPLY_MAPS_FILENAME do
   notifies :run, "execute[#{RBL_REPLY_MAPS_FILENAME}]", :immediately
 end
 
-CONFIGURATION_COMMANDS =
-  [
-    'smtpd_upstream_proxy_protocol = haproxy',
-
-    # Server side TLS configuration
-    'smtpd_tls_security_level = may',
-    'smtpd_tls_ciphers = high',
-    'smtpd_tls_mandatory_ciphers = high',
-    'smtpd_tls_loglevel = 1',
-    'smtpd_tls_received_header = yes',
-    "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
-    "smtpd_tls_key_file = #{KEY_FILE}",
-
-    # Recipient restrictions
-    'smtpd_recipient_restrictions = ' +
-      "reject_rhsbl_reverse_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
-      "reject_rhsbl_sender #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
-      "reject_rhsbl_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
-      "reject_rbl_client #{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES}, " +
-      'permit',
-
-    'relay_domains = static:ALL',
-
-    # Sender restrictions
-    'smtpd_sender_restrictions = ' +
-      "reject_non_fqdn_sender",
-
-    # RBL response configuration
-    "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_FILENAME}"
-  ]
-
-CONFIGURATION_COMMANDS.each do | cur |
-  execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
-end
-
-
 if account != 'sandbox'
+
+  CONFIGURATION_COMMANDS =
+      [
+          'smtpd_upstream_proxy_protocol = haproxy',
+
+          # Server side TLS configuration
+          'smtpd_tls_security_level = may',
+          'smtpd_tls_ciphers = high',
+          'smtpd_tls_mandatory_ciphers = high',
+          'smtpd_tls_loglevel = 1',
+          'smtpd_tls_received_header = yes',
+          "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
+          "smtpd_tls_key_file = #{KEY_FILE}",
+
+          # Recipient restrictions
+          'smtpd_recipient_restrictions = ' +
+              "reject_rhsbl_reverse_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
+              "reject_rhsbl_sender #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
+              "reject_rhsbl_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
+              "reject_rbl_client #{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES}, " +
+              'permit',
+
+          'relay_domains = static:ALL',
+
+          # Sender restrictions
+          'smtpd_sender_restrictions = ' +
+              "reject_non_fqdn_sender",
+
+          # RBL response configuration
+          "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_FILENAME}"
+      ]
+
+  CONFIGURATION_COMMANDS.each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+  end
+
   include_recipe 'sophos-cloud-xgemail::setup_dh_params'
   include_recipe 'sophos-cloud-xgemail::install_jilter_outbound'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_policy_service'
 else
+
+  [
+      # RBL response configuration
+      "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_FILENAME}"
+  ] .each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+  end
+
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
 end
