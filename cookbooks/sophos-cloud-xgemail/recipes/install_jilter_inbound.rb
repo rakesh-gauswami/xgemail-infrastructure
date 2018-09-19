@@ -151,6 +151,7 @@ template 'xgemail.jilter.properties' do
   variables(
       :policy_bucket => POLICY_BUCKET_NAME,
       :active_profile => ACTIVE_PROFILE
+  )
 end
 
 template 'xgemail-jilter-service' do
