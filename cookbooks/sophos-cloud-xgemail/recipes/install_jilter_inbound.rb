@@ -12,6 +12,7 @@
 package 'tar'
 
 NODE_TYPE = node['xgemail']['cluster_type']
+ENVIRONMENT = ENV['DEFAULT_ENVIRONMENT']
 
 # Make sure we're on an internet submit node
 if NODE_TYPE != 'submit'
@@ -42,6 +43,7 @@ LIBOPENDKIM_PACKAGE_NAME = "libopendkim-#{LIBOPENDKIM_VERSION}"
 
 SERVICE_USER = node['xgemail']['jilter_user']
 POLICY_BUCKET_NAME   = node['xgemail']['xgemail_policy_bucket_name']
+ACTIVE_PROFILE = node['xgemail']['xgemail_active_profile']
 
 include_recipe 'sophos-cloud-xgemail::install_jilter_common'
 
@@ -141,15 +143,29 @@ template 'xgemail.jilter.service.sh' do
 end
 
 # Create the jilter application properties
-template 'xgemail.jilter.properties' do
-  path JILTER_APPLICATION_PROPERTIES_PATH
-  source 'jilter-inbound-application.properties.erb'
-  mode '0700'
-  owner SERVICE_USER
-  group SERVICE_USER
-  variables(
-      :policy_bucket => POLICY_BUCKET_NAME
-  )
+
+if ENVIRONMENT == "sandbox"
+  template 'xgemail.jilter.properties' do
+    path JILTER_APPLICATION_PROPERTIES_PATH
+    source 'jilter-inbound-application.properties.erb'
+    mode '0700'
+    owner SERVICE_USER
+    group SERVICE_USER
+    variables(
+        :policy_bucket => POLICY_BUCKET_NAME,
+        :active_profile => ACTIVE_PROFILE
+  end
+
+else
+  template 'xgemail.jilter.properties' do
+    path JILTER_APPLICATION_PROPERTIES_PATH
+    source 'jilter-inbound-application.properties.erb'
+    mode '0700'
+    owner SERVICE_USER
+    group SERVICE_USER
+    variables(
+        :policy_bucket => POLICY_BUCKET_NAME
+  end
 end
 
 template 'xgemail-jilter-service' do

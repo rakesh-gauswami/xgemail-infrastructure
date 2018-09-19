@@ -31,6 +31,7 @@ if ENVIRONMENT == "sandbox"
 
     default['xgemail']['sxl_dbl']          = 'fake-domain.com'
     default['xgemail']['sxl_rbl']          = 'fake-domain.com'
+    default['xgemail']['xgemail_active_profile'] = 'sandbox'
 
     if INSTANCE_TYPE == "customer-submit"
         default['ec2']['instance_id']          = ENV['INSTANCE_ID']
