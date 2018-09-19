@@ -18,7 +18,7 @@
           ami_type:     "{{ami_type}}"
       register: ec2_ami_find_output
   rescue:
-    - name: Find Base AMI ({{alternate_branch}})
+    - name: "Find Base AMI ({{alternate_branch}})"
       ec2_ami_find:
         name: "hmr-core-{{alternate_branch}}-{{ami_type}}-*"
         region: "{{account.region}}"
