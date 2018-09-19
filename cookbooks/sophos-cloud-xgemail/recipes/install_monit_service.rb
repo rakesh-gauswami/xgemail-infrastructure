@@ -20,6 +20,13 @@ cookbook_file '/etc/monit.conf' do
   group 'root'
 end
 
+cookbook_file '/etc/logrotate.d/monit' do
+  source 'logrotate-monit.conf'
+  mode '0644'
+  owner 'root'
+  group 'root'
+end
+
 # Configure monit to log to syslog.
 file '/etc/monit.d/logging' do
   content 'set logfile syslog facility log_daemon'
