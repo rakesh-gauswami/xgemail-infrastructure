@@ -7,7 +7,7 @@
 
 - name: "Set alternate branch for feature branch to fall back to."
   set_fact:
-    alternate_branch: "{{ ami_parent_alternate_feature_branch }}"
+    alternate_branch: "{{ ami.base.ami_parent_alternate_feature_branch }}"
   when: build.branch | search('feature/')
 
 - name: "Set alternate branch for release and develop branch to fall back to."
