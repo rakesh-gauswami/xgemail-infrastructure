@@ -193,7 +193,7 @@ end
 if ACCOUNT == 'sandbox'
   [
     # RBL response configuration
-    "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_FILENAME}",
+    "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_FILENAME}"
   ].each do | cur |
     execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
   end
