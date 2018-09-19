@@ -12,7 +12,7 @@ function up()
     docker-compose up -d
     sleep 5
 
-    for container in $(docker ps --filter='ancestor=postfix' --format {{.Names}})
+    for container in $(docker ps | grep postfix | awk '{print $11}')
       do
         echo "Running configurations for ${container}"
         docker exec ${container} sh -c '/opt/run.sh'
@@ -25,12 +25,8 @@ function setup_profile()
 {
     # Check if profile exists, create otherwise
     if [[ $(aws configure --profile docker-amzn list) && $? -ne 0 ]]; then
-        echo "Creating AWS profile to pull docker images"
-        $(
-            aws configure set aws_secret_access_key AltCuzTgU27TnYmRIQoJ7iJhwrqwY4WB0xZ2ovO4 --profile docker-amzn &&
-            aws configure set aws_access_key_id AKIAIMKUB4FSRCN5MECQ --profile docker-amzn &&
-            aws configure set region us-east-2 --profile docker-amzn
-        ) || exit 1
+        echo "AWS docker-amzn profile is not set."
+        exit 1
     fi
 
     # Login using the profile
