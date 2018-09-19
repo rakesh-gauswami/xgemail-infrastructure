@@ -1,4 +1,20 @@
 ---
+
+- name: "Set alternate branch for bugfix branch to fall back to."
+  set_fact:
+    alternate_branch: "{{ ami.base.ami_parent_alternate_bugfix_branch }}"
+  when: build.branch | search('bugfix/')
+
+- name: "Set alternate branch for feature branch to fall back to."
+  set_fact:
+    alternate_branch: "{{ ami_parent_alternate_feature_branch }}"
+  when: build.branch | search('feature/')
+
+- name: "Set alternate branch for release and develop branch to fall back to."
+  set_fact:
+    alternate_branch: "{{ build.branch }}"
+  when: (build.branch | search('release/')) or (build.branch | search('develop'))
+
 - import_tasks: find-base-ami.yml
   when: ami_type == 'base'
 
