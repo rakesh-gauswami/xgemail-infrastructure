@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+# Copyright 2018, Sophos Limited. All rights reserved.
+#
+# 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
+# Sophos Limited and Sophos Group.  All other product and company
+# names mentioned are trademarks or registered trademarks of their
+# respective owners.
+
+#docker-compose up -d
+#sleep 5
+
+for container in $(docker ps --filter='ancestor=postfix' --format {{.Names}})
+  do
+    echo "Running configurations for ${container}"
+    docker exec ${container} sh -c '/opt/run.sh'
+  done
+
+echo Done

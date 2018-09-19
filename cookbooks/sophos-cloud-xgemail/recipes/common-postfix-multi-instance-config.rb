@@ -11,6 +11,14 @@
 # It will usually be included from the recipe that defines that non-default instance
 #
 
+ACCOUNT =  node['sophos_cloud']['environment']
+
+if ACCOUNT == 'sandbox'
+  chef_gem 'aws-sdk' do
+    action [:install]
+  end
+end
+
 require 'aws-sdk'
 
 # Include Helper library
@@ -36,7 +44,12 @@ FILE_CACHE_DIR = ::Chef::Config[:file_cache_path]
 
 TLS_HIGH_CIPHERLIST = node['xgemail']['tls_high_cipherlist']
 
-INSTANCE_HOST_NAME = get_hostname(NODE_TYPE)
+if ACCOUNT == 'sandbox'
+  INSTANCE_HOST_NAME = get_hostname_sandbox()
+else
+  INSTANCE_HOST_NAME = get_hostname(NODE_TYPE)
+end
+
 
 CONFIGURATION_COMMANDS =
   node['xgemail']['common_instance_config_params'] +
@@ -55,10 +68,44 @@ CONFIGURATION_COMMANDS =
     'notify_classes ='
   ]
 
-# Create new instance
-MULTI_CREATE_GUARD = ::File.join( FILE_CACHE_DIR, ".create-postfix-instance-#{INSTANCE_NAME}" )
-execute "#{print_postmulti_create( INSTANCE_NAME )} && touch #{MULTI_CREATE_GUARD}" do
-  creates MULTI_CREATE_GUARD
+# Sandbox only
+if ACCOUNT == 'sandbox'
+  # Create and ignore errors in case of sandbox
+  MULTI_CREATE_GUARD = ::File.join( FILE_CACHE_DIR, ".create-postfix-instance-#{INSTANCE_NAME}" )
+  execute "#{print_postmulti_create( INSTANCE_NAME )} && touch #{MULTI_CREATE_GUARD}" do
+    creates MULTI_CREATE_GUARD
+    ignore_failure true
+  end
+
+  # Modify stock main.cf for newly created INSTANCE_NAME
+  [
+      'inet_interfaces = all'
+  ].each do | cur |
+    execute print_postconf( INSTANCE_NAME, "'#{cur}'")
+  end
+
+  # Change ownership tp postfix user
+  execute 'change_ownership_to_postfix' do
+      user 'root'
+      command <<-EOH
+          chown -R postfix /var/lib/#{instance_name(INSTANCE_NAME)}
+      EOH
+  end
+
+  # Update postfix to call jilter as external service
+  [
+      'smtpd_milters = inet:jilter.sandbox.sophos:9876',
+      'milter_connect_macros = {client_addr}, {j}',
+      'milter_end_of_data_macros = {i}'
+  ].each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+  end
+else
+  # Create new instance
+  MULTI_CREATE_GUARD = ::File.join( FILE_CACHE_DIR, ".create-postfix-instance-#{INSTANCE_NAME}" )
+  execute "#{print_postmulti_create( INSTANCE_NAME )} && touch #{MULTI_CREATE_GUARD}" do
+    creates MULTI_CREATE_GUARD
+  end
 end
 
 CONFIGURATION_COMMANDS.each do | cur |
