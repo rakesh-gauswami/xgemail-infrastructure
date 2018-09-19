@@ -137,7 +137,8 @@ template 'xgemail.jilter.service.sh' do
   group SERVICE_USER
   variables(
       :deployment_dir => DEPLOYMENT_DIR,
-      :property_path => JILTER_APPLICATION_PROPERTIES_PATH
+      :property_path => JILTER_APPLICATION_PROPERTIES_PATH,
+      :active_profile => ACTIVE_PROFILE
   )
 end
 
@@ -149,8 +150,7 @@ template 'xgemail.jilter.properties' do
   owner SERVICE_USER
   group SERVICE_USER
   variables(
-      :policy_bucket => POLICY_BUCKET_NAME,
-      :active_profile => ACTIVE_PROFILE
+      :policy_bucket => POLICY_BUCKET_NAME
   )
 end
 
