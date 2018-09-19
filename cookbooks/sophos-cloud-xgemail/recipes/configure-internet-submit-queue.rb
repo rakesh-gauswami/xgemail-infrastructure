@@ -70,6 +70,47 @@ SXL_RBL_RESPONSE_CODES = "127.0.4.[1;5;6;8;13;14;18;21]"
 # Hosts authorized to make use of the XCLIENT extension
 SMTPD_AUTHORIZED_XCLIENT_HOSTS = node["xgemail"]["smtpd_authorized_xclient_hosts"]
 
+RBL_REPLY_MAPS_FILENAME = 'rbl_reply_maps'
+
+execute RBL_REPLY_MAPS_FILENAME do
+  command lazy {
+    print_postmulti_cmd(
+        INSTANCE_NAME,
+        "postmap 'hash:#{postmulti_config_dir(INSTANCE_NAME)}/#{RBL_REPLY_MAPS_FILENAME}'"
+    )
+  }
+  action :nothing
+end
+
+RBL_MAP_ENTRY = "#{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES} " +
+    '$rbl_code Service unavailable; $rbl_class [$rbl_what] is blacklisted. ' +
+    'Visit https://www.sophos.com/en-us/threat-center/ip-lookup.aspx?ip=$rbl_what ' +
+    'to request delisting' +
+    "\n"
+
+file RBL_REPLY_MAPS_FILENAME do
+  path lazy { "#{postmulti_config_dir(INSTANCE_NAME)}/#{RBL_REPLY_MAPS_FILENAME}" }
+  content RBL_MAP_ENTRY
+  notifies :run, "execute[#{RBL_REPLY_MAPS_FILENAME}]", :immediately
+end
+
+execute SOFT_RETRY_SENDERS_MAP_FILENAME do
+  command lazy {
+    print_postmulti_cmd(
+        INSTANCE_NAME,
+        "postmap 'hash:#{postmulti_config_dir(INSTANCE_NAME)}/#{SOFT_RETRY_SENDERS_MAP_FILENAME}'"
+    )
+  }
+  action :nothing
+end
+
+SOFT_RETRY_SENDERS_MAP_ENTRY = "#{WELCOME_MSG_SENDER} DEFER Recipient address unknown\n"
+
+file SOFT_RETRY_SENDERS_MAP_FILENAME do
+  path lazy { "#{postmulti_config_dir(INSTANCE_NAME)}/#{SOFT_RETRY_SENDERS_MAP_FILENAME}" }
+  content SOFT_RETRY_SENDERS_MAP_ENTRY
+  notifies :run, "execute[#{SOFT_RETRY_SENDERS_MAP_FILENAME}]", :immediately
+end
 
 if ACCOUNT != 'sandbox'
   GLOBAL_SIGN_DIR = "#{LOCAL_CERT_PATH}/3rdparty/global-sign"
@@ -146,51 +187,16 @@ if ACCOUNT != 'sandbox'
     execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
   end
 
-end
+  include_recipe 'sophos-cloud-xgemail::setup_dh_params'
+  include_recipe 'sophos-cloud-xgemail::install_jilter_inbound'
+  include_recipe 'sophos-cloud-xgemail::setup_flag_toggle_internet_submit'
+  include_recipe 'sophos-cloud-xgemail::setup_internet_submit_domain_updater_cron'
+  include_recipe 'sophos-cloud-xgemail::setup_internet_submit_recipient_updater_cron'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_policy_service'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_multi_policy_service'
 
-RBL_REPLY_MAPS_FILENAME = 'rbl_reply_maps'
-
-execute RBL_REPLY_MAPS_FILENAME do
-  command lazy {
-    print_postmulti_cmd(
-      INSTANCE_NAME,
-      "postmap 'hash:#{postmulti_config_dir(INSTANCE_NAME)}/#{RBL_REPLY_MAPS_FILENAME}'"
-    )
-  }
-  action :nothing
-end
-
-RBL_MAP_ENTRY = "#{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES} " +
-  '$rbl_code Service unavailable; $rbl_class [$rbl_what] is blacklisted. ' +
-  'Visit https://www.sophos.com/en-us/threat-center/ip-lookup.aspx?ip=$rbl_what ' +
-  'to request delisting' +
-  "\n"
-
-file RBL_REPLY_MAPS_FILENAME do
-  path lazy { "#{postmulti_config_dir(INSTANCE_NAME)}/#{RBL_REPLY_MAPS_FILENAME}" }
-  content RBL_MAP_ENTRY
-  notifies :run, "execute[#{RBL_REPLY_MAPS_FILENAME}]", :immediately
-end
-
-execute SOFT_RETRY_SENDERS_MAP_FILENAME do
-  command lazy {
-    print_postmulti_cmd(
-      INSTANCE_NAME,
-      "postmap 'hash:#{postmulti_config_dir(INSTANCE_NAME)}/#{SOFT_RETRY_SENDERS_MAP_FILENAME}'"
-    )
-  }
-  action :nothing
-end
-
-SOFT_RETRY_SENDERS_MAP_ENTRY = "#{WELCOME_MSG_SENDER} DEFER Recipient address unknown\n"
-
-file SOFT_RETRY_SENDERS_MAP_FILENAME do
-  path lazy { "#{postmulti_config_dir(INSTANCE_NAME)}/#{SOFT_RETRY_SENDERS_MAP_FILENAME}" }
-  content SOFT_RETRY_SENDERS_MAP_ENTRY
-  notifies :run, "execute[#{SOFT_RETRY_SENDERS_MAP_FILENAME}]", :immediately
-end
-
-if ACCOUNT == 'sandbox'
+else
   [
     # RBL response configuration
     "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_FILENAME}"
@@ -202,13 +208,4 @@ if ACCOUNT == 'sandbox'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_utils_structure'
 
-else
-  include_recipe 'sophos-cloud-xgemail::setup_dh_params'
-  include_recipe 'sophos-cloud-xgemail::install_jilter_inbound'
-  include_recipe 'sophos-cloud-xgemail::setup_flag_toggle_internet_submit'
-  include_recipe 'sophos-cloud-xgemail::setup_internet_submit_domain_updater_cron'
-  include_recipe 'sophos-cloud-xgemail::setup_internet_submit_recipient_updater_cron'
-  include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
-  include_recipe 'sophos-cloud-xgemail::setup_xgemail_policy_service'
-  include_recipe 'sophos-cloud-xgemail::setup_xgemail_multi_policy_service'
 end
