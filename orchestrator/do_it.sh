@@ -83,7 +83,7 @@ gprintf "Waiting for localstack to be fully up."
 count=0
 max_count=12 # Multiply this number by 5 for total wait time, in seconds.
 while [[ $count -le $max_count ]]; do
-    startup_check=$(docker-compose logs localstack-xgemail | grep -c "Ready.")
+    startup_check=$(docker ps --filter='ancestor=localstack/localstack' --format {{.Status}} | grep -c "Up")
     if [[ $startup_check -ne 1 ]]; then
         count=$((count+1))
         sleep 5
