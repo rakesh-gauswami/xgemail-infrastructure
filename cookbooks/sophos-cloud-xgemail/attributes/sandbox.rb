@@ -24,8 +24,8 @@ if ENVIRONMENT == "sandbox"
     default['xgemail']['msg_history_queue_url']      = 'http://localstack-xgemail:4576/queue/Xgemail_MessageHistoryEvent_Delivery'
     default['xgemail']['xgemail_policy_bucket_name'] = 'xgemail-policy'
 
-    default['xgemail']['xgemail_sns_sqs_url']        = 'http://localstack-xgemail:4576/sns/Xgemail_Customer_Delivery_SNS_Listener'
-    default['xgemail']['mail_pic_api_auth']          = 'xgemail-us-east-1-mail'
+    default['xgemail']['xgemail_sns_sqs_url']        = 'http://localstack-xgemail:4576/queue/Xgemail_Customer_Delivery_SNS_Listener'
+    default['xgemail']['mail_pic_api_auth']          = 'us-east-2'
     default['xgemail']['msg_history_status_sns_arn'] = 'arn:aws:sns:us-east-2:xgemail-msg-history-delivery-status-SNS'
     default['sophos_cloud']['connections']           = 'cloud-sandbox-connections'
 
