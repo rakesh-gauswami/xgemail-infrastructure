@@ -63,10 +63,10 @@ def build_policy_map(recipients, aws_region = None, policy_bucket_name = None, p
 
             if (is_toc_enabled != True): #Not to read endpoint policy for ToC config if found enabled for processed recipients
                 endpoint_policy = read_policy_endpoint(recipient, customer_policy['userId'], aws_region, policy_bucket_name, read_from_s3)
-            if not endpoint_policy:
-                return None
+                if not endpoint_policy:
+                    return None
+                is_toc_enabled = read_toc_config(recipient, endpoint_policy)
 
-            is_toc_enabled = read_toc_config(recipient, endpoint_policy)
             if (is_toc_enabled != True): #Not to build polcy map if ToC found enabled for processing / processed recipient
                 retrieve_policy_id_and_add_to_policy_list(customer_policy, policy_list, recipient) #Required to build policy map as ToC may disbale for all recipients to avoid reiteration
             retrieve_user_id_and_add_to_user_list(customer_policy, user_list, recipient) #user map will have one to one key (userid), value (recipient) mapping
