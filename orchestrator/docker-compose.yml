@@ -110,7 +110,7 @@ services:
     hostname: extended-delivery
     domainname: local.sandbox.hydra.sophos.com
     ports:
-      - '6425:25' #SMTP
+      - '5325:25' #SMTP
     environment:
       - HOSTNAME_EXTERNAL=extended-delivery
       - INSTANCE_TYPE=xdelivery
@@ -118,7 +118,7 @@ services:
       - DEFAULT_ENVIRONMENT=sandbox
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
-      - ~/g/email/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
+      - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
     networks:
       - novanet
 
