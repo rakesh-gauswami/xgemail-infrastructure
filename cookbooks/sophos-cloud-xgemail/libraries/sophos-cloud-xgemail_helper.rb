@@ -151,19 +151,27 @@ module SophosCloudXgemail
         when 'customer-submit'
           return "relay-#{region}.#{account}.hydra.sophos.com"
         when 'internet-delivery', 'internet-xdelivery'
-          # Get a clean EIP from the pool and associate to the instance, errors are handled within the function
-          eip = associate_clean_ip()
-          begin
-            # Lookup the reverse DNS record of the EIP and use it as postfix hostname
-            Chef::Log.info("Getting reverse DNS of EIP: #{eip}")
-            hostname = Resolv.getname "#{eip}"
-            raise "Resolved hostname is empty for EIP <#{eip}>" if hostname.nil?
-            Chef::Log.info("Setting postfix hostname: #{hostname}")
-            return hostname
-          rescue
-            Chef::Log.error("ERROR: Cannot resolve hostname from EIP <#{eip}>. Cannot Continue. Exiting")
-            raise "ERROR: Cannot resolve hostname from EIP <#{eip}>. Cannot Continue."
+          if account == 'sandbox'
+            # Return docker instance ip
+            return node['ipaddress']
+          else
+            # Get a clean EIP from the pool and associate to the instance, errors are handled within the function
+            eip = associate_clean_ip()
+            begin
+              # Lookup the reverse DNS record of the EIP and use it as postfix hostname
+              Chef::Log.info("Getting reverse DNS of EIP: #{eip}")
+              hostname = Resolv.getname "#{eip}"
+              raise "Resolved hostname is empty for EIP <#{eip}>" if hostname.nil?
+              Chef::Log.info("Setting postfix hostname: #{hostname}")
+              return hostname
+            rescue
+              Chef::Log.error("ERROR: Cannot resolve hostname from EIP <#{eip}>. Cannot Continue. Exiting")
+              raise "ERROR: Cannot resolve hostname from EIP <#{eip}>. Cannot Continue."
+            end
           end
+      else
+        if account == 'sandbox'
+          return "outbound-#{node['ipaddress'].gsub('.','-')}-#{region}.#{account}.hydra.sophos.com"
         else
           mac = node['macaddress'].downcase
           subnet_id = node['ec2']['network_interfaces_macs'][mac]['subnet_id']
@@ -187,12 +195,8 @@ module SophosCloudXgemail
             Chef::Log.error("ERROR: Unknown error #{e.message}. Cannot Continue. Exiting")
             raise "ERROR: Unknown error #{e.message}. Cannot Continue. Exiting"
           end
+        end
       end
     end
-
-    def get_hostname_sandbox ()
-      return 'localhost'
-    end
-
   end
 end

@@ -55,8 +55,6 @@ else
   end
 end
 
-
-
 # Enable multi-instance support
 # Create new instance
 POSTMULTI_INIT_GUARD = ::File.join( FILE_CACHE_DIR, ".postfix-postmulti-init" )
@@ -71,11 +69,14 @@ ruby_block 'cleanup_config_files' do
   end
 end
 
-
 include_recipe 'sophos-cloud-xgemail::configure-internet-submit-queue'
 include_recipe 'sophos-cloud-xgemail::configure-customer-submit-queue'
 include_recipe 'sophos-cloud-xgemail::configure-customer-delivery-queue'
 include_recipe 'sophos-cloud-xgemail::configure-internet-delivery-queue'
+
+if ACCOUNT == 'sandbox'
+  include_recipe 'sophos-cloud-xgemail::configure-extended-delivery-queue'
+end
 
 MANAGED_SERVICES_IN_START_ORDER =
   [

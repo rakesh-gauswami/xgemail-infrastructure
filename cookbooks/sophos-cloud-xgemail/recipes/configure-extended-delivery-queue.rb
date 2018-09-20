@@ -11,11 +11,19 @@
 
 NODE_TYPE = node['xgemail']['cluster_type']
 
+if NODE_TYPE != 'xdelivery'
+  return
+end
+
+ACCOUNT =  node['sophos_cloud']['environment']
+
 # Include Helper library
 ::Chef::Recipe.send(:include, ::SophosCloudXgemail::Helper)
 ::Chef::Resource.send(:include, ::SophosCloudXgemail::Helper)
 
 FILE_CACHE_DIR = ::Chef::Config[:file_cache_path]
+
+include_recipe 'sophos-cloud-xgemail::common-postfix-multi-instance-config'
 
 CONFIGURATION_COMMANDS =
   node['xgemail']['common_instance_config_params'] +
@@ -81,13 +89,20 @@ CONFIGURATION_COMMANDS.each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
 end
 
-if NODE_TYPE == 'xdelivery'
-  include_recipe 'sophos-cloud-xgemail::configure-bounce-message-customer-delivery-queue'
-  include_recipe 'sophos-cloud-xgemail::setup_customer_delivery_transport_updater_cron'
+if ACCOUNT == 'sandbox'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_utils_structure'
 end
 
-if NODE_TYPE == 'internet-xdelivery'
-  include_recipe 'sophos-cloud-xgemail::configure-bounce-message-internet-delivery-queue'
+if NODE_TYPE == 'xdelivery'
+  include_recipe 'sophos-cloud-xgemail::configure-bounce-message-customer-delivery-queue'
+
+  if ACCOUNT != 'sandbox'
+    include_recipe 'sophos-cloud-xgemail::setup_customer_delivery_transport_updater_cron'
+  end
+else
+  if NODE_TYPE == 'internet-xdelivery'
+    include_recipe 'sophos-cloud-xgemail::configure-bounce-message-internet-delivery-queue'
+  end
 end
 
 MANAGED_SERVICES_IN_START_ORDER.each do | cur |
