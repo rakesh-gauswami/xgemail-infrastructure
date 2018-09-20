@@ -171,7 +171,8 @@ module SophosCloudXgemail
           end
       else
         if account == 'sandbox'
-          return "outbound-#{node['ipaddress'].gsub('.','-')}-#{region}.#{account}.hydra.sophos.com"
+          localip = node['ipaddress'].split(".")
+          return "outbound-#{localip.reverse.join("-")}-#{region}.#{account}.hydra.sophos.com"
         else
           mac = node['macaddress'].downcase
           subnet_id = node['ec2']['network_interfaces_macs'][mac]['subnet_id']
