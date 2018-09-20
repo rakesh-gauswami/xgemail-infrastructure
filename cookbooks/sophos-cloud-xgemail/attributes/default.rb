@@ -89,6 +89,7 @@ default['xgemail']['libspfjni'] = '1.0.0-SNAPSHOT'
 default['xgemail']['libspf2_version'] = '1.2.10-9'
 default['xgemail']['jilter_user'] = 'jilter'
 default['xgemail']['jilter_service_name'] = 'xgemail-jilter-service'
+default['xgemail']['xgemail_active_profile'] = 'aws'
 
 # DKIM specific
 default['xgemail']['libdkimjni'] = '1.0.0-SNAPSHOT'
