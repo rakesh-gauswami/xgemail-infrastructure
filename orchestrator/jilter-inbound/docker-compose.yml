@@ -1,0 +1,24 @@
+version: "3"
+services:
+  jilter-inbound:
+    build: .
+    container_name: jilter-inbound
+    hostname: jilter-inbound
+    domainname: sandbox.sophos
+    environment:
+      - JILTER_VERSION=0.7.9-SNAPSHOT
+    ports:
+      - '9876:9876'
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - ~/g/email/xgemail/xgemail-jilter-inbound/build/distributions:/jilter:rw
+      - ~/.policy-storage:/policy-storage:rw
+    networks:
+      - novanet
+
+networks:
+  default:
+    driver: bridge
+  novanet:
+    external:
+      name: nova_novanet
