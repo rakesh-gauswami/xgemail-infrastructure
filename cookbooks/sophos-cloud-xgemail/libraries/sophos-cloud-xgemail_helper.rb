@@ -151,7 +151,7 @@ module SophosCloudXgemail
         when 'customer-submit'
           return "relay-#{region}.#{account}.hydra.sophos.com"
         when 'customer-encryption'
-                  return "encryption-#{region}.#{account}.hydra.sophos.com"
+          return "encryption-#{region}.#{account}.hydra.sophos.com"
         when 'internet-delivery', 'internet-xdelivery'
           # Get a clean EIP from the pool and associate to the instance, errors are handled within the function
           eip = associate_clean_ip()
