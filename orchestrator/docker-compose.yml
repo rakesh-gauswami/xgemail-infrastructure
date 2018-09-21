@@ -47,9 +47,9 @@ services:
     networks:
       - novanet
 
-  internet-submit:
+  postfix-is:
     image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:1.0.0
-    container_name: internet-submit
+    container_name: postfix-is
     hostname: internet-submit
     domainname: local.sandbox.hydra.sophos.com
     ports:
@@ -103,9 +103,9 @@ services:
     networks:
       - novanet
 
-  extended-delivery:
+  postfix-xd:
     image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:1.0.0
-    container_name: extended-delivery
+    container_name: postfix-xd
     hostname: extended-delivery
     domainname: local.sandbox.hydra.sophos.com
     environment:
@@ -119,9 +119,9 @@ services:
     networks:
       - novanet
 
-  internet-xdelivery:
+  postfix-ix:
     image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:1.0.0
-    container_name: internet-xdelivery
+    container_name: postfix-ix
     hostname: internet-xdelivery
     domainname: local.sandbox.hydra.sophos.com
     environment:
@@ -133,7 +133,7 @@ services:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
       - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
     networks:
-    - novanet
+      - novanet
 
 networks:
   novanet:
