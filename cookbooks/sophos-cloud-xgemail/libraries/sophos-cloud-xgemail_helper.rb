@@ -152,8 +152,8 @@ module SophosCloudXgemail
           return "relay-#{region}.#{account}.hydra.sophos.com"
         when 'internet-delivery', 'internet-xdelivery'
           if account == 'sandbox'
-            # Return docker instance ip
-            return node['ipaddress']
+            # Return docker instance fully qualified domain name
+            return node['fqdn']
           else
             # Get a clean EIP from the pool and associate to the instance, errors are handled within the function
             eip = associate_clean_ip()
