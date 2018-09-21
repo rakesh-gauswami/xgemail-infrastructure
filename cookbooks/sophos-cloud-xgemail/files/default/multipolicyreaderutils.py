@@ -19,11 +19,17 @@ from logging.handlers import SysLogHandler
 
 #Constants
 EFS_POLICY_STORAGE_PATH = '/policy-storage/'
+
 MULTI_POLICY_DOMAINS_PATH = 'config/policies/domains/'
 EFS_MULTI_POLICY_DOMAINS_PATH = EFS_POLICY_STORAGE_PATH + MULTI_POLICY_DOMAINS_PATH
+
+MULTI_POLICY_ENDPOINTS_PATH = 'config/policies/endpoints/'
+EFS_MULTI_POLICY_ENDPOINTS_PATH = EFS_POLICY_STORAGE_PATH + MULTI_POLICY_ENDPOINTS_PATH
+
 EFS_MULTI_POLICY_CONFIG_PATH = EFS_POLICY_STORAGE_PATH + 'config/inbound-relay-control/multi-policy/'
 EFS_MULTI_POLICY_CONFIG_FILE = EFS_MULTI_POLICY_CONFIG_PATH + 'global.CONFIG'
 FLAG_TO_READ_POLICY_FROM_S3_FILE = EFS_MULTI_POLICY_CONFIG_PATH + 'msg_producer_read_policy_from_s3_global.CONFIG'
+FLAG_TO_TOC_USER_BASED_SPLIT = EFS_MULTI_POLICY_CONFIG_PATH + 'msg_producer_toc_user_based_split_global.CONFIG'
 
 logger = logging.getLogger('multi-policy-reader-utils')
 logger.setLevel(logging.INFO)
@@ -34,20 +40,47 @@ formatter = logging.Formatter(
 syslog_handler.formatter = formatter
 logger.addHandler(syslog_handler)
 
-"""This method builds a map with <policy_id> as key 
+"""This method builds a map with <policy_id> as key
 and a list of recipient emails that belong to that policy as values.
 Where the flag to read from s3 is set to true and <aws_region> and <policy_bucket_name> parameters are supplied,
 it will read the policy from s3. Otherwise policy will be read locally via mounted storage
 """
-def build_policy_map(recipients, awsregion = None, policy_bucket_name = None, policies = {}):
-    read_from_s3 = get_read_from_s3_enabled()
-    policy_list = policies.copy()
 
-    if (awsregion and policy_bucket_name and read_from_s3):
+def build_policy_map(recipients, aws_region = None, policy_bucket_name = None, policies = {}):
+    read_from_s3 = get_read_from_s3_enabled()
+    user_based_split = get_user_based_split_enabled()
+    is_toc_enabled = False
+    policy_list = policies.copy()
+    user_list = policies.copy()
+
+    if (user_based_split and len(recipients) > 1):
+        logger.info("ToC user based split block for recipients [{0}]".format(recipients))
+
+        for recipient in recipients:
+            customer_policy = read_policy(recipient, aws_region, policy_bucket_name, read_from_s3)
+            if not customer_policy:
+                return None
+
+            if (is_toc_enabled != True): #Not to read endpoint policy for ToC config if found enabled for processed recipients
+                endpoint_policy = read_policy_endpoint(recipient, customer_policy['userId'], aws_region, policy_bucket_name, read_from_s3)
+                if not endpoint_policy:
+                    return None
+                is_toc_enabled = read_toc_config(recipient, endpoint_policy)
+
+            if (is_toc_enabled != True): #Not to build polcy map if ToC found enabled for processing / processed recipient
+                retrieve_policy_id_and_add_to_policy_list(customer_policy, policy_list, recipient) #Required to build policy map as ToC may disbale for all recipients to avoid reiteration
+            retrieve_user_id_and_add_to_user_list(customer_policy, user_list, recipient) #user map will have one to one key (userid), value (recipient) mapping
+
+        if (is_toc_enabled == True): # Return user map when ToC found enable.
+            logger.info("ToC is enabled so returning user list : [{0}]".format(user_list))
+            return user_list
+
+    elif (aws_region and policy_bucket_name and read_from_s3):
         logger.debug("Reading policy for [{0}] directly from s3".format(recipients))
         for recipient in recipients:
             begin_time = time.time()
-            customer_policy = read_policy_from_S3(recipient, awsregion, policy_bucket_name)
+
+            customer_policy = read_policy_from_S3(recipient, aws_region, policy_bucket_name)
 
             elapsed_time = time.time() - begin_time
             elapsed_time = elapsed_time * 1000
@@ -86,15 +119,26 @@ def read_policy_from_EFS(recipient):
 
     return load_multi_policy_file_locally(file_name)
 
+def read_endpoint_policy_from_EFS(userid):
+    file_name = EFS_MULTI_POLICY_ENDPOINTS_PATH + userid + ".POLICY"
+    if not file_name:
+        return None
+
+    return load_multi_policy_file_locally(file_name)
 
 def read_policy_from_S3(recipient, aws_region, policy_bucket_name):
     file_name = build_recipient_file_path(recipient, MULTI_POLICY_DOMAINS_PATH)
-
     if not file_name:
         return None
 
     return load_multi_policy_file_from_S3(aws_region, policy_bucket_name, file_name)
 
+def read_endpoint_policy_from_S3(userid, aws_region, policy_bucket_name):
+    file_name = MULTI_POLICY_ENDPOINTS_PATH + userid + ".POLICY"
+    if not file_name:
+        return None
+
+    return load_multi_policy_file_from_S3(aws_region, policy_bucket_name, file_name)
 
 def load_multi_policy_file_locally(filename):
     try:
@@ -139,6 +183,10 @@ def retrieve_policy_id_and_add_to_policy_list(customer_policy, policy_list, reci
 
     return policy_list
 
+def retrieve_user_id_and_add_to_user_list(customer_policy, user_list,recipient):
+    user_list[customer_policy['userId']] = [recipient]
+    return user_list
+
 def get_multi_policy_enabled():
     try:
         with open(EFS_MULTI_POLICY_CONFIG_FILE) as config_file:
@@ -155,4 +203,44 @@ def get_read_from_s3_enabled():
     except IOError:
         return False
 
+def get_user_based_split_enabled():
+    try:
+        with open(FLAG_TO_TOC_USER_BASED_SPLIT) as flag_file:
+            flag_data = json.load(flag_file)
+            return flag_data['toc.user.based.split.enabled'] == "true"
+    except IOError:
+        return False
 
+def read_policy(recipient, aws_region, policy_bucket_name, read_from_s3):
+    if (aws_region and policy_bucket_name and read_from_s3):
+        logger.debug("ToC user based split, Reading policy for {0} directly from s3".format(recipient))
+        begin_time = time.time()
+        customer_policy = read_policy_from_S3(recipient, aws_region, policy_bucket_name)
+    else:
+        logger.debug("ToC user based split, Reading policy for {0} from EFS".format(recipient))
+        begin_time = time.time()
+        customer_policy = read_policy_from_EFS(recipient)
+
+    elapsed_time = time.time() - begin_time
+    elapsed_time = elapsed_time * 1000
+    logger.debug("Policy_Read_MSG_PRODUCER result returned in {0} ms".format(elapsed_time))
+    return customer_policy
+
+def read_policy_endpoint(recipient, userid, aws_region, policy_bucket_name, read_from_s3):
+    logger.debug("Reading endpoint policy for recipient {0} and userid {1}".format(recipient,userid))
+    if (aws_region and policy_bucket_name and read_from_s3):
+        endpoint_policy = read_endpoint_policy_from_S3(userid, aws_region, policy_bucket_name)
+    else:
+        endpoint_policy = read_endpoint_policy_from_EFS(userid)
+
+    return endpoint_policy
+
+def read_toc_config(recipient, endpoint_policy):
+    try:
+        policy_attributes = endpoint_policy['policyAttributes']
+        is_toc_enabled = policy_attributes['xgemail/toc/enabled']
+        logger.info("Recipient {0} has ToC on : {1}".format(recipient, is_toc_enabled))
+        return is_toc_enabled
+    except (IOError, KeyError, ValueError), e:
+        logger.error("endpoint json parse / read error : ",e)
+        return False
