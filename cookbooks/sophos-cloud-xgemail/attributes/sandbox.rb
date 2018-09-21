@@ -33,10 +33,11 @@ if ENVIRONMENT == "sandbox"
     default['xgemail']['sxl_rbl']          = 'fake-domain.com'
 
     if INSTANCE_TYPE == "customer-submit"
-        default['ec2']['instance_id']          = ENV['INSTANCE_ID']
+        default['ec2']['instance_id'] = ENV['INSTANCE_ID']
     end
 
-    default['sandbox']['mail_transport_entry'] = 'sophos.com mailcatcher:1025'
-    default['sandbox']['mail_relay_domain']    = 'sophos.com OK'
+    default['sandbox']['mail_transport_entry']     = 'sophos.com mailcatcher:1025'
+    default['sandbox']['mail_relay_domain']        = 'sophos.com OK'
+    default['sandbox']['mail_recipient_access']    = 'sophos.com OK'
 
 end
