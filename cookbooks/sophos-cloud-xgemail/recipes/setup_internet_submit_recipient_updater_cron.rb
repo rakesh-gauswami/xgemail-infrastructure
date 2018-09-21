@@ -52,7 +52,11 @@ if sandbox_account == 'sandbox'
     EOH
   end
 
-  CONFIGURATION_COMMANDS.each do | cur |
+  [
+    'smtpd_recipient_restrictions = ' +
+      "check_recipient_access hash:$config_directory/#{RECIPIENT_ACCESS_FILENAME}" +
+      'reject'
+  ].each do | cur |
     execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
   end
 
