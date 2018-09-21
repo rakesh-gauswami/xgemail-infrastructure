@@ -17,11 +17,10 @@
           branch:       "{{build.branch}}"
           ami_type:     "{{ami_type}}"
       register: ec2_ami_find_output
-
   rescue:
-    - name: Find Base AMI (develop)
+    - name: "Find Base AMI ({{alternate_branch}})"
       ec2_ami_find:
-        name: "hmr-core-develop-{{ami_type}}-*"
+        name: "hmr-core-{{alternate_branch}}-{{ami_type}}-*"
         region: "{{account.region}}"
         owner: 843638552935
         is_public: no
@@ -31,11 +30,10 @@
         sort_end: 1
         no_result_action: fail
         ami_tags:
-          Name:         "hmr-core-develop-{{ami_type}}-*"
+          Name:         "hmr-core-{{alternate_branch}}-{{ami_type}}-*"
           branch:       develop
           ami_type:     "{{ami_type}}"
       register: ec2_ami_find_output
-   #when: ec2_ami_find_output.results | length==0
   always:
     - name: "Display EC2 AMI Find Output"
       debug:
