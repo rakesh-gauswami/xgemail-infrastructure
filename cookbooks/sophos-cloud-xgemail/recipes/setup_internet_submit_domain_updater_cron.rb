@@ -39,9 +39,7 @@ CONFIGURATION_COMMANDS =
     "relay_domains = hash:$config_directory/#{RELAY_DOMAINS_FILENAME}"
   ]
 
-sandbox_account = node['sophos_cloud']['environment']
-
-if sandbox_account == 'sandbox'
+if ACCOUNT == 'sandbox'
   RELAY_DOMAINS = "/etc/#{instance_name(INSTANCE_NAME)}/#{RELAY_DOMAINS_FILENAME}"
   file RELAY_DOMAINS do
     content "#{node['sandbox']['mail_relay_domain']}\n"

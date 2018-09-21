@@ -39,9 +39,7 @@ CONFIGURATION_COMMANDS =
     "transport_maps=hash:$config_directory/#{TRANSPORT_FILENAME}"
   ]
 
-sandbox_account = node['sophos_cloud']['environment']
-
-if sandbox_account == 'sandbox'
+if ACCOUNT == 'sandbox'
   TRANSPORT_FILE = "/etc/#{instance_name(INSTANCE_NAME)}/#{TRANSPORT_FILENAME}"
   file TRANSPORT_FILE do
     content "#{node['sandbox']['mail_transport_entry']}\n" + '* retry: domain is unknown'

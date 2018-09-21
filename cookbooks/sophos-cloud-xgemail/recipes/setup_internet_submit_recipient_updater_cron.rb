@@ -35,9 +35,7 @@ RELAY_DOMAINS_FILENAME = 'relay_domains'
 MAIL_PIC_API_RESPONSE_TIMEOUT = node['xgemail']['mail_pic_apis_response_timeout_seconds']
 MAIL_PIC_API_AUTH = node['xgemail']['mail_pic_api_auth']
 
-sandbox_account = node['sophos_cloud']['environment']
-
-if sandbox_account == 'sandbox'
+if ACCOUNT == 'sandbox'
   RECIPIENT_ACCESS_FILE = "/etc/#{instance_name(INSTANCE_NAME)}/#{RECIPIENT_ACCESS_FILENAME}"
   file RECIPIENT_ACCESS_FILE do
     content "#{node['sandbox']['mail_recipient_access']}\n"
