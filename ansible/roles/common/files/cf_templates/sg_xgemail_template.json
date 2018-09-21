@@ -823,6 +823,12 @@
           },
           {
             "IpProtocol": "tcp",
+            "FromPort": "8025",
+            "ToPort": "8025",
+            "SourceSecurityGroupId": { "Ref": "XgemailCustomerEncryptionSecurityGroupLb" }
+          },
+          {
+            "IpProtocol": "tcp",
             "FromPort": "587",
             "ToPort": "587",
             "SourceSecurityGroupId": { "Ref": "XgemailCustomerEncryptionSecurityGroupLb" }
@@ -884,9 +890,15 @@
         "SecurityGroupIngress": [
           {
             "IpProtocol": "tcp",
-            "FromPort": "2255",
-            "ToPort": "2255",
+            "FromPort": "25",
+            "ToPort": "25",
             "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "8025",
+            "ToPort": "8025",
+            "CidrIp": { "Ref": "ExternalIpAccess" }
           },
           {
             "IpProtocol": "tcp",
@@ -1183,6 +1195,16 @@
       "Properties": {
         "GroupId": {"Ref": "XgemailInternetXdeliverySecurityGroup"},
         "SourceSecurityGroupId": {"Ref": "SecurityGroupBastion"},
+        "IpProtocol": "tcp",
+        "FromPort": "22",
+        "ToPort": "22"
+      }
+    },
+    "XgemailCustomerEncryprionSecurityGroupIngressBastionSsh": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailCustomerEncryptionSecurityGroup" },
+        "SourceSecurityGroupId": { "Ref": "SecurityGroupBastion" },
         "IpProtocol": "tcp",
         "FromPort": "22",
         "ToPort": "22"
