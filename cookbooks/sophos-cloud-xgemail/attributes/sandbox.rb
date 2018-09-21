@@ -35,4 +35,8 @@ if ENVIRONMENT == "sandbox"
     if INSTANCE_TYPE == "customer-submit"
         default['ec2']['instance_id']          = ENV['INSTANCE_ID']
     end
+
+    default['sandbox']['mail_transport_entry'] = 'sophos.com mailcatcher:1025'
+    default['sandbox']['mail_relay_domain']    = 'sophos.com OK'
+
 end

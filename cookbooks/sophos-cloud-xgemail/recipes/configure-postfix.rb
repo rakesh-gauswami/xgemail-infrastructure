@@ -105,6 +105,12 @@ else
   end
 end
 
+if NODE_TYPE == 'xdelivery'
+  MANAGED_SERVICES_IN_START_ORDER = [
+      'postfix'
+  ]
+end
+
 MANAGED_SERVICES_IN_START_ORDER.each do | cur |
   log "starting service #{cur}" do
     notifies :start, "service[#{cur}]", :immediately
