@@ -782,9 +782,15 @@
         "SecurityGroupIngress": [
           {
             "IpProtocol": "tcp",
-            "FromPort": "2255",
-            "ToPort": "2255",
+            "FromPort": "25",
+            "ToPort": "25",
             "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "8025",
+            "ToPort": "8025",
+            "CidrIp": { "Ref": "ExternalIpAccess" }
           },
           {
             "IpProtocol": "tcp",
@@ -890,15 +896,9 @@
         "SecurityGroupIngress": [
           {
             "IpProtocol": "tcp",
-            "FromPort": "25",
-            "ToPort": "25",
+            "FromPort": "2255",
+            "ToPort": "2255",
             "CidrIp": "0.0.0.0/0"
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "8025",
-            "ToPort": "8025",
-            "CidrIp": { "Ref": "ExternalIpAccess" }
           },
           {
             "IpProtocol": "tcp",
