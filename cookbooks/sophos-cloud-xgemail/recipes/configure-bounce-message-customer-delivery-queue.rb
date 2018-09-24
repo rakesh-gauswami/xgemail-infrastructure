@@ -21,7 +21,7 @@ raise "Unsupported node type [#{NODE_TYPE}]" if INSTANCE_DATA.nil?
 INSTANCE_NAME = INSTANCE_DATA[:instance_name]
 raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 
-if NODE_TYPE == 'delivery' || NODE_TYPE == 'xdelivery'
+if NODE_TYPE == 'delivery' || NODE_TYPE == 'xdelivery' || NODE_TYPE == 'customer-encryption-delivery'
   [
   #Change master.cf "bounce" command from default(bounce) to "discard" so NDR and bounces can be disabled.
   'bounce/unix/command=discard'

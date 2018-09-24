@@ -157,6 +157,7 @@ end
 
 
 include_recipe 'sophos-cloud-xgemail::setup_dh_params'
-include_recipe 'sophos-cloud-xgemail::install_jilter_outbound'
-include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
-include_recipe 'sophos-cloud-xgemail::setup_xgemail_policy_service'
+
+# TODO Add the script for customer-encryption jilter setup and message splitting
+#include_recipe 'sophos-cloud-xgemail::install_jilter_outbound'
+#include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'

@@ -61,5 +61,5 @@ CONFIGURATION_COMMANDS =
 CONFIGURATION_COMMANDS.each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
 end
-include_recipe 'sophos-cloud-xgemail::configure-bounce-message-internet-delivery-queue'
+include_recipe 'sophos-cloud-xgemail::configure-bounce-message-customer-delivery-queue'
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_consumer'
