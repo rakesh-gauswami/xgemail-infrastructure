@@ -15,7 +15,12 @@ INSTANCE_TYPE = ENV['INSTANCE_TYPE']
 
 if ENVIRONMENT == "sandbox"
     default['sophos_cloud']['region']      = ENV['DEFAULT_REGION']
+
+    # TODO: context and account variables should be removed in favor of  environment
     default['sophos_cloud']['environment'] = ENV['DEFAULT_ENVIRONMENT']
+    default['sophos_cloud']['context']     = ENV['DEFAULT_ENVIRONMENT']
+    default['sophos_cloud']['account']     = ENV['DEFAULT_ENVIRONMENT']
+
     default['xgemail']['cluster_type']     = ENV['INSTANCE_TYPE']
 
     default['xgemail']['xgemail_bucket_name']        = 'xgemail-submit'
@@ -34,6 +39,10 @@ if ENVIRONMENT == "sandbox"
     default['xgemail']['xgemail_active_profile'] = 'sandbox'
 
     if INSTANCE_TYPE == "customer-submit"
-        default['ec2']['instance_id']          = ENV['INSTANCE_ID']
+        default['ec2']['instance_id'] = ENV['INSTANCE_ID']
     end
+
+    default['sandbox']['mail_transport_entry']     = 'sophos.com mailcatcher:1025'
+    default['sandbox']['mail_relay_domain']        = 'sophos.com OK'
+    default['sandbox']['mail_recipient_access']    = 'sophos.com OK'
 end
