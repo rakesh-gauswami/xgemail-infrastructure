@@ -45,7 +45,7 @@ services:
     ports:
       - '4010:4010'
     networks:
-      - novanet
+    - novanet
 
   postfix-is:
     image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:1.0.0
@@ -87,13 +87,13 @@ services:
   postfix-cd:
     image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:1.0.0
     container_name: postfix-cd
-    hostname: customer-delivery
+    hostname: delivery
     domainname: local.sandbox.hydra.sophos.com
     ports:
       - '5025:25' #SMTP
     environment:
-      - HOSTNAME_EXTERNAL=customer-delivery
-      - INSTANCE_TYPE=customer-delivery
+      - HOSTNAME_EXTERNAL=delivery
+      - INSTANCE_TYPE=delivery
       - DEFAULT_REGION=local
       - DEFAULT_ENVIRONMENT=sandbox
       - DEBUG=1
