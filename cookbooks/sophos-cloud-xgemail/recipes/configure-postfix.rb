@@ -74,10 +74,9 @@ end
 
 include_recipe 'sophos-cloud-xgemail::configure-internet-submit-queue'
 include_recipe 'sophos-cloud-xgemail::configure-customer-submit-queue'
-include_recipe 'sophos-cloud-xgemail::configure-encryption-submit-queue'
 include_recipe 'sophos-cloud-xgemail::configure-customer-delivery-queue'
 include_recipe 'sophos-cloud-xgemail::configure-internet-delivery-queue'
-include_recipe 'sophos-cloud-xgemail::configure-encryption-delivery-queue'
+include_recipe 'sophos-cloud-xgemail::configure-customer-encryption'
 
 MANAGED_SERVICES_IN_START_ORDER =
   [
