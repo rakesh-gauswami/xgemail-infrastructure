@@ -1,0 +1,24 @@
+version: "3"
+services:
+  jilter-outbound:
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/jilter-outbound:latest
+    container_name: jilter-outbound
+    hostname: jilter-outbound
+    domainname: sandbox.sophos
+    environment:
+      - JILTER_VERSION=0.4.6-SNAPSHOT
+    ports:
+      - '19876:9876'
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - ~/g/email/xgemail/xgemail-jilter-outbound/build/distributions:/jilter:rw
+      - ~/.policy-storage:/policy-storage:rw
+    networks:
+      - novanet
+
+networks:
+  default:
+    driver: bridge
+  novanet:
+    external:
+      name: nova_novanet
