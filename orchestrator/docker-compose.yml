@@ -45,7 +45,25 @@ services:
     ports:
       - '4010:4010'
     networks:
-    - novanet
+      - novanet
+
+  internet-submit:
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:1.0.0
+    container_name: internet-submit
+    hostname: internet-submit
+    domainname: local.sandbox.hydra.sophos.com
+    ports:
+      - '5225:25' #SMTP
+    environment:
+      - HOSTNAME_EXTERNAL=internet-submit
+      - INSTANCE_TYPE=submit
+      - DEFAULT_REGION=local
+      - DEFAULT_ENVIRONMENT=sandbox
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
+    networks:
+      - novanet
 
   postfix-cs:
       image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:1.0.0
@@ -62,31 +80,47 @@ services:
         - DEBUG=1
       volumes:
         - /sys/fs/cgroup:/sys/fs/cgroup:ro
-        - /var/run/docker.sock:/var/run/docker.sock
-        - $XGEMAIL_HOME/xgemail-infrastructure/:/opt/sophos/xgemail
+        - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
       networks:
         - novanet
 
   postfix-cd:
     image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:1.0.0
     container_name: postfix-cd
-    hostname: customer-delivery
+    hostname: delivery
     domainname: local.sandbox.hydra.sophos.com
     ports:
       - '5025:25' #SMTP
     environment:
       - HOSTNAME_EXTERNAL=customer-delivery
-      - INSTANCE_TYPE=customer-delivery
+      - INSTANCE_TYPE=delivery
       - DEFAULT_REGION=local
       - DEFAULT_ENVIRONMENT=sandbox
       - DEBUG=1
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
-      - /var/run/docker.sock:/var/run/docker.sock
-      - $XGEMAIL_HOME/xgemail-infrastructure/:/opt/sophos/xgemail
+      - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks
     networks:
       - novanet
 
+  postfix-id:
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:1.0.0
+    container_name: postfix-id
+    hostname: internet-delivery
+    domainname: local.sandbox.hydra.sophos.com
+    ports:
+      - '5425:25' #SMTP
+    environment:
+      - HOSTNAME_EXTERNAL=internet-delivery
+      - INSTANCE_TYPE=internet-delivery
+      - DEFAULT_REGION=local
+      - DEFAULT_ENVIRONMENT=sandbox
+      - DEBUG=1
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks
+    networks:
+      - novanet
 
 networks:
   novanet:
