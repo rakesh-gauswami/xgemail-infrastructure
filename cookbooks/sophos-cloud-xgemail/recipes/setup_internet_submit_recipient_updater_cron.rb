@@ -30,6 +30,36 @@ CRON_JOB_TIMEOUT      = node['xgemail']['cron_job_timeout']
 CRON_MINUTE_FREQUENCY = node['xgemail']['internet_submit_recipient_cron_minute_frequency']
 STATION_VPC_NAME      = node['xgemail']['station_vpc_name']
 XGEMAIL_FILES_DIR     = node['xgemail']['xgemail_files_dir']
+RECIPIENT_ACCESS_FILENAME = node['xgemail']['recipient_access_filename']
+RELAY_DOMAINS_FILENAME = 'relay_domains'
+MAIL_PIC_API_RESPONSE_TIMEOUT = node['xgemail']['mail_pic_apis_response_timeout_seconds']
+MAIL_PIC_API_AUTH = node['xgemail']['mail_pic_api_auth']
+
+sandbox_account = node['sophos_cloud']['environment']
+
+if sandbox_account == 'sandbox'
+  RECIPIENT_ACCESS_FILE = "/etc/#{instance_name(INSTANCE_NAME)}/#{RECIPIENT_ACCESS_FILENAME}"
+  file RECIPIENT_ACCESS_FILE do
+    content "#{node['sandbox']['mail_recipient_access']}\n"
+    mode '0644'
+    owner 'root'
+  end
+
+  execute 'build_postmap_for_recipient_access' do
+    user 'root'
+    command <<-EOH
+          postmap #{RECIPIENT_ACCESS_FILE}
+    EOH
+  end
+
+  CONFIGURATION_COMMANDS.each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+  end
+
+  # Return, don't create CRON job
+  return
+
+end
 
 PACKAGE_DIR = "#{XGEMAIL_FILES_DIR}/internet-submit-recipient-cron"
 CRON_SCRIPT = 'internet.submit.recipient.updater.py'
@@ -37,10 +67,6 @@ CRON_SCRIPT_PATH = "#{PACKAGE_DIR}/#{CRON_SCRIPT}"
 
 XGEMAIL_PIC_CA_PATH = "#{LOCAL_CERT_PATH}/hmr-infrastructure-ca.crt"
 XGEMAIL_PIC_FQDN = "mail-#{STATION_VPC_NAME.downcase}-#{REGION}.#{ACCOUNT}.hydra.sophos.com"
-RECIPIENT_ACCESS_FILENAME = node['xgemail']['recipient_access_filename']
-RELAY_DOMAINS_FILENAME = 'relay_domains'
-MAIL_PIC_API_RESPONSE_TIMEOUT = node['xgemail']['mail_pic_apis_response_timeout_seconds']
-MAIL_PIC_API_AUTH = node['xgemail']['mail_pic_api_auth']
 
 directory XGEMAIL_FILES_DIR do
   mode '0755'

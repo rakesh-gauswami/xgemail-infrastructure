@@ -46,6 +46,32 @@ CONFIGURATION_COMMANDS =
     "relay_domains = hash:$config_directory/#{RELAY_DOMAINS_FILENAME}"
   ]
 
+sandbox_account = node['sophos_cloud']['environment']
+
+if sandbox_account == 'sandbox'
+  RELAY_DOMAINS = "/etc/#{instance_name(INSTANCE_NAME)}/#{RELAY_DOMAINS_FILENAME}"
+  file RELAY_DOMAINS do
+    content "#{node['sandbox']['mail_relay_domain']}\n"
+    mode '0644'
+    owner 'root'
+  end
+
+  execute 'build_postmap_for_relay_domains' do
+    user 'root'
+    command <<-EOH
+          postmap #{RELAY_DOMAINS}
+    EOH
+  end
+
+  CONFIGURATION_COMMANDS.each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+  end
+
+  # Return, don't create CRON job
+  return
+
+end
+
 directory XGEMAIL_FILES_DIR do
   mode '0755'
   owner 'root'

@@ -19,5 +19,5 @@ RUN yum clean all && \
               python-pip && \
     rm -rf /var/cache/yum && \
     pip install --upgrade pip && \
-    pip install boto3 argparse && \
+    pip install boto3 argparse requests && \
     useradd -s /usr/sbin/nologin -r -M -d /dev/null messageprocessor
