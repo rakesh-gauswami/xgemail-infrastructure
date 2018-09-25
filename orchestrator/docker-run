@@ -12,7 +12,7 @@ function up()
     docker-compose up -d
     sleep 5
 
-    for container in $(docker ps | grep postfix | awk '{print $11}')
+    for container in $(docker ps --format {{.Names}} | grep postfix)
       do
         echo "Running configurations for ${container}"
         docker exec ${container} sh -c '/opt/run.sh'

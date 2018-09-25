@@ -15,8 +15,8 @@ Setup
 ```aws configure --profile docker-amzn```
 ##### Output :
 ```
-AWS Access Key ID [None]: xxxxx   -- Please ask for key ID
-AWS Secret Access Key [None]: xxxx -- Please ask for access key
+AWS Access Key ID [None]: xxxxx   -- Refer shared credential file
+AWS Secret Access Key [None]: xxxx -- Refer shared credential file
 Default region name [None]: us-east-2
 Default output format [None]: json
 ```
