@@ -53,6 +53,7 @@ MESSAGE_DIRECTION = '<%= @message_direction %>'
 MESSAGE_HISTORY_DELIVERY_STATUS_SNS_TOPIC = '<%= @message_history_status_sns_topic_arn %>'
 NODE_TYPE = '<%= @node_type %>'
 NODE_IP = '<%= @node_ip %>'
+ACCOUNT = '<%= @account %>'
 
 # headers API constants
 PIC_HEADERS_URL = 'https://%s/mail/api/xgemail/headers' % (PIC_FQDN)
@@ -70,17 +71,25 @@ formatter = logging.Formatter(
 handler.formatter = formatter
 logger.addHandler(handler)
 
-def get_passphrase():
-    s3 = boto3.client('s3')
-    passphrase = s3.get_object(Bucket=CONNECTIONS_BUCKET, Key=MAIL_PIC_API_AUTH)
-    return base64.b64encode('mail:' + passphrase['Body'].read())
+if ACCOUNT != 'sandbox':
+  def get_passphrase():
+      s3 = boto3.client('s3')
+      passphrase = s3.get_object(Bucket=CONNECTIONS_BUCKET, Key=MAIL_PIC_API_AUTH)
+      return base64.b64encode('mail:' + passphrase['Body'].read())
 
-auth = get_passphrase()
+  auth = get_passphrase()
 
-HEADERS = {
-    'Content-type': 'application/json',
-    'Authorization': 'Basic ' + auth
-}
+  HEADERS = {
+      'Content-type': 'application/json',
+      'Authorization': 'Basic ' + auth
+  }
+
+else:
+
+  HEADERS = {
+      'Content-type': 'application/json',
+      'Authorization': 'Basic'
+  }
 
 awshandler = AwsHandler(AWS_REGION)
 
