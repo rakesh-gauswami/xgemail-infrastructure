@@ -34,9 +34,11 @@ if ENVIRONMENT == "sandbox"
     default['xgemail']['msg_history_status_sns_arn'] = 'arn:aws:sns:local:xgemail-msg-history-delivery-status-SNS'
     default['sophos_cloud']['connections']           = 'cloud-sandbox-connections'
 
-    default['xgemail']['sxl_dbl']          = 'fake-domain.com'
-    default['xgemail']['sxl_rbl']          = 'fake-domain.com'
-    default['xgemail']['xgemail_active_profile'] = 'sandbox'
+    default['xgemail']['sxl_dbl']                    = 'fake-domain.com'
+    default['xgemail']['sxl_rbl']                    = 'fake-domain.com'
+    default['xgemail']['xgemail_active_profile']     = 'sandbox'
+    default['xgemail']['station_vpc_name']           = 'pic'
+
 
     if INSTANCE_TYPE == "customer-submit"
         default['ec2']['instance_id'] = ENV['INSTANCE_ID']
