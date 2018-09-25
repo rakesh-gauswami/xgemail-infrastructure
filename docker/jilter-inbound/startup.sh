@@ -11,6 +11,7 @@ exec $JAVA_HOME/bin/java \
     -Djava.library.path=/jilter/xgemail-jilter-inbound-${JILTER_VERSION}/lib \
     -Dconf.dir=/data/conf \
     -Dspring.profiles.active=sandbox \
+    -Djilter.host=${IPADDRESS} \
     -Xms256m -Xmx256m \
     -cp "/jilter/xgemail-jilter-inbound-${JILTER_VERSION}/lib/*" \
     com.sophos.xgemail.jilter.Application
