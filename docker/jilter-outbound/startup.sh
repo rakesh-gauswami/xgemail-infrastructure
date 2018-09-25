@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export IPADDRESS=`hostname -i`
+
 #Expand the tar file
 tar -xvf /jilter/xgemail-jilter-outbound-${JILTER_VERSION}.tar
 
@@ -12,6 +14,7 @@ exec $JAVA_HOME/bin/java \
     -Djava.library.path=/jilter/xgemail-jilter-outbound-${JILTER_VERSION}/lib \
     -Dconf.dir=/data/conf \
     -Dspring.profiles.active=sandbox \
+    -Djilter.host=${IPADDRESS} \
     -Xms256m \
     -Xmx256m \
     -cp "/jilter/xgemail-jilter-outbound-${JILTER_VERSION}/lib/*" \

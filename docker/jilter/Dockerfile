@@ -1,5 +1,8 @@
 FROM 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/xgemail-java:latest
 
+LABEL maintainer="Sophos Inc. <www.sophos.com>" \
+      description="jilter-base service image"
+
 # Setup the environment
 ENV SPF_VERSION 1.2.10
 ENV DKIM_VERSION 2.11.0

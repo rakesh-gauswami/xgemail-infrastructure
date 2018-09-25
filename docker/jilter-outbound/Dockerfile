@@ -1,5 +1,8 @@
 FROM 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/jilter-base:latest
 
+LABEL maintainer="Sophos Inc. <www.sophos.com>" \
+      description="jilter-outbound service image"
+
 RUN mkdir -p /data/scripts && \
     mkdir -p /data/conf
 

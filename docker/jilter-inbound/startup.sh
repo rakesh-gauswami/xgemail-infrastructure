@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export IPADDRESS=`hostname -i`
+
 #Expand the tar file
 tar -xvf /jilter/xgemail-jilter-inbound-${JILTER_VERSION}.tar
 
