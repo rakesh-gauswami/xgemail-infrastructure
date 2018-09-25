@@ -47,9 +47,9 @@ services:
     networks:
       - novanet
 
-  internet-submit:
+  postfix-is:
     image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:1.0.0
-    container_name: internet-submit
+    container_name: postfix-is
     hostname: internet-submit
     domainname: local.sandbox.hydra.sophos.com
     ports:
@@ -130,10 +130,43 @@ services:
         - '19876:9876'
       volumes:
         - /sys/fs/cgroup:/sys/fs/cgroup:ro
-        - ~/g/email/xgemail/xgemail-jilter-outbound/build/distributions:/jilter
+        - $XGEMAIL_HOME/xgemail/xgemail-jilter-outbound/build/distributions:/jilter
         - ~/.policy-storage:/policy-storage:rw
       networks:
         - novanet
+
+  postfix-xd:
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:1.0.0
+    container_name: postfix-xd
+    hostname: extended-delivery
+    domainname: local.sandbox.hydra.sophos.com
+    environment:
+      - HOSTNAME_EXTERNAL=extended-delivery
+      - INSTANCE_TYPE=xdelivery
+      - DEFAULT_REGION=local
+      - DEFAULT_ENVIRONMENT=sandbox
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
+    networks:
+      - novanet
+
+  postfix-ix:
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:1.0.0
+    container_name: postfix-ix
+    hostname: internet-xdelivery
+    domainname: local.sandbox.hydra.sophos.com
+    environment:
+      - HOSTNAME_EXTERNAL=internet-xdelivery
+      - INSTANCE_TYPE=internet-xdelivery
+      - DEFAULT_REGION=local
+      - DEFAULT_ENVIRONMENT=sandbox
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
+    networks:
+      - novanet
+
 
 networks:
   novanet:
