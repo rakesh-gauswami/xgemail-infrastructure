@@ -9,6 +9,7 @@
 # This recipe configures internet submit postfix instance
 #
 
+ACCOUNT =   node['sophos_cloud']['environment']
 NODE_TYPE = node['xgemail']['cluster_type']
 
 if NODE_TYPE != 'submit'
@@ -69,58 +70,23 @@ SXL_RBL_RESPONSE_CODES = "127.0.4.[1;5;6;8;13;14;18;21]"
 # Hosts authorized to make use of the XCLIENT extension
 SMTPD_AUTHORIZED_XCLIENT_HOSTS = node["xgemail"]["smtpd_authorized_xclient_hosts"]
 
-GLOBAL_SIGN_DIR = "#{LOCAL_CERT_PATH}/3rdparty/global-sign"
-GLOBAL_SIGN_INTERMEDIARY = "#{GLOBAL_SIGN_DIR}/global-sign-sha256-intermediary.crt"
-GLOBAL_SIGN_ROOT = "#{GLOBAL_SIGN_DIR}/global-sign-root.crt"
-
-# Add xgemail certificate
-remote_file "/etc/ssl/certs/#{CERT_NAME}.crt" do
-  source "file:///tmp/sophos/certificates/api-mcs-mob-prod.crt"
-  owner 'root'
-  group 'root'
-  mode 0444
-end
-
-# Add xgemail key
-remote_file "/etc/ssl/private/#{CERT_NAME}.key" do
-  source "file:///tmp/sophos/certificates/appserver.key"
-  owner 'root'
-  group 'root'
-  mode 0440
-end
-
-CREATE_SERVER_PEM_COMMAND = 'cat ' +
-  "'#{CERT_FILE}' " +
-  "'#{GLOBAL_SIGN_INTERMEDIARY}' " +
-  "'#{GLOBAL_SIGN_ROOT}' " +
-  "> '#{SERVER_PEM_FILE}'"
-
-file SERVER_PEM_FILE do
-  owner 'root'
-  group 'root'
-  mode '0444'
-  action :create
-end
-
-execute CREATE_SERVER_PEM_COMMAND
-
 RBL_REPLY_MAPS_FILENAME = 'rbl_reply_maps'
 
 execute RBL_REPLY_MAPS_FILENAME do
   command lazy {
     print_postmulti_cmd(
-      INSTANCE_NAME,
-      "postmap 'hash:#{postmulti_config_dir(INSTANCE_NAME)}/#{RBL_REPLY_MAPS_FILENAME}'"
+        INSTANCE_NAME,
+        "postmap 'hash:#{postmulti_config_dir(INSTANCE_NAME)}/#{RBL_REPLY_MAPS_FILENAME}'"
     )
   }
   action :nothing
 end
 
 RBL_MAP_ENTRY = "#{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES} " +
-  '$rbl_code Service unavailable; $rbl_class [$rbl_what] is blacklisted. ' +
-  'Visit https://www.sophos.com/en-us/threat-center/ip-lookup.aspx?ip=$rbl_what ' +
-  'to request delisting' +
-  "\n"
+    '$rbl_code Service unavailable; $rbl_class [$rbl_what] is blacklisted. ' +
+    'Visit https://www.sophos.com/en-us/threat-center/ip-lookup.aspx?ip=$rbl_what ' +
+    'to request delisting' +
+    "\n"
 
 file RBL_REPLY_MAPS_FILENAME do
   path lazy { "#{postmulti_config_dir(INSTANCE_NAME)}/#{RBL_REPLY_MAPS_FILENAME}" }
@@ -131,8 +97,8 @@ end
 execute SOFT_RETRY_SENDERS_MAP_FILENAME do
   command lazy {
     print_postmulti_cmd(
-      INSTANCE_NAME,
-      "postmap 'hash:#{postmulti_config_dir(INSTANCE_NAME)}/#{SOFT_RETRY_SENDERS_MAP_FILENAME}'"
+        INSTANCE_NAME,
+        "postmap 'hash:#{postmulti_config_dir(INSTANCE_NAME)}/#{SOFT_RETRY_SENDERS_MAP_FILENAME}'"
     )
   }
   action :nothing
@@ -146,7 +112,42 @@ file SOFT_RETRY_SENDERS_MAP_FILENAME do
   notifies :run, "execute[#{SOFT_RETRY_SENDERS_MAP_FILENAME}]", :immediately
 end
 
-CONFIGURATION_COMMANDS =
+if ACCOUNT != 'sandbox'
+  GLOBAL_SIGN_DIR = "#{LOCAL_CERT_PATH}/3rdparty/global-sign"
+  GLOBAL_SIGN_INTERMEDIARY = "#{GLOBAL_SIGN_DIR}/global-sign-sha256-intermediary.crt"
+  GLOBAL_SIGN_ROOT = "#{GLOBAL_SIGN_DIR}/global-sign-root.crt"
+
+  # Add xgemail certificate
+  remote_file "/etc/ssl/certs/#{CERT_NAME}.crt" do
+    source "file:///tmp/sophos/certificates/api-mcs-mob-prod.crt"
+    owner 'root'
+    group 'root'
+    mode 0444
+  end
+
+  # Add xgemail key
+  remote_file "/etc/ssl/private/#{CERT_NAME}.key" do
+    source "file:///tmp/sophos/certificates/appserver.key"
+    owner 'root'
+    group 'root'
+    mode 0440
+  end
+
+  CREATE_SERVER_PEM_COMMAND = 'cat ' +
+    "'#{CERT_FILE}' " +
+    "'#{GLOBAL_SIGN_INTERMEDIARY}' " +
+    "'#{GLOBAL_SIGN_ROOT}' " +
+    "> '#{SERVER_PEM_FILE}'"
+
+  file SERVER_PEM_FILE do
+    owner 'root'
+    group 'root'
+    mode '0444'
+    action :create
+  end
+
+  execute CREATE_SERVER_PEM_COMMAND
+
   [
     'smtpd_upstream_proxy_protocol = haproxy',
 
@@ -171,28 +172,43 @@ CONFIGURATION_COMMANDS =
 
     # Sender restrictions
     'smtpd_sender_restrictions = ' +
-      "reject_non_fqdn_sender",
+        "reject_non_fqdn_sender",
 
     # RBL response configuration
     "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_FILENAME}",
 
     'smtpd_relay_restrictions = ' +
-      'permit_auth_destination, ' +
-      "check_sender_access hash:$config_directory/#{SOFT_RETRY_SENDERS_MAP_FILENAME}, " +
-      'reject',
+        'permit_auth_destination, ' +
+        "check_sender_access hash:$config_directory/#{SOFT_RETRY_SENDERS_MAP_FILENAME}, " +
+        'reject',
 
     "smtpd_authorized_xclient_hosts = #{SMTPD_AUTHORIZED_XCLIENT_HOSTS}"
-  ]
+  ].each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+  end
 
-CONFIGURATION_COMMANDS.each do | cur |
-  execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+  include_recipe 'sophos-cloud-xgemail::setup_dh_params'
+  include_recipe 'sophos-cloud-xgemail::install_jilter_inbound'
+  include_recipe 'sophos-cloud-xgemail::setup_flag_toggle_internet_submit'
+  include_recipe 'sophos-cloud-xgemail::setup_internet_submit_domain_updater_cron'
+  include_recipe 'sophos-cloud-xgemail::setup_internet_submit_recipient_updater_cron'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_policy_service'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_multi_policy_service'
+
+else
+  [
+    # RBL response configuration
+    "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_FILENAME}"
+  ].each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+  end
+
+  include_recipe 'sophos-cloud-xgemail::setup_flag_toggle_internet_submit'
+  include_recipe 'sophos-cloud-xgemail::setup_internet_submit_domain_updater_cron'
+  include_recipe 'sophos-cloud-xgemail::setup_internet_submit_recipient_updater_cron'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_utils_structure'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_processors_structure'
+
 end
-
-include_recipe 'sophos-cloud-xgemail::setup_dh_params'
-include_recipe 'sophos-cloud-xgemail::install_jilter_inbound'
-include_recipe 'sophos-cloud-xgemail::setup_flag_toggle_internet_submit'
-include_recipe 'sophos-cloud-xgemail::setup_internet_submit_domain_updater_cron'
-include_recipe 'sophos-cloud-xgemail::setup_internet_submit_recipient_updater_cron'
-include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
-include_recipe 'sophos-cloud-xgemail::setup_xgemail_policy_service'
-include_recipe 'sophos-cloud-xgemail::setup_xgemail_multi_policy_service'

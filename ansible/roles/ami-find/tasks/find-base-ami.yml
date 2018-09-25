@@ -1,10 +1,10 @@
 ---
 # http://docs.ansible.com/ansible/latest/ec2_ami_find_module.html
-- name: "Find base AMI in current branch, fallback to develop branch."
+- name: "Find base AMI in current branch, fallback to alternate branch."
   block:
     - name: "Find Base AMI ({{build.branch}})"
       ec2_ami_find:
-        name: "{{ami.base.ami_parent_name}}-{{build.branch}}*"
+        name: "{{ami.find.ami_parent_name}}-{{build.branch}}*"
         region: "{{account.region}}"
         owner: 283871543274
         is_public: no
@@ -15,9 +15,9 @@
         no_result_action: fail
       register: ec2_ami_find_output
   rescue:
-    - name: Find Base AMI (develop)
+    - name: "Find Base AMI ({{alternate_branch}})"
       ec2_ami_find:
-        name: "{{ami.base.ami_parent_name}}-develop*"
+        name: "{{ami.find.ami_parent_name}}-{{alternate_branch}}*"
         region: "{{account.region}}"
         owner: 283871543274
         is_public: no

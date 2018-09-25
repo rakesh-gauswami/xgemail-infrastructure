@@ -14,6 +14,7 @@
 ::Chef::Recipe.send(:include, ::SophosCloudXgemail::Helper)
 ::Chef::Resource.send(:include, ::SophosCloudXgemail::Helper)
 
+ACCOUNT = node['sophos_cloud']['environment']
 FILE_CACHE_DIR = ::Chef::Config[:file_cache_path]
 
 CONFIGURATION_COMMANDS =
@@ -23,17 +24,35 @@ CONFIGURATION_COMMANDS =
     'master_service_disable = inet'
   ]
 
+CONFIGURATION_COMMANDS_SANDBOX =
+    node['xgemail']['common_instance_config_params'] +
+    [
+        # Disable inet services for default instance
+        'master_service_disable = inet',
+        'inet_protocols = ipv4'
+    ]
+
 SQS_MESSAGE_CONSUMER_SERVICE_NAME = node['xgemail']['sqs_message_consumer_service_name']
-JILTER_SERVICE_NAME = node['xgemail']['jilter_service_name']
+
 
 service 'postfix' do
   supports :restart => true, :start => true, :stop => true, :reload => true
   action :stop
 end
 
-# First configure default instance
-CONFIGURATION_COMMANDS.each do | cur |
-  execute "postconf '#{cur}'"
+if ACCOUNT != 'sandbox'
+  JILTER_SERVICE_NAME = node['xgemail']['jilter_service_name']
+
+  # First configure default instance
+  CONFIGURATION_COMMANDS.each do | cur |
+    execute "postconf '#{cur}'"
+  end
+
+else
+  # First configure default instance
+  CONFIGURATION_COMMANDS_SANDBOX.each do | cur |
+    execute "postconf -e '#{cur}'"
+  end
 end
 
 # Enable multi-instance support
@@ -55,6 +74,10 @@ include_recipe 'sophos-cloud-xgemail::configure-customer-submit-queue'
 include_recipe 'sophos-cloud-xgemail::configure-customer-delivery-queue'
 include_recipe 'sophos-cloud-xgemail::configure-internet-delivery-queue'
 
+if ACCOUNT == 'sandbox'
+  include_recipe 'sophos-cloud-xgemail::configure-extended-delivery-queue'
+end
+
 MANAGED_SERVICES_IN_START_ORDER =
   [
     'postfix'
@@ -67,11 +90,23 @@ if NODE_TYPE == 'delivery' || NODE_TYPE == 'internet-delivery'
   'postfix',
   SQS_MESSAGE_CONSUMER_SERVICE_NAME
 ]
+else
+  if NODE_TYPE == 'submit' || NODE_TYPE == 'customer-submit'
+    if ACCOUNT != 'sandbox'
+       MANAGED_SERVICES_IN_START_ORDER = [
+          JILTER_SERVICE_NAME,
+          'postfix'
+      ]
+    else
+      MANAGED_SERVICES_IN_START_ORDER = [
+          'postfix'
+      ]
+    end
+  end
 end
 
-if NODE_TYPE == 'submit' || NODE_TYPE == 'customer-submit'
+if NODE_TYPE == 'xdelivery'
   MANAGED_SERVICES_IN_START_ORDER = [
-      JILTER_SERVICE_NAME,
       'postfix'
   ]
 end

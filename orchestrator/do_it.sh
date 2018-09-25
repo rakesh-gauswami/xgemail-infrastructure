@@ -15,7 +15,6 @@ gprintf() {
 	printf "${GREEN}$@${NC}\n"
 }
 
-
 #S3 buckets
 CUSTOMER_SUBMIT_BUCKET="xgemail-cust-submit"
 EMERGENCY_INBOX_BUCKET="xgemail-emgcy-inbox"
@@ -29,29 +28,29 @@ LAMDA_BUCKET="lamda"
 
 
 #SQS
-CUSTOMER_DELIVERY_SQS_QUEUE="Xgemail_Customer_Delivery"
-CUSTOMER_SUBMIT_SQS_QUEUE="Xgemail_Customer_Submit"
-CUSTOMER_DELIVERY_SQS_QUEUE_SNS_LISTENER="Xgemail_Customer_Delivery_SNS_Listener"
-DQS_SQS_QUEUE="Xgemail_DQS"
-DELAY_SQS_QUEUE="Xgemail_Delay"
-EMERGENCY_INBOX_SQS_QUEUE="Xgemail_Emergency_Inbox_Delivery"
-EMERGENCY_INBOX_SQS_QUEUE_SNS_LISTENER="Xgemail_Emergency_Inbox_Delivery_SNS_Listener"
-INTERNET_DELIVERY_SQS_QUEUE="Xgemail_Internet_Delivery"
-INTERNET_DELIVERY_SQS_QUEUE_SNS_LISTENER="Xgemail_Internet_Delivery_SNS_Listener"
-INTERNET_SUBMIT_SQS_QUEUE="Xgemail_Internet_Submit"
+CUSTOMER_DELIVERY_SQS_QUEUE="sandbox-Xgemail_Customer_Delivery"
+CUSTOMER_SUBMIT_SQS_QUEUE="sandbox-Xgemail_Customer_Submit"
+CUSTOMER_DELIVERY_SQS_QUEUE_SNS_LISTENER="sandbox-Xgemail_Customer_Delivery_SNS_Listener"
+DQS_SQS_QUEUE="sandbox-Xgemail_DQS"
+DELAY_SQS_QUEUE="sandbox-Xgemail_Delay"
+EMERGENCY_INBOX_SQS_QUEUE="sandbox-Xgemail_Emergency_Inbox_Delivery"
+EMERGENCY_INBOX_SQS_QUEUE_SNS_LISTENER="sandbox-Xgemail_Emergency_Inbox_Delivery_SNS_Listener"
+INTERNET_DELIVERY_SQS_QUEUE="sandbox-Xgemail_Internet_Delivery"
+INTERNET_DELIVERY_SQS_QUEUE_SNS_LISTENER="sandbox-Xgemail_Internet_Delivery_SNS_Listener"
+INTERNET_SUBMIT_SQS_QUEUE="sandbox-Xgemail_Internet_Submit"
 
 #MSG Queues
-MSG_HISTORY_SQS_QUEUE="Xgemail_MessageHistoryEvent_Delivery"
-MSG_HISTORY_SQS_QUEUE_SNS_LISTENER="Xgemail_MessageHistoryEvent_Delivery_SNS_Listener"
-MSG_HISTORY_STATUS_SQS_QUEUE="Xgemail_MessageHistory_Delivery_Status"
-MSG_HISTORY_STATUS_SQS_QUEUE_SNS_LISTENER="Xgemail_MessageHistory_Delivery_Status_SNS_Listener"
-MSG_STATISTICS_REJECTION_SQS_QUEUE="Xgemail_Message_Statistics_Rejection"
-MSG_STATISTICS_SQS_QUEUE="Xgemail_Message_Statistics"
-MSG_STATISTICS_SQS_QUEUE_SNS_LISTENER="Xgemail_Message_Statistics_SNS_Listener"
-MULTI_POLICY_SQS_QUEUE="Xgemail_multi_policy"
-NOTIFIER_REQUEST_SQS_QUEUE="Xgemail_Notifier_Request"
-QUARANTINE_SQS_QUEUE="Xgemail_Quarantine_Delivery"
-QUARANTINE_SQS_QUEUE_SNS_LISTENER="Xgemail_Quarantine_Delivery_SNS_Listener"
+MSG_HISTORY_SQS_QUEUE="sandbox-Xgemail_MessageHistoryEvent_Delivery"
+MSG_HISTORY_SQS_QUEUE_SNS_LISTENER="sandbox-Xgemail_MessageHistoryEvent_Delivery_SNS_Listener"
+MSG_HISTORY_STATUS_SQS_QUEUE="sandbox-Xgemail_MessageHistory_Delivery_Status"
+MSG_HISTORY_STATUS_SQS_QUEUE_SNS_LISTENER="sandbox-Xgemail_MessageHistory_Delivery_Status_SNS_Listener"
+MSG_STATISTICS_REJECTION_SQS_QUEUE="sandbox-Xgemail_Message_Statistics_Rejection"
+MSG_STATISTICS_SQS_QUEUE="sandbox-Xgemail_Message_Statistics"
+MSG_STATISTICS_SQS_QUEUE_SNS_LISTENER="sandbox-Xgemail_Message_Statistics_SNS_Listener"
+MULTI_POLICY_SQS_QUEUE="sandbox-Xgemail_multi_policy"
+NOTIFIER_REQUEST_SQS_QUEUE="sandbox-Xgemail_Notifier_Request"
+QUARANTINE_SQS_QUEUE="sandbox-Xgemail_Quarantine_Delivery"
+QUARANTINE_SQS_QUEUE_SNS_LISTENER="sandbox-Xgemail_Quarantine_Delivery_SNS_Listener"
 
 #SASI Queues
 SASI_OUTBOUND_REQUEST_SQS_QUEUE="SASI_Outbound_Request"
@@ -83,7 +82,7 @@ gprintf "Waiting for localstack to be fully up."
 count=0
 max_count=12 # Multiply this number by 5 for total wait time, in seconds.
 while [[ $count -le $max_count ]]; do
-    startup_check=$(docker-compose logs localstack-xgemail | grep -c "Ready.")
+    startup_check=$(docker ps --filter='ancestor=localstack/localstack' --format {{.Status}} | grep -c "Up")
     if [[ $startup_check -ne 1 ]]; then
         count=$((count+1))
         sleep 5

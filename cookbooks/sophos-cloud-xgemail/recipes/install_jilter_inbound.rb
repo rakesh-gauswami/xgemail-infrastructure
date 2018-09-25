@@ -42,6 +42,7 @@ LIBOPENDKIM_PACKAGE_NAME = "libopendkim-#{LIBOPENDKIM_VERSION}"
 
 SERVICE_USER = node['xgemail']['jilter_user']
 POLICY_BUCKET_NAME   = node['xgemail']['xgemail_policy_bucket_name']
+ACTIVE_PROFILE = node['xgemail']['xgemail_active_profile']
 
 include_recipe 'sophos-cloud-xgemail::install_jilter_common'
 
@@ -136,7 +137,8 @@ template 'xgemail.jilter.service.sh' do
   group SERVICE_USER
   variables(
       :deployment_dir => DEPLOYMENT_DIR,
-      :property_path => JILTER_APPLICATION_PROPERTIES_PATH
+      :property_path => JILTER_APPLICATION_PROPERTIES_PATH,
+      :active_profile => ACTIVE_PROFILE
   )
 end
 
