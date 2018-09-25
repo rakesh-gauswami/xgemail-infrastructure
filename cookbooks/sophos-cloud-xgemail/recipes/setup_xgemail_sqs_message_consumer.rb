@@ -81,8 +81,7 @@ template CONSUMER_SCRIPT_PATH do
     :message_direction => MESSAGE_DIRECTION,
     :message_history_status_sns_topic_arn => MESSAGE_HISTORY_DELIVERY_STATUS_SNS_TOPIC_ARN,
     :node_type => NODE_TYPE,
-    :node_ip => NODE_IP,
-    :account => ACCOUNT
+    :node_ip => NODE_IP
   )
 end
 
@@ -107,18 +106,9 @@ file '/etc/rsyslog.d/00-xgemail-sqsmsgconsumer.conf' do
   group 'root'
 end
 
-# if ACCOUNT != 'sandbox'
 service 'xgemail-sqs-consumer' do
   service_name CONSUMER_SERVICE_NAME
   init_command "/etc/init.d/#{CONSUMER_SERVICE_NAME}"
   supports :restart => true, :start => true, :stop => true, :reload => true
   subscribes :enable, 'template[xgemail-sqs-consumer]', :immediately
 end
-# else
-#   service 'xgemail-sqs-consumer' do
-#     service_name CONSUMER_SERVICE_NAME
-#     init_command "/etc/init.d/#{CONSUMER_SERVICE_NAME}"
-#     supports :restart => true, :start => true, :stop => true, :reload => true
-#     action [:enable, :start], :immediately
-#   end
-# end
