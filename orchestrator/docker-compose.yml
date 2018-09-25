@@ -104,6 +104,24 @@ services:
       - novanet
 
 
+  extended-delivery:
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:1.0.0
+    container_name: extended-delivery
+    hostname: extended-delivery
+    domainname: local.sandbox.hydra.sophos.com
+    ports:
+      - '5325:25' #SMTP
+    environment:
+      - HOSTNAME_EXTERNAL=extended-delivery
+      - INSTANCE_TYPE=xdelivery
+      - DEFAULT_REGION=local
+      - DEFAULT_ENVIRONMENT=sandbox
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
+    networks:
+      - novanet
+
 networks:
   novanet:
     external:
