@@ -10,7 +10,7 @@
 #
 
 NODE_TYPE = node['xgemail']['cluster_type']
-ACCOUNT =  node['sophos_cloud']['environment']
+ACCOUNT   =  node['sophos_cloud']['environment']
 
 if NODE_TYPE != 'delivery'
   return
@@ -30,14 +30,13 @@ include_recipe 'sophos-cloud-xgemail::common-postfix-multi-instance-config'
 
 AWS_REGION = node['sophos_cloud']['region']
 
-SOPHOS_ACCOUNT = node['sophos_cloud']['environment']
 
 XDELIVERY_INSTANCE_DATA = node['xgemail']['postfix_instance_data']['xdelivery']
 raise "Unsupported node type [#{NODE_TYPE}]" if XDELIVERY_INSTANCE_DATA.nil?
 
 SMTP_PORT = XDELIVERY_INSTANCE_DATA[:port]
 
-SMTP_FALLBACK_RELAY = "xdelivery-cloudemail-#{AWS_REGION}.#{SOPHOS_ACCOUNT}.hydra.sophos.com:#{SMTP_PORT}"
+SMTP_FALLBACK_RELAY = "xdelivery-cloudemail-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com:#{SMTP_PORT}"
 
 CONFIGURATION_COMMANDS =
   [
