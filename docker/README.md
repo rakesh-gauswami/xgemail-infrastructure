@@ -10,14 +10,13 @@ Requirements
 
 Setup
 ----------
-Download AWS credentials from [wiki](https://wiki.sophos.net/download/attachments/291609046/xgemail-ecr-readonly.csv?api=v2) 
 #### Setup AWS profile
 ##### Command :
 ```aws configure --profile docker-amzn```
 ##### Output :
 ```
-AWS Access Key ID [None]: xxxxx   -- Refer downloaded credential file
-AWS Secret Access Key [None]: xxxx -- Refer downloaded credential file
+AWS Access Key ID [None]: xxxxx   -- Refer shared credential file
+AWS Secret Access Key [None]: xxxx -- Refer shared credential file
 Default region name [None]: us-east-2
 Default output format [None]: json
 ```
