@@ -101,6 +101,23 @@ services:
     networks:
       - novanet
 
+  postfix-id:
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:1.0.0
+    container_name: postfix-id
+    hostname: internet-delivery
+    domainname: local.sandbox.hydra.sophos.com
+    environment:
+      - HOSTNAME_EXTERNAL=internet-delivery
+      - INSTANCE_TYPE=internet-delivery
+      - DEFAULT_REGION=local
+      - DEFAULT_ENVIRONMENT=sandbox
+      - DEBUG=1
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
+    networks:
+      - novanet
+
   postfix-xd:
     image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:1.0.0
     container_name: postfix-xd
