@@ -10,15 +10,12 @@ services:
     ports:
       - '19876:9876'
     volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
       - ~/g/email/xgemail/xgemail-jilter-outbound/build/distributions:/jilter
       - ~/.policy-storage:/policy-storage:rw
     networks:
       - novanet
 
 networks:
-  default:
-    driver: bridge
   novanet:
     external:
       name: nova_novanet

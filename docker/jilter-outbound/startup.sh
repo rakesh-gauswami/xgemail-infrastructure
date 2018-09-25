@@ -10,6 +10,7 @@ find . -type f -name 'libdkimjni*' -execdir mv {} libdkimjni.so \;
 find . -type f -name 'libspfjni*' -execdir mv {} libspfjni.so \;
 
 exec $JAVA_HOME/bin/java \
+		-Dlogback.configurationFile=/data/conf/logback.xml \
     -Dcom.sun.management.jmxremote.port=6007 \
     -Dcom.sun.management.jmxremote.authenticate=false \
     -Dcom.sun.management.jmxremote.ssl=false \

@@ -10,6 +10,7 @@ ADD startup.sh /data/scripts
 RUN chmod 777 /data/scripts/startup.sh
 
 ADD jilter-application.properties /data/conf
+ADD logback.xml /data/conf
 
 ENTRYPOINT ["/data/scripts/startup.sh"]
 
