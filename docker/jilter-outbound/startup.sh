@@ -3,9 +3,11 @@
 export IPADDRESS=`hostname -i`
 
 #Expand the tar file
-tar -xvf /jilter/xgemail-jilter-outbound-${JILTER_VERSION}.tar
+tar -xvf /jilter/xgemail-jilter-outbound-${JILTER_VERSION}.tar -C /jilter
 
-sleep 5
+#rename libs:
+find . -type f -name 'libdkimjni*' -execdir mv {} libdkimjni.so \;
+find . -type f -name 'libspfjni*' -execdir mv {} libspfjni.so \;
 
 exec $JAVA_HOME/bin/java \
     -Dcom.sun.management.jmxremote.port=6007 \

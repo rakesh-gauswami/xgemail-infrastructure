@@ -3,7 +3,11 @@
 export IPADDRESS=`hostname -i`
 
 #Expand the tar file
-tar -xvf /jilter/xgemail-jilter-inbound-${JILTER_VERSION}.tar
+tar -xvf /jilter/xgemail-jilter-inbound-${JILTER_VERSION}.tar -C /jilter
+
+#rename lib:
+find . -type f -name 'libdkimjni*' -execdir mv {} libdkimjni.so \;
+find . -type f -name 'libspfjni*' -execdir mv {} libspfjni.so \;
 
 #Start the jilter service
 exec $JAVA_HOME/bin/java \

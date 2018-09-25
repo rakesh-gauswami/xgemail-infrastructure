@@ -103,6 +103,37 @@ services:
     networks:
       - novanet
 
+  jilter-inbound:
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/jilter-inbound:latest
+    container_name: jilter-inbound
+    hostname: jilter-inbound
+    domainname: sandbox.sophos
+    environment:
+      - JILTER_VERSION=0.7.9-SNAPSHOT
+    ports:
+      - '9876:9876'
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - $XGEMAIL_HOME/xgemail/xgemail-jilter-inbound/build/distributions:/jilter
+      - ~/.policy-storage:/policy-storage:rw
+    networks:
+      - novanet
+
+  jilter-outbound:
+      image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/jilter-outbound:latest
+      container_name: jilter-outbound
+      hostname: jilter-outbound
+      domainname: sandbox.sophos
+      environment:
+        - JILTER_VERSION=0.4.6-SNAPSHOT
+      ports:
+        - '19876:9876'
+      volumes:
+        - /sys/fs/cgroup:/sys/fs/cgroup:ro
+        - ~/g/email/xgemail/xgemail-jilter-outbound/build/distributions:/jilter
+        - ~/.policy-storage:/policy-storage:rw
+      networks:
+        - novanet
 
 networks:
   novanet:
