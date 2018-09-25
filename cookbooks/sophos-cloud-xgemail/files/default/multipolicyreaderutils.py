@@ -242,5 +242,5 @@ def read_toc_config(recipient, endpoint_policy):
         logger.info("Recipient {0} has ToC on : {1}".format(recipient, is_toc_enabled))
         return is_toc_enabled
     except (IOError, KeyError, ValueError), e:
-        logger.error("endpoint json parse / read error : ",e)
+        logger.error("endpoint json parse / read error : {0}".format(e))
         return False
