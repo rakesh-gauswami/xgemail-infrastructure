@@ -15,7 +15,12 @@ INSTANCE_TYPE = ENV['INSTANCE_TYPE']
 
 if ENVIRONMENT == "sandbox"
     default['sophos_cloud']['region']      = ENV['DEFAULT_REGION']
+
+    # TODO: context and account variables should be removed in favor of  environment
     default['sophos_cloud']['environment'] = ENV['DEFAULT_ENVIRONMENT']
+    default['sophos_cloud']['context']     = ENV['DEFAULT_ENVIRONMENT']
+    default['sophos_cloud']['account']     = ENV['DEFAULT_ENVIRONMENT']
+
     default['xgemail']['cluster_type']     = ENV['INSTANCE_TYPE']
 
     default['xgemail']['xgemail_bucket_name']        = 'xgemail-submit'
@@ -29,16 +34,17 @@ if ENVIRONMENT == "sandbox"
     default['xgemail']['msg_history_status_sns_arn'] = 'arn:aws:sns:local:xgemail-msg-history-delivery-status-SNS'
     default['sophos_cloud']['connections']           = 'cloud-sandbox-connections'
 
-    default['xgemail']['sxl_dbl']          = 'fake-domain.com'
-    default['xgemail']['sxl_rbl']          = 'fake-domain.com'
-    default['xgemail']['xgemail_active_profile'] = 'sandbox'
+    default['xgemail']['sxl_dbl']                    = 'fake-domain.com'
+    default['xgemail']['sxl_rbl']                    = 'fake-domain.com'
+    default['xgemail']['xgemail_active_profile']     = 'sandbox'
+    default['xgemail']['station_vpc_name']           = 'pic'
+
 
     if INSTANCE_TYPE == "customer-submit"
         default['ec2']['instance_id'] = ENV['INSTANCE_ID']
     end
 
-    default['sandbox']['mail_transport_entry']     = 'sophos.com mailcatcher:1025'
+    default['sandbox']['mail_transport_entry']     = 'sophos.com smtp:mailcatcher:1025'
     default['sandbox']['mail_relay_domain']        = 'sophos.com OK'
     default['sandbox']['mail_recipient_access']    = 'sophos.com OK'
-
 end
