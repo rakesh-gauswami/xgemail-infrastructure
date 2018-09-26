@@ -29,15 +29,16 @@ include_recipe 'sophos-cloud-xgemail::common-postfix-multi-instance-config'
 
 AWS_REGION = node['sophos_cloud']['region']
 
-SOPHOS_ACCOUNT = node['sophos_cloud']['environment']
+ACCOUNT = node['sophos_cloud']['environment']
 
 INTERNET_XDELIVERY_INSTANCE_DATA = node['xgemail']['postfix_instance_data']['internet-xdelivery']
 raise "Unsupported node type [#{NODE_TYPE}]" if INTERNET_XDELIVERY_INSTANCE_DATA.nil?
 
 SMTP_PORT = INTERNET_XDELIVERY_INSTANCE_DATA[:port]
 
-SMTP_FALLBACK_RELAY = "internet-xdelivery-cloudemail-#{AWS_REGION}.#{SOPHOS_ACCOUNT}.hydra.sophos.com:#{SMTP_PORT}"
+SMTP_FALLBACK_RELAY = "internet-xdelivery-cloudemail-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com:#{SMTP_PORT}"
 
+if ACCOUNT != 'sandbox'
 CONFIGURATION_COMMANDS =
   [
     'bounce_queue_lifetime=0',
@@ -54,3 +55,8 @@ CONFIGURATION_COMMANDS.each do | cur |
 end
 include_recipe 'sophos-cloud-xgemail::configure-bounce-message-internet-delivery-queue'
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_consumer'
+else
+  include_recipe 'sophos-cloud-xgemail::configure-bounce-message-internet-delivery-queue'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_consumer'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_utils_structure'
+end
