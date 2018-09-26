@@ -88,14 +88,27 @@ if ACCOUNT == 'sandbox'
   end
 
   # Update postfix to call jilter as external service
-  [
-      # TO DO: To be decided where jilter instances are functional
-      #'smtpd_milters = inet:jilter.sandbox.sophos:9876',
-      'milter_connect_macros = {client_addr}, {j}',
-      'milter_end_of_data_macros = {i}'
-  ].each do | cur |
-    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+  # only for submit instances
+  if NODE_TYPE == 'submit'
+    [
+        'smtpd_milters = inet:jilter-inbound:9876',
+        'milter_connect_macros = {client_addr}, {j}',
+        'milter_end_of_data_macros = {i}'
+    ].each do | cur |
+        execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+      end
+  else
+    if NODE_TYPE == 'customer-submit'
+      [
+          'smtpd_milters = inet:jilter-outbound:9876',
+          'milter_connect_macros = {client_addr}, {j}',
+          'milter_end_of_data_macros = {i}'
+      ].each do | cur |
+        execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+      end
+    end
   end
+
 else
   # Create new instance
   MULTI_CREATE_GUARD = ::File.join( FILE_CACHE_DIR, ".create-postfix-instance-#{INSTANCE_NAME}" )
