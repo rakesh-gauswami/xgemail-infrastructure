@@ -64,3 +64,9 @@ aws --endpoint-url=http://localhost:4575 sns subscribe --topic-arn arn:aws:sns:u
 # publish a message to the topic
 aws --endpoint-url=http://localhost:4575 sns publish --topic-arn arn:aws:sns:us-east-1:123456789012:test-topic --message 'Test Message!!' --region us-east-1
 
+
+#to send email 
+# use the sendmsg script in this directory ./sendmsg.py 
+# ./sendmsg.py --help gives you the usage. Example below : 
+
+./sendmsg.py tosandboxuser@sophos.com fromsandboxuser@sophos.com ./sample-emails/email_clean.eml 
