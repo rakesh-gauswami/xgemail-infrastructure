@@ -72,7 +72,7 @@ def send_message(message, server, sender, recipients, requested_read_receipt):
         if requested_read_receipt:
             rcpt_options.append('NOTIFY=SUCCESS')
 
-	smtp = smtplib.SMTP(server, SMTP_PORT, 'localhost')
+	smtp = smtplib.SMTP(server, SMTP_PORT, 'sophos.com')
 	smtp.sendmail(sender, recipients, message.as_string(), mail_options = [], rcpt_options = rcpt_options)
 	print 'Message successfully sent.'
     except Exception as ex:
@@ -122,6 +122,8 @@ if __name__ == "__main__":
     print 'Recipient(s):\t\t{0}'.format(recipients)
     print 'Server:\t\t\t{0}'.format(server)
     print 'Direction:\t\t{0}'.format(direction)
+    print 'Environment:\t\t{0}'.format(env)
+    print 'Region:\t\t\t{0}'.format(region)
     print 'Generate Message-ID:\t{0}'.format(generate_message_id)
     print 'Remove Date header:\t{0}'.format(remove_date)
     print 'Requested read receipt:\t{0}'.format(requested_read_receipt)
