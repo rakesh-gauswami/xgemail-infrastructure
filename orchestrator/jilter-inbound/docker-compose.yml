@@ -1,12 +1,14 @@
 version: "3"
 services:
   jilter-inbound:
-    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/jilter-inbound:latest
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/jilter-base:latest
     container_name: jilter-inbound
     hostname: jilter-inbound
     domainname: sandbox.sophos
     environment:
       - JILTER_VERSION=0.7.9-SNAPSHOT
+      - DIRECTION=inbound
+      - APPLICATION=
     ports:
       - '9876:9876'
     volumes:
