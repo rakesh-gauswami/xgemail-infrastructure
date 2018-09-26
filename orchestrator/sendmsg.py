@@ -13,6 +13,8 @@ import datetime
 HEADER_SUBJECT = 'subject'
 HEADER_DATE = 'date'
 HEADER_MESSAGE_ID = 'message-id'
+ENVIRONMENT = 'sandbox'
+REGION = 'local'
 
 RANDOM_STRING_LENGTH = 10
 
@@ -85,12 +87,10 @@ if __name__ == "__main__":
     parser.add_argument('recipients', metavar='recipients', nargs='+', type = str, help = 'The envelope recipient address(es)')
     parser.add_argument('eml', metavar='eml', type = str, help = 'The local email file to be sent (in EML format)')
     parser.add_argument('--emailstosend', default = 1, help = 'the number of emails to send using sender and recipient')
-    parser.add_argument('--env', default = 'sandbox', choices=['sandbox'], help = 'the region to send the email to (default: DEV)')
     parser.add_argument('--direction', default = DIRECTION_INBOUND, choices=[DIRECTION_INBOUND, DIRECTION_OUTBOUND], help = 'the email direction (default: inbound)')
     parser.add_argument('--keepmessageid', dest='keepmessageid', action = 'store_true', help = 'Do not generate a new Message-ID before sending the email')
     parser.add_argument('--keepdate', dest='keepdate', action = 'store_true', help = 'Keep the original date in the eml file (if exists)')
     parser.add_argument('--readreceipt', dest='readreceipt', action = 'store_true', help = 'Request a read receipt')
-    parser.add_argument('--region', default = 'local', choices=['local'], help = 'the region to send the email to (default: local)')
     parser.add_argument('--subject', help = 'Subject of the email')
 
     args = parser.parse_args()
@@ -106,8 +106,8 @@ if __name__ == "__main__":
     subject = args.subject
     generate_message_id = not args.keepmessageid
     remove_date = not args.keepdate
-    region = args.region
-    env = args.env
+    region = REGION
+    env = ENVIRONMENT
     requested_read_receipt = args.readreceipt
     direction = args.direction
 
@@ -122,8 +122,6 @@ if __name__ == "__main__":
     print 'Recipient(s):\t\t{0}'.format(recipients)
     print 'Server:\t\t\t{0}'.format(server)
     print 'Direction:\t\t{0}'.format(direction)
-    print 'Environment:\t\t{0}'.format(env)
-    print 'Region:\t\t\t{0}'.format(region)
     print 'Generate Message-ID:\t{0}'.format(generate_message_id)
     print 'Remove Date header:\t{0}'.format(remove_date)
     print 'Requested read receipt:\t{0}'.format(requested_read_receipt)
