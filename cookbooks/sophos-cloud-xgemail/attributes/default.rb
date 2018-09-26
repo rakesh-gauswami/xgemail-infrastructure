@@ -52,7 +52,7 @@ default['xgemail']['cert']              = 'xgemail'
 # This is used on the 'processing' host only
 ## CYREN settings
 default['xgemail']['ctasd_url'] = 'ftp.ctmail.com/ctasd/Release'
-default['xgemail']['ctasd_package_version'] = '5.01.0000'
+default['xgemail']['ctasd_package_version'] = '5.01.0006.4'
 default['xgemail']['ctasd_license_key'] = '0001W000S0051K019G03'
 default['xgemail']['ctasd_server_address'] = 'resolver%d.sophos.ctmail.com'
 default['xgemail']['ctasd_daemon_stop_timeout'] = 5
