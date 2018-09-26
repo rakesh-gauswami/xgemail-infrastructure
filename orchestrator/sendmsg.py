@@ -21,7 +21,7 @@ SMTP_PORT = 5225
 DIRECTION_INBOUND = 'inbound'
 DIRECTION_OUTBOUND = 'outbound'
 
-def get_server(region, env, direction=DIRECTION_INBOUND):
+def get_server(region, env):
         return 'localhost'.format(region, env)
 
 def get_random_string(size = RANDOM_STRING_LENGTH, chars = string.ascii_uppercase + string.digits):
@@ -70,9 +70,7 @@ def send_message(message, server, sender, recipients, requested_read_receipt):
         if requested_read_receipt:
             rcpt_options.append('NOTIFY=SUCCESS')
 
-	#smtp = smtplib.SMTP(server, SMTP_PORT)
-	smtp = smtplib.SMTP(server, SMTP_PORT, 'emailp365.org')
-        # smtp.set_debuglevel(1)
+	smtp = smtplib.SMTP(server, SMTP_PORT, 'localhost')
 	smtp.sendmail(sender, recipients, message.as_string(), mail_options = [], rcpt_options = rcpt_options)
 	print 'Message successfully sent.'
     except Exception as ex:
@@ -87,12 +85,12 @@ if __name__ == "__main__":
     parser.add_argument('recipients', metavar='recipients', nargs='+', type = str, help = 'The envelope recipient address(es)')
     parser.add_argument('eml', metavar='eml', type = str, help = 'The local email file to be sent (in EML format)')
     parser.add_argument('--emailstosend', default = 1, help = 'the number of emails to send using sender and recipient')
-    parser.add_argument('--env', default = 'sandbox', choices=['DEV', 'QA', 'PROD', 'sandbox'], help = 'the region to send the email to (default: DEV)')
+    parser.add_argument('--env', default = 'sandbox', choices=['sandbox'], help = 'the region to send the email to (default: DEV)')
     parser.add_argument('--direction', default = DIRECTION_INBOUND, choices=[DIRECTION_INBOUND, DIRECTION_OUTBOUND], help = 'the email direction (default: inbound)')
     parser.add_argument('--keepmessageid', dest='keepmessageid', action = 'store_true', help = 'Do not generate a new Message-ID before sending the email')
     parser.add_argument('--keepdate', dest='keepdate', action = 'store_true', help = 'Keep the original date in the eml file (if exists)')
     parser.add_argument('--readreceipt', dest='readreceipt', action = 'store_true', help = 'Request a read receipt')
-    parser.add_argument('--region', default = 'local', choices=['eu-central-1', 'eu-west-1', 'us-west-2', 'us-east-2','local'], help = 'the region to send the email to (default: local)')
+    parser.add_argument('--region', default = 'local', choices=['local'], help = 'the region to send the email to (default: local)')
     parser.add_argument('--subject', help = 'Subject of the email')
 
     args = parser.parse_args()
@@ -114,7 +112,7 @@ if __name__ == "__main__":
     direction = args.direction
 
     message_as_string = read_file(eml_file)
-    server = get_server(region, env.lower(), direction)
+    server = get_server(region, env.lower())
 
     print
     print 'Sending email:'
