@@ -11,7 +11,7 @@
 
 NODE_TYPE = node['xgemail']['cluster_type']
 
-if NODE_TYPE != 'customer-encryption-submit'
+if NODE_TYPE != 'customer-encryption'
   return
 end
 
@@ -19,11 +19,12 @@ end
 ::Chef::Recipe.send(:include, ::SophosCloudXgemail::Helper)
 ::Chef::Resource.send(:include, ::SophosCloudXgemail::Helper)
 
-INSTANCE_DATA = node['xgemail']['postfix_instance_data'][NODE_TYPE]
-raise "Unsupported node type [#{NODE_TYPE}]" if INSTANCE_DATA.nil?
+INSTANCE_TYPE = 'encryption-submit';
+INSTANCE_DATA = node['xgemail']['postfix_instance_data'][INSTANCE_TYPE]
+raise "Unsupported node type [#{INSTANCE_TYPE}]" if INSTANCE_DATA.nil?
 
 INSTANCE_NAME = INSTANCE_DATA[:instance_name]
-raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
+raise "Invalid instance name for node type [#{INSTANCE_TYPE}]" if INSTANCE_NAME.nil?
 
 include_recipe 'sophos-cloud-xgemail::common-postfix-multi-instance-config'
 

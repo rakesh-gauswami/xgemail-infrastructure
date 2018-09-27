@@ -11,7 +11,7 @@
 
 NODE_TYPE = node['xgemail']['cluster_type']
 
-if NODE_TYPE != 'customer-encryption-delivery'
+if NODE_TYPE != 'customer-encryption'
   return
 end
 
@@ -19,11 +19,12 @@ end
 ::Chef::Recipe.send(:include, ::SophosCloudXgemail::Helper)
 ::Chef::Resource.send(:include, ::SophosCloudXgemail::Helper)
 
-INSTANCE_DATA = node['xgemail']['postfix_instance_data'][NODE_TYPE]
-raise "Unsupported node type [#{NODE_TYPE}]" if INSTANCE_DATA.nil?
+INSTANCE_TYPE = 'encryption-delivery';
+INSTANCE_DATA = node['xgemail']['postfix_instance_data'][INSTANCE_TYPE]
+raise "Unsupported node type [#{INSTANCE_TYPE}]" if INSTANCE_DATA.nil?
 
 INSTANCE_NAME = INSTANCE_DATA[:instance_name]
-raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
+raise "Invalid instance name for node type [#{INSTANCE_TYPE}]" if INSTANCE_NAME.nil?
 
 include_recipe 'sophos-cloud-xgemail::common-postfix-multi-instance-config'
 
@@ -31,26 +32,16 @@ AWS_REGION = node['sophos_cloud']['region']
 
 SOPHOS_ACCOUNT = node['sophos_cloud']['environment']
 
-ENCRYPTION_XDELIVERY_INSTANCE_DATA = node['xgemail']['postfix_instance_data']['encryption-xdelivery']
-raise "Unsupported node type [#{NODE_TYPE}]" if ENCRYPTION_XDELIVERY_INSTANCE_DATA.nil?
+SMTP_PORT = INSTANCE_DATA[:port]
 
-SMTP_PORT = ENCRYPTION_XDELIVERY_INSTANCE_DATA[:port]
-
-SMTP_FALLBACK_RELAY = "encryption-xdelivery-cloudemail-#{AWS_REGION}.#{SOPHOS_ACCOUNT}.hydra.sophos.com:#{SMTP_PORT}"
+DESTINATION_PORT = 587
+DESTINATION_HOST = '52.215.131.101:#{DESTINATION_PORT}'
 
 CONFIGURATION_COMMANDS =
   [
-    # This is a host on the Echoworx side, we don't have it now, will be updated
-    #'relayhost'=[???echoworx.com]:587',
-
-    'queue_directory=/storage/postfix-cd',
-    'command_directory=/usr/sbin',
-    'daemon_directory=/usr/libexec/postfix',
-    'data_directory=/var/lib/postfix-cd',
-    'mail_owner=postfix',
+    'relayhost=#{DESTINATION_HOST}',
     'unknown_local_recipient_reject_code=550',
     'bounce_queue_lifetime=0',
-    'smtp_fallback_relay=#{SMTP_FALLBACK_RELAY}',
     'smtp_tls_security_level=encrypt',
     'smtp_tls_ciphers=high',
     'smtp_tls_mandatory_ciphers=high',
