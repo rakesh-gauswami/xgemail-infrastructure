@@ -1,4 +1,4 @@
-version: "3"
+version: '3'
 services:
   localstack-xgemail:
     image: localstack/localstack
@@ -28,14 +28,14 @@ services:
       - novanet
 
   cyren:
-      image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/cyren:latest
-      container_name: cyren
-      hostname: cyren
-      domainname: sandbox.sophos
-      ports:
-        - '8088:8088' #cyren port
-      networks:
-        - novanet
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/cyren:latest
+    container_name: cyren
+    hostname: cyren
+    domainname: sandbox.sophos
+    ports:
+      - '8088:8088' #cyren port
+    networks:
+      - novanet
 
   savi:
     image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/savi:latest
@@ -44,6 +44,30 @@ services:
     domainname: sandbox.sophos
     ports:
       - '4010:4010'
+    networks:
+      - novanet
+
+  sasi-service:
+    image: email/sasi-service
+    container_name: sasi-service
+    hostname: sasi-service
+    domainname: sandbox.sophos
+    env_file:
+      - ~/.aws/credentials
+    ports:
+      - '8080:8080'
+    depends_on:
+      - "sasi-daemon"
+    networks:
+      - novanet
+
+  sasi-daemon:
+    image: email/sasi-daemon
+    container_name: sasi-daemon-contanier
+    hostname: sasi-daemon
+    domainname: sandbox.sophos
+    ports:
+      - '32223:32223'
     networks:
       - novanet
 
