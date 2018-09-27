@@ -1,4 +1,4 @@
-version: "3"
+version: '3'
 services:
   localstack-xgemail:
     image: localstack/localstack
@@ -28,14 +28,14 @@ services:
       - novanet
 
   cyren:
-      image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/cyren:latest
-      container_name: cyren
-      hostname: cyren
-      domainname: sandbox.sophos
-      ports:
-        - '8088:8088' #cyren port
-      networks:
-        - novanet
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/cyren:latest
+    container_name: cyren
+    hostname: cyren
+    domainname: sandbox.sophos
+    ports:
+      - '8088:8088' #cyren port
+    networks:
+      - novanet
 
   savi:
     image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/savi:latest
@@ -44,6 +44,30 @@ services:
     domainname: sandbox.sophos
     ports:
       - '4010:4010'
+    networks:
+      - novanet
+
+  sasi-service:
+    image: email/sasi-service
+    container_name: sasi-service
+    hostname: sasi-service
+    domainname: sandbox.sophos
+    env_file:
+      - ~/.aws/credentials
+    ports:
+      - '8080:8080'
+    depends_on:
+      - "sasi-daemon"
+    networks:
+      - novanet
+
+  sasi-daemon:
+    image: email/sasi-daemon
+    container_name: sasi-daemon-contanier
+    hostname: sasi-daemon
+    domainname: sandbox.sophos
+    ports:
+      - '32223:32223'
     networks:
       - novanet
 
@@ -101,6 +125,57 @@ services:
     networks:
       - novanet
 
+  postfix-id:
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:1.0.0
+    container_name: postfix-id
+    hostname: internet-delivery
+    domainname: local.sandbox.hydra.sophos.com
+    environment:
+      - HOSTNAME_EXTERNAL=internet-delivery
+      - INSTANCE_TYPE=internet-delivery
+      - DEFAULT_REGION=local
+      - DEFAULT_ENVIRONMENT=sandbox
+      - DEBUG=1
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
+    networks:
+      - novanet
+
+  jilter-inbound:
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/jilter-base:latest
+    container_name: jilter-inbound
+    hostname: jilter-inbound
+    domainname: sandbox.sophos
+    environment:
+      - JILTER_VERSION=0.7.9-SNAPSHOT
+      - DIRECTION=inbound
+      - APPLICATION=
+    ports:
+      - '9876:9876'
+    volumes:
+      - $XGEMAIL_HOME/xgemail/xgemail-jilter-inbound/build/distributions:/jilter
+      - ~/.policy-storage:/policy-storage:rw
+    networks:
+      - novanet
+
+  jilter-outbound:
+      image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/jilter-base:latest
+      container_name: jilter-outbound
+      hostname: jilter-outbound
+      domainname: sandbox.sophos
+      environment:
+        - JILTER_VERSION=0.4.6-SNAPSHOT
+        - DIRECTION=outbound
+        - APPLICATION=Outbound
+      ports:
+        - '19876:9876'
+      volumes:
+        - $XGEMAIL_HOME/xgemail/xgemail-jilter-outbound/build/distributions:/jilter
+        - ~/.policy-storage:/policy-storage:rw
+      networks:
+        - novanet
+
   postfix-xd:
     image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:1.0.0
     container_name: postfix-xd
@@ -132,6 +207,7 @@ services:
       - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
     networks:
       - novanet
+
 
 networks:
   novanet:

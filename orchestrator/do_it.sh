@@ -53,11 +53,36 @@ QUARANTINE_SQS_QUEUE="sandbox-Xgemail_Quarantine_Delivery"
 QUARANTINE_SQS_QUEUE_SNS_LISTENER="sandbox-Xgemail_Quarantine_Delivery_SNS_Listener"
 
 #SASI Queues
-SASI_OUTBOUND_REQUEST_SQS_QUEUE="SASI_Outbound_Request"
-SASI_OUTBOUND_RESPONSE_SQS_QUEUE="SASI_Outbound_Response"
-SASI_REQUEST_SQS_QUEUE="SASI_Request"
-SASI_RESPONSE_SQS_QUEUE="SASI_Response"
+SASI_OUTBOUND_REQUEST_SQS_QUEUE="sandbox-SASI_Outbound_Request"
+SASI_OUTBOUND_RESPONSE_SQS_QUEUE="sandbox-SASI_Outbound_Response"
+SASI_REQUEST_SQS_QUEUE="sandbox-SASI_Request"
+SASI_RESPONSE_SQS_QUEUE="sandbox-SASI_Response"
 
+#DLQ queues
+SASI_OUTBOUND_REQUEST_SQS_QUEUE_DLQ="sandbox-SASI_Outbound_Request-DLQ"
+SASI_OUTBOUND_RESPONSE_SQS_QUEUE_DLQ="sandbox-SASI_Outbound_Response-DLQ"
+SASI_REQUEST_SQS_QUEUE_DLQ="sandbox-SASI_Request-DLQ"
+SASI_RESPONSE_SQS_QUEUE_DLQ="sandbox-SASI_Response-DLQ"
+CUSTOMER_DELIVERY_SQS_QUEUE_SNS_LISTENER_DLQ="sandbox-Xgemail_Customer_Delivery_SNS_Listener-DLQ"
+CUSTOMER_SUBMIT_SQS_QUEUE_DLQ="sandbox-Xgemail_Customer_Submit-DLQ"
+DQS_SQS_QUEUE_DLQ="sandbox-Xgemail_DQS-DLQ"
+DELAY_SQS_QUEUE_DLQ="sandbox-Xgemail_Delay-DLQ"
+EMERGENCY_INBOX_SQS_QUEUE_DLQ="sandbox-Xgemail_Emergency_Inbox_Delivery-DLQ"
+EMERGENCY_INBOX_SQS_QUEUE_SNS_LISTENER_DLQ="sandbox-Xgemail_Emergency_Inbox_Delivery_SNS_Listener-DLQ"
+INTERNET_DELIVERY_SQS_QUEUE_DLQ="sandbox-Xgemail_Internet_Delivery-DLQ"
+INTERNET_DELIVERY_SQS_QUEUE_SNS_LISTENER_DLQ="sandbox-Xgemail_Internet_Delivery_SNS_Listener-DLQ"
+INTERNET_SUBMIT_SQS_QUEUE_DLQ="sandbox-Xgemail_Internet_Submit-DLQ"
+MSG_HISTORY_SQS_QUEUE_DLQ="sandbox-Xgemail_MessageHistoryEvent_Delivery-DLQ"
+MSG_HISTORY_SQS_QUEUE_SNS_LISTENER_DLQ="sandbox-Xgemail_MessageHistoryEvent_Delivery_SNS_Listener-DLQ"
+MSG_HISTORY_STATUS_SQS_QUEUE_DLQ="sandbox-Xgemail_MessageHistory_Delivery_Status-DLQ"
+MSG_HISTORY_STATUS_SQS_QUEUE_SNS_LISTENER_DLQ="sandbox-Xgemail_MessageHistory_Delivery_Status_SNS_Listener-DLQ"
+MSG_STATISTICS_REJECTION_SQS_QUEUE_DLQ="sandbox-Xgemail_Message_Statistics_Rejection-DLQ"
+MSG_STATISTICS_SQS_QUEUE_DLQ="sandbox-Xgemail_Message_Statistics-DLQ"
+MSG_STATISTICS_SQS_QUEUE_SNS_LISTENER_DLQ="sandbox-Xgemail_Message_Statistics_SNS_Listener-DLQ"
+MULTI_POLICY_SQS_QUEUE_DLQ="sandbox-Xgemail_multi_policy-DLQ"
+NOTIFIER_REQUEST_SQS_QUEUE_DLQ="sandbox-Xgemail_Notifier_Request-DLQ"
+QUARANTINE_SQS_QUEUE_DLQ="sandbox-Xgemail_Quarantine_Delivery-DLQ"
+QUARANTINE_SQS_QUEUE_SNS_LISTENER_DLQ="sandbox-Xgemail_Quarantine_Delivery_SNS_Listener-DLQ"
 
 #SNS
 DELAY_SNS_TOPIC="xgemail-delay-SNS"
@@ -196,10 +221,58 @@ awslocal sqs create-queue --queue-name ${SASI_REQUEST_SQS_QUEUE} | jq .
 gprintf "CREATING SASI_RESPONSE_SQS_QUEUE"
 awslocal sqs create-queue --queue-name ${SASI_RESPONSE_SQS_QUEUE} | jq .
 
+
+gprintf "CREATING DLQ "
+awslocal sqs create-queue --queue-name ${SASI_OUTBOUND_REQUEST_SQS_QUEUE_DLQ} | jq .
+
+awslocal sqs create-queue --queue-name ${SASI_OUTBOUND_RESPONSE_SQS_QUEUE_DLQ} | jq .
+
+awslocal sqs create-queue --queue-name ${SASI_REQUEST_SQS_QUEUE_DLQ} | jq .
+
+awslocal sqs create-queue --queue-name ${SASI_RESPONSE_SQS_QUEUE_DLQ} | jq .
+
+awslocal sqs create-queue --queue-name ${CUSTOMER_DELIVERY_SQS_QUEUE_SNS_LISTENER_DLQ} | jq .
+
+awslocal sqs create-queue --queue-name ${CUSTOMER_SUBMIT_SQS_QUEUE_DLQ} | jq .
+
+awslocal sqs create-queue --queue-name ${DQS_SQS_QUEUE_DLQ} | jq .
+
+awslocal sqs create-queue --queue-name ${DELAY_SQS_QUEUE_DLQ} | jq .
+
+awslocal sqs create-queue --queue-name ${EMERGENCY_INBOX_SQS_QUEUE_DLQ} | jq .
+
+awslocal sqs create-queue --queue-name ${EMERGENCY_INBOX_SQS_QUEUE_SNS_LISTENER_DLQ} | jq .
+
+awslocal sqs create-queue --queue-name ${INTERNET_DELIVERY_SQS_QUEUE_DLQ} | jq .
+
+awslocal sqs create-queue --queue-name ${INTERNET_DELIVERY_SQS_QUEUE_SNS_LISTENER_DLQ} | jq .
+
+awslocal sqs create-queue --queue-name ${INTERNET_SUBMIT_SQS_QUEUE_DLQ} | jq .
+
+awslocal sqs create-queue --queue-name ${MSG_HISTORY_SQS_QUEUE_DLQ} | jq .
+
+awslocal sqs create-queue --queue-name ${MSG_HISTORY_SQS_QUEUE_SNS_LISTENER_DLQ} | jq .
+
+awslocal sqs create-queue --queue-name ${MSG_HISTORY_STATUS_SQS_QUEUE_DLQ} | jq .
+
+awslocal sqs create-queue --queue-name ${MSG_HISTORY_STATUS_SQS_QUEUE_SNS_LISTENER_DLQ} | jq .
+
+awslocal sqs create-queue --queue-name ${MSG_STATISTICS_REJECTION_SQS_QUEUE_DLQ} | jq .
+
+awslocal sqs create-queue --queue-name ${MSG_STATISTICS_SQS_QUEUE_DLQ} | jq .
+
+awslocal sqs create-queue --queue-name ${MSG_STATISTICS_SQS_QUEUE_SNS_LISTENER_DLQ} | jq .
+
+awslocal sqs create-queue --queue-name ${MULTI_POLICY_SQS_QUEUE_DLQ} | jq .
+
+awslocal sqs create-queue --queue-name ${NOTIFIER_REQUEST_SQS_QUEUE_DLQ} | jq .
+
+awslocal sqs create-queue --queue-name ${QUARANTINE_SQS_QUEUE_DLQ} | jq .
+
+awslocal sqs create-queue --queue-name ${QUARANTINE_SQS_QUEUE_SNS_LISTENER_DLQ} | jq .
+
 #SNS Topics
 gprintf "Creating SNS Topics"
-
-#not used for local
 
 gprintf "CREATING DELAY_SNS_TOPIC"
 awslocal sns create-topic --name ${DELAY_SNS_TOPIC} | jq .
