@@ -62,8 +62,6 @@ raise "SXL_RBL was nil" if SXL_RBL.nil?
 #  - 127.0.4.21: SXL_IP_TFX_PSH (Received via a known source of phishing (SXL lookup))
 SXL_RBL_RESPONSE_CODES = "127.0.4.[1;5;6;8;13;14;18;21]"
 
-POSTFIX_DEFAULT_PROCESS_LIMIT = node["xgemail"]["postfix_default_process_limit"]
-
 GLOBAL_SIGN_DIR = "#{LOCAL_CERT_PATH}/3rdparty/global-sign"
 GLOBAL_SIGN_INTERMEDIARY = "#{GLOBAL_SIGN_DIR}/global-sign-sha256-intermediary.crt"
 GLOBAL_SIGN_ROOT = "#{GLOBAL_SIGN_DIR}/global-sign-root.crt"
@@ -158,9 +156,7 @@ if account != 'sandbox'
               "reject_non_fqdn_sender",
 
           # RBL response configuration
-          "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_FILENAME}",
-
-          "default_process_limit = #{POSTFIX_DEFAULT_PROCESS_LIMIT}"
+          "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_FILENAME}"
       ]
 
   CONFIGURATION_COMMANDS.each do | cur |

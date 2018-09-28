@@ -38,8 +38,6 @@ SMTP_PORT = INTERNET_XDELIVERY_INSTANCE_DATA[:port]
 
 SMTP_FALLBACK_RELAY = "internet-xdelivery-cloudemail-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com:#{SMTP_PORT}"
 
-POSTFIX_DEFAULT_PROCESS_LIMIT = node["xgemail"]["postfix_default_process_limit"]
-
 if ACCOUNT != 'sandbox'
 CONFIGURATION_COMMANDS =
   [
@@ -49,8 +47,7 @@ CONFIGURATION_COMMANDS =
     'smtp_tls_ciphers=high',
     'smtp_tls_mandatory_ciphers=high',
     'smtp_tls_loglevel=1',
-    'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache',
-    "default_process_limit = #{POSTFIX_DEFAULT_PROCESS_LIMIT}"
+    'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache'
   ]
 
 CONFIGURATION_COMMANDS.each do | cur |

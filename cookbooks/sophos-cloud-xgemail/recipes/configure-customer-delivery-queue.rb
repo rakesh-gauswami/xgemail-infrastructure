@@ -30,14 +30,13 @@ include_recipe 'sophos-cloud-xgemail::common-postfix-multi-instance-config'
 
 AWS_REGION = node['sophos_cloud']['region']
 
+
 XDELIVERY_INSTANCE_DATA = node['xgemail']['postfix_instance_data']['xdelivery']
 raise "Unsupported node type [#{NODE_TYPE}]" if XDELIVERY_INSTANCE_DATA.nil?
 
 SMTP_PORT = XDELIVERY_INSTANCE_DATA[:port]
 
 SMTP_FALLBACK_RELAY = "xdelivery-cloudemail-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com:#{SMTP_PORT}"
-
-POSTFIX_DEFAULT_PROCESS_LIMIT = node["xgemail"]["postfix_default_process_limit"]
 
 CONFIGURATION_COMMANDS =
   [
@@ -47,13 +46,13 @@ CONFIGURATION_COMMANDS =
     'smtp_tls_ciphers=high',
     'smtp_tls_mandatory_ciphers=high',
     'smtp_tls_loglevel=1',
-    'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache',
-    "default_process_limit = #{POSTFIX_DEFAULT_PROCESS_LIMIT}"
+    'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache'
   ]
 
 CONFIGURATION_COMMANDS.each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
 end
+
 
 if ACCOUNT == 'sandbox'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_utils_structure'

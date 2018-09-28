@@ -70,8 +70,6 @@ SXL_RBL_RESPONSE_CODES = "127.0.4.[1;5;6;8;13;14;18;21]"
 # Hosts authorized to make use of the XCLIENT extension
 SMTPD_AUTHORIZED_XCLIENT_HOSTS = node["xgemail"]["smtpd_authorized_xclient_hosts"]
 
-POSTFIX_DEFAULT_PROCESS_LIMIT = node["xgemail"]["postfix_default_process_limit"]
-
 RBL_REPLY_MAPS_FILENAME = 'rbl_reply_maps'
 
 execute RBL_REPLY_MAPS_FILENAME do
@@ -184,9 +182,7 @@ if ACCOUNT != 'sandbox'
         "check_sender_access hash:$config_directory/#{SOFT_RETRY_SENDERS_MAP_FILENAME}, " +
         'reject',
 
-    "smtpd_authorized_xclient_hosts = #{SMTPD_AUTHORIZED_XCLIENT_HOSTS}",
-
-    "default_process_limit = #{POSTFIX_DEFAULT_PROCESS_LIMIT}"
+    "smtpd_authorized_xclient_hosts = #{SMTPD_AUTHORIZED_XCLIENT_HOSTS}"
   ].each do | cur |
     execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
   end
