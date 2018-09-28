@@ -21,7 +21,10 @@ CONFIGURATION_COMMANDS =
   node['xgemail']['common_instance_config_params'] +
   [
     # Disable inet services for default instance
-    'master_service_disable = inet'
+    'master_service_disable = inet',
+
+    # Increase default processing limit from default 100 to 200
+    'default_process_limit = 200'
   ]
 
 CONFIGURATION_COMMANDS_SANDBOX =
