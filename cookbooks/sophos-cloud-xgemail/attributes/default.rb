@@ -124,6 +124,9 @@ default['xgemail']['sxl_dbl_response_codes'] = "127.0.1.[1;3;4;5]"
 # https://wiki.sophos.net/display/NSG/VBSpam+Integration+into+Sophos+Email
 default['xgemail']['smtpd_authorized_xclient_hosts'] = "81.136.243.94"
 
+# Increase Postfix default process limit from default 100 to 200
+default['xgemail']['postfix_default_process_limit'] = 200
+
 ## IP blacklist settings
 default['xgemail']['sxl_rbl'] = nil
 

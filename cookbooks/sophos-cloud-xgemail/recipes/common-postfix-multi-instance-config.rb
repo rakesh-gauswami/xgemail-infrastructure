@@ -46,6 +46,8 @@ TLS_HIGH_CIPHERLIST = node['xgemail']['tls_high_cipherlist']
 
 INSTANCE_HOST_NAME = get_hostname(NODE_TYPE)
 
+POSTFIX_DEFAULT_PROCESS_LIMIT = node["xgemail"]["postfix_default_process_limit"]
+
 CONFIGURATION_COMMANDS =
   node['xgemail']['common_instance_config_params'] +
   node['xgemail']['no_local_delivery_config_params'] +
@@ -54,11 +56,9 @@ CONFIGURATION_COMMANDS =
     "mailbox_size_limit = #{MSG_SIZE_LIMIT + 1024}",
     "message_size_limit = #{MSG_SIZE_LIMIT}",
     "queue_minfree = #{MSG_SIZE_LIMIT * 10}",
-
+    "default_process_limit = #{POSTFIX_DEFAULT_PROCESS_LIMIT}",
     "tls_high_cipherlist = #{TLS_HIGH_CIPHERLIST}",
-
     'mynetworks_style=subnet',
-
     'smtpd_discard_ehlo_keywords = silent-discard, dsn',
     'notify_classes ='
   ]
