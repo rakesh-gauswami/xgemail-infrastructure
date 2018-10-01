@@ -11,6 +11,7 @@ sys.path.append("<%= @xgemail_utils_path %>")
 import os
 import logging
 import policyconsumerutils
+import multipolicyreaderutils
 import json
 from awshandler import AwsHandler
 from logging import handlers
@@ -134,13 +135,16 @@ if __name__ == "__main__":
 
         configs_list = json.loads(CONFIGS.replace("\'", '"'))
 
-        #Download all the S3 policies documents to local
-        for entry in configs_list:
-            download_policy_documents(
-                entry['s3_path_dir'],
-                entry['local_dir'],
-                entry['file_extension']
-            )
+        if multipolicyreaderutils.get_read_from_s3_enabled():
+            logger.info("Skipping policy download as read from S3 is enabled")
+        else:
+            #Download all the S3 policies documents to local
+            for entry in configs_list:
+                download_policy_documents(
+                    entry['s3_path_dir'],
+                    entry['local_dir'],
+                    entry['file_extension']
+                )
 
     except Exception as e:
         logger.exception("Unhandled exception in main ", e)
