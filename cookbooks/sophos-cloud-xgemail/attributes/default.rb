@@ -228,56 +228,47 @@ default['xgemail']['sysctl_tcp_window_scaling'] = 1
 SUBMIT_MESSAGE_SIZE_LIMIT_BYTES = 52428800
 default['xgemail']['postfix3_version'] = '3.2.4.1-1'
 
-POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST = 500
-POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST = 500
-
 
 default['xgemail']['postfix_instance_data'] = {
   # internet-submit
   'submit' => {
     :instance_name => 'is',
     :port => 25,
-    :msg_size_limit => SUBMIT_MESSAGE_SIZE_LIMIT_BYTES,
-    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+    :msg_size_limit => SUBMIT_MESSAGE_SIZE_LIMIT_BYTES
   },
   # customer-submit
   'customer-submit' => {
     :instance_name => 'cs',
     :port => 25,
-    :msg_size_limit => SUBMIT_MESSAGE_SIZE_LIMIT_BYTES,
-    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+    :msg_size_limit => SUBMIT_MESSAGE_SIZE_LIMIT_BYTES
   },
   # customer-delivery
   'delivery' => {
     :instance_name => 'cd',
     :port => 25,
     # Give delivery queues extra padding because extra content may be created during processing
-    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800),
-    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800)
   },
   # internet-delivery
   'internet-delivery' => {
     :instance_name => 'id',
     :port => 25,
     # Give delivery queues extra padding because extra content may be created during processing
-    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800),
-    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800)
   },
   # extended-delivery
   'xdelivery' => {
     :instance_name => 'xd',
     :port => 8025,
     # Give delivery queues extra padding because extra content may be created during processing
-    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600),
-    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600)
   },
   # internet-extended-delivery
   'internet-xdelivery' => {
     :instance_name => 'ix',
     :port => 8025,
     # Give delivery queues extra padding because extra content may be created during processing
-    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600),
-    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600)
   }
 }
 
