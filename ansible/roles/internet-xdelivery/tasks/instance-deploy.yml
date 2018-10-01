@@ -48,8 +48,8 @@
       XgemailMsgHistoryStatusSnsArn:        "{{sns.arn_prefix}}{{sns.msg_history_status_sns_topic}}"
       XgemailServiceType:                   "internet-xdelivery"
   with_together:
-    - "{{stack_number}}"
-    - "{{zone_index}}"
+    - "{{aws.asg.ix.stack_number}}"
+    - "{{aws.asg.ix.zone_index}}"
   register: ix_stack_async_results
 
 - async_status:
