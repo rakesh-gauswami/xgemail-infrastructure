@@ -10,6 +10,11 @@
 #
 
 NODE_TYPE = node['xgemail']['cluster_type']
+ACCOUNT =  node['sophos_cloud']['environment']
+
+if NODE_TYPE != 'xdelivery' && NODE_TYPE != 'internet-xdelivery'
+  return
+end
 
 # Include Helper library
 ::Chef::Recipe.send(:include, ::SophosCloudXgemail::Helper)
@@ -28,33 +33,36 @@ MANAGED_SERVICES_IN_START_ORDER = [
   'postfix',
 ]
 
-service 'postfix' do
-  supports :restart => true, :start => true, :stop => true, :reload => true
-  action :nothing
-end
-
-MANAGED_SERVICES_IN_START_ORDER.reverse.each do | cur |
-  log "stopping service #{cur}" do
-    notifies :stop, "service[#{cur}]", :immediately
+if ACCOUNT != 'sandbox'
+  service 'postfix' do
+    supports :restart => true, :start => true, :stop => true, :reload => true
+    action :nothing
   end
-end
 
-# First configure default instance
-CONFIGURATION_COMMANDS.each do | cur |
-  execute "postconf '#{cur}'"
-end
+  MANAGED_SERVICES_IN_START_ORDER.reverse.each do | cur |
+    log "stopping service #{cur}" do
+      notifies :stop, "service[#{cur}]", :immediately
+    end
+  end
 
-# Enable multi-instance support
-# Create new instance
-POSTMULTI_INIT_GUARD = ::File.join( FILE_CACHE_DIR, ".postfix-postmulti-init" )
-execute "#{print_postmulti_init()} && touch #{POSTMULTI_INIT_GUARD}" do
-  creates POSTMULTI_INIT_GUARD
-end
 
-ruby_block 'cleanup_config_files' do
-  block do
-    cleanup_main_cf POSTMULTI_DEFAULT_INSTANCE
-    cleanup_master_cf POSTMULTI_DEFAULT_INSTANCE
+  # First configure default instance
+  CONFIGURATION_COMMANDS.each do | cur |
+    execute "postconf '#{cur}'"
+  end
+
+  # Enable multi-instance support
+  # Create new instance
+  POSTMULTI_INIT_GUARD = ::File.join( FILE_CACHE_DIR, ".postfix-postmulti-init" )
+  execute "#{print_postmulti_init()} && touch #{POSTMULTI_INIT_GUARD}" do
+    creates POSTMULTI_INIT_GUARD
+  end
+
+  ruby_block 'cleanup_config_files' do
+    block do
+      cleanup_main_cf POSTMULTI_DEFAULT_INSTANCE
+      cleanup_master_cf POSTMULTI_DEFAULT_INSTANCE
+    end
   end
 end
 
@@ -66,8 +74,7 @@ raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 
 include_recipe 'sophos-cloud-xgemail::common-postfix-multi-instance-config'
 
-CONFIGURATION_COMMANDS =
-  [
+[
     'bounce_queue_lifetime=0',
     'mynetworks = 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16',
     'smtp_tls_security_level=may',
@@ -75,24 +82,27 @@ CONFIGURATION_COMMANDS =
     'smtp_tls_mandatory_ciphers=high',
     'smtp_tls_loglevel=1',
     'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache'
-  ]
-
-CONFIGURATION_COMMANDS.each do | cur |
+].each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
 end
 
 if NODE_TYPE == 'xdelivery'
   include_recipe 'sophos-cloud-xgemail::configure-bounce-message-customer-delivery-queue'
   include_recipe 'sophos-cloud-xgemail::setup_customer_delivery_transport_updater_cron'
+else
+  if NODE_TYPE == 'internet-xdelivery'
+    include_recipe 'sophos-cloud-xgemail::configure-bounce-message-internet-delivery-queue'
+  end
 end
 
-if NODE_TYPE == 'internet-xdelivery'
-  include_recipe 'sophos-cloud-xgemail::configure-bounce-message-internet-delivery-queue'
-end
-
-MANAGED_SERVICES_IN_START_ORDER.each do | cur |
-  log "starting service #{cur}" do
-    notifies :start, "service[#{cur}]", :immediately
+if ACCOUNT == 'sandbox'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_utils_structure'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_processors_structure'
+else
+  MANAGED_SERVICES_IN_START_ORDER.each do | cur |
+    log "starting service #{cur}" do
+      notifies :start, "service[#{cur}]", :immediately
+    end
   end
 end
 

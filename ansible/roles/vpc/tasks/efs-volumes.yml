@@ -7,8 +7,11 @@
     disable_rollback:        true
     template:                "{{template.efs.efs_template}}"
     template_parameters:
-      Encrypted:             "true"
-      PerformanceMode:       "generalPurpose"
+      EfsNameTag:                       "{{efs.policy_efs_volume}}"
+      Encrypted:                        "{{aws.efs.policy_efs_volume.encrypted}}"
+      PerformanceMode:                  "{{aws.efs.policy_efs_volume.performance_mode}}"
+      ProvisionedThroughputInMibps:     "{{aws.efs.policy_efs_volume.provisioned_throughput_in_mibps}}"
+      ThroughputMode:                   "{{aws.efs.policy_efs_volume.throughput_mode}}"
   register: efs_volume_stack
 
 - debug:

@@ -105,7 +105,7 @@
     "InstanceType": {
       "Description": "Amazon EC2 instance type",
       "Type" : "String",
-      "Default" : "t2.large"
+      "Default" : "t3.large"
     },
     "XgemailServiceType": {
       "Description": "Service type for the Xgemail instance (Defaults to unknown so not to break builds)",
@@ -230,6 +230,11 @@
     },
     "XgemailMsgHistoryStatusSnsArn": {
       "Description" : "ARN for the SNS Topic where Message History delivery status events are published",
+      "Type" : "String",
+      "Default": ""
+    },
+    "XgemailNotificationSnsArn": {
+      "Description" : "ARN for the SNS Topic where notifications are published",
       "Type" : "String",
       "Default": ""
     },
@@ -560,6 +565,7 @@
                     "    \"msg_history_status_queue_url\"     : \"{{msg_history_delivery_status_queue_url}}\",\n",
                     "    \"msg_history_status_sns_arn\"       : \"{{msg_history_delivery_status_sns_arn}}\",\n",
                     "    \"msg_notifier_queue_url\"           : \"{{msg_notifier_queue_url}}\",\n",
+                    "    \"notification_sns_arn\"             : \"{{notification_sns_arn}}\",\n",
                     "    \"policy_efs_file_system_id\"        : \"{{policy_efs_file_system_id}}\",\n",
                     "    \"sxl_dbl\"                          : \"{{sxl_dbl}}\",\n",
                     "    \"sxl_rbl\"                          : \"{{sxl_rbl}}\",\n",
@@ -590,6 +596,7 @@
                   "msg_history_delivery_status_queue_url":    { "Ref": "XgemailMsgHistoryStatusQueueUrl" },
                   "msg_history_delivery_status_sns_arn":      { "Ref": "XgemailMsgHistoryStatusSnsArn"},
                   "msg_notifier_queue_url":                   { "Ref": "XgemailNotifierQueueUrl" },
+                  "notification_sns_arn":                     { "Ref": "XgemailNotificationSnsArn" },
                   "policy_efs_file_system_id":                { "Ref": "XgemailPolicyEfsFileSystemId" },
                   "region":                                   { "Ref": "AWS::Region" },
                   "stack":                                    { "Ref": "AWS::StackName" },
@@ -855,34 +862,70 @@
             "Fn::Join": [ "", [
               "#!/bin/bash -xe\n",
               "# Install the files and packages from the metadata\n",
+              "\n",
 
               "# Make sure we call cfn-signal before exiting, otherwise we have to\n",
               "# wait for the CreationPolicy timeout to detect failed initialization.\n",
               "# That's because of using the bash -e option, which makes the script\n",
               "# exit immediately as soon as any command, e.g. cfn-init, fails.\n",
+              "\n",
 
               "onexit() {\n",
+              "  # Save exit code for call to cfn-signal below.\n",
               "  exit_code=$?\n",
+              "\n",
+              "  # Disable errexit so errors below don't prevent the call to cfn-signal.\n",
+              "  set +o errexit\n",
+              "\n",
+              "  # Set LastHealth tag so cloud list command shows progress.\n",
+              "  if [ \"$exit_code\" == 0 ]; then\n",
+              "    /opt/sophos/bin/set_instance_tag.py LastHealth UserDataSuccess\n",
+              "  else\n",
+              "    /opt/sophos/bin/set_instance_tag.py LastHealth UserDataFailure\n",
+              "  fi\n",
+              "\n",
+
+              "  # Upload logs before reporting failure to avoid race against termination.\n",
+              "  ACCOUNT='", { "Ref" : "Environment" }, "'\n",
+              "  BRANCH='", { "Ref": "Branch" }, "'\n",
+              "  DEPLOYMENT_NAME='", { "Ref": "XgemailServiceType" }, "'\n",
+              "  /opt/sophos/bin/upload_deployment_logs.py -a ${ACCOUNT} -b ${BRANCH} ${DEPLOYMENT_NAME} -c netstat_tuna.out='netstat -tuna'",
+              "\n",
               "  /opt/aws/bin/cfn-signal -e $exit_code",
               " --stack ", { "Ref": "AWS::StackName" },
               " --resource JavaAutoScalingGroup",
               " --region ", { "Ref": "AWS::Region" },
               "\n",
               "}\n",
+              "\n",
 
               "trap onexit EXIT\n",
+              "\n",
 
               "# Wait for network access.\n",
               "/usr/bin/nc -v -z -w 60 www.google.com 80\n",
+              "\n",
+
+              "# Set LastHealth tag so cloud list command shows progress.\n",
+              "/opt/sophos/bin/set_instance_tag.py LastHealth UserDataStarted\n",
+              "\n",
 
               "/opt/aws/bin/cfn-init --verbose ",
               " --stack ", { "Ref": "AWS::StackName" },
               " --resource JavaAutoScalingLaunchConfig ",
               " --configsets java_install ",
               " --region ", { "Ref": "AWS::Region" }, "\n",
+              "\n",
+
+              "# Disable errexit so errors below don't prevent the call to cfn-signal.\n",
+              "# This is NOT redundant with the call to disable errexit inside onexit,\n",
+              "# because an error that happens earlier than this point will be trapped\n",
+              "# and generate a call to onexit before this code is reached.\n",
+              "set +o errexit\n",
+              "\n",
 
               "# Now the onexit function will get called.\n"
-            ]
+              ]
             ]
           }
         }

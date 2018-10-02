@@ -30,6 +30,16 @@
   tags:
     - vpc
 
+- name: "Include CloudEmail VPC Kinesis Firehose Creation Task."
+  include_tasks: kinesis-firehose.yml
+  tags:
+    - vpc
+
+- name: "Include CloudEmail VPC IAM Policies Creation Task."
+  include_tasks: iam-policies.yml
+  tags:
+    - vpc
+
 - name: "Include CloudEmail VPC SQS Queues Creation Task."
   include_tasks: sqs-queues.yml
   tags:

@@ -1,3 +1,17 @@
+aws:
+  efs:
+    policy_efs_volume:
+      provisioned_throughput_in_mibps:          "5"
+      throughput_mode:                          "provisioned"
+  es:
+    toc_elasticsearch_domain:
+      ebs_volume_size:                          "300"
+      master_node_type:                         "m4.large.elasticsearch"
+      node_type:                                "m4.xlarge.elasticsearch"
+      instance_number:                          "2"
+      master_instance_number:                   "3"
+      snapshot_start_hour:                      "4"
+      zone_awareness:                           "true"
 aws_account_id: 769208163330
 connector_env: 75a323d6-8b09-44cf-855a-0f368a546a0d
 connector_env_newboo: 7f6e8324-e4b5-4943-ac6b-dd5f27738a3d

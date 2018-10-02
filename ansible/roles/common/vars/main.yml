@@ -3,318 +3,349 @@
 # Each playbook has an associated role and in each role is a meta task which loads the common role first.
 # The variables are organized into namespaces
 aws:
+  efs:
+    policy_efs_volume:
+      encrypted:                                                  "true"
+      performance_mode:                                           "generalPurpose"
+      provisioned_throughput_in_mibps:                            "0"
+      throughput_mode:                                            "bursting"
   es:
     toc_elasticsearch_domain:
-      ebs_volume_size:                          "10"
-      master_node_type:                         't2.small.elasticsearch'
-      node_type:                                "t2.medium.elasticsearch"
-      instance_number:                          "1"
-      master_instance_number:                   "2"
-      snapshot_start_hour:                      "4"
-      zone_awareness:                           "false"
+      ebs_volume_size:                                            "10"
+      master_node_type:                                           't2.small.elasticsearch'
+      node_type:                                                  "t2.medium.elasticsearch"
+      instance_number:                                            "1"
+      master_instance_number:                                     "2"
+      snapshot_start_hour:                                        "4"
+      zone_awareness:                                             "false"
   s3:
     customer_submit_bucket:
-      stack_name:                               "{{stack.s3.customer_submit_bucket}}"
-      template:                                 "{{template.s3.s3_bucket_template}}"
+      stack_name:                                                 "{{stack.s3.customer_submit_bucket}}"
+      template:                                                   "{{template.s3.s3_bucket_template}}"
       template_parameters:
-        Environment:                            "{{account.name}}"
-        RequireEncryptionForUploads:            "sse-s3"
-        S3BucketName:                           "{{s3.customer_submit_bucket}}"
-        S3LifeCycleDelete:                      "30"
-        S3PolicyCreate:                         "true"
-        S3PolicyPrincipalList:                  "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
+        Environment:                                              "{{account.name}}"
+        RequireEncryptionForUploads:                              "sse-s3"
+        S3BucketName:                                             "{{s3.customer_submit_bucket}}"
+        S3LifeCycleDelete:                                        "30"
+        S3PolicyCreate:                                           "true"
+        S3PolicyPrincipalList:                                    "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
     emergency_inbox_bucket:
-      stack_name:                               "{{stack.s3.emergency_inbox_bucket}}"
-      template:                                 "{{template.s3.s3_bucket_template}}"
+      stack_name:                                                 "{{stack.s3.emergency_inbox_bucket}}"
+      template:                                                   "{{template.s3.s3_bucket_template}}"
       template_parameters:
-        Environment:                            "{{account.name}}"
-        RequireEncryptionForUploads:            "sse-s3"
-        S3BucketName:                           "{{s3.emergency_inbox_bucket}}"
-        S3LifeCycleDelete:                      "14"
-        S3PolicyCreate:                         "true"
-        S3PolicyPrincipalList:                  "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
+        Environment:                                              "{{account.name}}"
+        RequireEncryptionForUploads:                              "sse-s3"
+        S3BucketName:                                             "{{s3.emergency_inbox_bucket}}"
+        S3LifeCycleDelete:                                        "14"
+        S3PolicyCreate:                                           "true"
+        S3PolicyPrincipalList:                                    "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
     msg_history_bucket:
-      stack_name:                               "{{stack.s3.msg_history_bucket}}"
-      template:                                 "{{template.s3.s3_bucket_template}}"
+      stack_name:                                                 "{{stack.s3.msg_history_bucket}}"
+      template:                                                   "{{template.s3.s3_bucket_template}}"
       template_parameters:
-        Environment:                            "{{account.name}}"
-        RequireEncryptionForUploads:            "sse-s3"
-        S3BucketName:                           "{{s3.msg_history_bucket}}"
-        S3PolicyCreate:                         "true"
-        S3PolicyPrincipalList:                  "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
+        Environment:                                              "{{account.name}}"
+        RequireEncryptionForUploads:                              "sse-s3"
+        S3BucketName:                                             "{{s3.msg_history_bucket}}"
+        S3PolicyCreate:                                           "true"
+        S3PolicyPrincipalList:                                    "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
     msg_stats_bucket:
-      stack_name:                               "{{stack.s3.msg_stats_bucket}}"
-      template:                                 "{{template.s3.s3_bucket_template}}"
+      stack_name:                                                 "{{stack.s3.msg_stats_bucket}}"
+      template:                                                   "{{template.s3.s3_bucket_template}}"
       template_parameters:
-        Environment:                            "{{account.name}}"
-        RequireEncryptionForUploads:            "sse-s3"
-        S3BucketName:                           "{{s3.msg_stats_bucket}}"
-        S3LifeCycleDelete:                      "365"
-        S3PolicyCreate:                         "true"
-        S3PolicyPrincipalList:                  "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
+        Environment:                                              "{{account.name}}"
+        RequireEncryptionForUploads:                              "sse-s3"
+        S3BucketName:                                             "{{s3.msg_stats_bucket}}"
+        S3LifeCycleDelete:                                        "365"
+        S3PolicyCreate:                                           "true"
+        S3PolicyPrincipalList:                                    "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
     quarantine_bucket:
-      stack_name:                               "{{stack.s3.quarantine_bucket}}"
-      template:                                 "{{template.s3.s3_bucket_template}}"
+      stack_name:                                                 "{{stack.s3.quarantine_bucket}}"
+      template:                                                   "{{template.s3.s3_bucket_template}}"
       template_parameters:
-        Environment:                            "{{account.name}}"
-        RequireEncryptionForUploads:            "sse-s3"
-        S3BucketName:                           "{{s3.quarantine_bucket}}"
-        S3LifeCycleDelete:                      "30"
-        S3PolicyCreate:                         "true"
-        S3PolicyPrincipalList:                  "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
+        Environment:                                              "{{account.name}}"
+        RequireEncryptionForUploads:                              "sse-s3"
+        S3BucketName:                                             "{{s3.quarantine_bucket}}"
+        S3LifeCycleDelete:                                        "30"
+        S3PolicyCreate:                                           "true"
+        S3PolicyPrincipalList:                                    "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
     submit_bucket:
-      stack_name:                               "{{stack.s3.submit_bucket}}"
-      template:                                 "{{template.s3.s3_bucket_template}}"
+      stack_name:                                                 "{{stack.s3.submit_bucket}}"
+      template:                                                   "{{template.s3.s3_bucket_template}}"
       template_parameters:
-        Environment:                            "{{account.name}}"
-        RequireEncryptionForUploads:            "sse-s3"
-        S3BucketName:                           "{{s3.submit_bucket}}"
-        S3LifeCycleDelete:                      "30"
-        S3PolicyCreate:                         "true"
-        SubmitBucketPolicy:                     "true"
-        S3PolicyPrincipalList:                  "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
+        Environment:                                              "{{account.name}}"
+        RequireEncryptionForUploads:                              "sse-s3"
+        S3BucketName:                                             "{{s3.submit_bucket}}"
+        S3LifeCycleDelete:                                        "30"
+        S3PolicyCreate:                                           "true"
+        SubmitBucketPolicy:                                       "true"
+        S3PolicyPrincipalList:                                    "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
     lambda_bucket:
-      stack_name:                               "{{stack.s3.lambda_bucket}}"
-      template:                                 "{{template.s3.s3_bucket_template}}"
+      stack_name:                                                 "{{stack.s3.lambda_bucket}}"
+      template:                                                   "{{template.s3.s3_bucket_template}}"
       template_parameters:
-        Environment:                            "{{account.name}}"
-        S3BucketName:                           "{{s3.lambda_bucket}}"
-        S3PolicyCreate:                         "false"
-        S3PolicyPrincipalList:                  "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
+        Environment:                                              "{{account.name}}"
+        S3BucketName:                                             "{{s3.lambda_bucket}}"
+        S3PolicyCreate:                                           "false"
+        S3PolicyPrincipalList:                                    "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
     policy_bucket:
-      stack_name:                               "{{stack.s3.policy_bucket}}"
-      template:                                 "{{template.s3.s3_policy_bucket_template}}"
+      stack_name:                                                 "{{stack.s3.policy_bucket}}"
+      template:                                                   "{{template.s3.s3_policy_bucket_template}}"
       template_parameters:
-        Environment:                            "{{account.name}}"
-        S3BucketName:                           "{{s3.policy_bucket}}"
-        SnsPolicyTopic:                         "{{sns.arn_prefix}}{{sns.policy_sns_topic}}"
-        SnsRelayControlTopic:                   "{{sns.arn_prefix}}{{sns.relay_control_sns_topic}}"
-        SnsMultiPolicyTopic:                    "{{sns.arn_prefix}}{{sns.multi_policy_sns_topic}}"
+        Environment:                                              "{{account.name}}"
+        S3BucketName:                                             "{{s3.policy_bucket}}"
+        SnsPolicyTopic:                                           "{{sns.arn_prefix}}{{sns.policy_sns_topic}}"
+        SnsRelayControlTopic:                                     "{{sns.arn_prefix}}{{sns.relay_control_sns_topic}}"
+        SnsMultiPolicyTopic:                                      "{{sns.arn_prefix}}{{sns.multi_policy_sns_topic}}"
 
   sns:
     alarm_sns_topic:
-      stack_name:                               "{{stack.sns.alarm_sns_topic}}"
-      template:                                 "{{template.sns.sns_template}}"
+      stack_name:                                                 "{{stack.sns.alarm_sns_topic}}"
+      template:                                                   "{{template.sns.sns_template}}"
       template_parameters:
-        SNSTopicEndpointProtocol:               "email"
-        SNSTopicEndpointValue:                  "cloud-inf-aws-alerts@sophos.com"
-        SNSTopicName:                           "{{sns.alarm_sns_topic}}"
+        SNSTopicEndpointProtocol:                                 "email"
+        SNSTopicEndpointValue:                                    "cloud-inf-aws-alerts@sophos.com"
+        SNSTopicName:                                             "{{sns.alarm_sns_topic}}"
     delay_sns_topic:
-      stack_name:                               "{{stack.sns.delay_sns_topic}}"
-      template:                                 "{{template.sns.sns_simple_template}}"
+      stack_name:                                                 "{{stack.sns.delay_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
       template_parameters:
-        TopicName:                              "{{sns.delay_sns_topic}}"
+        TopicName:                                                "{{sns.delay_sns_topic}}"
     deleted_events_sns_topic:
-      stack_name:                               "{{stack.sns.deleted_events_sns_topic}}"
-      template:                                 "{{template.sns.sns_simple_template}}"
+      stack_name:                                                 "{{stack.sns.deleted_events_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
       template_parameters:
-        TopicName:                              "{{sns.deleted_events_sns_topic}}"
+        TopicName:                                                "{{sns.deleted_events_sns_topic}}"
     internet_delivery_sns_topic:
-      stack_name:                               "{{stack.sns.internet_delivery_sns_topic}}"
-      template:                                 "{{template.sns.sns_simple_template}}"
+      stack_name:                                                 "{{stack.sns.internet_delivery_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
       template_parameters:
-        TopicName:                              "{{sns.internet_delivery_sns_topic}}"
+        TopicName:                                                "{{sns.internet_delivery_sns_topic}}"
     quarantined_events_sns_topic:
-      stack_name:                               "{{stack.sns.quarantined_events_sns_topic}}"
-      template:                                 "{{template.sns.sns_simple_template}}"
+      stack_name:                                                 "{{stack.sns.quarantined_events_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
       template_parameters:
-        TopicName:                              "{{sns.quarantined_events_sns_topic}}"
+        TopicName:                                                "{{sns.quarantined_events_sns_topic}}"
     success_events_sns_topic:
-      stack_name:                               "{{stack.sns.success_events_sns_topic}}"
-      template:                                 "{{template.sns.sns_simple_template}}"
+      stack_name:                                                 "{{stack.sns.success_events_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
       template_parameters:
-        TopicName:                              "{{sns.success_events_sns_topic}}"
+        TopicName:                                                "{{sns.success_events_sns_topic}}"
     msg_history_status_sns_topic:
-      stack_name:                               "{{stack.sns.msg_history_status_sns_topic}}"
-      template:                                 "{{template.sns.sns_simple_template}}"
+      stack_name:                                                 "{{stack.sns.msg_history_status_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
       template_parameters:
-        TopicName:                              "{{sns.msg_history_status_sns_topic}}"
+        TopicName:                                                "{{sns.msg_history_status_sns_topic}}"
     msg_statistics_rejection_sns_topic:
-      stack_name:                               "{{stack.sns.msg_statistics_rejection_sns_topic}}"
-      template:                                 "{{template.sns.sns_simple_template}}"
+      stack_name:                                                 "{{stack.sns.msg_statistics_rejection_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
       template_parameters:
-        TopicName:                              "{{sns.msg_statistics_rejection_sns_topic}}"
+        TopicName:                                                "{{sns.msg_statistics_rejection_sns_topic}}"
     policy_sns_topic:
-      stack_name:                               "{{stack.sns.policy_sns_topic}}"
-      template:                                 "{{template.sns.sns_topic_policy_s3_template}}"
+      stack_name:                                                 "{{stack.sns.policy_sns_topic}}"
+      template:                                                   "{{template.sns.sns_topic_policy_s3_template}}"
       template_parameters:
-        TopicName:                              "{{sns.policy_sns_topic}}"
-        SnsS3TopicPolicyBucket:                 "{{s3.policy_bucket}}"
-        SnsS3TopicPolicyCreate:                 "true"
+        TopicName:                                                "{{sns.policy_sns_topic}}"
+        SnsS3TopicPolicyBucket:                                   "{{s3.policy_bucket}}"
+        SnsS3TopicPolicyCreate:                                   "true"
     multi_policy_sns_topic:
-      stack_name:                               "{{stack.sns.multi_policy_sns_topic}}"
-      template:                                 "{{template.sns.sns_topic_policy_s3_template}}"
+      stack_name:                                                 "{{stack.sns.multi_policy_sns_topic}}"
+      template:                                                   "{{template.sns.sns_topic_policy_s3_template}}"
       template_parameters:
-        TopicName:                              "{{sns.multi_policy_sns_topic}}"
-        SnsS3TopicPolicyBucket:                 "{{s3.policy_bucket}}"
-        SnsS3TopicPolicyCreate:                 "true"
+        TopicName:                                                "{{sns.multi_policy_sns_topic}}"
+        SnsS3TopicPolicyBucket:                                   "{{s3.policy_bucket}}"
+        SnsS3TopicPolicyCreate:                                   "true"
     relay_control_sns_topic:
-      stack_name:                               "{{stack.sns.relay_control_sns_topic}}"
-      template:                                 "{{template.sns.sns_topic_policy_s3_template}}"
+      stack_name:                                                 "{{stack.sns.relay_control_sns_topic}}"
+      template:                                                   "{{template.sns.sns_topic_policy_s3_template}}"
       template_parameters:
-        TopicName:                              "{{sns.relay_control_sns_topic}}"
-        SnsS3TopicPolicyBucket:                 "{{s3.policy_bucket}}"
-        SnsS3TopicPolicyCreate:                 "true"
+        TopicName:                                                "{{sns.relay_control_sns_topic}}"
+        SnsS3TopicPolicyBucket:                                   "{{s3.policy_bucket}}"
+        SnsS3TopicPolicyCreate:                                   "true"
+    notification_sns_topic:
+      stack_name:                                                 "{{stack.sns.notification_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                                                "{{sns.notification_sns_topic}}"
 
   sqs:
     lifecycle_sqs_sns:
-      stack_name:                               "{{stack.sqs.lifecycle_sqs_sns}}"
-      state:                                    present
-      template:                                 "{{template.sqs.sqs_sns_subscription_template}}"
+      stack_name:                                                 "{{stack.sqs.lifecycle_sqs_sns}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_sns_subscription_template}}"
       template_parameters:
-        Branch:                                 "{{build.branch}}"
-        Environment:                            "{{account.name}}"
-        SubscriptionName:                       "xgemail-lifecycle"
+        Branch:                                                   "{{build.branch}}"
+        Environment:                                              "{{account.name}}"
+        SubscriptionName:                                         "xgemail-lifecycle"
     customer_delivery_sqs_queue:
-      stack_name:                               "{{stack.sqs.customer_delivery_sqs_queue}}"
-      state:                                    absent
-      template:                                 "{{template.sqs.sqs_simple_template}}"
+      stack_name:                                                 "{{stack.sqs.customer_delivery_sqs_queue}}"
+      state:                                                      absent
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
-        QueueName:                              "{{sqs.customer_delivery_sqs_queue}}"
+        QueueName:                                                "{{sqs.customer_delivery_sqs_queue}}"
     customer_submit_sqs_queue:
-      stack_name:                               "{{stack.sqs.customer_submit_sqs_queue}}"
-      state:                                    present
-      template:                                 "{{template.sqs.sqs_simple_template}}"
+      stack_name:                                                 "{{stack.sqs.customer_submit_sqs_queue}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
-        QueueName:                              "{{sqs.customer_submit_sqs_queue}}"
+        QueueName:                                                "{{sqs.customer_submit_sqs_queue}}"
     customer_delivery_sqs_queue_sns_listener:
-      stack_name:                               "{{stack.sqs.customer_delivery_sqs_queue_sns_listener}}"
-      state:                                    present
-      template:                                 "{{template.sqs.sqs_simple_template}}"
+      stack_name:                                                 "{{stack.sqs.customer_delivery_sqs_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
-        QueueName:                              "{{sqs.customer_delivery_sqs_queue_sns_listener}}"
+        QueueName:                                                "{{sqs.customer_delivery_sqs_queue_sns_listener}}"
     internet_delivery_sqs_queue_sns_listener:
-      stack_name:                               "{{stack.sqs.internet_delivery_sqs_queue_sns_listener}}"
-      state:                                    present
-      template:                                 "{{template.sqs.sqs_simple_template}}"
+      stack_name:                                                 "{{stack.sqs.internet_delivery_sqs_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
-        QueueName:                              "{{sqs.internet_delivery_sqs_queue_sns_listener}}"
+        QueueName:                                                "{{sqs.internet_delivery_sqs_queue_sns_listener}}"
     dqs_sqs_queue:
-      stack_name:                               "{{stack.sqs.dqs_sqs_queue}}"
-      state:                                    present
-      template:                                 "{{template.sqs.sqs_simple_template}}"
+      stack_name:                                                 "{{stack.sqs.dqs_sqs_queue}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
-        QueueName:                              "{{sqs.dqs_sqs_queue}}"
+        QueueName:                                                "{{sqs.dqs_sqs_queue}}"
     delay_sqs_queue:
-      stack_name:                               "{{stack.sqs.delay_sqs_queue}}"
-      state:                                    present
-      template:                                 "{{template.sqs.sqs_simple_template}}"
+      stack_name:                                                 "{{stack.sqs.delay_sqs_queue}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
-        QueueName:                              "{{sqs.delay_sqs_queue}}"
-        DelaySeconds:                           "600"
+        QueueName:                                                "{{sqs.delay_sqs_queue}}"
+        DelaySeconds:                                             "600"
     emergency_inbox_sqs_queue:
-      stack_name:                               "{{stack.sqs.emergency_inbox_sqs_queue}}"
-      state:                                    absent
-      template:                                 "{{template.sqs.sqs_simple_template}}"
+      stack_name:                                                 "{{stack.sqs.emergency_inbox_sqs_queue}}"
+      state:                                                      absent
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
-        QueueName:                              "{{sqs.emergency_inbox_sqs_queue}}"
+        QueueName:                                                "{{sqs.emergency_inbox_sqs_queue}}"
     emergency_inbox_sqs_queue_sns_listener:
-      stack_name:                               "{{stack.sqs.emergency_inbox_sqs_queue_sns_listener}}"
-      state:                                    present
-      template:                                 "{{template.sqs.sqs_simple_template}}"
+      stack_name:                                                 "{{stack.sqs.emergency_inbox_sqs_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
-        QueueName:                              "{{sqs.emergency_inbox_sqs_queue_sns_listener}}"
+        QueueName:                                                "{{sqs.emergency_inbox_sqs_queue_sns_listener}}"
     internet_delivery_sqs_queue:
-      stack_name:                               "{{stack.sqs.internet_delivery_sqs_queue}}"
-      state:                                    absent
-      template:                                 "{{template.sqs.sqs_simple_template}}"
+      stack_name:                                                 "{{stack.sqs.internet_delivery_sqs_queue}}"
+      state:                                                      absent
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
-        QueueName:                              "{{sqs.internet_delivery_sqs_queue}}"
+        QueueName:                                                "{{sqs.internet_delivery_sqs_queue}}"
     internet_submit_sqs_queue:
-      stack_name:                               "{{stack.sqs.internet_submit_sqs_queue}}"
-      state:                                    present
-      template:                                 "{{template.sqs.sqs_simple_template}}"
+      stack_name:                                                 "{{stack.sqs.internet_submit_sqs_queue}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
-        QueueName:                              "{{sqs.internet_submit_sqs_queue}}"
+        QueueName:                                                "{{sqs.internet_submit_sqs_queue}}"
     msg_history_status_sqs_queue:
-      stack_name:                               "{{stack.sqs.msg_history_status_sqs_queue}}"
-      state:                                    present
-      template:                                 "{{template.sqs.sqs_simple_template}}"
+      stack_name:                                                 "{{stack.sqs.msg_history_status_sqs_queue}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
-        QueueName:                              "{{sqs.msg_history_status_sqs_queue}}"
+        QueueName:                                                "{{sqs.msg_history_status_sqs_queue}}"
+        DelaySeconds:                                             "20"
     msg_history_status_sqs_queue_sns_listener:
-      stack_name:                               "{{stack.sqs.msg_history_status_sqs_queue_sns_listener}}"
-      state:                                    present
-      template:                                 "{{template.sqs.sqs_simple_template}}"
+      stack_name:                                                 "{{stack.sqs.msg_history_status_sqs_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
-        QueueName:                              "{{sqs.msg_history_status_sqs_queue_sns_listener}}"
-        DelaySeconds:                           "30"
+        QueueName:                                                "{{sqs.msg_history_status_sqs_queue_sns_listener}}"
+        DelaySeconds:                                             "20"
     msg_history_sqs_queue:
-      stack_name:                               "{{stack.sqs.msg_history_sqs_queue}}"
-      state:                                    present
-      template:                                 "{{template.sqs.sqs_simple_template}}"
+      stack_name:                                                 "{{stack.sqs.msg_history_sqs_queue}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
-        QueueName:                              "{{sqs.msg_history_sqs_queue}}"
+        QueueName:                                                "{{sqs.msg_history_sqs_queue}}"
     msg_history_sqs_queue_sns_listener:
-      stack_name:                               "{{stack.sqs.msg_history_sqs_queue_sns_listener}}"
-      state:                                    present
-      template:                                 "{{template.sqs.sqs_simple_template}}"
+      stack_name:                                                 "{{stack.sqs.msg_history_sqs_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
-        QueueName:                              "{{sqs.msg_history_sqs_queue_sns_listener}}"
+        QueueName:                                                "{{sqs.msg_history_sqs_queue_sns_listener}}"
     msg_statistics_sqs_queue:
-      stack_name:                               "{{stack.sqs.msg_statistics_sqs_queue}}"
-      state:                                    absent
-      template:                                 "{{template.sqs.sqs_simple_template}}"
+      stack_name:                                                 "{{stack.sqs.msg_statistics_sqs_queue}}"
+      state:                                                      absent
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
-        QueueName:                              "{{sqs.msg_statistics_sqs_queue}}"
+        QueueName:                                                "{{sqs.msg_statistics_sqs_queue}}"
     msg_statistics_rejection_sqs_queue:
-      stack_name:                               "{{stack.sqs.msg_statistics_rejection_sqs_queue}}"
-      state:                                    present
-      template:                                 "{{template.sqs.sqs_simple_template}}"
+      stack_name:                                                 "{{stack.sqs.msg_statistics_rejection_sqs_queue}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
-        QueueName:                              "{{sqs.msg_statistics_rejection_sqs_queue}}"
+        QueueName:                                                "{{sqs.msg_statistics_rejection_sqs_queue}}"
     multi_policy_sqs_queue:
-      stack_name:                               "{{stack.sqs.multi_policy_sqs_queue}}"
-      state:                                    present
-      template:                                 "{{template.sqs.sqs_simple_template}}"
+      stack_name:                                                 "{{stack.sqs.multi_policy_sqs_queue}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
-        QueueName:                              "{{sqs.multi_policy_sqs_queue}}"
+        QueueName:                                                "{{sqs.multi_policy_sqs_queue}}"
     msg_statistics_sqs_queue_sns_listener:
-      stack_name:                               "{{stack.sqs.msg_statistics_sqs_queue_sns_listener}}"
-      state:                                    present
-      template:                                 "{{template.sqs.sqs_simple_template}}"
+      stack_name:                                                 "{{stack.sqs.msg_statistics_sqs_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
-        QueueName:                              "{{sqs.msg_statistics_sqs_queue_sns_listener}}"
+        QueueName:                                                "{{sqs.msg_statistics_sqs_queue_sns_listener}}"
+    notifier_request_sqs_queue:
+      stack_name:                                                 "{{stack.sqs.notifier_request_sqs_queue}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.notifier_request_sqs_queue}}"
+    outbound_malware_protection_queue_sns_listener:
+      stack_name:                                                 "{{stack.sqs.outbound_malware_protection_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.outbound_malware_protection_queue_sns_listener}}"
+    outbound_malware_protection_unblock_sender_queue:
+      stack_name:                                                 "{{stack.sqs.outbound_malware_protection_unblock_sender_queue}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.outbound_malware_protection_unblock_sender_queue}}"
+        DelaySeconds:                                             "900"
     quarantine_sqs_queue:
-      stack_name:                               "{{stack.sqs.quarantine_sqs_queue}}"
-      state:                                    absent
-      template:                                 "{{template.sqs.sqs_simple_template}}"
+      stack_name:                                                 "{{stack.sqs.quarantine_sqs_queue}}"
+      state:                                                      absent
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
-        QueueName:                              "{{sqs.quarantine_sqs_queue}}"
+        QueueName:                                                "{{sqs.quarantine_sqs_queue}}"
     quarantine_sqs_queue_sns_listener:
-      stack_name:                               "{{stack.sqs.quarantine_sqs_queue_sns_listener}}"
-      state:                                    present
-      template:                                 "{{template.sqs.sqs_simple_template}}"
+      stack_name:                                                 "{{stack.sqs.quarantine_sqs_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
-        QueueName:                              "{{sqs.quarantine_sqs_queue_sns_listener}}"
+        QueueName:                                                "{{sqs.quarantine_sqs_queue_sns_listener}}"
 
-aes_decryption_key:                             "{{lookup('env','AES_KEY') | default('EFB0D00E7B34527A6CFE3CD804A53312C5A7AF129650A9793D2CEF3A3C6B3741')}}"
-ami_parent_id:                                  "{{ami_id}}"
-as_min_cap_bastion:                             "1"
-elb_security_policy:                            "ELBSecurityPolicy-2016-08"
-hostedzone:                                     "hydra.sophos.com"
-cron_scale_down:                                "0 1 * * 6"
-cron_scale_up:                                  "0 4 * * 1"
-nat_eip_a:                                      "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.NatEipA}}"
-health_check_grace_period_cd:                   "600"
-health_check_grace_period_id:                   "600"
-health_check_grace_period_cs:                   "1200"
-health_check_grace_period_is:                   "1200"
-health_check_grace_period_cx:                   "600"
-health_check_grace_period_ix:                   "600"
-hopper_public_ip:                               "198.144.101.106/32"
-instance_size_elasticsearch:                    "t2.medium"
-instance_size_id:                               "t2.small"
-instance_size_cd:                               "t2.small"
-instance_size_is:                               "t2.small"
-instance_size_cs:                               "t2.small"
-instance_size_ix:                               "t2.small"
-instance_size_cx:                               "t2.small"
-instance_size_xgemail_spot_price:               "-1"
-weekend_scale_down:                             "false"
-xgemail_sxl_dbl:                                "uri.cal1.sophosxl.com"
-xgemail_sxl_rbl:                                "fur.cal1.sophosxl.com"
-xgemail_iops_data_gb:                           "0"
-xgemail_size_data_gb:                           "40"
+aes_decryption_key:                                               "{{lookup('env','AES_KEY') | default('EFB0D00E7B34527A6CFE3CD804A53312C5A7AF129650A9793D2CEF3A3C6B3741')}}"
+ami_parent_id:                                                    "{{ami_id}}"
+as_min_cap_bastion:                                               "1"
+elb_security_policy:                                              "ELBSecurityPolicy-2016-08"
+hostedzone:                                                       "hydra.sophos.com"
+cron_scale_down:                                                  "0 1 * * 6"
+cron_scale_up:                                                    "0 4 * * 1"
+nat_eip_a:                                                        "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.NatEipA}}"
+health_check_grace_period_cd:                                     "600"
+health_check_grace_period_id:                                     "600"
+health_check_grace_period_cs:                                     "1800"
+health_check_grace_period_is:                                     "1200"
+health_check_grace_period_cx:                                     "600"
+health_check_grace_period_ix:                                     "600"
+hopper_public_ip:                                                 "198.144.101.106/32"
+instance_size_elasticsearch:                                      "t2.medium"
+instance_size_id:                                                 "t2.small"
+instance_size_cd:                                                 "t2.small"
+instance_size_is:                                                 "t2.small"
+instance_size_cs:                                                 "t2.small"
+instance_size_ix:                                                 "t2.small"
+instance_size_cx:                                                 "t2.small"
+instance_size_xgemail_spot_price:                                 "-1"
+weekend_scale_down:                                               "false"
+xgemail_sxl_dbl:                                                  "uri.cal1.sophosxl.com"
+xgemail_sxl_rbl:                                                  "fur.cal1.sophosxl.com"
+xgemail_iops_data_gb:                                             "0"
+xgemail_size_data_gb:                                             "40"
 
 

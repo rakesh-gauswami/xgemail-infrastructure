@@ -28,13 +28,21 @@ DEPLOYMENT_DIR = node['xgemail']['xgemail_files_dir']
 PACKAGES_DIR = '/opt/sophos/packages'
 
 LIBSPF_JNI_VERSION = node['xgemail']['libspfjni']
+LIBDKIM_JNI_VERSION = node['xgemail']['libdkimjni']
 
 JILTER_SERVICE_NAME = node['xgemail']['jilter_service_name']
 JILTER_PACKAGE_NAME = 'xgemail-jilter-outbound'
 JILTER_SCRIPT_DIR = "#{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}/scripts"
 JILTER_SCRIPT_PATH = "#{JILTER_SCRIPT_DIR}/xgemail.jilter.service.sh"
+JILTER_CONF_DIR = "#{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}/conf"
+JILTER_APPLICATION_PROPERTIES_PATH = "#{JILTER_CONF_DIR}/jilter-application.properties"
+
+LIBOPENDKIM_VERSION = node['xgemail']['libopendkim_version']
+LIBOPENDKIM_PACKAGE_NAME = "libopendkim-#{LIBOPENDKIM_VERSION}"
 
 SERVICE_USER = node['xgemail']['jilter_user']
+POLICY_BUCKET_NAME   = node['xgemail']['xgemail_policy_bucket_name']
+ACTIVE_PROFILE = node['xgemail']['xgemail_active_profile']
 
 include_recipe 'sophos-cloud-xgemail::install_jilter_common'
 
@@ -64,6 +72,42 @@ execute 'move_jilter_jni' do
   EOH
 end
 
+# Install libopendkim package via yum
+execute "execute_yum_dkim_install" do
+  user "root"
+  cwd "/tmp"
+  command <<-EOH
+      yum-config-manager --enable epel
+      yum install -y #{LIBOPENDKIM_PACKAGE_NAME}
+      yum-config-manager --disable epel
+  EOH
+end
+
+# dkim jni movement
+# temporarily hard-coded the xgemail-jilter-inbound path. As part of XGE-6573 the
+# jilter-outbound service will build the libdkimjni itself
+src = "#{DEPLOYMENT_DIR}/xgemail-jilter-inbound/lib/libdkimjni-#{LIBDKIM_JNI_VERSION}.so"
+
+log "filename_information" do
+  message "dkim jni library is: #{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}/lib/libdkimjni-#{LIBDKIM_JNI_VERSION}.so"
+  level :debug
+end
+
+src_url = "file://#{src}"
+dest_location = "#{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}/lib/libdkimjni.so"
+
+remote_file "move_dkim_jni" do
+  path dest_location
+  source src_url
+  owner 'root'
+  action :create
+end
+
+# Remove the dkim library
+file "#{src}" do
+  action :delete
+end
+
 # Create the jilter script directory
 directory JILTER_SCRIPT_DIR do
   mode '0755'
@@ -71,6 +115,15 @@ directory JILTER_SCRIPT_DIR do
   group 'root'
   recursive true
 end
+
+# Create the jilter application properties directory
+directory JILTER_CONF_DIR do
+  mode '0755'
+  owner 'root'
+  group 'root'
+  recursive true
+end
+
 
 # Create jilter user
 user SERVICE_USER do
@@ -86,7 +139,21 @@ template 'xgemail.jilter.service.sh' do
   owner SERVICE_USER
   group SERVICE_USER
   variables(
-      :deployment_dir => DEPLOYMENT_DIR
+      :deployment_dir => DEPLOYMENT_DIR,
+      :active_profile => ACTIVE_PROFILE
+  )
+end
+
+
+# Create the jilter application properties
+template 'xgemail.jilter.properties' do
+  path JILTER_APPLICATION_PROPERTIES_PATH
+  source 'jilter-outbound-application.properties.erb'
+  mode '0700'
+  owner SERVICE_USER
+  group SERVICE_USER
+  variables(
+      :policy_bucket => POLICY_BUCKET_NAME
   )
 end
 

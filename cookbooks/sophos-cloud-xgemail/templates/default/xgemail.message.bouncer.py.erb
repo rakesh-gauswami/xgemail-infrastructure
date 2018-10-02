@@ -10,11 +10,9 @@ import sys
 sys.path.append("<%= @utils_dir %>")
 import email
 import json
-import formatterutils
 import re
 import string
 from dateutil import parser
-from datetime import datetime
 from awshandler import AwsHandler
 from common.notificationsubmitinfo import NotificationSubmitInfo
 import logging
@@ -73,6 +71,7 @@ def submit_notification_info_to_sqs(sender, recipients, subject, hostname, failu
         sent_timestamp
     )
     sqs_json = notification_submit_info.get_sqs_json()
+
     logger.info("Added notification submit info SQS job response [{0}] [{1}]]".format
         (add_to_sqs(
             XGEMAIL_NOTIFIER_QUEUE,
@@ -80,7 +79,6 @@ def submit_notification_info_to_sqs(sender, recipients, subject, hostname, failu
             ),sqs_json
         )
     )
-
 
 def main():
     try:

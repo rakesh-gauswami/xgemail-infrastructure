@@ -81,7 +81,8 @@ template CONSUMER_SCRIPT_PATH do
     :message_direction => MESSAGE_DIRECTION,
     :message_history_status_sns_topic_arn => MESSAGE_HISTORY_DELIVERY_STATUS_SNS_TOPIC_ARN,
     :node_type => NODE_TYPE,
-    :node_ip => NODE_IP
+    :node_ip => NODE_IP,
+    :account => ACCOUNT
   )
 end
 
