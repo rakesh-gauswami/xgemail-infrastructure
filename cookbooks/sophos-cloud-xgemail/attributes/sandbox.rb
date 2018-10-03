@@ -37,6 +37,7 @@ if ENVIRONMENT == "sandbox"
     default['xgemail']['sxl_dbl']                    = 'fake-domain.com'
     default['xgemail']['sxl_rbl']                    = 'fake-domain.com'
     default['xgemail']['xgemail_active_profile']     = 'sandbox'
+    default['xgemail']['station_vpc_name']           = 'pic'
 
 
     if INSTANCE_TYPE == "customer-submit"
