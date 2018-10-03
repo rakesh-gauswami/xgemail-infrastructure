@@ -52,7 +52,7 @@ default['xgemail']['cert']              = 'xgemail'
 # This is used on the 'processing' host only
 ## CYREN settings
 default['xgemail']['ctasd_url'] = 'ftp.ctmail.com/ctasd/Release'
-default['xgemail']['ctasd_package_version'] = '5.01.0000'
+default['xgemail']['ctasd_package_version'] = '5.01.0006.4'
 default['xgemail']['ctasd_license_key'] = '0001W000S0051K019G03'
 default['xgemail']['ctasd_server_address'] = 'resolver%d.sophos.ctmail.com'
 default['xgemail']['ctasd_daemon_stop_timeout'] = 5
@@ -123,6 +123,9 @@ default['xgemail']['sxl_dbl_response_codes'] = "127.0.1.[1;3;4;5]"
 # More information can be found at
 # https://wiki.sophos.net/display/NSG/VBSpam+Integration+into+Sophos+Email
 default['xgemail']['smtpd_authorized_xclient_hosts'] = "81.136.243.94"
+
+# Increase Postfix default process limit from default 100 to 200
+default['xgemail']['postfix_default_process_limit'] = 200
 
 ## IP blacklist settings
 default['xgemail']['sxl_rbl'] = nil
@@ -225,47 +228,56 @@ default['xgemail']['sysctl_tcp_window_scaling'] = 1
 SUBMIT_MESSAGE_SIZE_LIMIT_BYTES = 52428800
 default['xgemail']['postfix3_version'] = '3.2.4.1-1'
 
+POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST = 500
+POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST = 500
+
 
 default['xgemail']['postfix_instance_data'] = {
   # internet-submit
   'submit' => {
     :instance_name => 'is',
     :port => 25,
-    :msg_size_limit => SUBMIT_MESSAGE_SIZE_LIMIT_BYTES
+    :msg_size_limit => SUBMIT_MESSAGE_SIZE_LIMIT_BYTES,
+    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
   },
   # customer-submit
   'customer-submit' => {
     :instance_name => 'cs',
     :port => 25,
-    :msg_size_limit => SUBMIT_MESSAGE_SIZE_LIMIT_BYTES
+    :msg_size_limit => SUBMIT_MESSAGE_SIZE_LIMIT_BYTES,
+    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
   },
   # customer-delivery
   'delivery' => {
     :instance_name => 'cd',
     :port => 25,
     # Give delivery queues extra padding because extra content may be created during processing
-    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800)
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800),
+    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
   },
   # internet-delivery
   'internet-delivery' => {
     :instance_name => 'id',
     :port => 25,
     # Give delivery queues extra padding because extra content may be created during processing
-    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800)
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800),
+    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
   },
   # extended-delivery
   'xdelivery' => {
     :instance_name => 'xd',
     :port => 8025,
     # Give delivery queues extra padding because extra content may be created during processing
-    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600)
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600),
+    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
   },
   # internet-extended-delivery
   'internet-xdelivery' => {
     :instance_name => 'ix',
     :port => 8025,
     # Give delivery queues extra padding because extra content may be created during processing
-    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600)
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600),
+    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
   },
   # customer-encryption-delivery
   'encryption-delivery' => {

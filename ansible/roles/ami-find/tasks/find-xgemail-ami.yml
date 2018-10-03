@@ -31,7 +31,7 @@
         no_result_action: fail
         ami_tags:
           Name:         "hmr-core-{{alternate_branch}}-{{ami_type}}-*"
-          branch:       develop
+          branch:       "{{alternate_branch}}"
           ami_type:     "{{ami_type}}"
       register: ec2_ami_find_output
   always:

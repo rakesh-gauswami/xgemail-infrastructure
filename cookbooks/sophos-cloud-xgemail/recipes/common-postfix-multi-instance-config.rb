@@ -40,11 +40,16 @@ raise "Invalid smtpd port for node type [#{NODE_TYPE}]" if SMTPD_PORT.nil?
 MSG_SIZE_LIMIT = INSTANCE_DATA[:msg_size_limit]
 raise "Invalid message size limit for node type [#{NODE_TYPE}]" if MSG_SIZE_LIMIT.nil?
 
+RCPT_SIZE_LIMIT = INSTANCE_DATA[:rcpt_size_limit]
+raise "Invalid rcpt size limit for node type [#{NODE_TYPE}]" if RCPT_SIZE_LIMIT.nil?
+
 FILE_CACHE_DIR = ::Chef::Config[:file_cache_path]
 
 TLS_HIGH_CIPHERLIST = node['xgemail']['tls_high_cipherlist']
 
 INSTANCE_HOST_NAME = get_hostname(NODE_TYPE)
+
+POSTFIX_DEFAULT_PROCESS_LIMIT = node["xgemail"]["postfix_default_process_limit"]
 
 CONFIGURATION_COMMANDS =
   node['xgemail']['common_instance_config_params'] +
@@ -54,11 +59,12 @@ CONFIGURATION_COMMANDS =
     "mailbox_size_limit = #{MSG_SIZE_LIMIT + 1024}",
     "message_size_limit = #{MSG_SIZE_LIMIT}",
     "queue_minfree = #{MSG_SIZE_LIMIT * 10}",
-
+    "default_process_limit = #{POSTFIX_DEFAULT_PROCESS_LIMIT}",
     "tls_high_cipherlist = #{TLS_HIGH_CIPHERLIST}",
-
+    "smtpd_recipient_limit = #{RCPT_SIZE_LIMIT}",
+    "smtpd_recipient_overshoot_limit = 1",
+    "default_destination_recipient_limit = #{RCPT_SIZE_LIMIT}",
     'mynetworks_style=subnet',
-
     'smtpd_discard_ehlo_keywords = silent-discard, dsn',
     'notify_classes ='
   ]
