@@ -58,19 +58,14 @@ restart() {
 }
 
 force_restart() {
-    # Force Restarting Daemon
-    echo $"Stopping Service: "
-    stop
-    echo $"Removing pidfile ${pidfile}: "
-    rm -fv ${pidfile}
-    echo $"Removing lockfile ${lockfile}: "
-    rm -fv ${lockfile}
-    echo $"Killing any zombie processes: "
-    pkill -u ${user} java
-    echo $"Starting Service: "
-    start
+# Force Restarting Daemon
+stop
+echo $"Removing pidfile ${pidfile}: "
+rm -fv ${pidfile}
+echo $"Removing lockfile ${lockfile}: "
+rm -fv ${lockfile}
+start
 }
-
 
 rh_status() {
     status -p "${pidfile}" -l ${prog} ${exec_path}
