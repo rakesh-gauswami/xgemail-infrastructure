@@ -209,6 +209,31 @@ services:
       - novanet
 
 
+  mail:
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/sophos_cloud_tomcat:latest
+    container_name: mail-service
+    hostname: mail-service
+    domainname: sandbox.sophos
+    networks:
+      - novanet
+    dns:
+      - 172.16.199.101
+    external_links:
+      - 'postgres:postgres-service'
+      - 'mongo:mongo-service'
+      - 'memcache:memcache-service'
+      - 'redis:redis-service'
+      - 'kinesalite:kinesalite'
+      - 'dynamodb:dynamo-service'
+      - 'elasticmq:elasticmq-service'
+      - 'elasticsearch:elasticsearch-service'
+      - 'mailcatcher:mailcatcher-service'
+    volumes:
+      - '~/.nova/wars/mail-services-NOVA-LOCAL.war:/usr/local/tomcat/webapps/mail-services.war'
+      - '~/xgemail-infrastructure/orchestrator/sophos_cloud_mail/config/bootstrap.properties:/usr/local/etc/sophos/bootstrap.properties'
+
+
+
 networks:
   novanet:
     external:
