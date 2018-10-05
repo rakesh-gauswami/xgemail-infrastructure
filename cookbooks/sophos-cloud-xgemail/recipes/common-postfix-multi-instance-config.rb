@@ -35,7 +35,6 @@ else
   POSTFIX_INSTANCE = NODE_TYPE
 end
 
-
 INSTANCE_DATA = node['xgemail']['postfix_instance_data'][POSTFIX_INSTANCE]
 raise "Unsupported node type [#{NODE_TYPE}]" if INSTANCE_DATA.nil?
 
