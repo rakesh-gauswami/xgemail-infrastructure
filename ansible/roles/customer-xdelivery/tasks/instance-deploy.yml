@@ -26,10 +26,10 @@
       BundleVersion:                        "{{ami_build}}"
       EbsMinIops:                           "{{xgemail_iops_data_gb}}"
       Environment:                          "{{account.name}}"
-      HealthCheckGracePeriod:               "{{health_check_grace_period_cx}}"
+      HealthCheckGracePeriod:               "{{aws.asg.cx.health_check_grace_period}}"
       HealthCheckType:                      "ELB"
       InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.XgemailXdeliveryInstanceProfile}}"
-      InstanceType:                         "{{instance_size_cx}}"
+      InstanceType:                         "{{aws.asg.cx.instance_size}}"
       KeyName:                              "private-{{account.region}}"
       LoadBalancerName:                     "{{elb_stack_output.stack_outputs.LoadBalancerId}}"
       PublicIpAddressEnabled:               "false"
@@ -49,8 +49,8 @@
       XgemailMsgHistoryStatusSnsArn:        "{{sns.arn_prefix}}{{sns.msg_history_status_sns_topic}}"
       XgemailServiceType:                   "xdelivery"
   with_together:
-    - "{{stack_number}}"
-    - "{{zone_index}}"
+    - "{{aws.asg.cx.stack_number}}"
+    - "{{aws.asg.cx.zone_index}}"
   register: cx_stack_async_results
 
 - async_status:
