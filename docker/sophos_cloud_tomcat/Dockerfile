@@ -5,8 +5,6 @@ ENV JAVA_VERSION=${BUILD_JAVA_VERSION:-8} \
     JAVA_BUILD=${BUILD_JAVA_BUILD:-13} \
     JAVA_HOME="/usr/java"
 
-COPY jce_policy-8.zip /tmp/jce_policy-8.zip
-
 RUN apk add --no-cache --virtual=build-dependencies wget ca-certificates && \
     cd "/tmp" && \
     wget http://maven.cloud.sophos/nexus/content/repositories/pulsar-files/content/thirdparty/alpine/glibc-2.25-r0.apk &&  \
@@ -36,9 +34,6 @@ RUN apk add --no-cache --virtual=build-dependencies wget ca-certificates && \
            "$JAVA_HOME/jre/lib/amd64/libgstreamer-lite.so" \
            "$JAVA_HOME/jre/lib/amd64/"libjavafx*.so \
            "$JAVA_HOME/jre/lib/amd64/"libjfx*.so && \
-    unzip "jce_policy-${JAVA_VERSION}.zip" && \
-    mv "UnlimitedJCEPolicyJDK${JAVA_VERSION}/US_export_policy.jar" "${JAVA_HOME}/jre/lib/security/" && \
-    mv "UnlimitedJCEPolicyJDK${JAVA_VERSION}/local_policy.jar" "${JAVA_HOME}/jre/lib/security/" && \
     apk  --no-cache del build-dependencies && \
     rm -rf "/tmp/"*
 
