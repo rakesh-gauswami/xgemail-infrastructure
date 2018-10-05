@@ -46,11 +46,11 @@ POLICY_BUCKET_NAME   = node['xgemail']['xgemail_policy_bucket_name']
 ACTIVE_PROFILE = node['xgemail']['xgemail_active_profile']
 
 if ACCOUNT == 'sandbox'
-  include_recipe 'sophos-cloud-xgemail::download_libspf2'
+  #include_recipe 'sophos-cloud-xgemail::download_libspf2'
   include_recipe 'sophos-cloud-xgemail::install_jilter_code_sandbox'
 end
 
-include_recipe 'sophos-cloud-xgemail::install_jilter_common'
+#include_recipe 'sophos-cloud-xgemail::install_jilter_common'
 
 # Modify /etc/rsyslog.conf
 execute 'modify_rsyslog.conf' do
@@ -193,7 +193,10 @@ if ACCOUNT != 'sandbox'
 
 else
 
-  # Create the Jilter service
+  APPLICATION = node['xgemail']['application']
+  DIRECTION   = node['xgemail']['direction']
+
+   # Create the Jilter service
   template 'xgemail.jilter.service.sh' do
     path JILTER_SCRIPT_PATH
     source 'xgemail.jilter.sandbox.sh.erb'
@@ -204,7 +207,7 @@ else
         :deployment_dir => DEPLOYMENT_DIR,
         :property_path  => JILTER_APPLICATION_PROPERTIES_PATH,
         :active_profile => ACTIVE_PROFILE,
-        :direction      => inbound,
+        :direction      => DIRECTION,
         :application    => APPLICATION
     )
   end

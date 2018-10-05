@@ -12,8 +12,8 @@ RUN yum update -y && \
             awscli && \
 	yum clean all
 
-ADD run.sh /opt/run.sh
+ADD run.sh /opt/scripts/run.sh
 
-RUN chmod 777 /data/scripts/startup.sh
+RUN chmod 777 /opt/scripts/run.sh
 
-ENTRYPOINT ["/data/scripts/startup.sh"]
+#ENTRYPOINT ["/opt/scripts/run.sh"]

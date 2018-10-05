@@ -9,4 +9,4 @@
 cd /opt/sophos/xgemail/cookbooks
 chef-client --local-mode -o "recipe[sophos-cloud-xgemail::install_jilter_inbound]"
 
-/opt/run.sh &
+/opt/sophos/xgemail/xgemail-jilter-inbound/scripts/xgemail.jilter.service.sh &

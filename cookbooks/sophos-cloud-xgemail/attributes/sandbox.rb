@@ -24,6 +24,7 @@ if ENVIRONMENT == "sandbox"
     default['xgemail']['cluster_type']     = ENV['INSTANCE_TYPE']
 
     default['xgemail']['direction']        = ENV['DIRECTION']
+    default['xgemail']['application']      = ENV['APPLICATION']
 
     default['xgemail']['xgemail_bucket_name']        = 'xgemail-submit'
     default['xgemail']['xgemail_queue_url']          = 'http://localstack-xgemail:4576/queue/sandbox-Xgemail_Internet_Submit'
