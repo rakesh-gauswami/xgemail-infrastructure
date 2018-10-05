@@ -48,7 +48,6 @@ CONSUMER_SCRIPT_PATH = "#{SQS_MESSAGE_PROCESSOR_DIR}/#{CONSUMER_SCRIPT}"
 
 SERVICE_USER = node['xgemail']['sqs_message_processor_user']
 
-
 # Configs use by sqsmsgconsumer
 if NODE_TYPE == 'delivery' or NODE_TYPE == 'xdelivery'
   MESSAGE_DIRECTION = 'INBOUND'
