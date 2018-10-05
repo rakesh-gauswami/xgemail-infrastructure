@@ -43,7 +43,7 @@
 # This will upload and replace Outbound Monitor private keys S3
 - name: Upload Self Singed Certs to bucket cloud-inf-connections
   aws_s3:
-    bucket: "cloud-inf-connections"
+    bucket: "cloud-{{ account.name }}-connections"
     object: "{{ item }}.key"
     region: "us-west-2"
     src: "{{ msg_output_work_dir.path }}/msg-certificates/{{ item }}.key"
@@ -58,7 +58,7 @@
 # This will upload and replace Outbound Monitor certs in S3
 - name: Upload Self Singed Certs to bucket cloud-inf-connections
   aws_s3:
-    bucket: "cloud-inf-connections"
+    bucket: "cloud-{{ account.name }}-connections"
     object: "{{ item }}.crt"
     region: "us-west-2"
     src: "{{ msg_output_work_dir.path }}/msg-certificates/{{ item }}.crt"
@@ -73,7 +73,7 @@
 # This will upload and replace Outbound Monitor SHA files in S3
 - name: Upload Self Singed Certs to bucket cloud-inf-connections
   aws_s3:
-    bucket: "cloud-inf-connections"
+    bucket: "cloud-{{ account.name }}-connections"
     object: "{{ item }}._sha1.txt"
     region: "us-west-2"
     src: "{{ msg_output_work_dir.path }}/msg-certificates/{{ item }}_sha1.txt"
