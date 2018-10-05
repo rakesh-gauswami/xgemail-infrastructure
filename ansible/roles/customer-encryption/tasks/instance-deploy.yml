@@ -60,9 +60,9 @@
       XgemailSxlDbl:                        "{{xgemail_sxl_dbl}}"
       XgemailSxlRbl:                        "{{xgemail_sxl_rbl}}"
   with_together:
-    - "{{stack_number}}"
-    - "{{asg_min_size}}"
-    - "{{zone_index}}"
+    - "{{aws.asg.ce.stack_number}}"
+    - "{{aws.asg.ce.asg_min_size}}"
+    - "{{aws.asg.ce.zone_index}}"
   register: ce_stack_async_results
 
 - async_status:
