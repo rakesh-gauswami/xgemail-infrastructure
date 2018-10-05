@@ -3,7 +3,6 @@ FROM 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/xgemail-java:latest
 LABEL maintainer="Sophos Inc. <www.sophos.com>" \
       description="jilter-base service image"
 
-# Get to the latest versions and Install and enable the EPEL repo, which is where the spf library lives
 RUN yum update -y && \
 	yum install -y \
             epel-release \
@@ -11,7 +10,10 @@ RUN yum update -y && \
             curl \
             initscripts \
             awscli && \
-	yum clean all && \
-	mkdir -p /data/conf
+	yum clean all
 
-ADD logback.xml /data/conf
+ADD run.sh /opt/run.sh
+
+RUN chmod 777 /data/scripts/startup.sh
+
+ENTRYPOINT ["/data/scripts/startup.sh"]

@@ -46,11 +46,11 @@ POLICY_BUCKET_NAME   = node['xgemail']['xgemail_policy_bucket_name']
 ACTIVE_PROFILE = node['xgemail']['xgemail_active_profile']
 
 if ACCOUNT == 'sandbox'
-  # include_recipe 'sophos-cloud-xgemail::download_libspf2'
+  include_recipe 'sophos-cloud-xgemail::download_libspf2'
   include_recipe 'sophos-cloud-xgemail::install_jilter_code_sandbox'
 end
 
-# include_recipe 'sophos-cloud-xgemail::install_jilter_common'
+include_recipe 'sophos-cloud-xgemail::install_jilter_common'
 
 # Modify /etc/rsyslog.conf
 execute 'modify_rsyslog.conf' do
@@ -134,7 +134,6 @@ user SERVICE_USER do
   shell '/sbin/nologin'
 end
 
-
 # Create the jilter application properties
 template 'xgemail.jilter.properties' do
   path JILTER_APPLICATION_PROPERTIES_PATH
@@ -147,10 +146,9 @@ template 'xgemail.jilter.properties' do
   )
 end
 
-
 if ACCOUNT != 'sandbox'
 
-# Create the Jilter service
+  # Create the Jilter service
   template 'xgemail.jilter.service.sh' do
     path JILTER_SCRIPT_PATH
     source 'xgemail.jilter.inbound.service.sh.erb'
@@ -194,22 +192,20 @@ if ACCOUNT != 'sandbox'
   end
 
 else
-   # Create the Jilter service
+
+  # Create the Jilter service
   template 'xgemail.jilter.service.sh' do
     path JILTER_SCRIPT_PATH
-    source 'xgemail.jilter.inbound.service.sh.erb'
+    source 'xgemail.jilter.sandbox.sh.erb'
     mode '0700'
     owner SERVICE_USER
     group SERVICE_USER
     variables(
         :deployment_dir => DEPLOYMENT_DIR,
-        :property_path => JILTER_APPLICATION_PROPERTIES_PATH,
-        :active_profile => ACTIVE_PROFILE
+        :property_path  => JILTER_APPLICATION_PROPERTIES_PATH,
+        :active_profile => ACTIVE_PROFILE,
+        :direction      => inbound,
+        :application    => APPLICATION
     )
-    notifies :start, 'service[xgemail-jilter-service]', :immediately
-  end
-
-  service 'xgemail-jilter-service' do
-    supports :restart => true, :start => true, :stop => true, :reload => true
   end
 end
