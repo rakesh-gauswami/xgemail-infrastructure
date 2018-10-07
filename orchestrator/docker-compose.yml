@@ -147,6 +147,8 @@ services:
     container_name: jilter-inbound
     hostname: jilter-inbound
     domainname: sandbox.sophos
+    env_file:
+      - ~/.aws/credentials
     environment:
       - JILTER_VERSION=0.7.9-SNAPSHOT
       - DIRECTION=inbound
