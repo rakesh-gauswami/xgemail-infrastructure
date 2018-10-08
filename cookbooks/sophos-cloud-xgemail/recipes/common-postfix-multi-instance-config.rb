@@ -28,13 +28,14 @@ require 'aws-sdk'
 
 NODE_TYPE = node['xgemail']['cluster_type']
 
-if NODE_TYPE == 'customer-encryption'
-  POSTFIX_INSTANCE = node['xgemail']['customer_encryption_postfix_instance_name']
-  raise "Invalid instance name for node type [#{NODE_TYPE}]" if POSTFIX_INSTANCE.nil?
-else
-  POSTFIX_INSTANCE = NODE_TYPE
-end
+#if NODE_TYPE == 'customer-encryption'
+#  POSTFIX_INSTANCE = node['xgemail']['customer_encryption_postfix_instance_name']
+#  raise "Invalid instance name for node type [#{NODE_TYPE}]" if POSTFIX_INSTANCE.nil?
+#else
+#  POSTFIX_INSTANCE = NODE_TYPE
+#end
 
+POSTFIX_INSTANCE = NODE_TYPE
 INSTANCE_DATA = node['xgemail']['postfix_instance_data'][POSTFIX_INSTANCE]
 raise "Unsupported node type [#{NODE_TYPE}]" if INSTANCE_DATA.nil?
 

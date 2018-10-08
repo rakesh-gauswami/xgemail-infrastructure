@@ -11,5 +11,5 @@
 
 include_recipe 'sophos-cloud-xgemail::configure-customer-encryption-delivery-queue'
 
-set['xgemail']['customer_encryption_postfix_instance_name'] = 'es'
-include_recipe 'sophos-cloud-xgemail::configure-customer-encryption-submit-queue'
+#set['xgemail']['customer_encryption_postfix_instance_name'] = 'es'
+#include_recipe 'sophos-cloud-xgemail::configure-customer-encryption-submit-queue'
