@@ -29,7 +29,7 @@ require 'aws-sdk'
 NODE_TYPE = node['xgemail']['cluster_type']
 
 if NODE_TYPE == 'customer-encryption'
-  POSTFIX_INSTANCE = CUSTOMER_ENCRYPTION_POSTFIX_INSTANCE_NAME
+  POSTFIX_INSTANCE = node['xgemail']['customer_encryption_postfix_instance_name']
   raise "Invalid instance name for node type [#{NODE_TYPE}]" if POSTFIX_INSTANCE.nil?
 else
   POSTFIX_INSTANCE = NODE_TYPE
