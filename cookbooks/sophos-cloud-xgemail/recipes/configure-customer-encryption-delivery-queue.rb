@@ -20,7 +20,7 @@ end
 ::Chef::Resource.send(:include, ::SophosCloudXgemail::Helper)
 
 #POSTFIX_INSTANCE = 'encryption-delivery'
-#POSTFIX_INSTANCE = NODE_TYPE
+POSTFIX_INSTANCE = NODE_TYPE
 INSTANCE_DATA = node['xgemail']['postfix_instance_data'][POSTFIX_INSTANCE]
 raise "Unsupported node type [#{POSTFIX_INSTANCE}]" if INSTANCE_DATA.nil?
 
