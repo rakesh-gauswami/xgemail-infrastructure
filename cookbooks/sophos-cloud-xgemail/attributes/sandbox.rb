@@ -49,7 +49,7 @@ if ENVIRONMENT == "sandbox"
 
     if INSTANCE_TYPE == "jilter-inbound" || INSTANCE_TYPE == "jilter_outbound"
         default['xgemail']['jilter_version'] = ENV['JILTER_VERSION']
-        default['sophos_cloud']['thirdparty']  = '//cloud-inf-3rdparty'
+        default['sophos_cloud']['thirdparty']  = '//cloud-sandbox-3rdparty'
         default['xgemail']['postfix_instance_data']['jilter-outbound'] =
           {
             :instance_name => 'jilter-outbound'
