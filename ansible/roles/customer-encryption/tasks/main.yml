@@ -1,16 +1,16 @@
-#---
-#
-#- name: "Include ELB Creation Task."
-#  include_tasks: elb-deploy.yml
-#  tags:
-#    - asg
-#
-#- name: "Include Route53 Creation Task."
-#  include_tasks: route53-deploy.yml
-#  tags:
-#    - asg
-#
-#- name: "Include EC2 Instance Creation Task."
-#  include_tasks: instance-deploy.yml
-#  tags:
-#    - asg
+---
+
+- name: "Include ELB Creation Task."
+  include_tasks: elb-deploy.yml
+  tags:
+    - asg
+
+- name: "Include Route53 Creation Task."
+  include_tasks: route53-deploy.yml
+  tags:
+    - asg
+
+- name: "Include EC2 Instance Creation Task."
+  include_tasks: instance-deploy.yml
+  tags:
+    - asg
