@@ -26,7 +26,6 @@ raise "Unsupported node type [#{POSTFIX_INSTANCE}]" if INSTANCE_DATA.nil?
 INSTANCE_NAME = INSTANCE_DATA[:instance_name]
 raise "Invalid instance name for node type [#{POSTFIX_INSTANCE}]" if INSTANCE_NAME.nil?
 
-node['xgemail']['customer_encryption_postfix_instance_name'] = POSTFIX_INSTANCE
 include_recipe 'sophos-cloud-xgemail::common-postfix-multi-instance-config'
 
 LOCAL_CERT_PATH = node['sophos_cloud']['local_cert_path']
