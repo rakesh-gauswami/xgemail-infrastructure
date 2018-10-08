@@ -29,7 +29,7 @@
       BundleVersion:                        "{{ami_build}}"
       EbsMinIops:                           "{{xgemail_iops_data_gb}}"
       Environment:                          "{{account.name}}"
-      HealthCheckGracePeriod:               "{{health_check_grace_period_ce}}"
+      HealthCheckGracePeriod:               "{{aws.asg.ce.health_check_grace_period}}"
       HealthCheckType:                      "ELB"
       InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.XgemailCustomerEncryptionInstanceProfile}}"
       InstanceType:                         "{{instance_size_ce}}"
