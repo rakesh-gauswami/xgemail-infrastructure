@@ -296,7 +296,7 @@ default['xgemail']['postfix_instance_data'] = {
 }
 
 ## The Postfix instance name for the customer-encryption node
-default['xgemail']['customer_encryption_postfix_instance_name'] = nil
+default['xgemail']['customer_encryption_postfix_instance_name'] = 'ed'
 
 default['xgemail']['common_instance_config_params'] = [
   # Disable special handling of owner- prefix
