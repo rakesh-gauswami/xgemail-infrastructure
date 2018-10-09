@@ -7,10 +7,6 @@
 * The orchestrator is part of the xgemail repo
 * 
 # Environment variables 
-export aws_access_key_id=$(aws --profile default configure get aws_access_key_id)
-export aws_secret_access_key=$(aws --profile default configure get aws_secret_access_key)
-
-
 export XGEMAIL_HOME={path up to email repo}
 example: export XGEMAIL_HOME=~/g/email
 
