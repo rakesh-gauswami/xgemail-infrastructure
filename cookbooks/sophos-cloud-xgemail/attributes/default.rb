@@ -286,16 +286,16 @@ default['xgemail']['postfix_instance_data'] = {
 #    # Give delivery queues extra padding because extra content may be created during processing
 #    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800)
 #  },
+    # customer-encryption
+     'customer-encryption' => {
+        :instance_name => 'ce',
+       :port => 25,
+       # Give delivery queues extra padding because extra content may be created during processing
+       :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800)
+     },
   # customer-encryption-submit
-#   'encryption-submit' => {
-#     :instance_name => 'es',
-#     :port => 587,
-     # Give delivery queues extra padding because extra content may be created during processing
-#     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800)
-#   }
-  # customer-encryption
-   'customer-encryption' => {
-      :instance_name => 'ce',
+   'encryption-submit' => {
+     :instance_name => 'es',
      :port => 587,
      # Give delivery queues extra padding because extra content may be created during processing
      :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800)

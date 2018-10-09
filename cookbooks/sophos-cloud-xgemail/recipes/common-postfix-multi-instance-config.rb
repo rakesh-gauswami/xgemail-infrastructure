@@ -28,15 +28,7 @@ require 'aws-sdk'
 
 NODE_TYPE = node['xgemail']['cluster_type']
 
-#if NODE_TYPE == 'customer-encryption'
-#  POSTFIX_INSTANCE = node['xgemail']['customer_encryption_postfix_instance_name']
-#  raise "Invalid instance name for node type [#{NODE_TYPE}]" if POSTFIX_INSTANCE.nil?
-#else
-#  POSTFIX_INSTANCE = NODE_TYPE
-#end
-
-POSTFIX_INSTANCE = NODE_TYPE
-INSTANCE_DATA = node['xgemail']['postfix_instance_data'][POSTFIX_INSTANCE]
+INSTANCE_DATA = node['xgemail']['postfix_instance_data'][NODE_TYPE]
 raise "Unsupported node type [#{NODE_TYPE}]" if INSTANCE_DATA.nil?
 
 INSTANCE_NAME = INSTANCE_DATA[:instance_name]
@@ -103,7 +95,7 @@ if ACCOUNT == 'sandbox'
 
   # Update postfix to call jilter as external service
   # only for submit instances
-  if POSTFIX_INSTANCE == 'submit'
+  if NODE_TYPE == 'submit'
     [
         'smtpd_milters = inet:jilter-inbound:9876',
         'milter_connect_macros = {client_addr}, {j}',
@@ -112,7 +104,7 @@ if ACCOUNT == 'sandbox'
         execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
       end
   else
-    if POSTFIX_INSTANCE == 'customer-submit'
+    if NODE_TYPE == 'customer-submit'
       [
           'smtpd_milters = inet:jilter-outbound:9876',
           'milter_connect_macros = {client_addr}, {j}',
@@ -121,7 +113,7 @@ if ACCOUNT == 'sandbox'
         execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
       end
     end
-    # TODO Add jilter configuration for POSTFIX_INSTANCE == 'customer-encryption'
+    # TODO Add jilter configuration for NODE_TYPE == 'customer-encryption'
   end
 
 else

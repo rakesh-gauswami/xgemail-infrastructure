@@ -19,13 +19,11 @@ end
 ::Chef::Recipe.send(:include, ::SophosCloudXgemail::Helper)
 ::Chef::Resource.send(:include, ::SophosCloudXgemail::Helper)
 
-#POSTFIX_INSTANCE = 'encryption-delivery'
-POSTFIX_INSTANCE = NODE_TYPE
-INSTANCE_DATA = node['xgemail']['postfix_instance_data'][POSTFIX_INSTANCE]
-raise "Unsupported node type [#{POSTFIX_INSTANCE}]" if INSTANCE_DATA.nil?
+INSTANCE_DATA = node['xgemail']['postfix_instance_data'][NODE_TYPE]
+raise "Unsupported node type [#{NODE_TYPE}]" if INSTANCE_DATA.nil?
 
 INSTANCE_NAME = INSTANCE_DATA[:instance_name]
-raise "Invalid instance name for node type [#{POSTFIX_INSTANCE}]" if INSTANCE_NAME.nil?
+raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 
 include_recipe 'sophos-cloud-xgemail::common-postfix-multi-instance-config'
 

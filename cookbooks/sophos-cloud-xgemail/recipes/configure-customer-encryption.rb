@@ -9,7 +9,11 @@
 # This recipe configures the postfix instances for customer-encryption node
 #
 
-include_recipe 'sophos-cloud-xgemail::configure-customer-encryption-delivery-queue'
+NODE_TYPE = node['xgemail']['cluster_type']
 
-#set['xgemail']['customer_encryption_postfix_instance_name'] = 'es'
+if NODE_TYPE != 'customer-encryption'
+  return
+end
+
+include_recipe 'sophos-cloud-xgemail::configure-customer-encryption-delivery-queue'
 #include_recipe 'sophos-cloud-xgemail::configure-customer-encryption-submit-queue'
