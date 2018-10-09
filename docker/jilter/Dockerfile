@@ -16,4 +16,4 @@ ADD run.sh /opt/scripts/run.sh
 
 RUN chmod 777 /opt/scripts/run.sh
 
-#ENTRYPOINT ["/opt/scripts/run.sh"]
+ENTRYPOINT ["/opt/scripts/run.sh"]
