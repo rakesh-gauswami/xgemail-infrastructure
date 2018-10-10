@@ -34,11 +34,11 @@ SOPHOS_ACCOUNT = node['sophos_cloud']['environment']
 SMTP_PORT = INSTANCE_DATA[:port]
 
 DESTINATION_PORT = 587
-DESTINATION_HOST = '52.215.131.101:#{DESTINATION_PORT}'
+DESTINATION_HOST = "52.215.131.101:#{DESTINATION_PORT}"
 
 CONFIGURATION_COMMANDS =
   [
-    'relayhost=#{DESTINATION_HOST}',
+    "relayhost=#{DESTINATION_HOST}",
     'unknown_local_recipient_reject_code=550',
     'bounce_queue_lifetime=0',
     'smtp_tls_security_level=encrypt',
