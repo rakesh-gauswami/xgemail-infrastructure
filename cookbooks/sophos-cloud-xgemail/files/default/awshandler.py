@@ -22,9 +22,9 @@ class AwsHandler(object):
             self.sqs_client = boto3.client("sqs", region_name=aws_region)
             self.sns_client = boto3.client("sns", region_name=aws_region)
         else:
-            self.s3_client  = boto3.client("s3", region_name=aws_region, aws_access_key_id='', aws_secret_access_key='', endpoint_url='http://localstack-xgemail:4572')
-            self.sqs_client = boto3.client("sqs", region_name=aws_region, aws_access_key_id='', aws_secret_access_key='', endpoint_url='http://localstack-xgemail:4576')
-            self.sns_client = boto3.client("sns", region_name=aws_region, aws_access_key_id='', aws_secret_access_key='', endpoint_url='http://localstack-xgemail:4575')
+            self.s3_client  = boto3.client("s3", region_name=aws_region, aws_access_key_id='', aws_secret_access_key='', endpoint_url='http://localstack:4572')
+            self.sqs_client = boto3.client("sqs", region_name=aws_region, aws_access_key_id='', aws_secret_access_key='', endpoint_url='http://localstack:4576')
+            self.sns_client = boto3.client("sns", region_name=aws_region, aws_access_key_id='', aws_secret_access_key='', endpoint_url='http://localstack:4575')
 
     # puts data into S3 bucket
     def upload_data_in_s3(self, bucket, key, data, expires, encryption):
