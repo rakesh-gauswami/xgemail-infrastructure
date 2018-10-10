@@ -37,7 +37,12 @@ MESSAGE_HISTORY_DELIVERY_STATUS_SNS_TOPIC_ARN = node['xgemail']['msg_history_sta
 NODE_IP                                 = node['ipaddress']
 
 XGEMAIL_PIC_CA_PATH = "#{LOCAL_CERT_PATH}/hmr-infrastructure-ca.crt"
-XGEMAIL_PIC_FQDN = "mail-#{STATION_VPC_NAME.downcase}-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com"
+
+if ACCOUNT == 'sandbox'
+  XGEMAIL_PIC_FQDN = 'mail.sandbox.sophos'
+else
+  XGEMAIL_PIC_FQDN = "mail-#{STATION_VPC_NAME.downcase}-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com"
+end
 
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_processors_structure'
 
