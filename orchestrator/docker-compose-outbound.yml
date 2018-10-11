@@ -1,0 +1,70 @@
+version: '3'
+services:
+  postfix-cs:
+      image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:1.0.0
+      container_name: postfix-cs
+      hostname: customer-submit
+      domainname: local.sandbox.hydra.sophos.com
+      ports:
+        - '5125:25' #SMTP
+      environment:
+        - HOSTNAME_EXTERNAL=customer-submit
+        - INSTANCE_TYPE=customer-submit
+        - DEFAULT_REGION=local
+        - DEFAULT_ENVIRONMENT=sandbox
+        - DEBUG=1
+      volumes:
+        - /sys/fs/cgroup:/sys/fs/cgroup:ro
+        - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
+      networks:
+        - novanet
+
+  postfix-id:
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:1.0.0
+    container_name: postfix-id
+    hostname: internet-delivery
+    domainname: local.sandbox.hydra.sophos.com
+    environment:
+      - HOSTNAME_EXTERNAL=internet-delivery
+      - INSTANCE_TYPE=internet-delivery
+      - DEFAULT_REGION=local
+      - DEFAULT_ENVIRONMENT=sandbox
+      - DEBUG=1
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
+    networks:
+      - novanet
+
+  postfix-ix:
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:1.0.0
+    container_name: postfix-ix
+    hostname: internet-xdelivery
+    domainname: local.sandbox.hydra.sophos.com
+    environment:
+      - HOSTNAME_EXTERNAL=internet-xdelivery
+      - INSTANCE_TYPE=internet-xdelivery
+      - DEFAULT_REGION=local
+      - DEFAULT_ENVIRONMENT=sandbox
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
+    networks:
+      - novanet
+
+  jilter-outbound:
+      image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/jilter-base:latest
+      container_name: jilter-outbound
+      hostname: jilter-outbound
+      domainname: sandbox.sophos
+      environment:
+        - JILTER_VERSION=0.4.6-SNAPSHOT
+        - DIRECTION=outbound
+        - APPLICATION=Outbound
+      ports:
+        - '19876:9876'
+      volumes:
+        - $XGEMAIL_HOME/xgemail/xgemail-jilter-outbound/build/distributions:/jilter
+        - ~/.policy-storage:/policy-storage:rw
+      networks:
+        - novanet
