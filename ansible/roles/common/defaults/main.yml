@@ -82,6 +82,7 @@ sqs:
 sns:
   arn_prefix:                                           "arn:aws:sns:{{account.region}}:{{aws_account_id}}:"
   alarm_sns_topic:                                      "{{account.name}}-xgemail-alarm-topic"
+  customer_encryption_events_sns_topic:                 "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-customer-encryption-events-SNS"
   delay_sns_topic:                                      "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-delay-SNS"
   deleted_events_sns_topic:                             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-deleted-events-SNS"
   internet_delivery_sns_topic:                          "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-internet-delivery-SNS"
@@ -93,7 +94,6 @@ sns:
   quarantined_events_sns_topic:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-quarantined-events-SNS"
   relay_control_sns_topic:                              "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-relay-control-SNS"
   success_events_sns_topic:                             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-success-events-SNS"
-  customer_encryption_events_sns_topic:                 "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-customer-encryption-events-SNS"
   notification_sns_topic:                               "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-notification-SNS"
 sdb:
   volume_tracker_sdb:                                   "{{volume_tracker_sdb_output.ansible_facts.cloudformation[stack.sdb.volume_tracker_sdb].stack_outputs.SimpleDbDomain}}"
