@@ -1,6 +1,7 @@
 #!/bin/bash
 
-xgemail_infrastructure_location="${XGEMAIL_HOME}xgemail-infrastructure/"
+XGEMAIL_HOME_DIR=${XGEMAIL_HOME}
+xgemail_infrastructure_location="${XGEMAIL_HOME_DIR}xgemail-infrastructure/"
 orchestrator_location="${xgemail_infrastructure_location}orchestrator/"
 tomcat_wars=()
 GREEN='\033[0;32m'
@@ -60,7 +61,6 @@ function provision_localstack {
     echo -e "${GREEN} provisioning localstack successfully completed ${NC}"
 }
 
-
 : 'This function retrieves the necessary war files specified in the services variable for the users
 current local sophos cloud branch.
 It then copies into a folder with a standard name to enable mounting into a docker
@@ -114,6 +114,8 @@ function deploy_mail {
             rm -rf "$file"
         fi
     done
+
+    tomcat_wars=()
 }
 
 
@@ -152,6 +154,15 @@ function join {
     echo "$*";
 }
 
+function modifyHome {
+    if [[ ! ${XGEMAIL_HOME_DIR} == */ ]]; then
+        XGEMAIL_HOME_DIR=${XGEMAIL_HOME_DIR} + "/"
+    else
+        echo "cool"
+    fi
+}
+
+modifyHome
 case "$1" in
     deploy)
         case "$2" in
