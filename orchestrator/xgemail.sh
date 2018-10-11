@@ -154,15 +154,18 @@ function join {
     echo "$*";
 }
 
-function modifyHome {
+
+: ' This function takes the XGEMAIL_HOME env variable and adds a forward slash if it is missing one
+ '
+function provision_home_directory_path {
     if [[ ! ${XGEMAIL_HOME_DIR} == */ ]]; then
-        XGEMAIL_HOME_DIR=${XGEMAIL_HOME_DIR} + "/"
-    else
-        echo "cool"
+        XGEMAIL_HOME_DIR="${XGEMAIL_HOME_DIR}/"
     fi
+    echo ${XGEMAIL_HOME_DIR}
 }
 
-modifyHome
+provision_home_directory_path
+
 case "$1" in
     deploy)
         case "$2" in
