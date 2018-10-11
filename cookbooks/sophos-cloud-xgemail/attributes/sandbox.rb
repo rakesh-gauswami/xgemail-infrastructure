@@ -23,6 +23,9 @@ if ENVIRONMENT == "sandbox"
 
     default['xgemail']['cluster_type']     = ENV['INSTANCE_TYPE']
 
+    default['xgemail']['direction']        = ENV['DIRECTION']
+    default['xgemail']['application']      = ENV['APPLICATION']
+
     default['xgemail']['xgemail_bucket_name']        = 'xgemail-submit'
     default['xgemail']['xgemail_queue_url']          = 'http://localstack:4576/queue/sandbox-Xgemail_Internet_Submit'
     default['xgemail']['msg_history_bucket_name']    = 'xgemail-msg-history'
@@ -44,6 +47,18 @@ if ENVIRONMENT == "sandbox"
         default['ec2']['instance_id'] = ENV['INSTANCE_ID']
     end
 
+    if INSTANCE_TYPE == "jilter-inbound" || INSTANCE_TYPE == "jilter_outbound"
+        default['xgemail']['jilter_version'] = ENV['JILTER_VERSION']
+        default['sophos_cloud']['thirdparty']  = '//cloud-sandbox-3rdparty'
+        default['xgemail']['postfix_instance_data']['jilter-outbound'] =
+          {
+            :instance_name => 'jilter-outbound'
+          }
+        default['xgemail']['postfix_instance_data']['jilter-inbound'] =
+            {
+                :instance_name => 'jilter-inbound'
+            }
+    end
     default['sandbox']['mail_transport_entry']     = 'sophos.com smtp:mailcatcher:1025'
     default['sandbox']['mail_relay_domain']        = 'sophos.com OK'
     default['sandbox']['mail_recipient_access']    = 'sophos.com OK'
