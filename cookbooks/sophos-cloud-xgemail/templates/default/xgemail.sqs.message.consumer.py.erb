@@ -90,6 +90,7 @@ else:
       'Content-type': 'application/json',
       'Authorization': 'Basic'
   }
+  PIC_HEADERS_URL = 'https://%s/api/xgemail/headers' % (PIC_FQDN)
 
 awshandler = AwsHandler(AWS_REGION)
 
@@ -121,13 +122,21 @@ def attempt_to_retrieve_headers(message_path):
         query_parameters
     )
 
-    response = requests.get(
-        PIC_HEADERS_URL,
-        headers=HEADERS,
-        verify = PIC_CA_PATH,
-        params = query_parameters,
-        timeout = MAIL_PIC_RESPONSE_TIMEOUT
-    )
+    if ACCOUNT != 'sandbox':
+        response = requests.get(
+            PIC_HEADERS_URL,
+            headers=HEADERS,
+            verify = PIC_CA_PATH,
+            params = query_parameters,
+            timeout = MAIL_PIC_RESPONSE_TIMEOUT
+        )
+    else:
+        response = requests.get(
+            PIC_HEADERS_URL,
+            headers=HEADERS,
+            params = query_parameters,
+            timeout = MAIL_PIC_RESPONSE_TIMEOUT
+        )
 
     response.raise_for_status()
 

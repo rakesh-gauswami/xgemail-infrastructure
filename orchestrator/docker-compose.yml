@@ -1,8 +1,8 @@
 version: '3'
 services:
-  localstack-xgemail:
+  localstack:
     image: localstack/localstack
-    container_name: localstack-xgemail
+    container_name: localstack
     ports:
       - '4567:4567' #API Gateway
       - '4568:4568' #Kinesis
@@ -17,7 +17,7 @@ services:
       - '8081:8081' #WebUI
     environment:
       - PORT_WEB_UI=8081
-      - HOSTNAME_EXTERNAL=localstack-xgemail
+      - HOSTNAME_EXTERNAL=localstack
       - SERVICES=apigateway,kinesis,dynamodb,dynamodbstreams,s3,sns,sqs,es,lambda
       - DEFAULT_REGION=us-east-1
       - LAMBDA_EXECUTOR=docker
@@ -150,11 +150,18 @@ services:
     environment:
       - JILTER_VERSION=0.7.9-SNAPSHOT
       - DIRECTION=inbound
+      - HOSTNAME_EXTERNAL=jilter-inbound
+      - INSTANCE_TYPE=jilter-inbound
+      - DEFAULT_REGION=local
+      - DEFAULT_ENVIRONMENT=sandbox
       - APPLICATION=
     ports:
       - '9876:9876'
     volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - ~/.aws:/root/.aws:ro
       - $XGEMAIL_HOME/xgemail/xgemail-jilter-inbound/build/distributions:/jilter
+      - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
       - ~/.policy-storage:/policy-storage:rw
     networks:
       - novanet
@@ -167,11 +174,18 @@ services:
       environment:
         - JILTER_VERSION=0.4.6-SNAPSHOT
         - DIRECTION=outbound
+        - INSTANCE_TYPE=jilter-outbound
+        - DEFAULT_REGION=local
+        - DEFAULT_ENVIRONMENT=sandbox
         - APPLICATION=Outbound
+        - HOSTNAME_EXTERNAL=jilter-outboundv
       ports:
         - '19876:9876'
       volumes:
+        - ~/.aws:/root/.aws:ro
+        - /sys/fs/cgroup:/sys/fs/cgroup:ro
         - $XGEMAIL_HOME/xgemail/xgemail-jilter-outbound/build/distributions:/jilter
+        - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
         - ~/.policy-storage:/policy-storage:rw
       networks:
         - novanet
