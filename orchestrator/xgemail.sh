@@ -87,7 +87,7 @@ function deploy_mail {
     if [[ $war_count -ne $services_count ]]; then
         echo "found services: [${services_found[@]}] , expected: [${tomcat_wars[@]}]"
         echo "All war files were not available in the current branch"
-        echo "Please ensure all war files are available"
+        echo "You may not have assembled the necessary wars. Please ensure all war files are available"
         comma_seperated_services=$(join , ${tomcat_wars[@]})
         echo "Run './gradlew {"$comma_seperated_services"}-services:assemble' in the sophos cloud repo"
         exit 1
@@ -104,7 +104,6 @@ function deploy_mail {
         echo "cool"
     fi
 
-
     echo "Copying WAR files to ${war_file_location} for deployment"
     newfiles=""
     mkdir -p ${war_file_location}
@@ -118,13 +117,6 @@ function deploy_mail {
     popd >/dev/null
 
     echo -e "${GREEN} successfully deployed ${warfiles_found[@]} ${NC}"
-
-#    echo "Clearing out previously deployed WAR files"
-#    for file in ${war_file_location}; do
-#        if [[ $(echo "$newfiles" | grep -o "|$(basename $file)|" | wc -w) -eq 0 ]]; then
-#            rm -rf "$file"
-#        fi
-#    done
 
     tomcat_wars=()
 }
@@ -172,7 +164,7 @@ function provision_home_directory_path {
     if [[ ! ${XGEMAIL_HOME_DIR} == */ ]]; then
         XGEMAIL_HOME_DIR="${XGEMAIL_HOME_DIR}/"
     fi
-    echo ${XGEMAIL_HOME_DIR}
+    echo "Xgemail Home is ${XGEMAIL_HOME_DIR}"
 }
 
 provision_home_directory_path
@@ -194,7 +186,27 @@ case "$1" in
                 ;;
        esac
     ;;
+    hot_deploy)
+        case "$2" in
+            mail)
+            tomcat_wars=("mail")
+            deploy_mail
+            ;;
+            mailinbound)
+            tomcat_wars=("mailinbound")
+            deploy_mail
+            ;;
+            mailoutbound)
+            tomcat_wars=("mailoutbound")
+            deploy_mail
+            ;;
+            *)
+            echo "usage"
+            ;;
+        esac
+        ;;
+
     *)
-        echo "unknown option"
+        echo "usage"
     ;;
 esac
