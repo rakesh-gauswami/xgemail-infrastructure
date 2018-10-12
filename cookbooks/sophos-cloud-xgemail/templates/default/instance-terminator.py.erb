@@ -1,0 +1,436 @@
+#!/usr/bin/env python
+# vim: autoindent expandtab filetype=python shiftwidth=4 softtabstop=4 tabstop=4
+#
+# Polls the lifecycle notification SQS and if a notification pertains to the current instance
+# take action on the event
+#
+# Copyright: Copyright (c) 1997-2018. All rights reserved.
+# Company: Sophos Limited or one of its affiliates.
+
+import argparse
+import boto3
+import botocore
+import sys
+import os
+import time
+import logging
+import json
+import subprocess
+from datetime import datetime
+from logging import handlers
+from botocore import exceptions
+
+
+# logging to syslog setup
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
+formatter = logging.Formatter(
+    '%(asctime)s %(process)d %(module)s %(levelname)s %(name)s %(message)s'
+)
+syslog_handler.formatter = formatter
+logger.addHandler(syslog_handler)
+
+
+class TerminationListener(object):
+
+    def __init__(self):
+
+        self.logger = logging.getLogger(__name__)
+
+        self.postfix_instance = None
+        self.sns_alarm_topic_arn = "<%= @alarm_topic_arn %>"
+        self.aws_region = "<%= @aws_region %>"
+        self.instance_id = "<%= @instance_id %>"
+        self.sqs_consumer_service = "<%= @sqs_consumer_service_name %>"
+        self.postfix_queue_count = None
+
+        # Create SQS client
+        self.sqs = boto3.client('sqs', region_name=self.aws_region)
+        """:type: pyboto3.sqs """
+
+        # Create SNS client
+        self.sns = boto3.client('sns', region_name=self.aws_region)
+        """:type: pyboto3.sns """
+
+    def get_postfix_instance(self):
+        """
+        Return the Postfix Multi-Instance name.
+        """
+        output = self.run_cmd(
+            ['postmulti', '-l'],
+            'Getting Postfix Instance'
+        )
+        for line in output.split('\n'):
+            if 'mta' in line:
+                return line.split()[0]
+
+    def run_cmd(self, cmd, comment=None):
+        """
+        Run a provided shell command.
+        """
+        if not cmd:
+            self.logger.error("Function: run_cmd - Command not provided.")
+            sys.exit(1)
+
+        if comment:
+            self.logger.info(comment)
+
+        process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+
+        out, err = process.communicate()
+
+        if process.returncode != 0:
+            self.logger.error("Error while running command [ %s ], exiting." % cmd)
+            sys.exit(process.returncode)
+
+        return out.strip()
+
+    def send_sns_alert(self, message):
+        """
+        Send provided message as an alarm to specified Amazon Web Services SNS Topic.
+        """
+        if not message:
+            self.logger.info("Function: send_sns_alert - Need a message to send an alert.")
+            sys.exit(1)
+        try:
+            response = self.sns.publish(
+                TopicArn=self.sns_alarm_topic_arn,
+                Subject="Alarm from EC2 Instance: %s in Region: %s" % (self.instance_id, self.aws_region),
+                Message=message
+            )
+            self.logger.info("SNS MessageId: %s" % response['MessageId'])
+        except botocore.exceptions.ClientError as e:
+            self.logger.exception("Error sending SNS alert to alarm topic %s : %s" % (
+                self.sns_alarm_topic_arn, e.response['Error']['Code']))
+
+    def service_controller(self, service, action):
+        """
+        Used to control the Xgemail SQS Consumer Service.
+        """
+        process = subprocess.Popen(
+            ('/sbin/service', service, action),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        out, err = process.communicate()
+        self.logger.info(out.strip())
+
+        return process.returncode
+
+    def stop_sqs_consumer(self):
+        """
+        Stop SQS consumer (used on delivery instances)
+        Returns True if the service is stopped or False if there is a problem
+        Does it's best to detect problems and fix them.
+        """
+        if not self.sqs_consumer_service:
+            self.logger.error("Function: stop_sqs_consumer - sqs_service not provided.")
+            sys.exit(1)
+
+        status = self.service_controller(self.sqs_consumer_service, 'status')
+        if status == 0:
+            self.logger.info("Xgemail SQS Consumer Service is running. Stopping Service.")
+            if self.service_controller(self.sqs_consumer_service, 'stop') == 0:
+                self.logger.info("Xgemail SQS Consumer Service is Stopped.")
+                return True
+        if (status == 1) or (status == 2):
+            self.logger.warning("Xgemail SQS Consumer Service is dead but pid and lock files exist. Forcing a restart then stopping cleanly.")
+            if self.service_controller(self.sqs_consumer_service, 'force-restart') == 0:
+                self.logger.info("Xgemail SQS Consumer Service is Running. Stopping Service")
+                if self.service_controller(self.sqs_consumer_service, 'stop') == 0:
+                    self.logger.info("Xgemail SQS Consumer Service is Stopped.")
+                    return True
+        if status == 3:
+            self.logger.info("Xgemail SQS Consumer Service is already Stopped.")
+            return True
+
+        error_message = "CRITICAL! cannot stop Xgemail SQS Consumer!"
+        self.send_sns_alert(error_message)
+        return False
+
+    def sns_unsubscribe(self):
+        """
+        Unsubscribes SQS Queue Subscription from SNS Topic.
+        """
+        self.logger.info("Unsubscribing SNS Subscription %s." % self.sns_lifecycle_topic_subscription_arn)
+        try:
+            return self.sns.unsubscribe(SubscriptionArn=self.sns_lifecycle_topic_subscription_arn)
+        except botocore.exceptions.ClientError as e:
+            self.logger.exception("Error unsubscribing subscription %s from SNS Topic : %s" % (
+                self.sns_lifecycle_topic_subscription_arn, e.response['Error']['Code']))
+
+    def sqs_delete_queue(self):
+        """
+        Deletes SQS Queue.
+        """
+        self.logger.info("Deleting SQS lifecycle queue for this instance.")
+        try:
+            return self.sqs.delete_queue(QueueUrl=self.sqs_lifecycle_url)
+        except botocore.exceptions.ClientError as e:
+            self.logger.exception("Error deleting SQS Queue %s : %s" % (
+                self.sqs_lifecycle_url, e.response['Error']['Code']))
+
+    def check_postfix_queue(self):
+        """
+        Check the postfix queue.
+        Returns the number of messages in the Postfix queue
+        """
+        subdirs = ['maildrop', 'incoming', 'active', 'deferred']
+        messages = 0
+
+        for q in subdirs:
+            # TODO: replace static storage path with new asg volume when XGE-1807 is pulled in
+            path = ("/storage/%s/%s" % (self.postfix_instance, q))
+            for root, dirs, files in os.walk(path):
+                messages += len(files)
+
+        return messages
+
+    def receive_sqs_messages(self):
+        """
+        Retrieves one or more messages (up to 10), from the specified QueueUrl.
+        """
+        try:
+            return self.sqs.receive_message(
+                QueueUrl=self.sqs_lifecycle_url,
+                AttributeNames=['All'],
+                MaxNumberOfMessages=self.sqs_lifecycle_max_number_of_messages,
+                VisibilityTimeout=self.sqs_lifecycle_visibility_timeout,
+                WaitTimeSeconds=self.sqs_lifecycle_wait_time_seconds
+            )
+        except botocore.exceptions.ClientError as e:
+            self.logger.exception("Received Error %s" % e)
+
+    def process_messages(self):
+
+        response = self.receive_sqs_messages()
+
+        if "Messages" not in response:
+            # no messages found exit
+            self.logger.info('No messages found in Xgemail SQS queue')
+            sys.exit(0)
+
+        # Process messages
+        for message in response['Messages']:
+            try:
+                innermessage = json.loads(json.loads(message['Body'])['Message'])
+            except:
+                self.logger.exception('ERROR parsing SQS message body')
+                continue
+
+            self.logger.info("Scanning SQS message: %s" % innermessage)
+            # Check that sqs message is relating to an autoscaling lifecycle termination event
+            if 'LifecycleActionToken' in innermessage:
+                if innermessage['EC2InstanceId'] == self.instance_id and innermessage['LifecycleTransition'] == 'autoscaling:EC2_INSTANCE_TERMINATING':
+                    self.logger.info('Processing SQS message for this instance')
+                    lifecycle_hook = LifecycleHook(innermessage, self.aws_region)
+
+                    # Now perform all necessary logic to make sure the postfix server has empty queues before terminating.
+                    self.postfix_instance = self.get_postfix_instance()
+                    if self.postfix_instance == 'postfix-cd':
+                        if self.stop_sqs_consumer() is False:
+                            self.logger.error("Unable to continue. There is a problem with the Xgemail SQS Consumer Service.")
+                            sys.exit(1)
+
+                    self.postfix_queue_count = self.check_postfix_queue()
+                    self.logger.info("Messages in Postfix queue: %d" % self.postfix_queue_count)
+
+                    # If there are still messages in the Postfix queue
+                    while self.postfix_queue_count != 0:
+                        self.logger.warning("There are %d email messages still in the queue. We need to wait for them to drain." % self.postfix_queue_count)
+
+                        for lifecycle_hook.heartbeat_request_count in range(1, 100, 1):
+                            while lifecycle_hook.time_check():
+                                last_count = self.postfix_queue_count
+                                time.sleep(10)
+
+                                self.postfix_queue_count = self.check_postfix_queue()
+                                self.logger.info("Queue Count: %d" % self.postfix_queue_count)
+
+                                if self.postfix_queue_count == 0:
+                                    break
+
+                                elif self.postfix_queue_count < last_count:
+                                    continue
+
+                                elif self.postfix_queue_count >= last_count:
+                                    self.logger.warning("Email queue doesn't seem to be draining. Flushing queue and waiting 30 seconds before checking again.")
+                                    # Attempt to flush postfix queue then wait for drop
+                                    self.run_cmd(['/usr/sbin/postmulti', '-i', self.postfix_instance, '-x', 'postqueue', '-f'])
+                                    time.sleep(30)
+
+                                    self.postfix_queue_count = self.check_postfix_queue()
+
+                                    if self.postfix_queue_count < last_count:
+                                        self.logger.info("Email queue is draining. Continuing with regular check.")
+                                        continue
+
+                                    elif self.postfix_queue_count >= last_count:
+                                        error_message = "CRITICAL! *** %d *** Undelivered messages are stuck in the email queue." % self.postfix_queue_count
+                                        self.logger.critical(error_message)
+                                        self.send_sns_alert(error_message)
+
+                            if self.postfix_queue_count == 0:
+                                break
+
+                            self.logger.warning("Time Check - Time is running out!! Recording Lifecycle Action HeartBeat.")
+                            lifecycle_hook.record_lifecycle_action_heartbeat()
+
+                        if self.postfix_queue_count == 0:
+                            self.logger.info("The Postfix queue is empty.")
+                            break
+
+                        self.logger.critical("LIFECYCLE HOOK EXHAUSTED!")
+
+                    # Unsubscribe SQS Queue from SNS Topic
+                    self.sns_unsubscribe()
+                    # Delete SQS Queue
+                    self.sqs_delete_queue()
+
+                    if self.postfix_queue_count != 0:
+                        self.logger.critical("The Postfix queue is NOT empty! Unmounting and detatching volume for further investigation.")
+                        # Run umount command to unmount the volume
+                        self.run_cmd(['umount', lifecycle_hook.device_name])
+                        # Detatch the volume so it is not deleted when the instance is terminated.
+                        lifecycle_hook.detatch_volume()
+
+                    # Complete ASG hook
+                    self.logger.info('Completing lifecycle action.')
+                    lifecycle_hook.complete_lifecycle_action()
+                    sys.exit(0)
+
+            # Delete the SQS message if it is not for this instance
+            self.logger.info('Deleting SQS message from queue, not for this instance')
+            self.sqs.delete_message(QueueUrl=self.sqs_lifecycle_url, ReceiptHandle=message['ReceiptHandle'])
+        sys.exit(0)
+
+
+class LifecycleHook(object):
+
+    def __init__(self, message, region):
+        self.logger = logging.getLogger(__name__)
+        self.aws_region = region
+        # Create AS client
+        self.asc = boto3.client('autoscaling', region_name=self.aws_region)
+        """:type: pyboto3.autoscaling """
+        self.aws_time_format = '%Y-%m-%dT%H:%M:%S.%fZ'
+        self.autoscaling_group_name = message['AutoScalingGroupName']
+        self.lifecycle_hook_name = message['LifecycleHookName']
+        self.instance_id = message['EC2InstanceId']
+        self.lifecycle_global_timeout = self.get_timeout('GlobalTimeout')
+        self.heartbeat_request_count = 1
+        self.heartbeat_timeout = self.get_timeout('HeartbeatTimeout')
+        self.heartbeat_start_time = datetime.strptime(message['Time'], self.aws_time_format)
+        self.lifecycle_action_token = message['LifecycleActionToken']
+        self.device_name = '/dev/xvdi'
+
+    def time_check(self):
+        """
+        Calculates elapsed time: Current time in AWS format '%Y-%m-%dT%H:%M:%S.%fZ' minus the Heartbeat Start Time in AWS format.
+        """
+        seconds_buffer = 60
+        elapsed_time = datetime.strptime(datetime.now().strftime(self.aws_time_format), self.aws_time_format) - self.heartbeat_start_time
+        elapsed_time.total_seconds()
+        self.logger.info("Time Check - Elapsed Time: %f04.1f seconds, Heartbeat Timeout: %d seconds, Heartbeat Request Count: %s" % (elapsed_time.total_seconds(), self.heartbeat_timeout, self.heartbeat_request_count))
+        if elapsed_time.total_seconds() <= self.heartbeat_timeout - seconds_buffer:
+            return True
+        else:
+            return False
+
+    def get_timeout(self, timeout):
+        """
+        Takes timeout parameter (GlobalTimeout or HeartbeatTimeout) and returns associated value from Describe Lifecycle Hooks.
+        """
+        try:
+            response = self.asc.describe_lifecycle_hooks(
+                AutoScalingGroupName=self.autoscaling_group_name,
+                LifecycleHookNames=[self.lifecycle_hook_name]
+            )['LifecycleHooks'][0][timeout]
+            self.logger.info("%s: %s" % (timeout, response))
+            return response
+        except botocore.exceptions.ClientError as e:
+            self.logger.exception("Error getting timeout for LifecycleHook {}: {}".format(
+                self.lifecycle_hook_name, e.response['Error']['Code']))
+
+    def detatch_volume(self):
+        """
+        As a last resort detatch the volume before termination to avoid losing data.
+        """
+        # TODO: Create a way to find the correct device name so it's not hard coded.
+        ec2 = boto3.client('ec2', region_name=self.aws_region)
+        """:type: pyboto3.ec2 """
+
+        response = ec2.describe_instances(InstanceIds=[self.instance_id])
+        for r in response['Reservations']:
+            for instance in r['Instances']:
+                volumes = instance['BlockDeviceMappings']
+                for volume in volumes:
+                    if volume['DeviceName'] == self.device_name:
+                        volume_id = volume['Ebs']['VolumeId']
+                        try:
+                            ec2.detach_volume(volume_id, self.instance_id, self.device_name)
+                        except botocore.exceptions.ClientError as e:
+                            self.logger.exception("Error detatching volume for instance {}: {}".format(
+                                self.instance_id, e.response['Error']['Code']))
+
+    def record_lifecycle_action_heartbeat(self):
+        """
+        Records a heartbeat for the lifecycle action associated with the specified token or instance.
+        This extends the timeout by the length of time defined using PutLifecycleHook.
+        Resets the Heartbeat Start Time.
+        """
+        try:
+            response = self.asc.record_lifecycle_action_heartbeat(
+                LifecycleHookName=self.lifecycle_hook_name,
+                AutoScalingGroupName=self.autoscaling_group_name,
+                LifecycleActionToken=self.lifecycle_action_token,
+                InstanceId=self.instance_id
+            )
+            self.heartbeat_start_time = datetime.strptime(datetime.now().strftime(self.aws_time_format), self.aws_time_format)
+            self.logger.info("Recording Lifecycle Action Heartbeat: %s and resetting heartbeat start time to %s" % (response, self.heartbeat_start_time))
+            return response
+        except botocore.exceptions.ClientError as e:
+            self.logger.exception("Error recording lifecycle action heartbeat for instance {}: Lifecycle Hook Name {}: Lifecycle Action Token {}: {}".format(
+                self.instance_id, self.lifecycle_hook_name, self.lifecycle_action_token, e.response['Error']['Code']))
+
+    def complete_lifecycle_action(self):
+        """
+        Completes the lifecycle action for the specified token or instance with the specified result.
+        """
+        try:
+            self.asc.complete_lifecycle_action(
+                LifecycleHookName=self.lifecycle_hook_name,
+                AutoScalingGroupName=self.autoscaling_group_name,
+                LifecycleActionToken=self.lifecycle_action_token,
+                LifecycleActionResult='CONTINUE',
+            )
+        except botocore.exceptions.ClientError as e:
+            self.logger.exception("Error completing lifecycle hook for instance {}: {}".format(
+                self.instance_id, e.response['Error']['Code']))
+
+
+# Argument Parser
+def parse_command_line():
+    parser = argparse.ArgumentParser(
+        description='Cleanup SQS Queues and SNS Subscriptions from a bad deployment.')
+    parser.add_argument('--account', '-a', dest='account', default='inf', choices=[
+                        'inf', 'dev', 'dev3', 'qa', 'default', 'iam'], required=False, help='The account you are working in.')
+    parser.add_argument('--region', '-r', dest='region', default='eu-central-1', choices=[
+                        'eu-central-1', 'eu-west-1', 'us-west-2', 'us-east-2'], required=False, help='The region you are working in.')
+    parser.add_argument('--dry-run', '-d', action='store_true',
+                        help='Just test to see what will happen or really delete stuff?.')
+
+    return parser.parse_args()
+
+
+if __name__ == '__main__':
+
+    args = parse_command_line()
+
+    tl = TerminationListener()
+    tl.process_messages()
