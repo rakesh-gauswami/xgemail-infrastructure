@@ -95,25 +95,36 @@ function deploy_mail {
         echo "War files have been indexed"
     fi
 
-    echo "Copying WAR files to ~/.nova/wars for deployment"
+    war_file_location="${HOME}/.xgemail_sandbox/wars"
+
+    echo ${war_file_location}
+    mkdir -p ${war_file_location}
+
+    if [ $? -eq 0 ]; then
+        echo "cool"
+    fi
+
+
+    echo "Copying WAR files to ${war_file_location} for deployment"
     newfiles=""
+    mkdir -p ${war_file_location}
     for file in "${warfiles_found[@]}" ; do
         filename=$(echo "$file" | xargs -n 1 basename)
         prefix=$(echo "$filename" | awk -F"-" '{print $1}')
         newfile=$(echo "$prefix"-services-NOVA-LOCAL.war)
-        rsync -a --progress "$file" ~/.nova/wars/"$newfile"
+        rsync -a --progress "$file" "${war_file_location}/$newfile"
         newfiles+="|$newfile|"
     done
     popd >/dev/null
 
     echo -e "${GREEN} successfully deployed ${warfiles_found[@]} ${NC}"
 
-    echo "Clearing out previously deployed WAR files"
-    for file in ~/.nova/wars/*.war; do
-        if [[ $(echo "$newfiles" | grep -o "|$(basename $file)|" | wc -w) -eq 0 ]]; then
-            rm -rf "$file"
-        fi
-    done
+#    echo "Clearing out previously deployed WAR files"
+#    for file in ${war_file_location}; do
+#        if [[ $(echo "$newfiles" | grep -o "|$(basename $file)|" | wc -w) -eq 0 ]]; then
+#            rm -rf "$file"
+#        fi
+#    done
 
     tomcat_wars=()
 }

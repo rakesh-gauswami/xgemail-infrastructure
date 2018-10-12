@@ -27,6 +27,30 @@ services:
     networks:
       - novanet
 
+#  sasi-service:
+#    image: email/sasi-service
+#    container_name: sasi-service
+#    hostname: sasi-service
+#    domainname: sandbox.sophos
+#    env_file:
+#      - ~/.aws/credentials
+#    ports:
+#      - '8080:8080'
+#    depends_on:
+#      - "sasi-daemon"
+#    networks:
+#      - novanet
+#
+#  sasi-daemon:
+#    image: email/sasi-daemon
+#    container_name: sasi-daemon-contanier
+#    hostname: sasi-daemon
+#    domainname: sandbox.sophos
+#    ports:
+#      - '32223:32223'
+#    networks:
+#      - novanet
+
   mail:
     image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/sophos_cloud_tomcat:latest
     container_name: mail-service
@@ -47,33 +71,8 @@ services:
       - 'elasticsearch:elasticsearch-service'
       - 'mailcatcher:mailcatcher-service'
     volumes:
-      - ~/.nova/wars/mail-services-NOVA-LOCAL.war:/usr/local/tomcat/webapps/mail-services.war
+      - ~/.xgemail_sandbox/wars/:/usr/local/tomcat/webapps/
       - $XGEMAIL_HOME/xgemail-infrastructure/orchestrator/sophos_cloud_tomcat_bootstrap.properties:/usr/local/etc/sophos/bootstrap.properties
-
-  sasi-service:
-    image: email/sasi-service
-    container_name: sasi-service
-    hostname: sasi-service
-    domainname: sandbox.sophos
-    env_file:
-      - ~/.aws/credentials
-    ports:
-      - '8080:8080'
-    depends_on:
-      - "sasi-daemon"
-    networks:
-      - novanet
-
-  sasi-daemon:
-    image: email/sasi-daemon
-    container_name: sasi-daemon-contanier
-    hostname: sasi-daemon
-    domainname: sandbox.sophos
-    ports:
-      - '32223:32223'
-    networks:
-      - novanet
-
 
 networks:
   novanet:
