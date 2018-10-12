@@ -38,7 +38,7 @@ directory XGEMAIL_FILES_DIR do
   recursive true
 end
 
-cookbook_file "#{PACKAGE_DIR}/instance-terminator.py" do
+cookbook_file "#{XGEMAIL_FILES_DIR}/instance-terminator.py" do
     source 'instance-terminator.py'
     owner 'root'
     group 'root'
@@ -47,7 +47,7 @@ cookbook_file "#{PACKAGE_DIR}/instance-terminator.py" do
 end
 
 # Write script to script path on instance
-template "#{PACKAGE_DIR}/instance-terminator.py" do
+template "#{XGEMAIL_FILES_DIR}/instance-terminator.py" do
   source 'instance-terminator.py.erb'
   mode '0750'
   owner 'root'
