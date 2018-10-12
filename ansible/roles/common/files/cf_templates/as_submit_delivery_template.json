@@ -434,9 +434,7 @@
             },
             "HeartbeatTimeout" : "300",
             "LifecycleTransition" : "autoscaling:EC2_INSTANCE_TERMINATING",
-            "NotificationTargetARN" :{
-              "Fn::GetAtt": [ "CloudWatchLifecycleTerminatingEventRule", "Arn" ],
-            },
+            "NotificationTargetARN" : { "Ref": "AutoScalingNotificationTopicARN" },
             "RoleARN" : { "Ref": "AutoScalingInstanceRoleArn" }
           }
         ],
