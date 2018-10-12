@@ -85,11 +85,11 @@ function deploy_mail {
 
     war_count=${#warfiles_found[@]}
     if [[ $war_count -ne $services_count ]]; then
-        echo "found services: [${services_found[@]}] , expected: [${services[@]}]"
+        echo "found services: [${services_found[@]}] , expected: [${tomcat_wars[@]}]"
         echo "All war files were not available in the current branch"
         echo "Please ensure all war files are available"
-        comma_seperated_services=$(join , ${services[@]})
-        echo "Run './gradlew {"$comma_seperated_services"}-services:assemble'"
+        comma_seperated_services=$(join , ${tomcat_wars[@]})
+        echo "Run './gradlew {"$comma_seperated_services"}-services:assemble' in the sophos cloud repo"
         exit 1
     else
         echo "War files have been indexed"
