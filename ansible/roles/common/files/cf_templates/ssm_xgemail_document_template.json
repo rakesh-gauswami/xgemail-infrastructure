@@ -74,6 +74,35 @@
         },
         "DocumentType": "Command"
       }
+    },
+
+    "InstanceTerminator": {
+      "Type": "AWS::SSM::Document",
+      "Properties":{
+        "Content": {
+          "schemaVersion": "1.2",
+          "description": "Safe shutdown of an EC2 instance",
+          "parameters": {
+            "event":{
+              "type":"String",
+              "description":"The contents of the CloudWatch Event."
+            }
+          },
+          "runtimeConfig": {
+            "aws:runShellScript": {
+              "properties": [
+                {
+                  "id": "0.aws:runShellScript",
+                  "runCommand": [
+                    "/opt/sophos/xgemail/instance-terminator.py -e event={{ event }}"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        "DocumentType": "Command"
+      }
     }
   },
 
@@ -85,6 +114,10 @@
     "UpdateHostname" : {
       "Description" : "SSM Update Hostname document name",
       "Value" : { "Ref" : "UpdateHostname" }
+    },
+    "InstanceTerminator" : {
+      "Description" : "SSM Instance Terminator document name",
+      "Value" : { "Ref" : "InstanceTerminator" }
     }
   }
 }

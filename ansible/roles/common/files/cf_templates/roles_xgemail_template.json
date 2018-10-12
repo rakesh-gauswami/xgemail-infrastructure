@@ -117,6 +117,56 @@
       "Type": "AWS::IAM::Policy"
     },
 
+    "CloudWatchEventRole" : {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [ "events.amazonaws.com" ]
+            },
+            "Action": [ "sts:AssumeRole" ]
+          }]
+        },
+        "Path": "/"
+      }
+    },
+
+    "CloudWatchEventRolePolicies": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "events:*",
+                "iam:PassRole"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            },
+            {
+              "Action": [
+                "lambda:InvokeFunction"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ]
+        },
+        "PolicyName": "root",
+        "Roles": [
+          {
+            "Ref": "CloudWatchEventRole"
+          }
+        ]
+      },
+      "Type": "AWS::IAM::Policy"
+    },
+
     "BastionInstanceProfile" : {
       "Type" : "AWS::IAM::InstanceProfile",
       "Properties" : {
@@ -398,6 +448,94 @@
         "Roles": [
           {
             "Ref": "EipRotationLambdaExecutionRole"
+          }
+        ]
+      },
+      "Type": "AWS::IAM::Policy"
+    },
+
+    "InstanceTerminatorLambdaExecutionRole" : {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [ "lambda.amazonaws.com" ]
+            },
+            "Action": [ "sts:AssumeRole" ]
+          }]
+        },
+        "Path": "/"
+      }
+    },
+
+    "InstanceTerminatorLambdaExecutionRolePolicies": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "lambda:*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "autoscaling:CompleteLifecycleAction",
+                "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:RecordLifecycleActionHeartbeat",
+                "autoscaling:UpdateAutoScalingGroup"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:logs:*:*:*"
+              ]
+            },
+            {
+              "Action": [
+                "ssm:DescribeDocument",
+                "ssm:GetCommandInvocation",
+                "ssm:ListInstanceAssociations",
+                "ssm:ListCommands",
+                "ssm:SendCommand"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "ec2:DescribeInstances",
+                "ec2:CreateTags"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ]
+        },
+        "PolicyName": "root",
+        "Roles": [
+          {
+            "Ref": "InstanceTerminatorLambdaExecutionRole"
           }
         ]
       },
@@ -1905,21 +2043,37 @@
       "Description": "Bastion instance role",
       "Value": { "Ref": "BastionInstanceRole" }
     },
+    "CloudWatchEventRole": {
+      "Description": "CloudWatch instance role",
+      "Value": { "Ref": "CloudWatchEventRole" }
+    },
+    "CloudWatchEventRoleArn": {
+      "Description": "ECloudWatch Event role ARN",
+      "Value": { "Fn::GetAtt" : [ "CloudWatchEventRole", "Arn" ] }
+    },
     "EipMonitorLambdaExecutionRole": {
-      "Description": "Lambda Execution role",
+      "Description": "Eip Monitor Lambda Execution role",
       "Value": { "Ref": "EipMonitorLambdaExecutionRole" }
     },
     "EipMonitorLambdaExecutionRoleArn": {
-      "Description": "Lambda Execution role ARN",
+      "Description": "Eip Monitor Lambda Execution role ARN",
       "Value": { "Fn::GetAtt" : [ "EipMonitorLambdaExecutionRole", "Arn" ] }
     },
     "EipRotationLambdaExecutionRole": {
-      "Description": "Lambda Execution role",
+      "Description": "Eip Rotation Lambda Execution role",
       "Value": { "Ref": "EipRotationLambdaExecutionRole" }
     },
     "EipRotationLambdaExecutionRoleArn": {
-      "Description": "Lambda Execution role ARN",
+      "Description": "Eip Rotation Lambda Execution role ARN",
       "Value": { "Fn::GetAtt" : [ "EipRotationLambdaExecutionRole", "Arn" ] }
+    },
+    "InstanceTerminatorLambdaExecutionRole": {
+      "Description": "Instance Terminator Lambda Execution role",
+      "Value": { "Ref": "InstanceTerminatorLambdaExecutionRole" }
+    },
+    "InstanceTerminatorLambdaExecutionRoleArn": {
+      "Description": "Instance Terminator Lambda Execution role ARN",
+      "Value": { "Fn::GetAtt" : [ "InstanceTerminatorLambdaExecutionRole", "Arn" ] }
     },
     "LogicMonitorInstanceProfile": {
       "Description": "Profile for logic monitor collectors to do their job",

@@ -14,7 +14,6 @@ import sys
 import os
 import time
 import logging
-import json
 import subprocess
 from datetime import datetime
 from logging import handlers
@@ -31,18 +30,25 @@ formatter = logging.Formatter(
 syslog_handler.formatter = formatter
 logger.addHandler(syslog_handler)
 
-
 class TerminationListener(object):
 
-    def __init__(self):
+    def __init__(self, event):
 
         self.logger = logging.getLogger(__name__)
 
         self.postfix_instance = None
+
+        self.aws_region = event['region']
+        self.instance_id = event['detail']['EC2InstanceId']
+        self.lifecycle_hook_name = event['detail']['LifecycleHookName']
+        self.autocaling_group_name = event['detail']['AutoScalingGroupName']
+        self.lifecycle_action_token = event['detail']['LifecycleActionToken']
+        self.sdb_domain = event['detail']['NotificationMetadata']['SimpleDbDomain']
+        self.lifecycle_transition = event['detail']['LifecycleTransition']
         self.sns_alarm_topic_arn = "<%= @alarm_topic_arn %>"
-        self.aws_region = "<%= @aws_region %>"
-        self.instance_id = "<%= @instance_id %>"
         self.sqs_consumer_service = "<%= @sqs_consumer_service_name %>"
+        self.sns_policy_arn = "<%= @sns_policy_arn %>"
+        self.sqs_policy_queue_name = "<%= @sqs_policy_queue_name %>"
         self.postfix_queue_count = None
 
         # Create SQS client
@@ -191,142 +197,103 @@ class TerminationListener(object):
 
         return messages
 
-    def receive_sqs_messages(self):
-        """
-        Retrieves one or more messages (up to 10), from the specified QueueUrl.
-        """
-        try:
-            return self.sqs.receive_message(
-                QueueUrl=self.sqs_lifecycle_url,
-                AttributeNames=['All'],
-                MaxNumberOfMessages=self.sqs_lifecycle_max_number_of_messages,
-                VisibilityTimeout=self.sqs_lifecycle_visibility_timeout,
-                WaitTimeSeconds=self.sqs_lifecycle_wait_time_seconds
-            )
-        except botocore.exceptions.ClientError as e:
-            self.logger.exception("Received Error %s" % e)
+    def process_event(self):
 
-    def process_messages(self):
+        lifecycle_hook = LifecycleHook(self.event)
 
-        response = self.receive_sqs_messages()
+        # Now perform all necessary logic to make sure the postfix server has empty queues before terminating.
+        self.postfix_instance = self.get_postfix_instance()
+        if self.postfix_instance == 'postfix-cd':
+            if self.stop_sqs_consumer() is False:
+                self.logger.error("Unable to continue. There is a problem with the Xgemail SQS Consumer Service.")
+                sys.exit(1)
 
-        if "Messages" not in response:
-            # no messages found exit
-            self.logger.info('No messages found in Xgemail SQS queue')
-            sys.exit(0)
+        self.postfix_queue_count = self.check_postfix_queue()
+        self.logger.info("Messages in Postfix queue: %d" % self.postfix_queue_count)
 
-        # Process messages
-        for message in response['Messages']:
-            try:
-                innermessage = json.loads(json.loads(message['Body'])['Message'])
-            except:
-                self.logger.exception('ERROR parsing SQS message body')
-                continue
+        # If there are still messages in the Postfix queue
+        while self.postfix_queue_count != 0:
+            self.logger.warning("There are %d email messages still in the queue. We need to wait for them to drain." % self.postfix_queue_count)
 
-            self.logger.info("Scanning SQS message: %s" % innermessage)
-            # Check that sqs message is relating to an autoscaling lifecycle termination event
-            if 'LifecycleActionToken' in innermessage:
-                if innermessage['EC2InstanceId'] == self.instance_id and innermessage['LifecycleTransition'] == 'autoscaling:EC2_INSTANCE_TERMINATING':
-                    self.logger.info('Processing SQS message for this instance')
-                    lifecycle_hook = LifecycleHook(innermessage, self.aws_region)
-
-                    # Now perform all necessary logic to make sure the postfix server has empty queues before terminating.
-                    self.postfix_instance = self.get_postfix_instance()
-                    if self.postfix_instance == 'postfix-cd':
-                        if self.stop_sqs_consumer() is False:
-                            self.logger.error("Unable to continue. There is a problem with the Xgemail SQS Consumer Service.")
-                            sys.exit(1)
+            for lifecycle_hook.heartbeat_request_count in range(1, 100, 1):
+                while lifecycle_hook.time_check():
+                    last_count = self.postfix_queue_count
+                    time.sleep(10)
 
                     self.postfix_queue_count = self.check_postfix_queue()
-                    self.logger.info("Messages in Postfix queue: %d" % self.postfix_queue_count)
+                    self.logger.info("Queue Count: %d" % self.postfix_queue_count)
 
-                    # If there are still messages in the Postfix queue
-                    while self.postfix_queue_count != 0:
-                        self.logger.warning("There are %d email messages still in the queue. We need to wait for them to drain." % self.postfix_queue_count)
+                    if self.postfix_queue_count == 0:
+                        break
 
-                        for lifecycle_hook.heartbeat_request_count in range(1, 100, 1):
-                            while lifecycle_hook.time_check():
-                                last_count = self.postfix_queue_count
-                                time.sleep(10)
+                    elif self.postfix_queue_count < last_count:
+                        continue
 
-                                self.postfix_queue_count = self.check_postfix_queue()
-                                self.logger.info("Queue Count: %d" % self.postfix_queue_count)
+                    elif self.postfix_queue_count >= last_count:
+                        self.logger.warning("Email queue doesn't seem to be draining. Flushing queue and waiting 30 seconds before checking again.")
+                        # Attempt to flush postfix queue then wait for drop
+                        self.run_cmd(['/usr/sbin/postmulti', '-i', self.postfix_instance, '-x', 'postqueue', '-f'])
+                        time.sleep(30)
 
-                                if self.postfix_queue_count == 0:
-                                    break
+                        self.postfix_queue_count = self.check_postfix_queue()
 
-                                elif self.postfix_queue_count < last_count:
-                                    continue
+                        if self.postfix_queue_count < last_count:
+                            self.logger.info("Email queue is draining. Continuing with regular check.")
+                            continue
 
-                                elif self.postfix_queue_count >= last_count:
-                                    self.logger.warning("Email queue doesn't seem to be draining. Flushing queue and waiting 30 seconds before checking again.")
-                                    # Attempt to flush postfix queue then wait for drop
-                                    self.run_cmd(['/usr/sbin/postmulti', '-i', self.postfix_instance, '-x', 'postqueue', '-f'])
-                                    time.sleep(30)
+                        elif self.postfix_queue_count >= last_count:
+                            error_message = "CRITICAL! *** %d *** Undelivered messages are stuck in the email queue." % self.postfix_queue_count
+                            self.logger.critical(error_message)
+                            self.send_sns_alert(error_message)
 
-                                    self.postfix_queue_count = self.check_postfix_queue()
+                if self.postfix_queue_count == 0:
+                    break
 
-                                    if self.postfix_queue_count < last_count:
-                                        self.logger.info("Email queue is draining. Continuing with regular check.")
-                                        continue
+                self.logger.warning("Time Check - Time is running out!! Recording Lifecycle Action HeartBeat.")
+                lifecycle_hook.record_lifecycle_action_heartbeat()
 
-                                    elif self.postfix_queue_count >= last_count:
-                                        error_message = "CRITICAL! *** %d *** Undelivered messages are stuck in the email queue." % self.postfix_queue_count
-                                        self.logger.critical(error_message)
-                                        self.send_sns_alert(error_message)
+            if self.postfix_queue_count == 0:
+                self.logger.info("The Postfix queue is empty.")
+                break
 
-                            if self.postfix_queue_count == 0:
-                                break
+            self.logger.critical("LIFECYCLE HOOK EXHAUSTED!")
 
-                            self.logger.warning("Time Check - Time is running out!! Recording Lifecycle Action HeartBeat.")
-                            lifecycle_hook.record_lifecycle_action_heartbeat()
+        # Unsubscribe SQS Queue from SNS Topic
+        self.sns_unsubscribe()
+        # Delete SQS Queue
+        self.sqs_delete_queue()
 
-                        if self.postfix_queue_count == 0:
-                            self.logger.info("The Postfix queue is empty.")
-                            break
+        if self.postfix_queue_count != 0:
+            self.logger.critical("The Postfix queue is NOT empty! Unmounting and detatching volume for further investigation.")
+            # Run umount command to unmount the volume
+            self.run_cmd(['umount', lifecycle_hook.device_name])
+            # Detatch the volume so it is not deleted when the instance is terminated.
+            lifecycle_hook.detatch_volume()
 
-                        self.logger.critical("LIFECYCLE HOOK EXHAUSTED!")
-
-                    # Unsubscribe SQS Queue from SNS Topic
-                    self.sns_unsubscribe()
-                    # Delete SQS Queue
-                    self.sqs_delete_queue()
-
-                    if self.postfix_queue_count != 0:
-                        self.logger.critical("The Postfix queue is NOT empty! Unmounting and detatching volume for further investigation.")
-                        # Run umount command to unmount the volume
-                        self.run_cmd(['umount', lifecycle_hook.device_name])
-                        # Detatch the volume so it is not deleted when the instance is terminated.
-                        lifecycle_hook.detatch_volume()
-
-                    # Complete ASG hook
-                    self.logger.info('Completing lifecycle action.')
-                    lifecycle_hook.complete_lifecycle_action()
-                    sys.exit(0)
-
-            # Delete the SQS message if it is not for this instance
-            self.logger.info('Deleting SQS message from queue, not for this instance')
-            self.sqs.delete_message(QueueUrl=self.sqs_lifecycle_url, ReceiptHandle=message['ReceiptHandle'])
+        # Complete ASG hook
+        self.logger.info('Completing lifecycle action.')
+        lifecycle_hook.complete_lifecycle_action()
         sys.exit(0)
+    sys.exit(0)
 
 
 class LifecycleHook(object):
 
-    def __init__(self, message, region):
+    def __init__(self, event):
         self.logger = logging.getLogger(__name__)
-        self.aws_region = region
+        self.aws_region = event['region']
         # Create AS client
         self.asc = boto3.client('autoscaling', region_name=self.aws_region)
         """:type: pyboto3.autoscaling """
         self.aws_time_format = '%Y-%m-%dT%H:%M:%S.%fZ'
-        self.autoscaling_group_name = message['AutoScalingGroupName']
-        self.lifecycle_hook_name = message['LifecycleHookName']
-        self.instance_id = message['EC2InstanceId']
+        self.autoscaling_group_name = event['detail']['AutoScalingGroupName']
+        self.lifecycle_hook_name = event['detail']['LifecycleHookName']
+        self.instance_id = event['detail']['EC2InstanceId']
         self.lifecycle_global_timeout = self.get_timeout('GlobalTimeout')
         self.heartbeat_request_count = 1
         self.heartbeat_timeout = self.get_timeout('HeartbeatTimeout')
-        self.heartbeat_start_time = datetime.strptime(message['Time'], self.aws_time_format)
-        self.lifecycle_action_token = message['LifecycleActionToken']
+        self.heartbeat_start_time = datetime.strptime(event['Time'], self.aws_time_format)
+        self.lifecycle_action_token = event['detail']['LifecycleActionToken']
         self.device_name = '/dev/xvdi'
 
     def time_check(self):
@@ -417,13 +384,8 @@ class LifecycleHook(object):
 # Argument Parser
 def parse_command_line():
     parser = argparse.ArgumentParser(
-        description='Cleanup SQS Queues and SNS Subscriptions from a bad deployment.')
-    parser.add_argument('--account', '-a', dest='account', default='inf', choices=[
-                        'inf', 'dev', 'dev3', 'qa', 'default', 'iam'], required=False, help='The account you are working in.')
-    parser.add_argument('--region', '-r', dest='region', default='eu-central-1', choices=[
-                        'eu-central-1', 'eu-west-1', 'us-west-2', 'us-east-2'], required=False, help='The region you are working in.')
-    parser.add_argument('--dry-run', '-d', action='store_true',
-                        help='Just test to see what will happen or really delete stuff?.')
+        description='Begin graceful termination of EC2 instance.')
+    parser.add_argument('--event', '-e', dest='event', default='inf',  required=True, help='The Event data.')
 
     return parser.parse_args()
 
@@ -432,5 +394,5 @@ if __name__ == '__main__':
 
     args = parse_command_line()
 
-    tl = TerminationListener()
-    tl.process_messages()
+    tl = TerminationListener(event)
+    tl.process_event()
