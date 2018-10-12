@@ -5,8 +5,6 @@
 #  with_dict: "{{aws.ec2.asg.cd}}"
 
 - name: "Create ASG Stacks in AWS"
-  async: 100
-  poll: 0
   cloudformation:
     stack_name: "{{vpc.cloud_email.name}}-internet-submit-asg"
     state: present
