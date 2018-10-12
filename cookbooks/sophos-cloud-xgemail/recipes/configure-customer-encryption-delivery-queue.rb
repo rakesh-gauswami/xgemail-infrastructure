@@ -40,7 +40,6 @@ CONFIGURATION_COMMANDS =
   [
     "relayhost=#{DESTINATION_HOST}",
     'unknown_local_recipient_reject_code=550',
-    'bounce_queue_lifetime=0',
     'smtp_tls_security_level=encrypt',
     'smtp_tls_ciphers=high',
     'smtp_tls_mandatory_ciphers=high',
@@ -51,5 +50,5 @@ CONFIGURATION_COMMANDS =
 CONFIGURATION_COMMANDS.each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
 end
-include_recipe 'sophos-cloud-xgemail::configure-bounce-message-customer-delivery-queue'
+
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_consumer'
