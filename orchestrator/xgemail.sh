@@ -4,16 +4,29 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 BLUE='\033[0;34m'
 
+# Set XGEMAIL_HOME environment variable
 echo -e "${GREEN} Setting environment variable <XGEMAIL_HOME> to <~/g/email/> ${NC}"
 echo -e "${BLUE} NOTE: XGEMAIL_HOME points to the directory above which xgemail-infrastructure and xgemail repo live locally ${NC}"
 export XGEMAIL_HOME="${HOME}/g/email/"
 
-echo "Xgemail Home is ${XGEMAIL_HOME}"
+if [ ! $? -eq 0 ]; then
+    echo -e "${RED} Unable to set XGEMAIL_HOME environment variable ${NC}"
+else
+    echo -e "${GREEN} XGEMAIL_HOME environment successfully set to ${XGEMAIL_HOME} ${NC}"
+fi
+
 xgemail_infrastructure_location="${XGEMAIL_HOME}xgemail-infrastructure/"
 orchestrator_location="${xgemail_infrastructure_location}orchestrator/"
-tomcat_wars=()
 
-provision_home_directory_path
+#Setup login to amazon ECR
+aws ecr get-login --no-include-email --region us-east-2 --profile docker-amzn >/dev/null 2>&1
+if [ ! $? -eq 0 ]; then
+    echo -e "${RED} Unable to log into AWS ECR. Check your AWS credentials configuration ${NC}"
+else
+    echo -e "${GREEN} Successfully logged into AWS ECR"
+fi
+
+tomcat_wars=()
 
 function deploy_inbound {
     echo -e "${GREEN} user selected inbound ${NC}"
@@ -31,7 +44,9 @@ function deploy_inbound {
         exit 1
     fi
 
-    docker-compose -f ${orchestrator_location}docker-compose-base.yml -f ${orchestrator_location}docker-compose-inbound.yml up -d
+    inbound_docker_compose_prefix="docker-compose -f ${orchestrator_location}docker-compose-base.yml -f ${orchestrator_location}docker-compose-inbound.yml"
+
+    ${inbound_docker_compose_prefix} up -d
 
     check_mail_up
 
@@ -40,6 +55,8 @@ function deploy_inbound {
         deploy_mail
     else
         echo "${RED} mail-service tomcat did not start. Unable to deploy ${tomcat_wars[@]} ${NC}"
+        echo "${RED} bringing inbound docker containers back down"
+        ${inbound_docker_compose_prefix} down
         exit 1
     fi
 
