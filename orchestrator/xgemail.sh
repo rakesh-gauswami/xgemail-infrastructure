@@ -1,19 +1,25 @@
 #!/bin/bash
-
-XGEMAIL_HOME_DIR=${XGEMAIL_HOME}
-xgemail_infrastructure_location="${XGEMAIL_HOME_DIR}xgemail-infrastructure/"
-orchestrator_location="${xgemail_infrastructure_location}orchestrator/"
-tomcat_wars=()
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
+BLUE='\033[0;34m'
 
+echo -e "${GREEN} Setting environment variable <XGEMAIL_HOME> to <~/g/email/> ${NC}"
+echo -e "${BLUE} NOTE: XGEMAIL_HOME points to the directory above which xgemail-infrastructure and xgemail repo live locally ${NC}"
+export XGEMAIL_HOME="${HOME}/g/email/"
+
+echo "Xgemail Home is ${XGEMAIL_HOME}"
+xgemail_infrastructure_location="${XGEMAIL_HOME}xgemail-infrastructure/"
+orchestrator_location="${xgemail_infrastructure_location}orchestrator/"
+tomcat_wars=()
+
+provision_home_directory_path
 
 function deploy_inbound {
     echo -e "${GREEN} user selected inbound ${NC}"
     echo -e "${GREEN} Services needed for inbound mail-flow will be started ${NC}"
     echo ""
-    tomcat_wars=("mail" "mailinbound")
+    tomcat_wars=("mail")
     postfix_services=("postfix-is" "postfix-cd")
 
     create_mail_bootstrap
@@ -25,13 +31,23 @@ function deploy_inbound {
         exit 1
     fi
 
-    deploy_mail
-
     docker-compose -f ${orchestrator_location}docker-compose-base.yml -f ${orchestrator_location}docker-compose-inbound.yml up -d
+
+    check_mail_up
+
+    if [ $? -eq 0 ]; then 
+        echo "mail-service is up!"
+        deploy_mail
+    else
+        echo "${RED} mail-service tomcat did not start. Unable to deploy ${tomcat_wars[@]} ${NC}"
+        exit 1
+    fi
 
     provision_localstack
 
     provision_postfix
+
+    check_tomcat_startup
 }
 
 function deploy_outbound {
@@ -97,28 +113,70 @@ function deploy_mail {
 
     war_file_location="${HOME}/.xgemail_sandbox/wars"
 
-    echo ${war_file_location}
     mkdir -p ${war_file_location}
 
     if [ $? -eq 0 ]; then
         echo "cool"
     fi
 
-    echo "Copying WAR files to ${war_file_location} for deployment"
-    newfiles=""
-    mkdir -p ${war_file_location}
+    tomcat_webapps_loc="mail-service:/usr/local/tomcat/webapps/"
+
     for file in "${warfiles_found[@]}" ; do
         filename=$(echo "$file" | xargs -n 1 basename)
         prefix=$(echo "$filename" | awk -F"-" '{print $1}')
-        newfile=$(echo "$prefix"-services-NOVA-LOCAL.war)
-        rsync -a --progress "$file" "${war_file_location}/$newfile"
-        newfiles+="|$newfile|"
+        newfile=$(echo "$prefix"-services.war)
+        newfile_location="${war_file_location}/$newfile"
+        rsync -a --progress "${file}" "${newfile_location}"
+        echo "Copying WAR file ${newfile_location} into tomcat for deployment"
+        docker cp "${newfile_location}" "${tomcat_webapps_loc}"
+       newfiles+="|$newfile|"
     done
+
     popd >/dev/null
 
-    echo -e "${GREEN} successfully deployed ${warfiles_found[@]} ${NC}"
+    echo -e "${GREEN} successfully copied ${newfiles} into Tomcat ${NC}"
+}
 
-    tomcat_wars=()
+function check_mail_up()
+{
+    echo "Waiting for mail-service to be fully up."
+    count=0
+    max_count=12 # Multiply this number by 5 for total wait time, in seconds.
+    while [[ $count -le $max_count ]]; do
+        startup_check=$(docker ps --filter='name=mail-service' --format {{.Status}} | grep -c "Up")
+        if [[ $startup_check -ne 1 ]]; then
+            count=$((count+1))
+            sleep 5
+        else
+            count=$((max_count+1))
+        fi
+    done
+
+    if [[ $startup_check -ne 1 ]]; then
+        echo -e "${RED}Mail-service tomcat did not start properly.  Please check the logs ${NC}"
+        exit 1
+    fi
+}
+
+function check_tomcat_startup()
+{
+    local minutes=20
+    echo "Checking deployment of wars <${tomcat_wars[@]}> in background"
+    sleep 20
+    local now=$(date +%s)
+    local deadline=$(($now + $minutes*60))
+    while (($now < $deadline)); do
+        startup_check=$(curl -u script:script -s -o /dev/null -m 5 -w "%{http_code}" http://localhost:9898/manager/text/list)
+        if [[ $startup_check -eq 200 ]]; then
+            service_count=$(curl -s -u script:script http://localhost:9898/manager/text/list | grep services | awk -F":" '{print $1," ",$2}' | column -t | grep -c -v running)
+            if [[ $service_count -eq 0 ]]; then
+                echo -e "${GREEN} Deployment of wars <${tomcat_wars[@]}> done! ${NC}"
+                return 0
+            fi
+        fi
+        sleep 10
+        now=$(date +%s)
+    done
 }
 
 
@@ -149,25 +207,11 @@ function create_mail_bootstrap()
     echo "successfully concatenated and created bootstrap properties file $file"
 }
 
-
-
 function join {
     local IFS="$1";
     shift;
     echo "$*";
 }
-
-
-: ' This function takes the XGEMAIL_HOME env variable and adds a forward slash if it is missing one
- '
-function provision_home_directory_path {
-    if [[ ! ${XGEMAIL_HOME_DIR} == */ ]]; then
-        XGEMAIL_HOME_DIR="${XGEMAIL_HOME_DIR}/"
-    fi
-    echo "Xgemail Home is ${XGEMAIL_HOME_DIR}"
-}
-
-provision_home_directory_path
 
 case "$1" in
     deploy)
@@ -191,14 +235,23 @@ case "$1" in
             mail)
             tomcat_wars=("mail")
             deploy_mail
+            if [ $? -eq 0 ]; then 
+                check_tomcat_startup
+            fi
             ;;
             mailinbound)
             tomcat_wars=("mailinbound")
             deploy_mail
+            if [ $? -eq 0 ]; then 
+                check_tomcat_startup
+            fi
             ;;
             mailoutbound)
             tomcat_wars=("mailoutbound")
             deploy_mail
+            if [ $? -eq 0 ]; then 
+                check_tomcat_startup
+            fi
             ;;
             *)
             echo "usage"
