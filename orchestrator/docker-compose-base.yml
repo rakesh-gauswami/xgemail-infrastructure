@@ -21,35 +21,51 @@ services:
       - SERVICES=apigateway,kinesis,dynamodb,dynamodbstreams,s3,sns,sqs,es,lambda
       - DEFAULT_REGION=us-east-1
       - LAMBDA_EXECUTOR=docker
+      - DATA_DIR=/tmp/localstack/data
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /tmp/localstack:/tmp/localstack
     networks:
       - novanet
 
-#  sasi-service:
-#    image: email/sasi-service
-#    container_name: sasi-service
-#    hostname: sasi-service
-#    domainname: sandbox.sophos
-#    env_file:
-#      - ~/.aws/credentials
-#    ports:
-#      - '8080:8080'
-#    depends_on:
-#      - "sasi-daemon"
-#    networks:
-#      - novanet
-#
-#  sasi-daemon:
-#    image: email/sasi-daemon
-#    container_name: sasi-daemon-contanier
-#    hostname: sasi-daemon
-#    domainname: sandbox.sophos
-#    ports:
-#      - '32223:32223'
-#    networks:
-#      - novanet
+  sasi-daemon:
+    image: email/sasi-daemon
+    container_name: sasi-daemon-container
+    hostname: sasi-daemon
+    domainname: sandbox.sophos
+    ports:
+      - '32226:32223'
+    networks:
+      novanet:
+        ipv4_address: 172.16.199.111
+
+  sasi-service:
+    image: email/sasi-service
+    container_name: sasi-service-container
+    hostname: sasi-service
+    domainname: sandbox.sophos
+    extra_hosts:
+      - "sasi-daemon:172.16.199.111"
+
+    environment:
+      - aws.accessKeyId=$AWS_ACCESS_KEY_ID
+      - aws.aws.secretKey=$AWS_SECRET_ACCESS_KEY
+      - logging.level.com.sophos=INFO
+      - APPLICATION_NAME=sasi-outbound
+      - COUNTER_DB_TABLE=None
+      - enableLabsMonitoring=false
+      - HISTORIAN_DB_TABLE=None
+      - HISTORIAN_DB_TABLE_CREATE_DATE=None
+      - SASI_REQUEST_QUEUE=sandbox-SASI_Outbound_Request
+      - SASI_RESPONSE_QUEU=sandbox-SASI_Outbound_Response
+    volumes:
+      - $XGEMAIL_HOME/xgemail-infrastructure.orchestrator/sasi/application.properties:/application.properties
+    ports:
+      - '18081:8080'
+    depends_on:
+      - "sasi-daemon"
+    networks:
+      - novanet
 
   mail:
     image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/sophos_cloud_tomcat:latest
