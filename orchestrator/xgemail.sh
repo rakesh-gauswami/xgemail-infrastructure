@@ -8,15 +8,60 @@ base_compose="docker-compose-base.yml"
 inbound_compose="docker-compose-inbound.yml"
 outbound_compose="docker-compose-outbound.yml"
 
+nova_bootstrap_file="${HOME}/g/nova/appserver/config/bootstrap.properties"
+mail_bootstrap_file="${orchestrator_location}sophos_cloud_tomcat_bootstrap.properties"
+nova_bootstrap_file_original=${HOME}/g/nova/appserver/config/bootstrap_copy.properties
+
+sasi_service_image="email/sasi-service"
+sasi_docker_image="email/sasi-daemon"
+
 possible_clean_up_files=()
 
+function initialize {
+    set_home
+    echo -e "${YELLOW} Running set up steps ${NC}"
+    echo -e "${YELLOW} NOTE: This should be run each time before starting NOVA ${NC}"
+    if [ ! -f ${nova_bootstrap_file} ]; then
+        echo -e "${RED} ${nova_bootstrap_file} could not be found. Ensure it exists at the right location ${NC}"
+        exit 1        
+    fi
+
+    if [ ! -f ${nova_bootstrap_file_original} ]; then
+        cp ${nova_bootstrap_file} ${nova_bootstrap_file_original}
+    fi
+
+    create_mail_bootstrap
+
+    if [ ! -f ${mail_bootstrap_file} ]; then
+        echo -e "${RED} ${mail_bootstrap_file} could not be found. Ensure it exists at the right location ${NC}"
+        exit 1
+    fi
+    
+    echo "Overwriting nova hub bootstrap properties file"
+    cp ${mail_bootstrap_file} ${nova_bootstrap_file}
+
+    if [ $? -eq 0 ]; then
+        echo "Created new bootstrap properties for nova hub"
+    else
+        echo -e "${RED} There was an error creating bootstrap properties for nova hub ${NC}"
+        exit 1
+    fi
+
+    build_policy_storage_for_jilter
+
+    echo -e "${GREEN} Initialization Completed Successfully ${NC}"
+}
+
 function deploy_inbound {
+    initialize
     check_login_to_aws
     set_home
     
     echo -e "${YELLOW} user selected inbound ${NC}"
     echo -e "${YELLOW} Services needed for inbound mail-flow will be started ${NC}"
     echo ""
+
+    check_sasi ${sasi_service_image} ${sasi_docker_image}
 
     deploy_jilter inbound
 
@@ -36,8 +81,11 @@ function deploy_inbound {
 }
 
 function deploy_outbound {
+    initialize
     check_login_to_aws
     set_home
+    
+    check_sasi ${sasi_service_image} ${sasi_docker_image}
 
     echo -e "${YELLOW} user selected outbound ${NC}"
     echo -e "${YELLOW} Services needed for outbound mail-flow will be started ${NC}"
@@ -244,10 +292,7 @@ function deploy_jilter_helper()
     else
         pushd "${jilter_build_location}"
         jilter_tar_file_string=$(ls *.tar)
-        jilter_tar_files=(${jilter_tar_file_string})
-
-        echo ${jilter_tar_files[0]}
-    
+        jilter_tar_files=(${jilter_tar_file_string})    
 
         if [ ! ${#jilter_tar_files[@]} -eq 1 ] ; then
             echo -e "${RED} 0 or more than 1 tar files were found. There should be only tar file in the distribution folder ${NC}"
@@ -274,11 +319,70 @@ function deploy_jilter_helper()
     fi
 }
 
+#TODO: remove or edit this after policy synchronization piece is done
+function build_policy_storage_for_jilter {
+    policy_sandbox_location="${HOME}/.xgemail_sandbox/policy_storage/"
+    mkdir -p ${policy_sandbox_location}
+
+    global_config_folder="${policy_sandbox_location}config/outbound-relay-control/rate-limit/"
+    mkdir -p ${global_config_folder}
+    global_config_file="${global_config_folder}global.CONFIG"
+
+    domains_config_folder="${policy_sandbox_location}config/outbound-relay-control/domains/"
+    mkdir -p ${domains_config_folder}
+    default_domain_config_file="${domains_config_folder}sophos.com.CONFIG"
+
+    user_policy_folder="${policy_sandbox_location}config/outbound-relay-control/domains/sophos.com/"
+    mkdir -p ${user_policy_folder}
+    user_policy1_file="${user_policy_folder}b25l"
+    user_policy2_file="${user_policy_folder}dGVzdGFkbWlu"
+
+    #create empty policy files
+    touch ${user_policy1_file}
+    touch ${user_policy2_file}
+
+    cat > ${global_config_file} << EOF
+{"limit_by_domain":true,"limit_by_ip_address":false,"number_of_messages":2500,"duration":"PT300S"}
+EOF
+
+    cat > ${default_domain_config_file} << EOF
+{"schema_version":20171026,"service_provider":"CUSTOM","addresses":["172.16.199.1"]} 
+EOF
+
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN} Created default policy files for jilter ${NC}"
+    else
+        echo -e "${RED} Unable to create default policy files for jilter ${NC}"
+        exit 1
+    fi
+
+}
+
+function check_sasi {
+    for image in "$@"; do
+        docker inspect ${image} >/dev/null 2>&1
+        if [ ! $? -eq 0 ]; then
+            echo -e "${RED} ${image} cannot be found ${NC}"
+            echo -e "${RED} For sasi-daemon, follow the instructions in the readme here 
+            https://git.cloud.sophos/projects/EMAIL/repos/sasi-docker/browse ${NC}"
+
+            echo -e "${RED} For sasi-service, follow the instructions in the readme here 
+            https://git.cloud.sophos/projects/EMAIL/repos/sasi-service/browse ${NC}"
+
+            exit 1
+        else
+            echo -e "${GREEN} Docker image ${image} confirmed to be present ${NC}"
+        fi
+    done
+}
+
 function check_login_to_aws {
     #Setup login to amazon ECR
-    aws ecr get-login --no-include-email --region us-east-2 --profile docker-amzn >/dev/null 2>&1
+    aws ecr get-login --no-include-email --region us-east-2 >/dev/null 2>&1
+
     if [ ! $? -eq 0 ]; then
         echo -e "${RED} Unable to log into AWS ECR. Check your AWS credentials configuration ${NC}"
+        echo -e "${RED} Please take a look at the README.md file under ${XGEMAIL_HOME}xgemail-infrastructure/docker ${NC}"
         exit 1
     else
         echo -e "${GREEN} Successfully logged into AWS ECR ${NC}"
@@ -344,7 +448,7 @@ function check_tomcat_startup()
         sleep 10
         now=$(date +%s)
     done
-    echo "${RED} Wars in tomcat did not startup in ${minutes} minutes. They might need more time or there may be something wrong. Check the logs ${NC}"
+    echo -e "${RED} Wars in tomcat did not startup in ${minutes} minutes. They might need more time or there may be something wrong. Check the logs ${NC}"
 }
 
 
@@ -355,7 +459,6 @@ function create_mail_bootstrap()
 {
     echo -e "${GREEN} Creating bootstrap.properties file from nova appserver bootstrap properties
     and email addendum bootstrap properties ${NC}"
-    local nova_bootstrap_file="${HOME}/g/nova/appserver/config/bootstrap.properties"
     local addendum_file="${xgemail_infrastructure_location}/docker/sophos_cloud_tomcat/config/xgemail_addendum_bootstrap.properties"
 
     if [ ! -f "${nova_bootstrap_file}" ]; then
@@ -368,14 +471,18 @@ function create_mail_bootstrap()
       exit 1
     fi
 
-    local file="${orchestrator_location}sophos_cloud_tomcat_bootstrap.properties"
+    if [ ! -f "${nova_bootstrap_file_original}" ]; then
+      echo -e "${RED} Original bootstrap file not found at ${nova_bootstrap_file_original}. Run <./xgemail.sh initialize>  ${NC}"
+      exit 1
+    fi
 
-    cat $nova_bootstrap_file $addendum_file > $file
+
+    cat $nova_bootstrap_file_original $addendum_file > $mail_bootstrap_file
 
     if [ $? -eq 0 ]; then
-        echo -e "${GREEN} Successfully concatenated and created bootstrap properties file ${file} ${NC}"
+        echo -e "${GREEN} Successfully concatenated and created bootstrap properties file ${mail_bootstrap_file} ${NC}"
     else
-        echo -e "${RED} Failed to created bootstrap properties file ${file} ${NC}"
+        echo -e "${RED} Failed to created bootstrap properties file ${mail_bootstrap_file} ${NC}"
         exit 1
     fi
 }
@@ -389,11 +496,30 @@ function clean_up {
 
     if [ $? -eq 0 ]; then
         echo -e "${GREEN} Successfully cleaned up ${NC}"
-        exit 1
+        exit 0
     else
         echo -e "${RED} Clean up was unsuccessful ${NC}"
         exit 1
      fi   
+}
+
+function clean_up_nova_initialization
+{
+    echo -e "${YELLOW} Cleaning up nova initialization ${NC}"
+
+    if [ -f ${nova_bootstrap_file_original} ]; then
+
+        mv ${nova_bootstrap_file_original} ${nova_bootstrap_file}
+
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN} Successfully restored ${nova_bootstrap_file} ${NC}"
+        else
+            echo -e "${RED} Clean up was unsuccessful. Unable to restore ${nova_bootstrap_file} ${NC}"
+            exit 1
+        fi 
+    fi
+     
+
 }
 
 function clean_up_files {
@@ -421,7 +547,6 @@ function join {
 # When the user hits ctrl-c to interrupt the process, clean up
 trap clean_up INT
 
-
 function usage {
     cat <<EOF
 Xgemail Sandbox
@@ -430,7 +555,8 @@ Usage:
   ./xgemail.sh COMMAND OPTIONS
 
 Commands                                                                            Options
-help         get usage info                                                                                                       
+help         get usage info 
+initialize   setup steps before starting up nova                                                                                                     
 deploy       deploy and start containers                                            inbound, outbound, all
 hot_deploy   hot deploy artifacts(NOTE: artifacts have to be built first)           mail, mailinbound, mailoutbound
                                                                                     jilter-inbound, jilter-outbound
@@ -500,10 +626,14 @@ case "$1" in
             ;;
         esac
         ;;
+    initialize)
+        initialize
+        ;;
     help)
         usage
         ;;
     destroy)
+        clean_up_nova_initialization
         clean_up
         ;;
     *)
