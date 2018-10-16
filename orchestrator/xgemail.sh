@@ -4,6 +4,10 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 YELLOW='\033[0;33m'
 
+base_compose="docker-compose-base.yml"
+inbound_compose="docker-compose-inbound.yml"
+outbound_compose="docker-compose-outbound.yml"
+
 possible_clean_up_files=()
 
 function deploy_inbound {
@@ -18,17 +22,17 @@ function deploy_inbound {
 
     create_mail_bootstrap
 
-    docker-compose -f ${orchestrator_location}docker-compose-base.yml -f ${orchestrator_location}docker-compose-inbound.yml up -d
+    docker-compose -f ${orchestrator_location}${base_compose} -f ${orchestrator_location}${inbound_compose} up -d
 
     check_mail_service_up
 
-    # deploy_mail "mail" "mailinbound"
+    deploy_mail "mail" "mailinbound"
 
-    # provision_localstack
+    provision_localstack
  
-    # provision_postfix "postfix-is" "postfix-cd"
+    provision_postfix "postfix-is" "postfix-cd"
 
-    # check_tomcat_startup "mail" "mailinbound"
+    check_tomcat_startup "mail" "mailinbound"
 }
 
 function deploy_outbound {
@@ -43,17 +47,17 @@ function deploy_outbound {
 
     create_mail_bootstrap
 
-    docker-compose -f ${orchestrator_location}docker-compose-base.yml -f ${orchestrator_location}docker-compose-outbound.yml up -d
+    docker-compose -f ${orchestrator_location}${base_compose} -f ${orchestrator_location}${outbound_compose} up -d
 
     check_mail_service_up
 
-    # deploy_mail "mail" "mailoutbound"
+    deploy_mail "mail" "mailoutbound"
 
-    # provision_localstack
+    provision_localstack
  
-    # provision_postfix "postfix-cs" "postfix-id"
+    provision_postfix "postfix-cs" "postfix-id"
 
-    # check_tomcat_startup "mail" "mailoutbound"
+    check_tomcat_startup "mail" "mailoutbound"
 }
 
 function deploy_all {
@@ -68,17 +72,17 @@ function deploy_all {
 
     create_mail_bootstrap
 
-    docker-compose -f ${orchestrator_location}docker-compose-base.yml -f ${orchestrator_location}docker-compose-inbound.yml -f ${orchestrator_location}docker-compose-outbound.yml up -d
+    docker-compose -f ${orchestrator_location}${base_compose} -f ${orchestrator_location}${inbound_compose} -f ${orchestrator_location}${outbound_compose} up -d
 
     check_mail_service_up
 
-    # deploy_mail "mail" "mailinbound" "mailoutbound"
+    deploy_mail "mail" "mailinbound" "mailoutbound"
 
-    # provision_localstack
+    provision_localstack
  
-    # provision_postfix "postfix-cs" "postfix-id" "postfix-is" "postfix-cd"
+    provision_postfix "postfix-cs" "postfix-id" "postfix-is" "postfix-cd"
 
-    # check_tomcat_startup "mail" "mailoutbound" "mailinbound"
+    check_tomcat_startup "mail" "mailoutbound" "mailinbound"
 }
 
 function provision_postfix {
@@ -381,7 +385,7 @@ function clean_up {
 
     clean_up_files
     #TODO: break up line
-    $(docker-compose -f ${orchestrator_location}docker-compose-base.yml -f ${orchestrator_location}docker-compose-inbound.yml -f ${orchestrator_location}docker-compose-outbound.yml down)
+    $(docker-compose -f ${orchestrator_location}${base_compose} -f ${orchestrator_location}${inbound_compose} -f ${orchestrator_location}${outbound_compose} down)
 
     if [ $? -eq 0 ]; then
         echo -e "${GREEN} Successfully cleaned up ${NC}"
@@ -397,7 +401,11 @@ function clean_up_files {
         echo -e "${YELLOW} Cleaning up files ${possible_clean_up_files[@]} ${NC}"
         for file in ${possible_clean_up_files}; do
             rm -f ${file}
-            echo "${file} removed"
+            if [ $? -eq 0 ]; then
+                echo "${file} removed"
+            else
+                echo -e "${RED} Unable to remove file ${file} ${NC}"
+            fi    
         done
     else
         echo -e "${YELLOW} No files to clean up ${NC}"    
@@ -425,6 +433,8 @@ Commands                                                                        
 help         get usage info                                                                                                       
 deploy       deploy and start containers                                            inbound, outbound, all
 hot_deploy   hot deploy artifacts(NOTE: artifacts have to be built first)           mail, mailinbound, mailoutbound
+                                                                                    jilter-inbound, jilter-outbound
+                                                                                    postfix-is, postfix-cd, postfix-cs, postfix-id
 destroy      clean up and bring down all containers    
 EOF
 }
@@ -448,28 +458,45 @@ case "$1" in
        esac
         ;;
     hot_deploy)
+        set_home
         case "$2" in
             mail)
-
-            set_home
             deploy_mail "mail"
             check_tomcat_startup "mail"
             ;;
-            mailinbound)
 
-            set_home
+            mailinbound)
             deploy_mail "mailinbound"
             check_tomcat_startup "mailinbound"
-        
             ;;
+
             mailoutbound)
-            
-            set_home
             deploy_mail "mailoutbound"
             check_tomcat_startup "mailoutbound"
             ;;
+
+            jilter-inbound)
+                deploy_jilter inbound  
+                docker-compose -f ${orchestrator_location}${inbound_compose} restart jilter-inbound
+                ;;
+            jilter-outbound)
+                deploy_jilter outbound
+                docker-compose -f ${orchestrator_location}${outbound_compose} restart jilter-outbound
+                ;;
+            postfix-is)
+                provision_postfix postfix-is
+                ;;
+            postfix-cd)
+                provision_postfix postfix-cd
+                ;;
+            postfix-cs)
+                provision_postfix postfix-cs
+                ;;
+            postfix-id)
+                provision_postfix postfix-id
+                ;;
             *)
-            echo "Usage: $0 <mail | mailinbound | mailoutbound>"
+            echo "Usage: $0 <mail | mailinbound | mailoutbound | jilter-inbound | jilter-outbound | postfix-is | postfix-cd | postfix-cs | postfix-id>"
             ;;
         esac
         ;;
