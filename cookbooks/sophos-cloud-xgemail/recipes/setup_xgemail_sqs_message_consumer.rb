@@ -39,7 +39,7 @@ NODE_IP                                 = node['ipaddress']
 XGEMAIL_PIC_CA_PATH = "#{LOCAL_CERT_PATH}/hmr-infrastructure-ca.crt"
 
 if ACCOUNT == 'sandbox'
-  XGEMAIL_PIC_FQDN = 'mail.sandbox.sophos'
+  XGEMAIL_PIC_FQDN = 'mail-service:8080'
 else
   XGEMAIL_PIC_FQDN = "mail-#{STATION_VPC_NAME.downcase}-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com"
 end

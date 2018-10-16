@@ -45,6 +45,7 @@ if ENVIRONMENT == "sandbox"
 
     if INSTANCE_TYPE == "customer-submit"
         default['ec2']['instance_id'] = ENV['INSTANCE_ID']
+        default['xgemail']['xgemail_bucket_name']    = 'xgemail-cust-submit'
     end
 
     if INSTANCE_TYPE == "jilter-inbound" || INSTANCE_TYPE == "jilter_outbound"
