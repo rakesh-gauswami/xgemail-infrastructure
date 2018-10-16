@@ -60,11 +60,18 @@ services:
       environment:
         - JILTER_VERSION=
         - DIRECTION=outbound
+        - INSTANCE_TYPE=jilter-outbound
+        - DEFAULT_REGION=local
+        - DEFAULT_ENVIRONMENT=sandbox
         - APPLICATION=Outbound
+        - HOSTNAME_EXTERNAL=jilter-outbound
       ports:
         - '19876:9876'
       volumes:
-        - ~/.xgemail-sandbox/jilter/outbound/:/jilter/
-        - ~/.policy-storage:/policy-storage:rw
+        - ~/.aws:/root/.aws:ro
+        - /sys/fs/cgroup:/sys/fs/cgroup:ro
+        - ~/.xgemail_sandbox/jilter/outbound/:/jilter/
+        - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
+        - ~/.policy-storage:/policy-storage:rw 
       networks:
         - novanet

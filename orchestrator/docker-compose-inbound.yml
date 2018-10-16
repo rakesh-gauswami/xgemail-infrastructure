@@ -83,7 +83,10 @@ services:
     ports:
       - '9876:9876'
     volumes:
-      - ~/.xgemail-sandbox/jilter/inbound/:/jilter/
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - ~/.aws:/root/.aws:ro
+      - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
+      - ~/.xgemail_sandbox/jilter/inbound/:/jilter/
       - ~/.policy-storage:/policy-storage:rw
     networks:
       - novanet
