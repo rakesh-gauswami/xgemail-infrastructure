@@ -225,10 +225,6 @@ awslocal sqs create-queue --queue-name ${SASI_RESPONSE_SQS_QUEUE} | jq .
 gprintf "CREATING POLICASSIGNMENT_SQS_QUEUE"
 awslocal sqs create-queue --queue-name ${POLICYASSIGNMENT_SQS_QUEUE} | jq .
 
-gprintf "CREATING POLICASSIGNMENT_SQS_QUEUE2"
-awslocal sqs create-queue --queue-name ${POLICYASSIGNMENT_SQS_QUEUE2} | jq .
-
-
 
 gprintf "CREATING DLQ "
 awslocal sqs create-queue --queue-name ${SASI_OUTBOUND_REQUEST_SQS_QUEUE_DLQ} | jq .
