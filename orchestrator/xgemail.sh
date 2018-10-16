@@ -2,15 +2,16 @@
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
-BLUE='\033[0;34m'
+YELLOW='\033[0;33m'
 
 # Set XGEMAIL_HOME environment variable
-echo -e "${GREEN} Setting environment variable <XGEMAIL_HOME> to <~/g/email/> ${NC}"
-echo -e "${BLUE} NOTE: XGEMAIL_HOME points to the directory above which xgemail-infrastructure and xgemail repo live locally ${NC}"
+echo -e "Setting environment variable <XGEMAIL_HOME> to <~/g/email/>"
+echo -e "${YELLOW} NOTE: XGEMAIL_HOME points to the directory above which xgemail-infrastructure and xgemail repo live locally ${NC}"
 export XGEMAIL_HOME="${HOME}/g/email/"
 
 if [ ! $? -eq 0 ]; then
     echo -e "${RED} Unable to set XGEMAIL_HOME environment variable ${NC}"
+    exit 1
 else
     echo -e "${GREEN} XGEMAIL_HOME environment successfully set to ${XGEMAIL_HOME} ${NC}"
 fi
@@ -18,80 +19,85 @@ fi
 xgemail_infrastructure_location="${XGEMAIL_HOME}xgemail-infrastructure/"
 orchestrator_location="${xgemail_infrastructure_location}orchestrator/"
 
-#Setup login to amazon ECR
-aws ecr get-login --no-include-email --region us-east-2 --profile docker-amzn >/dev/null 2>&1
-if [ ! $? -eq 0 ]; then
-    echo -e "${RED} Unable to log into AWS ECR. Check your AWS credentials configuration ${NC}"
-else
-    echo -e "${GREEN} Successfully logged into AWS ECR"
-fi
-
-tomcat_wars=()
-
 function deploy_inbound {
-    echo -e "${GREEN} user selected inbound ${NC}"
-    echo -e "${GREEN} Services needed for inbound mail-flow will be started ${NC}"
+    check_login_to_aws
+    
+    echo -e "${YELLOW} user selected inbound ${NC}"
+    echo -e "${YELLOW} Services needed for inbound mail-flow will be started ${NC}"
     echo ""
-    tomcat_wars=("mail")
-    postfix_services=("postfix-is" "postfix-cd")
+
+    deploy_jilter inbound
 
     create_mail_bootstrap
 
-    if [ $? -eq 0 ]; then
-        echo -e "${GREEN} Bootstrap properties creation completed successfully ${NC}"
-    else
-        echo "${RED} creating mail bootstrap properties failed ${NC}"
-        exit 1
-    fi
+    docker-compose -f ${orchestrator_location}docker-compose-base.yml -f ${orchestrator_location}docker-compose-inbound.yml up -d
 
-    inbound_docker_compose_prefix="docker-compose -f ${orchestrator_location}docker-compose-base.yml -f ${orchestrator_location}docker-compose-inbound.yml"
+    check_mail_service_up
 
-    ${inbound_docker_compose_prefix} up -d
+    deploy_mail "mail" "mailinbound"
 
-    check_mail_up
+    # provision_localstack
+ 
+    # provision_postfix "postfix-is" "postfix-cd"
 
-    if [ $? -eq 0 ]; then 
-        echo "mail-service is up!"
-        deploy_mail
-    else
-        echo "${RED} mail-service tomcat did not start. Unable to deploy ${tomcat_wars[@]} ${NC}"
-        echo "${RED} bringing inbound docker containers back down"
-        ${inbound_docker_compose_prefix} down
-        exit 1
-    fi
-
-    provision_localstack
-
-    provision_postfix
-
-    check_tomcat_startup
+    check_tomcat_startup "mail" "mailinbound"
 }
 
 function deploy_outbound {
-    echo -e "${GREEN} user selected outbound ${NC}"
-    echo -e "${GREEN} Services needed for outbound mail-flow will be started ${NC}"
+    check_login_to_aws
+
+    echo -e "${YELLOW} user selected outbound ${NC}"
+    echo -e "${YELLOW} Services needed for outbound mail-flow will be started ${NC}"
     echo ""
-    tomcat_wars=("mail" "mailoutbound")
+
+    deploy_jilter outbound
 
     create_mail_bootstrap
 
-    deploy_mail
+    deploy_mail "mail" "mailoutbound"
 
     docker-compose -f ${orchestrator_location}docker-compose-base.yml -f ${orchestrator_location}docker-compose-outbound.yml up -d
+
+    check_mail_service_up
+
+    deploy_mail "mail" "mailoutbound"
+
+    provision_localstack
+ 
+    provision_postfix "postfix-cs" "postfix-id"
+
+    check_tomcat_startup "mail" "mailoutbound"
 }
 
 function provision_postfix {
-    for service in "${postfix_services[@]}"; do
+    if [ "$#" -eq 0 ]; then
+        echo -e "${RED} No postfix instances specified for provisioning ${NC}"
+        clean_up
+        exit 1
+    fi
+    for service in "$@"; do
         echo -e "${GREEN} provisioning ${service} started ${NC}"
         docker exec ${service} /opt/run.sh
-        echo -e "${GREEN} provisioning ${service} successfully completed ${NC}"
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN} provisioning ${service} successfully completed ${NC}"
+        else
+            echo -e "${RED} provisioning ${service} failed ${NC}"
+            clean_up
+            exit 1
+        fi
     done
 }
 
 function provision_localstack {
     echo -e "${GREEN} provisioning localstack started ${NC}"
     bash ${orchestrator_location}do_it.sh
-    echo -e "${GREEN} provisioning localstack successfully completed ${NC}"
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN} provisioning localstack successfully completed ${NC}"
+    else
+        echo -e "${RED} provisioning localstack failed ${NC}"
+        clean_up
+        exit 1
+    fi
 }
 
 : 'This function retrieves the necessary war files specified in the services variable for the users
@@ -100,15 +106,21 @@ It then copies into a folder with a standard name to enable mounting into a dock
 container.
 '
 function deploy_mail {
-    echo -e "${GREEN} Starting to deploy ${tomcat_wars[@]} ${NC}"
+    if [ "$#" -eq 0 ]; then
+        echo -e "${RED} No wars specified for deployment ${NC}"
+        clean_up
+        exit 1
+    fi
+
+    echo -e "${GREEN} Starting to deploy '$@' ${NC}"
     pushd ${HOME}/g/cloud/sophos-cloud >/dev/null 2>&1
     raw_branch=$(git rev-parse --abbrev-ref HEAD)
     branch=$(echo $raw_branch | tr / _ | tr - _)
 
-    services_count=${#tomcat_wars[@]}
+    services_count="$#"
     services_found=()
     warfiles_found=()
-    for war in "${tomcat_wars[@]}"; do
+    for war in "$@"; do
         local spath="./${war}-services/build/libs/${war}-services-${branch}-LOCAL.war"
         if [ -e "$spath" ]; then
             warfiles_found+=("$spath")
@@ -118,11 +130,12 @@ function deploy_mail {
 
     war_count=${#warfiles_found[@]}
     if [[ $war_count -ne $services_count ]]; then
-        echo "found services: [${services_found[@]}] , expected: [${tomcat_wars[@]}]"
+        echo "found services: [${services_found[@]}] , expected: [$@]"
         echo "All war files were not available in the current branch"
         echo "You may not have assembled the necessary wars. Please ensure all war files are available"
-        comma_seperated_services=$(join , ${tomcat_wars[@]})
+        comma_seperated_services=$(join , "$@")
         echo "Run './gradlew {"$comma_seperated_services"}-services:assemble' in the sophos cloud repo"
+        clean_up
         exit 1
     else
         echo "War files have been indexed"
@@ -132,10 +145,11 @@ function deploy_mail {
 
     mkdir -p ${war_file_location}
 
-    if [ $? -eq 0 ]; then
-        echo "cool"
+    if [ ! $? -eq 0 ]; then
+        echo -e "${RED} Failed to create ${war_file_location} ${NC}"
+        clean_up
+        exit 1
     fi
-
     tomcat_webapps_loc="mail-service:/usr/local/tomcat/webapps/"
 
     for file in "${warfiles_found[@]}" ; do
@@ -144,9 +158,18 @@ function deploy_mail {
         newfile=$(echo "$prefix"-services.war)
         newfile_location="${war_file_location}/$newfile"
         rsync -a --progress "${file}" "${newfile_location}"
-        echo "Copying WAR file ${newfile_location} into tomcat for deployment"
+        if [ ! $? -eq 0 ]; then
+            echo -e "${RED} Failed to copy over ${file} to ${newfile_location} ${NC}"
+            continue
+        fi
+        echo "Copying WAR file ${newfile_location} into Tomcat for deployment"
         docker cp "${newfile_location}" "${tomcat_webapps_loc}"
-       newfiles+="|$newfile|"
+        if [ ! $? -eq 0 ]; then
+            echo -e "${RED} Failed to copy ${newfile_location} into Tomcat containers ${NC}"
+            echo "try recopying the war files into the tomcat container using 'docker cp <source> container_name:<destination>'"
+            continue
+        fi
+        newfiles+="|$newfile|"
     done
 
     popd >/dev/null
@@ -154,8 +177,66 @@ function deploy_mail {
     echo -e "${GREEN} successfully copied ${newfiles} into Tomcat ${NC}"
 }
 
-function check_mail_up()
+function deploy_jilter()
 {
+    jilter_location="${XGEMAIL_HOME}xgemail/"
+    
+    case $1 in 
+        inbound)
+            sandbox_jilter_tar_location="${HOME}/.xgemail_sandbox/jilter/inbound/"
+            mkdir -p ${sandbox_jilter_tar_location}
+            jilter_build_location="${jilter_location}xgemail-jilter-inbound/build/distributions/"
+            jilter_build_name="jilter_inbound.tar"
+        ;;
+        outbound)
+            sandbox_jilter_tar_location="${HOME}/.xgemail_sandbox/jilter/outbound/"
+            mkdir -p ${sandbox_jilter_tar_location}
+            jilter_build_location="${jilter_location}xgemail-jilter-outbound/build/distributions/"
+            jilter_build_name="jilter_outbound.tar"
+        ;;
+        *)
+        echo "usage"
+        exit 1
+        ;;
+    esac
+
+    if [ ! -d ${jilter_build_location} ]; then
+        echo -e "${RED} Jilter tar files are not present. Please follow instructions in the readme in the xgemail repo
+        to build jilter ${NC}"
+        exit 1
+    else
+        pushd "${jilter_build_location}"
+        jilter_tar_file=$(ls *.tar)
+        if [ ! ${#jilter_tar_file[@]} -eq 1 ]; then
+            echo -e "${RED} 0 or more than 1 tar files were found. There should be only tar file in the distribution ${NC}"
+            exit 1
+        else
+            newfile_location=${sandbox_jilter_tar_location}${jilter_build_name}
+            echo "Copying tar files to .xgemail_sandbox folder to ready it for deployment"
+            rsync -a --progress "${jilter_tar_file[0]}" "${newfile_location}"
+            if [ $? -eq 0 ]; then
+                echo -e "${GREEN} Successfully copied jilter tar files to .xgemail_sandbox folder ${NC}"
+            else
+                echo -e "${RED} Failed to copy jilter tar files to .xgemail_sandbox folder ${NC}"
+                exit 1
+            fi 
+        fi
+        popd > /dev/null
+    fi
+}
+
+function check_login_to_aws {
+    #Setup login to amazon ECR
+    aws ecr get-login --no-include-email --region us-east-2 --profile docker-amzn >/dev/null 2>&1
+    if [ ! $? -eq 0 ]; then
+        echo -e "${RED} Unable to log into AWS ECR. Check your AWS credentials configuration ${NC}"
+        exit 1
+    else
+        echo -e "${GREEN} Successfully logged into AWS ECR ${NC}"
+    fi
+}
+
+function check_mail_service_up {
     echo "Waiting for mail-service to be fully up."
     count=0
     max_count=12 # Multiply this number by 5 for total wait time, in seconds.
@@ -171,14 +252,17 @@ function check_mail_up()
 
     if [[ $startup_check -ne 1 ]]; then
         echo -e "${RED}Mail-service tomcat did not start properly.  Please check the logs ${NC}"
+        clean_up 
         exit 1
+    else
+        echo "Mail-service is up!"
     fi
 }
 
 function check_tomcat_startup()
 {
     local minutes=20
-    echo "Checking deployment of wars <${tomcat_wars[@]}> in background"
+    echo "Checking deployment of wars '$@' in background"
     sleep 20
     local now=$(date +%s)
     local deadline=$(($now + $minutes*60))
@@ -187,8 +271,8 @@ function check_tomcat_startup()
         if [[ $startup_check -eq 200 ]]; then
             service_count=$(curl -s -u script:script http://localhost:9898/manager/text/list | grep services | awk -F":" '{print $1," ",$2}' | column -t | grep -c -v running)
             if [[ $service_count -eq 0 ]]; then
-                echo -e "${GREEN} Deployment of wars <${tomcat_wars[@]}> done! ${NC}"
-                return 0
+                echo -e "${GREEN} Deployment of wars '$@' done! ${NC}"
+                exit 0
             fi
         fi
         sleep 10
@@ -221,7 +305,26 @@ function create_mail_bootstrap()
 
     cat $nova_bootstrap_file $addendum_file > $file
 
-    echo "successfully concatenated and created bootstrap properties file $file"
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN} Successfully concatenated and created bootstrap properties file ${file} ${NC}"
+    else
+        echo -e "${RED} Failed to created bootstrap properties file ${file} ${NC}"
+        exit 1
+    fi
+}
+
+function clean_up {
+    echo -e "${YELLOW} CLEANING UP ${NC}"
+    #TODO: break up line
+    $(docker-compose -f ${orchestrator_location}docker-compose-base.yml -f ${orchestrator_location}docker-compose-inbound.yml -f ${orchestrator_location}docker-compose-outbound.yml down)
+
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN} Successfully cleaned up ${NC}"
+        exit 1
+    else
+        echo -e "${GREEN} Clean up was unsuccessful ${NC}"
+        exit 1
+     fi   
 }
 
 function join {
@@ -229,6 +332,9 @@ function join {
     shift;
     echo "$*";
 }
+
+# When the user hits ctrl-c to interrupt the process, clean up
+trap clean_up INT
 
 case "$1" in
     deploy)
@@ -240,43 +346,38 @@ case "$1" in
                 deploy_outbound
                 ;;
 
-            both)
+            all)
                 ;;
             *)
                 echo "unknown option"
                 ;;
        esac
-    ;;
+        ;;
     hot_deploy)
         case "$2" in
             mail)
-            tomcat_wars=("mail")
-            deploy_mail
-            if [ $? -eq 0 ]; then 
-                check_tomcat_startup
-            fi
+            
+            deploy_mail "mail"
+            check_tomcat_startup "mail"
             ;;
             mailinbound)
-            tomcat_wars=("mailinbound")
-            deploy_mail
-            if [ $? -eq 0 ]; then 
-                check_tomcat_startup
-            fi
+            deploy_mail "mailinbound"
+            check_tomcat_startup "mailinbound"
+        
             ;;
             mailoutbound)
-            tomcat_wars=("mailoutbound")
-            deploy_mail
-            if [ $? -eq 0 ]; then 
-                check_tomcat_startup
-            fi
+            deploy_mail "mailoutbound"
+            check_tomcat_startup "mailoutbound"
             ;;
             *)
             echo "usage"
             ;;
         esac
         ;;
-
+    destroy)
+        clean_up
+        ;;
     *)
         echo "usage"
-    ;;
+        ;;
 esac
