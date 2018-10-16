@@ -738,7 +738,7 @@
       }
     },
 
-    "XgemailCustomerEncryptionSecurityGroupLb": {
+    "XgemailEncryptionDeliverySecurityGroupLb": {
       "Properties": {
         "GroupDescription": "Controls access to public facing ELBs.",
         "Tags": [
@@ -753,7 +753,7 @@
           },
           {
             "Key": "Role",
-            "Value": "svc-xgemail-customer-encryption-elb"
+            "Value": "svc-xgemail-encryption-delivery-elb"
 
           },
           {
@@ -773,7 +773,7 @@
                   {
                     "Ref": "AWS::StackName"
                   },
-                  "/sg/xgemail/customer/encryption/elb"
+                  "/sg/xgemail/encryption/delivery/elb"
                 ]
               ]
             }
@@ -800,17 +800,17 @@
       "Type": "AWS::EC2::SecurityGroup"
     },
 
-    "XgemailCustomerEncryptionSecurityGroup": {
+    "XgemailEncryptionDeliverySecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "GroupDescription": "Xgemail customer encryption security group.",
+        "GroupDescription": "Xgemail encryption delivery security group.",
         "Tags": [{
           "Key": "Name",
           "Value": {
             "Fn::Join": [ "", [
               { "Ref": "Environment" }, "-",
               { "Ref": "Branch" }, "-",
-              { "Ref": "AWS::StackName" }, "/sg/xgemail/customer/encryption"
+              { "Ref": "AWS::StackName" }, "/sg/xgemail/encryption/delivery"
             ]]
           }
         }],
@@ -819,13 +819,13 @@
             "IpProtocol": "tcp",
             "FromPort": "25",
             "ToPort": "25",
-            "SourceSecurityGroupId": { "Ref": "XgemailCustomerEncryptionSecurityGroupLb" }
+            "SourceSecurityGroupId": { "Ref": "XgemailEncryptionDeliverySecurityGroupLb" }
           },
           {
             "IpProtocol": "tcp",
             "FromPort": "587",
             "ToPort": "587",
-            "SourceSecurityGroupId": { "Ref": "XgemailCustomerEncryptionSecurityGroupLb" }
+            "SourceSecurityGroupId": { "Ref": "XgemailEncryptionDeliverySecurityGroupLb" }
           }
         ],
         "SecurityGroupEgress": [
@@ -1188,10 +1188,10 @@
         "ToPort": "22"
       }
     },
-    "XgemailCustomerEncryprionSecurityGroupIngressBastionSsh": {
+    "XgemailEncryprionDeliverySecurityGroupIngressBastionSsh": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
-        "GroupId": { "Ref": "XgemailCustomerEncryptionSecurityGroup" },
+        "GroupId": { "Ref": "XgemailEncryptionDeliverySecurityGroup" },
         "SourceSecurityGroupId": { "Ref": "SecurityGroupBastion" },
         "IpProtocol": "tcp",
         "FromPort": "22",
@@ -1304,16 +1304,16 @@
         "Ref": "XgemailCustomerSubmitSecurityGroup"
       }
     },
-    "XgemailCustomerEncryptionSecurityGroupLb": {
-      "Description": "Xgemail Customer Encryption Load Balancer security group",
+    "XgemailEncryptionDeliverySecurityGroupLb": {
+      "Description": "Xgemail Encryption Delivery Load Balancer security group",
       "Value": {
-        "Ref": "XgemailCustomerEncryptionSecurityGroupLb"
+        "Ref": "XgemailEncryptionDeliverySecurityGroupLb"
       }
     },
-    "XgemailCustomerEncryptionSecurityGroup": {
-      "Description": "Xgemail Customer Encryption security group",
+    "XgemailEncryptionDeliverySecurityGroup": {
+      "Description": "Xgemail Encryption Delivery security group",
       "Value": {
-        "Ref": "XgemailCustomerEncryptionSecurityGroup"
+        "Ref": "XgemailEncryptionDeliverySecurityGroup"
       }
     },
     "XgemailInternetDeliverySecurityGroupLb": {

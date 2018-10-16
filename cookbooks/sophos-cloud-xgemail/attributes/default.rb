@@ -279,33 +279,27 @@ default['xgemail']['postfix_instance_data'] = {
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600),
     :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
   },
-#  # customer-encryption-delivery
-#  'encryption-delivery' => {
-#    :instance_name => 'ed',
-#    :port => 8587,
-#    # Give delivery queues extra padding because extra content may be created during processing
-#    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800)
-#  },
-    # customer-encryption
-     'customer-encryption' => {
-        :instance_name => 'ce',
-       :port => 25,
-       # Give delivery queues extra padding because extra content may be created during processing
-       :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800),
-       :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
-     },
-  # customer-encryption-submit
-   'encryption-submit' => {
-     :instance_name => 'es',
-     :port => 587,
-     # Give delivery queues extra padding because extra content may be created during processing
-     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800),
-     :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
-   }
+  # encryption-delivery
+  'encryption-delivery' => {
+    :instance_name => 'ed',
+   :port => 25,
+   # Give delivery queues extra padding because extra content may be created during processing
+   :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800),
+   :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+  },
+  # encryption-submit
+  'encryption-submit' => {
+   :instance_name => 'es',
+   :port => 25,
+   # Give delivery queues extra padding because extra content may be created during processing
+   :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800),
+   :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+  }
 }
 
-## The Postfix instance name for the customer-encryption node
-default['xgemail']['customer_encryption_postfix_instance_name'] = 'ed'
+## The Postfix instance name for the encryption-delivery node
+default['xgemail']['encryption_delivery_postfix_instance_name'] = 'ed'
+default['xgemail']['encryption_submit_postfix_instance_name'] = 'es'
 
 default['xgemail']['common_instance_config_params'] = [
   # Disable special handling of owner- prefix

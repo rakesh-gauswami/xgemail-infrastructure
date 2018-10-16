@@ -51,16 +51,16 @@
       "Description": "Endpoint URL for delivery SQS queue",
       "Type": "String"
     },
-    "CustomerEncryptionDeliveryEventsTopicArn": {
-      "Description": "TopicArn for customer encryption events SNS",
+    "EncryptionDeliveryEventsTopicArn": {
+      "Description": "TopicArn for encryption delivery events SNS",
       "Type": "String"
     },
-    "CustomerEncryptionDeliveryQueueArn": {
-      "Description": "Endpoint for customer encryption SQS queue",
+    "EncryptionDeliveryQueueArn": {
+      "Description": "Endpoint for encryption delivery SQS queue",
       "Type": "String"
     },
-    "CustomerEncryptionDeliveryQueueUrl": {
-      "Description": "Endpoint URL for customer encryption SQS queue",
+    "EncryptionDeliveryQueueUrl": {
+      "Description": "Endpoint URL for encryption delivery SQS queue",
       "Type": "String"
     },
     "EmergencyInboxQueueArn": {
@@ -246,12 +246,12 @@
         "TopicArn": { "Ref": "SuccessEventsTopicArn"}
       }
     },
-    "CustomerEncryptionQueueToCustomerEncryptionSnsSubscription": {
+    "EncryptionDeliveryQueueToEncryptionDeliverySnsSubscription": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
-        "Endpoint": { "Ref": "CustomerEncryptionDeliveryQueueArn" },
+        "Endpoint": { "Ref": "EncryptionDeliveryQueueArn" },
         "Protocol": "sqs",
-        "TopicArn": { "Ref": "CustomerEncryptionDeliveryEventsTopicArn"}
+        "TopicArn": { "Ref": "EncryptionDeliveryEventsTopicArn"}
       }
     },
     "EmergencyInboxQueueToSuccessSnsSubsciption": {

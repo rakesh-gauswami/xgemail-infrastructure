@@ -11,7 +11,7 @@
 
 NODE_TYPE = node['xgemail']['cluster_type']
 
-if NODE_TYPE != 'customer-encryption'
+if NODE_TYPE != 'encryption-submit'
   return
 end
 
@@ -159,6 +159,6 @@ end
 
 include_recipe 'sophos-cloud-xgemail::setup_dh_params'
 
-# TODO Add the script for customer-encryption jilter setup and message splitting
+# TODO Add the script for encryption-submit jilter setup and message splitting
 #include_recipe 'sophos-cloud-xgemail::install_jilter_outbound'
 #include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'

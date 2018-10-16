@@ -150,7 +150,7 @@ module SophosCloudXgemail
           return "mx-01-#{region}.#{account}.hydra.sophos.com"
         when 'customer-submit'
           return "relay-#{region}.#{account}.hydra.sophos.com"
-        when 'customer-encryption'
+        when 'encryption-delivery'
           return "encryption-#{region}.#{account}.hydra.sophos.com"
         when 'internet-delivery', 'internet-xdelivery'
           if account == 'sandbox'

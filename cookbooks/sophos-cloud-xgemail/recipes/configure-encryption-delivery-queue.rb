@@ -11,7 +11,7 @@
 
 NODE_TYPE = node['xgemail']['cluster_type']
 
-if NODE_TYPE != 'customer-encryption'
+if NODE_TYPE != 'encryption-delivery'
   return
 end
 

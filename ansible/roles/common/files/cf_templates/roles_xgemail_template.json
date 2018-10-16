@@ -4,7 +4,7 @@
 
   "Metadata": {
     "Copyright": [
-      "Copyright 2017, Sophos Limited. All rights reserved.",
+      "Copyright 2018, Sophos Limited. All rights reserved.",
       "",
       "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
       "Sophos Limited and Sophos Group.  All other product and company",
@@ -759,18 +759,18 @@
         ]
       }
     },
-    "XgemailCustomerEncryptionInstanceProfile": {
+    "XgemailEncryptionDeliveryInstanceProfile": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
         "Path": "/",
         "Roles": [
           {
-            "Ref": "XgemailCustomerEncryptionInstanceRole"
+            "Ref": "XgemailEncryptionDeliveryInstanceRole"
           }
         ]
       }
     },
-    "XgemailCustomerEncryptionInstanceRole": {
+    "XgemailEncryptionDeliveryInstanceRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
         "ManagedPolicyArns": [ "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM" ],
@@ -788,7 +788,7 @@
         "Path": "/"
       }
     },
-    "XgemailCustomerEncryptionInstanceRolePolicies" : {
+    "XgemailEncryptionDeliveryInstanceRolePolicies" : {
       "Type" : "AWS::IAM::Policy",
       "Properties" : {
         "PolicyDocument" : {
@@ -989,7 +989,7 @@
         "PolicyName" : "root",
         "Roles" : [
           {
-            "Ref" : "XgemailCustomerEncryptionInstanceRole"
+            "Ref" : "XgemailEncryptionDeliveryInstanceRole"
           }
         ]
       }
@@ -2168,13 +2168,13 @@
       "Description": "XGEMAIL Delivery instance role",
       "Value": { "Ref": "XgemailDeliveryInstanceRole" }
     },
-    "XgemailCustomerEncryptionInstanceProfile": {
-      "Description": "XGEMAIL Customer Encryption instance profile",
-      "Value": { "Ref": "XgemailCustomerEncryptionInstanceProfile" }
+    "XgemailEncryptionDeliveryInstanceProfile": {
+      "Description": "XGEMAIL Encryption Delivery instance profile",
+      "Value": { "Ref": "XgemailEncryptionDeliveryInstanceProfile" }
     },
-    "XgemailCustomerEncryptionInstanceRole": {
-      "Description": "XGEMAIL Customer Encryption instance role",
-      "Value": { "Ref": "XgemailCustomerEncryptionInstanceRole" }
+    "XgemailEncryptionDeliveryInstanceRole": {
+      "Description": "XGEMAIL Encryption Delivery instance role",
+      "Value": { "Ref": "XgemailEncryptionDeliveryInstanceRole" }
     },
     "XgemailInternetDeliveryInstanceProfile": {
       "Description": "XGEMAIL Internet Delivery instance profile",

@@ -113,7 +113,7 @@ if ACCOUNT == 'sandbox'
         execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
       end
     end
-    # TODO Add jilter configuration for NODE_TYPE == 'customer-encryption'
+    # TODO Add jilter configuration for NODE_TYPE == 'encryption-submit'
   end
 
 else
