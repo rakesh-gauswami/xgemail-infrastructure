@@ -3,15 +3,20 @@
 export haproxy_file="${HOME}/g/nova/haproxy/haproxy.cfg"
 export addendum_file="././config/xgemail_addendum_haproxy.cfg"
 {
-    # modify existing routing to mail-backend
-    edited=$(sed 's/hub-backend if mail_context/mail-backend if mail_context/' ${haproxy_file})
+    pattern="hub-backend[[:space:]]if[[:space:]]mail_context"
+    replacement="mail-backend if mail_context"
 
-    if [[ ${edited} == 0 ]]; then
+    grep -q ${pattern} ${haproxy_file}
+
+    if [ $? -eq 0 ]; then
+        # modify existing routing to mail-backend
+        gawk -i inplace '{ gsub( "'"${pattern}"'", "'"${replacement}"'" ); }; { print }' ${haproxy_file}
+
         # add mail-backend
         cat ${addendum_file} >> ${haproxy_file}
 
         # restart nova proxy, make sure mail-service is up
         docker restart nova_proxy_1
-    fi;
+    fi
 
 } || exit 1
