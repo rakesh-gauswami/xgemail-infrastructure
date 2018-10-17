@@ -581,6 +581,7 @@ function override_files {
 
 function docker_compose_command
 {
+    all_command="docker-compose -f ${base_compose} -f ${inbound_compose} -f ${outbound_compose}"
     case "$2" in 
         inbound)
         docker-compose -f ${base_compose} -f ${inbound_compose} $1
@@ -589,10 +590,10 @@ function docker_compose_command
         docker-compose -f ${base_compose} -f ${outbound_compose} $1
         ;;
         all)
-        docker-compose -f ${base_compose} -f ${inbound_compose} -f ${outbound_compose} $1
+        ${all_command} $1
         ;;
         *)
-        echo "Usage: $0 $1 <inbound | outbound | all> "
+        ${all_command} $1 $2
         ;;
     esac    
 }
@@ -617,9 +618,9 @@ deploy       deploy and start containers                                        
 hot_deploy   hot deploy artifacts(NOTE: artifacts have to be built first)           mail, mailinbound, mailoutbound
                                                                                     jilter-inbound, jilter-outbound
                                                                                     postfix-is, postfix-cd, postfix-cs, postfix-id
-start        start stopped containers                                               inbound, outbound, all
-stop         stop started containers                                                inbound, outbound, all
-restart      restart started containers                                             inbound, outbound, all                                                                                    
+start        start stopped containers                                               <service_name>, inbound, outbound, all
+stop         stop started containers                                                <service_name>, inbound, outbound, all
+restart      restart started containers                                             <service_name>, inbound, outbound, all                                                                                    
 destroy      clean up and bring down all containers 
              This does not remove images
 EOF

@@ -1,7 +1,7 @@
 version: '3'
 services:
   postfix-cs:
-      image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:1.0.0
+      image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:latest
       container_name: postfix-cs
       hostname: customer-submit
       domainname: local.sandbox.hydra.sophos.com
@@ -20,7 +20,7 @@ services:
         - novanet
 
   postfix-id:
-    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:1.0.0
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:latest
     container_name: postfix-id
     hostname: internet-delivery
     domainname: local.sandbox.hydra.sophos.com
@@ -37,7 +37,7 @@ services:
       - novanet
 
   # postfix-ix:
-  #   image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:1.0.0
+  #   image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:latest
   #   container_name: postfix-ix
   #   hostname: internet-xdelivery
   #   domainname: local.sandbox.hydra.sophos.com
