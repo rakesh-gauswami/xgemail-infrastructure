@@ -10,7 +10,11 @@ outbound_compose="docker-compose-outbound.yml"
 
 nova_bootstrap_file="${HOME}/g/nova/appserver/config/bootstrap.properties"
 mail_bootstrap_file="${orchestrator_location}sophos_cloud_tomcat_bootstrap.properties"
-nova_bootstrap_file_original=${HOME}/g/nova/appserver/config/bootstrap_copy.properties
+nova_bootstrap_file_original_copy="${HOME}/g/nova/appserver/config/bootstrap_copy.properties"
+
+nova_docker_compose_single="${HOME}/g/nova/docker-compose-single.yml"
+xgemail_replacement_nova_compose="${orchestrator_location}docker-compose-nova-single.yml"
+nova_docker_compose_original_copy="${HOME}/g/nova/docker-compose-single_copy.yml"
 
 sasi_service_image="email/sasi-service"
 sasi_docker_image="email/sasi-daemon"
@@ -21,38 +25,40 @@ function initialize {
     set_home
     echo -e "${YELLOW} Running set up steps ${NC}"
     echo -e "${YELLOW} NOTE: This should be run each time before starting NOVA ${NC}"
+
+   #override nova appserver bootstrap file
     if [ ! -f ${nova_bootstrap_file} ]; then
         echo -e "${RED} ${nova_bootstrap_file} could not be found. Ensure it exists at the right location ${NC}"
         exit 1        
     fi
 
-    if [ ! -f ${nova_bootstrap_file_original} ]; then
-        cp ${nova_bootstrap_file} ${nova_bootstrap_file_original}
+    if [ ! -f ${nova_bootstrap_file_original_copy} ]; then
+        cp ${nova_bootstrap_file} ${nova_bootstrap_file_original_copy}
     fi
 
     create_mail_bootstrap
 
-    if [ ! -f ${mail_bootstrap_file} ]; then
-        echo -e "${RED} ${mail_bootstrap_file} could not be found. Ensure it exists at the right location ${NC}"
-        exit 1
-    fi
-    
-    echo "Overwriting nova hub bootstrap properties file"
-    cp ${mail_bootstrap_file} ${nova_bootstrap_file}
+    override_files ${nova_bootstrap_file} ${mail_bootstrap_file}
 
-    if [ $? -eq 0 ]; then
-        echo "Created new bootstrap properties for nova hub"
-    else
-        echo -e "${RED} There was an error creating bootstrap properties for nova hub ${NC}"
-        exit 1
+    #override nova docker-compose-single.yml file
+    if [ ! -f ${nova_docker_compose_single} ]; then
+        echo -e "${RED} ${nova_docker_compose_single} could not be found. Ensure it exists at the right location ${NC}"
+        exit 1        
     fi
+
+    if [ ! -f ${nova_docker_compose_original_copy} ]; then
+        cp ${nova_docker_compose_single} ${nova_docker_compose_original_copy}
+    fi
+
+    override_files ${nova_docker_compose_single} ${xgemail_replacement_nova_compose}
 
     echo -e "${GREEN} Initialization Completed Successfully ${NC}"
 }
 
+
 function deploy_inbound {
     initialize
-    check_login_to_aws
+    # check_login_to_aws
     set_home
     
     echo -e "${YELLOW} user selected inbound ${NC}"
@@ -65,10 +71,7 @@ function deploy_inbound {
 
     docker-compose -f ${orchestrator_location}${base_compose} -f ${orchestrator_location}${inbound_compose} up -d
 
-    check_service_up jilter-inbound
     deploy_jilter inbound
-
-    check_service_up mail-service
 
     deploy_mail "mail" "mailinbound"
 
@@ -96,12 +99,10 @@ function deploy_outbound {
 
     docker-compose -f ${orchestrator_location}${base_compose} -f ${orchestrator_location}${outbound_compose} up -d
 
-    check_service_up mail-service
-
     deploy_mail "mail" "mailoutbound"
 
     provision_localstack
- 
+    
     provision_postfix "postfix-cs" "postfix-id"
 
     check_tomcat_startup "mail" "mailoutbound"
@@ -121,8 +122,6 @@ function deploy_all {
 
     docker-compose -f ${orchestrator_location}${base_compose} -f ${orchestrator_location}${inbound_compose} -f ${orchestrator_location}${outbound_compose} up -d
 
-    check_service_up mail-service
-
     deploy_mail "mail" "mailinbound" "mailoutbound"
 
     provision_localstack
@@ -135,30 +134,30 @@ function deploy_all {
 function provision_postfix {
     if [ "$#" -eq 0 ]; then
         echo -e "${RED} No postfix instances specified for provisioning ${NC}"
-        clean_up
         exit 1
     fi
+
     for service in "$@"; do
+        check_service_up ${service}
         echo -e "${GREEN} provisioning ${service} started ${NC}"
         docker exec ${service} /opt/run.sh
         if [ $? -eq 0 ]; then
             echo -e "${GREEN} provisioning ${service} successfully completed ${NC}"
         else
             echo -e "${RED} provisioning ${service} failed ${NC}"
-            clean_up
             exit 1
         fi
     done
 }
 
 function provision_localstack {
+    check_service_up localstack
     echo -e "${GREEN} provisioning localstack started ${NC}"
     bash ${orchestrator_location}do_it.sh
     if [ $? -eq 0 ]; then
         echo -e "${GREEN} provisioning localstack successfully completed ${NC}"
     else
         echo -e "${RED} provisioning localstack failed ${NC}"
-        clean_up
         exit 1
     fi
 }
@@ -171,7 +170,6 @@ container.
 function deploy_mail {
     if [ "$#" -eq 0 ]; then
         echo -e "${RED} No wars specified for deployment ${NC}"
-        clean_up
         exit 1
     fi
 
@@ -194,11 +192,10 @@ function deploy_mail {
     war_count=${#warfiles_found[@]}
     if [[ $war_count -ne $services_count ]]; then
         echo "found services: [${services_found[@]}] , expected: [$@]"
-        echo "All war files were not available in the current branch"
-        echo "You may not have assembled the necessary wars. Please ensure all war files are available"
+        echo -e "${RED}All war files were not available in the current branch"
+        echo -e "You may not have assembled the necessary wars. Please ensure all war files are available"
         comma_seperated_services=$(join , "$@")
-        echo "Run './gradlew {"$comma_seperated_services"}-services:assemble' in the sophos cloud repo"
-        clean_up
+        echo -e "Run './gradlew {"$comma_seperated_services"}-services:clean {"$comma_seperated_services"}-services:assemble' in the sophos cloud repo ${NC}"
         exit 1
     else
         echo "War files have been indexed"
@@ -210,10 +207,11 @@ function deploy_mail {
 
     if [ ! $? -eq 0 ]; then
         echo -e "${RED} Failed to create ${war_file_location} ${NC}"
-        clean_up
         exit 1
     fi
     tomcat_webapps_loc="mail-service:/usr/local/tomcat/webapps/"
+
+    check_service_up mail-service
 
     for file in "${warfiles_found[@]}" ; do
         filename=$(echo "$file" | xargs -n 1 basename)
@@ -255,13 +253,18 @@ function deploy_jilter()
 
     case $1 in 
         inbound)
+            check_service_up jilter-inbound
             deploy_jilter_helper ${sandbox_inbound_jilter_tar_location} ${jilter_inbound_build_location} ${jilter_inbound_build_name}
         ;;
         outbound)
+            check_service_up jilter-outbound
             deploy_jilter_helper ${sandbox_outbound_jilter_tar_location} ${jilter_outbound_build_location} ${jilter_outbound_build_name}
         ;;
         all)
+            check_service_up jilter-inbound
             deploy_jilter_helper ${sandbox_inbound_jilter_tar_location} ${jilter_inbound_build_location} ${jilter_inbound_build_name}
+            
+            check_service_up jilter-outbound
             deploy_jilter_helper ${sandbox_outbound_jilter_tar_location} ${jilter_outbound_build_location} ${jilter_outbound_build_name}
         ;;
         *)
@@ -429,10 +432,6 @@ function check_service_up {
 
     if [[ $startup_check -ne 1 ]]; then
         echo -e "${RED} $1 did not start properly.  Please check the logs ${NC}"
-
-        if [ ! $2 = "hot" ]; then
-            clean_up
-        fi
         exit 1
     else
         echo "$1 is up!"
@@ -481,13 +480,13 @@ function create_mail_bootstrap()
       exit 1
     fi
 
-    if [ ! -f "${nova_bootstrap_file_original}" ]; then
-      echo -e "${RED} Original bootstrap file not found at ${nova_bootstrap_file_original}. Run <./xgemail.sh initialize>  ${NC}"
+    if [ ! -f "${nova_bootstrap_file_original_copy}" ]; then
+      echo -e "${RED} Original bootstrap file not found at ${nova_bootstrap_file_original_copy}. Run <./xgemail.sh initialize>  ${NC}"
       exit 1
     fi
 
 
-    cat $nova_bootstrap_file_original $addendum_file > $mail_bootstrap_file
+    cat $nova_bootstrap_file_original_copy $addendum_file > $mail_bootstrap_file
 
     if [ $? -eq 0 ]; then
         echo -e "${GREEN} Successfully concatenated and created bootstrap properties file ${mail_bootstrap_file} ${NC}"
@@ -517,19 +516,27 @@ function clean_up_nova_initialization
 {
     echo -e "${YELLOW} Cleaning up nova initialization ${NC}"
 
-    if [ -f ${nova_bootstrap_file_original} ]; then
+    if [ -f ${nova_bootstrap_file_original_copy} ]; then
 
-        mv ${nova_bootstrap_file_original} ${nova_bootstrap_file}
+        mv ${nova_bootstrap_file_original_copy} ${nova_bootstrap_file}
 
         if [ $? -eq 0 ]; then
             echo -e "${GREEN} Successfully restored ${nova_bootstrap_file} ${NC}"
         else
             echo -e "${RED} Clean up was unsuccessful. Unable to restore ${nova_bootstrap_file} ${NC}"
-            exit 1
         fi 
     fi
-     
 
+    if [ -f ${nova_docker_compose_original_copy} ]; then
+
+        mv ${nova_docker_compose_original_copy} ${nova_docker_compose_single}
+
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN} Successfully restored ${nova_docker_compose_single} ${NC}"
+        else
+            echo -e "${RED} Clean up was unsuccessful. Unable to restore ${nova_docker_compose_single} ${NC}"
+        fi 
+    fi  
 }
 
 function clean_up_files {
@@ -548,14 +555,53 @@ function clean_up_files {
     fi    
 }
 
+function override_files {
+    if [ ! $# -eq 2 ]; then
+        echo -e "${RED} This function needs two input arguments ${NC}"
+        exit 1
+    fi
+
+    for file in "$@"; do
+        if [ ! -f ${file} ]; then
+            echo -e "${RED} ${file} could not be found. Ensure it exists at the right location ${NC}"
+            exit 1
+        fi
+    done
+
+    echo "Overwriting $1 with $2"
+    cp $2 $1
+
+    if [ $? -eq 0 ]; then
+        echo "Successfully replaced $1 with $2"
+    else
+        echo -e "${RED} There was an error replacing $1 with $2 ${NC}"
+        exit 1
+    fi
+}
+
+function docker_compose_command
+{
+    case "$2" in 
+        inbound)
+        docker-compose -f ${base_compose} -f ${inbound_compose} $1
+        ;;
+        outbound)
+        docker-compose -f ${base_compose} -f ${outbound_compose} $1
+        ;;
+        all)
+        docker-compose -f ${base_compose} -f ${inbound_compose} -f ${outbound_compose} $1
+        ;;
+        *)
+        echo "Usage: $0 $1 <inbound | outbound | all> "
+        ;;
+    esac    
+}
+
 function join {
     local IFS="$1";
     shift;
     echo "$*";
 }
-
-# When the user hits ctrl-c to interrupt the process, clean up
-trap clean_up INT
 
 function usage {
     cat <<EOF
@@ -571,6 +617,9 @@ deploy       deploy and start containers                                        
 hot_deploy   hot deploy artifacts(NOTE: artifacts have to be built first)           mail, mailinbound, mailoutbound
                                                                                     jilter-inbound, jilter-outbound
                                                                                     postfix-is, postfix-cd, postfix-cs, postfix-id
+start        start stopped containers                                               inbound, outbound, all
+stop         stop started containers                                                inbound, outbound, all
+restart      restart started containers                                             inbound, outbound, all                                                                                    
 destroy      clean up and bring down all containers 
              This does not remove images
 EOF
@@ -590,7 +639,7 @@ case "$1" in
                 deploy_all
                 ;;
             *)
-                echo "Usage: $0 <inbound | outbound>"
+                echo "Usage: $0 <inbound | outbound | all>"
                 ;;
        esac
         ;;
@@ -598,55 +647,46 @@ case "$1" in
         case "$2" in
             mail)
             set_home
-            check_service_up mail-service hot
             deploy_mail "mail"
             check_tomcat_startup "mail"
             ;;
 
             mailinbound)
             set_home
-            check_service_up mail-service hot
             deploy_mail "mailinbound"
             check_tomcat_startup "mailinbound"
             ;;
 
             mailoutbound)
             set_home
-            check_service_up mail-service hot
             deploy_mail "mailoutbound"
             check_tomcat_startup "mailoutbound"
             ;;
 
             jilter-inbound)
                 set_home
-                check_service_up jilter-inbound hot
                 deploy_jilter inbound  
                 docker-compose -f ${orchestrator_location}${inbound_compose} restart jilter-inbound
                 ;;
             jilter-outbound)
                 set_home
-                check_service_up jilter-outbound hot
                 deploy_jilter outbound
                 docker-compose -f ${orchestrator_location}${outbound_compose} restart jilter-outbound
                 ;;
             postfix-is)
                 set_home
-                check_service_up postfix-is hot
                 provision_postfix postfix-is
                 ;;
             postfix-cd)
                 set_home
-                check_service_up postfix-cd hot
                 provision_postfix postfix-cd
                 ;;
             postfix-cs)
                 set_home
-                check_service_up postfix-cs hot
                 provision_postfix postfix-cs
                 ;;
             postfix-id)
                 set_home
-                check_service_up postfix-id
                 provision_postfix postfix-id
                 ;;
             *)
@@ -656,6 +696,15 @@ case "$1" in
         ;;
     initialize)
         initialize
+        ;;
+    start)
+        docker_compose_command $1 $2
+        ;;
+    stop)
+        docker_compose_command $1 $2
+        ;;
+    restart)
+        docker_compose_command $1 $2
         ;;
     help)
         usage
