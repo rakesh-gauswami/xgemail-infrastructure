@@ -1,15 +1,11 @@
 ---
-#- name: Debug
-#  debug:
-#    msg: "{{item.value.stack_name}} {{item.value.AutoScalingMinSize}} {{item.value.AvailabilityZoneIndex}} {{item.value.VolumeSetId}} {{cloud_email_iam_output.stack_outputs.AutoScalingInstanceRoleArn}}"
-#  with_dict: "{{aws.ec2.asg.cd}}"
 
 - name: "Create ASG Stacks in AWS"
   cloudformation:
     stack_name: "{{vpc.cloud_email.name}}-internet-submit-asg"
     state: present
     region:  "{{account.region}}"
-    disable_rollback: false
+    disable_rollback: true
     template: "{{template.ec2.asg.as_submit_delivery_template}}"
     template_parameters:
       AesDecryptionKey:                     "{{aes_decryption_key}}"
