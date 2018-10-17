@@ -70,13 +70,13 @@ function deploy_inbound {
 
     check_service_up mail-service
 
-    # deploy_mail "mail" "mailinbound"
+    deploy_mail "mail" "mailinbound"
 
-    # provision_localstack
+    provision_localstack
  
-    # provision_postfix "postfix-is" "postfix-cd"
+    provision_postfix "postfix-is" "postfix-cd"
 
-    # check_tomcat_startup "mail" "mailinbound"
+    check_tomcat_startup "mail" "mailinbound"
 }
 
 function deploy_outbound {
