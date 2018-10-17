@@ -70,3 +70,6 @@ class Metadata:
 
     def set_recipients(self, recipients):
         self.recipients = recipients
+
+    def set_queue_id(self, queue_id):
+        self.queue_id = queue_id

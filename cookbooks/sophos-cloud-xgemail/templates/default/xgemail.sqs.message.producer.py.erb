@@ -86,6 +86,12 @@ SQS_BATCH_SIZE = 10
 
 awshandler = AwsHandler(AWS_REGION)
 
+# In order to make the queue_id unique, we add a UUID to it
+def add_uuid_to_queue_id(metadata):
+    queue_id = metadata.get_queue_id()
+    uuid = str(uuid.uuid4()).replace('-','')
+    metadata.set_queue_id('{0}_UUID_{1}'.format(queue_id, uuid))
+
 #postfix pipe sends metadata as sysargs.
 def get_metadata():
     try:
@@ -480,6 +486,8 @@ def multi_policy_flow(metadata, direction, domain, sender, compressed_message):
         this_policy_metadata = copy.deepcopy(metadata)
         this_policy_metadata.set_recipients(value)
 
+        add_uuid_to_queue_id(this_policy_metadata)
+
         policy_id_path = "/" + policy_id + "/"
         new_s3_file_path = s3_file_path.replace(POLICY_ID_PATH_VALUE, policy_id_path)
         # create a sqs message with policy_id
@@ -487,7 +495,7 @@ def multi_policy_flow(metadata, direction, domain, sender, compressed_message):
             messageformatter.SCHEMA_VERSION,
             new_s3_file_path,
             SUBMIT_HOST_IP,
-            queue_id,
+            this_policy_metadata.get_queue_id(),
             AKM_KEY,
             NONCE.encode('base64','strict'),
             MESSAGE_KEY.encode('base64','strict'),
