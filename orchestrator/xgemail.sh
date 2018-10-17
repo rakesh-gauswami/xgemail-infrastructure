@@ -47,8 +47,6 @@ function initialize {
         exit 1
     fi
 
-    build_policy_storage_for_jilter
-
     echo -e "${GREEN} Initialization Completed Successfully ${NC}"
 }
 
@@ -63,21 +61,22 @@ function deploy_inbound {
 
     check_sasi ${sasi_service_image} ${sasi_docker_image}
 
-    deploy_jilter inbound
-
     create_mail_bootstrap
 
     docker-compose -f ${orchestrator_location}${base_compose} -f ${orchestrator_location}${inbound_compose} up -d
 
-    check_mail_service_up
+    check_service_up jilter-inbound
+    deploy_jilter inbound
 
-    deploy_mail "mail" "mailinbound"
+    check_service_up mail-service
 
-    provision_localstack
+    # deploy_mail "mail" "mailinbound"
+
+    # provision_localstack
  
-    provision_postfix "postfix-is" "postfix-cd"
+    # provision_postfix "postfix-is" "postfix-cd"
 
-    check_tomcat_startup "mail" "mailinbound"
+    # check_tomcat_startup "mail" "mailinbound"
 }
 
 function deploy_outbound {
@@ -97,7 +96,7 @@ function deploy_outbound {
 
     docker-compose -f ${orchestrator_location}${base_compose} -f ${orchestrator_location}${outbound_compose} up -d
 
-    check_mail_service_up
+    check_service_up mail-service
 
     deploy_mail "mail" "mailoutbound"
 
@@ -122,7 +121,7 @@ function deploy_all {
 
     docker-compose -f ${orchestrator_location}${base_compose} -f ${orchestrator_location}${inbound_compose} -f ${orchestrator_location}${outbound_compose} up -d
 
-    check_mail_service_up
+    check_service_up mail-service
 
     deploy_mail "mail" "mailinbound" "mailoutbound"
 
@@ -249,10 +248,10 @@ function deploy_jilter()
     sandbox_outbound_jilter_tar_location="${HOME}/.xgemail_sandbox/jilter/outbound/"
     
     jilter_inbound_build_location="${jilter_location}xgemail-jilter-inbound/build/distributions/"
-    jilter_inbound_build_name="jilter_inbound.tar"
+    jilter_inbound_build_name="xgemail-jilter-inbound-current.tar"
 
     jilter_outbound_build_location="${jilter_location}xgemail-jilter-outbound/build/distributions/"
-    jilter_outbound_build_name="jilter_outbound.tar"
+    jilter_outbound_build_name="xgemail-jilter-outbound-current.tar"
 
     case $1 in 
         inbound)
@@ -270,6 +269,9 @@ function deploy_jilter()
         exit 1
         ;;
     esac
+
+    build_policy_storage_for_jilter
+
 }
 
 function deploy_jilter_helper()
@@ -304,7 +306,7 @@ function deploy_jilter_helper()
             newfile_location=${sandbox_jilter_tar_location}${jilter_build_name}
             echo "Copying tar files to .xgemail_sandbox folder to ready it for deployment"
             rsync -a --progress "${jilter_tar_files[0]}" "${newfile_location}"
-            echo ${newfile_location}
+
             if [ $? -eq 0 ]; then
                 echo -e "${GREEN} Successfully copied jilter tar files to .xgemail_sandbox folder ${NC}"
                 possible_clean_up_files+=${newfile_location}
@@ -406,12 +408,17 @@ function set_home {
     orchestrator_location="${xgemail_infrastructure_location}orchestrator/"
 }
 
-function check_mail_service_up {
-    echo "Waiting for mail-service to be fully up."
+function check_service_up {
+    if [ $# -eq 0 ]; then
+        echo -e "${RED} No service specified ${NC}"
+        exit 1
+    fi
+
+    echo "Waiting for $1 to be fully up."
     count=0
     max_count=12 # Multiply this number by 5 for total wait time, in seconds.
     while [[ $count -le $max_count ]]; do
-        startup_check=$(docker ps --filter='name=mail-service' --format {{.Status}} | grep -c "Up")
+        startup_check="$(docker ps --filter=name=$1 --format {{.Status}} | grep -c Up)"
         if [[ $startup_check -ne 1 ]]; then
             count=$((count+1))
             sleep 5
@@ -421,11 +428,14 @@ function check_mail_service_up {
     done
 
     if [[ $startup_check -ne 1 ]]; then
-        echo -e "${RED}Mail-service tomcat did not start properly.  Please check the logs ${NC}"
-        clean_up 
+        echo -e "${RED} $1 did not start properly.  Please check the logs ${NC}"
+
+        if [ ! $2 = "hot" ]; then
+            clean_up
+        fi
         exit 1
     else
-        echo "Mail-service is up!"
+        echo "$1 is up!"
     fi
 }
 
@@ -561,7 +571,8 @@ deploy       deploy and start containers                                        
 hot_deploy   hot deploy artifacts(NOTE: artifacts have to be built first)           mail, mailinbound, mailoutbound
                                                                                     jilter-inbound, jilter-outbound
                                                                                     postfix-is, postfix-cd, postfix-cs, postfix-id
-destroy      clean up and bring down all containers    
+destroy      clean up and bring down all containers 
+             This does not remove images
 EOF
 }
 
@@ -584,41 +595,58 @@ case "$1" in
        esac
         ;;
     hot_deploy)
-        set_home
         case "$2" in
             mail)
+            set_home
+            check_service_up mail-service hot
             deploy_mail "mail"
             check_tomcat_startup "mail"
             ;;
 
             mailinbound)
+            set_home
+            check_service_up mail-service hot
             deploy_mail "mailinbound"
             check_tomcat_startup "mailinbound"
             ;;
 
             mailoutbound)
+            set_home
+            check_service_up mail-service hot
             deploy_mail "mailoutbound"
             check_tomcat_startup "mailoutbound"
             ;;
 
             jilter-inbound)
+                set_home
+                check_service_up jilter-inbound hot
                 deploy_jilter inbound  
                 docker-compose -f ${orchestrator_location}${inbound_compose} restart jilter-inbound
                 ;;
             jilter-outbound)
+                set_home
+                check_service_up jilter-outbound hot
                 deploy_jilter outbound
                 docker-compose -f ${orchestrator_location}${outbound_compose} restart jilter-outbound
                 ;;
             postfix-is)
+                set_home
+                check_service_up postfix-is hot
                 provision_postfix postfix-is
                 ;;
             postfix-cd)
+                set_home
+                check_service_up postfix-cd hot
                 provision_postfix postfix-cd
                 ;;
             postfix-cs)
+                set_home
+                check_service_up postfix-cs hot
                 provision_postfix postfix-cs
                 ;;
             postfix-id)
+                set_home
+                check_service_up postfix-id
                 provision_postfix postfix-id
                 ;;
             *)
