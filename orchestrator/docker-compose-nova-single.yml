@@ -1,32 +1,32 @@
 version: '3'
 services:
   localstack:
-  image: localstack/localstack
-  container_name: localstack
-  ports:
-    - '4567:4567' #API Gateway
-    - '4568:4568' #Kinesis
-    - '4569:4569' #DynamoDB
-    - '4570:4570' #DynamoDB Streams
-    - '4571:4571' #ElasticSearch
-    - '4572:4572' #S3
-    - '4574:4574' #Lambda
-    - '4575:4575' #SNS
-    - '4576:4576' #SQS
-    - '4578:4578' #Elasticsearch Service
-    - '8081:8081' #WebUI
-  environment:
-    - PORT_WEB_UI=8081
-    - HOSTNAME_EXTERNAL=localstack
-    - SERVICES=apigateway,kinesis,dynamodb,dynamodbstreams,s3,sns,sqs,es,lambda
-    - DEFAULT_REGION=us-east-1
-    - LAMBDA_EXECUTOR=docker
-    - DATA_DIR=/tmp/localstack/data
-  volumes:
-    - /var/run/docker.sock:/var/run/docker.sock
-    - /tmp/localstack:/tmp/localstack
-  networks:
-    - novanet
+    image: localstack/localstack
+    container_name: localstack
+    ports:
+      - '4567:4567' #API Gateway
+      - '4568:4568' #Kinesis
+      - '4569:4569' #DynamoDB
+      - '4570:4570' #DynamoDB Streams
+      - '4571:4571' #ElasticSearch
+      - '4572:4572' #S3
+      - '4574:4574' #Lambda
+      - '4575:4575' #SNS
+      - '4576:4576' #SQS
+      - '4578:4578' #Elasticsearch Service
+      - '8081:8081' #WebUI
+    environment:
+      - PORT_WEB_UI=8081
+      - HOSTNAME_EXTERNAL=localstack
+      - SERVICES=apigateway,kinesis,dynamodb,dynamodbstreams,s3,sns,sqs,es,lambda
+      - DEFAULT_REGION=us-east-1
+      - LAMBDA_EXECUTOR=docker
+      - DATA_DIR=/tmp/localstack/data
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/localstack:/tmp/localstack
+    networks:
+      - novanet
 
   proxy:
     image: haproxy:1.7
@@ -95,8 +95,8 @@ services:
       - '~/.nova/wars/api-services-NOVA-LOCAL.war:/usr/local/tomcat/webapps/api-services.war'
       - '~/.nova/wars/hub-services-NOVA-LOCAL.war:/usr/local/tomcat/webapps/hub-services.war'
       - '~/.nova/wars/core-services-NOVA-LOCAL.war:/usr/local/tomcat/webapps/core-services.war'
-      - '~/.nova/wars/lpas-services-NOVA-LOCAL.war:/usr/local/tomcat/webapps/lpas-services.war'
       - '~/.nova/wars/mcs-services-NOVA-LOCAL.war:/usr/local/tomcat/webapps/mcs-services.war'
+      - '~/.nova/wars/lpas-services-NOVA-LOCAL.war:/usr/local/tomcat/webapps/lpas-services.war'
 # LOCATIONS FOR RCA DATA
       - '~/.nova/rca:/tmp/stacUploadFiles'
       - '~/.nova/stacValidatedUploadFiles:/tmp/stacValidatedUploadFiles'
@@ -112,7 +112,6 @@ services:
       - 'kinesalite:kinesalite'
       - 'dynamodb:dynamo-service'
       - 'elasticmq:elasticmq-service'
-      - 'elasticsearch:elasticsearch-service'
 #      - 'billing:billing-service'
       - 'mailcatcher:mailcatcher-service'
     depends_on:
@@ -123,7 +122,6 @@ services:
       - memcache
       - mailcatcher
       - localstack
-      
     ports:
       - '1043:1043'
     networks:
@@ -198,18 +196,6 @@ services:
     build: ./elasticmq
     ports:
       - '9324:9324'
-    networks:
-      - novanet
-    dns:
-      - 172.16.199.101
-  elasticsearch:
-    image: 'elasticsearch:1.7.2'
-    ports:
-      - '9200:9200'
-      - '9300:9300'
-    command: '-Des.cluster.name="quarantine.xgemail.sophos.cloud.com"'
-    volumes:
-      - '~/.nova/elasticsearch:/usr/share/elasticsearch/data'
     networks:
       - novanet
     dns:

@@ -58,7 +58,7 @@ function initialize {
 
 function deploy_inbound {
     initialize
-    # check_login_to_aws
+    check_login_to_aws
     set_home
     
     echo -e "${YELLOW} user selected inbound ${NC}"

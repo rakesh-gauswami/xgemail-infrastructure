@@ -61,6 +61,8 @@ services:
       - novanet
     dns:
       - 172.16.199.101
+    links:
+      - 'elasticsearch:elasticsearch-service'
     external_links:
       - 'postgres:postgres-service'
       - 'mongo:mongo-service'
@@ -69,7 +71,6 @@ services:
       - 'kinesalite:kinesalite'
       - 'dynamodb:dynamo-service'
       - 'elasticmq:elasticmq-service'
-      - 'elasticsearch:elasticsearch-service'
       - 'mailcatcher:mailcatcher-service'
     volumes:
       - $XGEMAIL_HOME/xgemail-infrastructure/orchestrator/sophos_cloud_tomcat_bootstrap.properties:/usr/local/etc/sophos/bootstrap.properties
