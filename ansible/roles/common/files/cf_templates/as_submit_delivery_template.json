@@ -71,10 +71,6 @@
       "Description": "Version of the AMI bundle",
       "Type": "Number"
     },
-    "CloudWatchEventRoleArn": {
-      "Description": "Arn of the CloudWatch Role.",
-      "Type": "String"
-    },
     "DeployIgnoreUnmodifiedGroupSize": {
       "Description": "During a stack update, indicates whether AWS CloudFormation ignores any group size property differences between your current Auto Scaling group and the Auto Scaling group that is described in the update.",
       "Type": "String",
@@ -132,8 +128,8 @@
       "Type": "AWS::EC2::KeyPair::KeyName",
       "Description": "Key pair used to SSH to the instance"
     },
-    "LambdaFunctionArn": {
-      "Description": "Arn of the Lambda Function.",
+    "LifecycleHookName": {
+      "Description": "Name of the Lifecycle Hook.",
       "Type": "String"
     },
     "LoadBalancerName": {
@@ -425,13 +421,7 @@
         "LaunchConfigurationName": { "Ref": "XgemailAutoScalingLaunchConfig" },
         "LifecycleHookSpecificationList" : [
           {
-            "LifecycleHookName": {
-              "Fn::Join":  ["-",[
-                { "Ref": "VpcName"},
-                { "Ref": "XgemailServiceType" },
-                "Terminating-LifeCycleHook"
-              ]]
-            },
+            "LifecycleHookName": { "Ref": "LifecycleHookName" },
             "HeartbeatTimeout" : "300",
             "LifecycleTransition" : "autoscaling:EC2_INSTANCE_TERMINATING",
             "NotificationTargetARN" : { "Ref": "AutoScalingNotificationTopicARN" },
@@ -489,37 +479,6 @@
         "AutoScalingScheduledAction": {
           "IgnoreUnmodifiedGroupSizeProperties": { "Ref": "DeployIgnoreUnmodifiedGroupSize" }
         }
-      }
-    },
-
-    "CloudWatchLifecycleTerminatingEventRule": {
-      "Type" : "AWS::Events::Rule",
-      "Properties" : {
-        "Description" : "Triggered on Instance Termination.",
-        "EventPattern" : {
-          "source": [
-            "aws.autoscaling"
-          ],
-          "detail-type": [
-            "EC2 Instance-terminate Lifecycle Action"
-          ],
-          "detail": {
-            "AutoScalingGroupName": [
-              {"Ref": "XgemailAutoScalingGroup"}
-            ],
-            "LifecycleTransition": [
-              "autoscaling:EC2_INSTANCE_LAUNCHING"
-            ]
-          }
-        },
-        "State" : "ENABLED",
-        "Targets" : [
-          {
-            "Arn": { "Ref": "LambdaFunctionArn" },
-            "Id": "instance_terminator",
-            "RoleArn": { "Ref": "CloudWatchEventRoleArn" }
-          }
-        ]
       }
     },
 
@@ -984,7 +943,6 @@
       }
     }
   },
-
 
   "Outputs": {
     "AutoScalingGroup": {

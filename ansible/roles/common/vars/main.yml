@@ -12,6 +12,7 @@ aws:
       asg_min_size:                                               [0,0,0,0,0,0,1,1,1,1,1,1]
       health_check_grace_period:                                  "600"
       instance_size:                                              "t2.small"
+      lifecycle_hook_name:                                        "{{vpc.cloud_email.name}}-customer-delivery-Terminating-LifeCycleHook"
       stack_number:                                               [1,2,3,4,5,6,7,8,9,10,11,12]
       zone_index:                                                 [0,1,2,0,1,2,0,1,2,0,1,2]
     cs:
@@ -22,6 +23,7 @@ aws:
       asg_min_size:                                               [0,0,0,1,1,1]
       health_check_grace_period:                                  "2100"
       instance_size:                                              "t2.small"
+      lifecycle_hook_name:                                        "{{vpc.cloud_email.name}}-customer-submit-Terminating-LifeCycleHook"
       stack_number:                                               [1,2,3,4,5,6]
       zone_index:                                                 [0,1,2,0,1,2]
     cx:
@@ -37,6 +39,7 @@ aws:
       asg_min_size:                                               [0,0,0,0,0,0,1,1,1,1,1,1]
       health_check_grace_period:                                  "600"
       instance_size:                                              "t2.small"
+      lifecycle_hook_name:                                        "{{vpc.cloud_email.name}}-internet-delivery-Terminating-LifeCycleHook"
       stack_number:                                               [1,2,3,4,5,6,7,8,9,10,11,12]
       zone_index:                                                 [0,1,2,0,1,2,0,1,2,0,1,2]
     is:
@@ -47,6 +50,7 @@ aws:
       asg_min_size:                                               [0,0,0,1,1,1]
       health_check_grace_period:                                  "1200"
       instance_size:                                              "t2.small"
+      lifecycle_hook_name:                                        "{{vpc.cloud_email.name}}-internet-submit-Terminating-LifeCycleHook"
       stack_number:                                               [1,2,3,4,5,6]
       zone_index:                                                 [0,1,2,0,1,2]
     ix:

@@ -117,56 +117,6 @@
       "Type": "AWS::IAM::Policy"
     },
 
-    "CloudWatchEventRole" : {
-      "Type": "AWS::IAM::Role",
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Version": "2012-10-17",
-          "Statement": [{
-            "Effect": "Allow",
-            "Principal": {
-              "Service": [ "events.amazonaws.com" ]
-            },
-            "Action": [ "sts:AssumeRole" ]
-          }]
-        },
-        "Path": "/"
-      }
-    },
-
-    "CloudWatchEventRolePolicies": {
-      "Properties": {
-        "PolicyDocument": {
-          "Statement": [
-            {
-              "Action": [
-                "events:*",
-                "iam:PassRole"
-              ],
-              "Effect": "Allow",
-              "Resource": "*"
-            },
-            {
-              "Action": [
-                "lambda:InvokeFunction"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
-            }
-          ]
-        },
-        "PolicyName": "root",
-        "Roles": [
-          {
-            "Ref": "CloudWatchEventRole"
-          }
-        ]
-      },
-      "Type": "AWS::IAM::Policy"
-    },
-
     "BastionInstanceProfile" : {
       "Type" : "AWS::IAM::InstanceProfile",
       "Properties" : {
@@ -2042,14 +1992,6 @@
     "BastionInstanceRole": {
       "Description": "Bastion instance role",
       "Value": { "Ref": "BastionInstanceRole" }
-    },
-    "CloudWatchEventRole": {
-      "Description": "CloudWatch instance role",
-      "Value": { "Ref": "CloudWatchEventRole" }
-    },
-    "CloudWatchEventRoleArn": {
-      "Description": "ECloudWatch Event role ARN",
-      "Value": { "Fn::GetAtt" : [ "CloudWatchEventRole", "Arn" ] }
     },
     "EipMonitorLambdaExecutionRole": {
       "Description": "Eip Monitor Lambda Execution role",

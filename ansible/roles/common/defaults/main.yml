@@ -134,6 +134,9 @@ stack:
     policy_efs_volume:                                  "{{vpc.cloud_email.name}}-xgemail-policy-EFS-volume"
     policy_efs_mount_target:                            "{{vpc.cloud_email.name}}-xgemail-policy-EFS-volume-mount-target"
   es:
+    rule:
+      lifecycle_lambda:                                 "{{vpc.cloud_email.name}}-xgemail-lifecycle-termination-events-rule"
+  es:
     toc_elasticsearch_domain:                           "{{vpc.cloud_email.name}}-XGEMAIL-ToC-ES-Domain"
   kinesis:
     firehose:
@@ -223,6 +226,9 @@ template:
   efs:
     efs_template:                                       "{{tmp_artifacts_dir}}/efs_template.json"
     efs_mount_target_template:                          "{{tmp_artifacts_dir}}/efs_mount_target_template.json"
+  events:
+    rule:
+      events_rule_lifecycle_lambda_template:            "{{tmp_artifacts_dir}}/events_rule_lifecycle_lambda_template.json"
   es:
     es_domain_template:                                 "{{tmp_artifacts_dir}}/es_domain_template.json"
   iam:
