@@ -19,6 +19,8 @@ nova_docker_compose_original_copy="${HOME}/g/nova/docker-compose-single_copy.yml
 sasi_service_image="email/sasi-service"
 sasi_docker_image="email/sasi-daemon"
 
+
+
 possible_clean_up_files=()
 
 function initialize {
@@ -93,11 +95,11 @@ function deploy_outbound {
     echo -e "${YELLOW} Services needed for outbound mail-flow will be started ${NC}"
     echo ""
 
-    deploy_jilter outbound
-
     create_mail_bootstrap
 
     docker-compose -f ${orchestrator_location}${base_compose} -f ${orchestrator_location}${outbound_compose} up -d
+
+    deploy_jilter outbound
 
     deploy_mail "mail" "mailoutbound"
 
@@ -116,11 +118,11 @@ function deploy_all {
     echo -e "${YELLOW} Services needed for both inbound and outbound mail-flow will be started ${NC}"
     echo ""
 
-    deploy_jilter all
-
     create_mail_bootstrap
 
     docker-compose -f ${orchestrator_location}${base_compose} -f ${orchestrator_location}${inbound_compose} -f ${orchestrator_location}${outbound_compose} up -d
+    
+    deploy_jilter all
 
     deploy_mail "mail" "mailinbound" "mailoutbound"
 
@@ -209,7 +211,8 @@ function deploy_mail {
         echo -e "${RED} Failed to create ${war_file_location} ${NC}"
         exit 1
     fi
-    tomcat_webapps_loc="mail-service:/usr/local/tomcat/webapps/"
+    service_name="mail-service"
+    tomcat_webapps_loc="/usr/local/tomcat/webapps/"
 
     check_service_up mail-service
 
@@ -217,14 +220,20 @@ function deploy_mail {
         filename=$(echo "$file" | xargs -n 1 basename)
         prefix=$(echo "$filename" | awk -F"-" '{print $1}')
         newfile=$(echo "$prefix"-services.war)
-        newfile_location="${war_file_location}/$newfile"
+        newfile_location="${war_file_location}/${newfile}"
         rsync -a --progress "${file}" "${newfile_location}"
         if [ ! $? -eq 0 ]; then
             echo -e "${RED} Failed to copy over ${file} to ${newfile_location} ${NC}"
             continue
         fi
+        destination_file_in_container="${tomcat_webapps_loc}/${newfile}"
+
+        #remove if the war file is already present and wait a few for undeploy to happen
+        docker exec ${service_name} rm -f ${destination_file_in_container} >/dev/null
+        sleep 10
+
         echo "Copying WAR file ${newfile_location} into Tomcat for deployment"
-        docker cp "${newfile_location}" "${tomcat_webapps_loc}"
+        docker cp "${newfile_location}" "${service_name}:${destination_file_in_container}"
         if [ ! $? -eq 0 ]; then
             echo -e "${RED} Failed to copy ${newfile_location} into Tomcat containers ${NC}"
             echo "try recopying the war files into the tomcat container using 'docker cp <source> container_name:<destination>'"
@@ -445,12 +454,19 @@ function check_tomcat_startup()
     sleep 30
     local now=$(date +%s)
     local deadline=$(($now + $minutes*60))
+    local running_services=()
     while (($now < $deadline)); do
         startup_check=$(curl -u script:script -s -o /dev/null -m 5 -w "%{http_code}" http://localhost:9898/manager/text/list)
         if [[ $startup_check -eq 200 ]]; then
-            service_count=$(curl -s -u script:script http://localhost:9898/manager/text/list | grep services | awk -F":" '{print $1," ",$2}' | column -t | grep -c -v running)
-            if [[ $service_count -eq 0 ]]; then
-                echo -e "${GREEN} Deployment of wars '$@' done! ${NC}"
+            for service in "$@"; do
+                service_running=$(curl -s -u script:script http://localhost:9898/manager/text/list | grep ${service}-services | awk -F":" '{print $2}')
+                if [ "${service_running}" = "running" ]; then
+                    echo -e "Deployment of wars ${service} done!"
+                    running_services+=(${service})
+                fi
+            done
+            if [ ${#running_services[@]} -eq $# ]; then
+                echo -e "${GREEN} All wars <$@> up ${NC}"
                 exit 0
             fi
         fi
@@ -615,24 +631,24 @@ Usage:
 Commands                                                                            Required                                                        Optional
 help         get usage info 
 initialize   setup steps before starting up nova                                                                                                     
-deploy       deploy, provision and start containers                                 inbound, outbound, all
-hot_deploy   hot deploy artifacts(NOTE: artifacts have to be built first)           mail, mailinbound, mailoutbound
-                                                                                    jilter-inbound, jilter-outbound
-                                                                                    postfix-is, postfix-cd, postfix-cs, postfix-id
+deploy       deploy, provision and start containers                                 inbound | outbound | all
+hot_deploy   hot deploy artifacts(NOTE: artifacts have to be built first)           mail | mailinbound | mailoutbound
+                                                                                    jilter-inbound | jilter-outbound
+                                                                                    postfix-is | postfix-cd | postfix-cs | postfix-id
 
 status       List status of created containers                                                           
-up           create and start containers without any provisioning                   <service_name>, inbound, outbound, all                          [-d]                          
-start        start stopped containers                                               <service_name>, inbound, outbound, all                          [-d]
-stop         stop started containers                                                <service_name>, inbound, outbound, all                          [-d]
-restart      restart started containers                                             <service_name>, inbound, outbound, all                          [-d]                                                                                    
-create       create services without starting them                                  <service_name>, inbound, outbound, all                          [-d]
-kill         kill containers                                                        <service_name>, inbound, outbound, all                          [-d]
+up           create and start containers without any provisioning                   <service_name> | inbound | outbound | all                          [-d]                          
+start        start stopped containers                                               <service_name> | inbound | outbound | all                          [-d]
+stop         stop started containers                                                <service_name> | inbound | outbound | all                          [-d]
+restart      restart started containers                                             <service_name> | inbound | outbound | all                          [-d]                                                                                    
+create       create services without starting them                                  <service_name> | inbound | outbound | all                          [-d]
+kill         kill containers                                                        <service_name> | inbound | outbound | all                          [-d]
              unlike stop, kill destroys the containers
              container has to be recreated in order to be started
-rm           remove stopped containers                                              <service_name>, inbound, outbound, all                          [-d]
-pause        pause services                                                         <service_name>, inbound, outbound, all                          [-d]
-unpause      unpause services                                                       <service_name>, inbound, outbound, all                          [-d]
-build        build or rebuild services                                              <service_name>, inbound, outbound, all                          [-d]
+rm           remove stopped containers                                              <service_name> | inbound | outbound | all                          [-d]
+pause        pause services                                                         <service_name> | inbound | outbound | all                          [-d]
+unpause      unpause services                                                       <service_name> | inbound | outbound | all                          [-d]
+build        build or rebuild services                                              <service_name> | inbound | outbound | all                          [-d]
 
 destroy      clean up and bring down all containers 
              This does not remove images
@@ -745,8 +761,8 @@ case "$1" in
     up)
         docker_compose_command $1 $2 $3
         ;;
-    ps)
-        docker_compose_command $1 all
+    status)
+        docker_compose_command ps all
         ;;
     help)
         usage
