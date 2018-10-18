@@ -6,12 +6,30 @@
 # Copyright: Copyright (c) 1997-2018. All rights reserved.
 # Company: Sophos Limited or one of its affiliates.
 
+: 'Set XGEMAIL_HOME environment variable
+'
+function set_home {
+    # Set XGEMAIL_HOME environment variable
+    echo -e "Setting environment variable <XGEMAIL_HOME> to <~/g/email/>"
+    echo -e "${YELLOW} NOTE: XGEMAIL_HOME points to the directory above which xgemail-infrastructure and xgemail repo live locally ${NC}"
+    export XGEMAIL_HOME="${HOME}/g/email/"
 
+    if [ ! $? -eq 0 ]; then
+        echo -e "${RED} Unable to set XGEMAIL_HOME environment variable ${NC}"
+        exit 1
+    else
+        echo -e "${GREEN} XGEMAIL_HOME environment successfully set to ${XGEMAIL_HOME} ${NC}"
+    fi
+}
+set_home
 
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 YELLOW='\033[0;33m'
+
+xgemail_infrastructure_location="${XGEMAIL_HOME}xgemail-infrastructure/"
+orchestrator_location="${xgemail_infrastructure_location}orchestrator/"
 
 base_compose="docker-compose-base.yml"
 inbound_compose="docker-compose-inbound.yml"
@@ -38,7 +56,6 @@ possible_clean_up_files=()
 2. adds to the bootstrap file for deploying wars in nova hub
 '
 function initialize {
-    set_home
     echo -e "${YELLOW} Running set up steps ${NC}"
     echo -e "${YELLOW} NOTE: This should be run each time before starting NOVA ${NC}"
 
@@ -79,7 +96,6 @@ and docker-compose-base.yml
 function deploy_inbound {
     initialize
     check_login_to_aws
-    set_home
 
     echo -e "${YELLOW} user selected inbound ${NC}"
     echo -e "${YELLOW} Services needed for inbound mail-flow will be started ${NC}"
@@ -109,7 +125,6 @@ and docker-compose-base.yml
 function deploy_outbound {
     initialize
     check_login_to_aws
-    set_home
 
     check_sasi ${sasi_service_image} ${sasi_docker_image}
 
@@ -138,7 +153,6 @@ docker-compose-outbound.yml and docker-compose-base.yml
 '
 function deploy_all {
     check_login_to_aws
-    set_home
 
     echo -e "${YELLOW} user selected all ${NC}"
     echo -e "${YELLOW} Services needed for both inbound and outbound mail-flow will be started ${NC}"
@@ -284,6 +298,8 @@ which they are mounted into jilter instances
 '
 function deploy_jilter()
 {
+    build_policy_storage_for_jilter
+
     jilter_location="${XGEMAIL_HOME}xgemail/"
 
     sandbox_inbound_jilter_tar_location="${HOME}/.xgemail_sandbox/jilter/inbound/"
@@ -299,26 +315,35 @@ function deploy_jilter()
         inbound)
             check_service_up jilter-inbound
             deploy_jilter_helper ${sandbox_inbound_jilter_tar_location} ${jilter_inbound_build_location} ${jilter_inbound_build_name}
+
+            # $(docker exec jilter-inbound sh -c '/opt/scripts/run.sh' &)
+
+
         ;;
         outbound)
             check_service_up jilter-outbound
             deploy_jilter_helper ${sandbox_outbound_jilter_tar_location} ${jilter_outbound_build_location} ${jilter_outbound_build_name}
+
+            # $(docker exec jilter-outbound sh -c '/opt/scripts/run.sh' &)
+
         ;;
         all)
             check_service_up jilter-inbound
             deploy_jilter_helper ${sandbox_inbound_jilter_tar_location} ${jilter_inbound_build_location} ${jilter_inbound_build_name}
 
+            # $(docker exec jilter-inbound sh -c '/opt/scripts/run.sh' &)
+
+
             check_service_up jilter-outbound
             deploy_jilter_helper ${sandbox_outbound_jilter_tar_location} ${jilter_outbound_build_location} ${jilter_outbound_build_name}
+
+            # $(docker exec jilter-outbound sh -c '/opt/scripts/run.sh' &)
         ;;
         *)
         clean_up_files
         exit 1
         ;;
     esac
-
-    build_policy_storage_for_jilter
-
 }
 
 : 'This function is a helper to deploy_jilter that copies jilter files into a directory
@@ -443,25 +468,6 @@ function check_login_to_aws {
     else
         echo -e "${GREEN} Successfully logged into AWS ECR ${NC}"
     fi
-}
-
-: 'Set XGEMAIL_HOME environment variable
-'
-function set_home {
-    # Set XGEMAIL_HOME environment variable
-    echo -e "Setting environment variable <XGEMAIL_HOME> to <~/g/email/>"
-    echo -e "${YELLOW} NOTE: XGEMAIL_HOME points to the directory above which xgemail-infrastructure and xgemail repo live locally ${NC}"
-    export XGEMAIL_HOME="${HOME}/g/email/"
-
-    if [ ! $? -eq 0 ]; then
-        echo -e "${RED} Unable to set XGEMAIL_HOME environment variable ${NC}"
-        exit 1
-    else
-        echo -e "${GREEN} XGEMAIL_HOME environment successfully set to ${XGEMAIL_HOME} ${NC}"
-    fi
-
-    xgemail_infrastructure_location="${XGEMAIL_HOME}xgemail-infrastructure/"
-    orchestrator_location="${xgemail_infrastructure_location}orchestrator/"
 }
 
 : 'Checks if the input docker instance is up.
@@ -654,7 +660,6 @@ function override_files {
 '
 function docker_compose_command
 {
-    set_home
     base_compose_full=${orchestrator_location}${base_compose}
     inbound_compose_full=${orchestrator_location}${inbound_compose}
     outbound_compose_full=${orchestrator_location}${outbound_compose}
@@ -741,47 +746,38 @@ case "$1" in
     hot_deploy)
         case "$2" in
             mail)
-            set_home
             deploy_mail "mail"
             check_tomcat_startup "mail"
             ;;
 
             mailinbound)
-            set_home
             deploy_mail "mailinbound"
             check_tomcat_startup "mailinbound"
             ;;
 
             mailoutbound)
-            set_home
             deploy_mail "mailoutbound"
             check_tomcat_startup "mailoutbound"
             ;;
 
             jilter-inbound)
-                set_home
                 deploy_jilter inbound
                 docker-compose -f ${orchestrator_location}${inbound_compose} restart jilter-inbound
                 ;;
             jilter-outbound)
-                set_home
                 deploy_jilter outbound
                 docker-compose -f ${orchestrator_location}${outbound_compose} restart jilter-outbound
                 ;;
             postfix-is)
-                set_home
                 provision_postfix postfix-is
                 ;;
             postfix-cd)
-                set_home
                 provision_postfix postfix-cd
                 ;;
             postfix-cs)
-                set_home
                 provision_postfix postfix-cs
                 ;;
             postfix-id)
-                set_home
                 provision_postfix postfix-id
                 ;;
             *)
