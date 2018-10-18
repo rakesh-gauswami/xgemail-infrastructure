@@ -655,13 +655,17 @@ function override_files {
 function docker_compose_command
 {
     set_home
-    all_command="docker-compose -f ${base_compose} -f ${inbound_compose} -f ${outbound_compose}"
+    base_compose_full=${orchestrator_location}${base_compose}
+    inbound_compose_full=${orchestrator_location}${inbound_compose}
+    outbound_compose_full=${orchestrator_location}${outbound_compose}
+
+    all_command="docker-compose -f ${base_compose_full} -f ${inbound_compose_full} -f ${outbound_compose_full}"
     case "$2" in
         inbound)
-        docker-compose -f ${base_compose} -f ${inbound_compose} $1 $3
+        docker-compose -f ${base_compose_full} -f ${inbound_compose_full} $1 $3
         ;;
         outbound)
-        docker-compose -f ${base_compose} -f ${outbound_compose} $1 $3
+        docker-compose -f ${base_compose_full} -f ${outbound_compose_full} $1 $3
         ;;
         all)
         ${all_command} $1 $3
