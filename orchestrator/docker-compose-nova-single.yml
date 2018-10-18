@@ -1,0 +1,225 @@
+version: '3'
+services:
+  localstack:
+    image: localstack/localstack
+    container_name: localstack
+    ports:
+      - '4567:4567' #API Gateway
+      - '4568:4568' #Kinesis
+      - '4569:4569' #DynamoDB
+      - '4570:4570' #DynamoDB Streams
+      - '4571:4571' #ElasticSearch
+      - '4572:4572' #S3
+      - '4574:4574' #Lambda
+      - '4575:4575' #SNS
+      - '4576:4576' #SQS
+      - '4578:4578' #Elasticsearch Service
+      - '8081:8081' #WebUI
+    environment:
+      - PORT_WEB_UI=8081
+      - HOSTNAME_EXTERNAL=localstack
+      - SERVICES=apigateway,kinesis,dynamodb,dynamodbstreams,s3,sns,sqs,es,lambda
+      - DEFAULT_REGION=us-east-1
+      - LAMBDA_EXECUTOR=docker
+      - DATA_DIR=/tmp/localstack/data
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/localstack:/tmp/localstack
+    networks:
+      - novanet
+
+  proxy:
+    image: haproxy:1.7
+    ports:
+      - '80:80'
+      - '443:443'
+      - '1936:1936'
+      - '8080:8080'
+      - '9090:9090'
+    links:
+      - 'hub:hub-service'
+      - 'ui:ui-service'
+      - 'elasticmq:elasticmq-service'
+      - 'kinesalite:kinesalite-service'
+      - 'mongo:mongo-service'
+      - 'redis:redis-service'
+      - 'memcache:memcache-service'
+#      - 'billing:billing-service'
+    depends_on:
+      - hub
+    volumes:
+      - './haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro'
+      - '~/.nova/ssl:/etc/sophos/ssl:ro'
+    networks:
+      novanet:
+        ipv4_address: 172.16.199.100
+    dns:
+      - 172.16.199.101
+  dns:
+    image: jpillora/dnsmasq
+    volumes:
+      - './dnsmasq/dnsmasq.conf:/etc/dnsmasq.conf'
+    environment:
+      - 'HTTP_USER=admin'
+      - 'HTTP_PASS=AdminAdmin1'
+    ports:
+      - '5380:8080'
+    networks:
+      novanet:
+        ipv4_address: 172.16.199.101
+    dns:
+      - 172.16.199.101
+  rca-uploader:
+    build: ./rca-uploader
+    ports:
+      - '9072:9072'
+    volumes:
+      - '~/.nova/rca:/tmp/rcaUpload'
+    networks:
+      - novanet
+    dns:
+      - 172.16.199.101
+  ui:
+    build: ./ui
+    ports:
+      - '9000:80'
+    volumes:
+      - '~/g/cloud/ui/build/webroot:/var/www/localhost/htdocs'
+    networks:
+      - novanet
+    dns:
+      - 172.16.199.101
+  hub:
+    build: ./appserver
+    volumes:
+      - '~/.nova/wars/api-services-NOVA-LOCAL.war:/usr/local/tomcat/webapps/api-services.war'
+      - '~/.nova/wars/hub-services-NOVA-LOCAL.war:/usr/local/tomcat/webapps/hub-services.war'
+      - '~/.nova/wars/core-services-NOVA-LOCAL.war:/usr/local/tomcat/webapps/core-services.war'
+      - '~/.nova/wars/mcs-services-NOVA-LOCAL.war:/usr/local/tomcat/webapps/mcs-services.war'
+      - '~/.nova/wars/lpas-services-NOVA-LOCAL.war:/usr/local/tomcat/webapps/lpas-services.war'
+# LOCATIONS FOR RCA DATA
+      - '~/.nova/rca:/tmp/stacUploadFiles'
+      - '~/.nova/stacValidatedUploadFiles:/tmp/stacValidatedUploadFiles'
+# LOCATION FOR POLICY FRAGMENTS
+      - '~/.nova/policy-fragments:/tmp/policy-fragments'
+# LOCATION FOR SSL CERTS
+      - '~/.nova/ssl:/etc/sophos/ssl'
+    links:
+      - 'postgres:postgres-service'
+      - 'mongo:mongo-service'
+      - 'memcache:memcache-service'
+      - 'redis:redis-service'
+      - 'kinesalite:kinesalite'
+      - 'dynamodb:dynamo-service'
+      - 'elasticmq:elasticmq-service'
+#      - 'billing:billing-service'
+      - 'mailcatcher:mailcatcher-service'
+    depends_on:
+      - postgres
+      - mongo
+      - redis
+      - kinesalite
+      - memcache
+      - mailcatcher
+      - localstack
+    ports:
+      - '1043:1043'
+    networks:
+      - novanet
+    dns:
+      - 172.16.199.101
+  postgres:
+    image: postgres:9.6-alpine
+    ports:
+      - '5432:5432'
+    networks:
+      - novanet
+    volumes:
+      - '~/.nova/postgres:/var/lib/postgresql/data'
+    environment:
+      - 'POSTGRES_ROOT_PASSWORD=D3v0ps!#'
+      - 'POSTGRES_USER=postgres'
+      - 'POSTGRES_PASSWORD=postgres'
+    dns:
+      - 172.16.199.101
+  redis:
+    build:
+      context: ./redis
+      args:
+        redis_version: '3.2.6'
+    ports:
+      - '6379:6379'
+      - '7378-7380:7378-7380'
+    networks:
+      - novanet
+    dns:
+      - 172.16.199.101
+  memcache:
+    image: memcached
+    ports:
+      - '11211:11211'
+    networks:
+      - novanet
+    dns:
+      - 172.16.199.101
+  mongo:
+    build: ./mongodb
+    ports:
+      - '27017:27017'
+      - '8090:27017'
+# To make data not persistent, uncomment the following 2 lines:
+    volumes:
+      - '~/.nova/db:/data/db'
+    networks:
+      - novanet
+    dns:
+      - 172.16.199.101
+  kinesalite:
+    build: ./kinesalite
+#    ports:
+#      - '4567:4567'
+    volumes:
+      - '~/.nova/kinesalite:/var/kinesalite'
+    networks:
+      - novanet
+    dns:
+      - 172.16.199.101
+  dynamodb:
+    build: ./dynamodb
+    ports:
+      - '8000:8000'
+    networks:
+      - novanet
+    dns:
+      - 172.16.199.101
+  elasticmq:
+    build: ./elasticmq
+    ports:
+      - '9324:9324'
+    networks:
+      - novanet
+    dns:
+      - 172.16.199.101
+#  salesforce:
+#    build: ./salesforce
+#    ports:
+#      - '8094:8094'
+#    networks:
+#      - novanet
+#    dns:
+#      - 172.16.199.101
+  mailcatcher:
+    image: 'schickling/mailcatcher'
+    ports:
+      - '9080:1080'
+      - '1025:1025'
+    networks:
+      - novanet
+    dns:
+      - 172.16.199.101
+networks:
+  novanet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.16.199.0/24

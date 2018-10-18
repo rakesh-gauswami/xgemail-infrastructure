@@ -14,6 +14,8 @@ RUN yum -y update && \
     cd "/tmp" && \
     wget https://packages.chef.io/files/stable/chef/12.3.0/el/6/chef-12.3.0-1.el6.x86_64.rpm && \
     rpm -ivh chef-12.3.0-1.el6.x86_64.rpm && \
+    wget https://rubygems.org/gems/aws-sdk/versions/3.0.1 && \
+    /opt/chef/embedded/bin/gem install aws-sdk && \
     rm -rf "/tmp/"*
 
 VOLUME ["/sys/fs/cgroup"]

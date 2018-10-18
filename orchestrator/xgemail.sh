@@ -4,47 +4,90 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 YELLOW='\033[0;33m'
 
-# Set XGEMAIL_HOME environment variable
-echo -e "Setting environment variable <XGEMAIL_HOME> to <~/g/email/>"
-echo -e "${YELLOW} NOTE: XGEMAIL_HOME points to the directory above which xgemail-infrastructure and xgemail repo live locally ${NC}"
-export XGEMAIL_HOME="${HOME}/g/email/"
+base_compose="docker-compose-base.yml"
+inbound_compose="docker-compose-inbound.yml"
+outbound_compose="docker-compose-outbound.yml"
 
-if [ ! $? -eq 0 ]; then
-    echo -e "${RED} Unable to set XGEMAIL_HOME environment variable ${NC}"
-    exit 1
-else
-    echo -e "${GREEN} XGEMAIL_HOME environment successfully set to ${XGEMAIL_HOME} ${NC}"
-fi
+nova_bootstrap_file="${HOME}/g/nova/appserver/config/bootstrap.properties"
+mail_bootstrap_file="${orchestrator_location}sophos_cloud_tomcat_bootstrap.properties"
+nova_bootstrap_file_original_copy="${HOME}/g/nova/appserver/config/bootstrap_copy.properties"
 
-xgemail_infrastructure_location="${XGEMAIL_HOME}xgemail-infrastructure/"
-orchestrator_location="${xgemail_infrastructure_location}orchestrator/"
+nova_docker_compose_single="${HOME}/g/nova/docker-compose-single.yml"
+xgemail_replacement_nova_compose="${orchestrator_location}docker-compose-nova-single.yml"
+nova_docker_compose_original_copy="${HOME}/g/nova/docker-compose-single_copy.yml"
+
+sasi_service_image="email/sasi-service"
+sasi_docker_image="email/sasi-daemon"
+
+possible_clean_up_files=()
+
+function initialize {
+    set_home
+    echo -e "${YELLOW} Running set up steps ${NC}"
+    echo -e "${YELLOW} NOTE: This should be run each time before starting NOVA ${NC}"
+
+   #override nova appserver bootstrap file
+    if [ ! -f ${nova_bootstrap_file} ]; then
+        echo -e "${RED} ${nova_bootstrap_file} could not be found. Ensure it exists at the right location ${NC}"
+        exit 1        
+    fi
+
+    if [ ! -f ${nova_bootstrap_file_original_copy} ]; then
+        cp ${nova_bootstrap_file} ${nova_bootstrap_file_original_copy}
+    fi
+
+    create_mail_bootstrap
+
+    override_files ${nova_bootstrap_file} ${mail_bootstrap_file}
+
+    #override nova docker-compose-single.yml file
+    if [ ! -f ${nova_docker_compose_single} ]; then
+        echo -e "${RED} ${nova_docker_compose_single} could not be found. Ensure it exists at the right location ${NC}"
+        exit 1        
+    fi
+
+    if [ ! -f ${nova_docker_compose_original_copy} ]; then
+        cp ${nova_docker_compose_single} ${nova_docker_compose_original_copy}
+    fi
+
+    override_files ${nova_docker_compose_single} ${xgemail_replacement_nova_compose}
+
+    echo -e "${GREEN} Initialization Completed Successfully ${NC}"
+}
+
 
 function deploy_inbound {
+    initialize
     check_login_to_aws
+    set_home
     
     echo -e "${YELLOW} user selected inbound ${NC}"
     echo -e "${YELLOW} Services needed for inbound mail-flow will be started ${NC}"
     echo ""
 
-    deploy_jilter inbound
+    check_sasi ${sasi_service_image} ${sasi_docker_image}
 
     create_mail_bootstrap
 
-    docker-compose -f ${orchestrator_location}docker-compose-base.yml -f ${orchestrator_location}docker-compose-inbound.yml up -d
+    docker-compose -f ${orchestrator_location}${base_compose} -f ${orchestrator_location}${inbound_compose} up -d
 
-    check_mail_service_up
+    deploy_jilter inbound
 
     deploy_mail "mail" "mailinbound"
 
-    # provision_localstack
+    provision_localstack
  
-    # provision_postfix "postfix-is" "postfix-cd"
+    provision_postfix "postfix-is" "postfix-cd"
 
     check_tomcat_startup "mail" "mailinbound"
 }
 
 function deploy_outbound {
+    initialize
     check_login_to_aws
+    set_home
+    
+    check_sasi ${sasi_service_image} ${sasi_docker_image}
 
     echo -e "${YELLOW} user selected outbound ${NC}"
     echo -e "${YELLOW} Services needed for outbound mail-flow will be started ${NC}"
@@ -54,48 +97,67 @@ function deploy_outbound {
 
     create_mail_bootstrap
 
-    deploy_mail "mail" "mailoutbound"
-
-    docker-compose -f ${orchestrator_location}docker-compose-base.yml -f ${orchestrator_location}docker-compose-outbound.yml up -d
-
-    check_mail_service_up
+    docker-compose -f ${orchestrator_location}${base_compose} -f ${orchestrator_location}${outbound_compose} up -d
 
     deploy_mail "mail" "mailoutbound"
 
     provision_localstack
- 
+    
     provision_postfix "postfix-cs" "postfix-id"
 
     check_tomcat_startup "mail" "mailoutbound"
 }
 
+function deploy_all {
+    check_login_to_aws
+    set_home
+
+    echo -e "${YELLOW} user selected all ${NC}"
+    echo -e "${YELLOW} Services needed for both inbound and outbound mail-flow will be started ${NC}"
+    echo ""
+
+    deploy_jilter all
+
+    create_mail_bootstrap
+
+    docker-compose -f ${orchestrator_location}${base_compose} -f ${orchestrator_location}${inbound_compose} -f ${orchestrator_location}${outbound_compose} up -d
+
+    deploy_mail "mail" "mailinbound" "mailoutbound"
+
+    provision_localstack
+ 
+    provision_postfix "postfix-cs" "postfix-id" "postfix-is" "postfix-cd"
+
+    check_tomcat_startup "mail" "mailoutbound" "mailinbound"
+}
+
 function provision_postfix {
     if [ "$#" -eq 0 ]; then
         echo -e "${RED} No postfix instances specified for provisioning ${NC}"
-        clean_up
         exit 1
     fi
+
     for service in "$@"; do
+        check_service_up ${service}
         echo -e "${GREEN} provisioning ${service} started ${NC}"
         docker exec ${service} /opt/run.sh
         if [ $? -eq 0 ]; then
             echo -e "${GREEN} provisioning ${service} successfully completed ${NC}"
         else
             echo -e "${RED} provisioning ${service} failed ${NC}"
-            clean_up
             exit 1
         fi
     done
 }
 
 function provision_localstack {
+    check_service_up localstack
     echo -e "${GREEN} provisioning localstack started ${NC}"
     bash ${orchestrator_location}do_it.sh
     if [ $? -eq 0 ]; then
         echo -e "${GREEN} provisioning localstack successfully completed ${NC}"
     else
         echo -e "${RED} provisioning localstack failed ${NC}"
-        clean_up
         exit 1
     fi
 }
@@ -108,7 +170,6 @@ container.
 function deploy_mail {
     if [ "$#" -eq 0 ]; then
         echo -e "${RED} No wars specified for deployment ${NC}"
-        clean_up
         exit 1
     fi
 
@@ -131,11 +192,10 @@ function deploy_mail {
     war_count=${#warfiles_found[@]}
     if [[ $war_count -ne $services_count ]]; then
         echo "found services: [${services_found[@]}] , expected: [$@]"
-        echo "All war files were not available in the current branch"
-        echo "You may not have assembled the necessary wars. Please ensure all war files are available"
+        echo -e "${RED}All war files were not available in the current branch"
+        echo -e "You may not have assembled the necessary wars. Please ensure all war files are available"
         comma_seperated_services=$(join , "$@")
-        echo "Run './gradlew {"$comma_seperated_services"}-services:assemble' in the sophos cloud repo"
-        clean_up
+        echo -e "Run './gradlew {"$comma_seperated_services"}-services:clean {"$comma_seperated_services"}-services:assemble' in the sophos cloud repo ${NC}"
         exit 1
     else
         echo "War files have been indexed"
@@ -147,10 +207,11 @@ function deploy_mail {
 
     if [ ! $? -eq 0 ]; then
         echo -e "${RED} Failed to create ${war_file_location} ${NC}"
-        clean_up
         exit 1
     fi
     tomcat_webapps_loc="mail-service:/usr/local/tomcat/webapps/"
+
+    check_service_up mail-service
 
     for file in "${warfiles_found[@]}" ; do
         filename=$(echo "$file" | xargs -n 1 basename)
@@ -181,24 +242,53 @@ function deploy_jilter()
 {
     jilter_location="${XGEMAIL_HOME}xgemail/"
     
+    sandbox_inbound_jilter_tar_location="${HOME}/.xgemail_sandbox/jilter/inbound/"
+    sandbox_outbound_jilter_tar_location="${HOME}/.xgemail_sandbox/jilter/outbound/"
+    
+    jilter_inbound_build_location="${jilter_location}xgemail-jilter-inbound/build/distributions/"
+    jilter_inbound_build_name="xgemail-jilter-inbound-current.tar"
+
+    jilter_outbound_build_location="${jilter_location}xgemail-jilter-outbound/build/distributions/"
+    jilter_outbound_build_name="xgemail-jilter-outbound-current.tar"
+
     case $1 in 
         inbound)
-            sandbox_jilter_tar_location="${HOME}/.xgemail_sandbox/jilter/inbound/"
-            mkdir -p ${sandbox_jilter_tar_location}
-            jilter_build_location="${jilter_location}xgemail-jilter-inbound/build/distributions/"
-            jilter_build_name="jilter_inbound.tar"
+            check_service_up jilter-inbound
+            deploy_jilter_helper ${sandbox_inbound_jilter_tar_location} ${jilter_inbound_build_location} ${jilter_inbound_build_name}
         ;;
         outbound)
-            sandbox_jilter_tar_location="${HOME}/.xgemail_sandbox/jilter/outbound/"
-            mkdir -p ${sandbox_jilter_tar_location}
-            jilter_build_location="${jilter_location}xgemail-jilter-outbound/build/distributions/"
-            jilter_build_name="jilter_outbound.tar"
+            check_service_up jilter-outbound
+            deploy_jilter_helper ${sandbox_outbound_jilter_tar_location} ${jilter_outbound_build_location} ${jilter_outbound_build_name}
+        ;;
+        all)
+            check_service_up jilter-inbound
+            deploy_jilter_helper ${sandbox_inbound_jilter_tar_location} ${jilter_inbound_build_location} ${jilter_inbound_build_name}
+            
+            check_service_up jilter-outbound
+            deploy_jilter_helper ${sandbox_outbound_jilter_tar_location} ${jilter_outbound_build_location} ${jilter_outbound_build_name}
         ;;
         *)
-        echo "usage"
+        clean_up_files
         exit 1
         ;;
     esac
+
+    build_policy_storage_for_jilter
+
+}
+
+function deploy_jilter_helper()
+{
+    if [ ! $# -eq 3 ]; then
+        echo "${RED} This function needs to take in 3 inputs ${NC}"
+        exit 1
+    fi
+
+    sandbox_jilter_tar_location="$1"
+    jilter_build_location="$2"
+    jilter_build_name="$3"
+
+    mkdir -p ${sandbox_jilter_tar_location}
 
     if [ ! -d ${jilter_build_location} ]; then
         echo -e "${RED} Jilter tar files are not present. Please follow instructions in the readme in the xgemail repo
@@ -206,18 +296,27 @@ function deploy_jilter()
         exit 1
     else
         pushd "${jilter_build_location}"
-        jilter_tar_file=$(ls *.tar)
-        if [ ! ${#jilter_tar_file[@]} -eq 1 ]; then
-            echo -e "${RED} 0 or more than 1 tar files were found. There should be only tar file in the distribution ${NC}"
+        jilter_tar_file_string=$(ls *.tar)
+        jilter_tar_files=(${jilter_tar_file_string})    
+
+        if [ ! ${#jilter_tar_files[@]} -eq 1 ] ; then
+            echo -e "${RED} 0 or more than 1 tar files were found. There should be only tar file in the distribution folder ${NC}"
+            echo -e "${RED} Follow instructions in the xgemail repo to build jilter ${NC}"
+            popd > /dev/null
+            clean_up_files
             exit 1
         else
             newfile_location=${sandbox_jilter_tar_location}${jilter_build_name}
             echo "Copying tar files to .xgemail_sandbox folder to ready it for deployment"
-            rsync -a --progress "${jilter_tar_file[0]}" "${newfile_location}"
+            rsync -a --progress "${jilter_tar_files[0]}" "${newfile_location}"
+
             if [ $? -eq 0 ]; then
                 echo -e "${GREEN} Successfully copied jilter tar files to .xgemail_sandbox folder ${NC}"
+                possible_clean_up_files+=${newfile_location}
             else
                 echo -e "${RED} Failed to copy jilter tar files to .xgemail_sandbox folder ${NC}"
+                popd > /dev/null
+                clean_up_files
                 exit 1
             fi 
         fi
@@ -225,23 +324,104 @@ function deploy_jilter()
     fi
 }
 
+#TODO: remove or edit this after policy synchronization piece is done
+function build_policy_storage_for_jilter {
+    policy_sandbox_location="${HOME}/.xgemail_sandbox/policy_storage/"
+    mkdir -p ${policy_sandbox_location}
+
+    global_config_folder="${policy_sandbox_location}config/outbound-relay-control/rate-limit/"
+    mkdir -p ${global_config_folder}
+    global_config_file="${global_config_folder}global.CONFIG"
+
+    domains_config_folder="${policy_sandbox_location}config/outbound-relay-control/domains/"
+    mkdir -p ${domains_config_folder}
+    default_domain_config_file="${domains_config_folder}sophos.com.CONFIG"
+
+    user_policy_folder="${policy_sandbox_location}config/outbound-relay-control/domains/sophos.com/"
+    mkdir -p ${user_policy_folder}
+    user_policy1_file="${user_policy_folder}b25l"
+    user_policy2_file="${user_policy_folder}dGVzdGFkbWlu"
+
+    #create empty policy files
+    touch ${user_policy1_file}
+    touch ${user_policy2_file}
+
+    cat > ${global_config_file} << EOF
+{"limit_by_domain":true,"limit_by_ip_address":false,"number_of_messages":2500,"duration":"PT300S"}
+EOF
+
+    cat > ${default_domain_config_file} << EOF
+{"schema_version":20171026,"service_provider":"CUSTOM","addresses":["172.16.199.1"]} 
+EOF
+
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN} Created default policy files for jilter ${NC}"
+    else
+        echo -e "${RED} Unable to create default policy files for jilter ${NC}"
+        exit 1
+    fi
+
+}
+
+function check_sasi {
+    for image in "$@"; do
+        docker inspect ${image} >/dev/null 2>&1
+        if [ ! $? -eq 0 ]; then
+            echo -e "${RED} ${image} cannot be found ${NC}"
+            echo -e "${RED} For sasi-daemon, follow the instructions in the readme here 
+            https://git.cloud.sophos/projects/EMAIL/repos/sasi-docker/browse ${NC}"
+
+            echo -e "${RED} For sasi-service, follow the instructions in the readme here 
+            https://git.cloud.sophos/projects/EMAIL/repos/sasi-service/browse ${NC}"
+
+            exit 1
+        else
+            echo -e "${GREEN} Docker image ${image} confirmed to be present ${NC}"
+        fi
+    done
+}
+
 function check_login_to_aws {
     #Setup login to amazon ECR
-    aws ecr get-login --no-include-email --region us-east-2 --profile docker-amzn >/dev/null 2>&1
+    aws ecr get-login --no-include-email --region us-east-2 >/dev/null 2>&1
+
     if [ ! $? -eq 0 ]; then
         echo -e "${RED} Unable to log into AWS ECR. Check your AWS credentials configuration ${NC}"
+        echo -e "${RED} Please take a look at the README.md file under ${XGEMAIL_HOME}xgemail-infrastructure/docker ${NC}"
         exit 1
     else
         echo -e "${GREEN} Successfully logged into AWS ECR ${NC}"
     fi
 }
 
-function check_mail_service_up {
-    echo "Waiting for mail-service to be fully up."
+function set_home {
+    # Set XGEMAIL_HOME environment variable
+    echo -e "Setting environment variable <XGEMAIL_HOME> to <~/g/email/>"
+    echo -e "${YELLOW} NOTE: XGEMAIL_HOME points to the directory above which xgemail-infrastructure and xgemail repo live locally ${NC}"
+    export XGEMAIL_HOME="${HOME}/g/email/"
+
+    if [ ! $? -eq 0 ]; then
+        echo -e "${RED} Unable to set XGEMAIL_HOME environment variable ${NC}"
+        exit 1
+    else
+        echo -e "${GREEN} XGEMAIL_HOME environment successfully set to ${XGEMAIL_HOME} ${NC}"
+    fi
+
+    xgemail_infrastructure_location="${XGEMAIL_HOME}xgemail-infrastructure/"
+    orchestrator_location="${xgemail_infrastructure_location}orchestrator/"
+}
+
+function check_service_up {
+    if [ $# -eq 0 ]; then
+        echo -e "${RED} No service specified ${NC}"
+        exit 1
+    fi
+
+    echo "Waiting for $1 to be fully up."
     count=0
     max_count=12 # Multiply this number by 5 for total wait time, in seconds.
     while [[ $count -le $max_count ]]; do
-        startup_check=$(docker ps --filter='name=mail-service' --format {{.Status}} | grep -c "Up")
+        startup_check="$(docker ps --filter=name=$1 --format {{.Status}} | grep -c Up)"
         if [[ $startup_check -ne 1 ]]; then
             count=$((count+1))
             sleep 5
@@ -251,11 +431,10 @@ function check_mail_service_up {
     done
 
     if [[ $startup_check -ne 1 ]]; then
-        echo -e "${RED}Mail-service tomcat did not start properly.  Please check the logs ${NC}"
-        clean_up 
+        echo -e "${RED} $1 did not start properly.  Please check the logs ${NC}"
         exit 1
     else
-        echo "Mail-service is up!"
+        echo "$1 is up!"
     fi
 }
 
@@ -263,7 +442,7 @@ function check_tomcat_startup()
 {
     local minutes=20
     echo "Checking deployment of wars '$@' in background"
-    sleep 20
+    sleep 30
     local now=$(date +%s)
     local deadline=$(($now + $minutes*60))
     while (($now < $deadline)); do
@@ -278,6 +457,7 @@ function check_tomcat_startup()
         sleep 10
         now=$(date +%s)
     done
+    echo -e "${RED} Wars in tomcat did not startup in ${minutes} minutes. They might need more time or there may be something wrong. Check the logs ${NC}"
 }
 
 
@@ -288,7 +468,6 @@ function create_mail_bootstrap()
 {
     echo -e "${GREEN} Creating bootstrap.properties file from nova appserver bootstrap properties
     and email addendum bootstrap properties ${NC}"
-    local nova_bootstrap_file="${HOME}/g/nova/appserver/config/bootstrap.properties"
     local addendum_file="${xgemail_infrastructure_location}/docker/sophos_cloud_tomcat/config/xgemail_addendum_bootstrap.properties"
 
     if [ ! -f "${nova_bootstrap_file}" ]; then
@@ -301,30 +480,122 @@ function create_mail_bootstrap()
       exit 1
     fi
 
-    local file="${orchestrator_location}sophos_cloud_tomcat_bootstrap.properties"
+    if [ ! -f "${nova_bootstrap_file_original_copy}" ]; then
+      echo -e "${RED} Original bootstrap file not found at ${nova_bootstrap_file_original_copy}. Run <./xgemail.sh initialize>  ${NC}"
+      exit 1
+    fi
 
-    cat $nova_bootstrap_file $addendum_file > $file
+
+    cat $nova_bootstrap_file_original_copy $addendum_file > $mail_bootstrap_file
 
     if [ $? -eq 0 ]; then
-        echo -e "${GREEN} Successfully concatenated and created bootstrap properties file ${file} ${NC}"
+        echo -e "${GREEN} Successfully concatenated and created bootstrap properties file ${mail_bootstrap_file} ${NC}"
     else
-        echo -e "${RED} Failed to created bootstrap properties file ${file} ${NC}"
+        echo -e "${RED} Failed to created bootstrap properties file ${mail_bootstrap_file} ${NC}"
         exit 1
     fi
 }
 
 function clean_up {
     echo -e "${YELLOW} CLEANING UP ${NC}"
+
+    clean_up_files
     #TODO: break up line
-    $(docker-compose -f ${orchestrator_location}docker-compose-base.yml -f ${orchestrator_location}docker-compose-inbound.yml -f ${orchestrator_location}docker-compose-outbound.yml down)
+    $(docker-compose -f ${orchestrator_location}${base_compose} -f ${orchestrator_location}${inbound_compose} -f ${orchestrator_location}${outbound_compose} down)
 
     if [ $? -eq 0 ]; then
         echo -e "${GREEN} Successfully cleaned up ${NC}"
-        exit 1
+        exit 0
     else
-        echo -e "${GREEN} Clean up was unsuccessful ${NC}"
+        echo -e "${RED} Clean up was unsuccessful ${NC}"
         exit 1
      fi   
+}
+
+function clean_up_nova_initialization
+{
+    echo -e "${YELLOW} Cleaning up nova initialization ${NC}"
+
+    if [ -f ${nova_bootstrap_file_original_copy} ]; then
+
+        mv ${nova_bootstrap_file_original_copy} ${nova_bootstrap_file}
+
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN} Successfully restored ${nova_bootstrap_file} ${NC}"
+        else
+            echo -e "${RED} Clean up was unsuccessful. Unable to restore ${nova_bootstrap_file} ${NC}"
+        fi 
+    fi
+
+    if [ -f ${nova_docker_compose_original_copy} ]; then
+
+        mv ${nova_docker_compose_original_copy} ${nova_docker_compose_single}
+
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN} Successfully restored ${nova_docker_compose_single} ${NC}"
+        else
+            echo -e "${RED} Clean up was unsuccessful. Unable to restore ${nova_docker_compose_single} ${NC}"
+        fi 
+    fi  
+}
+
+function clean_up_files {
+    if [ ${#possible_clean_up_files} -gt 0 ]; then
+        echo -e "${YELLOW} Cleaning up files ${possible_clean_up_files[@]} ${NC}"
+        for file in ${possible_clean_up_files}; do
+            rm -f ${file}
+            if [ $? -eq 0 ]; then
+                echo "${file} removed"
+            else
+                echo -e "${RED} Unable to remove file ${file} ${NC}"
+            fi    
+        done
+    else
+        echo -e "${YELLOW} No files to clean up ${NC}"    
+    fi    
+}
+
+function override_files {
+    if [ ! $# -eq 2 ]; then
+        echo -e "${RED} This function needs two input arguments ${NC}"
+        exit 1
+    fi
+
+    for file in "$@"; do
+        if [ ! -f ${file} ]; then
+            echo -e "${RED} ${file} could not be found. Ensure it exists at the right location ${NC}"
+            exit 1
+        fi
+    done
+
+    echo "Overwriting $1 with $2"
+    cp $2 $1
+
+    if [ $? -eq 0 ]; then
+        echo "Successfully replaced $1 with $2"
+    else
+        echo -e "${RED} There was an error replacing $1 with $2 ${NC}"
+        exit 1
+    fi
+}
+
+function docker_compose_command
+{
+    all_command="docker-compose -f ${base_compose} -f ${inbound_compose} -f ${outbound_compose}"
+    case "$2" in 
+        inbound)
+        docker-compose -f ${base_compose} -f ${inbound_compose} $1
+        ;;
+        outbound)
+        docker-compose -f ${base_compose} -f ${outbound_compose} $1
+        ;;
+        all)
+        ${all_command} $1
+        ;;
+        *)
+        ${all_command} $1 $2
+        ;;
+    esac    
 }
 
 function join {
@@ -333,8 +604,27 @@ function join {
     echo "$*";
 }
 
-# When the user hits ctrl-c to interrupt the process, clean up
-trap clean_up INT
+function usage {
+    cat <<EOF
+Xgemail Sandbox
+
+Usage:
+  ./xgemail.sh COMMAND OPTIONS
+
+Commands                                                                            Options
+help         get usage info 
+initialize   setup steps before starting up nova                                                                                                     
+deploy       deploy and start containers                                            inbound, outbound, all
+hot_deploy   hot deploy artifacts(NOTE: artifacts have to be built first)           mail, mailinbound, mailoutbound
+                                                                                    jilter-inbound, jilter-outbound
+                                                                                    postfix-is, postfix-cd, postfix-cs, postfix-id
+start        start stopped containers                                               <service_name>, inbound, outbound, all
+stop         stop started containers                                                <service_name>, inbound, outbound, all
+restart      restart started containers                                             <service_name>, inbound, outbound, all                                                                                    
+destroy      clean up and bring down all containers 
+             This does not remove images
+EOF
+}
 
 case "$1" in
     deploy)
@@ -347,37 +637,84 @@ case "$1" in
                 ;;
 
             all)
+                deploy_all
                 ;;
             *)
-                echo "unknown option"
+                echo "Usage: $0 <inbound | outbound | all>"
                 ;;
        esac
         ;;
     hot_deploy)
         case "$2" in
             mail)
-            
+            set_home
             deploy_mail "mail"
             check_tomcat_startup "mail"
             ;;
+
             mailinbound)
+            set_home
             deploy_mail "mailinbound"
             check_tomcat_startup "mailinbound"
-        
             ;;
+
             mailoutbound)
+            set_home
             deploy_mail "mailoutbound"
             check_tomcat_startup "mailoutbound"
             ;;
+
+            jilter-inbound)
+                set_home
+                deploy_jilter inbound  
+                docker-compose -f ${orchestrator_location}${inbound_compose} restart jilter-inbound
+                ;;
+            jilter-outbound)
+                set_home
+                deploy_jilter outbound
+                docker-compose -f ${orchestrator_location}${outbound_compose} restart jilter-outbound
+                ;;
+            postfix-is)
+                set_home
+                provision_postfix postfix-is
+                ;;
+            postfix-cd)
+                set_home
+                provision_postfix postfix-cd
+                ;;
+            postfix-cs)
+                set_home
+                provision_postfix postfix-cs
+                ;;
+            postfix-id)
+                set_home
+                provision_postfix postfix-id
+                ;;
             *)
-            echo "usage"
+            echo "Usage: $0 <mail | mailinbound | mailoutbound | jilter-inbound | jilter-outbound | postfix-is | postfix-cd | postfix-cs | postfix-id>"
             ;;
         esac
         ;;
+    initialize)
+        initialize
+        ;;
+    start)
+        docker_compose_command $1 $2
+        ;;
+    stop)
+        docker_compose_command $1 $2
+        ;;
+    restart)
+        docker_compose_command $1 $2
+        ;;
+    help)
+        usage
+        ;;
     destroy)
+        clean_up_nova_initialization
         clean_up
         ;;
     *)
-        echo "usage"
+        usage
         ;;
 esac

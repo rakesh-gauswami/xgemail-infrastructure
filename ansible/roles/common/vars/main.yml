@@ -3,6 +3,41 @@
 # Each playbook has an associated role and in each role is a meta task which loads the common role first.
 # The variables are organized into namespaces
 aws:
+  asg:
+    cd:
+      asg_min_size:                                               [0,0,0,0,0,0,1,1,1,1,1,1]
+      health_check_grace_period:                                  "600"
+      instance_size:                                              "t2.small"
+      stack_number:                                               [1,2,3,4,5,6,7,8,9,10,11,12]
+      zone_index:                                                 [0,1,2,0,1,2,0,1,2,0,1,2]
+    cs:
+      asg_min_size:                                               [0,0,0,1,1,1]
+      health_check_grace_period:                                  "2100"
+      instance_size:                                              "t2.small"
+      stack_number:                                               [1,2,3,4,5,6]
+      zone_index:                                                 [0,1,2,0,1,2]
+    cx:
+      health_check_grace_period:                                  "600"
+      instance_size:                                              "t2.small"
+      stack_number:                                               [1,2,3]
+      zone_index:                                                 [0,1,2]
+    id:
+      asg_min_size:                                               [0,0,0,0,0,0,1,1,1,1,1,1]
+      health_check_grace_period:                                  "600"
+      instance_size:                                              "t2.small"
+      stack_number:                                               [1,2,3,4,5,6,7,8,9,10,11,12]
+      zone_index:                                                 [0,1,2,0,1,2,0,1,2,0,1,2]
+    is:
+      asg_min_size:                                               [0,0,0,1,1,1]
+      health_check_grace_period:                                  "1200"
+      instance_size:                                              "t2.small"
+      stack_number:                                               [1,2,3,4,5,6]
+      zone_index:                                                 [0,1,2,0,1,2]
+    ix:
+      health_check_grace_period:                                  "600"
+      instance_size:                                              "t2.small"
+      stack_number:                                               [1,2,3]
+      zone_index:                                                 [0,1,2]
   efs:
     policy_efs_volume:
       encrypted:                                                  "true"
@@ -327,20 +362,8 @@ hostedzone:                                                       "hydra.sophos.
 cron_scale_down:                                                  "0 1 * * 6"
 cron_scale_up:                                                    "0 4 * * 1"
 nat_eip_a:                                                        "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.NatEipA}}"
-health_check_grace_period_cd:                                     "600"
-health_check_grace_period_id:                                     "600"
-health_check_grace_period_cs:                                     "1800"
-health_check_grace_period_is:                                     "1200"
-health_check_grace_period_cx:                                     "600"
-health_check_grace_period_ix:                                     "600"
 hopper_public_ip:                                                 "198.144.101.106/32"
 instance_size_elasticsearch:                                      "t2.medium"
-instance_size_id:                                                 "t2.small"
-instance_size_cd:                                                 "t2.small"
-instance_size_is:                                                 "t2.small"
-instance_size_cs:                                                 "t2.small"
-instance_size_ix:                                                 "t2.small"
-instance_size_cx:                                                 "t2.small"
 instance_size_xgemail_spot_price:                                 "-1"
 weekend_scale_down:                                               "false"
 xgemail_sxl_dbl:                                                  "uri.cal1.sophosxl.com"
