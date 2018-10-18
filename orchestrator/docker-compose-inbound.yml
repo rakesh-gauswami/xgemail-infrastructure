@@ -79,17 +79,49 @@ services:
     environment:
       - JILTER_VERSION=current
       - DIRECTION=inbound
+      - HOSTNAME_EXTERNAL=jilter-inbound
+      - INSTANCE_TYPE=jilter-inbound
+      - DEFAULT_REGION=local
+      - DEFAULT_ENVIRONMENT=sandbox
       - APPLICATION=
     ports:
       - '9876:9876'
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
-      - ~/.aws:/root/.aws:ro
       - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
       - ~/.xgemail_sandbox/jilter/inbound/:/jilter/
       - ~/.policy-storage:/policy-storage:rw
     networks:
       - novanet
+
+  sasi-service-inbound:
+    image: email/sasi-service
+    container_name: sasi-service-inbound
+    hostname: sasi-service-inbound
+    domainname: sandbox.sophos
+    extra_hosts:
+      - "sasi-daemon:172.16.199.111"
+
+    environment:
+      - aws.accessKeyId=$AWS_ACCESS_KEY_ID
+      - aws.secretKey=$AWS_SECRET_ACCESS_KEY
+      - logging.level.com.sophos=INFO
+      - APPLICATION_NAME=sasi-inbound
+      - COUNTER_DB_TABLE=None
+      - enableLabsMonitoring=false
+      - HISTORIAN_DB_TABLE=None
+      - HISTORIAN_DB_TABLE_CREATE_DATE=None
+      - SASI_REQUEST_QUEUE=sandbox-SASI_Request
+      - SASI_RESPONSE_QUEU=sandbox-SASI_Response
+    volumes:
+      - $XGEMAIL_HOME/xgemail-infrastructure/orchestrator/sasi/inbound-application.properties:/application.properties
+    ports:
+      - '18082:8080'
+    depends_on:
+      - "sasi-daemon"
+    networks:
+      - novanet
+
 
 networks:
   novanet:

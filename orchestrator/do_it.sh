@@ -54,16 +54,16 @@ QUARANTINE_SQS_QUEUE_SNS_LISTENER="sandbox-Xgemail_Quarantine_Delivery_SNS_Liste
 POLICYASSIGNMENT_SQS_QUEUE="sandbox-PolicyAssignment.Xgemail"
 
 #SASI Queues
-SASI_OUTBOUND_REQUEST_SQS_QUEUE="sandbox-SASI_Outbound_Request"
-SASI_OUTBOUND_RESPONSE_SQS_QUEUE="sandbox-SASI_Outbound_Response"
-SASI_REQUEST_SQS_QUEUE="sandbox-SASI_Request"
-SASI_RESPONSE_SQS_QUEUE="sandbox-SASI_Response"
+#SASI_OUTBOUND_REQUEST_SQS_QUEUE="sandbox-SASI_Outbound_Request"
+#SASI_OUTBOUND_RESPONSE_SQS_QUEUE="sandbox-SASI_Outbound_Response"
+#SASI_REQUEST_SQS_QUEUE="sandbox-SASI_Request"
+#SASI_RESPONSE_SQS_QUEUE="sandbox-SASI_Response"
 
 #DLQ queues
-SASI_OUTBOUND_REQUEST_SQS_QUEUE_DLQ="sandbox-SASI_Outbound_Request-DLQ"
-SASI_OUTBOUND_RESPONSE_SQS_QUEUE_DLQ="sandbox-SASI_Outbound_Response-DLQ"
-SASI_REQUEST_SQS_QUEUE_DLQ="sandbox-SASI_Request-DLQ"
-SASI_RESPONSE_SQS_QUEUE_DLQ="sandbox-SASI_Response-DLQ"
+#SASI_OUTBOUND_REQUEST_SQS_QUEUE_DLQ="sandbox-SASI_Outbound_Request-DLQ"
+#SASI_OUTBOUND_RESPONSE_SQS_QUEUE_DLQ="sandbox-SASI_Outbound_Response-DLQ"
+#SASI_REQUEST_SQS_QUEUE_DLQ="sandbox-SASI_Request-DLQ"
+#SASI_RESPONSE_SQS_QUEUE_DLQ="sandbox-SASI_Response-DLQ"
 CUSTOMER_DELIVERY_SQS_QUEUE_SNS_LISTENER_DLQ="sandbox-Xgemail_Customer_Delivery_SNS_Listener-DLQ"
 CUSTOMER_SUBMIT_SQS_QUEUE_DLQ="sandbox-Xgemail_Customer_Submit-DLQ"
 DQS_SQS_QUEUE_DLQ="sandbox-Xgemail_DQS-DLQ"

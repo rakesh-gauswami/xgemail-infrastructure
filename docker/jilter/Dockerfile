@@ -18,6 +18,3 @@ RUN yum update -y && \
 ADD run.sh /opt/scripts/run.sh
 
 RUN chmod 777 /opt/scripts/run.sh
-
-RUN find . -type f -name 'libdkimjni*' -execdir mv {} libdkimjni.so \;
-RUN find . -type f -name 'libspfjni*' -execdir mv {} libspfjni.so \;

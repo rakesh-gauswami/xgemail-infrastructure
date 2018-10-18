@@ -76,6 +76,34 @@ services:
     networks:
       - novanet
 
+  sasi-service-outbound:
+    image: email/sasi-service
+    container_name: sasi-service-outbound
+    hostname: sasi-service-outbound
+    domainname: sandbox.sophos
+    extra_hosts:
+      - "sasi-daemon:172.16.199.111"
+
+    environment:
+      - aws.accessKeyId=$AWS_ACCESS_KEY_ID
+      - aws.secretKey=$AWS_SECRET_ACCESS_KEY
+      - logging.level.com.sophos=INFO
+      - APPLICATION_NAME=sasi-outbound
+      - COUNTER_DB_TABLE=None
+      - enableLabsMonitoring=false
+      - HISTORIAN_DB_TABLE=None
+      - HISTORIAN_DB_TABLE_CREATE_DATE=None
+      - SASI_REQUEST_QUEUE=sandbox-SASI_Outbound_Request
+      - SASI_RESPONSE_QUEU=sandbox-SASI_Outbound_Response
+    volumes:
+      - $XGEMAIL_HOME/xgemail-infrastructure/orchestrator/sasi/application.properties:/application.properties
+    ports:
+      - '18081:8080'
+    depends_on:
+      - "sasi-daemon"
+    networks:
+      - novanet
+
 networks:
   novanet:
     external:
