@@ -21,7 +21,7 @@ services:
       - novanet
 
   postfix-is:
-    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:1.0.0
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:latest
     container_name: postfix-is
     hostname: internet-submit
     domainname: local.sandbox.hydra.sophos.com
@@ -39,7 +39,7 @@ services:
       - novanet
 
   postfix-cd:
-    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:1.0.0
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:latest
     container_name: postfix-cd
     hostname: delivery
     domainname: local.sandbox.hydra.sophos.com
@@ -56,7 +56,7 @@ services:
       - novanet
 
   # postfix-xd:
-  #   image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:1.0.0
+  #   image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:latest
   #   container_name: postfix-xd
   #   hostname: extended-delivery
   #   domainname: local.sandbox.hydra.sophos.com
@@ -90,6 +90,11 @@ services:
       - ~/.policy-storage:/policy-storage:rw
     networks:
       - novanet
+
+networks:
+  novanet:
+    external:
+      name: nova_novanet
 
 
 

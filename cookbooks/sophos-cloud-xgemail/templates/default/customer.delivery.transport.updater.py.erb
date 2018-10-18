@@ -37,23 +37,29 @@ formatter = logging.Formatter(
 handler.formatter = formatter
 logger.addHandler(handler)
 
-PIC_XGEMAIL_API_URL = 'https://%s/mail/api/xgemail' % (PIC_FQDN)
-PIC_DOMAINS_URL = PIC_XGEMAIL_API_URL + '/domains'
+ACCOUNT = '<%= @account %>'
 
-logger.info('customer delivery transport cron - pic url [%s]', PIC_XGEMAIL_API_URL)
-
-def get_passphrase():
+if ACCOUNT != 'sandbox':
+  def get_passphrase():
     s3 = boto3.client('s3')
     passphrase = s3.get_object(Bucket=CONNECTIONS_BUCKET, Key=MAIL_PIC_API_AUTH)
     return base64.b64encode('mail:' + passphrase['Body'].read())
 
-auth = get_passphrase()
-
-HEADERS = {
+  auth = get_passphrase()
+  HEADERS = {
+      'Content-type': 'application/json',
+      'Authorization': 'Basic ' + auth
+  }
+  PIC_XGEMAIL_API_URL = 'https://%s/mail/api/xgemail' % (PIC_FQDN)
+else:
+  HEADERS = {
     'Content-type': 'application/json',
     'Authorization': 'Basic ' + auth
-}
+  }
+  PIC_XGEMAIL_API_URL = 'https://%s/mail-services/api/xgemail' % (PIC_FQDN)
 
+logger.info('customer delivery transport cron - pic url [%s]', PIC_XGEMAIL_API_URL)
+PIC_DOMAINS_URL = PIC_XGEMAIL_API_URL + '/domains'
 PIC_DESTINATION_URL = PIC_XGEMAIL_API_URL + '/destination'
 
 response = requests.get(

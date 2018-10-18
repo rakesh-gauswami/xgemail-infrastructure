@@ -222,7 +222,7 @@ awslocal sqs create-queue --queue-name ${SASI_REQUEST_SQS_QUEUE} | jq .
 gprintf "CREATING SASI_RESPONSE_SQS_QUEUE"
 awslocal sqs create-queue --queue-name ${SASI_RESPONSE_SQS_QUEUE} | jq .
 
-gprintf "CREATING POLICASSIGNMENT_SQS_QUEUE"
+gprintf "CREATING POLICY_ASSIGNMENT_SQS_QUEUE"
 awslocal sqs create-queue --queue-name ${POLICYASSIGNMENT_SQS_QUEUE} | jq .
 
 

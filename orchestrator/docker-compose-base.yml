@@ -1,33 +1,5 @@
 version: '3'
 services:
-  localstack:
-    image: localstack/localstack
-    container_name: localstack
-    ports:
-      - '4567:4567' #API Gateway
-      - '4568:4568' #Kinesis
-      - '4569:4569' #DynamoDB
-      - '4570:4570' #DynamoDB Streams
-      - '4571:4571' #ElasticSearch
-      - '4572:4572' #S3
-      - '4574:4574' #Lambda
-      - '4575:4575' #SNS
-      - '4576:4576' #SQS
-      - '4578:4578' #Elasticsearch Service
-      - '8081:8081' #WebUI
-    environment:
-      - PORT_WEB_UI=8081
-      - HOSTNAME_EXTERNAL=localstack
-      - SERVICES=apigateway,kinesis,dynamodb,dynamodbstreams,s3,sns,sqs,es,lambda
-      - DEFAULT_REGION=us-east-1
-      - LAMBDA_EXECUTOR=docker
-      - DATA_DIR=/tmp/localstack/data
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /tmp/localstack:/tmp/localstack
-    networks:
-      - novanet
-
   sasi-daemon:
     image: email/sasi-daemon
     container_name: sasi-daemon-container
@@ -67,7 +39,18 @@ services:
     networks:
       - novanet
 
-  mail:
+  elasticsearch:
+    image: 'elasticsearch:1.7.5'
+    ports:
+      - '9200:9200'
+      - '9300:9300'
+    command: '-Des.cluster.name="quarantine.xgemail.sophos.cloud.com"'
+    volumes:
+      - '~/.nova/elasticsearch:/usr/share/elasticsearch/data'
+    networks:
+      - novanet
+
+  mail-service:
     image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/sophos_cloud_tomcat:latest
     container_name: mail-service
     hostname: mail-service
@@ -78,6 +61,8 @@ services:
       - novanet
     dns:
       - 172.16.199.101
+    links:
+      - 'elasticsearch:elasticsearch-service'
     external_links:
       - 'postgres:postgres-service'
       - 'mongo:mongo-service'
@@ -85,8 +70,6 @@ services:
       - 'redis:redis-service'
       - 'kinesalite:kinesalite'
       - 'dynamodb:dynamo-service'
-      - 'elasticmq:elasticmq-service'
-      - 'elasticsearch:elasticsearch-service'
       - 'mailcatcher:mailcatcher-service'
     volumes:
       - $XGEMAIL_HOME/xgemail-infrastructure/orchestrator/sophos_cloud_tomcat_bootstrap.properties:/usr/local/etc/sophos/bootstrap.properties
