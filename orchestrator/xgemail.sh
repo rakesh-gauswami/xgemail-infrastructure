@@ -23,6 +23,11 @@ sasi_docker_image="email/sasi-daemon"
 
 possible_clean_up_files=()
 
+
+: 'This function has to run before starting nova. It carries out various setup steps:
+1. replaces docker-compose-single file of nova
+2. adds to the bootstrap file for deploying wars in nova hub
+'
 function initialize {
     set_home
     echo -e "${YELLOW} Running set up steps ${NC}"
@@ -38,6 +43,7 @@ function initialize {
         cp ${nova_bootstrap_file} ${nova_bootstrap_file_original_copy}
     fi
 
+    #create new bootstrap file by concatenating it with existing bootstrap file in nova
     create_mail_bootstrap
 
     override_files ${nova_bootstrap_file} ${mail_bootstrap_file}
@@ -57,7 +63,10 @@ function initialize {
     echo -e "${GREEN} Initialization Completed Successfully ${NC}"
 }
 
-
+: 'This function creates, starts and provisions the base containers required for
+inbound mail flow. These containers can be found in docker-compose-inbound.yml
+and docker-compose-base.yml
+'
 function deploy_inbound {
     initialize
     check_login_to_aws
@@ -84,6 +93,10 @@ function deploy_inbound {
     check_tomcat_startup "mail" "mailinbound"
 }
 
+: 'This function creates, starts and provisions the base containers required for
+outbound mail flow. These containers can be found in docker-compose-outbound.yml
+and docker-compose-base.yml
+'
 function deploy_outbound {
     initialize
     check_login_to_aws
@@ -110,6 +123,10 @@ function deploy_outbound {
     check_tomcat_startup "mail" "mailoutbound"
 }
 
+: 'This function creates, starts and provisions the base containers required for
+both inbound and outbound mail flow. These containers can be found in docker-compose-inbound.yml,
+docker-compose-outbound.yml and docker-compose-base.yml
+'
 function deploy_all {
     check_login_to_aws
     set_home
@@ -133,6 +150,9 @@ function deploy_all {
     check_tomcat_startup "mail" "mailoutbound" "mailinbound"
 }
 
+: 'This function runs the script to provision postfix instances.
+It takes as an input the postfix instances to be provisioned
+'
 function provision_postfix {
     if [ "$#" -eq 0 ]; then
         echo -e "${RED} No postfix instances specified for provisioning ${NC}"
@@ -152,6 +172,9 @@ function provision_postfix {
     done
 }
 
+: 'This function provisions localstack.
+It runs the script to create all the necessary queues, sns topics and s3 buckets
+'
 function provision_localstack {
     check_service_up localstack
     echo -e "${GREEN} provisioning localstack started ${NC}"
@@ -164,10 +187,8 @@ function provision_localstack {
     fi
 }
 
-: 'This function retrieves the necessary war files specified in the services variable for the users
-current local sophos cloud branch.
-It then copies into a folder with a standard name to enable mounting into a docker
-container.
+: 'This function retrieves the specified war files in the current local sophos-cloud directory
+It then copies them into a folder from which they are hot deployed into a running tomcat docker instance.
 '
 function deploy_mail {
     if [ "$#" -eq 0 ]; then
@@ -183,6 +204,7 @@ function deploy_mail {
     services_count="$#"
     services_found=()
     warfiles_found=()
+    #look for war files
     for war in "$@"; do
         local spath="./${war}-services/build/libs/${war}-services-${branch}-LOCAL.war"
         if [ -e "$spath" ]; then
@@ -216,6 +238,7 @@ function deploy_mail {
 
     check_service_up mail-service
 
+    #copy war files into .xgemail_sandbox/wars and hot deploy them into tomcat container
     for file in "${warfiles_found[@]}" ; do
         filename=$(echo "$file" | xargs -n 1 basename)
         prefix=$(echo "$filename" | awk -F"-" '{print $1}')
@@ -247,6 +270,9 @@ function deploy_mail {
     echo -e "${GREEN} successfully copied ${newfiles} into Tomcat ${NC}"
 }
 
+: 'This function deploys jilter tar files by copying them into a directory from 
+which they are mounted into jilter instances
+'
 function deploy_jilter()
 {
     jilter_location="${XGEMAIL_HOME}xgemail/"
@@ -286,6 +312,9 @@ function deploy_jilter()
 
 }
 
+: 'This function is a helper to deploy_jilter that copies jilter files into a directory
+and mounts them into a running jilter docker instance
+'
 function deploy_jilter_helper()
 {
     if [ ! $# -eq 3 ]; then
@@ -334,6 +363,7 @@ function deploy_jilter_helper()
 }
 
 #TODO: remove or edit this after policy synchronization piece is done
+# This creates place holder policy files
 function build_policy_storage_for_jilter {
     policy_sandbox_location="${HOME}/.xgemail_sandbox/policy_storage/"
     mkdir -p ${policy_sandbox_location}
@@ -371,7 +401,8 @@ EOF
     fi
 
 }
-
+: 'Checks if the required sasi images are present locally
+'
 function check_sasi {
     for image in "$@"; do
         docker inspect ${image} >/dev/null 2>&1
@@ -390,6 +421,8 @@ function check_sasi {
     done
 }
 
+: 'Checks if the user can log into AWS ECR to download the necessary images
+'
 function check_login_to_aws {
     #Setup login to amazon ECR
     aws ecr get-login --no-include-email --region us-east-2 >/dev/null 2>&1
@@ -403,6 +436,8 @@ function check_login_to_aws {
     fi
 }
 
+: 'Set XGEMAIL_HOME environment variable
+'
 function set_home {
     # Set XGEMAIL_HOME environment variable
     echo -e "Setting environment variable <XGEMAIL_HOME> to <~/g/email/>"
@@ -420,6 +455,8 @@ function set_home {
     orchestrator_location="${xgemail_infrastructure_location}orchestrator/"
 }
 
+: 'Checks if the input docker instance is up.
+'
 function check_service_up {
     if [ $# -eq 0 ]; then
         echo -e "${RED} No service specified ${NC}"
@@ -447,6 +484,8 @@ function check_service_up {
     fi
 }
 
+: 'Checks if the specified deployed war files are up and running in Tomcat
+'
 function check_tomcat_startup()
 {
     local minutes=20
@@ -478,7 +517,7 @@ function check_tomcat_startup()
 
 
 : ' This function concatenates the bootstrap properties in the appserver in nova with the addendum bootstrap
-properties for email. The newly created bootstrap properties file can then be used to
+properties for email. 
 '
 function create_mail_bootstrap()
 {
@@ -512,6 +551,9 @@ function create_mail_bootstrap()
     fi
 }
 
+: 'This function destroy all docker containers brought up; removes files that have to be removed on 
+clean up
+'
 function clean_up {
     echo -e "${YELLOW} CLEANING UP ${NC}"
 
@@ -528,6 +570,8 @@ function clean_up {
      fi   
 }
 
+: 'Restores nova files edited when initialization function is called
+'
 function clean_up_nova_initialization
 {
     echo -e "${YELLOW} Cleaning up nova initialization ${NC}"
@@ -555,6 +599,8 @@ function clean_up_nova_initialization
     fi  
 }
 
+: 'Removes files that have to be deleted
+'
 function clean_up_files {
     if [ ${#possible_clean_up_files} -gt 0 ]; then
         echo -e "${YELLOW} Cleaning up files ${possible_clean_up_files[@]} ${NC}"
@@ -595,6 +641,8 @@ function override_files {
     fi
 }
 
+: 'This is a wrapper function around some commonly used docker-compose commands
+'
 function docker_compose_command
 {
     set_home
