@@ -39,35 +39,16 @@ CONFIGURATION_COMMANDS =
     "relay_domains = hash:$config_directory/#{RELAY_DOMAINS_FILENAME}"
   ]
 
-if ACCOUNT == 'sandbox'
-  RELAY_DOMAINS = "/etc/#{instance_name(INSTANCE_NAME)}/#{RELAY_DOMAINS_FILENAME}"
-  file RELAY_DOMAINS do
-    content "#{node['sandbox']['mail_relay_domain']}\n"
-    mode '0644'
-    owner 'root'
-  end
-
-  execute 'build_postmap_for_relay_domains' do
-    user 'root'
-    command <<-EOH
-          postmap #{RELAY_DOMAINS}
-    EOH
-  end
-
-  CONFIGURATION_COMMANDS.each do | cur |
-    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
-  end
-
-  # Return, don't create CRON job
-  return
-
-end
-
 PACKAGE_DIR           = "#{XGEMAIL_FILES_DIR}/internet-submit-domain-cron"
 CRON_SCRIPT           = 'internet.submit.domain.updater.py'
 CRON_SCRIPT_PATH      = "#{PACKAGE_DIR}/#{CRON_SCRIPT}"
 XGEMAIL_PIC_CA_PATH     = "#{LOCAL_CERT_PATH}/hmr-infrastructure-ca.crt"
-XGEMAIL_PIC_FQDN        = "mail-#{STATION_VPC_NAME.downcase}-#{REGION}.#{ACCOUNT}.hydra.sophos.com"
+
+if ACCOUNT == 'sandbox'
+  XGEMAIL_PIC_FQDN = 'mail-service:8080'
+else
+  XGEMAIL_PIC_FQDN = "mail-#{STATION_VPC_NAME.downcase}-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com"
+end
 
 directory XGEMAIL_FILES_DIR do
   mode '0755'
@@ -101,7 +82,8 @@ template CRON_SCRIPT_PATH do
     :relay_domains_filename => RELAY_DOMAINS_FILENAME,
     :mail_pic_api_response_timeout => MAIL_PIC_API_RESPONSE_TIMEOUT,
     :mail_pic_api_auth => MAIL_PIC_API_AUTH,
-    :connections_bucket => CONNECTIONS_BUCKET
+    :connections_bucket => CONNECTIONS_BUCKET,
+    :account => ACCOUNT
   )
   notifies :run, "execute[#{CRON_SCRIPT_PATH}]", :immediately
 end
@@ -110,8 +92,10 @@ CONFIGURATION_COMMANDS.each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
 end
 
-cron "#{INSTANCE_NAME}-domain-cron" do
-  minute "*/#{CRON_MINUTE_FREQUENCY}"
-  user 'root'
-  command "source /etc/profile && timeout #{CRON_JOB_TIMEOUT} flock --nb /var/lock/#{CRON_SCRIPT}.lock -c '#{CRON_SCRIPT_PATH}' >/dev/null 2>&1"
+if ACCOUNT != 'sandbox'
+  cron "#{INSTANCE_NAME}-domain-cron" do
+    minute "*/#{CRON_MINUTE_FREQUENCY}"
+    user 'root'
+    command "source /etc/profile && timeout #{CRON_JOB_TIMEOUT} flock --nb /var/lock/#{CRON_SCRIPT}.lock -c '#{CRON_SCRIPT_PATH}' >/dev/null 2>&1"
+  end
 end
