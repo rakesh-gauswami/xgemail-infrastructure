@@ -785,12 +785,6 @@
             "FromPort": "25",
             "ToPort": "25",
             "CidrIp": "0.0.0.0/0"
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "587",
-            "ToPort": "587",
-            "CidrIp": { "Ref": "ExternalIpAccess" }
           }
         ],
         "VpcId": {
@@ -820,12 +814,100 @@
             "FromPort": "25",
             "ToPort": "25",
             "SourceSecurityGroupId": { "Ref": "XgemailEncryptionDeliverySecurityGroupLb" }
-          },
+          }
+        ],
+        "SecurityGroupEgress": [
           {
             "IpProtocol": "tcp",
-            "FromPort": "587",
-            "ToPort": "587",
-            "SourceSecurityGroupId": { "Ref": "XgemailEncryptionDeliverySecurityGroupLb" }
+            "FromPort": "0",
+            "ToPort": "65535",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "VpcId": { "Ref": "Vpc" }
+      }
+    },
+
+    "XgemailEncryptionSubmitSecurityGroupLb": {
+      "Properties": {
+        "GroupDescription": "Controls access to public facing ELBs.",
+        "Tags": [
+          {
+            "Key": "Branch",
+            "Value": { "Ref" : "Branch" }
+
+          },
+          {
+            "Key": "Environment",
+            "Value": { "Ref" : "Environment" }
+          },
+          {
+            "Key": "Role",
+            "Value": "svc-xgemail-encryption-submit-elb"
+
+          },
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "Environment"
+                  },
+                  "-",
+                  {
+                    "Ref": "Branch"
+                  },
+                  "-",
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "/sg/xgemail/encryption/submit/elb"
+                ]
+              ]
+            }
+          }
+        ],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "25",
+            "ToPort": "25",
+            "CidrIp": { "Fn::If": [
+              "IsProdOrQaEnvironment",
+              "0.0.0.0/0",
+              { "Ref": "ExternalIpAccess" }
+            ]}
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      },
+      "Type": "AWS::EC2::SecurityGroup"
+    },
+
+    "XgemailEncryptionSubmitSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Xgemail encryption submit security group.",
+        "Tags": [{
+          "Key": "Name",
+          "Value": {
+            "Fn::Join": [ "", [
+              { "Ref": "Environment" }, "-",
+              { "Ref": "Branch" }, "-",
+              { "Ref": "AWS::StackName" }, "/sg/xgemail/encryption/submit"
+            ]]
+          }
+        }],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "25",
+            "ToPort": "25",
+            "SourceSecurityGroupId": { "Ref": "XgemailEncryptionSubmitSecurityGroupLb" }
           }
         ],
         "SecurityGroupEgress": [
