@@ -581,19 +581,20 @@ function override_files {
 
 function docker_compose_command
 {
+    set_home
     all_command="docker-compose -f ${base_compose} -f ${inbound_compose} -f ${outbound_compose}"
     case "$2" in 
         inbound)
-        docker-compose -f ${base_compose} -f ${inbound_compose} $1
+        docker-compose -f ${base_compose} -f ${inbound_compose} $1 $3
         ;;
         outbound)
-        docker-compose -f ${base_compose} -f ${outbound_compose} $1
+        docker-compose -f ${base_compose} -f ${outbound_compose} $1 $3
         ;;
         all)
-        ${all_command} $1
+        ${all_command} $1 $3
         ;;
         *)
-        ${all_command} $1 $2
+        ${all_command} $1 $3 $2 
         ;;
     esac    
 }
@@ -611,18 +612,34 @@ Xgemail Sandbox
 Usage:
   ./xgemail.sh COMMAND OPTIONS
 
-Commands                                                                            Options
+Commands                                                                            Required                                                        Optional
 help         get usage info 
 initialize   setup steps before starting up nova                                                                                                     
-deploy       deploy and start containers                                            inbound, outbound, all
+deploy       deploy, provision and start containers                                 inbound, outbound, all
 hot_deploy   hot deploy artifacts(NOTE: artifacts have to be built first)           mail, mailinbound, mailoutbound
                                                                                     jilter-inbound, jilter-outbound
                                                                                     postfix-is, postfix-cd, postfix-cs, postfix-id
-start        start stopped containers                                               <service_name>, inbound, outbound, all
-stop         stop started containers                                                <service_name>, inbound, outbound, all
-restart      restart started containers                                             <service_name>, inbound, outbound, all                                                                                    
+
+status       List status of created containers                                                           
+up           create and start containers without any provisioning                   <service_name>, inbound, outbound, all                          [-d]                          
+start        start stopped containers                                               <service_name>, inbound, outbound, all                          [-d]
+stop         stop started containers                                                <service_name>, inbound, outbound, all                          [-d]
+restart      restart started containers                                             <service_name>, inbound, outbound, all                          [-d]                                                                                    
+create       create services without starting them                                  <service_name>, inbound, outbound, all                          [-d]
+kill         kill containers                                                        <service_name>, inbound, outbound, all                          [-d]
+             unlike stop, kill destroys the containers
+             container has to be recreated in order to be started
+rm           remove stopped containers                                              <service_name>, inbound, outbound, all                          [-d]
+pause        pause services                                                         <service_name>, inbound, outbound, all                          [-d]
+unpause      unpause services                                                       <service_name>, inbound, outbound, all                          [-d]
+build        build or rebuild services                                              <service_name>, inbound, outbound, all                          [-d]
+
 destroy      clean up and bring down all containers 
              This does not remove images
+
+
+Optional
+-d          start in background
 EOF
 }
 
@@ -706,6 +723,30 @@ case "$1" in
         ;;
     restart)
         docker_compose_command $1 $2
+        ;;
+    create)
+        docker_compose_command $1 $2
+        ;;
+    kill)
+        docker_compose_command $1 $2
+        ;;
+    build)
+        docker_compose_command $1 $2
+        ;;
+    rm)
+        docker_compose_command $1 $2
+        ;;
+    pause)
+        docker_compose_command $1 $2
+        ;;
+    unpause)
+        docker_compose_command $1 $2
+        ;;
+    up)
+        docker_compose_command $1 $2 $3
+        ;;
+    ps)
+        docker_compose_command $1 all
         ;;
     help)
         usage
