@@ -79,6 +79,10 @@ services:
     environment:
       - JILTER_VERSION=current
       - DIRECTION=inbound
+      - HOSTNAME_EXTERNAL=jilter-inbound
+      - INSTANCE_TYPE=jilter-inbound
+      - DEFAULT_REGION=local
+      - DEFAULT_ENVIRONMENT=sandbox
       - APPLICATION=
     ports:
       - '9876:9876'
@@ -95,8 +99,3 @@ networks:
   novanet:
     external:
       name: nova_novanet
-
-
-
-
-
