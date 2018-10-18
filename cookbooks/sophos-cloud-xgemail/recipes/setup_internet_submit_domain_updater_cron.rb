@@ -47,7 +47,7 @@ XGEMAIL_PIC_CA_PATH     = "#{LOCAL_CERT_PATH}/hmr-infrastructure-ca.crt"
 if ACCOUNT == 'sandbox'
   XGEMAIL_PIC_FQDN = 'mail-service:8080'
 else
-  XGEMAIL_PIC_FQDN = "mail-#{STATION_VPC_NAME.downcase}-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com"
+  XGEMAIL_PIC_FQDN = "mail-#{STATION_VPC_NAME.downcase}-#{REGION}.#{ACCOUNT}.hydra.sophos.com"
 end
 
 directory XGEMAIL_FILES_DIR do
