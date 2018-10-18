@@ -1,4 +1,13 @@
 #!/bin/bash
+#
+# This script provides convenient functions to start and operate xgemail
+# sandbox
+#
+# Copyright: Copyright (c) 1997-2018. All rights reserved.
+# Company: Sophos Limited or one of its affiliates.
+
+
+
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
@@ -36,7 +45,7 @@ function initialize {
    #override nova appserver bootstrap file
     if [ ! -f ${nova_bootstrap_file} ]; then
         echo -e "${RED} ${nova_bootstrap_file} could not be found. Ensure it exists at the right location ${NC}"
-        exit 1        
+        exit 1
     fi
 
     if [ ! -f ${nova_bootstrap_file_original_copy} ]; then
@@ -51,7 +60,7 @@ function initialize {
     #override nova docker-compose-single.yml file
     if [ ! -f ${nova_docker_compose_single} ]; then
         echo -e "${RED} ${nova_docker_compose_single} could not be found. Ensure it exists at the right location ${NC}"
-        exit 1        
+        exit 1
     fi
 
     if [ ! -f ${nova_docker_compose_original_copy} ]; then
@@ -71,7 +80,7 @@ function deploy_inbound {
     initialize
     check_login_to_aws
     set_home
-    
+
     echo -e "${YELLOW} user selected inbound ${NC}"
     echo -e "${YELLOW} Services needed for inbound mail-flow will be started ${NC}"
     echo ""
@@ -87,7 +96,7 @@ function deploy_inbound {
     deploy_mail "mail" "mailinbound"
 
     provision_localstack
- 
+
     provision_postfix "postfix-is" "postfix-cd"
 
     check_tomcat_startup "mail" "mailinbound"
@@ -101,7 +110,7 @@ function deploy_outbound {
     initialize
     check_login_to_aws
     set_home
-    
+
     check_sasi ${sasi_service_image} ${sasi_docker_image}
 
     echo -e "${YELLOW} user selected outbound ${NC}"
@@ -117,7 +126,7 @@ function deploy_outbound {
     deploy_mail "mail" "mailoutbound"
 
     provision_localstack
-    
+
     provision_postfix "postfix-cs" "postfix-id"
 
     check_tomcat_startup "mail" "mailoutbound"
@@ -138,13 +147,13 @@ function deploy_all {
     create_mail_bootstrap
 
     docker-compose -f ${orchestrator_location}${base_compose} -f ${orchestrator_location}${inbound_compose} -f ${orchestrator_location}${outbound_compose} up -d
-    
+
     deploy_jilter all
 
     deploy_mail "mail" "mailinbound" "mailoutbound"
 
     provision_localstack
- 
+
     provision_postfix "postfix-cs" "postfix-id" "postfix-is" "postfix-cd"
 
     check_tomcat_startup "mail" "mailoutbound" "mailinbound"
@@ -270,23 +279,23 @@ function deploy_mail {
     echo -e "${GREEN} successfully copied ${newfiles} into Tomcat ${NC}"
 }
 
-: 'This function deploys jilter tar files by copying them into a directory from 
+: 'This function deploys jilter tar files by copying them into a directory from
 which they are mounted into jilter instances
 '
 function deploy_jilter()
 {
     jilter_location="${XGEMAIL_HOME}xgemail/"
-    
+
     sandbox_inbound_jilter_tar_location="${HOME}/.xgemail_sandbox/jilter/inbound/"
     sandbox_outbound_jilter_tar_location="${HOME}/.xgemail_sandbox/jilter/outbound/"
-    
+
     jilter_inbound_build_location="${jilter_location}xgemail-jilter-inbound/build/distributions/"
     jilter_inbound_build_name="xgemail-jilter-inbound-current.tar"
 
     jilter_outbound_build_location="${jilter_location}xgemail-jilter-outbound/build/distributions/"
     jilter_outbound_build_name="xgemail-jilter-outbound-current.tar"
 
-    case $1 in 
+    case $1 in
         inbound)
             check_service_up jilter-inbound
             deploy_jilter_helper ${sandbox_inbound_jilter_tar_location} ${jilter_inbound_build_location} ${jilter_inbound_build_name}
@@ -298,7 +307,7 @@ function deploy_jilter()
         all)
             check_service_up jilter-inbound
             deploy_jilter_helper ${sandbox_inbound_jilter_tar_location} ${jilter_inbound_build_location} ${jilter_inbound_build_name}
-            
+
             check_service_up jilter-outbound
             deploy_jilter_helper ${sandbox_outbound_jilter_tar_location} ${jilter_outbound_build_location} ${jilter_outbound_build_name}
         ;;
@@ -335,7 +344,7 @@ function deploy_jilter_helper()
     else
         pushd "${jilter_build_location}"
         jilter_tar_file_string=$(ls *.tar)
-        jilter_tar_files=(${jilter_tar_file_string})    
+        jilter_tar_files=(${jilter_tar_file_string})
 
         if [ ! ${#jilter_tar_files[@]} -eq 1 ] ; then
             echo -e "${RED} 0 or more than 1 tar files were found. There should be only tar file in the distribution folder ${NC}"
@@ -356,7 +365,7 @@ function deploy_jilter_helper()
                 popd > /dev/null
                 clean_up_files
                 exit 1
-            fi 
+            fi
         fi
         popd > /dev/null
     fi
@@ -390,7 +399,7 @@ function build_policy_storage_for_jilter {
 EOF
 
     cat > ${default_domain_config_file} << EOF
-{"schema_version":20171026,"service_provider":"CUSTOM","addresses":["172.16.199.1"]} 
+{"schema_version":20171026,"service_provider":"CUSTOM","addresses":["172.16.199.1"]}
 EOF
 
     if [ $? -eq 0 ]; then
@@ -408,10 +417,10 @@ function check_sasi {
         docker inspect ${image} >/dev/null 2>&1
         if [ ! $? -eq 0 ]; then
             echo -e "${RED} ${image} cannot be found ${NC}"
-            echo -e "${RED} For sasi-daemon, follow the instructions in the readme here 
+            echo -e "${RED} For sasi-daemon, follow the instructions in the readme here
             https://git.cloud.sophos/projects/EMAIL/repos/sasi-docker/browse ${NC}"
 
-            echo -e "${RED} For sasi-service, follow the instructions in the readme here 
+            echo -e "${RED} For sasi-service, follow the instructions in the readme here
             https://git.cloud.sophos/projects/EMAIL/repos/sasi-service/browse ${NC}"
 
             exit 1
@@ -517,7 +526,7 @@ function check_tomcat_startup()
 
 
 : ' This function concatenates the bootstrap properties in the appserver in nova with the addendum bootstrap
-properties for email. 
+properties for email.
 '
 function create_mail_bootstrap()
 {
@@ -551,7 +560,7 @@ function create_mail_bootstrap()
     fi
 }
 
-: 'This function destroy all docker containers brought up; removes files that have to be removed on 
+: 'This function destroy all docker containers brought up; removes files that have to be removed on
 clean up
 '
 function clean_up {
@@ -567,7 +576,7 @@ function clean_up {
     else
         echo -e "${RED} Clean up was unsuccessful ${NC}"
         exit 1
-     fi   
+     fi
 }
 
 : 'Restores nova files edited when initialization function is called
@@ -584,7 +593,7 @@ function clean_up_nova_initialization
             echo -e "${GREEN} Successfully restored ${nova_bootstrap_file} ${NC}"
         else
             echo -e "${RED} Clean up was unsuccessful. Unable to restore ${nova_bootstrap_file} ${NC}"
-        fi 
+        fi
     fi
 
     if [ -f ${nova_docker_compose_original_copy} ]; then
@@ -595,8 +604,8 @@ function clean_up_nova_initialization
             echo -e "${GREEN} Successfully restored ${nova_docker_compose_single} ${NC}"
         else
             echo -e "${RED} Clean up was unsuccessful. Unable to restore ${nova_docker_compose_single} ${NC}"
-        fi 
-    fi  
+        fi
+    fi
 }
 
 : 'Removes files that have to be deleted
@@ -610,11 +619,11 @@ function clean_up_files {
                 echo "${file} removed"
             else
                 echo -e "${RED} Unable to remove file ${file} ${NC}"
-            fi    
+            fi
         done
     else
-        echo -e "${YELLOW} No files to clean up ${NC}"    
-    fi    
+        echo -e "${YELLOW} No files to clean up ${NC}"
+    fi
 }
 
 function override_files {
@@ -647,7 +656,7 @@ function docker_compose_command
 {
     set_home
     all_command="docker-compose -f ${base_compose} -f ${inbound_compose} -f ${outbound_compose}"
-    case "$2" in 
+    case "$2" in
         inbound)
         docker-compose -f ${base_compose} -f ${inbound_compose} $1 $3
         ;;
@@ -658,9 +667,9 @@ function docker_compose_command
         ${all_command} $1 $3
         ;;
         *)
-        ${all_command} $1 $3 $2 
+        ${all_command} $1 $3 $2
         ;;
-    esac    
+    esac
 }
 
 function join {
@@ -677,18 +686,18 @@ Usage:
   ./xgemail.sh COMMAND OPTIONS
 
 Commands                                                                            Required                                                        Optional
-help         get usage info 
-initialize   setup steps before starting up nova                                                                                                     
+help         get usage info
+initialize   setup steps before starting up nova
 deploy       deploy, provision and start containers                                 inbound | outbound | all
 hot_deploy   hot deploy artifacts(NOTE: artifacts have to be built first)           mail | mailinbound | mailoutbound
                                                                                     jilter-inbound | jilter-outbound
                                                                                     postfix-is | postfix-cd | postfix-cs | postfix-id
 
-status       List status of created containers                                                           
-up           create and start containers without any provisioning                   <service_name> | inbound | outbound | all                          [-d]                          
+status       List status of created containers
+up           create and start containers without any provisioning                   <service_name> | inbound | outbound | all                          [-d]
 start        start stopped containers                                               <service_name> | inbound | outbound | all                          [-d]
 stop         stop started containers                                                <service_name> | inbound | outbound | all                          [-d]
-restart      restart started containers                                             <service_name> | inbound | outbound | all                          [-d]                                                                                    
+restart      restart started containers                                             <service_name> | inbound | outbound | all                          [-d]
 create       create services without starting them                                  <service_name> | inbound | outbound | all                          [-d]
 kill         kill containers                                                        <service_name> | inbound | outbound | all                          [-d]
              unlike stop, kill destroys the containers
@@ -698,7 +707,7 @@ pause        pause services                                                     
 unpause      unpause services                                                       <service_name> | inbound | outbound | all                          [-d]
 build        build or rebuild services                                              <service_name> | inbound | outbound | all                          [-d]
 
-destroy      clean up and bring down all containers 
+destroy      clean up and bring down all containers
              This does not remove images
 
 
@@ -747,7 +756,7 @@ case "$1" in
 
             jilter-inbound)
                 set_home
-                deploy_jilter inbound  
+                deploy_jilter inbound
                 docker-compose -f ${orchestrator_location}${inbound_compose} restart jilter-inbound
                 ;;
             jilter-outbound)
