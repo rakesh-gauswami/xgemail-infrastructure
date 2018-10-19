@@ -24,7 +24,7 @@ top: $(TARGET)
 # These tests only work when run in Bamboo:
 
 BAMBOO_TARGETS = 	.check.python \
-		.check.ruby \
+			.check.ruby \
 		$(EOL)
 
 # These tests work when run locally:
