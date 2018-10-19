@@ -114,7 +114,7 @@ PIPE_COMMAND='pipe ' +
 end
 
 # Activate new service by postfix configs
-if NODE_TYPE == SUBMIT
+if NODE_TYPE == SUBMIT or NODE_TYPE == INTERNET_SUBMIT
   # Update transports to use new pipe service
   [
       "default_transport = #{SERVICE_NAME}",
