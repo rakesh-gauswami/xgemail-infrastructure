@@ -49,7 +49,7 @@ include_recipe 'sophos-cloud-xgemail::install_jilter_common'
 # Modify /etc/rsyslog.conf
 execute 'modify_rsyslog.conf' do
   user 'root'
-  command <<-EOH
+  command <<-EOH`
       sed -i -e 's/#\$ModLoad\simudp/\$ModLoad imudp/' /etc/rsyslog.conf \
       -e 's/#\$UDPServerRun\s514/\$UDPServerRun 514/' /etc/rsyslog.conf
   EOH

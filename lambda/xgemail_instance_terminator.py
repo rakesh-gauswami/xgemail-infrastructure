@@ -30,10 +30,6 @@ region = os.environ['AWS_REGION']
 ssm_document_name = os.environ['SSM_DOCUMENT_NAME']
 
 session = boto3.session.Session(region_name=region)
-ec2 = session.client('ec2')
-""":type: pyboto3.ec2 """
-asg = session.client('autoscaling')
-""":type: pyboto3.autoscaling """
 ssm = session.client('ssm')
 """:type: pyboto3.ssm """
 
