@@ -39,19 +39,20 @@ LOCAL_TARGETS = 	.check.ansible \
 
 # Build Group 1 - Python Bamboo
 GROUP_1 = 	.check.python \
-			$(EOL)
+		.check.pyunit.local \
+		$(EOL)
 
 # Build Group 2 - Python Local
 GROUP_2 = 	.check.cloudformation \
-			$(EOL)
+		$(EOL)
 
 # Build Group 3 - Everything else
 GROUP_3 = 	.check.bash \
-			.check.copyright \
-			.check.erb \
-			.check.ruby \
-			.check.yaml \
-			$(EOL)
+		.check.copyright \
+		.check.erb \
+		.check.ruby \
+		.check.yaml \
+		$(EOL)
 
 # Build Group 4 - Ansible
 GROUP_4 = 	.check.ansible \
