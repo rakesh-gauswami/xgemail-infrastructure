@@ -33,7 +33,7 @@ class DiskUtilsTest(unittest.TestCase):
             diskutils.is_directory_empty('/tmp/xgemail-does-not-exist')
 
     def test_is_directory_empty_with_existing_empty_directory(self):
-        self.assertFalse(diskutils.is_directory_empty(self.empty_dir))
+        self.assertTrue(diskutils.is_directory_empty(self.empty_dir))
 
     def test_is_directory_empty_with_existing_non_empty_directory(self):
         self.assertFalse(diskutils.is_directory_empty('.'))
