@@ -24,7 +24,7 @@ top: $(TARGET)
 # These tests only work when run in Bamboo:
 
 BAMBOO_TARGETS = 	.check.python \
-			.check.ruby \
+		.check.ruby \
 		$(EOL)
 
 # These tests work when run locally:
@@ -39,7 +39,7 @@ LOCAL_TARGETS = 	.check.ansible \
 
 # Build Group 1 - Python Bamboo
 GROUP_1 = 	.check.python \
-		.check.pyunit.local \
+			.check.pyunit.local \
 			$(EOL)
 
 # Build Group 2 - Python Local
@@ -65,6 +65,7 @@ PYUNIT_LOCAL_DIRS :=  \
 		./bamboo \
 		./lambda \
 		./tools \
+		./cookbooks/sophos-cloud-xgemail/files/default \
 		$(EOL)
 
 # Use this target to run all checks.
