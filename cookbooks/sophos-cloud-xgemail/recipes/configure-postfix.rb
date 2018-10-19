@@ -91,7 +91,7 @@ if NODE_TYPE == 'delivery' || NODE_TYPE == 'internet-delivery'
   SQS_MESSAGE_CONSUMER_SERVICE_NAME
 ]
 else
-  if NODE_TYPE == 'submit' || NODE_TYPE == 'submit' || NODE_TYPE == 'customer-submit'
+  if NODE_TYPE == 'submit' || NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit'
     if ACCOUNT != 'sandbox'
        MANAGED_SERVICES_IN_START_ORDER = [
           JILTER_SERVICE_NAME,
