@@ -210,30 +210,30 @@ awslocal sqs create-queue --queue-name ${QUARANTINE_SQS_QUEUE} | jq .
 gprintf "CREATING QUARANTINE_SQS_QUEUE_SNS_LISTENER"
 awslocal sqs create-queue --queue-name ${QUARANTINE_SQS_QUEUE_SNS_LISTENER} | jq .
 
-gprintf "CREATING SASI_OUTBOUND_REQUEST_SQS_QUEUE"
-awslocal sqs create-queue --queue-name ${SASI_OUTBOUND_REQUEST_SQS_QUEUE} | jq .
+#gprintf "CREATING SASI_OUTBOUND_REQUEST_SQS_QUEUE"
+#awslocal sqs create-queue --queue-name ${SASI_OUTBOUND_REQUEST_SQS_QUEUE} | jq .
 
-gprintf "CREATING SASI_OUTBOUND_RESPONSE_SQS_QUEUE"
-awslocal sqs create-queue --queue-name ${SASI_OUTBOUND_RESPONSE_SQS_QUEUE} | jq .
+#gprintf "CREATING SASI_OUTBOUND_RESPONSE_SQS_QUEUE"
+#awslocal sqs create-queue --queue-name ${SASI_OUTBOUND_RESPONSE_SQS_QUEUE} | jq .
 
-gprintf "CREATING SASI_REQUEST_SQS_QUEUE"
-awslocal sqs create-queue --queue-name ${SASI_REQUEST_SQS_QUEUE} | jq .
+#gprintf "CREATING SASI_REQUEST_SQS_QUEUE"
+#awslocal sqs create-queue --queue-name ${SASI_REQUEST_SQS_QUEUE} | jq .
 
-gprintf "CREATING SASI_RESPONSE_SQS_QUEUE"
-awslocal sqs create-queue --queue-name ${SASI_RESPONSE_SQS_QUEUE} | jq .
+#gprintf "CREATING SASI_RESPONSE_SQS_QUEUE"
+#awslocal sqs create-queue --queue-name ${SASI_RESPONSE_SQS_QUEUE} | jq .
 
 gprintf "CREATING POLICY_ASSIGNMENT_SQS_QUEUE"
 awslocal sqs create-queue --queue-name ${POLICYASSIGNMENT_SQS_QUEUE} | jq .
 
 
 gprintf "CREATING DLQ "
-awslocal sqs create-queue --queue-name ${SASI_OUTBOUND_REQUEST_SQS_QUEUE_DLQ} | jq .
+#awslocal sqs create-queue --queue-name ${SASI_OUTBOUND_REQUEST_SQS_QUEUE_DLQ} | jq .
 
-awslocal sqs create-queue --queue-name ${SASI_OUTBOUND_RESPONSE_SQS_QUEUE_DLQ} | jq .
+#awslocal sqs create-queue --queue-name ${SASI_OUTBOUND_RESPONSE_SQS_QUEUE_DLQ} | jq .
 
-awslocal sqs create-queue --queue-name ${SASI_REQUEST_SQS_QUEUE_DLQ} | jq .
+#awslocal sqs create-queue --queue-name ${SASI_REQUEST_SQS_QUEUE_DLQ} | jq .
 
-awslocal sqs create-queue --queue-name ${SASI_RESPONSE_SQS_QUEUE_DLQ} | jq .
+#awslocal sqs create-queue --queue-name ${SASI_RESPONSE_SQS_QUEUE_DLQ} | jq .
 
 awslocal sqs create-queue --queue-name ${CUSTOMER_DELIVERY_SQS_QUEUE_SNS_LISTENER_DLQ} | jq .
 
