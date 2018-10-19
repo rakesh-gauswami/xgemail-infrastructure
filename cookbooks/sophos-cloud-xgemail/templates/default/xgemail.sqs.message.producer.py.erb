@@ -26,6 +26,7 @@ import multipolicyreaderutils
 import os
 import re
 import signal
+import uuid
 from awshandler import AwsHandler
 from common.metadata import Metadata
 from common.sqsmessage import SqsMessage
@@ -89,8 +90,8 @@ awshandler = AwsHandler(AWS_REGION)
 # In order to make the queue_id unique, we add a UUID to it
 def add_uuid_to_queue_id(metadata):
     queue_id = metadata.get_queue_id()
-    uuid = str(uuid.uuid4()).replace('-','')
-    metadata.set_queue_id('{0}_UUID_{1}'.format(queue_id, uuid))
+    msg_uuid = str(uuid.uuid4()).replace('-','')
+    metadata.set_queue_id('{0}_UUID_{1}'.format(queue_id, msg_uuid))
 
 #postfix pipe sends metadata as sysargs.
 def get_metadata():
