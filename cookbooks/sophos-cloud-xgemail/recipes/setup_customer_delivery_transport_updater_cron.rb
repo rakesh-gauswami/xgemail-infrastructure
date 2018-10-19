@@ -39,16 +39,34 @@ CONFIGURATION_COMMANDS =
     "transport_maps=hash:$config_directory/#{TRANSPORT_FILENAME}"
   ]
 
+if ACCOUNT == 'sandbox'
+  TRANSPORT_FILE = "/etc/#{instance_name(INSTANCE_NAME)}/#{TRANSPORT_FILENAME}"
+  file TRANSPORT_FILE do
+    content "#{node['sandbox']['mail_transport_entry']}\n" + '* retry: domain is unknown'
+    mode '0644'
+    owner 'root'
+  end
+  CONFIGURATION_COMMANDS.each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+  end
+
+  execute 'build_postmap_for_transport' do
+    user 'root'
+    command <<-EOH
+          postmap #{TRANSPORT_FILE}
+    EOH
+  end
+
+  # Return, don't create CRON job
+  return
+
+end
+
 PACKAGE_DIR           = "#{XGEMAIL_FILES_DIR}/customer-delivery-transport-cron"
 CRON_SCRIPT           = 'customer.delivery.transport.updater.py'
 CRON_SCRIPT_PATH      = "#{PACKAGE_DIR}/#{CRON_SCRIPT}"
 XGEMAIL_PIC_CA_PATH   = "#{LOCAL_CERT_PATH}/hmr-infrastructure-ca.crt"
-
-if ACCOUNT == 'sandbox'
-  XGEMAIL_PIC_FQDN = 'mail-service:8080'
-else
-  XGEMAIL_PIC_FQDN = "mail-#{STATION_VPC_NAME.downcase}-#{REGION}.#{ACCOUNT}.hydra.sophos.com"
-end
+XGEMAIL_PIC_FQDN      = "mail-#{STATION_VPC_NAME.downcase}-#{REGION}.#{ACCOUNT}.hydra.sophos.com"
 
 directory XGEMAIL_FILES_DIR do
   mode '0755'
@@ -82,8 +100,7 @@ template CRON_SCRIPT_PATH do
     :transport_filename => TRANSPORT_FILENAME,
     :mail_pic_api_response_timeout => MAIL_PIC_API_RESPONSE_TIMEOUT,
     :mail_pic_api_auth => MAIL_PIC_API_AUTH,
-    :connections_bucket => CONNECTIONS_BUCKET,
-    :account => ACCOUNT
+    :connections_bucket => CONNECTIONS_BUCKET
   )
   notifies :run, "execute[#{CRON_SCRIPT_PATH}]", :immediately
 end
@@ -92,10 +109,8 @@ CONFIGURATION_COMMANDS.each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
 end
 
-if ACCOUNT != 'sandbox'
-  cron "#{INSTANCE_NAME}-transport-cron" do
-    minute "1-59/#{CRON_MINUTE_FREQUENCY}"
-    user 'root'
-    command "source /etc/profile && timeout #{CRON_JOB_TIMEOUT} flock --nb /var/lock/#{CRON_SCRIPT}.lock -c '#{CRON_SCRIPT_PATH}' >/dev/null 2>&1"
-  end
+cron "#{INSTANCE_NAME}-transport-cron" do
+  minute "1-59/#{CRON_MINUTE_FREQUENCY}"
+  user 'root'
+  command "source /etc/profile && timeout #{CRON_JOB_TIMEOUT} flock --nb /var/lock/#{CRON_SCRIPT}.lock -c '#{CRON_SCRIPT_PATH}' >/dev/null 2>&1"
 end
