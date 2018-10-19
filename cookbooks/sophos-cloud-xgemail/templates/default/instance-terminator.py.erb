@@ -30,6 +30,7 @@ formatter = logging.Formatter(
 syslog_handler.formatter = formatter
 logger.addHandler(syslog_handler)
 
+
 class TerminationListener(object):
 
     def __init__(self, event):
@@ -43,7 +44,6 @@ class TerminationListener(object):
         self.lifecycle_hook_name = event['detail']['LifecycleHookName']
         self.autocaling_group_name = event['detail']['AutoScalingGroupName']
         self.lifecycle_action_token = event['detail']['LifecycleActionToken']
-        self.sdb_domain = event['detail']['NotificationMetadata']['SimpleDbDomain']
         self.lifecycle_transition = event['detail']['LifecycleTransition']
         self.sns_alarm_topic_arn = "<%= @alarm_topic_arn %>"
         self.sqs_consumer_service = "<%= @sqs_consumer_service_name %>"
