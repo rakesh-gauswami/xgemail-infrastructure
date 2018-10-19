@@ -36,7 +36,7 @@ template '/etc/monit.d/submit.conf' do
   mode '0644'
   owner 'root'
   group 'root'
-  only_if { NODE_TYPE == 'submit' }
+  only_if { NODE_TYPE == 'submit' || NODE_TYPE == 'internet-submit' }
 end
 
 template '/etc/monit.d/customer-submit.conf' do

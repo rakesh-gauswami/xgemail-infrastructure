@@ -46,12 +46,14 @@ XGEMAIL_MESSAGE_HISTORY_BUCKET_NAME          = node['xgemail']['msg_history_buck
 XGEMAIL_MESSAGE_HISTORY_QUEUE_URL            = node['xgemail']['msg_history_queue_url']
 XGEMAIL_POLICY_S3_BUCKET_NAME                = node['xgemail']['xgemail_policy_bucket_name']
 
+# TODO Once we retire the old submit instances this logic needs to be removed
 #constants to use
 SUBMIT = 'submit'
+INTERNET_SUBMIT = 'internet-submit'
 CUSTOMER_SUBMIT = 'customer-submit'
 
 # Configs use by sqsmsgproducer
-if NODE_TYPE == SUBMIT
+if NODE_TYPE == SUBMIT or NODE_TYPE == INTERNET_SUBMIT
   XGEMAIL_SUBMIT_TYPE                   = 'INTERNET'
 elsif NODE_TYPE == CUSTOMER_SUBMIT
   XGEMAIL_SUBMIT_TYPE                   = 'CUSTOMER'

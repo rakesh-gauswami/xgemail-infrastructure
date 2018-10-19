@@ -2,7 +2,7 @@
 
 - name: "Create ASG Stacks in AWS"
   cloudformation:
-    stack_name: "{{vpc.cloud_email.name}}-internet-submit-asg"
+    stack_name: "{{stack.ec2.asg.is}}"
     state: present
     region:  "{{account.region}}"
     disable_rollback: true
@@ -25,7 +25,7 @@
       Environment:                          "{{account.name}}"
       HealthCheckGracePeriod:               "{{aws.asg.is.health_check_grace_period}}"
       HealthCheckType:                      "ELB"
-      InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.XgemailSubmitInstanceProfile}}"
+      InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.XgemailInternetSubmitInstanceProfile}}"
       InstanceType:                         "{{aws.asg.is.instance_size}}"
       KeyName:                              "public-{{account.region}}"
       LifecycleHookName:                    "{{aws.asg.is.lifecycle_hook_name}}"
@@ -35,7 +35,7 @@
       ScaleDownOnWeekends:                  "{{weekend_scale_down}}"
       ScaleDownCron:                        "{{cron_scale_down}}"
       ScaleUpCron:                          "{{cron_scale_up}}"
-      SecurityGroups:                       "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.XgemailSubmitSecurityGroup}},{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.SecurityGroupBase}}"
+      SecurityGroups:                       "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.XgemailInternetSubmitSecurityGroup}},{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.SecurityGroupBase}}"
       SpotPrice:                            "{{instance_size_xgemail_spot_price}}"
       StationVpcId:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}"
       StationVpcName:                       "{{vpc.cloud_station.name}}"

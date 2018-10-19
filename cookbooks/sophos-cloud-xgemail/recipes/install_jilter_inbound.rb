@@ -14,7 +14,7 @@ package 'tar'
 NODE_TYPE = node['xgemail']['cluster_type']
 
 # Make sure we're on an internet submit node
-if NODE_TYPE != 'submit'
+if NODE_TYPE != 'submit' or NODE_TYPE != 'internet-submit'
   return
 end
 
