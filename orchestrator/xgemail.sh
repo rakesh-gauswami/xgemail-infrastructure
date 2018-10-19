@@ -46,7 +46,7 @@ nova_docker_compose_original_copy="${HOME}/g/nova/docker-compose-single_copy.yml
 sasi_service_image="email/sasi-service"
 sasi_docker_image="email/sasi-daemon"
 
-
+jilter_version="current"
 
 possible_clean_up_files=()
 
@@ -210,6 +210,22 @@ function provision_localstack {
     fi
 }
 
+: 'This function provisions jilter based on the jilter instance specified
+'
+function provision_jilter {
+    check_service_up $1
+
+    echo "Provisioning $1"
+
+    $(docker exec $1 sh -c '/opt/scripts/run.sh' &)
+
+    if [ ! $? -eq 0 ]; then
+      echo -e "${RED} Error provisioning $1 ${NC}"
+    else
+      echo -e "${GREEN} Successfully provisioned $1 ${NC}"
+    fi
+}
+
 : 'This function retrieves the specified war files in the current local sophos-cloud directory
 It then copies them into a folder from which they are hot deployed into a running tomcat docker instance.
 '
@@ -306,38 +322,34 @@ function deploy_jilter()
     sandbox_outbound_jilter_tar_location="${HOME}/.xgemail_sandbox/jilter/outbound/"
 
     jilter_inbound_build_location="${jilter_location}xgemail-jilter-inbound/build/distributions/"
-    jilter_inbound_build_name="xgemail-jilter-inbound-current.tar"
+    jilter_inbound_build_name="xgemail-jilter-inbound-${jilter_version}.tar"
 
     jilter_outbound_build_location="${jilter_location}xgemail-jilter-outbound/build/distributions/"
-    jilter_outbound_build_name="xgemail-jilter-outbound-current.tar"
+    jilter_outbound_build_name="xgemail-jilter-outbound-${jilter_version}.tar"
 
     case $1 in
         inbound)
             check_service_up jilter-inbound
             deploy_jilter_helper ${sandbox_inbound_jilter_tar_location} ${jilter_inbound_build_location} ${jilter_inbound_build_name}
 
-            # $(docker exec jilter-inbound sh -c '/opt/scripts/run.sh' &)
-
-
+            provision_jilter jilter-inbound
         ;;
         outbound)
             check_service_up jilter-outbound
             deploy_jilter_helper ${sandbox_outbound_jilter_tar_location} ${jilter_outbound_build_location} ${jilter_outbound_build_name}
 
-            # $(docker exec jilter-outbound sh -c '/opt/scripts/run.sh' &)
-
+            provision_jilter jilter-outbound
         ;;
         all)
             check_service_up jilter-inbound
             deploy_jilter_helper ${sandbox_inbound_jilter_tar_location} ${jilter_inbound_build_location} ${jilter_inbound_build_name}
 
-            # $(docker exec jilter-inbound sh -c '/opt/scripts/run.sh' &)
-
+            provision_jilter jilter-inbound
 
             check_service_up jilter-outbound
             deploy_jilter_helper ${sandbox_outbound_jilter_tar_location} ${jilter_outbound_build_location} ${jilter_outbound_build_name}
 
-            # $(docker exec jilter-outbound sh -c '/opt/scripts/run.sh' &)
+            provision_jilter jilter-outbound
         ;;
         *)
         clean_up_files
@@ -761,12 +773,12 @@ case "$1" in
             ;;
 
             jilter-inbound)
-                deploy_jilter inbound
                 docker-compose -f ${orchestrator_location}${inbound_compose} restart jilter-inbound
+                deploy_jilter inbound
                 ;;
             jilter-outbound)
-                deploy_jilter outbound
                 docker-compose -f ${orchestrator_location}${outbound_compose} restart jilter-outbound
+                deploy_jilter outbound
                 ;;
             postfix-is)
                 provision_postfix postfix-is
