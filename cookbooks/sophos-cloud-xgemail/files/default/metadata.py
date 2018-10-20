@@ -10,7 +10,12 @@
 #
 # Representation of a message metadata
 
+import re
+import uuid
+
 class Metadata:
+    uuid_regex = re.compile("^\w+_uuid_\w+$", re.IGNORECASE)
+
     def __init__(self,
                  schema_version,
                  sender_ip,
@@ -34,15 +39,7 @@ class Metadata:
         return ', '.join('%s=%s' % (key, value) for (key, value) in metadata_json.iteritems())
 
     def get_metadata_json(self):
-        return {
-            'schema_version': self.schema_version,
-            'sender_ip': self.sender_ip,
-            'sender_address': self.sender_address,
-            'accepting_server_ip': self.accepting_server_ip,
-            'queue_id': self.queue_id,
-            'date_recorded': self.date_recorded,
-            'recipients': self.recipients
-        }
+        return self.__dict__
 
     def get_schema_version(self):
         return self.schema_version
@@ -71,5 +68,14 @@ class Metadata:
     def set_recipients(self, recipients):
         self.recipients = recipients
 
-    def set_queue_id(self, queue_id):
-        self.queue_id = queue_id
+    def add_uuid_to_queue_id(self):
+        """
+        Adds a UUID to the queue_id to generate a truly unique queue_id string.
+        If a UUID is already part of queue_id, this method returns without adding a new UUID.
+        """
+        if self.uuid_regex.match(self.queue_id):
+            # uuid has already been added, don't add it again
+            return
+
+        msg_uuid = str(uuid.uuid4()).replace('-','')
+        self.queue_id = '{0}_UUID_{1}'.format(self.queue_id, msg_uuid)

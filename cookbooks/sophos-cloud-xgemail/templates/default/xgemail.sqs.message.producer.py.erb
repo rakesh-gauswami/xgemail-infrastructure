@@ -26,7 +26,6 @@ import multipolicyreaderutils
 import os
 import re
 import signal
-import uuid
 from awshandler import AwsHandler
 from common.metadata import Metadata
 from common.sqsmessage import SqsMessage
@@ -86,12 +85,6 @@ POLICY_ID_PATH_VALUE = "/00/"
 SQS_BATCH_SIZE = 10
 
 awshandler = AwsHandler(AWS_REGION)
-
-# In order to make the queue_id unique, we add a UUID to it
-def add_uuid_to_queue_id(metadata):
-    queue_id = metadata.get_queue_id()
-    msg_uuid = str(uuid.uuid4()).replace('-','')
-    metadata.set_queue_id('{0}_UUID_{1}'.format(queue_id, msg_uuid))
 
 #postfix pipe sends metadata as sysargs.
 def get_metadata():
@@ -469,8 +462,7 @@ def multi_policy_flow(metadata, direction, domain, sender, message):
     for policy_id, value in policy_list.items():
         this_policy_metadata = copy.deepcopy(metadata)
         this_policy_metadata.set_recipients(value)
-
-        add_uuid_to_queue_id(this_policy_metadata)
+        this_policy_metadata.add_uuid_to_queue_id()
 
         policy_id_path = "/" + policy_id + "/"
         new_s3_file_path = s3_file_path.replace(POLICY_ID_PATH_VALUE, policy_id_path)
