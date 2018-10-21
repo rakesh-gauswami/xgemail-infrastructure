@@ -289,7 +289,7 @@ def send_msg_processing_sqs_message(sqs_message_json):
         exit(EX_TEMPFAIL)
 
 
-def get_plaintext_message(submit_type):
+def get_plaintext_message():
     stdin_no = sys.stdin.fileno()
     plaintext_email_bytes = io.BytesIO()
 
@@ -533,7 +533,7 @@ def main():
         direction = None
         sender = None
 
-        plaintext_message = get_plaintext_message(SUBMIT_TYPE)
+        plaintext_message = get_plaintext_message()
 
         if 'INTERNET' == SUBMIT_TYPE:
             domain = metadata.get_recipient_domain()
