@@ -14,7 +14,7 @@ import re
 import uuid
 
 class Metadata:
-    uuid_regex = re.compile("^\w+_uuid_\w+$", re.IGNORECASE)
+    uuid_regex = re.compile("^\w+_UUID_\w+$", re.IGNORECASE)
 
     def __init__(self,
                  schema_version,
