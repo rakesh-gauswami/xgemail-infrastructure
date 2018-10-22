@@ -16,8 +16,8 @@ from __future__ import print_function
 import boto3
 import logging
 import json
-import time
 import os
+from time import sleep
 from botocore.exceptions import ClientError
 
 
@@ -80,7 +80,7 @@ def send_ssm_command(region, time, autocaling_group_name, instance_id, lifecycle
         if ssm_status == 'Success':
             return True
         while ssm_status == 'Pending' or ssm_status == 'InProgress':
-            time.sleep(3)
+            sleep(3)
             ssm_status = ssm.list_commands(
                 CommandId=ssmresponse['Command']['CommandId']
             )['Commands'][0]['Status']
