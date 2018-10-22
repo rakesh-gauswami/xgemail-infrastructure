@@ -35,13 +35,16 @@ class MetadataTest(unittest.TestCase):
 
     def test_add_uuid_to_queue_id(self):
         self.assertFalse(self.uuid_regex.match(self.metadata.get_queue_id()))
-        self.assertEqual(self.metadata.get_queue_id(), '42c6b66mZYz1V')
+        self.assertEquals(self.metadata.get_queue_id(), '42c6b66mZYz1V')
 
         self.metadata.add_uuid_to_queue_id()
         self.assertTrue(self.uuid_regex.match(self.metadata.get_queue_id()))
 
+        updated_queue_id = self.metadata.get_queue_id()
+
         # verify that add_uuid_to_queue_id is idempotent
         self.metadata.add_uuid_to_queue_id()
+        self.assertEquals(updated_queue_id, self.metadata.get_queue_id())
         self.assertTrue(self.uuid_regex.match(self.metadata.get_queue_id()))
 
     def test_get_metadata_json(self):

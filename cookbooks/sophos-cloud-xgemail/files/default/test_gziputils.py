@@ -21,6 +21,9 @@ class GZipUtilsTest(unittest.TestCase):
 
     def test_zip_unzip_data(self):
         gzipped_data = gziputils.gzip_data(self.data)
+
+        self.assertNotEquals(self.data, gzipped_data)
+
         unzipped_data = gziputils.unzip_data(gzipped_data)
 
         self.assertEquals(self.data, unzipped_data)
