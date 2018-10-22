@@ -64,12 +64,12 @@ def send_ssm_command(region, time, autocaling_group_name, instance_id, lifecycle
             InstanceIds=[instance_id],
             DocumentName=ssm_document_name,
             Parameters={
-                'region': [region],
-                'time': [time],
-                'autocaling_group_name': [autocaling_group_name],
-                'instance_id': [instance_id],
-                'lifecycle_hook_name': [lifecycle_hook_name],
-                'lifecycle_action_token': [lifecycle_action_token]
+                'Region': [region],
+                'Time': [time],
+                'AutoScalingGroupName': [autocaling_group_name],
+                'InstanceId': [instance_id],
+                'LifecycleHookName': [lifecycle_hook_name],
+                'LifecycleActionToken': [lifecycle_action_token]
             }
         )
     except ClientError as e:
