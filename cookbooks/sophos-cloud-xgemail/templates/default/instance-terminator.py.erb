@@ -31,20 +31,20 @@ syslog_handler.formatter = formatter
 logger.addHandler(syslog_handler)
 
 
-class TerminationListener(object):
+class Terminator(object):
 
-    def __init__(self, event):
+    def __init__(self, region, time, asg, instance, hook, token):
 
         self.logger = logging.getLogger(__name__)
 
         self.postfix_instance = None
 
-        self.aws_region = event['region']
-        self.instance_id = event['detail']['EC2InstanceId']
-        self.lifecycle_hook_name = event['detail']['LifecycleHookName']
-        self.autocaling_group_name = event['detail']['AutoScalingGroupName']
-        self.lifecycle_action_token = event['detail']['LifecycleActionToken']
-        self.lifecycle_transition = event['detail']['LifecycleTransition']
+        self.aws_region = region
+        self.timestamp = time
+        self.autocaling_group_name = asg
+        self.instance_id = instance
+        self.lifecycle_hook_name = hook
+        self.lifecycle_action_token =token
         self.sns_alarm_topic_arn = "<%= @alarm_topic_arn %>"
         self.sqs_consumer_service = "<%= @sqs_consumer_service_name %>"
         self.sns_policy_arn = "<%= @sns_policy_arn %>"
@@ -199,7 +199,7 @@ class TerminationListener(object):
 
     def process_event(self):
 
-        lifecycle_hook = LifecycleHook(self.event)
+        lifecycle_hook = LifecycleHook(self.timestamp, self.autocaling_group_name, self.instance_id, self.lifecycle_hook_name, self.lifecycle_action_token)
 
         # Now perform all necessary logic to make sure the postfix server has empty queues before terminating.
         self.postfix_instance = self.get_postfix_instance()
@@ -279,21 +279,21 @@ class TerminationListener(object):
 
 class LifecycleHook(object):
 
-    def __init__(self, event):
+    def __init__(self, region, time, asg, instance, hook, token):
         self.logger = logging.getLogger(__name__)
-        self.aws_region = event['region']
+        self.aws_region = region
         # Create AS client
         self.asc = boto3.client('autoscaling', region_name=self.aws_region)
         """:type: pyboto3.autoscaling """
         self.aws_time_format = '%Y-%m-%dT%H:%M:%S.%fZ'
-        self.autoscaling_group_name = event['detail']['AutoScalingGroupName']
-        self.lifecycle_hook_name = event['detail']['LifecycleHookName']
-        self.instance_id = event['detail']['EC2InstanceId']
+        self.autoscaling_group_name = asg
+        self.lifecycle_hook_name = hook
+        self.instance_id = instance
         self.lifecycle_global_timeout = self.get_timeout('GlobalTimeout')
         self.heartbeat_request_count = 1
         self.heartbeat_timeout = self.get_timeout('HeartbeatTimeout')
-        self.heartbeat_start_time = datetime.strptime(event['Time'], self.aws_time_format)
-        self.lifecycle_action_token = event['detail']['LifecycleActionToken']
+        self.heartbeat_start_time = datetime.strptime(time, self.aws_time_format)
+        self.lifecycle_action_token = token
         self.device_name = '/dev/xvdi'
 
     def time_check(self):
@@ -385,7 +385,12 @@ class LifecycleHook(object):
 def parse_command_line():
     parser = argparse.ArgumentParser(
         description='Begin graceful termination of EC2 instance.')
-    parser.add_argument('--event', '-e', dest='event', default='inf',  required=True, help='The Event data.')
+    parser.add_argument('--region', '-r', dest='region',  required=True, help='The region.')
+    parser.add_argument('--time', '-t', dest='time', required=True, help='The timestamp of the lifecycle hook.')
+    parser.add_argument('--asg', '-a', dest='asg', required=True, help='The AutoScaling Group Name.')
+    parser.add_argument('--instance', '-i', dest='instance', required=True, help='The EC2 Instance Id.')
+    parser.add_argument('--hook', '-h', dest='hook', required=True, help='The Lifecycle Hook Name.')
+    parser.add_argument('--token', '-t', dest='token', required=True, help='The Lifecycle Action Token.')
 
     return parser.parse_args()
 
@@ -394,5 +399,5 @@ if __name__ == '__main__':
 
     args = parse_command_line()
 
-    tl = TerminationListener(event)
-    tl.process_event()
+    t = Terminator(region=args.region, time=args.time, asg=args.asg, instance=args.instance, hook=args.hook, token=args.token)
+    t.process_event()

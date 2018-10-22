@@ -42,12 +42,19 @@ def instance_terminator(event, context):
     logger.info("Request ID: {}".format(context.aws_request_id))
     logger.info("Mem. limits(MB): {}".format(context.memory_limit_in_mb))
 
-    instance_id = event['detail']['EC2InstanceId']
-    send_ssm_command(instance_id=instance_id, event=event)
+    send_ssm_command(
+        region=event['region'],
+        time=event['time'],
+        autocaling_group_name=event['detail']['AutoScalingGroupName'],
+        instance_id=event['detail']['EC2InstanceId'],
+        lifecycle_hook_name=event['detail']['LifecycleHookName'],
+        lifecycle_action_token=event['detail']['LifecycleActionToken'],
+    )
+
     logger.info("===FINISHED=== Sending SSM Command.")
 
 
-def send_ssm_command(instance_id, event):
+def send_ssm_command(region, time, autocaling_group_name, instance_id, lifecycle_hook_name, lifecycle_action_token):
     """
     Run SSM Command to run the shutdown script .
     """
@@ -56,7 +63,14 @@ def send_ssm_command(instance_id, event):
         ssmresponse = ssm.send_command(
             InstanceIds=[instance_id],
             DocumentName=ssm_document_name,
-            Parameters={'event': [event]}
+            Parameters={
+                'region': [region],
+                'time': [time],
+                'autocaling_group_name': [autocaling_group_name],
+                'instance_id': [instance_id],
+                'lifecycle_hook_name': [lifecycle_hook_name],
+                'lifecycle_action_token': [lifecycle_action_token]
+            }
         )
     except ClientError as e:
         logger.exception("Unable to send SSM command. {}".format(e))
