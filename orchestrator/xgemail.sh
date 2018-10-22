@@ -107,13 +107,13 @@ function deploy_inbound {
 
     docker-compose -f ${orchestrator_location}${base_compose} -f ${orchestrator_location}${inbound_compose} up -d
 
-    deploy_jilter inbound
-
     deploy_mail "mail" "mailinbound"
 
     provision_localstack
 
     provision_postfix "postfix-is" "postfix-cd"
+
+    deploy_jilter inbound
 
     check_tomcat_startup "mail" "mailinbound"
 }
@@ -136,13 +136,13 @@ function deploy_outbound {
 
     docker-compose -f ${orchestrator_location}${base_compose} -f ${orchestrator_location}${outbound_compose} up -d
 
-    deploy_jilter outbound
-
     deploy_mail "mail" "mailoutbound"
 
     provision_localstack
 
     provision_postfix "postfix-cs" "postfix-id"
+
+    deploy_jilter outbound
 
     check_tomcat_startup "mail" "mailoutbound"
 }
@@ -162,13 +162,13 @@ function deploy_all {
 
     docker-compose -f ${orchestrator_location}${base_compose} -f ${orchestrator_location}${inbound_compose} -f ${orchestrator_location}${outbound_compose} up -d
 
-    deploy_jilter all
-
     deploy_mail "mail" "mailinbound" "mailoutbound"
 
     provision_localstack
 
     provision_postfix "postfix-cs" "postfix-id" "postfix-is" "postfix-cd"
+
+    deploy_jilter all
 
     check_tomcat_startup "mail" "mailoutbound" "mailinbound"
 }
