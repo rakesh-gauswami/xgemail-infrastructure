@@ -1280,6 +1280,16 @@
         "ToPort": "22"
       }
     },
+    "XgemailEncryprionSubmitSecurityGroupIngressBastionSsh": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailEncryptionSubmitSecurityGroup" },
+        "SourceSecurityGroupId": { "Ref": "SecurityGroupBastion" },
+        "IpProtocol": "tcp",
+        "FromPort": "22",
+        "ToPort": "22"
+      }
+    },
     "XgemailPolicyEfsMountTargetSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
