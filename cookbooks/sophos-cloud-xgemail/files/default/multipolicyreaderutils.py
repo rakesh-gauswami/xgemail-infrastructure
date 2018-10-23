@@ -62,7 +62,7 @@ def split_by_recipient(split_config, recipients, aws_region, policy_bucket_name,
         )
         customer_id = customer_policy['customerId']
 
-        return split_config.is_split_by_recipient_enabled(customer_id):
+        return split_config.is_split_by_recipient_enabled(customer_id)
     except:
         logger.error('Unable to split by recipients')
         return False
