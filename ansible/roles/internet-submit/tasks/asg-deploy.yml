@@ -16,7 +16,6 @@
       AutoScalingMaxSize:                   "{{aws.asg.is.as_max_size}}"
       AutoScalingNotificationTopicARN:      "{{sns.arn_prefix}}{{sns.lifecycle_sqs_sns}}"
       AvailabilityZones:                    "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.AvailabilityZones}}"
-      BastionSecurityGroup:                 "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.SecurityGroupBastion}}"
       Branch:                               "{{build.branch}}"
       BuildVersion:                         "{{build.result_key}}"
       BundleVersion:                        "{{ami_build}}"
