@@ -95,7 +95,9 @@ and docker-compose-base.yml
 '
 function deploy_inbound {
     initialize
+    check_nova_up
     check_login_to_aws
+
 
     echo -e "${YELLOW} user selected inbound ${NC}"
     echo -e "${YELLOW} Services needed for inbound mail-flow will be started ${NC}"
@@ -124,6 +126,7 @@ and docker-compose-base.yml
 '
 function deploy_outbound {
     initialize
+    check_nova_up
     check_login_to_aws
 
     check_sasi ${sasi_service_image} ${sasi_docker_image}
@@ -152,7 +155,9 @@ both inbound and outbound mail flow. These containers can be found in docker-com
 docker-compose-outbound.yml and docker-compose-base.yml
 '
 function deploy_all {
+    initialize
     check_login_to_aws
+    check_nova_up
 
     echo -e "${YELLOW} user selected all ${NC}"
     echo -e "${YELLOW} Services needed for both inbound and outbound mail-flow will be started ${NC}"
@@ -217,13 +222,12 @@ function provision_jilter {
 
     echo "Provisioning $1"
 
-    $(docker exec $1 sh -c '/opt/scripts/run.sh' &)
+    docker exec $1 sh -c '/opt/scripts/run.sh'
 
-    if [ ! $? -eq 0 ]; then
-      echo -e "${RED} Error provisioning $1 ${NC}"
-    else
-      echo -e "${GREEN} Successfully provisioned $1 ${NC}"
-    fi
+    #At the time of writing this script, docker exec had a bug that results in the exit
+    #code of a command being run in a container not being properly returned
+    #Hence we don't check the exit code here
+    echo -e "${YELLOW} $1 Provisioning completed. ${NC}"
 }
 
 : 'This function retrieves the specified war files in the current local sophos-cloud directory
@@ -517,6 +521,9 @@ function check_tomcat_startup()
 {
     local minutes=20
     echo "Checking deployment of wars '$@' in background"
+    echo "You can check the deployment status visually at 'http://localhost:9898/manager' using
+    username: admin and pwd: Test1234"
+    echo "You can also follow the logs using 'docker logs -f mail-service'"
     sleep 30
     local now=$(date +%s)
     local deadline=$(($now + $minutes*60))
@@ -697,6 +704,18 @@ function join {
     local IFS="$1";
     shift;
     echo "$*";
+}
+
+function check_nova_up {
+  echo ""
+  echo ""
+
+  read -p "Have you started Nova? If not, press "N" to exit and start NOVA. If yes, press "Y" to continue" -n 1 -r
+  echo ""
+
+  if [[ $REPLY =~ ^[Nn]$ ]]; then
+    exit 0
+  fi
 }
 
 function usage {
