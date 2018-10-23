@@ -1,20 +1,25 @@
 #!/usr/bin/env python
 # vim: autoindent expandtab filetype=python shiftwidth=4 softtabstop=4 tabstop=4
-#
-# Polls the lifecycle notification SQS and if a notification pertains to the current instance
-# take action on the event
-#
-# Copyright: Copyright (c) 1997-2018. All rights reserved.
-# Company: Sophos Limited or one of its affiliates.
+
+"""
+Processes CloudWatch Event generated from Lifecycle Hook in order to perform an orderly shutdown of EC2 Instance.
+
+Copyright 2018, Sophos Limited. All rights reserved.
+
+'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
+Sophos Limited and Sophos Group.  All other product and company
+names mentioned are trademarks or registered trademarks of their
+respective owners.
+"""
 
 import argparse
 import boto3
 import botocore
 import sys
 import os
-import time
 import logging
 import subprocess
+from time import sleep
 from datetime import datetime
 from logging import handlers
 from botocore import exceptions
@@ -23,7 +28,7 @@ from botocore import exceptions
 # logging to syslog setup
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
+syslog_handler = logging.handlers.SysLogHandler('/dev/log')
 formatter = logging.Formatter(
     '[%(name)s] %(process)d %(levelname)s %(message)s'
 )
@@ -45,10 +50,10 @@ class Terminator(object):
         self.instance_id = instance
         self.lifecycle_hook_name = hook
         self.lifecycle_action_token = token
-        self.sns_alarm_topic_arn = "<%= @alarm_topic_arn %>"
-        self.sqs_consumer_service = "<%= @sqs_consumer_service_name %>"
-        self.sns_policy_arn = "<%= @sns_policy_arn %>"
-        self.sqs_policy_queue_name = "<%= @sqs_policy_queue_name %>"
+        self.sns_alarm_topic_arn = "arn:aws:sns:eu-west-1:283871543274:inf-xgemail-alarm-topic"
+        self.sqs_consumer_service = "xgemail-sqs-consumer"
+        self.sns_policy_arn = "arn:aws:sns:eu-west-1:283871543274:vpc-8615b8e3-xgemail-policy-SNS"
+        self.sqs_policy_queue_name = "inf-xgemail-policy-i-022db6ce67bc38365"
         self.postfix_queue_count = None
 
         # Create SQS client
@@ -159,27 +164,48 @@ class Terminator(object):
         self.send_sns_alert(error_message)
         return False
 
-    def sns_unsubscribe(self):
+    def get_subscription_arn(self, topic_arn, instance, next_token=None):
+        """
+        Finds SNS Subscription Arn.
+        """
+        subs = None
+        self.logger.info('Getting all subscriptions in topic.')
+        try:
+            if next_token:
+                subs = self.sns.list_subscriptions_by_topic(TopicArn=topic_arn, NextToken=next_token)
+            else:
+                subs = self.sns.list_subscriptions_by_topic(TopicArn=topic_arn)
+        except botocore.exceptions.ClientError as e:
+            raise e
+        self.logger.info('Looping through Policy Subscriptions.')
+        for s in subs['Subscriptions']:
+            if s['Endpoint'][-19:] in instance:
+                return s['SubscriptionArn']
+        if subs.get('NextToken'):
+            return self.get_subscription_arn(self, topic_arn, instance, subs.get('NextToken'))
+        return None
+
+    def sns_unsubscribe(self, arn):
         """
         Unsubscribes SQS Queue Subscription from SNS Topic.
         """
-        self.logger.info("Unsubscribing SNS Subscription %s." % self.sns_lifecycle_topic_subscription_arn)
+        self.logger.info("Unsubscribing SNS Subscription %s." % arn)
         try:
-            return self.sns.unsubscribe(SubscriptionArn=self.sns_lifecycle_topic_subscription_arn)
+            return self.sns.unsubscribe(SubscriptionArn=arn)
         except botocore.exceptions.ClientError as e:
             self.logger.exception("Error unsubscribing subscription %s from SNS Topic : %s" % (
-                self.sns_lifecycle_topic_subscription_arn, e.response['Error']['Code']))
+                arn, e.response['Error']['Code']))
 
-    def sqs_delete_queue(self):
+    def sqs_delete_queue(self, url):
         """
         Deletes SQS Queue.
         """
         self.logger.info("Deleting SQS lifecycle queue for this instance.")
         try:
-            return self.sqs.delete_queue(QueueUrl=self.sqs_lifecycle_url)
+            return self.sqs.delete_queue(QueueUrl=url)
         except botocore.exceptions.ClientError as e:
             self.logger.exception("Error deleting SQS Queue %s : %s" % (
-                self.sqs_lifecycle_url, e.response['Error']['Code']))
+                url, e.response['Error']['Code']))
 
     def check_postfix_queue(self):
         """
@@ -198,8 +224,14 @@ class Terminator(object):
         return messages
 
     def process_event(self):
+        """
+        Main function that processes the CloudWatch Event generated from the Lifecycle Hook.
+        """
 
-        lifecycle_hook = LifecycleHook(self.timestamp, self.autocaling_group_name, self.instance_id, self.lifecycle_hook_name, self.lifecycle_action_token)
+        self.logger.info("Begin processing Lifecycle Hook Event")
+        self.run_cmd(['service', 'monit', 'stop'])
+
+        lifecycle_hook = LifecycleHook(region=self.aws_region, time=self.timestamp, asg=self.autocaling_group_name, instance=self.instance_id, hook=self.lifecycle_hook_name, token=self.lifecycle_action_token)
 
         # Now perform all necessary logic to make sure the postfix server has empty queues before terminating.
         self.postfix_instance = self.get_postfix_instance()
@@ -218,7 +250,7 @@ class Terminator(object):
             for lifecycle_hook.heartbeat_request_count in range(1, 100, 1):
                 while lifecycle_hook.time_check():
                     last_count = self.postfix_queue_count
-                    time.sleep(10)
+                    sleep(10)
 
                     self.postfix_queue_count = self.check_postfix_queue()
                     self.logger.info("Queue Count: %d" % self.postfix_queue_count)
@@ -233,7 +265,7 @@ class Terminator(object):
                         self.logger.warning("Email queue doesn't seem to be draining. Flushing queue and waiting 30 seconds before checking again.")
                         # Attempt to flush postfix queue then wait for drop
                         self.run_cmd(['/usr/sbin/postmulti', '-i', self.postfix_instance, '-x', 'postqueue', '-f'])
-                        time.sleep(30)
+                        sleep(30)
 
                         self.postfix_queue_count = self.check_postfix_queue()
 
@@ -259,9 +291,16 @@ class Terminator(object):
             self.logger.critical("LIFECYCLE HOOK EXHAUSTED!")
 
         # Unsubscribe SQS Queue from SNS Topic
-        self.sns_unsubscribe()
-        # Delete SQS Queue
-        self.sqs_delete_queue()
+        if self.postfix_instance == 'postfix-is':
+            # Also Remove Policy SNS subscription and delete SQS queue for this instance
+            self.logger.info('Getting policy queue URL.')
+            sqs_policy_queue_url = self.sqs.get_queue_url(QueueName=self.sqs_policy_queue_name)['QueueUrl']
+            self.logger.info('Getting policy subscription ARN.')
+            sns_policy_subscription_arn = self.get_subscription_arn(topic_arn=self.sns_policy_arn, instance=self.instance_id)
+            self.sns_unsubscribe(arn=sns_policy_subscription_arn)
+            self.sqs_delete_queue(url=sqs_policy_queue_url)
+            self.logger.info("Deleting SQS policy dead letter queue for this instance.")
+            self.sqs_delete_queue(url=self.sqs.get_queue_url(QueueName=self.sqs_policy_queue_name + '-DLQ')['QueueUrl'])
 
         if self.postfix_queue_count != 0:
             self.logger.critical("The Postfix queue is NOT empty! Unmounting and detatching volume for further investigation.")

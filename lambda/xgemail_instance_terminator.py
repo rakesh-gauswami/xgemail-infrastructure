@@ -58,7 +58,7 @@ def send_ssm_command(region, time, autocaling_group_name, instance_id, lifecycle
     """
     Run SSM Command to run the shutdown script .
     """
-    logger.info("Executing Instance Terminator SSM Document, for Instance Id: {} ".format(instance_id))
+    logger.info("Executing Instance Terminator SSM Document, for Instance Id: {} in AutoScaling Group: {}".format(instance_id, autocaling_group_name))
     try:
         ssmresponse = ssm.send_command(
             InstanceIds=[instance_id],
