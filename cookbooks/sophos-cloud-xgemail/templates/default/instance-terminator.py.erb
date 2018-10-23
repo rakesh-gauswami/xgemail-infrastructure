@@ -50,10 +50,10 @@ class Terminator(object):
         self.instance_id = instance
         self.lifecycle_hook_name = hook
         self.lifecycle_action_token = token
-        self.sns_alarm_topic_arn = "arn:aws:sns:eu-west-1:283871543274:inf-xgemail-alarm-topic"
-        self.sqs_consumer_service = "xgemail-sqs-consumer"
-        self.sns_policy_arn = "arn:aws:sns:eu-west-1:283871543274:vpc-8615b8e3-xgemail-policy-SNS"
-        self.sqs_policy_queue_name = "inf-xgemail-policy-i-022db6ce67bc38365"
+        self.sns_alarm_topic_arn = "<%= @alarm_topic_arn %>"
+        self.sqs_consumer_service = "<%= @sqs_consumer_service_name %>"
+        self.sns_policy_arn = "<%= @sns_policy_arn %>"
+        self.sqs_policy_queue_name = "<%= @sqs_policy_queue_name %>"
         self.postfix_queue_count = None
 
         # Create SQS client
