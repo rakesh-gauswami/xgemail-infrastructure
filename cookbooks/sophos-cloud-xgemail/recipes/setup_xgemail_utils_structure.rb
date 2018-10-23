@@ -45,6 +45,7 @@ end
     'multipolicyreaderutils.py',
     'nonrecoverableexception.py',
     'notadirectoryexception.py',
+    'recipientsplitconfig.py',
     'recoverableexception.py'
 ].each do | cur |
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{cur}" do
