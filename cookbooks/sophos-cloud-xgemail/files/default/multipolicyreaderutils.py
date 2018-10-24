@@ -32,7 +32,7 @@ EFS_MULTI_POLICY_CONFIG_PATH = INBOUND_RELAY_CONTROL_PATH + 'multi-policy/'
 EFS_MULTI_POLICY_CONFIG_FILE = EFS_MULTI_POLICY_CONFIG_PATH + 'global.CONFIG'
 FLAG_TO_READ_POLICY_FROM_S3_FILE = EFS_MULTI_POLICY_CONFIG_PATH + 'msg_producer_read_policy_from_s3_global.CONFIG'
 FLAG_TO_TOC_USER_BASED_SPLIT = EFS_MULTI_POLICY_CONFIG_PATH + 'msg_producer_toc_user_based_split_global.CONFIG'
-FLAG_TO_SPLIT_BY_RECIPIENTS = INBOUND_RELAY_CONTROL_PATH + 'msg_producer_split_by_recipient.CONFIG'
+SPLIT_BY_RECIPIENTS_CONFIG_PATH = INBOUND_RELAY_CONTROL_PATH + 'msg_producer_split_by_recipients.CONFIG'
 
 logger = logging.getLogger('multi-policy-reader-utils')
 logger.setLevel(logging.INFO)
@@ -75,7 +75,7 @@ def build_policy_map(recipients, aws_region = None, policy_bucket_name = None, p
         it will read the policy from s3. Otherwise policy will be read locally via mounted storage
     """
     user_list = policies.copy()
-    split_config = RecipientSplitConfig(FLAG_TO_SPLIT_BY_RECIPIENTS)
+    split_config = RecipientSplitConfig(SPLIT_BY_RECIPIENTS_CONFIG_PATH)
 
     if split_by_recipient(split_config, recipients, aws_region, policy_bucket_name, read_from_s3):
         for recipient in recipients:
