@@ -14,7 +14,6 @@ from logging.handlers import SysLogHandler
 
 try:
     import mock
-    from mock import patch, MagicMock
 except ImportError:
     # Python 2.x doesn't provide the above module as part of its standard library.
     #
@@ -33,7 +32,7 @@ from recipientsplitconfig import RecipientSplitConfig
 
 # on OSX, the file /dev/log does not exist and needs to be changed to /var/run/syslog
 if sys.platform.startswith('darwin'):
-    with patch('__main__.logging.handlers.SysLogHandler', create=True) as mocked_logging:
+    with mock.patch('__main__.logging.handlers.SysLogHandler', create=True) as mocked_logging:
         mocked_logging.return_value = logging.handlers.SysLogHandler(address='/var/run/syslog')
         import multipolicyreaderutils
 else:
@@ -103,7 +102,7 @@ class MultiPolicyReaderUtilsTest(unittest.TestCase):
         # remove the directory after the test
         shutil.rmtree(self.test_dir)
 
-    @patch('multipolicyreaderutils.read_policy')
+    @mock.patch('multipolicyreaderutils.read_policy')
     def test_split_by_recipient_only_one_recipient(self, mock_read_policy):
         globally_enabled_config = RecipientSplitConfig(
             self.valid_config_globally_enabled_file
