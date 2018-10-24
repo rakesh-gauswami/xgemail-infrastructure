@@ -45,19 +45,25 @@ XGEMAIL_QUEUE_URL                            = node['xgemail']['xgemail_queue_ur
 XGEMAIL_MESSAGE_HISTORY_BUCKET_NAME          = node['xgemail']['msg_history_bucket_name']
 XGEMAIL_MESSAGE_HISTORY_QUEUE_URL            = node['xgemail']['msg_history_queue_url']
 XGEMAIL_POLICY_S3_BUCKET_NAME                = node['xgemail']['xgemail_policy_bucket_name']
+RELAY_DOMAINS_FILENAME                       = node['xgemail']['relay_domains_filename']
 
 #constants to use
 SUBMIT = 'submit'
 CUSTOMER_SUBMIT = 'customer-submit'
+ENCRYPTION_SUBMIT = 'encryption-submit'
 
 # Configs use by sqsmsgproducer
 if NODE_TYPE == SUBMIT
   XGEMAIL_SUBMIT_TYPE                   = 'INTERNET'
 elsif NODE_TYPE == CUSTOMER_SUBMIT
   XGEMAIL_SUBMIT_TYPE                   = 'CUSTOMER'
+elsif NODE_TYPE == ENCRYPTION_SUBMIT
+  XGEMAIL_SUBMIT_TYPE                   = 'ENCRYPTION'
 else
   raise "Unsupported node type to setup sqsmsgproducer [#{NODE_TYPE}]"
 end
+
+POSTFIX_CONFIG_DIR = execute print_postmulti_cmd( INSTANCE_NAME, "postconf -h 'config_directory" )
 
 template PRODUCER_SCRIPT_PATH do
   source "#{PRODUCER_SCRIPT}.erb"
@@ -79,7 +85,8 @@ template PRODUCER_SCRIPT_PATH do
       :sqs_msg_producer_s3_bucket_name => XGEMAIL_BUCKET_NAME,
       :sqs_msg_producer_sqs_url => XGEMAIL_QUEUE_URL,
       :sqs_msg_producer_submit_ip => NODE_IP,
-      :sqs_msg_producer_ttl_in_days => SQS_MESSAGE_PRODUCER_TTL_IN_DAYS
+      :sqs_msg_producer_ttl_in_days => SQS_MESSAGE_PRODUCER_TTL_IN_DAYS,
+      :relay_domains_file => "#{postmulti_config_dir(INSTANCE_NAME)}/#{RELAY_DOMAINS_FILENAME}"
   )
 end
 
@@ -130,6 +137,9 @@ elsif NODE_TYPE == CUSTOMER_SUBMIT
       "#{SMTPD_PORT}/inet = #{SMTPD_PORT} inet n - n - - smtpd -o content_filter=#{SERVICE_NAME}:dummy"
   ].each do | cur |
     execute print_postmulti_cmd( INSTANCE_NAME, "postconf -M '#{cur}'" )
+  end
+
+elseif NODE_TYPE == ENCRYPTION_SUBMIT
   end
 
 else

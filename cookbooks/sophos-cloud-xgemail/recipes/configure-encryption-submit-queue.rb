@@ -161,4 +161,5 @@ include_recipe 'sophos-cloud-xgemail::setup_dh_params'
 
 # TODO Add the script for encryption-submit jilter setup and message splitting
 #include_recipe 'sophos-cloud-xgemail::install_jilter_outbound'
+#include_recipe 'sophos-cloud-xgemail::setup_internet_submit_domain_updater_cron'
 #include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
