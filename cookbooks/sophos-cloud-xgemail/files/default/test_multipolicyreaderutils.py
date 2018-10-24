@@ -64,6 +64,14 @@ class MultiPolicyReaderUtilsTest(unittest.TestCase):
         "schema_version":20170825
     }
 
+    mock_policy_customer_enabled = {
+        "customerId":"84e61a73-5e3b-4616-8719-6098a0cb0ede",
+        "userId":"5908cc03a2a94d0f94a472df",
+        "policyId":"e8cb39e49c083a96f7fad75ee60e7369249ec83c71c09951c1825a03b2cb09f9",
+        "endpointId":"2acedd58-a9cb-4a82-8696-e5546ed52c70",
+        "schema_version":20170825
+    }
+
     mock_policy_invalid = {
         "userId":"5908cc03a2a94d0f94a472df",
         "policyId":"e8cb39e49c083a96f7fad75ee60e7369249ec83c71c09951c1825a03b2cb09f9",
@@ -94,6 +102,23 @@ class MultiPolicyReaderUtilsTest(unittest.TestCase):
     def tearDown(self):
         # remove the directory after the test
         shutil.rmtree(self.test_dir)
+
+    @patch('multipolicyreaderutils.read_policy')
+    def test_split_by_recipient_only_one_recipient(self, mock_read_policy):
+        globally_enabled_config = RecipientSplitConfig(
+            self.valid_config_globally_enabled_file
+        )
+
+        do_split_by_recipient = multipolicyreaderutils.split_by_recipient(
+            globally_enabled_config,
+            ['recipient-a@domain.com'],
+            'eu-central-1',
+            'bucket-name',
+            True
+        )
+
+        self.assertFalse(do_split_by_recipient)
+        mock_read_policy.assert_not_called()
 
     @mock.patch('multipolicyreaderutils.read_policy')
     def test_split_by_recipient_invalid_config(self, mock_read_policy):
@@ -167,22 +192,29 @@ class MultiPolicyReaderUtilsTest(unittest.TestCase):
             True
         )
 
-    @patch('multipolicyreaderutils.read_policy')
-    def test_split_by_recipient_only_one_recipient(self, mock_read_policy):
-        globally_enabled_config = RecipientSplitConfig(
-            self.valid_config_globally_enabled_file
+    @mock.patch('multipolicyreaderutils.read_policy')
+    def test_split_by_recipient_not_globally_enabled_customer_enabled(self, mock_read_policy):
+        mock_read_policy.return_value = self.mock_policy_customer_enabled
+
+        globally_not_enabled_config = RecipientSplitConfig(
+            self.valid_config_globally_not_enabled_file
         )
 
         do_split_by_recipient = multipolicyreaderutils.split_by_recipient(
-            globally_enabled_config,
-            ['recipient-a@domain.com'],
+            globally_not_enabled_config,
+            ['recipient-a@domain.com', 'recipient-b@domain.com'],
             'eu-central-1',
             'bucket-name',
             True
         )
 
-        self.assertFalse(do_split_by_recipient)
-        mock_read_policy.assert_not_called()
+        self.assertTrue(do_split_by_recipient)
+        mock_read_policy.assert_called_with(
+            'recipient-a@domain.com',
+            'eu-central-1',
+            'bucket-name',
+            True
+        )
 
 if __name__ == "__main__":
     unittest.main()
