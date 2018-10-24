@@ -11,7 +11,7 @@
     template_parameters:
       EventDetailType:                       "EC2 Instance-terminate Lifecycle Action"
       EventSource:                           "aws.autoscaling"
-      LifecycleHookNames:                    "{{aws.asg.is.lifecycle_hook_name}},{{aws.asg.cs.lifecycle_hook_name}},{{aws.asg.id.lifecycle_hook_name}},{{aws.asg.cd.lifecycle_hook_name}}"
+      LifecycleHookNames:                    "{{aws.asg.is.lifecycle_hook_name}},{{aws.asg.cs.lifecycle_hook_name}},{{aws.asg.id.lifecycle_hook_name}},{{aws.asg.cd.lifecycle_hook_name}},{{aws.asg.es.lifecycle_hook_name}},{{aws.asg.ed.lifecycle_hook_name}}"
       LifecycleTransition:                   "autoscaling:EC2_INSTANCE_TERMINATING"
       TargetsArn:                            "{{instance_terminator_stack.stack_outputs.LambdaFunctionArn}}"
       TargetsId:                             "instance_terminator"

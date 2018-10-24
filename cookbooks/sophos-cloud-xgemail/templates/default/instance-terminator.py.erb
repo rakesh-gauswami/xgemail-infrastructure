@@ -301,11 +301,7 @@ class Terminator(object):
             self.sqs_delete_queue(url=self.sqs.get_queue_url(QueueName=self.sqs_policy_queue_name + '-DLQ')['QueueUrl'])
 
         if self.postfix_queue_count != 0:
-            self.logger.critical("The Postfix queue is NOT empty! Unmounting and detatching volume for further investigation.")
-            # Run umount command to unmount the volume
-            self.run_cmd(['umount', lifecycle_hook.device_name])
-            # Detatch the volume so it is not deleted when the instance is terminated.
-            lifecycle_hook.detatch_volume()
+            self.logger.critical("The Postfix queue is NOT empty!")
 
         # Complete ASG hook
         self.logger.info('Completing lifecycle action.')
