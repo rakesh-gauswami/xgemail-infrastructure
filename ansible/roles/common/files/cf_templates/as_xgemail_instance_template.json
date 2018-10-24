@@ -116,6 +116,10 @@
       "Type": "AWS::EC2::KeyPair::KeyName",
       "Description": "Key pair used to SSH to the instance"
     },
+    "LifecycleHookName": {
+      "Description": "Name of the Lifecycle Hook.",
+      "Type": "String"
+    },
     "LoadBalancerName": {
       "Description": "Name for the ELB to attach to the Auto Scaling Group",
       "Type": "List<String>"
@@ -434,20 +438,13 @@
         "HealthCheckGracePeriod": { "Ref": "HealthCheckGracePeriod" },
         "HealthCheckType": { "Ref": "HealthCheckType" },
         "LaunchConfigurationName": { "Ref": "JavaAutoScalingLaunchConfig" },
-        "LifecycleHookSpecificationList": [
+        "LifecycleHookSpecificationList" : [
           {
-            "LifecycleHookName": {
-              "Fn::Join":  ["-",[
-                { "Ref": "VpcName"},
-                { "Ref": "XgemailServiceType" },
-                "Terminating-LifeCycleHook"
-              ]]
-            },
-            "DefaultResult": "CONTINUE",
-            "HeartbeatTimeout": "300",
-            "LifecycleTransition": "autoscaling:EC2_INSTANCE_TERMINATING",
-            "NotificationTargetARN": { "Ref": "AutoScalingNotificationTopicARN" },
-            "RoleARN": { "Ref": "AutoScalingInstanceRoleArn" }
+            "LifecycleHookName": { "Ref": "LifecycleHookName" },
+            "HeartbeatTimeout" : "300",
+            "LifecycleTransition" : "autoscaling:EC2_INSTANCE_TERMINATING",
+            "NotificationTargetARN" : { "Ref": "AutoScalingNotificationTopicARN" },
+            "RoleARN" : { "Ref": "AutoScalingInstanceRoleArn" }
           }
         ],
         "LoadBalancerNames": { "Ref": "LoadBalancerName" },
@@ -763,7 +760,7 @@
                     "recipe[sophos-cloud-xgemail::setup_xgemail_utils_structure],",
                     "recipe[sophos-cloud-xgemail::configure-postfix],",
                     "recipe[sophos-cloud-xgemail::configure_postfix_snmp_logicmonitor],",
-                    "recipe[sophos-cloud-xgemail::setup_xgemail_sqs_lifecycle_poller_cron],",
+                    "recipe[sophos-cloud-xgemail::setup_xgemail_instance_terminator],",
                     "recipe[sophos-cloud-xgemail::configure_monit],",
                     "recipe[sophos-cloud-xgemail::run_install_cleanup]",
                     "\""

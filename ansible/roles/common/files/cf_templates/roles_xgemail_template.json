@@ -404,6 +404,93 @@
       "Type": "AWS::IAM::Policy"
     },
 
+     "InstanceTerminatorLambdaExecutionRole" : {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [ "lambda.amazonaws.com" ]
+            },
+            "Action": [ "sts:AssumeRole" ]
+          }]
+        },
+        "Path": "/"
+      }
+    },
+    "InstanceTerminatorLambdaExecutionRolePolicies": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "lambda:*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "autoscaling:CompleteLifecycleAction",
+                "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:RecordLifecycleActionHeartbeat",
+                "autoscaling:UpdateAutoScalingGroup"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:logs:*:*:*"
+              ]
+            },
+            {
+              "Action": [
+                "ssm:DescribeDocument",
+                "ssm:GetCommandInvocation",
+                "ssm:ListInstanceAssociations",
+                "ssm:ListCommands",
+                "ssm:SendCommand"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "ec2:DescribeInstances",
+                "ec2:CreateTags"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ]
+        },
+        "PolicyName": "root",
+        "Roles": [
+          {
+            "Ref": "InstanceTerminatorLambdaExecutionRole"
+          }
+        ]
+      },
+      "Type": "AWS::IAM::Policy"
+    },
+
     "LogicMonitorInstanceProfile": {
       "Properties": {
         "Path": "/",
@@ -562,6 +649,7 @@
               "Action": [
                 "autoscaling:CompleteLifecycleAction",
                 "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:DescribeLifecycleHooks",
                 "autoscaling:RecordLifecycleActionHeartbeat",
                 "autoscaling:UpdateAutoScalingGroup"
               ],
@@ -797,6 +885,7 @@
               "Action": [
                 "autoscaling:CompleteLifecycleAction",
                 "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:DescribeLifecycleHooks",
                 "autoscaling:RecordLifecycleActionHeartbeat",
                 "autoscaling:UpdateAutoScalingGroup"
               ],
@@ -1032,6 +1121,7 @@
               "Action": [
                 "autoscaling:CompleteLifecycleAction",
                 "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:DescribeLifecycleHooks",
                 "autoscaling:RecordLifecycleActionHeartbeat",
                 "autoscaling:UpdateAutoScalingGroup"
               ],
@@ -1256,6 +1346,7 @@
               "Action": [
                 "autoscaling:CompleteLifecycleAction",
                 "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:DescribeLifecycleHooks",
                 "autoscaling:RecordLifecycleActionHeartbeat",
                 "autoscaling:UpdateAutoScalingGroup"
               ],
@@ -1515,6 +1606,7 @@
               "Action": [
                 "autoscaling:CompleteLifecycleAction",
                 "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:DescribeLifecycleHooks",
                 "autoscaling:RecordLifecycleActionHeartbeat",
                 "autoscaling:UpdateAutoScalingGroup"
               ],
@@ -1759,6 +1851,7 @@
               "Action": [
                 "autoscaling:CompleteLifecycleAction",
                 "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:DescribeLifecycleHooks",
                 "autoscaling:RecordLifecycleActionHeartbeat",
                 "autoscaling:UpdateAutoScalingGroup"
               ],
@@ -2391,6 +2484,14 @@
     "EipRotationLambdaExecutionRoleArn": {
       "Description": "Lambda Execution role ARN",
       "Value": { "Fn::GetAtt" : [ "EipRotationLambdaExecutionRole", "Arn" ] }
+    },
+    "InstanceTerminatorLambdaExecutionRole": {
+      "Description": "Instance Terminator Lambda Execution role",
+      "Value": { "Ref": "InstanceTerminatorLambdaExecutionRole" }
+    },
+    "InstanceTerminatorLambdaExecutionRoleArn": {
+      "Description": "Instance Terminator Lambda Execution role ARN",
+      "Value": { "Fn::GetAtt" : [ "InstanceTerminatorLambdaExecutionRole", "Arn" ] }
     },
     "LogicMonitorInstanceProfile": {
       "Description": "Profile for logic monitor collectors to do their job",
