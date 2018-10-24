@@ -1,0 +1,164 @@
+#!/usr/bin/env python
+# vim: autoindent expandtab filetype=python shiftwidth=4 softtabstop=4 tabstop=4
+#
+# Copyright 2018, Sophos Limited. All rights reserved.
+#
+# 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
+# Sophos Limited and Sophos Group.  All other product and company
+# names mentioned are trademarks or registered trademarks of their
+# respective owners.
+#
+#
+#  This script is used to modify which messages are split by recipients.
+#  There are two available options:
+#    - Enable/disable split-by-recipient globally
+#    - Add/remove customers for a per-customer recipient split of messages
+#
+
+import argparse
+import json
+import sys
+import os
+from uuid import UUID
+
+# Constants
+# POLICY_STORAGE_PATH = "<%= @policy_storage_path %>"
+POLICY_STORAGE_PATH = "/tmp"
+INBOUND_RELAY_CONTROL_PATH = POLICY_STORAGE_PATH + '/config/inbound-relay-control/'
+SPLIT_RECIPIENT_CONFIG_FILE = INBOUND_RELAY_CONTROL_PATH + 'msg_producer_split_by_recipients.CONFIG'
+
+parser = argparse.ArgumentParser(description='Used to modify which messages are split by recipients')
+parser.add_argument('--get', action='store_true', help='Get current split-by-recipient configuration')
+parser.add_argument('--enableglobal', action='store_true', help='Enable split-by-recipient feature on a global level')
+parser.add_argument('--disableglobal', action='store_true', help='Disable split-by-recipient feature on a global level (customer level still applies)')
+parser.add_argument('--addcustomer', help='Add a customer id (UUID4 format) for which split-by-recipient feature should be enabled')
+parser.add_argument('--removecustomer', help='Removes a customer id (UUID4 format) so that messages for that customer are no longer split by recipients')
+
+args = parser.parse_args()
+
+default_config = {'is_globally_enabled': False, 'customer_ids_enabled': []}
+
+def validate_uuid(uuid_string):
+    '''
+        Verifies that the provided string is a valid UUID Version 4.
+        Returns True if uuid is valid, False otherwise
+    '''
+    try:
+        val = UUID(uuid_string, version=4)
+    except ValueError:
+        # If it's a value error, then the string
+        # is not a valid hex code for a UUID.
+        return False
+    return True
+
+def get_config():
+    '''
+        Returns the current split-by-recipient configuration.
+        If no CONFIG file currently exists, print out the default config
+    '''
+    if os.path.isfile(SPLIT_RECIPIENT_CONFIG_FILE):
+        with open(SPLIT_RECIPIENT_CONFIG_FILE) as config_file:
+            config_data = json.load(config_file)
+            print 'split by recipient enabled globally: {0}'.format(config_data['is_globally_enabled'])
+
+            print 'split by recipient enabled for these {0} customer ids:'.format(len(config_data['customer_ids_enabled']))
+            for customer_id in config_data['customer_ids_enabled']:
+                print '\t{0}'.format(customer_id)
+    else:
+        print 'Config file does not exist at location {0}'.format(SPLIT_RECIPIENT_CONFIG_FILE)
+        print '[DEFAULT_CONFIG]: split by recipient enabled globally: {0}'.format(default_config['is_globally_enabled'])
+        print '[DEFAULT_CONFIG]: split by recipient enabled for these customer ids: {0}'.format(default_config['customer_ids_enabled'])
+
+def update_global_config(updated_value):
+    '''
+        Updates the global configuration setting depending on the provided value.
+    '''
+    config = get_current_config()
+
+    config['is_globally_enabled'] = updated_value
+
+    write_config(config)
+
+    # logger.info('Set is_globally_enabled to {0} in file {1}'.format(updated_value, SPLIT_RECIPIENT_CONFIG_FILE))
+    print 'Set is_globally_enabled to {0} in file {1}'.format(updated_value, SPLIT_RECIPIENT_CONFIG_FILE)
+
+def add_customer(customer_id):
+    '''
+        Adds the provided customer_id to the list of customers for which messages should be split by recipient.
+        If the customer_id already exists, this method does nothing.
+    '''
+    config = get_current_config()
+
+    if customer_id in config['customer_ids_enabled']:
+        print 'Customer with id {0} already exists in file {1}'.format(customer_id, SPLIT_RECIPIENT_CONFIG_FILE)
+        return
+
+    config['customer_ids_enabled'].append(customer_id)
+
+    write_config(config)
+
+    # logger.info('Added customer_id {0} in file {1}'.format(customer_id, SPLIT_RECIPIENT_CONFIG_FILE))
+    print 'Added customer_id {0} in file {1}'.format(customer_id, SPLIT_RECIPIENT_CONFIG_FILE)
+
+def remove_customer(customer_id):
+    '''
+        Removes the provided customer_id from the list of customers for which messages should be split by recipient.
+        If the customer_id does not exist, this method does nothing.
+    '''
+    config = get_current_config()
+
+    if not customer_id in config['customer_ids_enabled']:
+        print 'Customer with id {0} does not exist in file {1}'.format(customer_id, SPLIT_RECIPIENT_CONFIG_FILE)
+        return
+
+    config['customer_ids_enabled'].remove(customer_id)
+
+    write_config(config)
+
+    # logger.info('Added customer_id {0} in file {1}'.format(customer_id, SPLIT_RECIPIENT_CONFIG_FILE))
+    print 'Removed customer_id {0} from file {1}'.format(customer_id, SPLIT_RECIPIENT_CONFIG_FILE)
+
+def get_current_config():
+    '''
+        Reads the current configuration. If the config file does not yet exist,
+        then this method returns the default config.
+    '''
+    config_dir = os.path.dirname(INBOUND_RELAY_CONTROL_PATH)
+
+    if not os.path.exists(config_dir):
+        os.makedirs(config_dir)
+
+    if os.path.isfile(SPLIT_RECIPIENT_CONFIG_FILE):
+        with open(SPLIT_RECIPIENT_CONFIG_FILE) as config_file:
+            return json.load(config_file)
+    return default_config
+
+def write_config(config):
+    '''
+        Overwrites any existing config file with the updated configuration.
+    '''
+    temp_file = SPLIT_RECIPIENT_CONFIG_FILE + '.tmp'
+
+    with open(temp_file, 'w') as config_file:
+        json.dump(config, config_file)
+
+    os.rename(temp_file, SPLIT_RECIPIENT_CONFIG_FILE)
+
+if args.get:
+    get_config()
+elif args.enableglobal:
+    update_global_config(True)
+elif args.disableglobal:
+    update_global_config(False)
+elif args.addcustomer:
+    if not validate_uuid(args.addcustomer):
+        print 'Invalid UUID {0}'.format(args.addcustomer)
+        sys.exit(1)
+    add_customer(args.addcustomer)
+elif args.removecustomer:
+    if not validate_uuid(args.removecustomer):
+        print 'Invalid UUID {0}'.format(args.addcustomer)
+        sys.exit(1)
+    remove_customer(args.removecustomer)
+else:
+    parser.print_help()
