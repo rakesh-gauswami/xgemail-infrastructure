@@ -9,32 +9,35 @@
 # respective owners.
 
 import sys
+import logging
+from logging.handlers import SysLogHandler
 
 try:
     import mock
+    from mock import patch, MagicMock
 except ImportError:
     # Python 2.x doesn't provide the above module as part of its standard library.
-    # A CRE ticket has been opened to request adding the mock library to the
-    # Bamboo build agents: https://jira.sophos.net/browse/CRE-1396
     #
-    # Until the mock library is installed, this unit test class will not run as
-    # part of the CI build but can still be run locally as long as the above library
-    # is installed.
-    #
-    # See https://pypi.org/project/mock for how to install the module.
-    print 'mock library not installed. Skipping these unit tests'
+    # In order to run this unit test on your local machine, you need to install
+    # the mock library as explained here: https://pypi.org/project/mock
+    print 'mock library not installed. Skipping these unit tests.'
     sys.exit(0)
-
-from mock import create_autospec
 
 import json
 from os import path
 import shutil
 import tempfile
 import unittest
-import multipolicyreaderutils
 
 from recipientsplitconfig import RecipientSplitConfig
+
+# on OSX, the file /dev/log does not exist and needs to be changed to /var/run/syslog
+if sys.platform.startswith('darwin'):
+    with patch('__main__.logging.handlers.SysLogHandler', create=True) as mocked_logging:
+        mocked_logging.return_value = logging.handlers.SysLogHandler(address='/var/run/syslog')
+        import multipolicyreaderutils
+else:
+    import multipolicyreaderutils
 
 class MultiPolicyReaderUtilsTest(unittest.TestCase):
     valid_config_globally_enabled = {
@@ -91,23 +94,6 @@ class MultiPolicyReaderUtilsTest(unittest.TestCase):
     def tearDown(self):
         # remove the directory after the test
         shutil.rmtree(self.test_dir)
-
-    @mock.patch('multipolicyreaderutils.read_policy')
-    def test_split_by_recipient_only_one_recipient(self, mock_read_policy):
-        globally_enabled_config = RecipientSplitConfig(
-            self.valid_config_globally_enabled_file
-        )
-
-        do_split_by_recipient = multipolicyreaderutils.split_by_recipient(
-            globally_enabled_config,
-            ['recipient-a@domain.com'],
-            'eu-central-1',
-            'bucket-name',
-            True
-        )
-
-        self.assertFalse(do_split_by_recipient)
-        mock_read_policy.assert_not_called()
 
     @mock.patch('multipolicyreaderutils.read_policy')
     def test_split_by_recipient_invalid_config(self, mock_read_policy):
@@ -181,6 +167,22 @@ class MultiPolicyReaderUtilsTest(unittest.TestCase):
             True
         )
 
+    @patch('multipolicyreaderutils.read_policy')
+    def test_split_by_recipient_only_one_recipient(self, mock_read_policy):
+        globally_enabled_config = RecipientSplitConfig(
+            self.valid_config_globally_enabled_file
+        )
+
+        do_split_by_recipient = multipolicyreaderutils.split_by_recipient(
+            globally_enabled_config,
+            ['recipient-a@domain.com'],
+            'eu-central-1',
+            'bucket-name',
+            True
+        )
+
+        self.assertFalse(do_split_by_recipient)
+        mock_read_policy.assert_not_called()
 
 if __name__ == "__main__":
     unittest.main()
