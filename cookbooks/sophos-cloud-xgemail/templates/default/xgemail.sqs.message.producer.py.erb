@@ -6,7 +6,7 @@
 # to a designated S3 bucket. In case of a failure email stays in postfix deferred
 # queue and postfix retries later.
 #
-# Copyright: Copyright (c) 1997-2016. All rights reserved.
+# Copyright: Copyright (c) 1997-2018. All rights reserved.
 # Company: Sophos Limited or one of its affiliates.
 
 import sys
@@ -48,6 +48,7 @@ SUBMIT_BUCKET_NAME = "<%= @sqs_msg_producer_s3_bucket_name %>"
 SUBMIT_HOST_IP = "<%= @sqs_msg_producer_submit_ip %>"
 SUBMIT_SQS_URL = "<%= @sqs_msg_producer_sqs_url %>"
 TTL_IN_DAYS = <%= @sqs_msg_producer_ttl_in_days %>
+RELAY_DOMAINS_FILE = "<%= @relay_domains_file %>"
 
 # Exit codes from sysexits
 EX_TEMPFAIL = <%= @sqs_msg_producer_ex_temp_failure_code %>
@@ -426,17 +427,18 @@ def base_policy_flow(metadata, direction, domain, sender, message):
         sqs_message.get_sqs_json()
     )
 
-    sqs_history = prepare_msg_history_event(
-        s3_file_path,
-        metadata,
-        sqs_message,
-        direction,
-        sender
-    )
+    if 'ENCRYPTION' != SUBMIT_TYPE:
+        sqs_history = prepare_msg_history_event(
+            s3_file_path,
+            metadata,
+            sqs_message,
+            direction,
+            sender
+        )
 
-    send_msg_history_sqs_event(
-        sqs_history.get_sqs_json()
-    )
+        send_msg_history_sqs_event(
+            sqs_history.get_sqs_json()
+        )
 
 # Mail flow goes through multi_policy_flow if multi-policy flag is enabled
 # but if there are error conditions such as file read error etc, the mail
@@ -524,10 +526,23 @@ def multi_policy_flow(metadata, direction, domain, sender, message):
                 history_job
             )
 
+def get_customer_domains():
+    domains = []
+    with open(RELAY_DOMAINS_FILE, 'r') as f:
+        for domain in f.readlines():
+            # file is formatted like so:
+            #   example1.com OK
+            #   example2.com OK
+            #   ...
+            # but we only need the domain name
+            domains.append(domain.split(' ')[0])
+    return domains
+
 # accepts data from postfix and send message and metadata to S3 and
 # a json object to SQS which provides pointer to the message in S3
 def main():
     try:
+        customer_domains = get_customer_domains()
         metadata = get_metadata()
         domain = None
         direction = None
@@ -547,6 +562,16 @@ def main():
             metadata = get_metadata_for_outbound(metadata, plaintext_message)
             sender = metadata.get_sender_address()
             domain = get_from_sender_domain(metadata)
+
+        elif 'ENCRYPTION' == SUBMIT_TYPE:
+            domain = metadata.get_recipient_domain()
+            logger.debug("Customer's domain: [{0}]".format(domain))
+            sender = metadata.get_sender_address()
+            if domain in customer_domains:
+                direction =  INBOUND_MESSAGE_DIRECTION
+            else:
+                direction =  OUTBOUND_MESSAGE_DIRECTION
+
         else:
             raise ("Wrong submit type [{0}]".format(SUBMIT_TYPE))
 
