@@ -30,13 +30,23 @@ import tempfile
 import unittest
 import imp
 
+absolute_path = path.dirname(path.realpath(__file__))
+
+print absolute_path
+
 # on OSX, the file /dev/log does not exist and needs to be changed to /var/run/syslog
 if sys.platform.startswith('darwin'):
     with mock.patch('__main__.logging.handlers.SysLogHandler', create=True) as mocked_logging:
         mocked_logging.return_value = logging.handlers.SysLogHandler(address='/var/run/syslog')
-        user_based_split_module = imp.load_source('foobar', 'xgemail.user.based.split.py.erb')
+        user_based_split_module = imp.load_source(
+            'user_based_split_module', 
+            '{0}/{1}'.format(absolute_path, 'xgemail.user.based.split.py.erb')
+        )
 else:
-    user_based_split_module = imp.load_source('foobar', 'xgemail.user.based.split.py.erb')
+    user_based_split_module = imp.load_source(
+        'user_based_split_module', 
+        '{0}/{1}'.format(absolute_path, 'xgemail.user.based.split.py.erb')
+    )
 
 class UserBasedSplitTest(unittest.TestCase):
     config_valid = {
