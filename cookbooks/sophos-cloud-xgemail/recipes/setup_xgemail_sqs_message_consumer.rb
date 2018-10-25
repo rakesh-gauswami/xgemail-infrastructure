@@ -37,7 +37,12 @@ MESSAGE_HISTORY_DELIVERY_STATUS_SNS_TOPIC_ARN = node['xgemail']['msg_history_sta
 NODE_IP                                 = node['ipaddress']
 
 XGEMAIL_PIC_CA_PATH = "#{LOCAL_CERT_PATH}/hmr-infrastructure-ca.crt"
-XGEMAIL_PIC_FQDN = "mail-#{STATION_VPC_NAME.downcase}-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com"
+
+if ACCOUNT == 'sandbox'
+  XGEMAIL_PIC_FQDN = 'mail-service:8080'
+else
+  XGEMAIL_PIC_FQDN = "mail-#{STATION_VPC_NAME.downcase}-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com"
+end
 
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_processors_structure'
 
@@ -48,11 +53,10 @@ CONSUMER_SCRIPT_PATH = "#{SQS_MESSAGE_PROCESSOR_DIR}/#{CONSUMER_SCRIPT}"
 
 SERVICE_USER = node['xgemail']['sqs_message_processor_user']
 
-
 # Configs use by sqsmsgconsumer
-if NODE_TYPE == 'delivery' or NODE_TYPE == 'xdelivery'
+if NODE_TYPE == 'delivery' or NODE_TYPE == 'xdelivery' or NODE_TYPE == 'encryption-submit'
   MESSAGE_DIRECTION = 'INBOUND'
-elsif NODE_TYPE == 'internet-delivery' or NODE_TYPE = 'internet-xdelivery'
+elsif NODE_TYPE == 'internet-delivery' or NODE_TYPE == 'internet-xdelivery' or NODE_TYPE == 'encryption-delivery'
   MESSAGE_DIRECTION = 'OUTBOUND'
 else
   raise "Unsupported node type to setup sqsmsgproducer [#{NODE_TYPE}]"

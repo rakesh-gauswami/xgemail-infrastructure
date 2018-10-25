@@ -14,6 +14,7 @@ import logging
 import base64
 from awshandler import AwsHandler
 import policyformatter
+from recipientsplitconfig import RecipientSplitConfig
 import time
 from logging.handlers import SysLogHandler
 
@@ -26,10 +27,12 @@ EFS_MULTI_POLICY_DOMAINS_PATH = EFS_POLICY_STORAGE_PATH + MULTI_POLICY_DOMAINS_P
 MULTI_POLICY_ENDPOINTS_PATH = 'config/policies/endpoints/'
 EFS_MULTI_POLICY_ENDPOINTS_PATH = EFS_POLICY_STORAGE_PATH + MULTI_POLICY_ENDPOINTS_PATH
 
-EFS_MULTI_POLICY_CONFIG_PATH = EFS_POLICY_STORAGE_PATH + 'config/inbound-relay-control/multi-policy/'
+INBOUND_RELAY_CONTROL_PATH = EFS_POLICY_STORAGE_PATH + 'config/inbound-relay-control/'
+EFS_MULTI_POLICY_CONFIG_PATH = INBOUND_RELAY_CONTROL_PATH + 'multi-policy/'
 EFS_MULTI_POLICY_CONFIG_FILE = EFS_MULTI_POLICY_CONFIG_PATH + 'global.CONFIG'
 FLAG_TO_READ_POLICY_FROM_S3_FILE = EFS_MULTI_POLICY_CONFIG_PATH + 'msg_producer_read_policy_from_s3_global.CONFIG'
 FLAG_TO_TOC_USER_BASED_SPLIT = EFS_MULTI_POLICY_CONFIG_PATH + 'msg_producer_toc_user_based_split_global.CONFIG'
+SPLIT_BY_RECIPIENTS_CONFIG_PATH = INBOUND_RELAY_CONTROL_PATH + 'msg_producer_split_by_recipients.CONFIG'
 
 logger = logging.getLogger('multi-policy-reader-utils')
 logger.setLevel(logging.INFO)
@@ -40,18 +43,49 @@ formatter = logging.Formatter(
 syslog_handler.formatter = formatter
 logger.addHandler(syslog_handler)
 
-"""This method builds a map with <policy_id> as key
-and a list of recipient emails that belong to that policy as values.
-Where the flag to read from s3 is set to true and <aws_region> and <policy_bucket_name> parameters are supplied,
-it will read the policy from s3. Otherwise policy will be read locally via mounted storage
-"""
+def split_by_recipient(split_config, recipients, aws_region, policy_bucket_name, read_from_s3):
+    """
+        Determines if the current message must be split by recipients.
+        Returns True if split by recipient required, False otherwise.
+    """
+    if (len(recipients) <= 1):
+        return False
+
+    try:
+        # at this point, all recipients belong to the same customer so it is sufficient
+        # to retrieve the customer_id from the first recipient in the list
+        customer_policy = read_policy(
+            recipients[0],
+            aws_region,
+            policy_bucket_name,
+            read_from_s3
+        )
+        customer_id = customer_policy['customerId']
+
+        return split_config.is_split_by_recipient_enabled(customer_id)
+    except:
+        logger.error('Unable to split by recipients')
+        return False
 
 def build_policy_map(recipients, aws_region = None, policy_bucket_name = None, policies = {}):
+    """
+        This method builds a map with <policy_id> as key
+        and a list of recipient emails that belong to that policy as values.
+        Where the flag to read from s3 is set to true and <aws_region> and <policy_bucket_name> parameters are supplied,
+        it will read the policy from s3. Otherwise policy will be read locally via mounted storage
+    """
+    user_list = policies.copy()
+    split_config = RecipientSplitConfig(SPLIT_BY_RECIPIENTS_CONFIG_PATH)
+
+    if split_by_recipient(split_config, recipients, aws_region, policy_bucket_name, read_from_s3):
+        for recipient in recipients:
+            retrieve_user_id_and_add_to_user_list(customer_policy, user_list, recipient)
+        return user_list
+
     read_from_s3 = get_read_from_s3_enabled()
     user_based_split = get_user_based_split_enabled()
     is_toc_enabled = False
     policy_list = policies.copy()
-    user_list = policies.copy()
 
     if (user_based_split and len(recipients) > 1):
         logger.info("ToC user based split block for recipients [{0}]".format(recipients))

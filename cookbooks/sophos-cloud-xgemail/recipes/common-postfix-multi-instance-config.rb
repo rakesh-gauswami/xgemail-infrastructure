@@ -13,12 +13,6 @@
 
 ACCOUNT =  node['sophos_cloud']['environment']
 
-if ACCOUNT == 'sandbox'
-  chef_gem 'aws-sdk' do
-    action [:install]
-  end
-end
-
 require 'aws-sdk'
 
 # Include Helper library
@@ -113,6 +107,7 @@ if ACCOUNT == 'sandbox'
         execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
       end
     end
+    # TODO Add jilter configuration for NODE_TYPE == 'encryption-submit'
   end
 
 else

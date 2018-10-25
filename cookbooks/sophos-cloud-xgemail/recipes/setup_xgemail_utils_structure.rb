@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: setup_xgemail_utils_structure
 #
-# Copyright 2016, Sophos
+# Copyright 2018, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -45,6 +45,7 @@ end
     'multipolicyreaderutils.py',
     'nonrecoverableexception.py',
     'notadirectoryexception.py',
+    'recipientsplitconfig.py',
     'recoverableexception.py'
 ].each do | cur |
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{cur}" do
@@ -74,7 +75,8 @@ else
 end
 
 if NODE_TYPE == 'delivery' or NODE_TYPE == 'internet-delivery' or
-    NODE_TYPE == 'xdelivery' or NODE_TYPE == 'internet-xdelivery'
+    NODE_TYPE == 'xdelivery' or NODE_TYPE == 'internet-xdelivery' or
+    NODE_TYPE == 'encryption-delivery'
   [
       'postfix_injection_response.py',
       'queue_log.py',

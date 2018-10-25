@@ -39,6 +39,7 @@ LOCAL_TARGETS = 	.check.ansible \
 
 # Build Group 1 - Python Bamboo
 GROUP_1 = 	.check.python \
+			.check.pyunit.local \
 			$(EOL)
 
 # Build Group 2 - Python Local
@@ -64,6 +65,7 @@ PYUNIT_LOCAL_DIRS :=  \
 		./bamboo \
 		./lambda \
 		./tools \
+		./cookbooks/sophos-cloud-xgemail/files/default \
 		$(EOL)
 
 # Use this target to run all checks.
