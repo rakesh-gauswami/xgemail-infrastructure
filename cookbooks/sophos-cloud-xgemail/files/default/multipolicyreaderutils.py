@@ -75,6 +75,7 @@ def build_policy_map(recipients, aws_region = None, policy_bucket_name = None, p
         it will read the policy from s3. Otherwise policy will be read locally via mounted storage
     """
     user_list = policies.copy()
+    read_from_s3 = get_read_from_s3_enabled()
     split_config = RecipientSplitConfig(SPLIT_BY_RECIPIENTS_CONFIG_PATH)
 
     if split_by_recipient(split_config, recipients, aws_region, policy_bucket_name, read_from_s3):
@@ -82,7 +83,6 @@ def build_policy_map(recipients, aws_region = None, policy_bucket_name = None, p
             retrieve_user_id_and_add_to_user_list(customer_policy, user_list, recipient)
         return user_list
 
-    read_from_s3 = get_read_from_s3_enabled()
     user_based_split = get_user_based_split_enabled()
     is_toc_enabled = False
     policy_list = policies.copy()
