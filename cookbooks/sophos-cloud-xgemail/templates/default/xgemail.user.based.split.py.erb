@@ -38,14 +38,14 @@ formatter = logging.Formatter(
 syslog_handler.formatter = formatter
 logger.addHandler(syslog_handler)
 
-#parser = argparse.ArgumentParser(description='Used to modify which messages are split by recipients')
-#parser.add_argument('--get', action='store_true', help='Get current split-by-recipient configuration')
-#parser.add_argument('--enableglobal', action='store_true', help='Enable split-by-recipient feature on a global level')
-#parser.add_argument('--disableglobal', action='store_true', help='Disable split-by-recipient feature on a global level (customer level still applies)')
-#parser.add_argument('--addcustomer', help='Add a customer id (UUID4 format) for which split-by-recipient feature should be enabled')
-#parser.add_argument('--removecustomer', help='Removes a customer id (UUID4 format) so that messages for that customer are no longer split by recipients')
+user_split_parser = argparse.ArgumentParser(description='Used to modify which messages are split by recipients')
+user_split_parser.add_argument('--get', action='store_true', help='Get current split-by-recipient configuration')
+user_split_parser.add_argument('--enableglobal', action='store_true', help='Enable split-by-recipient feature on a global level')
+user_split_parser.add_argument('--disableglobal', action='store_true', help='Disable split-by-recipient feature on a global level (customer level still applies)')
+user_split_parser.add_argument('--addcustomer', help='Add a customer id (UUID4 format) for which split-by-recipient feature should be enabled')
+user_split_parser.add_argument('--removecustomer', help='Removes a customer id (UUID4 format) so that messages for that customer are no longer split by recipients')
 
-#args = parser.parse_args()
+user_split_args = user_split_parser.parse_args()
 
 default_config = {'is_globally_enabled': False, 'customer_ids_enabled': []}
 
@@ -156,21 +156,21 @@ def write_config(config, config_location):
     os.rename(temp_file, config_location)
 
 if __name__ == "__main__":
-    if args.get:
+    if user_split_args.get:
         get_config()
-    elif args.enableglobal:
+    elif user_split_args.enableglobal:
         update_global_config(True, SPLIT_RECIPIENT_CONFIG_FILE)
-    elif args.disableglobal:
+    elif user_split_args.disableglobal:
         update_global_config(False, SPLIT_RECIPIENT_CONFIG_FILE)
-    elif args.addcustomer:
-        if not validate_uuid(args.addcustomer):
-            print 'Invalid UUID {0}'.format(args.addcustomer)
+    elif user_split_args.addcustomer:
+        if not validate_uuid(user_split_args.addcustomer):
+            print 'Invalid UUID {0}'.format(user_split_args.addcustomer)
             sys.exit(1)
-        add_customer(args.addcustomer, SPLIT_RECIPIENT_CONFIG_FILE)
-    elif args.removecustomer:
-        if not validate_uuid(args.removecustomer):
-            print 'Invalid UUID {0}'.format(args.addcustomer)
+        add_customer(user_split_args.addcustomer, SPLIT_RECIPIENT_CONFIG_FILE)
+    elif user_split_args.removecustomer:
+        if not validate_uuid(user_split_args.removecustomer):
+            print 'Invalid UUID {0}'.format(user_split_args.addcustomer)
             sys.exit(1)
-        remove_customer(args.removecustomer, SPLIT_RECIPIENT_CONFIG_FILE)
+        remove_customer(user_split_args.removecustomer, SPLIT_RECIPIENT_CONFIG_FILE)
     else:
         parser.print_help()
