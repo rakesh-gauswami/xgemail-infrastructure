@@ -38,15 +38,6 @@ formatter = logging.Formatter(
 syslog_handler.formatter = formatter
 logger.addHandler(syslog_handler)
 
-user_split_parser = argparse.ArgumentParser(description='Used to modify which messages are split by recipients')
-user_split_parser.add_argument('--get', action='store_true', help='Get current split-by-recipient configuration')
-user_split_parser.add_argument('--enableglobal', action='store_true', help='Enable split-by-recipient feature on a global level')
-user_split_parser.add_argument('--disableglobal', action='store_true', help='Disable split-by-recipient feature on a global level (customer level still applies)')
-user_split_parser.add_argument('--addcustomer', help='Add a customer id (UUID4 format) for which split-by-recipient feature should be enabled')
-user_split_parser.add_argument('--removecustomer', help='Removes a customer id (UUID4 format) so that messages for that customer are no longer split by recipients')
-
-user_split_args = user_split_parser.parse_args()
-
 default_config = {'is_globally_enabled': False, 'customer_ids_enabled': []}
 
 def validate_uuid(uuid_string):
@@ -156,6 +147,15 @@ def write_config(config, config_location):
     os.rename(temp_file, config_location)
 
 if __name__ == "__main__":
+    user_split_parser = argparse.ArgumentParser(description='Used to modify which messages are split by recipients')
+    user_split_parser.add_argument('--get', action='store_true', help='Get current split-by-recipient configuration')
+    user_split_parser.add_argument('--enableglobal', action='store_true', help='Enable split-by-recipient feature on a global level')
+    user_split_parser.add_argument('--disableglobal', action='store_true', help='Disable split-by-recipient feature on a global level (customer level still applies)')
+    user_split_parser.add_argument('--addcustomer', help='Add a customer id (UUID4 format) for which split-by-recipient feature should be enabled')
+    user_split_parser.add_argument('--removecustomer', help='Removes a customer id (UUID4 format) so that messages for that customer are no longer split by recipients')
+
+    user_split_args = user_split_parser.parse_args()
+
     if user_split_args.get:
         get_config()
     elif user_split_args.enableglobal:
