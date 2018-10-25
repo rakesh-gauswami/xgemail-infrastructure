@@ -38,14 +38,14 @@ formatter = logging.Formatter(
 syslog_handler.formatter = formatter
 logger.addHandler(syslog_handler)
 
-parser = argparse.ArgumentParser(description='Used to modify which messages are split by recipients')
-parser.add_argument('--get', action='store_true', help='Get current split-by-recipient configuration')
-parser.add_argument('--enableglobal', action='store_true', help='Enable split-by-recipient feature on a global level')
-parser.add_argument('--disableglobal', action='store_true', help='Disable split-by-recipient feature on a global level (customer level still applies)')
-parser.add_argument('--addcustomer', help='Add a customer id (UUID4 format) for which split-by-recipient feature should be enabled')
-parser.add_argument('--removecustomer', help='Removes a customer id (UUID4 format) so that messages for that customer are no longer split by recipients')
+#parser = argparse.ArgumentParser(description='Used to modify which messages are split by recipients')
+#parser.add_argument('--get', action='store_true', help='Get current split-by-recipient configuration')
+#parser.add_argument('--enableglobal', action='store_true', help='Enable split-by-recipient feature on a global level')
+#parser.add_argument('--disableglobal', action='store_true', help='Disable split-by-recipient feature on a global level (customer level still applies)')
+#parser.add_argument('--addcustomer', help='Add a customer id (UUID4 format) for which split-by-recipient feature should be enabled')
+#parser.add_argument('--removecustomer', help='Removes a customer id (UUID4 format) so that messages for that customer are no longer split by recipients')
 
-args = parser.parse_args()
+#args = parser.parse_args()
 
 default_config = {'is_globally_enabled': False, 'customer_ids_enabled': []}
 
