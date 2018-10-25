@@ -43,7 +43,7 @@ class MultiPolicyReaderUtilsTest(unittest.TestCase):
         'is_globally_enabled': True,
         'customer_ids_enabled': [
             '84e61a73-5e3b-4616-8719-6098a0cb0ede',
-            '84e61a73-5e3b-4616-8719-6098a0cb0ede'
+            '99e61a73-5e3b-4616-8719-6098a0cb0ede'
         ]
     }
 
@@ -51,7 +51,7 @@ class MultiPolicyReaderUtilsTest(unittest.TestCase):
         'is_globally_enabled': False,
         'customer_ids_enabled': [
             '84e61a73-5e3b-4616-8719-6098a0cb0ede',
-            '84e61a73-5e3b-4616-8719-6098a0cb0ede'
+            '99e61a73-5e3b-4616-8719-6098a0cb0ede'
         ]
     }
 
