@@ -48,6 +48,9 @@ sasi_docker_image="email/sasi-daemon"
 
 jilter_version="current"
 
+email_tomcat_url="localhost:9898"
+nova_tomcat_url="appserver.sandbox.sophos:8080"
+
 possible_clean_up_files=()
 
 
@@ -109,7 +112,7 @@ function deploy_inbound {
 
     docker-compose -f ${orchestrator_location}${base_compose} -f ${orchestrator_location}${inbound_compose} up -d
 
-    deploy_mail "mail" "mailinbound"
+    deploy_wars "mail-service" "false" "mail" "mailinbound"
 
     provision_localstack
 
@@ -117,7 +120,7 @@ function deploy_inbound {
 
     deploy_jilter inbound
 
-    check_tomcat_startup "mail" "mailinbound"
+    check_tomcat_startup ${email_tomcat_url} "mail" "mailinbound"
 }
 
 : 'This function creates, starts and provisions the base containers required for
@@ -139,7 +142,7 @@ function deploy_outbound {
 
     docker-compose -f ${orchestrator_location}${base_compose} -f ${orchestrator_location}${outbound_compose} up -d
 
-    deploy_mail "mail" "mailoutbound"
+    deploy_wars "mail-service" "false" "mail" "mailoutbound"
 
     provision_localstack
 
@@ -147,7 +150,7 @@ function deploy_outbound {
 
     deploy_jilter outbound
 
-    check_tomcat_startup "mail" "mailoutbound"
+    check_tomcat_startup ${email_tomcat_url} "mail" "mailoutbound"
 }
 
 : 'This function creates, starts and provisions the base containers required for
@@ -167,7 +170,7 @@ function deploy_all {
 
     docker-compose -f ${orchestrator_location}${base_compose} -f ${orchestrator_location}${inbound_compose} -f ${orchestrator_location}${outbound_compose} up -d
 
-    deploy_mail "mail" "mailinbound" "mailoutbound"
+    deploy_wars "mail-service" "false" "mail" "mailinbound" "mailoutbound"
 
     provision_localstack
 
@@ -175,7 +178,7 @@ function deploy_all {
 
     deploy_jilter all
 
-    check_tomcat_startup "mail" "mailoutbound" "mailinbound"
+    check_tomcat_startup ${email_tomcat_url} "mail" "mailoutbound" "mailinbound"
 }
 
 : 'This function runs the script to provision postfix instances.
@@ -233,11 +236,17 @@ function provision_jilter {
 : 'This function retrieves the specified war files in the current local sophos-cloud directory
 It then copies them into a folder from which they are hot deployed into a running tomcat docker instance.
 '
-function deploy_mail {
+function deploy_wars {
     if [ "$#" -eq 0 ]; then
-        echo -e "${RED} No wars specified for deployment ${NC}"
+        echo -e "${RED} No wars or services specified for deployment ${NC}"
         exit 1
     fi
+
+    service_name="$1"
+    shift
+
+    hot_deploy="$1"
+    shift
 
     echo -e "${GREEN} Starting to deploy '$@' ${NC}"
     pushd ${HOME}/g/cloud/sophos-cloud >/dev/null 2>&1
@@ -276,10 +285,9 @@ function deploy_mail {
         echo -e "${RED} Failed to create ${war_file_location} ${NC}"
         exit 1
     fi
-    service_name="mail-service"
     tomcat_webapps_loc="/usr/local/tomcat/webapps/"
 
-    check_service_up mail-service
+    check_service_up ${service_name}
 
     #copy war files into .xgemail_sandbox/wars and hot deploy them into tomcat container
     for file in "${warfiles_found[@]}" ; do
@@ -292,11 +300,18 @@ function deploy_mail {
             echo -e "${RED} Failed to copy over ${file} to ${newfile_location} ${NC}"
             continue
         fi
-        destination_file_in_container="${tomcat_webapps_loc}/${newfile}"
+        destination_file_in_container="${tomcat_webapps_loc}${newfile}"
 
-        #remove if the war file is already present and wait a few for undeploy to happen
+        #remove if the war file is already present
         docker exec ${service_name} rm -f ${destination_file_in_container} >/dev/null
-        sleep 10
+
+        # wait for a few seconds for undeploy to happen if doing a hot deploy
+        #TODO: refactor this by adding a function that checks to see if the undeploy is completed
+        #rather than just wait. Waiting works for now
+        if [ ${hot_deploy} = "true" ];then
+          echo "Undeploying ${prefix}"
+          sleep 30
+        fi
 
         echo "Copying WAR file ${newfile_location} into Tomcat for deployment"
         docker cp "${newfile_location}" "${service_name}:${destination_file_in_container}"
@@ -311,6 +326,7 @@ function deploy_mail {
     popd >/dev/null
 
     echo -e "${GREEN} successfully copied ${newfiles} into Tomcat ${NC}"
+    newfiles=()
 }
 
 : 'This function deploys jilter tar files by copying them into a directory from
@@ -519,34 +535,41 @@ function check_service_up {
 '
 function check_tomcat_startup()
 {
+    service_url="$1"
+    shift
     local minutes=20
     echo "Checking deployment of wars '$@' in background"
-    echo "You can check the deployment status visually at 'http://localhost:9898/manager' using
-    username: admin and pwd: Test1234"
-    echo "You can also follow the logs using 'docker logs -f mail-service'"
+    # echo "You can check the deployment status visually at 'http://localhost:9898/manager' using
+    # username: admin and pwd: Test1234"
+    # echo "You can also follow the logs using 'docker logs -f mail-service'"
     sleep 30
     local now=$(date +%s)
     local deadline=$(($now + $minutes*60))
     local running_services=()
     while (($now < $deadline)); do
-        startup_check=$(curl -u script:script -s -o /dev/null -m 5 -w "%{http_code}" http://localhost:9898/manager/text/list)
+        startup_check=$(curl -u script:script -s -o /dev/null -m 5 -w "%{http_code}" http://${service_url}/manager/text/list)
         if [[ $startup_check -eq 200 ]]; then
             for service in "$@"; do
-                service_running=$(curl -s -u script:script http://localhost:9898/manager/text/list | grep ${service}-services | awk -F":" '{print $2}')
-                if [ "${service_running}" = "running" ]; then
+                if [[ " ${running_services[@]} " =~ " ${service} " ]]; then
+                  continue
+                fi
+                service_running=$(curl -s -u script:script http://${service_url}/manager/text/list | grep ${service}-services | awk -F":" '{print $2}')
+
+                if [[ "${service_running}" = "running" ]]; then
                     echo -e "Deployment of wars ${service} done!"
                     running_services+=(${service})
                 fi
             done
             if [ ${#running_services[@]} -eq $# ]; then
                 echo -e "${GREEN} All wars <$@> up ${NC}"
-                exit 0
+                return 0
             fi
         fi
         sleep 10
         now=$(date +%s)
     done
     echo -e "${RED} Wars in tomcat did not startup in ${minutes} minutes. They might need more time or there may be something wrong. Check the logs ${NC}"
+    return 1
 }
 
 
@@ -585,6 +608,21 @@ function create_mail_bootstrap()
     fi
 }
 
+: 'This function sets up all the necessary war files needed to support the ui in nova tomcat
+'
+function setup_ui {
+    echo -e "${YELLOW} Setting up UI ${NC}"
+    check_service_up "nova_hub_1"
+
+    deploy_wars "nova_hub_1" $1 "api" "hub" "core"
+    check_tomcat_startup ${nova_tomcat_url}  "api" "hub" "core"
+    if [ $? -eq 0 ]; then
+      echo -e "${GREEN} Setup for UI complete ${NC}"
+    else
+      echo -e "${RED} Failed to setup UI ${NC}"
+    fi
+}
+
 : 'This function destroy all docker containers brought up; removes files that have to be removed on
 clean up
 '
@@ -592,7 +630,6 @@ function clean_up {
     echo -e "${YELLOW} CLEANING UP ${NC}"
 
     clean_up_files
-    #TODO: break up line
     $(docker-compose -f ${orchestrator_location}${base_compose} -f ${orchestrator_location}${inbound_compose} -f ${orchestrator_location}${outbound_compose} down)
 
     if [ $? -eq 0 ]; then
@@ -710,7 +747,7 @@ function check_nova_up {
   echo ""
   echo ""
 
-  read -p "Have you started Nova? If not, press "N" to exit and start NOVA. If yes, press "Y" to continue" -n 1 -r
+  read -p "Have you started Nova? If not, press "n" to exit and start NOVA. If yes, press "y" to continue" -n 1 -r
   echo ""
 
   if [[ $REPLY =~ ^[Nn]$ ]]; then
@@ -728,10 +765,11 @@ Usage:
 Commands                                                                            Required                                                        Optional
 help         get usage info
 initialize   setup steps before starting up nova
-deploy       deploy, provision and start containers                                 inbound | outbound | all
+deploy       deploy, provision and start containers                                 inbound | outbound | all                                           ui
 hot_deploy   hot deploy artifacts(NOTE: artifacts have to be built first)           mail | mailinbound | mailoutbound
                                                                                     jilter-inbound | jilter-outbound
-                                                                                    postfix-is | postfix-cd | postfix-cs | postfix-id
+                                                                                    postfix-is | postfix-cd | postfix-cs | postfix-id |
+                                                                                    ui_wars
 
 status       List status of created containers
 up           create and start containers without any provisioning                   <service_name> | inbound | outbound | all                          [-d]
@@ -773,47 +811,56 @@ case "$1" in
                 echo "Usage: $0 <inbound | outbound | all>"
                 ;;
        esac
-        ;;
+       case "$3" in
+         ui)
+           setup_ui "false"
+           ;;
+       esac
+       ;;
     hot_deploy)
         case "$2" in
             mail)
-            deploy_mail "mail"
-            check_tomcat_startup "mail"
-            ;;
+              deploy_wars "mail-service" "true" "mail"
+              check_tomcat_startup ${email_tomcat_url} "mail"
+              ;;
 
             mailinbound)
-            deploy_mail "mailinbound"
-            check_tomcat_startup "mailinbound"
-            ;;
+              deploy_wars "mail-service" "true" "mailinbound"
+              check_tomcat_startup ${email_tomcat_url} "mailinbound"
+              ;;
 
             mailoutbound)
-            deploy_mail "mailoutbound"
-            check_tomcat_startup "mailoutbound"
-            ;;
+              deploy_wars "mail-service" "true" "mailoutbound"
+              check_tomcat_startup ${email_tomcat_url} "mailoutbound"
+              ;;
 
+            ui_wars)
+              setup_ui "true"
+              ;;
+              
             jilter-inbound)
-                docker-compose -f ${orchestrator_location}${inbound_compose} restart jilter-inbound
-                deploy_jilter inbound
-                ;;
+              docker-compose -f ${orchestrator_location}${inbound_compose} restart jilter-inbound
+              deploy_jilter inbound
+              ;;
             jilter-outbound)
-                docker-compose -f ${orchestrator_location}${outbound_compose} restart jilter-outbound
-                deploy_jilter outbound
-                ;;
+              docker-compose -f ${orchestrator_location}${outbound_compose} restart jilter-outbound
+              deploy_jilter outbound
+              ;;
             postfix-is)
-                provision_postfix postfix-is
-                ;;
+              provision_postfix postfix-is
+              ;;
             postfix-cd)
-                provision_postfix postfix-cd
-                ;;
+              provision_postfix postfix-cd
+              ;;
             postfix-cs)
-                provision_postfix postfix-cs
-                ;;
+              provision_postfix postfix-cs
+              ;;
             postfix-id)
-                provision_postfix postfix-id
-                ;;
+              provision_postfix postfix-id
+              ;;
             *)
-            echo "Usage: $0 <mail | mailinbound | mailoutbound | jilter-inbound | jilter-outbound | postfix-is | postfix-cd | postfix-cs | postfix-id>"
-            ;;
+              echo "Usage: $0 <mail | mailinbound | mailoutbound | ui_wars | jilter-inbound | jilter-outbound | postfix-is | postfix-cd | postfix-cs | postfix-id>"
+              ;;
         esac
         ;;
     initialize)
