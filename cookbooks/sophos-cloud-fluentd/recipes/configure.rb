@@ -133,7 +133,7 @@ template 'fluentd-source-sqsmsgconsumer' do
   variables(
     :application_name => NODE_TYPE
   )
-  only_if { NODE_TYPE == 'delivery' || NODE_TYPE == 'internet-delivery' }
+  only_if { NODE_TYPE == 'delivery' || NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' }
 end
 
 # internet-submit and customer-submit - Start Order: 10
@@ -217,6 +217,7 @@ template 'fluentd-match-msg-delivery' do
   )
  only_if {
             NODE_TYPE == 'delivery' ||
+            NODE_TYPE == 'customer-delivery' ||
             NODE_TYPE == 'xdelivery' ||
             NODE_TYPE == 'internet-delivery' ||
             NODE_TYPE == 'internet-xdelivery'
@@ -233,6 +234,7 @@ template 'fluentd-filter-msg-delivery' do
   group 'root'
   only_if {
             NODE_TYPE == 'delivery' ||
+            NODE_TYPE == 'customer-delivery' ||
             NODE_TYPE == 'xdelivery' ||
             NODE_TYPE == 'internet-delivery' ||
             NODE_TYPE == 'internet-xdelivery'
@@ -280,6 +282,7 @@ template 'fluentd-filter-transform-msg-delivery' do
   )
  only_if {
             NODE_TYPE == 'delivery' ||
+            NODE_TYPE == 'customer-delivery' ||
             NODE_TYPE == 'xdelivery' ||
             NODE_TYPE == 'internet-delivery' ||
             NODE_TYPE == 'internet-xdelivery'
@@ -300,6 +303,7 @@ template 'fluentd-match-sns-msg-delivery' do
   )
  only_if {
             NODE_TYPE == 'delivery' ||
+            NODE_TYPE == 'customer-delivery' ||
             NODE_TYPE == 'xdelivery' ||
             NODE_TYPE == 'internet-delivery' ||
             NODE_TYPE == 'internet-xdelivery'

@@ -74,7 +74,7 @@ else
   #do nothing
 end
 
-if NODE_TYPE == 'delivery' or NODE_TYPE == 'internet-delivery' or
+if NODE_TYPE == 'delivery' or NODE_TYPE == 'customer-delivery' or NODE_TYPE == 'internet-delivery' or
     NODE_TYPE == 'xdelivery' or NODE_TYPE == 'internet-xdelivery' or
     NODE_TYPE == 'encryption-delivery'
   [
