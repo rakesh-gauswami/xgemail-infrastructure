@@ -80,6 +80,7 @@ def build_policy_map(recipients, aws_region = None, policy_bucket_name = None, p
 
     if split_by_recipient(split_config, recipients, aws_region, policy_bucket_name, read_from_s3):
         for recipient in recipients:
+            customer_policy = read_policy(recipient, aws_region, policy_bucket_name, read_from_s3)
             retrieve_user_id_and_add_to_user_list(customer_policy, user_list, recipient)
         return user_list
 
