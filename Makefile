@@ -66,6 +66,7 @@ PYUNIT_LOCAL_DIRS :=  \
 		./lambda \
 		./tools \
 		./cookbooks/sophos-cloud-xgemail/files/default \
+		./cookbooks/sophos-cloud-xgemail/templates/default \
 		$(EOL)
 
 # Use this target to run all checks.
