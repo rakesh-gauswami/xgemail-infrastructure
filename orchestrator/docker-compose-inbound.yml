@@ -32,6 +32,8 @@ services:
       - INSTANCE_TYPE=submit
       - DEFAULT_REGION=local
       - DEFAULT_ENVIRONMENT=sandbox
+    depends_on:
+      - jilter-inbound
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
       - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro

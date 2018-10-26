@@ -46,7 +46,6 @@ POLICY_BUCKET_NAME   = node['xgemail']['xgemail_policy_bucket_name']
 ACTIVE_PROFILE = node['xgemail']['xgemail_active_profile']
 
 if ACCOUNT == 'sandbox'
-  # include_recipe 'sophos-cloud-xgemail::download_libspf2'
   include_recipe 'sophos-cloud-xgemail::install_jilter_code_sandbox'
 else
   include_recipe 'sophos-cloud-xgemail::install_jilter_common'

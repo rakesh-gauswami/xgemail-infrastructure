@@ -13,6 +13,8 @@ services:
       - DEFAULT_REGION=local
       - DEFAULT_ENVIRONMENT=sandbox
       - DEBUG=1
+    depends_on:
+      - jilter-outbound
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
       - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
