@@ -106,15 +106,7 @@ if ACCOUNT == 'sandbox'
       ].each do | cur |
         execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
       end
-  else
-    if NODE_TYPE == 'encryption-submit'
-      [
-           'smtpd_milters = inet:jilter-inbound:9876',
-           'milter_connect_macros = {client_addr}, {j}',
-           'milter_end_of_data_macros = {i}'
-      ].each do | cur |
-        execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
-      end
+    end
   end
 
 else
