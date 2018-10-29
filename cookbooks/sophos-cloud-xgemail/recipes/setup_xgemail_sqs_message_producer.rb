@@ -84,7 +84,7 @@ template PRODUCER_SCRIPT_PATH do
       :sqs_msg_producer_sqs_url => XGEMAIL_QUEUE_URL,
       :sqs_msg_producer_submit_ip => NODE_IP,
       :sqs_msg_producer_ttl_in_days => SQS_MESSAGE_PRODUCER_TTL_IN_DAYS,
-      :relay_domains_file => "hash:#{postmulti_config_dir(INSTANCE_NAME)}/#{RELAY_DOMAINS_FILENAME}"
+      :relay_domains_file => '#{postmulti_config_dir(INSTANCE_NAME)}/#{RELAY_DOMAINS_FILENAME}'
   )
 end
 
