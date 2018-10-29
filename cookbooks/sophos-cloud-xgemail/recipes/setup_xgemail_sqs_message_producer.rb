@@ -46,6 +46,7 @@ XGEMAIL_MESSAGE_HISTORY_BUCKET_NAME          = node['xgemail']['msg_history_buck
 XGEMAIL_MESSAGE_HISTORY_QUEUE_URL            = node['xgemail']['msg_history_queue_url']
 XGEMAIL_POLICY_S3_BUCKET_NAME                = node['xgemail']['xgemail_policy_bucket_name']
 RELAY_DOMAINS_FILENAME                       = node['xgemail']['relay_domains_filename']
+RELAY_DOMAINS_PATH                           = postmulti_config_dir(INSTANCE_NAME)/RELAY_DOMAINS_FILENAME
 
 #constants to use
 SUBMIT = 'submit'
@@ -84,7 +85,7 @@ template PRODUCER_SCRIPT_PATH do
       :sqs_msg_producer_sqs_url => XGEMAIL_QUEUE_URL,
       :sqs_msg_producer_submit_ip => NODE_IP,
       :sqs_msg_producer_ttl_in_days => SQS_MESSAGE_PRODUCER_TTL_IN_DAYS,
-      :relay_domains_file => "#{postmulti_config_dir{INSTANCE_NAME}}/#{RELAY_DOMAINS_FILENAME}"
+      :relay_domains_file => RELAY_DOMAINS_PATH
   )
 end
 
