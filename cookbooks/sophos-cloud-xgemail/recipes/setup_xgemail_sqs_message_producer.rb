@@ -73,6 +73,11 @@ execute RELAY_DOMAINS_FILENAME do
   action :nothing
 end
 
+file RELAY_DOMAINS_FILENAME do
+  path lazy { "#{postmulti_config_dir(INSTANCE_NAME)}/#{RELAY_DOMAINS_FILENAME}" }
+  notifies :run, "execute[#{RELAY_DOMAINS_FILENAME}]", :immediately
+end
+
 template PRODUCER_SCRIPT_PATH do
   source "#{PRODUCER_SCRIPT}.erb"
   mode "0750"
