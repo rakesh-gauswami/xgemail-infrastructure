@@ -113,7 +113,15 @@ elsif NODE_TYPE == CUSTOMER_SUBMIT
   end
 
 elsif NODE_TYPE == ENCRYPTION_SUBMIT
-# TODO Need to add configuration for the encryption-submit postfix instance
+  # Update transports to use new pipe service
+  [
+      "default_transport = #{SERVICE_NAME}",
+      "relay_transport = #{SERVICE_NAME}",
+      "#{SERVICE_NAME}_destination_concurrency_limit = #{SUBMIT_DESTINATION_CONCUR_LIMIT}",
+      "#{SERVICE_NAME}_initial_destination_concurrency = #{SUBMIT_DESTINATION_CONCUR_LIMIT}"
+  ].each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+  end
 
 else
   raise "Unsupported node type to setup postfix config [#{NODE_TYPE}]"
