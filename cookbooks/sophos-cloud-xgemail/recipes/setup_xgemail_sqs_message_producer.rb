@@ -112,9 +112,9 @@ elsif NODE_TYPE == CUSTOMER_SUBMIT
     execute print_postmulti_cmd( INSTANCE_NAME, "postconf -M '#{cur}'" )
   end
 
+elsif NODE_TYPE == ENCRYPTION_SUBMIT
 # TODO Need to add configuration for the encryption-submit postfix instance
-#elseif NODE_TYPE == ENCRYPTION_SUBMIT
-#  end
+  end
 
 else
   raise "Unsupported node type to setup postfix config [#{NODE_TYPE}]"
