@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: common-postfix-multi-instance-config
 #
-# Copyright 2016, Sophos
+# Copyright 2018, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
