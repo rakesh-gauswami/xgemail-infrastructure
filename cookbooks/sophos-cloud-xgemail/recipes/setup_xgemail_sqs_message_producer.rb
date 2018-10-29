@@ -114,7 +114,6 @@ elsif NODE_TYPE == CUSTOMER_SUBMIT
 
 elsif NODE_TYPE == ENCRYPTION_SUBMIT
 # TODO Need to add configuration for the encryption-submit postfix instance
-  end
 
 else
   raise "Unsupported node type to setup postfix config [#{NODE_TYPE}]"
