@@ -50,6 +50,8 @@ RELAY_DOMAINS_FILENAME                       = node['xgemail']['relay_domains_fi
 if NODE_TYPE == ENCRYPTION_SUBMIT
   XGEMAIL_CUSTOMER_SUBMIT_BUCKET_NAME        = node['xgemail']['xgemail_customer_submit_bucket_name']
   XGEMAIL_CUSTOMER_SUBMIT_QUEUE_URL          = node['xgemail']['xgemail_customer_submit_queue_url']
+end
+
 
 #constants to use
 SUBMIT = 'submit'
