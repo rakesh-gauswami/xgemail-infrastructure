@@ -69,16 +69,6 @@ services:
         ipv4_address: 172.16.199.101
     dns:
       - 172.16.199.101
-  rca-uploader:
-    build: ./rca-uploader
-    ports:
-      - '9072:9072'
-    volumes:
-      - '~/.nova/rca:/tmp/rcaUpload'
-    networks:
-      - novanet
-    dns:
-      - 172.16.199.101
   ui:
     build: ./ui
     ports:
@@ -192,22 +182,6 @@ services:
       - novanet
     dns:
       - 172.16.199.101
-  elasticmq:
-    build: ./elasticmq
-    ports:
-      - '9324:9324'
-    networks:
-      - novanet
-    dns:
-      - 172.16.199.101
-#  salesforce:
-#    build: ./salesforce
-#    ports:
-#      - '8094:8094'
-#    networks:
-#      - novanet
-#    dns:
-#      - 172.16.199.101
   mailcatcher:
     image: 'schickling/mailcatcher'
     ports:
