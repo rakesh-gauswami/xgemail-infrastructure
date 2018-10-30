@@ -51,6 +51,7 @@ XGEMAIL_MESSAGE_HISTORY_BUCKET_NAME          = node['xgemail']['msg_history_buck
 XGEMAIL_MESSAGE_HISTORY_QUEUE_URL            = node['xgemail']['msg_history_queue_url']
 XGEMAIL_POLICY_S3_BUCKET_NAME                = node['xgemail']['xgemail_policy_bucket_name']
 RELAY_DOMAINS_FILENAME                       = node['xgemail']['relay_domains_filename']
+RELAY_DOMAINS_FILE                           = "/etc/postfix-#{INSTANCE_NAME}/#{RELAY_DOMAINS_FILENAME}"
 
 if NODE_TYPE == ENCRYPTION_SUBMIT
   XGEMAIL_CUSTOMER_SUBMIT_BUCKET_NAME        = node['xgemail']['xgemail_customer_submit_bucket_name']
@@ -66,21 +67,6 @@ elsif NODE_TYPE == ENCRYPTION_SUBMIT
   XGEMAIL_SUBMIT_TYPE                   = 'ENCRYPTION'
 else
   raise "Unsupported node type to setup sqsmsgproducer [#{NODE_TYPE}]"
-end
-
-execute RELAY_DOMAINS_FILENAME do
-  command lazy {
-    print_postmulti_cmd(
-      INSTANCE_NAME,
-      "#{postmulti_config_dir(INSTANCE_NAME)}/#{RELAY_DOMAINS_FILENAME}'"
-    )
-  }
-  action :nothing
-end
-
-file RELAY_DOMAINS_FILENAME do
-  path lazy { "#{postmulti_config_dir(INSTANCE_NAME)}/#{RELAY_DOMAINS_FILENAME}" }
-  notifies :run, "execute[#{RELAY_DOMAINS_FILENAME}]", :immediately
 end
 
 template PRODUCER_SCRIPT_PATH do
@@ -104,7 +90,7 @@ template PRODUCER_SCRIPT_PATH do
       :sqs_msg_producer_sqs_url => XGEMAIL_QUEUE_URL,
       :sqs_msg_producer_submit_ip => NODE_IP,
       :sqs_msg_producer_ttl_in_days => SQS_MESSAGE_PRODUCER_TTL_IN_DAYS,
-      :relay_domains_file => RELAY_DOMAINS_FILENAME
+      :relay_domains_file => RELAY_DOMAINS_FILE
   )
 end
 
