@@ -289,45 +289,28 @@ def send_msg_processing_sqs_message(sqs_message_json):
         exit(EX_TEMPFAIL)
 
 
-def get_messages(submit_type):
+def get_plaintext_message():
     stdin_no = sys.stdin.fileno()
-
-    compressed_bytes = None
-    uncompressed_bytes = None
-    bytes_io = io.BytesIO()
-    plain_email_bytes_io = io.BytesIO()
+    plaintext_email_bytes = io.BytesIO()
 
     try:
-        gzip_file = gzip.GzipFile(fileobj=bytes_io, mode='wb')
-        try:
-            while True:
-                try:
-                    new_bytes = os.read(stdin_no, BUFFER_SIZE)
-                    if not new_bytes:
-                        break
-                    if 'CUSTOMER' == submit_type:
-                        plain_email_bytes_io.write(new_bytes)
-                    gzip_file.write(new_bytes)
-                except EOFError:
+        while True:
+            try:
+                new_bytes = os.read(stdin_no, BUFFER_SIZE)
+                if not new_bytes:
                     break
-                except Exception as e:
-                    logger.exception("Failed in parsing input email [{0}]".format(e))
-                    exit(EX_TEMPFAIL)
-                except BaseException as e:
-                    logger.exception("Unexpected error in parsing input email: [{0}]".format(e))
-                    exit(EX_TEMPFAIL)
-        finally:
-            gzip_file.close()
-
-        compressed_bytes = bytes_io.getvalue()
-        uncompressed_bytes = plain_email_bytes_io.getvalue()
-
+                plaintext_email_bytes.write(new_bytes)
+            except EOFError:
+                break
+            except Exception as e:
+                logger.exception("Failed in parsing input email [{0}]".format(e))
+                exit(EX_TEMPFAIL)
+            except BaseException as e:
+                logger.exception("Unexpected error in parsing input email: [{0}]".format(e))
+                exit(EX_TEMPFAIL)
+        return plaintext_email_bytes.getvalue()
     finally:
-        bytes_io.close()
-        plain_email_bytes_io.close()
-
-    return compressed_bytes, uncompressed_bytes
-
+        plaintext_email_bytes.close()
 
 def get_metadata_for_outbound(metadata, message):
     headers = Parser().parsestr(message, headersonly=True)
@@ -410,7 +393,7 @@ def upload_documents(metadata, compressed_message, s3_file_path):
         metadata
     )
 
-def base_policy_flow(metadata, direction, domain, sender, compressed_message):
+def base_policy_flow(metadata, direction, domain, sender, message):
     queue_id = metadata.get_queue_id()
 
     s3_file_path = formatterutils.get_s3_path(
@@ -435,7 +418,7 @@ def base_policy_flow(metadata, direction, domain, sender, compressed_message):
 
     upload_documents(
         metadata,
-        compressed_message,
+        gziputils.gzip_data(message),
         s3_file_path
     )
 
@@ -458,11 +441,11 @@ def base_policy_flow(metadata, direction, domain, sender, compressed_message):
 # Mail flow goes through multi_policy_flow if multi-policy flag is enabled
 # but if there are error conditions such as file read error etc, the mail
 # fall back to base_policy_flow.
-def multi_policy_flow(metadata, direction, domain, sender, compressed_message):
+def multi_policy_flow(metadata, direction, domain, sender, message):
     recipients = metadata.get_recipients()
     policy_list = multipolicyreaderutils.build_policy_map(recipients, AWS_REGION, POLICY_S3_BUCKET_NAME)
     if not policy_list:
-        return base_policy_flow(metadata, direction, domain, sender, compressed_message)
+        return base_policy_flow(metadata, direction, domain, sender, message)
 
     queue_id = metadata.get_queue_id()
     s3_file_path = formatterutils.get_s3_path(
@@ -479,6 +462,7 @@ def multi_policy_flow(metadata, direction, domain, sender, compressed_message):
     for policy_id, value in policy_list.items():
         this_policy_metadata = copy.deepcopy(metadata)
         this_policy_metadata.set_recipients(value)
+        this_policy_metadata.add_uuid_to_queue_id()
 
         policy_id_path = "/" + policy_id + "/"
         new_s3_file_path = s3_file_path.replace(POLICY_ID_PATH_VALUE, policy_id_path)
@@ -487,7 +471,7 @@ def multi_policy_flow(metadata, direction, domain, sender, compressed_message):
             messageformatter.SCHEMA_VERSION,
             new_s3_file_path,
             SUBMIT_HOST_IP,
-            queue_id,
+            this_policy_metadata.get_queue_id(),
             AKM_KEY,
             NONCE.encode('base64','strict'),
             MESSAGE_KEY.encode('base64','strict'),
@@ -498,8 +482,9 @@ def multi_policy_flow(metadata, direction, domain, sender, compressed_message):
 
         upload_documents(
             this_policy_metadata,
-            compressed_message,
-            new_s3_file_path)
+            gziputils.gzip_data(message),
+            new_s3_file_path
+        )
 
         #batch SQS job - every 10 jobs as a batch
         sqs_message_json_queue.append(sqs_message.get_sqs_json())
@@ -548,18 +533,18 @@ def main():
         direction = None
         sender = None
 
-        compressed_message, uncompressed_message = get_messages(SUBMIT_TYPE)
+        plaintext_message = get_plaintext_message()
 
         if 'INTERNET' == SUBMIT_TYPE:
             domain = metadata.get_recipient_domain()
             direction = INBOUND_MESSAGE_DIRECTION
             sender = metadata.get_sender_address()
             if multipolicyreaderutils.get_multi_policy_enabled():
-                return multi_policy_flow(metadata, direction, domain, sender, compressed_message)
+                return multi_policy_flow(metadata, direction, domain, sender, plaintext_message)
 
         elif 'CUSTOMER' == SUBMIT_TYPE:
             direction = OUTBOUND_MESSAGE_DIRECTION
-            metadata = get_metadata_for_outbound(metadata, uncompressed_message)
+            metadata = get_metadata_for_outbound(metadata, plaintext_message)
             sender = metadata.get_sender_address()
             domain = get_from_sender_domain(metadata)
         else:
@@ -567,7 +552,7 @@ def main():
 
         logger.info("Metadata json info [{0}]".format(metadata))
 
-        base_policy_flow(metadata, direction, domain, sender, compressed_message)
+        base_policy_flow(metadata, direction, domain, sender, plaintext_message)
     except BaseException as e:
         logger.exception("Failed in processing email [{0}]".format(e))
         exit(EX_TEMPFAIL)

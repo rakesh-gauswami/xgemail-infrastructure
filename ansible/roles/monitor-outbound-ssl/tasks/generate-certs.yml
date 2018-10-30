@@ -1,0 +1,86 @@
+- name: Create the msg certificates subdirectory
+  file:
+    path="{{ msg_output_work_dir.path }}/msg-certificates"
+    state=directory
+    mode=0755
+
+- name: Generate Private Keys for XGEMAIL Outbound monitoring accounts
+  command: openssl genrsa -out {{ msg_output_work_dir.path }}/msg-certificates/{{ item }}.key 2048
+  with_items:
+    - sophos-email-monitor.com
+    - sophos-email-monitor.org
+    - sophos-email-monitor.us
+    - sophos-email-monitor.net
+
+- name: Generate CSR for XGEMAIL Outbound monitoring accounts
+  command: openssl req \
+           -new \
+           -subj '/C=US/ST=Massachusetts/L=Boston/O=Sophos/OU=MSG/CN={{ item }}/emailAddress=sophos-email-dev-burlington@sophos.com'
+           -key "{{ msg_output_work_dir.path }}/msg-certificates/{{ item }}.key" \
+           -out "{{ msg_output_work_dir.path }}/msg-certificates/{{ item }}.csr"
+  with_items:
+    - sophos-email-monitor.com
+    - sophos-email-monitor.org
+    - sophos-email-monitor.us
+    - sophos-email-monitor.net
+
+- name: Generate Self Signed Certs for XGEMAIL Outbound monitoring accounts
+  command: openssl x509 -req -signkey {{ msg_output_work_dir.path }}/msg-certificates/{{ item }}.key -in {{ msg_output_work_dir.path }}/msg-certificates/{{ item }}.csr -days 730 -out {{ msg_output_work_dir.path }}/msg-certificates/{{ item }}.crt
+  with_items:
+    - sophos-email-monitor.com
+    - sophos-email-monitor.org
+    - sophos-email-monitor.us
+    - sophos-email-monitor.net
+
+- name: Save Thumbprints for XGEMAIL Outbound monitoring accounts
+  shell: openssl x509 -in {{ msg_output_work_dir.path }}/msg-certificates/{{ item }}.crt -fingerprint -text | grep SHA1 | awk -F'[=]' '{print $2}' > {{ msg_output_work_dir.path }}/msg-certificates/{{ item }}_sha1.txt 2>&1
+  with_items:
+    - sophos-email-monitor.com
+    - sophos-email-monitor.org
+    - sophos-email-monitor.us
+    - sophos-email-monitor.net
+
+# This will upload and replace Outbound Monitor private keys S3
+- name: Upload Self Singed Certs to bucket cloud-inf-connections
+  aws_s3:
+    bucket: "cloud-{{ account.name }}-connections"
+    object: "{{ item }}.key"
+    region: "us-west-2"
+    src: "{{ msg_output_work_dir.path }}/msg-certificates/{{ item }}.key"
+    mode: put
+    encrypt: true
+  with_items:
+    - sophos-email-monitor.com
+    - sophos-email-monitor.org
+    - sophos-email-monitor.us
+    - sophos-email-monitor.net
+
+# This will upload and replace Outbound Monitor certs in S3
+- name: Upload Self Singed Certs to bucket cloud-inf-connections
+  aws_s3:
+    bucket: "cloud-{{ account.name }}-connections"
+    object: "{{ item }}.crt"
+    region: "us-west-2"
+    src: "{{ msg_output_work_dir.path }}/msg-certificates/{{ item }}.crt"
+    mode: put
+    encrypt: true
+  with_items:
+    - sophos-email-monitor.com
+    - sophos-email-monitor.org
+    - sophos-email-monitor.us
+    - sophos-email-monitor.net
+
+# This will upload and replace Outbound Monitor SHA files in S3
+- name: Upload Self Singed Certs to bucket cloud-inf-connections
+  aws_s3:
+    bucket: "cloud-{{ account.name }}-connections"
+    object: "{{ item }}._sha1.txt"
+    region: "us-west-2"
+    src: "{{ msg_output_work_dir.path }}/msg-certificates/{{ item }}_sha1.txt"
+    mode: put
+    encrypt: true
+  with_items:
+    - sophos-email-monitor.com
+    - sophos-email-monitor.org
+    - sophos-email-monitor.us
+    - sophos-email-monitor.net
