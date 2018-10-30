@@ -26,6 +26,11 @@ raise "Invalid smtpd port for node type [#{NODE_TYPE}]" if SMTPD_PORT.nil?
 
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_processors_structure'
 
+#constants to use
+SUBMIT = 'submit'
+CUSTOMER_SUBMIT = 'customer-submit'
+ENCRYPTION_SUBMIT = 'encryption-submit'
+
 AWS_REGION                                   = node['sophos_cloud']['region']
 MESSAGEPROCESSOR_USER                        = node['xgemail']['sqs_message_processor_user']
 NODE_IP                                      = node['ipaddress']
@@ -51,12 +56,6 @@ if NODE_TYPE == ENCRYPTION_SUBMIT
   XGEMAIL_CUSTOMER_SUBMIT_BUCKET_NAME        = node['xgemail']['xgemail_customer_submit_bucket_name']
   XGEMAIL_CUSTOMER_SUBMIT_QUEUE_URL          = node['xgemail']['xgemail_customer_submit_queue_url']
 end
-
-
-#constants to use
-SUBMIT = 'submit'
-CUSTOMER_SUBMIT = 'customer-submit'
-ENCRYPTION_SUBMIT = 'encryption-submit'
 
 # Configs use by sqsmsgproducer
 if NODE_TYPE == SUBMIT
