@@ -45,8 +45,10 @@ PROCESS_TIMEOUT_SECONDS = <%= @sqs_msg_producer_process_timeout_seconds %>
 SUBMIT_TYPE = "<%= @xgemail_submit_type %>"
 S3_ENCRYPTION_ALGORITHM = "<%= @s3_encryption_algorithm %>"
 SUBMIT_BUCKET_NAME = "<%= @sqs_msg_producer_s3_bucket_name %>"
+CUSTOMER_SUBMIT_BUCKET_NAME = "<%= @sqs_msg_producer_s3_customer_submit_bucket_name %>"
 SUBMIT_HOST_IP = "<%= @sqs_msg_producer_submit_ip %>"
 SUBMIT_SQS_URL = "<%= @sqs_msg_producer_sqs_url %>"
+CUSTOMER_SUBMIT_SQS_URL = "<%= @sqs_msg_producer_customer_submit_sqs_url %>"
 TTL_IN_DAYS = <%= @sqs_msg_producer_ttl_in_days %>
 RELAY_DOMAINS_FILE = "<%= @relay_domains_file %>"
 
@@ -141,7 +143,7 @@ def upload_to_s3(bucket_name, file_path, formatted_data, expires):
     )
 
 # uploads message file to S3
-def upload_message_to_s3(s3_file_path, expires, compressed_message):
+def upload_message_to_s3(s3_file_path, expires, compressed_message, direction):
     try:
         message_file_path = messageformatter.get_s3_message_path(
             s3_file_path
@@ -156,7 +158,7 @@ def upload_message_to_s3(s3_file_path, expires, compressed_message):
 
         # upload message to the submit bucket
         upload_to_s3(
-            SUBMIT_BUCKET_NAME,
+            SUBMIT_BUCKET_NAME if direction == INBOUND_MESSAGE_DIRECTION else CUSTOMER_SUBMIT_BUCKET_NAME,
             message_file_path,
             formatted_email_data,
             expires
@@ -169,7 +171,7 @@ def upload_message_to_s3(s3_file_path, expires, compressed_message):
         exit(EX_TEMPFAIL)
 
 
-def upload_metadata_to_s3(s3_file_path, expires, metadata):
+def upload_metadata_to_s3(s3_file_path, expires, metadata, direction):
     try:
         metadata_file_path = metadataformatter.get_s3_metadata_path(
             s3_file_path
@@ -187,7 +189,7 @@ def upload_metadata_to_s3(s3_file_path, expires, metadata):
 
         # upload metadata to submit bucket
         upload_to_s3(
-            SUBMIT_BUCKET_NAME,
+            SUBMIT_BUCKET_NAME if direction == INBOUND_MESSAGE_DIRECTION else CUSTOMER_SUBMIT_BUCKET_NAME,
             metadata_file_path,
             formatted_metadata,
             expires
@@ -289,6 +291,20 @@ def send_msg_processing_sqs_message(sqs_message_json):
         logger.exception("Failed in uploading message processing SQS job [{0}]".format(e))
         exit(EX_TEMPFAIL)
 
+def send_msg_processing_sqs_message_encrypted(sqs_message_json, direction):
+    try:
+        logger.info("Processing SQS job for encrypted message[{0}]".format(sqs_message_json))
+        logger.info("Added SQS job response [{0}]".format
+            (add_to_sqs(
+            SUBMIT_SQS_URL if direction == INBOUND_MESSAGE_DIRECTION else CUSTOMER_SUBMIT_SQS_URL,
+            sqs_message_json)
+        )
+    )
+
+    except Exception as e:
+        logger.exception("Failed in uploading message processing SQS job for encrypted message[{0}]".format(e))
+        exit(EX_TEMPFAIL)
+
 
 def get_plaintext_message():
     stdin_no = sys.stdin.fileno()
@@ -371,7 +387,7 @@ def get_from_sender_domain(metadata):
         )
 
 
-def upload_documents(metadata, compressed_message, s3_file_path):
+def upload_documents(metadata, compressed_message, s3_file_path, direction):
 
     # prepared expiration date based on ttl_in_days
     expires = datetime.now() + timedelta(days=TTL_IN_DAYS)
@@ -379,13 +395,15 @@ def upload_documents(metadata, compressed_message, s3_file_path):
     upload_message_to_s3(
         s3_file_path,
         expires,
-        compressed_message
+        compressed_message,
+        direction
     )
 
     upload_metadata_to_s3(
         s3_file_path,
         expires,
-        metadata
+        metadata,
+        direction
     )
 
     upload_msg_history_to_s3(
@@ -420,14 +438,19 @@ def base_policy_flow(metadata, direction, domain, sender, message):
     upload_documents(
         metadata,
         gziputils.gzip_data(message),
-        s3_file_path
+        s3_file_path,
+        direction
     )
 
-    send_msg_processing_sqs_message(
-        sqs_message.get_sqs_json()
-    )
+    if 'ENCRYPTION' == SUBMIT_TYPE:
+        send_msg_processing_sqs_message_encrypted(
+            sqs_message.get_sqs_json(), direction)
 
-    if 'ENCRYPTION' != SUBMIT_TYPE:
+    else:
+        send_msg_processing_sqs_message(
+            sqs_message.get_sqs_json()
+        )
+
         sqs_history = prepare_msg_history_event(
             s3_file_path,
             metadata,
@@ -439,6 +462,7 @@ def base_policy_flow(metadata, direction, domain, sender, message):
         send_msg_history_sqs_event(
             sqs_history.get_sqs_json()
         )
+
 
 # Mail flow goes through multi_policy_flow if multi-policy flag is enabled
 # but if there are error conditions such as file read error etc, the mail
@@ -485,7 +509,8 @@ def multi_policy_flow(metadata, direction, domain, sender, message):
         upload_documents(
             this_policy_metadata,
             gziputils.gzip_data(message),
-            new_s3_file_path
+            new_s3_file_path,
+            direction
         )
 
         #batch SQS job - every 10 jobs as a batch
@@ -567,10 +592,7 @@ def main():
             domain = metadata.get_recipient_domain()
             logger.debug("Customer's domain: [{0}]".format(domain))
             sender = metadata.get_sender_address()
-            if domain in customer_domains:
-                direction =  INBOUND_MESSAGE_DIRECTION
-            else:
-                direction =  OUTBOUND_MESSAGE_DIRECTION
+            direction = INBOUND_MESSAGE_DIRECTION if domain in customer_domains else OUTBOUND_MESSAGE_DIRECTION
 
         else:
             raise ("Wrong submit type [{0}]".format(SUBMIT_TYPE))

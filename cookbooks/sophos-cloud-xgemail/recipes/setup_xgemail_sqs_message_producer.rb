@@ -47,6 +47,10 @@ XGEMAIL_MESSAGE_HISTORY_QUEUE_URL            = node['xgemail']['msg_history_queu
 XGEMAIL_POLICY_S3_BUCKET_NAME                = node['xgemail']['xgemail_policy_bucket_name']
 RELAY_DOMAINS_FILENAME                       = node['xgemail']['relay_domains_filename']
 
+if NODE_TYPE == ENCRYPTION_SUBMIT
+  XGEMAIL_CUSTOMER_SUBMIT_BUCKET_NAME        = node['xgemail']['xgemail_customer_submit_bucket_name']
+  XGEMAIL_CUSTOMER_SUBMIT_QUEUE_URL          = node['xgemail']['xgemail_customer_submit_queue_url']
+
 #constants to use
 SUBMIT = 'submit'
 CUSTOMER_SUBMIT = 'customer-submit'
@@ -174,4 +178,3 @@ file '/etc/rsyslog.d/00-xgemail-sqsmsgproducer.conf' do
   owner 'root'
   group 'root'
 end
-

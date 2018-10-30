@@ -207,6 +207,10 @@
       "Description" : "Name of the S3 Bucket where XGEMAIL messages are sent",
       "Type" : "String"
     },
+    "XgemailCustomerSubmitBucketName" : {
+      "Description" : "Name of the S3 Bucket where XGEMAIL messages from the customer-submit are sent",
+      "Type" : "String"
+    },
     "XgemailMinSizeDataGB" : {
       "Description" : "Total GB to reserve for storing data files",
       "Type" : "Number",
@@ -265,6 +269,11 @@
     },
     "XgemailQueueUrl" : {
       "Description" : "URL for the SQS Queue where XGEMAIL messages are sent",
+      "Type" : "String",
+      "Default": ""
+    },
+    "XgemailCustomerSubmitQueueUrl" : {
+      "Description" : "URL for the SQS Queue where XGEMAIL messages from the customer-submit are sent",
       "Type" : "String",
       "Default": ""
     },
@@ -612,9 +621,11 @@
                   "volume_tracker_sdb_domain":                { "Ref": "VolumeTrackerSimpleDbDomain" },
                   "xgemail_policy_bucket_name":               { "Ref": "XgemailPolicyBucketName" },
                   "xgemail_bucket_name":                      { "Ref": "XgemailBucketName" },
+                  "xgemail_customer_submit_bucket_name":      { "Ref": "XgemailCustomerSubmitBucketName" },
                   "xgemail_policy_arn":                       { "Ref": "XgemailPolicyArn" },
                   "xgemail_sns_sqs_url":                      { "Ref": "XgemailSnsSqsQueueUrl" },
-                  "xgemail_queue_url":                        { "Ref": "XgemailQueueUrl" }
+                  "xgemail_queue_url":                        { "Ref": "XgemailQueueUrl" },
+                  "xgemail_customer_submit_queue_url":        { "Ref": "XgemailCustomerSubmitQueueUrl" }
                 },
                 "mode": "000444",
                 "owner": "root"
