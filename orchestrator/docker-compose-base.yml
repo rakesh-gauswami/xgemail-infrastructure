@@ -45,6 +45,10 @@ services:
       - 'mailcatcher:mailcatcher-service'
     volumes:
       - $XGEMAIL_HOME/xgemail-infrastructure/orchestrator/sophos_cloud_tomcat_bootstrap.properties:/usr/local/etc/sophos/bootstrap.properties
+# LOCATION FOR POLICY FRAGMENTS
+      - '~/.nova/policy-fragments:/tmp/policy-fragments'
+# LOCATION FOR SSL CERTS
+      - '~/.nova/ssl:/etc/sophos/ssl'
 
 networks:
   novanet:
