@@ -511,7 +511,8 @@ def multi_policy_flow(metadata, direction, domain, sender, message):
         if len(sqs_message_json_queue) == SQS_BATCH_SIZE:
             for processing_job in sqs_message_json_queue:
                 send_msg_processing_sqs_message(
-                    processing_job, direction
+                    processing_job,
+                    direction
                 )
             sqs_message_json_queue = []
 
@@ -535,7 +536,8 @@ def multi_policy_flow(metadata, direction, domain, sender, message):
     if len(sqs_message_json_queue) > 0:
         for processing_job in sqs_message_json_queue:
             send_msg_processing_sqs_message(
-                processing_job, direction
+                processing_job,
+                direction
             )
 
     if len(sqs_history_json_queue) > 0:
@@ -560,8 +562,8 @@ def get_customer_domains():
 # a json object to SQS which provides pointer to the message in S3
 def main():
     try:
-        customer_domains = get_customer_domains()
         metadata = get_metadata()
+        customer_domains = None
         domain = None
         direction = None
         sender = None
@@ -585,6 +587,7 @@ def main():
             domain = metadata.get_recipient_domain()
             logger.debug("Customer's domain: [{0}]".format(domain))
             sender = metadata.get_sender_address()
+            customer_domains = get_customer_domains()
             direction = INBOUND_MESSAGE_DIRECTION if domain in customer_domains else OUTBOUND_MESSAGE_DIRECTION
 
         else:
