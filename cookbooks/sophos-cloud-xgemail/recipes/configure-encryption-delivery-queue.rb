@@ -34,7 +34,7 @@ SOPHOS_ACCOUNT = node['sophos_cloud']['environment']
 SMTP_PORT = INSTANCE_DATA[:port]
 
 DESTINATION_PORT = 25
-DESTINATION_HOST = "52.215.131.101:#{DESTINATION_PORT}"
+DESTINATION_HOST = "euw-smtp.emailencryption.sophos.com:#{DESTINATION_PORT}"
 
 CONFIGURATION_COMMANDS =
   [

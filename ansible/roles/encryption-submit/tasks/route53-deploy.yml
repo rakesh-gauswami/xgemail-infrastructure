@@ -1,18 +1,17 @@
 ---
 
-- name: "Deploy {{stack.route53.encryption_submit_route53}} to {{account.name}} {{account.region}}"
+- name: "Deploy {{stack.route53.encryption_submit_a_route53}} to {{account.name}} {{account.region}}"
   cloudformation:
-    stack_name: "{{stack.route53.encryption_submit_route53}}"
+    stack_name: "{{stack.route53.encryption_submit_a_route53}}"
     state: present
     region: "{{account.region}}"
     disable_rollback: true
-    template: "{{template.route53.route53_record_template}}"
+    template: "{{template.route53.route53_record_basic_template}}"
     template_parameters:
       Environment:                   "{{account.name}}"
       RecordType:                    "CNAME"
       ResourceRecords:               "{{elb_stack_output.stack_outputs.LoadBalancerDnsName}}"
       ServiceName:                   "encryption-submit"
-      Vpc:                           "{{vpc.cloud_email.name}}"
   register: route53_stack_output
 
 - debug:
