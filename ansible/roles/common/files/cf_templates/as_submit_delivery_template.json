@@ -96,6 +96,18 @@
       "Default": "true",
       "AllowedValues": [ "true", "false" ]
     },
+    "EbsDeleteOnTermination": {
+      "Description": "Indicates whether to delete the volume when the instance is terminated.",
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [ "true", "false" ]
+    },
+    "EbsVolumeType": {
+      "Description": "Indicates whether to delete the volume when the instance is terminated.",
+      "Type": "String",
+      "Default": "gp2",
+      "AllowedValues": [ "gp2", "standard" ]
+    },
     "Environment": {
       "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
       "Type": "String"
@@ -501,7 +513,7 @@
       }
     },
 
-    "XgemailScaleUpPolicy": {
+    "XgemailScaleOutPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
       "Properties": {
         "AdjustmentType": "ChangeInCapacity",
@@ -511,7 +523,7 @@
       }
     },
 
-    "XgemailScaleDownPolicy": {
+    "XgemailScaleInPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
       "Properties": {
         "AdjustmentType": "ChangeInCapacity",
@@ -852,7 +864,14 @@
       },
       "Properties": {
         "BlockDeviceMappings": [
-          { "DeviceName": "/dev/xvdi", "Ebs": { "DeleteOnTermination": "false", "VolumeSize": { "Ref": "XgemailMinSizeDataGB" } } }
+          {
+            "DeviceName": "/dev/xvdi",
+            "Ebs": {
+              "DeleteOnTermination": { "Ref": "EbsDeleteOnTermination" },
+              "VolumeSize": { "Ref": "XgemailMinSizeDataGB" },
+              "VolumeType": { "Ref": "EbsVolumeType" }
+            },
+          }
         ],
         "AssociatePublicIpAddress": { "Ref": "PublicIpAddressEnabled" },
         "ImageId": { "Ref": "AmiId" },
@@ -951,6 +970,14 @@
     "LaunchConfig": {
       "Description": "Auto Scaling Launch Configuration Name.",
       "Value": { "Ref": "XgemailAutoScalingLaunchConfig" }
+    },
+    "XgemailScaleOutPolicy": {
+      "Description": "Auto Scaling Scale Out Policy ARN.",
+      "Value": { "Ref": "XgemailScaleOutPolicy" }
+    },
+    "XgemailScaleInPolicy": {
+      "Description": "Auto Scaling Scale In Policy ARN..",
+      "Value": { "Ref": "XgemailScaleInPolicy" }
     }
   }
 }
