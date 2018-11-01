@@ -31,7 +31,7 @@ CRON_MINUTE_FREQUENCY = node['xgemail']['internet_submit_recipient_cron_minute_f
 STATION_VPC_NAME      = node['xgemail']['station_vpc_name']
 XGEMAIL_FILES_DIR     = node['xgemail']['xgemail_files_dir']
 RECIPIENT_ACCESS_FILENAME = node['xgemail']['recipient_access_filename']
-RELAY_DOMAINS_FILENAME = 'relay_domains'
+RELAY_DOMAINS_FILENAME = node['xgemail']['relay_domains_filename']
 MAIL_PIC_API_RESPONSE_TIMEOUT = node['xgemail']['mail_pic_apis_response_timeout_seconds']
 MAIL_PIC_API_AUTH = node['xgemail']['mail_pic_api_auth']
 
