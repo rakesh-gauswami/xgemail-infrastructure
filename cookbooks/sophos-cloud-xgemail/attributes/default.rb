@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Attribute:: default
 #
-# Copyright 2017, Sophos
+# Copyright 2018, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -197,6 +197,7 @@ default['xgemail']['internet_submit_recipient_cron_minute_frequency'] = 5
 default['xgemail']['xgemail_sqs_lifecycle_poller_cron_minute_frequency'] = 1
 
 default['xgemail']['recipient_access_filename'] = 'recipient_access'
+default['xgemail']['relay_domains_filename']  = 'relay_domains'
 default['xgemail']['s3_encryption_algorithm'] = 'AES256'
 default['xgemail']['soft_retry_senders_map_filename'] = 'soft_retry_senders_map'
 default['xgemail']['tls_high_cipherlist'] = 'TLSv1.2+FIPS:kRSA+FIPS:!eNULL:!aNULL'
@@ -297,18 +298,18 @@ default['xgemail']['postfix_instance_data'] = {
   # encryption-delivery
   'encryption-delivery' => {
     :instance_name => 'ed',
-   :port => 25,
-   # Give delivery queues extra padding because extra content may be created during processing
-   :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800),
-   :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+    :port => 25,
+    # Give delivery queues extra padding because extra content may be created during processing
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800),
+    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
   },
   # encryption-submit
   'encryption-submit' => {
-   :instance_name => 'es',
-   :port => 25,
-   # Give delivery queues extra padding because extra content may be created during processing
-   :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800),
-   :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+    :instance_name => 'es',
+    :port => 25,
+    # Give delivery queues extra padding because extra content may be created during processing
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800),
+    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
   }
 }
 

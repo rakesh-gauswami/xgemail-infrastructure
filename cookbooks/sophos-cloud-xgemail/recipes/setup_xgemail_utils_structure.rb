@@ -56,7 +56,7 @@ end
   end
 end
 
-if NODE_TYPE == 'submit' or NODE_TYPE == 'internet-submit'
+if NODE_TYPE == 'submit' or NODE_TYPE == 'internet-submit' or NODE_TYPE == 'encryption-submit'
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{POLICY_FORMATTER}" do
     source 'policyformatter.py'
     mode '0644'

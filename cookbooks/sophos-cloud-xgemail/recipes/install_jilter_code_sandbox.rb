@@ -38,6 +38,8 @@ execute 'extract_jilter_package' do
   cwd "#{PACKAGES_DIR}"
   command <<-EOH
       tar xf #{JILTER_PACKAGE_NAME}.tar -C #{DEPLOYMENT_DIR}
+      mv #{DEPLOYMENT_DIR}/xgemail-jilter-inbound*SNAPSHOT #{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}
+
   EOH
 end
 
