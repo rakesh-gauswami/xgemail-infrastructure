@@ -402,11 +402,12 @@ def upload_documents(metadata, compressed_message, s3_file_path, direction):
         direction
     )
 
-    upload_msg_history_to_s3(
-        s3_file_path,
-        expires,
-        metadata
-    )
+    if 'ENCRYPTION' != SUBMIT_TYPE:
+        upload_msg_history_to_s3(
+            s3_file_path,
+            expires,
+            metadata
+        )
 
 def base_policy_flow(metadata, direction, domain, sender, message):
     queue_id = metadata.get_queue_id()
