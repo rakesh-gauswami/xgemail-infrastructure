@@ -88,8 +88,10 @@ template CRON_SCRIPT_PATH do
   notifies :run, "execute[#{CRON_SCRIPT_PATH}]", :immediately
 end
 
-CONFIGURATION_COMMANDS.each do | cur |
-  execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+if NODE_TYPE != 'encryption-submit'
+  CONFIGURATION_COMMANDS.each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+  end
 end
 
 if ACCOUNT != 'sandbox'
