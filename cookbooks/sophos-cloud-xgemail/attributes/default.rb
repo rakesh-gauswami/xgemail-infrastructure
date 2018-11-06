@@ -127,6 +127,14 @@ default['xgemail']['smtpd_authorized_xclient_hosts'] = "81.136.243.94"
 # Increase Postfix default process limit from default 100 to 200
 default['xgemail']['postfix_default_process_limit'] = 200
 
+# Ensure max hops on delivery instances are larger than max hops on submit instances.
+# This ensures that we will reject messages on the submit side rather than having to deal with 
+# bounces when the max hop value is reached on the delivery side.
+# The above can be guaranteed as long as the new headers added by Sophos Email as part of its
+# processing is smaller than (hop_count_delivery_instance - hop_count_submit_instance).
+default['xgemail']['hop_count_delivery_instance'] = 100
+default['xgemail']['hop_count_submit_instance'] = 50
+
 ## IP blacklist settings
 default['xgemail']['sxl_rbl'] = nil
 
