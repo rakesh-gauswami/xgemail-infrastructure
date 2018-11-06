@@ -70,7 +70,7 @@ SXL_RBL_RESPONSE_CODES = "127.0.4.[1;5;6;8;13;14;18;21]"
 # Hosts authorized to make use of the XCLIENT extension
 SMTPD_AUTHORIZED_XCLIENT_HOSTS = node["xgemail"]["smtpd_authorized_xclient_hosts"]
 
-HOP_COUNT_DELIVERY_INSTANCE = node['xgemail']['hop_count_submit_instance']
+HOP_COUNT_SUBMIT_INSTANCE = node['xgemail']['hop_count_submit_instance']
 
 RBL_REPLY_MAPS_FILENAME = 'rbl_reply_maps'
 

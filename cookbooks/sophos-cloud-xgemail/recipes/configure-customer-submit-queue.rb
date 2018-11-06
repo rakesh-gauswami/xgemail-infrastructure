@@ -66,7 +66,7 @@ GLOBAL_SIGN_DIR = "#{LOCAL_CERT_PATH}/3rdparty/global-sign"
 GLOBAL_SIGN_INTERMEDIARY = "#{GLOBAL_SIGN_DIR}/global-sign-sha256-intermediary.crt"
 GLOBAL_SIGN_ROOT = "#{GLOBAL_SIGN_DIR}/global-sign-root.crt"
 
-HOP_COUNT_DELIVERY_INSTANCE = node['xgemail']['hop_count_submit_instance']
+HOP_COUNT_SUBMIT_INSTANCE = node['xgemail']['hop_count_submit_instance']
 
 if account != 'sandbox'
   # Add xgemail certificate
