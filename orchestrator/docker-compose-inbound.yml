@@ -103,7 +103,8 @@ services:
     domainname: sandbox.sophos
     extra_hosts:
       - "sasi-daemon:172.16.199.111"
-
+    external_links:
+      - 'dynamodb:dynamo-service'
     environment:
       - aws.accessKeyId=$AWS_ACCESS_KEY_ID
       - aws.secretKey=$AWS_SECRET_ACCESS_KEY
@@ -114,7 +115,7 @@ services:
       - HISTORIAN_DB_TABLE=None
       - HISTORIAN_DB_TABLE_CREATE_DATE=None
       - SASI_REQUEST_QUEUE=sandbox-SASI_Request
-      - SASI_RESPONSE_QUEU=sandbox-SASI_Response
+      - SASI_RESPONSE_QUEUE=sandbox-SASI_Response
     volumes:
       - $XGEMAIL_HOME/xgemail-infrastructure/orchestrator/sasi/inbound-application.properties:/application.properties
     ports:
