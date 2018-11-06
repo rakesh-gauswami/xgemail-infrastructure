@@ -23,6 +23,7 @@ import messageformatter
 import messagehistoryformatter
 import metadataformatter
 import multipolicyreaderutils
+import serviceroutingutils
 import os
 import re
 import signal
@@ -42,11 +43,16 @@ MSG_HISTORY_BUCKET_NAME = "<%= @sqs_msg_producer_msg_history_s3_bucket_name %>"
 MSG_HISTORY_SQS_URL = "<%= @sqs_msg_producer_msg_history_sqs_url %>"
 POLICY_S3_BUCKET_NAME = "<%= @sqs_msg_producer_policy_s3_bucket_name %>"
 PROCESS_TIMEOUT_SECONDS = <%= @sqs_msg_producer_process_timeout_seconds %>
+
+# Either 'INTERNET' or 'CUSTOMER'
 SUBMIT_TYPE = "<%= @xgemail_submit_type %>"
+
+
 S3_ENCRYPTION_ALGORITHM = "<%= @s3_encryption_algorithm %>"
 SUBMIT_BUCKET_NAME = "<%= @sqs_msg_producer_s3_bucket_name %>"
 SUBMIT_HOST_IP = "<%= @sqs_msg_producer_submit_ip %>"
 SUBMIT_SQS_URL = "<%= @sqs_msg_producer_sqs_url %>"
+SUBMIT_SERVICE_SQS_URL = "<%= @sqs_msg_producer_service_sqs_url %>"
 TTL_IN_DAYS = <%= @sqs_msg_producer_ttl_in_days %>
 
 # Exit codes from sysexits
@@ -274,12 +280,19 @@ def send_msg_history_sqs_event(sqs_history_json):
         exit(EX_TEMPFAIL)
 
 # sends msg processing sqs messages to sqs
-def send_msg_processing_sqs_message(sqs_message_json):
+def send_msg_processing_sqs_message(sqs_message_json, customer_id = None):
+
+    receiving_queue = SUBMIT_SQS_URL
+
+    if serviceroutingutils.route_to_microservice(SUBMIT_TYPE, customer_id):
+        receiving_queue = SUBMIT_SERVICE_SQS_URL
+
+
     try:
         logger.info("Processing SQS job [{0}]".format(sqs_message_json))
         logger.info("Added SQS job response [{0}]".format
             (add_to_sqs(
-                SUBMIT_SQS_URL,
+                receiving_queue,
                 sqs_message_json)
             )
         )
@@ -443,7 +456,7 @@ def base_policy_flow(metadata, direction, domain, sender, message):
 # fall back to base_policy_flow.
 def multi_policy_flow(metadata, direction, domain, sender, message):
     recipients = metadata.get_recipients()
-    policy_list = multipolicyreaderutils.build_policy_map(recipients, AWS_REGION, POLICY_S3_BUCKET_NAME)
+    (policy_list, customer_id) = multipolicyreaderutils.build_policy_map(recipients, AWS_REGION, POLICY_S3_BUCKET_NAME)
     if not policy_list:
         return base_policy_flow(metadata, direction, domain, sender, message)
 
@@ -491,11 +504,13 @@ def multi_policy_flow(metadata, direction, domain, sender, message):
         if len(sqs_message_json_queue) == SQS_BATCH_SIZE:
             for processing_job in sqs_message_json_queue:
                 send_msg_processing_sqs_message(
-                    processing_job
+                    processing_job,
+                    customer_id
                 )
             sqs_message_json_queue = []
 
         # batch history sqs
+        # noinspection CookbookSourceRoot
         sqs_history = prepare_msg_history_event(
             new_s3_file_path,
             this_policy_metadata,
@@ -515,7 +530,8 @@ def multi_policy_flow(metadata, direction, domain, sender, message):
     if len(sqs_message_json_queue) > 0:
         for processing_job in sqs_message_json_queue:
             send_msg_processing_sqs_message(
-                processing_job
+                processing_job,
+                customer_id
             )
 
     if len(sqs_history_json_queue) > 0:

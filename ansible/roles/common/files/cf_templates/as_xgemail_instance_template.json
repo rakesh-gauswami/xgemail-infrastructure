@@ -273,6 +273,11 @@
       "Type" : "String",
       "Default": ""
     },
+    "XgemailSubmitServiceQueueUrl" : {
+      "Description" : "URL for the SQS Queue where XGEMAIL messages are sent for processing by the micro service",
+      "Type" : "String",
+      "Default": ""
+    },
     "XgemailSxlDbl" : {
       "Description" : "SXL Domain Blacklist used by Xgemail Submit Servers",
       "Type" : "String",
@@ -613,6 +618,7 @@
                   "xgemail_policy_bucket_name":               { "Ref": "XgemailPolicyBucketName" },
                   "xgemail_bucket_name":                      { "Ref": "XgemailBucketName" },
                   "xgemail_policy_arn":                       { "Ref": "XgemailPolicyArn" },
+                  "xgemail_service_queue_url":                { "Ref": "XgemailSubmitServiceQueueUrl" },
                   "xgemail_sns_sqs_url":                      { "Ref": "XgemailSnsSqsQueueUrl" },
                   "xgemail_queue_url":                        { "Ref": "XgemailQueueUrl" }
                 },

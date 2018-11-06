@@ -1,0 +1,108 @@
+#!/usr/bin/env python
+# vim: autoindent expandtab filetype=python shiftwidth=4 softtabstop=4 tabstop=4
+#
+# Copyright 2018, Sophos Limited. All rights reserved.
+#
+# 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
+# Sophos Limited and Sophos Group.  All other product and company
+# names mentioned are trademarks or registered trademarks of their
+# respective owners.
+#
+#
+#  This script is used to create and set the flag used to toggle reading policy from s3 on or off.
+#  This script can also be used to get this setting
+#
+import argparse
+import json
+import logging
+import os
+from logging.handlers import SysLogHandler
+
+#Constants
+POLICY_STORAGE_PATH = "<%= @policy_storage_path %>"
+ROUTING_CONFIG_PATH = POLICY_STORAGE_PATH + '/config/routing/internet-submit/'
+ROUTING_CONFIG_FILE = ROUTING_CONFIG_PATH + 'internet-submit-routing.CONFIG'
+
+logger = logging.getLogger('internet-submit-routing-toggle')
+logger.setLevel(logging.INFO)
+syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
+formatter = logging.Formatter(
+  '[%(name)s] %(process)d %(levelname)s %(message)s'
+)
+syslog_handler.formatter = formatter
+logger.addHandler(syslog_handler)
+
+
+def valid_float(x):
+  x = float(x)
+  if x < 0.00 or x > 1.00:
+    raise argparse.ArgumentTypeError("%r not in range [0.00, 1.00]"%(x,))
+  return x
+
+
+def get_read_from_s3_enabled():
+  try:
+    with open(ROUTING_CONFIG_FILE) as config_file:
+      config_data = json.load(config_file)
+      print 'Routing to microservice traffic %%: %.2f' % (float(config_data['percent.traffic.to.microservice']))
+  except IOError as e:
+    print "Unable to read config, file may not exist. Traffic %% to microservice will be zero"
+
+
+def verify_config_dir():
+  config_dir = os.path.dirname(ROUTING_CONFIG_PATH)
+  if not os.path.exists(config_dir):
+    os.makedirs(config_dir)
+
+
+def set_customer():
+  verify_config_dir()
+  file_name = ROUTING_CONFIG_PATH + args.setcustomer[0] + '.ROUTING'
+  open(file_name, 'a').close()
+  print 'File created at: ' + file_name
+
+def remove_customer():
+  file_location = ROUTING_CONFIG_PATH + args.removecustomer[0] + '.ROUTING'
+  if not os.path.exists(file_location):
+    print 'Cannot find: ' + file_location
+  else:
+    os.remove(file_location)
+    print 'Removed: ' + file_location
+
+
+def set_read_from_s3_enabled():
+
+  verify_config_dir()
+
+  config_data = {}
+  config_data['percent.traffic.to.microservice'] = args.set[0]
+  temp_file = ROUTING_CONFIG_FILE + '.tmp'
+
+  with open(temp_file, 'w') as config_file:
+    json.dump(config_data, config_file)
+
+  os.rename(temp_file, ROUTING_CONFIG_FILE)
+
+  logger.info('Set percent.traffic.to.microservice to {0} in file {1}'.format(args.set[0], ROUTING_CONFIG_FILE))
+  print 'Routing to microservice traffic %%: %.2f' % (args.set[0])
+
+
+parser = argparse.ArgumentParser(description='Used to set or get the "percent.traffic.to.microservice" value for internet submit. Or to turn microservice routing on or off for a specific customer')
+parser.add_argument('-g', '--get', action='store_true', help='Get the microservice traffic routing %%')
+parser.add_argument('-s', '--set', nargs=1, metavar='<value>',  type=valid_float, help='Set the microservice traffic routing %%, between 0.00 - 1.00')
+parser.add_argument('-sc', '--setcustomer', metavar='<customer UUID>', nargs=1, help='Set customer with the supplied id to be routed to the microservice')
+parser.add_argument('-rc', '--removecustomer', metavar='<customer UUID>', nargs=1, help='Stop customer with the supplied id from being routed to the microservice')
+
+args = parser.parse_args()
+
+
+if args.get:
+  get_read_from_s3_enabled()
+elif args.set:
+  set_read_from_s3_enabled()
+elif args.setcustomer:
+  set_customer()
+elif args.removecustomer:
+  remove_customer()
+else:
+  parser.print_help()
