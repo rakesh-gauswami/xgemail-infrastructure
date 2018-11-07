@@ -1,14 +1,12 @@
 #!/usr/bin/env python
-# vim: autoindent expandtab filetype=python shiftwidth=4 softtabstop=4
-# tabstop=4
+# vim: autoindent tabstop=4 softtabstop=4 shiftwidth=4 expandtab filetype=python
 #
-# Copyright 2016, Sophos Limited. All rights reserved.
+# Copyright 2018, Sophos Limited. All rights reserved.
 #
 # 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
 # Sophos Limited and Sophos Group.  All other product and company
 # names mentioned are trademarks or registered trademarks of their
 # respective owners.
-#
 
 import sys
 import logging
@@ -32,6 +30,16 @@ import json
 import os
 from routingmanager import RoutingManager
 
+"""
+
+if sys.platform.startswith('darwin'):
+    with mock.patch('__main__.logging.handlers.SysLogHandler', create=True) as mocked_logging:
+        mocked_logging.return_value = logging.handlers.SysLogHandler(address='/var/run/syslog')
+        from routingmanager import RoutingManager
+else:
+    from routingmanager import RoutingManager
+"""
+
 class RoutingManagerTest(unittest.TestCase):
 
     def setUp(self):
@@ -43,21 +51,15 @@ class RoutingManagerTest(unittest.TestCase):
         if sys.platform.startswith('darwin'):
             with mock.patch('__main__.logging.handlers.SysLogHandler', create=True) as mocked_logging:
                 mocked_logging.return_value = logging.handlers.SysLogHandler(address='/var/run/syslog')
-
-            self.routing_manager = RoutingManager(
-                self.test_data_dir,
-                self.manager_name,
-                mocked_logging
-            )
-        else:
-            with mock.patch('__main__.logging.handlers.SysLogHandler', create=True) as mocked_logging:
-                mocked_logging.return_value = logging.handlers.SysLogHandler(address='/dev/log')
-
                 self.routing_manager = RoutingManager(
                     self.test_data_dir,
-                    self.manager_name,
-                    mocked_logging
+                    self.manager_name
                 )
+        else:
+            self.routing_manager = RoutingManager(
+                self.test_data_dir,
+                self.manager_name
+            )
 
     def tearDown(self):
         if os.path.exists(self.test_data_dir):

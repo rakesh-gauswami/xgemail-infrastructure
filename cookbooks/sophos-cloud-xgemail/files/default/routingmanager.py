@@ -32,14 +32,13 @@ import argparse
 import os
 import randomutils
 import logging
-from logging.handlers import SysLogHandler
+#from logging.handlers import SysLogHandler
 
 class RoutingManager(object):
     def __init__(
         self,
         root_storage_path,
-        manager_name,
-        syslog_handler
+        manager_name
     ):
         self.root_storage_path = root_storage_path
         self.routing_config_path = '%s/config/routing/%s/' % (self.root_storage_path, manager_name)
@@ -49,6 +48,7 @@ class RoutingManager(object):
         self.logger = logging.getLogger('routing-manager-' + self.manager_name)
         self.logger.setLevel(logging.INFO)
 
+        syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
         syslog_handler.formatter = logging.Formatter(
             '[%(name)s] %(process)d %(levelname)s %(message)s'
         )
