@@ -40,14 +40,24 @@ class RoutingManagerTest(unittest.TestCase):
         self.manager_name = 'routing-name'
         self.test_config_path = '%s/config/routing/%s/' % (self.test_data_dir, self.manager_name)
 
-        with mock.patch('__main__.logging.handlers.SysLogHandler', create=True) as mocked_logging:
-            mocked_logging.return_value = logging.handlers.SysLogHandler(address='/var/run/syslog')
+        if sys.platform.startswith('darwin'):
+            with mock.patch('__main__.logging.handlers.SysLogHandler', create=True) as mocked_logging:
+                mocked_logging.return_value = logging.handlers.SysLogHandler(address='/var/run/syslog')
 
             self.routing_manager = RoutingManager(
                 self.test_data_dir,
                 self.manager_name,
                 mocked_logging
             )
+        else:
+            with mock.patch('__main__.logging.handlers.SysLogHandler', create=True) as mocked_logging:
+                mocked_logging.return_value = logging.handlers.SysLogHandler(address='/dev/log')
+
+                self.routing_manager = RoutingManager(
+                    self.test_data_dir,
+                    self.manager_name,
+                    mocked_logging
+                )
 
     def tearDown(self):
         if os.path.exists(self.test_data_dir):
