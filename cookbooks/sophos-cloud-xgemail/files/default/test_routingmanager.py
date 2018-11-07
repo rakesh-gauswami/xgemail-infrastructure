@@ -30,16 +30,6 @@ import json
 import os
 from routingmanager import RoutingManager
 
-"""
-
-if sys.platform.startswith('darwin'):
-    with mock.patch('__main__.logging.handlers.SysLogHandler', create=True) as mocked_logging:
-        mocked_logging.return_value = logging.handlers.SysLogHandler(address='/var/run/syslog')
-        from routingmanager import RoutingManager
-else:
-    from routingmanager import RoutingManager
-"""
-
 class RoutingManagerTest(unittest.TestCase):
 
     def setUp(self):
