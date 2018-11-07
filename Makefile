@@ -251,11 +251,11 @@ NUM_BASH_FILES=$(shell echo $(BASH_FILES) | wc -w)
 	#@touch $@
 
 PYTHON_FILES := $(shell find ./cookbooks -name '*.py')
-PYTHON_FILES += $(shell find ./hopper -name '*.py')
+PYTHON_FILES += $(shell find ./utils -name '*.py')
 PYTHON_FILES += $(shell find ./bamboo -name '*.py')
 PYTHON_FILES += $(shell find ./bamboo/xgemail -name '*.py')
-PYTHON_FILES += ./hopper/xgemail_send_eml.py
-PYTHON_FILES += ./hopper/xgemail_terminate_instance.py
+PYTHON_FILES += ./utils/xgemail_send_eml.py
+PYTHON_FILES += ./utils/xgemail_terminate_instance.py
 PYTHON_FILES += ./lambda/xgemail_eip_monitor.py
 PYTHON_FILES += ./lambda/xgemail_eip_rotation.py
 
