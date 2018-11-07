@@ -7,11 +7,20 @@
 # names mentioned are trademarks or registered trademarks of their
 # respective owners.
 #
-# Downloads all messages from a Message History Delivery DLQ for further analysis
-# This script was created to investigate messages landing in the DLQ as part of 
-# bug tickets XGE-7228 and XGE-7229.
+# Downloads all messages from a Xgemail Message History Delivery DLQ for analysis and processing.
 #
-# Run this script on any instance that has access to the Message History Delivery DLQ under analysis.
+# Run this script on any instance (e.g. CloudEmail:submit) that has access to the Message History Delivery DLQ under analysis.
+#
+# Examples:
+#
+# Download jobs from the Message History Delivery DLQ and store them in a new directory "messages":
+# python process.py --download messages
+#
+# Process previously downloaded jobs from the provided directory "messages":
+# python process.py --process messages --env PROD --region us-west-2
+#
+# Process and delete jobs:
+# python process.py --process messages --env PROD --region us-west-2 --nodryrun
 #
 
 import argparse
@@ -40,19 +49,57 @@ DLQ = {
     }
 }
 
-def delete_messages(entries):
-    resp = sqs_client.delete_message_batch(
-        QueueUrl=queue_url, Entries=entries
-    )
+# The categories into which the jobs will be moved into.
+# Any job that doesn't fit a category will be added to the uncategorized bucket.
+results = {
+    'null_queue_ids': {
+        'delete': False,
+        'messages': []
+    },
+    'quarant_summary': {
+        'delete': False,
+        'messages': []
+    },
+    'uncategorized': {
+        'delete': False,
+        'messages': []
+    }
+}
 
-    if len(resp['Successful']) != len(entries):
-        raise RuntimeError(
-            "Failed to delete messages: entries={0} resp={1}".format(entries, resp)
-        )
+def delete_messages(sqs_client, queue_url, is_dry_run):
+    """
+    Deletes ALL message for which the category delete field is set to True
+    AND is_dry_run is explicitly set to False.
+    """
+    for key, value in results.iteritems():
+        if value['delete']:
+            all_entries = [
+                {'Id': msg['MessageId'], 'ReceiptHandle': msg['ReceiptHandle']}
+                for msg in value['messages']
+            ]
 
-def get_messages_from_queue(queue_url, should_delete_messages, region):
-    sqs_client = boto3.client('sqs', region_name=region)
+            if is_dry_run:
+                print '[DRY RUN]: Removing <{0}> jobs from DLQ for category <{1}>'.format(len(all_entries), key)
+                continue
 
+            print 'Removing <{0}> jobs from DLQ for category <{1}>'.format(len(all_entries), key)
+
+            max_entries = 10
+            split_entries = [all_entries[x:x+max_entries] for x in range(0, len(all_entries), max_entries)]
+
+            for entries in split_entries:
+                resp = sqs_client.delete_message_batch(
+                    QueueUrl=queue_url,
+                    Entries=entries
+                )
+
+                if len(resp['Successful']) != len(entries):
+                    print 'Failed to delete messages: entries={0} resp={1}'.format(entries, resp)
+
+def get_messages_from_queue(sqs_client, queue_url, region):
+    """
+    Retrieves all the messages from the DLQ and returns them to the caller.
+    """
     msgs_retrieved = 0
 
     while True:
@@ -63,33 +110,35 @@ def get_messages_from_queue(queue_url, should_delete_messages, region):
         )
         try:
             yield resp['Messages']
+            msgs_retrieved += len(resp['Messages'])
         except KeyError:
             print 'All {0} messages downloaded'.format(msgs_retrieved)
             return
 
-        entries = [
-            {'Id': msg['MessageId'], 'ReceiptHandle': msg['ReceiptHandle']}
-            for msg in resp['Messages']
-        ]
-
-        if should_delete_messages:
-            delete_messages(entries)
-        msgs_retrieved += len(entries)
-
 def write_document(directory, document):
+    """
+    Writes the provided document to the provided directory. The filename is a newly created UUID.
+    """
     filename = uuid.uuid4()
     full_path = '{0}/{1}.json'.format(directory, filename)
 
     print 'Writing file {0}'.format(full_path)
 
-    with open(full_path, 'w') as the_file:
-        the_file.write(document)
+    json_to_write = json.loads(document['Body'])
+    json_to_write['MessageId'] = document['MessageId']
+    json_to_write['ReceiptHandle'] = document['ReceiptHandle']
 
-def analyse(directory):
-    print 'reading documents from directory {0}'.format(directory)
+    with open(full_path, 'w') as the_file:
+        the_file.write(json.dumps(json_to_write))
+
+def process(directory, results_to_print):
+    """
+    Processes (analysis + possible deletion) of the jobs stored in the provided directory.
+    """
+    print 'Reading documents from directory {0}'.format(directory)
 
     total = 0
-    results = {'quarantine_summary': [], 'null_queue_ids': [], 'rest': []}
+    sender_and_recipient_same = 0
 
     for filename in os.listdir(directory):
         with open('{0}/{1}'.format(directory, filename), 'r') as the_file:
@@ -101,66 +150,45 @@ def analyse(directory):
 
             msg_path = doc['message_path']
             if msg_path and 'quarantine-summary' in msg_path:
-                results['quarantine_summary'].append(doc)
+                results['quarant_summary']['messages'].append(doc)
                 continue
 
             recipient_address = doc['recipient_address']
             next_queue_log = doc['next_queue_log']
 
             if not msg_path and not recipient_address and not next_queue_log:
-                results['null_queue_ids'].append(doc)
+                results['null_queue_ids']['messages'].append(doc)
             else:
-                results['rest'].append(doc)
-
-    print 'Total documents analysed:       {0}'.format(total)
-    print 'Total quarantine_summary:       {0}'.format(len(results['quarantine_summary']))
-    print 'Total null queue_id messages:   {0}'.format(len(results['null_queue_ids']))
-    print 'Total rest:                     {0}'.format(len(results['rest']))
-
-    nr_of_examples_to_show = 5
+                results['uncategorized']['messages'].append(doc)
+    print 'Total documents processed:\t{0}'.format(total)
+    for key, value in results.iteritems():
+        print 'Total {0}:\t\t{1}'.format(key, len(value['messages']))
 
     print
     print '-'*20
-
-    if len(results['quarantine_summary']) > 0:
-        print 'Example of quarantine summary jobs:'
-        i = 0
-        for job in results['quarantine_summary']:
-            if i >= nr_of_examples_to_show:
-                break
-            print json.dumps(job)
-            i += 1
-        print
-        print '-'*20
-
-    if len(results['null_queue_ids']) > 0:
-        print 'Example of null jobs:'
-        i = 0
-        for job in results['null_queue_ids']:
-            if i >= nr_of_examples_to_show:
-                break
-            print json.dumps(job)
-            i += 1
-        print
-        print '-'*20
-
-    if len(results['rest']) > 0:
-        print 'Examples of remaining jobs:'
-        i = 0
-        for job in results['rest']:
-            if i >= nr_of_examples_to_show:
-                break
-            print json.dumps(job)
-            i += 1
-        print
-        print '-'*20
+    for key, value in results.iteritems():
+        if len(value['messages']) > 0:
+            print '{0} example of {1}:'.format(results_to_print, key)
+            i = 0
+            for job in value['messages']:
+                if i >= results_to_print:
+                    break
+                if 'Message' in job:
+                    print json.dumps(job['Message'])
+                else:
+                    print json.dumps(job)
+                i += 1
+            print
+            print '-'*20
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description = 'Send an email through Xgemail environment')
+    parser = argparse.ArgumentParser(description = 'Analyse Message History DLQ jobs')
     parser.add_argument('--region', default = 'eu-west-1', choices=['eu-central-1', 'eu-west-1', 'us-west-2', 'us-east-2'], help = 'the region to send the email to (default: eu-west-1)')
     parser.add_argument('--env', default = 'DEV', choices=['DEV', 'DEV3', 'QA', 'PROD','INF'], help = 'the region to send the email to (default: DEV)')
-    parser.add_argument('--retrieve', help = 'retrieve messages from DLQ and write to the provided directory')
-    parser.add_argument('--read', help = 'read previously downloaded jobs from the provided directory')
+    parser.add_argument('--download', dest = 'download_to_directory', help = 'downloads jobs from DLQ and write to the provided directory')
+    parser.add_argument('--process', help = 'process previously downloaded jobs from the provided directory')
+    parser.add_argument('--nodryrun', action='store_false', help = 'use this flag if the selected categories of jobs should be deleted')
+    parser.add_argument('--results', default = 3, help = 'defines the number of results to print')
 
     args = parser.parse_args()
     path = os.getcwd()
@@ -168,21 +196,25 @@ if __name__ == '__main__':
     region = args.region
     env = args.env
 
-    if args.retrieve:
-        queue_url = DLQ[env][region]
-        local_directory = args.retrieve
+    queue_url = DLQ[env][region]
+
+    sqs_client = boto3.client('sqs', region_name=region)
+
+    if args.download_to_directory:
+        local_directory = args.download_to_directory
         directory = '{0}/{1}'.format(path, local_directory)
 
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-        for messages in get_messages_from_queue(queue_url, False, region):
+        for messages in get_messages_from_queue(sqs_client, queue_url, region):
             for message in messages:
-                write_document(directory, message['Body'])
-    elif args.read:
-        local_directory = args.read
+                write_document(directory, message)
+    elif args.process:
+        local_directory = args.process
         directory = '{0}/{1}'.format(path, local_directory)
-        analyse(directory)
+        process(directory, int(args.results))
+        delete_messages(sqs_client, queue_url, args.nodryrun)
     else:
         parser.print_help(sys.stderr)
         sys.exit(1)

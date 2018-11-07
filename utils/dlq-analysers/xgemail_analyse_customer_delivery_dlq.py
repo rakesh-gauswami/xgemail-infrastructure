@@ -190,7 +190,7 @@ def process(directory, results_to_print):
             print '-'*20
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description = 'Send an email through Xgemail environment')
+    parser = argparse.ArgumentParser(description = 'Analyse Customer Delivery DLQ jobs')
     parser.add_argument('--region', default = 'eu-west-1', choices=['eu-central-1', 'eu-west-1', 'us-west-2', 'us-east-2'], help = 'the region to send the email to (default: eu-west-1)')
     parser.add_argument('--env', default = 'DEV', choices=['DEV', 'DEV3', 'QA', 'PROD','INF'], help = 'the region to send the email to (default: DEV)')
     parser.add_argument('--download', dest = 'download_to_directory', help = 'downloads jobs from DLQ and write to the provided directory')
