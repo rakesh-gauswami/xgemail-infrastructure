@@ -9,7 +9,7 @@
 #
 # Deserializes a .MESSAGE file downloaded from S3.
 # 
-# Example:
+# Example (run this from ~/g/xgemail-infrastructure/utils/s3-files-deserializer):
 # python deserialize-message.py -d 172.21.1.225-42kYcL3PQWz1S-invesakk.com.MESSAGE -o message.deserialized
 #
 

@@ -9,7 +9,7 @@
 #
 # Deserializes a gzipped .METADATA file downloaded from S3.
 # 
-# Example (run this from g/xgemail-infrastructure/hopper/message-deserializer):
+# Example (run this from ~/g/xgemail-infrastructure/utils/s3-files-deserializer):
 # python deserialize-metadata.py -d 172.21.2.167-42lmG10WRbz1p-invesakk.com.METADATA -o metadata.deserialized
 #
 
