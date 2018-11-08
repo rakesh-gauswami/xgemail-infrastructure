@@ -96,7 +96,7 @@ class RoutingManagerTest(unittest.TestCase):
         mock_random.return_value = 0.11
         self.assertFalse(self.routing_manager.maybe_perform_routing('customer-missing'))
 
-    @mock.patch('randomutils.roll_the_dice')
+    @mock.patch('random.random')
     @mock.patch("__builtin__.open")
     def test_perform_routing_without_customer_or_config_file(self, mock_open, mock_random):
         mock_open.side_effect = IOError('load error')
