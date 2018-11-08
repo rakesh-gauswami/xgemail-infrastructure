@@ -1,0 +1,113 @@
+version: '3'
+services:
+  postfix-cs:
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:latest
+    container_name: postfix-cs
+    hostname: customer-submit
+    domainname: local.sandbox.hydra.sophos.com
+    ports:
+      - '5125:25' #SMTP
+    environment:
+      - HOSTNAME_EXTERNAL=customer-submit
+      - INSTANCE_TYPE=customer-submit
+      - DEFAULT_REGION=local
+      - DEFAULT_ENVIRONMENT=sandbox
+      - DEBUG=1
+    depends_on:
+      - jilter-outbound
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
+    networks:
+      - novanet
+
+  postfix-id:
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:latest
+    container_name: postfix-id
+    hostname: internet-delivery
+    domainname: local.sandbox.hydra.sophos.com
+    environment:
+      - HOSTNAME_EXTERNAL=internet-delivery
+      - INSTANCE_TYPE=internet-delivery
+      - DEFAULT_REGION=local
+      - DEFAULT_ENVIRONMENT=sandbox
+      - DEBUG=1
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
+    networks:
+      - novanet
+
+  # postfix-ix:
+  #   image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:latest
+  #   container_name: postfix-ix
+  #   hostname: internet-xdelivery
+  #   domainname: local.sandbox.hydra.sophos.com
+  #   environment:
+  #     - HOSTNAME_EXTERNAL=internet-xdelivery
+  #     - INSTANCE_TYPE=internet-xdelivery
+  #     - DEFAULT_REGION=local
+  #     - DEFAULT_ENVIRONMENT=sandbox
+  #   volumes:
+  #     - /sys/fs/cgroup:/sys/fs/cgroup:ro
+  #     - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
+  #   networks:
+  #     - novanet
+
+  jilter-outbound:
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/jilter-base:latest
+    container_name: jilter-outbound
+    hostname: jilter-outbound
+    domainname: sandbox.sophos
+    environment:
+      - JILTER_VERSION=current
+      - DIRECTION=outbound
+      - INSTANCE_TYPE=jilter-outbound
+      - DEFAULT_REGION=local
+      - DEFAULT_ENVIRONMENT=sandbox
+      - APPLICATION=Outbound
+      - HOSTNAME_EXTERNAL=jilter-outbound
+    ports:
+      - '19876:9876'
+    volumes:
+      - ~/.aws:/root/.aws:ro
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - ~/.xgemail_sandbox/jilter/outbound/:/jilter/
+      - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
+      - ~/.xgemail_sandbox/policy_storage://policy-storage:rw
+    networks:
+      - novanet
+
+  sasi-service-outbound:
+    image: email/sasi-service
+    container_name: sasi-service-outbound
+    hostname: sasi-service-outbound
+    domainname: sandbox.sophos
+    extra_hosts:
+      - "sasi-daemon:172.16.199.111"
+    external_links:
+      - 'dynamodb:dynamo-service'
+    environment:
+      - aws.accessKeyId=$AWS_ACCESS_KEY_ID
+      - aws.secretKey=$AWS_SECRET_ACCESS_KEY
+      - logging.level.com.sophos=INFO
+      - APPLICATION_NAME=sasi-outbound
+      - COUNTER_DB_TABLE=None
+      - enableLabsMonitoring=false
+      - HISTORIAN_DB_TABLE=None
+      - HISTORIAN_DB_TABLE_CREATE_DATE=None
+      - SASI_REQUEST_QUEUE=sandbox-SASI_Outbound_Request
+      - SASI_RESPONSE_QUEUE=sandbox-SASI_Outbound_Response
+    volumes:
+      - $XGEMAIL_HOME/xgemail-infrastructure/orchestrator/sasi/application.properties:/application.properties
+    ports:
+      - '18081:8080'
+    depends_on:
+      - "sasi-daemon"
+    networks:
+      - novanet
+
+networks:
+  novanet:
+    external:
+      name: nova_novanet

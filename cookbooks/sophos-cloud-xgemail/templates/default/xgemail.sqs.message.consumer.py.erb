@@ -30,8 +30,9 @@ from queue_log import QueueLog
 from sns_message_history_delivery_status import SnsMessageHistoryDeliveryStatus
 from postfix_injection_response import PostfixInjectionResponse
 from logging.handlers import SysLogHandler
+from smtplib import SMTPDataError
 from smtplib import SMTPException
-from smtplib import SMTPException
+from smtplib import SMTPSenderRefused
 from smtplib import SMTPRecipientsRefused
 
 # general constants
@@ -90,7 +91,7 @@ else:
       'Content-type': 'application/json',
       'Authorization': 'Basic'
   }
-  PIC_HEADERS_URL = 'https://%s/mail-services/api/xgemail/headers' % (PIC_FQDN)
+  PIC_HEADERS_URL = 'http://%s/mail-services/api/xgemail/headers' % (PIC_FQDN)
 
 awshandler = AwsHandler(AWS_REGION)
 

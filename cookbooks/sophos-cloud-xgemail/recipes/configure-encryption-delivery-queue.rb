@@ -36,8 +36,11 @@ SMTP_PORT = INSTANCE_DATA[:port]
 DESTINATION_PORT = 25
 DESTINATION_HOST = "euw-smtp.emailencryption.sophos.com:#{DESTINATION_PORT}"
 
+HOP_COUNT_DELIVERY_INSTANCE = node['xgemail']['hop_count_delivery_instance']
+
 CONFIGURATION_COMMANDS =
   [
+    "hopcount_limit=#{HOP_COUNT_DELIVERY_INSTANCE}",
     "relayhost=#{DESTINATION_HOST}",
     'unknown_local_recipient_reject_code=550',
     'smtp_tls_security_level=encrypt',
