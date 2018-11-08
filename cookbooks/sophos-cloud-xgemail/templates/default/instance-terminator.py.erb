@@ -45,7 +45,6 @@ class Terminator(object):
         self.aws_region = region
         self.timestamp = time
         self.autocaling_group_name = asg
-        self.instance_id = instance
         self.lifecycle_hook_name = hook
         self.lifecycle_action_token = token
         self.sns_alarm_topic_arn = "<%= @alarm_topic_arn %>"
@@ -53,14 +52,32 @@ class Terminator(object):
         self.sns_policy_arn = "<%= @sns_policy_arn %>"
         self.sqs_policy_queue_name = "<%= @sqs_policy_queue_name %>"
         self.postfix_queue_count = None
+        self.volume_device_name = '/dev/xvdi'
 
-        # Create SQS client
+        # Create EC2 Resource
+        self.ec2 = boto3.resource('ec2', region_name=self.aws_region)
+        """:type: pyboto3.ec2 """
+
+        # Create SQS Client
         self.sqs = boto3.client('sqs', region_name=self.aws_region)
         """:type: pyboto3.sqs """
 
-        # Create SNS client
+        # Create SNS Client
         self.sns = boto3.client('sns', region_name=self.aws_region)
         """:type: pyboto3.sns """
+
+        # Create SSM Client
+        self.ssm = boto3.client('ssm', region_name=self.aws_region)
+        """:type: pyboto3.ssm """
+
+        self.instance = self.ec2.Instance(instance)
+        self.volume = self.ec2_get_volume()
+
+    def ec2_get_volume(self):
+        for v in self.instance.block_device_mappings:
+            if v['DeviceName'] == self.volume_device_name:
+                return self.ec2.Volume(v['Ebs']['VolumeId'])
+        return None
 
     def get_postfix_instance(self):
         """
@@ -99,6 +116,21 @@ class Terminator(object):
 
         return out.strip()
 
+    def get_ssm_parameter(self, param):
+        """
+        Get provided SSM Parameter valuec.
+        """
+        try:
+            response = self.ssm.get_parameter(Name=param)
+            self.logger.info("SSM Parameter Name: %s Value: %s" % (response['Parameter']['Name'], response['Parameter']['Value']))
+            return response['Parameter']['Value']
+        except botocore.exceptions.ClientError as e:
+            if e.response['Error']['Code'] == 'ParameterNotFound':
+                self.logger.error("ParameterNotFound %s" % param)
+                return None
+            self.logger.exception("Error getting SSM Parameter %s" % e.response['Error']['Code'])
+            raise e
+
     def send_sns_alert(self, message):
         """
         Send provided message as an alarm to specified Amazon Web Services SNS Topic.
@@ -109,7 +141,7 @@ class Terminator(object):
         try:
             response = self.sns.publish(
                 TopicArn=self.sns_alarm_topic_arn,
-                Subject="Alarm from EC2 Instance: %s in Region: %s" % (self.instance_id, self.aws_region),
+                Subject="Alarm from EC2 Instance: %s in Region: %s" % (self.instance.id, self.aws_region),
                 Message=message
             )
             self.logger.info("SNS MessageId: %s" % response['MessageId'])
@@ -229,7 +261,7 @@ class Terminator(object):
         self.logger.info("Begin processing Lifecycle Hook Event")
         self.run_cmd(['service', 'monit', 'stop'])
 
-        lifecycle_hook = LifecycleHook(region=self.aws_region, time=self.timestamp, asg=self.autocaling_group_name, instance=self.instance_id, hook=self.lifecycle_hook_name, token=self.lifecycle_action_token)
+        lifecycle_hook = LifecycleHook(region=self.aws_region, time=self.timestamp, asg=self.autocaling_group_name, instance=self.instance.id, hook=self.lifecycle_hook_name, token=self.lifecycle_action_token)
 
         # Now perform all necessary logic to make sure the postfix server has empty queues before terminating.
         self.postfix_instance = self.get_postfix_instance()
@@ -294,18 +326,23 @@ class Terminator(object):
             self.logger.info('Getting policy queue URL.')
             sqs_policy_queue_url = self.sqs.get_queue_url(QueueName=self.sqs_policy_queue_name)['QueueUrl']
             self.logger.info('Getting policy subscription ARN.')
-            sns_policy_subscription_arn = self.get_subscription_arn(topic_arn=self.sns_policy_arn, instance=self.instance_id)
+            sns_policy_subscription_arn = self.get_subscription_arn(topic_arn=self.sns_policy_arn, instance=self.instance.id)
             self.sns_unsubscribe(arn=sns_policy_subscription_arn)
             self.sqs_delete_queue(url=sqs_policy_queue_url)
             self.logger.info("Deleting SQS policy dead letter queue for this instance.")
             self.sqs_delete_queue(url=self.sqs.get_queue_url(QueueName=self.sqs_policy_queue_name + '-DLQ')['QueueUrl'])
 
         if self.postfix_queue_count != 0:
-            self.logger.critical("The Postfix queue is NOT empty! Unmounting and detatching volume for further investigation.")
+            self.logger.critical("The Postfix queue is NOT empty! Unmounting and detaching volume for further investigation.")
+
+        if self.postfix_queue_count == 0:
+            self.logger.info("The Postfix queue is empty! Unmounting, detaching, and deleting volume.")
             # Run umount command to unmount the volume
-            self.run_cmd(['umount', lifecycle_hook.device_name])
-            # Detatch the volume so it is not deleted when the instance is terminated.
-            lifecycle_hook.detatch_volume()
+            self.run_cmd(['umount', self.device_name])
+            # Detach the volume
+            self.volume.detach_from_instance(Device=self.volume_device_name, Force=True, InstanceId=self.instance.id)
+            # Delete the volume
+            self.volume.delete()
 
         # Complete ASG hook
         self.logger.info('Completing lifecycle action.')
@@ -330,7 +367,6 @@ class LifecycleHook(object):
         self.heartbeat_timeout = self.get_timeout('HeartbeatTimeout')
         self.heartbeat_start_time = datetime.strptime(time, self.aws_time_format)
         self.lifecycle_action_token = token
-        self.device_name = '/dev/xvdi'
 
     def time_check(self):
         """
@@ -359,27 +395,6 @@ class LifecycleHook(object):
         except botocore.exceptions.ClientError as e:
             self.logger.exception("Error getting timeout for LifecycleHook {}: {}".format(
                 self.lifecycle_hook_name, e.response['Error']['Code']))
-
-    def detatch_volume(self):
-        """
-        As a last resort detatch the volume before termination to avoid losing data.
-        """
-        # TODO: Create a way to find the correct device name so it's not hard coded.
-        ec2 = boto3.client('ec2', region_name=self.aws_region)
-        """:type: pyboto3.ec2 """
-
-        response = ec2.describe_instances(InstanceIds=[self.instance_id])
-        for r in response['Reservations']:
-            for instance in r['Instances']:
-                volumes = instance['BlockDeviceMappings']
-                for volume in volumes:
-                    if volume['DeviceName'] == self.device_name:
-                        volume_id = volume['Ebs']['VolumeId']
-                        try:
-                            ec2.detach_volume(volume_id, self.instance_id, self.device_name)
-                        except botocore.exceptions.ClientError as e:
-                            self.logger.exception("Error detatching volume for instance {}: {}".format(
-                                self.instance_id, e.response['Error']['Code']))
 
     def record_lifecycle_action_heartbeat(self):
         """

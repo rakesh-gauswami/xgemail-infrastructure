@@ -279,7 +279,7 @@
       "Default": ""
     },
     "XgemailCustomerSubmitQueueUrl" : {
-      "Description" : "URL for the SQS Queue where XGEMAIL messages from the customer-submit are sent",
+      "Description" : "URL for the SQS Queue where XGEMAIL messages from customer-submit are sent",
       "Type" : "String",
       "Default": ""
     },
@@ -449,22 +449,6 @@
         "HealthCheckGracePeriod": { "Ref": "HealthCheckGracePeriod" },
         "HealthCheckType": { "Ref": "HealthCheckType" },
         "LaunchConfigurationName": { "Ref": "JavaAutoScalingLaunchConfig" },
-        "LifecycleHookSpecificationList": [
-          {
-            "LifecycleHookName": {
-              "Fn::Join":  ["-",[
-                { "Ref": "VpcName"},
-                { "Ref": "XgemailServiceType" },
-                "Terminating-LifeCycleHook"
-              ]]
-            },
-            "DefaultResult": "CONTINUE",
-            "HeartbeatTimeout": "300",
-            "LifecycleTransition": "autoscaling:EC2_INSTANCE_TERMINATING",
-            "NotificationTargetARN": { "Ref": "AutoScalingNotificationTopicARN" },
-            "RoleARN": { "Ref": "AutoScalingInstanceRoleArn" }
-          }
-        ],
         "LoadBalancerNames": { "Ref": "LoadBalancerName" },
         "MinSize": { "Ref": "AutoScalingMinSize"},
         "MaxSize": { "Ref": "AutoScalingMaxSize"},
@@ -782,7 +766,6 @@
                     "recipe[sophos-cloud-xgemail::setup_xgemail_utils_structure],",
                     "recipe[sophos-cloud-xgemail::configure-postfix],",
                     "recipe[sophos-cloud-xgemail::configure_postfix_snmp_logicmonitor],",
-                    "recipe[sophos-cloud-xgemail::setup_xgemail_sqs_lifecycle_poller_cron],",
                     "recipe[sophos-cloud-xgemail::configure_monit],",
                     "recipe[sophos-cloud-xgemail::run_install_cleanup]",
                     "\""

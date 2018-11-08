@@ -90,12 +90,6 @@
       "Type": "String",
       "Default": "PT1H"
     },
-    "DeployWaitOnResourceSignals": {
-      "Description": "Indicates whether the Auto Scaling group waits on signals during an update.",
-      "Type": "String",
-      "Default": "true",
-      "AllowedValues": [ "true", "false" ]
-    },
     "EbsDeleteOnTermination": {
       "Description": "Indicates whether to delete the volume when the instance is terminated.",
       "Type": "String",
@@ -155,19 +149,19 @@
       "Type": "String",
       "Default": "//cloud-applications/develop/cookbooks.enc"
     },
-    "ScaleDownOnWeekends": {
-      "Description": "Enable scale down to zero on Saturday at midnight and scale back on Monday morning. (Times are UTC, NON PROD/QA ENVIRONMENT ONLY)",
+    "ScaleInOnWeekends": {
+      "Description": "Enable scale in to zero on Saturday at midnight and scale out on Monday morning. (Times are UTC, NON PROD/QA ENVIRONMENT ONLY)",
       "Type": "String",
       "Default": "false",
       "AllowedValues": [ "true", "false" ]
     },
-    "ScaleDownCron": {
-      "Description": "Cron string for when to begin scale down.",
+    "ScaleInCron": {
+      "Description": "Cron string for when to begin scale in.",
       "Type": "String",
       "Default": "0 1 * * 6"
     },
-    "ScaleUpCron": {
-      "Description": "Cron string for when to begin scale up.",
+    "ScaleOutCron": {
+      "Description": "Cron string for when to begin scale out.",
       "Type": "String",
       "Default": "0 4 * * 1"
     },
@@ -214,6 +208,16 @@
     "XgemailBucketName": {
       "Description": "Name of the S3 Bucket where XGEMAIL messages are sent",
       "Type": "String"
+    },
+    "XgemailCustomerSubmitBucketName" : {
+      "Description" : "Name of the S3 Bucket where XGEMAIL messages from the customer-submit are sent",
+      "Type" : "String",
+      "Default": ""
+    },
+    "XgemailCustomerSubmitQueueUrl" : {
+      "Description" : "URL for the SQS Queue where XGEMAIL messages from the customer-submit are sent",
+      "Type" : "String",
+      "Default": ""
     },
     "XgemailMinSizeDataGB": {
       "Description": "Total GB to reserve for storing data files",
@@ -280,6 +284,11 @@
       "Description": "Service type for the xgemail instance (Defaults to unknown so not to break builds)",
       "Type": "String",
       "Default": "unknown"
+    },
+    "XgemailSubmitServiceQueueUrl" : {
+      "Description" : "URL for the SQS Queue where XGEMAIL submit micro service messages are sent",
+      "Type" : "String",
+      "Default": ""
     },
     "XgemailSxlDbl": {
       "Description": "SXL Domain Blacklist used by Xgemail Submit Servers",
@@ -367,7 +376,7 @@
         }
       ]
     },
-    "EnableScaleDownOnWeekends": {
+    "EnableScaleInOnWeekends": {
       "Fn::And": [
         {
           "Fn::Not": [
@@ -391,7 +400,7 @@
         },
         {
           "Fn::Equals": [
-            { "Ref": "ScaleDownOnWeekends" },
+            { "Ref": "ScaleInOnWeekends" },
             "true"
           ]
         }
@@ -440,6 +449,12 @@
           }
         ],
         "LoadBalancerNames": { "Ref": "LoadBalancerName" },
+        "MetricsCollection" : {
+          "Fn::If": [ "EnableDetailedMonitoring",
+            { "Granularity" : "1Minute", },
+            { "Ref" : "AWS::NoValue" }
+          ]
+        },
         "MinSize": { "Ref": "AutoScalingMinSize" },
         "MaxSize": { "Ref": "AutoScalingMaxSize" },
         "TerminationPolicies": [ "NewestInstance", "Default" ],
@@ -485,7 +500,7 @@
             "ReplaceUnhealthy",
             "ScheduledActions"
           ],
-          "WaitOnResourceSignals": { "Ref": "DeployWaitOnResourceSignals" }
+          "WaitOnResourceSignals": "true"
         },
         "AutoScalingScheduledAction": {
           "IgnoreUnmodifiedGroupSizeProperties": { "Ref": "DeployIgnoreUnmodifiedGroupSize" }
@@ -493,23 +508,23 @@
       }
     },
 
-    "AutoScalingScheduledScaleDown": {
+    "AutoScalingScheduledScaleIn": {
       "Type": "AWS::AutoScaling::ScheduledAction",
-      "Condition": "EnableScaleDownOnWeekends",
+      "Condition": "EnableScaleInOnWeekends",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
         "MinSize": "0",
-        "Recurrence": { "Ref": "ScaleDownCron" }
+        "Recurrence": { "Ref": "ScaleInCron" }
       }
     },
 
-    "AutoScalingScheduledScaleUp": {
+    "AutoScalingScheduledScaleOut": {
       "Type": "AWS::AutoScaling::ScheduledAction",
-      "Condition": "EnableScaleDownOnWeekends",
+      "Condition": "EnableScaleInOnWeekends",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
         "MinSize": { "Ref": "AutoScalingMinSize" },
-        "Recurrence": { "Ref": "ScaleUpCron" }
+        "Recurrence": { "Ref": "ScaleOutCron" }
       }
     },
 
@@ -612,6 +627,8 @@
                     "    \"sxl_rbl\"                                : \"{{sxl_rbl}}\",\n",
                     "    \"xgemail_policy_bucket_name\"             : \"{{xgemail_policy_bucket_name}}\",\n",
                     "    \"xgemail_bucket_name\"                    : \"{{xgemail_bucket_name}}\",\n",
+                    "    \"xgemail_customer_submit_bucket_name\"    : \"{{xgemail_customer_submit_bucket_name}}\",\n",
+                    "    \"xgemail_customer_submit_queue_url\"      : \"{{xgemail_customer_submit_queue_url}}\",\n",
                     "    \"xgemail_policy_arn\"                     : \"{{xgemail_policy_arn}}\",\n",
                     "    \"xgemail_sns_sqs_url\"                    : \"{{xgemail_sns_sqs_url}}\",\n",
                     "    \"xgemail_queue_url\"                      : \"{{xgemail_queue_url}}\"\n",
@@ -643,6 +660,8 @@
                   "vpc_id":                                         { "Ref": "Vpc" },
                   "vpc_name":                                       { "Ref": "VpcName" },
                   "xgemail_bucket_name":                            { "Ref": "XgemailBucketName" },
+                  "xgemail_customer_submit_bucket_name":            { "Ref": "XgemailCustomerSubmitBucketName" },
+                  "xgemail_customer_submit_queue_url":              { "Ref": "XgemailCustomerSubmitQueueUrl" },
                   "xgemail_policy_arn":                             { "Ref": "XgemailPolicyArn" },
                   "xgemail_policy_bucket_name":                     { "Ref": "XgemailPolicyBucketName" },
                   "xgemail_queue_url":                              { "Ref": "XgemailQueueUrl" },
