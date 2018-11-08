@@ -98,7 +98,6 @@ class RoutingManager(object):
         except IOError:
             return False
 
-
         chance = random.random()
 
         if routing_percentage <= chance:

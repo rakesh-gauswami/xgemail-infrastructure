@@ -37,24 +37,7 @@ class RoutingManagerTest(unittest.TestCase):
         self.test_data_dir = 'routing-manager-test'
         self.manager_name = 'routing-name'
         self.test_config_path = '%s/config/routing/%s/' % (self.test_data_dir, self.manager_name)
-
-
         self.routing_manager = self.create_routing_manager()
-
-        """
-        if sys.platform.startswith('darwin'):
-            with mock.patch('__main__.logging.handlers.SysLogHandler', create=True) as mocked_logging:
-                mocked_logging.return_value = logging.handlers.SysLogHandler(address='/var/run/syslog')
-                self.routing_manager = RoutingManager(
-                    self.test_data_dir,
-                    self.manager_name
-                )
-        else:
-            self.routing_manager = RoutingManager(
-                self.test_data_dir,
-                self.manager_name
-            )
-        """
 
     def tearDown(self):
         if os.path.exists(self.test_data_dir):
@@ -102,19 +85,15 @@ class RoutingManagerTest(unittest.TestCase):
 
     @mock.patch('random.random')
     def test_perform_routing_without_customer_file_do_routing(self, mock_random):
-
         self.manually_write_routing_config_with_percentage(0.33)
         mock_random.return_value =  0.55
-
         self.assertTrue(self.routing_manager.maybe_perform_routing('customer-missing'))
 
 
     @mock.patch('random.random')
     def test_perform_routing_without_customer_file_no_routing(self, mock_random):
-
         self.manually_write_routing_config_with_percentage(0.33)
         mock_random.return_value = 0.11
-
         self.assertFalse(self.routing_manager.maybe_perform_routing('customer-missing'))
 
     @mock.patch('randomutils.roll_the_dice')
@@ -123,8 +102,6 @@ class RoutingManagerTest(unittest.TestCase):
         mock_open.side_effect = IOError('load error')
         self.assertFalse(self.routing_manager.maybe_perform_routing('customer-io-error'))
         mock_random.assert_not_called()
-
-
 
     def test_verify_config_dir(self):
 
