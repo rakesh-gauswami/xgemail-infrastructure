@@ -30,7 +30,7 @@
 import json
 import argparse
 import os
-import randomutils
+import random
 import logging
 
 class RoutingManager(object):
@@ -98,9 +98,13 @@ class RoutingManager(object):
         except IOError:
             return False
 
-        (result, chance) = randomutils.roll_the_dice(routing_percentage)
 
-        return result
+        chance = random.random()
+
+        if routing_percentage <= chance:
+            return True
+        else:
+            return False
 
     def verify_config_dir(self):
 

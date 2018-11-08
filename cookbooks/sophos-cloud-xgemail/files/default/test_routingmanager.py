@@ -85,8 +85,8 @@ class RoutingManagerTest(unittest.TestCase):
             self.create_routing_manager()
 
 
-    @mock.patch('randomutils.roll_the_dice')
-    def test_perform_routing_with_customer_file(self, mock_roll_the_dice):
+    @mock.patch('random.random')
+    def test_perform_routing_with_customer_file(self, mock_random):
 
         customer_file_name = self.test_config_path + '/customer-id-routing-000.ROUTING'
 
@@ -97,32 +97,32 @@ class RoutingManagerTest(unittest.TestCase):
 
         self.assertTrue(self.routing_manager.maybe_perform_routing('customer-id-routing-000'))
 
-        mock_roll_the_dice.assert_not_called()
+        mock_random.assert_not_called()
 
 
-    @mock.patch('randomutils.roll_the_dice')
-    def test_perform_routing_without_customer_file_do_routing(self, mock_roll_the_dice):
+    @mock.patch('random.random')
+    def test_perform_routing_without_customer_file_do_routing(self, mock_random):
 
         self.manually_write_routing_config_with_percentage(0.33)
-        mock_roll_the_dice.return_value = (True, 0.55)
+        mock_random.return_value =  0.55
 
         self.assertTrue(self.routing_manager.maybe_perform_routing('customer-missing'))
 
 
-    @mock.patch('randomutils.roll_the_dice')
-    def test_perform_routing_without_customer_file_no_routing(self, mock_roll_the_dice):
+    @mock.patch('random.random')
+    def test_perform_routing_without_customer_file_no_routing(self, mock_random):
 
         self.manually_write_routing_config_with_percentage(0.33)
-        mock_roll_the_dice.return_value = (False, 0.11)
+        mock_random.return_value = 0.11
 
         self.assertFalse(self.routing_manager.maybe_perform_routing('customer-missing'))
 
     @mock.patch('randomutils.roll_the_dice')
     @mock.patch("__builtin__.open")
-    def test_perform_routing_without_customer_or_config_file(self, mock_open, mock_roll_the_dice):
+    def test_perform_routing_without_customer_or_config_file(self, mock_open, mock_random):
         mock_open.side_effect = IOError('load error')
         self.assertFalse(self.routing_manager.maybe_perform_routing('customer-io-error'))
-        mock_roll_the_dice.assert_not_called()
+        mock_random.assert_not_called()
 
 
 
