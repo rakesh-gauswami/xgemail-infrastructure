@@ -32,7 +32,6 @@ import argparse
 import os
 import randomutils
 import logging
-#from logging.handlers import SysLogHandler
 
 class RoutingManager(object):
     def __init__(
@@ -40,8 +39,16 @@ class RoutingManager(object):
         root_storage_path,
         manager_name
     ):
+
         self.root_storage_path = root_storage_path
         self.routing_config_path = '%s/config/routing/%s/' % (self.root_storage_path, manager_name)
+
+        config_dir = os.path.dirname(self.routing_config_path)
+        if os.path.exists(config_dir):
+            raise ValueError('routing manager with name <%s> already exists' % manager_name)
+
+        self.verify_config_dir()
+
         self.routing_config_file_name = '%s%s-routing.CONFIG' % (self.routing_config_path, manager_name)
         self.manager_name = manager_name
 

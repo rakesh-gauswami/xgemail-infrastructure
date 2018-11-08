@@ -38,6 +38,10 @@ class RoutingManagerTest(unittest.TestCase):
         self.manager_name = 'routing-name'
         self.test_config_path = '%s/config/routing/%s/' % (self.test_data_dir, self.manager_name)
 
+
+        self.routing_manager = self.create_routing_manager()
+
+        """
         if sys.platform.startswith('darwin'):
             with mock.patch('__main__.logging.handlers.SysLogHandler', create=True) as mocked_logging:
                 mocked_logging.return_value = logging.handlers.SysLogHandler(address='/var/run/syslog')
@@ -50,10 +54,36 @@ class RoutingManagerTest(unittest.TestCase):
                 self.test_data_dir,
                 self.manager_name
             )
+        """
 
     def tearDown(self):
         if os.path.exists(self.test_data_dir):
             shutil.rmtree(self.test_data_dir)
+
+
+    def create_routing_manager(self):
+
+        ret_val = None;
+
+        if sys.platform.startswith('darwin'):
+            with mock.patch('__main__.logging.handlers.SysLogHandler', create=True) as mocked_logging:
+                mocked_logging.return_value = logging.handlers.SysLogHandler(address='/var/run/syslog')
+                ret_val = RoutingManager(
+                    self.test_data_dir,
+                    self.manager_name
+                )
+        else:
+            ret_val = RoutingManager(
+                self.test_data_dir,
+                self.manager_name
+            )
+
+        return ret_val
+
+    def test_manage_with_duplicate_name(self):
+        with self.assertRaises(ValueError):
+            self.create_routing_manager()
+
 
     @mock.patch('randomutils.roll_the_dice')
     def test_perform_routing_with_customer_file(self, mock_roll_the_dice):
