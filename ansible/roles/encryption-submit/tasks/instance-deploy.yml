@@ -33,6 +33,8 @@
       HealthCheckType:                      "ELB"
       InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.XgemailEncryptionSubmitInstanceProfile}}"
       InstanceType:                         "{{aws.asg.es.instance_size}}"
+      KeyName:                              "private-{{account.region}}"
+      LifecycleHookName:                    "{{aws.asg.es.lifecycle_hook_name}}"
       KeyName:                              "public-{{account.region}}"
       LoadBalancerName:                     "{{elb_stack_output.stack_outputs.LoadBalancerId}}"
       PublicIpAddressEnabled:               "true"
