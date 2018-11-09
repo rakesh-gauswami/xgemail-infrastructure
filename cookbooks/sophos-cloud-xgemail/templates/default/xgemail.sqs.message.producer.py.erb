@@ -53,11 +53,9 @@ SUBMIT_BUCKET_NAME = "<%= @sqs_msg_producer_s3_bucket_name %>"
 CUSTOMER_SUBMIT_BUCKET_NAME = "<%= @sqs_msg_producer_s3_customer_submit_bucket_name %>"
 SUBMIT_HOST_IP = "<%= @sqs_msg_producer_submit_ip %>"
 SUBMIT_SQS_URL = "<%= @sqs_msg_producer_sqs_url %>"
-<<<<<<< HEAD
 SUBMIT_SERVICE_SQS_URL = "<%= @sqs_msg_producer_service_sqs_url %>"
-=======
 CUSTOMER_SUBMIT_SQS_URL = "<%= @sqs_msg_producer_customer_submit_sqs_url %>"
->>>>>>> develop
+
 TTL_IN_DAYS = <%= @sqs_msg_producer_ttl_in_days %>
 RELAY_DOMAINS_FILE = "<%= @relay_domains_file %>"
 
@@ -536,11 +534,8 @@ def multi_policy_flow(metadata, direction, domain, sender, message):
             for processing_job in sqs_message_json_queue:
                 send_msg_processing_sqs_message(
                     processing_job,
-<<<<<<< HEAD
+                    direction,
                     customer_id
-=======
-                    direction
->>>>>>> develop
                 )
             sqs_message_json_queue = []
 
@@ -566,11 +561,8 @@ def multi_policy_flow(metadata, direction, domain, sender, message):
         for processing_job in sqs_message_json_queue:
             send_msg_processing_sqs_message(
                 processing_job,
-<<<<<<< HEAD
+                direction,
                 customer_id
-=======
-                direction
->>>>>>> develop
             )
 
     if len(sqs_history_json_queue) > 0:
