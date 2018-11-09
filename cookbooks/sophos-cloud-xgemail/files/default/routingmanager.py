@@ -29,6 +29,7 @@ import argparse
 import os
 import random
 import logging
+from logging.handlers import SysLogHandler
 
 class RoutingManager(object):
     def __init__(
