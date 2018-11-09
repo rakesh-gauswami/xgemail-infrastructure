@@ -42,15 +42,15 @@ if args.get:
   routing_percent = routing_manager.get_routing_percent()
   print 'Current routing %% for all traffic:' % routing_percent
 elif args.set:
-  new_routing_percent = args[0]
+  new_routing_percent = args.set[0]
   routing_manager.set_routing_percent(new_routing_percent)
   print 'Routing %% for all traffic set to:' % new_routing_percent
 elif args.setcustomer:
-  customer_id = args[0]
+  customer_id = args.setcustomer[0]
   routing_manager.set_customer(customer_id)
   print 'Customer %s set to use mailinbound microservice' % customer_id
 elif args.removecustomer:
-  customer_id = args[0]
+  customer_id = args.removecustomer[0]
   routing_manager.remove_customer(customer_id)
   print 'Customer %s removed from mailinbound microservice' % customer_id
 else:
