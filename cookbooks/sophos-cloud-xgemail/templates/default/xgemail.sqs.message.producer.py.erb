@@ -6,7 +6,7 @@
 # to a designated S3 bucket. In case of a failure email stays in postfix deferred
 # queue and postfix retries later.
 #
-# Copyright: Copyright (c) 1997-2016. All rights reserved.
+# Copyright: Copyright (c) 1997-2018. All rights reserved.
 # Company: Sophos Limited or one of its affiliates.
 
 import sys
@@ -50,10 +50,16 @@ SUBMIT_TYPE = "<%= @xgemail_submit_type %>"
 
 S3_ENCRYPTION_ALGORITHM = "<%= @s3_encryption_algorithm %>"
 SUBMIT_BUCKET_NAME = "<%= @sqs_msg_producer_s3_bucket_name %>"
+CUSTOMER_SUBMIT_BUCKET_NAME = "<%= @sqs_msg_producer_s3_customer_submit_bucket_name %>"
 SUBMIT_HOST_IP = "<%= @sqs_msg_producer_submit_ip %>"
 SUBMIT_SQS_URL = "<%= @sqs_msg_producer_sqs_url %>"
+<<<<<<< HEAD
 SUBMIT_SERVICE_SQS_URL = "<%= @sqs_msg_producer_service_sqs_url %>"
+=======
+CUSTOMER_SUBMIT_SQS_URL = "<%= @sqs_msg_producer_customer_submit_sqs_url %>"
+>>>>>>> develop
 TTL_IN_DAYS = <%= @sqs_msg_producer_ttl_in_days %>
+RELAY_DOMAINS_FILE = "<%= @relay_domains_file %>"
 
 # Exit codes from sysexits
 EX_TEMPFAIL = <%= @sqs_msg_producer_ex_temp_failure_code %>
@@ -151,7 +157,7 @@ def upload_to_s3(bucket_name, file_path, formatted_data, expires):
     )
 
 # uploads message file to S3
-def upload_message_to_s3(s3_file_path, expires, compressed_message):
+def upload_message_to_s3(s3_file_path, expires, compressed_message, direction):
     try:
         message_file_path = messageformatter.get_s3_message_path(
             s3_file_path
@@ -166,7 +172,7 @@ def upload_message_to_s3(s3_file_path, expires, compressed_message):
 
         # upload message to the submit bucket
         upload_to_s3(
-            SUBMIT_BUCKET_NAME,
+            get_submit_bucket_name(direction),
             message_file_path,
             formatted_email_data,
             expires
@@ -179,7 +185,7 @@ def upload_message_to_s3(s3_file_path, expires, compressed_message):
         exit(EX_TEMPFAIL)
 
 
-def upload_metadata_to_s3(s3_file_path, expires, metadata):
+def upload_metadata_to_s3(s3_file_path, expires, metadata, direction):
     try:
         metadata_file_path = metadataformatter.get_s3_metadata_path(
             s3_file_path
@@ -197,7 +203,7 @@ def upload_metadata_to_s3(s3_file_path, expires, metadata):
 
         # upload metadata to submit bucket
         upload_to_s3(
-            SUBMIT_BUCKET_NAME,
+            get_submit_bucket_name(direction),
             metadata_file_path,
             formatted_metadata,
             expires
@@ -209,6 +215,11 @@ def upload_metadata_to_s3(s3_file_path, expires, metadata):
         logger.exception("Failed in uploading metadata to S3 [{0}]".format(e))
         exit(EX_TEMPFAIL)
 
+def get_submit_bucket_name(direction):
+    if 'ENCRYPTION' == SUBMIT_TYPE:
+        return SUBMIT_BUCKET_NAME if direction == INBOUND_MESSAGE_DIRECTION else CUSTOMER_SUBMIT_BUCKET_NAME
+    else:
+        return SUBMIT_BUCKET_NAME
 
 # uploads message history parent file to message history bucket
 def upload_msg_history_to_s3(s3_file_path, expires, metadata):
@@ -285,9 +296,9 @@ def send_msg_history_sqs_event(sqs_history_json):
         exit(EX_TEMPFAIL)
 
 # sends msg processing sqs messages to sqs
-def send_msg_processing_sqs_message(sqs_message_json, customer_id = None):
+def send_msg_processing_sqs_message(sqs_message_json, direction, customer_id = None):
 
-    receiving_queue = SUBMIT_SQS_URL
+    receiving_queue = get_sqs_url(direction),
 
     # Check if we should route to the microservice
     # Enforce that we only do this for internet submit for now.
@@ -308,6 +319,11 @@ def send_msg_processing_sqs_message(sqs_message_json, customer_id = None):
         logger.exception("Failed in uploading message processing SQS job [{0}]".format(e))
         exit(EX_TEMPFAIL)
 
+def get_sqs_url(direction):
+    if 'ENCRYPTION' == SUBMIT_TYPE:
+        return SUBMIT_SQS_URL if direction == INBOUND_MESSAGE_DIRECTION else CUSTOMER_SUBMIT_SQS_URL
+    else:
+       return SUBMIT_SQS_URL
 
 def get_plaintext_message():
     stdin_no = sys.stdin.fileno()
@@ -390,7 +406,7 @@ def get_from_sender_domain(metadata):
         )
 
 
-def upload_documents(metadata, compressed_message, s3_file_path):
+def upload_documents(metadata, compressed_message, s3_file_path, direction):
 
     # prepared expiration date based on ttl_in_days
     expires = datetime.now() + timedelta(days=TTL_IN_DAYS)
@@ -398,20 +414,23 @@ def upload_documents(metadata, compressed_message, s3_file_path):
     upload_message_to_s3(
         s3_file_path,
         expires,
-        compressed_message
+        compressed_message,
+        direction
     )
 
     upload_metadata_to_s3(
         s3_file_path,
         expires,
-        metadata
+        metadata,
+        direction
     )
 
-    upload_msg_history_to_s3(
-        s3_file_path,
-        expires,
-        metadata
-    )
+    if 'ENCRYPTION' != SUBMIT_TYPE:
+        upload_msg_history_to_s3(
+            s3_file_path,
+            expires,
+            metadata
+        )
 
 def base_policy_flow(metadata, direction, domain, sender, message):
     queue_id = metadata.get_queue_id()
@@ -439,24 +458,28 @@ def base_policy_flow(metadata, direction, domain, sender, message):
     upload_documents(
         metadata,
         gziputils.gzip_data(message),
-        s3_file_path
+        s3_file_path,
+        direction
     )
 
     send_msg_processing_sqs_message(
-        sqs_message.get_sqs_json()
+        sqs_message.get_sqs_json(),
+        direction
     )
 
-    sqs_history = prepare_msg_history_event(
-        s3_file_path,
-        metadata,
-        sqs_message,
-        direction,
-        sender
-    )
+    if 'ENCRYPTION' != SUBMIT_TYPE:
+        sqs_history = prepare_msg_history_event(
+            s3_file_path,
+            metadata,
+            sqs_message,
+            direction,
+            sender
+        )
 
-    send_msg_history_sqs_event(
-        sqs_history.get_sqs_json()
-    )
+        send_msg_history_sqs_event(
+            sqs_history.get_sqs_json()
+        )
+
 
 # Mail flow goes through multi_policy_flow if multi-policy flag is enabled
 # but if there are error conditions such as file read error etc, the mail
@@ -503,7 +526,8 @@ def multi_policy_flow(metadata, direction, domain, sender, message):
         upload_documents(
             this_policy_metadata,
             gziputils.gzip_data(message),
-            new_s3_file_path
+            new_s3_file_path,
+            direction
         )
 
         #batch SQS job - every 10 jobs as a batch
@@ -512,7 +536,11 @@ def multi_policy_flow(metadata, direction, domain, sender, message):
             for processing_job in sqs_message_json_queue:
                 send_msg_processing_sqs_message(
                     processing_job,
+<<<<<<< HEAD
                     customer_id
+=======
+                    direction
+>>>>>>> develop
                 )
             sqs_message_json_queue = []
 
@@ -538,7 +566,11 @@ def multi_policy_flow(metadata, direction, domain, sender, message):
         for processing_job in sqs_message_json_queue:
             send_msg_processing_sqs_message(
                 processing_job,
+<<<<<<< HEAD
                 customer_id
+=======
+                direction
+>>>>>>> develop
             )
 
     if len(sqs_history_json_queue) > 0:
@@ -546,6 +578,18 @@ def multi_policy_flow(metadata, direction, domain, sender, message):
             send_msg_history_sqs_event(
                 history_job
             )
+
+def get_customer_domains():
+    domains = []
+    with open(RELAY_DOMAINS_FILE, 'r') as f:
+        for domain in f.readlines():
+            # file is formatted like so:
+            #   example1.com OK
+            #   example2.com OK
+            #   ...
+            # but we only need the domain name
+            domains.append(domain.split(' ')[0])
+    return domains
 
 # accepts data from postfix and send message and metadata to S3 and
 # a json object to SQS which provides pointer to the message in S3
@@ -570,6 +614,14 @@ def main():
             metadata = get_metadata_for_outbound(metadata, plaintext_message)
             sender = metadata.get_sender_address()
             domain = get_from_sender_domain(metadata)
+
+        elif 'ENCRYPTION' == SUBMIT_TYPE:
+            domain = metadata.get_recipient_domain()
+            logger.debug("Customer's domain: [{0}]".format(domain))
+            sender = metadata.get_sender_address()
+            customer_domains = get_customer_domains()
+            direction = INBOUND_MESSAGE_DIRECTION if domain in customer_domains else OUTBOUND_MESSAGE_DIRECTION
+
         else:
             raise ("Wrong submit type [{0}]".format(SUBMIT_TYPE))
 

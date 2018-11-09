@@ -1,0 +1,12 @@
+---
+
+- name: "Gather {{stack.events.rule.lifecycle_lambda}} CloudFormation Stack Output"
+  cloudformation_facts:
+    stack_name: "{{stack.events.rule.lifecycle_lambda}}"
+    region: "{{account.region}}"
+  register: events_rule_lifecycle_lambda_output
+
+- name: "Print {{stack.events.rule.lifecycle_lambda}} CloudFormation Stack Output"
+  debug:
+    var: events_rule_lifecycle_lambda_output
+    verbosity: 3

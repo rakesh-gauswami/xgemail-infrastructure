@@ -12,6 +12,7 @@
 package 'tar'
 
 NODE_TYPE = node['xgemail']['cluster_type']
+ACCOUNT = node['sophos_cloud']['account']
 
 # Make sure we're on an customer submit node
 if NODE_TYPE != 'customer-submit'
@@ -44,7 +45,11 @@ SERVICE_USER = node['xgemail']['jilter_user']
 POLICY_BUCKET_NAME   = node['xgemail']['xgemail_policy_bucket_name']
 ACTIVE_PROFILE = node['xgemail']['xgemail_active_profile']
 
-include_recipe 'sophos-cloud-xgemail::install_jilter_common'
+if ACCOUNT == 'sandbox'
+  include_recipe 'sophos-cloud-xgemail::install_jilter_code_sandbox'
+else
+  include_recipe 'sophos-cloud-xgemail::install_jilter_common'
+end
 
 # Modify /etc/rsyslog.conf
 execute 'modify_rsyslog.conf' do

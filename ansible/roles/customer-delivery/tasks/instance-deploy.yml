@@ -34,6 +34,7 @@
       InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.XgemailDeliveryInstanceProfile}}"
       InstanceType:                         "{{aws.asg.cd.instance_size}}"
       KeyName:                              "private-{{account.region}}"
+      LifecycleHookName:                    "{{aws.asg.cd.lifecycle_hook_name}}"
       LoadBalancerName:                     "{{elb_stack_output.stack_outputs.LoadBalancerId}}"
       PublicIpAddressEnabled:               "false"
       S3CookbookRepositoryURL:              "//cloud-{{account.name}}-templates/{{build.branch}}/xgemail-infrastructure/cookbooks.enc"
