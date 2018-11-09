@@ -46,6 +46,7 @@ XGEMAIL_SERVICE_QUEUE_URL                    = node['xgemail']['xgemail_service_
 XGEMAIL_MESSAGE_HISTORY_BUCKET_NAME          = node['xgemail']['msg_history_bucket_name']
 XGEMAIL_MESSAGE_HISTORY_QUEUE_URL            = node['xgemail']['msg_history_queue_url']
 XGEMAIL_POLICY_S3_BUCKET_NAME                = node['xgemail']['xgemail_policy_bucket_name']
+POLICY_STORAGE_PATH                          = node['xgemail']['policy_efs_mount_dir']
 
 #constants to use
 SUBMIT = 'submit'
@@ -81,7 +82,8 @@ template PRODUCER_SCRIPT_PATH do
       :sqs_msg_producer_service_sqs_url => XGEMAIL_SERVICE_QUEUE_URL,
       :sqs_msg_producer_sqs_url => XGEMAIL_QUEUE_URL,
       :sqs_msg_producer_submit_ip => NODE_IP,
-      :sqs_msg_producer_ttl_in_days => SQS_MESSAGE_PRODUCER_TTL_IN_DAYS
+      :sqs_msg_producer_ttl_in_days => SQS_MESSAGE_PRODUCER_TTL_IN_DAYS,
+      :policy_storage_path => POLICY_STORAGE_PATH
   )
 end
 

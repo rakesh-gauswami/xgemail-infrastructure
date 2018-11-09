@@ -221,8 +221,5 @@ class MultiPolicyReaderUtilsTest(unittest.TestCase):
             "76656a08-c17b-47d6-aafd-ef8fc7c250a0"
         )
 
-
-
-
 if __name__ == "__main__":
     unittest.main()

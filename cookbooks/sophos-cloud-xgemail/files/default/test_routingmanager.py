@@ -73,7 +73,7 @@ class RoutingManagerTest(unittest.TestCase):
 
         open(customer_file_name, 'a').close()
 
-        self.assertTrue(self.routing_manager.maybe_perform_routing('customer-id-routing-000'))
+        self.assertTrue(self.routing_manager.perform_routing('customer-id-routing-000'))
 
         mock_random.assert_not_called()
 
@@ -82,20 +82,20 @@ class RoutingManagerTest(unittest.TestCase):
     def test_perform_routing_without_customer_file_do_routing(self, mock_random):
         self.manually_write_routing_config_with_percentage(0.33)
         mock_random.return_value =  0.55
-        self.assertTrue(self.routing_manager.maybe_perform_routing('customer-missing'))
+        self.assertTrue(self.routing_manager.perform_routing('customer-missing'))
 
 
     @mock.patch('random.random')
     def test_perform_routing_without_customer_file_no_routing(self, mock_random):
         self.manually_write_routing_config_with_percentage(0.33)
         mock_random.return_value = 0.11
-        self.assertFalse(self.routing_manager.maybe_perform_routing('customer-missing'))
+        self.assertFalse(self.routing_manager.perform_routing('customer-missing'))
 
     @mock.patch('random.random')
     @mock.patch("__builtin__.open")
     def test_perform_routing_without_customer_or_config_file(self, mock_open, mock_random):
         mock_open.side_effect = IOError('load error')
-        self.assertFalse(self.routing_manager.maybe_perform_routing('customer-io-error'))
+        self.assertFalse(self.routing_manager.perform_routing('customer-io-error'))
         mock_random.assert_not_called()
 
     def test_verify_config_dir(self):

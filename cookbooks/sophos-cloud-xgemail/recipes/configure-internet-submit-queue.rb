@@ -190,6 +190,7 @@ if ACCOUNT != 'sandbox'
   include_recipe 'sophos-cloud-xgemail::setup_dh_params'
   include_recipe 'sophos-cloud-xgemail::install_jilter_inbound'
   include_recipe 'sophos-cloud-xgemail::setup_flag_toggle_internet_submit'
+  include_recipe 'sophos-cloud-xgemail::setup_routing_managers'
   include_recipe 'sophos-cloud-xgemail::setup_internet_submit_domain_updater_cron'
   include_recipe 'sophos-cloud-xgemail::setup_internet_submit_recipient_updater_cron'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
@@ -205,6 +206,7 @@ else
   end
 
   include_recipe 'sophos-cloud-xgemail::setup_flag_toggle_internet_submit'
+  include_recipe 'sophos-cloud-xgemail::setup_routing_managers'
   include_recipe 'sophos-cloud-xgemail::setup_internet_submit_domain_updater_cron'
   include_recipe 'sophos-cloud-xgemail::setup_internet_submit_recipient_updater_cron'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'

@@ -23,7 +23,6 @@ import messageformatter
 import messagehistoryformatter
 import metadataformatter
 import multipolicyreaderutils
-import serviceroutingutils
 import os
 import re
 import signal
@@ -36,6 +35,7 @@ from datetime import timedelta
 from email.parser import Parser
 from email.utils import parseaddr
 from logging.handlers import SysLogHandler
+from routingmanager import RoutingManager
 
 # Constants
 AWS_REGION = "<%= @sqs_msg_producer_aws_region %>"
@@ -43,10 +43,10 @@ MSG_HISTORY_BUCKET_NAME = "<%= @sqs_msg_producer_msg_history_s3_bucket_name %>"
 MSG_HISTORY_SQS_URL = "<%= @sqs_msg_producer_msg_history_sqs_url %>"
 POLICY_S3_BUCKET_NAME = "<%= @sqs_msg_producer_policy_s3_bucket_name %>"
 PROCESS_TIMEOUT_SECONDS = <%= @sqs_msg_producer_process_timeout_seconds %>
+POLICY_STORAGE_PATH = "<%= @policy_storage_path %>"
 
 # Either 'INTERNET' or 'CUSTOMER'
 SUBMIT_TYPE = "<%= @xgemail_submit_type %>"
-
 
 S3_ENCRYPTION_ALGORITHM = "<%= @s3_encryption_algorithm %>"
 SUBMIT_BUCKET_NAME = "<%= @sqs_msg_producer_s3_bucket_name %>"
@@ -91,6 +91,12 @@ POLICY_ID_PATH_VALUE = "/00/"
 SQS_BATCH_SIZE = 10
 
 awshandler = AwsHandler(AWS_REGION)
+
+routingmanager = RoutingManager(
+    POLICY_STORAGE_PATH,
+    SUBMIT_TYPE + "-SUBMIT"
+)
+
 
 #postfix pipe sends metadata as sysargs.
 def get_metadata():
@@ -284,12 +290,12 @@ def send_msg_processing_sqs_message(sqs_message_json, customer_id = None):
 
     receiving_queue = SUBMIT_SQS_URL
 
-    if serviceroutingutils.route_to_microservice(SUBMIT_TYPE, customer_id):
+    # Check if we should route to the microservice
+    if routingmanager.perform_routing(customer_id):
         receiving_queue = SUBMIT_SERVICE_SQS_URL
 
-
     try:
-        logger.info("Processing SQS job [{0}]".format(sqs_message_json))
+        logger.info("Processing SQS job [{0}] in queue [{1}]".format(sqs_message_json, receiving_queue))
         logger.info("Added SQS job response [{0}]".format
             (add_to_sqs(
                 receiving_queue,

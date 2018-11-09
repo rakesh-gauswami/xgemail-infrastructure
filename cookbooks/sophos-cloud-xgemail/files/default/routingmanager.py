@@ -63,7 +63,7 @@ class RoutingManager(object):
             self.routing_config_file_name
         )
 
-    def maybe_perform_routing(self, customer_id):
+    def perform_routing(self, customer_id):
 
         """
         Returns true if alternate routing should be performed.
