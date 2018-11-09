@@ -9,8 +9,11 @@
 # respective owners.
 #
 #
-#  This script is used to create and set the flag used to toggle reading policy from s3 on or off.
-#  This script can also be used to get this setting
+# This script is used to configure customer traffic flowing to the old mailinbound-services PIC
+# and the new mailinbound microservice. Traffic can be directed on a per customer basis, allowing
+# all traffic for a customer to be diverted to the the microservice, or as a percentage of all
+# traffic. The percentage routing can be set to 0.00 to prevent traffic from being directed
+# to the microservice
 #
 import argparse
 from routingmanager import RoutingManager
