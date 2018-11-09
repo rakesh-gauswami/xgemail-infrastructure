@@ -150,7 +150,7 @@ class RoutingManager(object):
         file_name = self.routing_config_path + customer_id + '.ROUTING'
         open(file_name, 'a').close()
 
-        self.logger.info('Added customer <{0}> to internet submit microservice routing'.format(file_location))
+        self.logger.info('Added customer <{0}> to internet submit microservice routing'.format(customer_id))
 
     def remove_customer(self, customer_id):
 
@@ -163,7 +163,7 @@ class RoutingManager(object):
             self.logger.info('Cannot find: {0}'.format(file_location))
         else:
             os.remove(file_location)
-            self.logger.info('Removed customer <{0}> from microservice routing'.format(file_location))
+            self.logger.info('Removed customer <{0}> from microservice routing'.format(customer_id))
 
 
     def valid_float(self, possible_float):
