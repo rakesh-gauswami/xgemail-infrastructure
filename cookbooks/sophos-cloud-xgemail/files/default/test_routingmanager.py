@@ -63,11 +63,6 @@ class RoutingManagerTest(unittest.TestCase):
 
         return ret_val
 
-    def test_manage_with_duplicate_name(self):
-        with self.assertRaises(ValueError):
-            self.create_routing_manager()
-
-
     @mock.patch('random.random')
     def test_perform_routing_with_customer_file(self, mock_random):
 
