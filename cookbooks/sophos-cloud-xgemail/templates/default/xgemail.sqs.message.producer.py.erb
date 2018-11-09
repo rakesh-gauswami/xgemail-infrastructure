@@ -290,7 +290,9 @@ def send_msg_processing_sqs_message(sqs_message_json, customer_id = None):
     receiving_queue = SUBMIT_SQS_URL
 
     # Check if we should route to the microservice
-    if routingmanager.perform_routing(customer_id):
+    # Enforce that we only do this for internet submit for now.
+    # This can be removed once we have an outbound microservice
+    if 'INTERNET' == SUBMIT_TYPE and routingmanager.perform_routing(customer_id):
         receiving_queue = SUBMIT_SERVICE_SQS_URL
 
     try:

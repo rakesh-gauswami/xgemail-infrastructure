@@ -16,8 +16,9 @@ if NODE_TYPE != 'submit'
 end
 
 
-POLICY_STORAGE_PATH = node['xgemail']['policy_efs_mount_dir']
-XGEMAIL_FILES_DIR     = node['xgemail']['xgemail_files_dir']
+POLICY_STORAGE_PATH              = node['xgemail']['policy_efs_mount_dir']
+XGEMAIL_FILES_DIR                = node['xgemail']['xgemail_files_dir']
+XGEMAIL_UTILS_DIR                = node['xgemail']['xgemail_utils_files_dir']
 ROUTING_MANAGERS_CLI_PACKAGE_DIR = "#{XGEMAIL_FILES_DIR}/routing-managers-cli"
 
 # Internet submit routing manager CLI
@@ -39,6 +40,7 @@ template INTERNET_SUBMIT_MANAGER_SCRIPT_PATH do
   owner 'root'
   group 'root'
   variables(
-      :policy_storage_path => POLICY_STORAGE_PATH
+      :policy_storage_path => POLICY_STORAGE_PATH,
+      :xgemail_utils_path => XGEMAIL_UTILS_DIR,
   )
 end
