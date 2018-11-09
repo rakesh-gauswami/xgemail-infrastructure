@@ -16,15 +16,12 @@
 #
 #   my_routing_manager = RoutingManager(
 #       data_storage_directory,
-#       manager_name,
-#       logger
+#       manager_name
 #   )
 #
 #   Where:
 #    - data_storage_directory: the local path to the directory where configuration files will be kept for this manager
 #    - manager_name: the unique name for your manager
-#    - logger: the logger to be used for your manager, when running in AWS this will likely be:
-#              logging.handlers.SysLogHandler(address='/dev/log')
 #
 
 import json
