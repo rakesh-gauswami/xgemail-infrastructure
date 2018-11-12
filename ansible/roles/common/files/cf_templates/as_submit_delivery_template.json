@@ -184,13 +184,6 @@
       "Type": "String",
       "Default": "CloudStation"
     },
-    "UpdateInterval": {
-      "Description": "The interval in minutes cfn-hup watches stack modifications.",
-      "Type": "Number",
-      "Default": "1",
-      "MinValue": "1",
-      "MaxValue": "30"
-    },
     "Vpc": {
       "Description": "ID of an existing VPC",
       "Type": "AWS::EC2::VPC::Id"
@@ -481,6 +474,35 @@
             "Key": "BundleVersion",
             "Value": { "Ref": "BundleVersion" },
             "PropagateAtLaunch": true
+          },
+          {
+            "Key": "Application",
+            "Value": { "Ref": "XgemailServiceType" },
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "ServiceCategory",
+            "Value": { "Fn::Sub": "${VpcName}:email" },
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "ServiceType",
+            "Value": { "Fn::Sub": "${VpcName}:${XgemailServiceType}" },
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "spot-enabled",
+            "Value": { "Fn::If": [
+              "UseSpotPrice",
+              "true" ,
+              "false"
+            ]},
+            "PropagateAtLaunch": true
           }
         ]
       },
@@ -553,8 +575,7 @@
       "Metadata": {
         "AWS::CloudFormation::Init": {
           "configSets": {
-            "xgemail_install": [ "install_volume", "attributes", "update_cookbooks", "xgemail_install" ],
-            "xgemail_update": [ "attributes", "update_cookbooks", "xgemail_update" ]
+            "xgemail_install": [ "install_volume", "attributes", "update_cookbooks", "xgemail_install" ]
           },
 
           "install_volume": {
@@ -724,25 +745,9 @@
                     "[main]\n",
                     "stack=", { "Ref": "AWS::StackName" }, "\n",
                     "region=", { "Ref": "AWS::Region" }, "\n",
-                    "interval=", { "Ref": "UpdateInterval" }, "\n"
+                    "interval=1\n"
                   ]]
                 }
-              },
-              "/etc/cfn/hooks.d/cfn-auto-reloader.conf": {
-                "content": {
-                  "Fn::Join": [ "", [
-                    "[cfn-auto-reloader-hook]\n",
-                    "triggers=post.update\n",
-                    "path=Resources.XgemailAutoScalingLaunchConfig.Metadata.AWS::CloudFormation::Init\n",
-                    "action=/opt/aws/bin/cfn-init -v -s ",
-                    { "Ref": "AWS::StackName" },
-                    " -r XgemailAutoScalingLaunchConfig",
-                    " --configsets xgemail_update",
-                    " --region ", { "Ref": "AWS::Region" }, "\n",
-                    "runas=root\n"
-                  ]]
-                }
-
               },
               "/var/sophos/modify_network_config": {
                 "content": {
@@ -829,53 +834,6 @@
                 "env": {
                   "HOME": "/var/chef"
                 }
-              },
-              "06_delete_cfn_hub_config": {
-                "command": "rm -f /etc/cfn/hooks.d/cfn-auto-reloader.conf.*"
-              }
-            },
-            "services": {
-              "sysvinit": {
-                "cfn-hup": {
-                  "enabled": "true",
-                  "ensureRunning": "true",
-                  "files": [
-                    "/etc/cfn/cfn-hup.conf",
-                    "/etc/cfn/hooks.d/cfn-auto-reloader.conf"
-                  ]
-                }
-              }
-            }
-          },
-
-          "xgemail_update": {
-            "commands": {
-              "01_setup_node_run_list": {
-                "command": {
-                  "Fn::Join": ["", [
-                    "knife node run_list set -z `knife node list -z` \"",
-                    "recipe[sophos-cloud-xgemail::update]",
-                    "\""
-                  ]]
-                },
-                "cwd": "/var/chef/chef-repo",
-                "env": {
-                  "HOME": "/var/chef"
-                }
-              },
-              "02_run_chef_client": {
-                "command": {
-                  "Fn::Join": [ " ", [
-                    "chef-client --no-color -z",
-                    "-c /var/chef/chef-repo/.chef/client.rb",
-                    "-j /var/sophos/cookbooks/attributes.json",
-                    "-l debug -L /var/log/chef-client.instance.update.log"
-                  ]]
-                },
-                "cwd": "/var/chef/chef-repo",
-                "env": {
-                  "HOME": "/var/chef"
-                }
               }
             }
           }
@@ -911,6 +869,9 @@
               "#!/bin/bash -xe\n",
               "# Install the files and packages from the metadata\n",
               "\n",
+
+              "# Force replacement of the LaunchConfiguration object by changing this value.\n",
+              "# ", { "Ref": "BuildVersion" }, "\n",
 
               "# Make sure we call cfn-signal before exiting, otherwise we have to\n",
               "# wait for the CreationPolicy timeout to detect failed initialization.\n",
@@ -982,9 +943,17 @@
   },
 
   "Outputs": {
+    "AmiId": {
+      "Description": "ID of the Ami we are using",
+      "Value": { "Ref" : "AmiId" }
+    },
     "AutoScalingGroup": {
       "Description": "Auto Scaling Group Name.",
       "Value": { "Ref": "XgemailAutoScalingGroup" }
+    },
+    "Branch": {
+      "Description": "Branch we are using so we know for things like ansible",
+      "Value": { "Ref": "Branch" }
     },
     "LaunchConfig": {
       "Description": "Auto Scaling Launch Configuration Name.",
