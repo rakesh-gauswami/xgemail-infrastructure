@@ -111,7 +111,7 @@ class Terminator(object):
         out, err = process.communicate()
 
         if process.returncode != 0:
-            self.logger.error("Error while running command [ %s ], exiting." % cmd)
+            self.logger.error("Error while running command [ {} ], exiting.".format(cmd))
             sys.exit(process.returncode)
 
         return out.strip()
@@ -122,13 +122,13 @@ class Terminator(object):
         """
         try:
             response = self.ssm.get_parameter(Name=param)
-            self.logger.info("SSM Parameter Name: %s Value: %s" % (response['Parameter']['Name'], response['Parameter']['Value']))
+            self.logger.info("SSM Parameter Name: {} Value: {}".format(response['Parameter']['Name'], response['Parameter']['Value']))
             return response['Parameter']['Value']
         except botocore.exceptions.ClientError as e:
             if e.response['Error']['Code'] == 'ParameterNotFound':
-                self.logger.error("ParameterNotFound %s" % param)
+                self.logger.error("ParameterNotFound {}".format(param))
                 return None
-            self.logger.exception("Error getting SSM Parameter %s" % e.response['Error']['Code'])
+            self.logger.exception("Error getting SSM Parameter {}".format(e.response['Error']['Code']))
             raise e
 
     def send_sns_alert(self, message):
@@ -141,12 +141,12 @@ class Terminator(object):
         try:
             response = self.sns.publish(
                 TopicArn=self.sns_alarm_topic_arn,
-                Subject="Alarm from EC2 Instance: %s in Region: %s" % (self.instance.id, self.aws_region),
+                Subject="Alarm from EC2 Instance: {} in Region: {}".format(self.instance.id, self.aws_region),
                 Message=message
             )
-            self.logger.info("SNS MessageId: %s" % response['MessageId'])
+            self.logger.info("SNS MessageId: {}".format(response['MessageId']))
         except botocore.exceptions.ClientError as e:
-            self.logger.exception("Error sending SNS alert to alarm topic %s : %s" % (
+            self.logger.exception("Error sending SNS alert to alarm topic {} : {}".format(
                 self.sns_alarm_topic_arn, e.response['Error']['Code']))
 
     def service_controller(self, service, action):
@@ -219,22 +219,22 @@ class Terminator(object):
         """
         Unsubscribes SQS Queue Subscription from SNS Topic.
         """
-        self.logger.info("Unsubscribing SNS Subscription %s." % arn)
+        self.logger.info("Unsubscribing SNS Subscription {}.".format(arn))
         try:
             return self.sns.unsubscribe(SubscriptionArn=arn)
         except botocore.exceptions.ClientError as e:
-            self.logger.exception("Error unsubscribing subscription %s from SNS Topic : %s" % (
+            self.logger.exception("Error unsubscribing subscription {} from SNS Topic : {}".format(
                 arn, e.response['Error']['Code']))
 
     def sqs_delete_queue(self, url):
         """
         Deletes SQS Queue.
         """
-        self.logger.info("Deleting SQS queue %s" % url)
+        self.logger.info("Deleting SQS queue {}".format(url))
         try:
             return self.sqs.delete_queue(QueueUrl=url)
         except botocore.exceptions.ClientError as e:
-            self.logger.exception("Error deleting SQS Queue %s : %s" % (
+            self.logger.exception("Error deleting SQS Queue {} : {}".format(
                 url, e.response['Error']['Code']))
 
     def check_postfix_queue(self):
@@ -247,7 +247,7 @@ class Terminator(object):
 
         for q in subdirs:
             # TODO: replace static storage path with new asg volume when XGE-1807 is pulled in
-            path = ("/storage/%s/%s" % (self.postfix_instance, q))
+            path = ("/storage/{}/{}".format(self.postfix_instance, q))
             for root, dirs, files in os.walk(path):
                 messages += len(files)
 
@@ -338,10 +338,13 @@ class Terminator(object):
         if self.postfix_queue_count == 0:
             self.logger.info("The Postfix queue is empty! Unmounting, detaching, and deleting volume.")
             # Run umount command to unmount the volume
-            self.run_cmd(['umount', self.device_name])
+            self.logger.info("Running umount on {}.".format(self.volume_device_name))
+            self.run_cmd(['umount', self.volume_device_name])
             # Detach the volume
+            self.logger.info("Detaching Ebs Volume: {} from EC2 Instance: {}.".format(self.volume.id, self.instance.id))
             self.volume.detach_from_instance(Device=self.volume_device_name, Force=True, InstanceId=self.instance.id)
             # Delete the volume
+            self.logger.info("Deleting Ebs Volume: {}.".format(self.volume.id))
             self.volume.delete()
 
         # Complete ASG hook
@@ -375,7 +378,7 @@ class LifecycleHook(object):
         seconds_buffer = 60
         elapsed_time = datetime.strptime(datetime.now().strftime(self.aws_time_format), self.aws_time_format) - self.heartbeat_start_time
         elapsed_time.total_seconds()
-        self.logger.info("Time Check - Elapsed Time: %f04.1f seconds, Heartbeat Timeout: %d seconds, Heartbeat Request Count: %s" % (elapsed_time.total_seconds(), self.heartbeat_timeout, self.heartbeat_request_count))
+        self.logger.info("Time Check - Elapsed Time: %f04.1f seconds, Heartbeat Timeout: %d seconds, Heartbeat Request Count: {}".format(elapsed_time.total_seconds(), self.heartbeat_timeout, self.heartbeat_request_count))
         if elapsed_time.total_seconds() <= self.heartbeat_timeout - seconds_buffer:
             return True
         else:
@@ -390,7 +393,7 @@ class LifecycleHook(object):
                 AutoScalingGroupName=self.autoscaling_group_name,
                 LifecycleHookNames=[self.lifecycle_hook_name]
             )['LifecycleHooks'][0][timeout]
-            self.logger.info("%s: %s" % (timeout, response))
+            self.logger.info("{}: {}".format(timeout, response))
             return response
         except botocore.exceptions.ClientError as e:
             self.logger.exception("Error getting timeout for LifecycleHook {}: {}".format(
@@ -410,7 +413,7 @@ class LifecycleHook(object):
                 InstanceId=self.instance_id
             )
             self.heartbeat_start_time = datetime.strptime(datetime.now().strftime(self.aws_time_format), self.aws_time_format)
-            self.logger.info("Recording Lifecycle Action Heartbeat: %s and resetting heartbeat start time to %s" % (response, self.heartbeat_start_time))
+            self.logger.info("Recording Lifecycle Action Heartbeat: {} and resetting heartbeat start time to ".format(response, self.heartbeat_start_time))
             return response
         except botocore.exceptions.ClientError as e:
             self.logger.exception("Error recording lifecycle action heartbeat for instance {}: Lifecycle Hook Name {}: Lifecycle Action Token {}: {}".format(
