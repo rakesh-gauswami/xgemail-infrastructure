@@ -337,9 +337,6 @@ class Terminator(object):
 
         if self.postfix_queue_count == 0:
             self.logger.info("The Postfix queue is empty! Unmounting, detaching, and deleting volume.")
-            # Run umount command to unmount the volume
-            self.logger.info("Running umount on {}.".format(self.volume_device_name))
-            self.run_cmd(['umount', self.volume_device_name])
             # Detach the volume
             self.logger.info("Detaching Ebs Volume: {} from EC2 Instance: {}.".format(self.volume.id, self.instance.id))
             try:
