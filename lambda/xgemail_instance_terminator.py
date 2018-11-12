@@ -61,8 +61,12 @@ def send_ssm_command(region, time, autocaling_group_name, instance_id, lifecycle
     logger.info("Executing Instance Terminator SSM Document, for Instance Id: {} in AutoScaling Group: {}".format(instance_id, autocaling_group_name))
     try:
         ssmresponse = ssm.send_command(
-            InstanceIds=[instance_id],
+            CloudWatchOutputConfig={
+                'CloudWatchOutputEnabled': True
+            },
+            Comment='Terminate {} in {}'.format(instance_id, autocaling_group_name),
             DocumentName=ssm_document_name,
+            InstanceIds=[instance_id],
             Parameters={
                 'Region': [region],
                 'Time': [time],
@@ -70,9 +74,6 @@ def send_ssm_command(region, time, autocaling_group_name, instance_id, lifecycle
                 'InstanceId': [instance_id],
                 'LifecycleHookName': [lifecycle_hook_name],
                 'LifecycleActionToken': [lifecycle_action_token]
-            },
-            CloudWatchOutputConfig={
-                'CloudWatchOutputEnabled': True
             }
         )
     except ClientError as e:
