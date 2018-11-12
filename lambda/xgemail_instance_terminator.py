@@ -64,7 +64,7 @@ def send_ssm_command(region, time, autocaling_group_name, instance_id, lifecycle
             CloudWatchOutputConfig={
                 'CloudWatchOutputEnabled': True
             },
-            Comment='Terminate {} in {}'.format(instance_id),
+            Comment='Terminate {}'.format(instance_id),
             DocumentName=ssm_document_name,
             InstanceIds=[instance_id],
             Parameters={
