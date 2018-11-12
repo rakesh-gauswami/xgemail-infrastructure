@@ -111,7 +111,7 @@ class Terminator(object):
         out, err = process.communicate()
 
         if process.returncode != 0:
-            self.logger.error("Error while running command [ {} ], exiting.".format(cmd))
+            self.logger.error("Exception while running command [ {} ], exiting.".format(cmd))
             sys.exit(process.returncode)
 
         return out.strip()
@@ -128,7 +128,7 @@ class Terminator(object):
             if e.response['Error']['Code'] == 'ParameterNotFound':
                 self.logger.error("ParameterNotFound {}".format(param))
                 return None
-            self.logger.exception("Error getting SSM Parameter {}".format(e.response['Error']['Code']))
+            self.logger.exception("Exception getting SSM Parameter {}".format(e.response['Error']['Code']))
             raise e
 
     def send_sns_alert(self, message):
@@ -146,7 +146,7 @@ class Terminator(object):
             )
             self.logger.info("SNS MessageId: {}".format(response['MessageId']))
         except botocore.exceptions.ClientError as e:
-            self.logger.exception("Error sending SNS alert to alarm topic {} : {}".format(
+            self.logger.exception("Exception sending SNS alert to alarm topic {} : {}".format(
                 self.sns_alarm_topic_arn, e.response['Error']['Code']))
 
     def service_controller(self, service, action):
@@ -223,7 +223,7 @@ class Terminator(object):
         try:
             return self.sns.unsubscribe(SubscriptionArn=arn)
         except botocore.exceptions.ClientError as e:
-            self.logger.exception("Error unsubscribing subscription {} from SNS Topic : {}".format(
+            self.logger.exception("Exception unsubscribing subscription {} from SNS Topic : {}".format(
                 arn, e.response['Error']['Code']))
 
     def sqs_delete_queue(self, url):
@@ -234,7 +234,7 @@ class Terminator(object):
         try:
             return self.sqs.delete_queue(QueueUrl=url)
         except botocore.exceptions.ClientError as e:
-            self.logger.exception("Error deleting SQS Queue {} : {}".format(
+            self.logger.exception("Exception deleting SQS Queue {} : {}".format(
                 url, e.response['Error']['Code']))
 
     def check_postfix_queue(self):
@@ -342,11 +342,16 @@ class Terminator(object):
             self.run_cmd(['umount', self.volume_device_name])
             # Detach the volume
             self.logger.info("Detaching Ebs Volume: {} from EC2 Instance: {}.".format(self.volume.id, self.instance.id))
-            self.volume.detach_from_instance(Device=self.volume_device_name, Force=True, InstanceId=self.instance.id)
+            try:
+                self.volume.detach_from_instance(Device=self.volume_device_name, Force=True, InstanceId=self.instance.id)
+            except botocore.exceptions.ClientError as e:
+                self.logger.exception("Exception detaching Ebs Volume {} from EC2 Instance : {} : {}".format(self.volume.id, self.instance.id, e.response['Error']['Code']))
             # Delete the volume
             self.logger.info("Deleting Ebs Volume: {}.".format(self.volume.id))
-            self.volume.delete()
-
+            try:
+                self.volume.delete()
+            except botocore.exceptions.ClientError as e:
+                self.logger.exception("Exception deleting Ebs Volume {} : {}".format(self.volume.id, e.response['Error']['Code']))
         # Complete ASG hook
         self.logger.info('Completing lifecycle action.')
         lifecycle_hook.complete_lifecycle_action()
@@ -396,7 +401,7 @@ class LifecycleHook(object):
             self.logger.info("{}: {}".format(timeout, response))
             return response
         except botocore.exceptions.ClientError as e:
-            self.logger.exception("Error getting timeout for LifecycleHook {}: {}".format(
+            self.logger.exception("Exception getting timeout for LifecycleHook {}: {}".format(
                 self.lifecycle_hook_name, e.response['Error']['Code']))
 
     def record_lifecycle_action_heartbeat(self):
@@ -416,7 +421,7 @@ class LifecycleHook(object):
             self.logger.info("Recording Lifecycle Action Heartbeat: {} and resetting heartbeat start time to ".format(response, self.heartbeat_start_time))
             return response
         except botocore.exceptions.ClientError as e:
-            self.logger.exception("Error recording lifecycle action heartbeat for instance {}: Lifecycle Hook Name {}: Lifecycle Action Token {}: {}".format(
+            self.logger.exception("Exception recording lifecycle action heartbeat for instance {}: Lifecycle Hook Name {}: Lifecycle Action Token {}: {}".format(
                 self.instance_id, self.lifecycle_hook_name, self.lifecycle_action_token, e.response['Error']['Code']))
 
     def complete_lifecycle_action(self):
@@ -431,7 +436,7 @@ class LifecycleHook(object):
                 LifecycleActionResult='CONTINUE',
             )
         except botocore.exceptions.ClientError as e:
-            self.logger.exception("Error completing lifecycle hook for instance {}: {}".format(
+            self.logger.exception("Exception completing lifecycle hook for instance {}: {}".format(
                 self.instance_id, e.response['Error']['Code']))
 
 
