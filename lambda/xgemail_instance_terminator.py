@@ -70,6 +70,9 @@ def send_ssm_command(region, time, autocaling_group_name, instance_id, lifecycle
                 'InstanceId': [instance_id],
                 'LifecycleHookName': [lifecycle_hook_name],
                 'LifecycleActionToken': [lifecycle_action_token]
+            },
+            CloudWatchOutputConfig={
+                'CloudWatchOutputEnabled': True
             }
         )
     except ClientError as e:
