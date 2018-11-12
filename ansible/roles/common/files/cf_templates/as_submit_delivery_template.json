@@ -494,15 +494,6 @@
             "Key": "ServiceType",
             "Value": { "Fn::Sub": "${VpcName}:${XgemailServiceType}" },
             "PropagateAtLaunch": true
-          },
-          {
-            "Key": "spot-enabled",
-            "Value": { "Fn::If": [
-              "UseSpotPrice",
-              "true" ,
-              "false"
-            ]},
-            "PropagateAtLaunch": true
           }
         ]
       },
