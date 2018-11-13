@@ -44,6 +44,7 @@ class Terminator(object):
         self.postfix_instance = None
         self.aws_region = region
         self.timestamp = time
+        self.delay = 5
         self.autocaling_group_name = asg
         self.lifecycle_hook_name = hook
         self.lifecycle_action_token = token
@@ -94,7 +95,7 @@ class Terminator(object):
         self.ec2c.get_waiter('volume_available').wait(
             VolumeIds=[self.volume.id],
             WaiterConfig={
-                'Delay': 5
+                'Delay': self.delay
             }
         )
         logger.info("Volume Detached")
@@ -107,7 +108,7 @@ class Terminator(object):
         self.ec2c.get_waiter('volume_deleted').wait(
             VolumeIds=[self.volume.id],
             WaiterConfig={
-                'Delay': 5
+                'Delay': self.delay
             }
         )
         logger.info("Volume Deleted")
@@ -376,9 +377,16 @@ class Terminator(object):
 
         if self.postfix_queue_count == 0:
             self.logger.info("The Postfix queue is empty! Unmounting, detaching, and deleting volume.")
+            # Unmount Volume
+            self.run_cmd(['umount', self.volume_device_name])
+            sleep(5)
+            self.logger.info("Volume Unmounted")
             # Detach the volume
             self.logger.info("Detaching Ebs Volume: {} from EC2 Instance: {}.".format(self.volume.id, self.instance.id))
             self.ec2_detach_volume()
+            self.volume.reload()
+            if self.volume.state != 'available':
+                self.ec2_detach_volume(force=True)
             # Delete the volume
             self.logger.info("Deleting Ebs Volume: {}.".format(self.volume.id))
             self.ec2_delete_volume()
