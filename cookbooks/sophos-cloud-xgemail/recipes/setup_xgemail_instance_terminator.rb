@@ -55,7 +55,7 @@ end
 
 # Add rsyslog config file to redirect lifecycle messages to its own log file.
 file '/etc/rsyslog.d/00-xgemail-lifecycle.conf' do
-  content "if $syslogtag == '[instance-terminator]' and $syslogseverity <= '5' then /var/log/xgemail/lifecycle.log\n& ~"
+  content "if $syslogtag == '[instance-terminator]' then /var/log/xgemail/lifecycle.log\n& ~"
   mode '0600'
   owner 'root'
   group 'root'
