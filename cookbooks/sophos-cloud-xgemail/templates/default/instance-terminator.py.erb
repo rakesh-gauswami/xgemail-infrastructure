@@ -22,7 +22,7 @@ import logging.handlers
 import subprocess
 from time import sleep
 from datetime import datetime
-from botocore import exceptions
+from botocore.exceptions import ClientError, WaiterError
 
 
 # logging to syslog setup
@@ -87,18 +87,23 @@ class Terminator(object):
         """
        Detach Ebs Volume from EC2 Instance.
         """
-        self.volume.detach_from_instance(
-            Device=self.volume_device_name,
-            Force=force,
-            InstanceId=self.instance.id
-        )
-        self.ec2c.get_waiter('volume_available').wait(
-            VolumeIds=[self.volume.id],
-            WaiterConfig={
-                'Delay': self.delay
-            }
-        )
-        logger.info("Volume Detached")
+        try:
+            self.volume.detach_from_instance(
+                Device=self.volume_device_name,
+                Force=force,
+                InstanceId=self.instance.id
+            )
+            self.ec2c.get_waiter('volume_available').wait(
+                VolumeIds=[self.volume.id],
+                WaiterConfig={
+                    'Delay': self.delay
+                }
+            )
+            self.logger.info("Volume Detached")
+            return True
+        except (ClientError, WaiterError) as e:
+            self.logger.exception("Exception detaching Volume: {}".format(e.response['Error']['Code']))
+            return False
 
     def ec2_delete_volume(self):
         """
@@ -386,6 +391,7 @@ class Terminator(object):
             self.ec2_detach_volume()
             self.volume.reload()
             if self.volume.state != 'available':
+                self.logger.info("Volume is still not available. Force detaching.")
                 self.ec2_detach_volume(force=True)
             # Delete the volume
             self.logger.info("Deleting Ebs Volume: {}.".format(self.volume.id))
