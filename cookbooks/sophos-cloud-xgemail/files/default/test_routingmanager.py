@@ -92,11 +92,16 @@ class RoutingManagerTest(unittest.TestCase):
         self.assertFalse(self.routing_manager.perform_routing('customer-missing'))
 
     @mock.patch('random.random')
-    @mock.patch("__builtin__.open")
+    @mock.patch('__builtin__.open')
     def test_perform_routing_without_customer_or_config_file(self, mock_open, mock_random):
         mock_open.side_effect = IOError('load error')
         self.assertFalse(self.routing_manager.perform_routing('customer-io-error'))
         mock_random.assert_not_called()
+
+    @mock.patch('os.path.isfile')
+    def test_perform_routing_with_none_customer_id(self, mock_is_file):
+        self.routing_manager.perform_routing(None)
+        mock_is_file.assert_not_called()
 
     def test_verify_config_dir(self):
 
