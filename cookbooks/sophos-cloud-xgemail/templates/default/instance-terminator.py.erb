@@ -227,13 +227,13 @@ class Terminator(object):
         """
 
         self.logger.info("Begin processing Lifecycle Hook Event")
-        self.run_cmd(['service', 'monit', 'stop'])
+        self.service_controller('monit', 'stop')
 
         lifecycle_hook = LifecycleHook(region=self.aws_region, time=self.timestamp, asg=self.autocaling_group_name, instance=self.instance_id, hook=self.lifecycle_hook_name, token=self.lifecycle_action_token)
 
         # Now perform all necessary logic to make sure the postfix server has empty queues before terminating.
         self.postfix_instance = self.get_postfix_instance()
-        if self.postfix_instance == 'postfix-cd':
+        if self.postfix_instance == 'postfix-cd' or self.postfix_instance == 'postfix-id':
             if self.stop_sqs_consumer() is False:
                 self.logger.error("Unable to continue. There is a problem with the Xgemail SQS Consumer Service.")
                 sys.exit(1)
@@ -289,7 +289,7 @@ class Terminator(object):
             self.logger.critical("LIFECYCLE HOOK EXHAUSTED!")
 
         # Unsubscribe SQS Queue from SNS Topic
-        if self.postfix_instance == 'postfix-is':
+        if self.postfix_instance == 'postfix-is' or self.postfix_instance == 'postfix-cs':
             # Also Remove Policy SNS subscription and delete SQS queue for this instance
             self.logger.info('Getting policy queue URL.')
             sqs_policy_queue_url = self.sqs.get_queue_url(QueueName=self.sqs_policy_queue_name)['QueueUrl']
