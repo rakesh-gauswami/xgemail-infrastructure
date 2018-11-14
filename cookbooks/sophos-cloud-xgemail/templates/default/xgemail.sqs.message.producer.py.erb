@@ -296,7 +296,7 @@ def send_msg_history_sqs_event(sqs_history_json):
 # sends msg processing sqs messages to sqs
 def send_msg_processing_sqs_message(sqs_message_json, direction, customer_id = None):
 
-    receiving_queue = get_sqs_url(direction),
+    receiving_queue = get_sqs_url(direction)
 
     # Check if we should route to the microservice
     # Enforce that we only do this for internet submit for now.

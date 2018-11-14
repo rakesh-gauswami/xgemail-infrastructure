@@ -73,9 +73,10 @@ class RoutingManager(object):
         configured, then the result is false
         """
 
-        customer_file_name = self.routing_config_path + customer_id + '.ROUTING'
-        if os.path.isfile(customer_file_name):
-            return True
+        if customer_id is not None:
+            customer_file_name = self.routing_config_path + customer_id + '.ROUTING'
+            if os.path.isfile(customer_file_name):
+                return True
 
 
         config_file = self.routing_config_file_name
