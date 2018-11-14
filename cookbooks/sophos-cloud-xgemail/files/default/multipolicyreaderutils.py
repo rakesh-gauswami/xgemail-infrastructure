@@ -12,11 +12,14 @@
 import json
 import logging
 import base64
+import boto3
 from awshandler import AwsHandler
 import policyformatter
 from recipientsplitconfig import RecipientSplitConfig
 import time
 from logging.handlers import SysLogHandler
+from botocore.exceptions import ClientError
+
 
 #Constants
 EFS_POLICY_STORAGE_PATH = '/policy-storage/'
@@ -196,8 +199,8 @@ def load_multi_policy_file_from_S3(aws_region, policy_bucket_name, file_name):
         ))
         return json.loads(decompressed_content)
 
-    except IOError:
-        logger.error("File does not exist or failed to read. [{0}]".format(file_name))
+    except (IOError, ClientError):
+        logger.error("File [{0}] does not exist or failed to read".format(file_name))
 
 
 def build_recipient_file_path(recipient, root_path):
