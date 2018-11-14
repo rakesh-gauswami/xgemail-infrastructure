@@ -91,5 +91,3 @@ def send_ssm_command(region, time, autocaling_group_name, instance_id, lifecycle
         if ssm_status != 'Success':
             return False
         return True
-
-

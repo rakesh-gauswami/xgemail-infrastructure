@@ -30,6 +30,7 @@ include_recipe 'sophos-cloud-xgemail::common-postfix-multi-instance-config'
 
 AWS_REGION = node['sophos_cloud']['region']
 
+HOP_COUNT_DELIVERY_INSTANCE = node['xgemail']['hop_count_delivery_instance']
 
 XDELIVERY_INSTANCE_DATA = node['xgemail']['postfix_instance_data']['xdelivery']
 raise "Unsupported node type [#{NODE_TYPE}]" if XDELIVERY_INSTANCE_DATA.nil?
@@ -41,6 +42,7 @@ SMTP_FALLBACK_RELAY = "xdelivery-cloudemail-#{AWS_REGION}.#{ACCOUNT}.hydra.sopho
 CONFIGURATION_COMMANDS =
   [
     'bounce_queue_lifetime=0',
+    "hopcount_limit = #{HOP_COUNT_DELIVERY_INSTANCE}",
     "smtp_fallback_relay = #{SMTP_FALLBACK_RELAY}",
     'smtp_tls_security_level=may',
     'smtp_tls_ciphers=high',

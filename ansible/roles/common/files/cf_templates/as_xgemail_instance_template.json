@@ -116,6 +116,10 @@
       "Type": "AWS::EC2::KeyPair::KeyName",
       "Description": "Key pair used to SSH to the instance"
     },
+    "LifecycleHookName": {
+      "Description": "Name of the Lifecycle Hook.",
+      "Type": "String"
+    },
     "LoadBalancerName": {
       "Description": "Name for the ELB to attach to the Auto Scaling Group",
       "Type": "List<String>"
@@ -253,11 +257,6 @@
       "Type" : "String",
       "Default": ""
     },
-    "XgemailSubmitServiceQueueUrl" : {
-      "Description" : "URL for the SQS Queue where XGEMAIL submit micro service messages are sent",
-      "Type" : "String",
-      "Default": ""
-    },
     "StationVpcId" : {
       "Description" : "Cloud Station VPC id ",
       "Type" : "String",
@@ -279,12 +278,17 @@
       "Default": ""
     },
     "XgemailCustomerSubmitQueueUrl" : {
-      "Description" : "URL for the SQS Queue where XGEMAIL messages from customer-submit are sent",
+      "Description" : "URL for the SQS Queue where XGEMAIL messages from the customer-submit are sent",
       "Type" : "String",
       "Default": ""
     },
     "XgemailSnsSqsQueueUrl" : {
       "Description" : "URL for the SNS-SQS Queue where XGEMAIL messages are sent",
+      "Type" : "String",
+      "Default": ""
+    },
+    "XgemailSubmitServiceQueueUrl" : {
+      "Description" : "URL for the SQS Queue where XGEMAIL messages are sent for processing by the microservice",
       "Type" : "String",
       "Default": ""
     },
@@ -449,6 +453,15 @@
         "HealthCheckGracePeriod": { "Ref": "HealthCheckGracePeriod" },
         "HealthCheckType": { "Ref": "HealthCheckType" },
         "LaunchConfigurationName": { "Ref": "JavaAutoScalingLaunchConfig" },
+        "LifecycleHookSpecificationList" : [
+          {
+            "LifecycleHookName": { "Ref": "LifecycleHookName" },
+            "HeartbeatTimeout" : "300",
+            "LifecycleTransition" : "autoscaling:EC2_INSTANCE_TERMINATING",
+            "NotificationTargetARN" : { "Ref": "AutoScalingNotificationTopicARN" },
+            "RoleARN" : { "Ref": "AutoScalingInstanceRoleArn" }
+          }
+        ],
         "LoadBalancerNames": { "Ref": "LoadBalancerName" },
         "MinSize": { "Ref": "AutoScalingMinSize"},
         "MaxSize": { "Ref": "AutoScalingMaxSize"},
@@ -616,6 +629,7 @@
                   "xgemail_customer_submit_bucket_name":      { "Ref": "XgemailCustomerSubmitBucketName" },
                   "xgemail_customer_submit_queue_url":        { "Ref": "XgemailCustomerSubmitQueueUrl" },
                   "xgemail_policy_arn":                       { "Ref": "XgemailPolicyArn" },
+                  "xgemail_service_queue_url":                { "Ref": "XgemailSubmitServiceQueueUrl" },
                   "xgemail_sns_sqs_url":                      { "Ref": "XgemailSnsSqsQueueUrl" },
                   "xgemail_queue_url":                        { "Ref": "XgemailQueueUrl" }
                 },
@@ -766,6 +780,7 @@
                     "recipe[sophos-cloud-xgemail::setup_xgemail_utils_structure],",
                     "recipe[sophos-cloud-xgemail::configure-postfix],",
                     "recipe[sophos-cloud-xgemail::configure_postfix_snmp_logicmonitor],",
+                    "recipe[sophos-cloud-xgemail::setup_xgemail_instance_terminator],",
                     "recipe[sophos-cloud-xgemail::configure_monit],",
                     "recipe[sophos-cloud-xgemail::run_install_cleanup]",
                     "\""

@@ -72,10 +72,13 @@ raise "Unsupported node type [#{NODE_TYPE}]" if INSTANCE_DATA.nil?
 INSTANCE_NAME = INSTANCE_DATA[:instance_name]
 raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 
+HOP_COUNT_DELIVERY_INSTANCE = node['xgemail']['hop_count_delivery_instance']
+
 include_recipe 'sophos-cloud-xgemail::common-postfix-multi-instance-config'
 
 [
     'bounce_queue_lifetime=0',
+    "hopcount_limit = #{HOP_COUNT_DELIVERY_INSTANCE}",
     'mynetworks = 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16',
     'smtp_tls_security_level=may',
     'smtp_tls_ciphers=high',

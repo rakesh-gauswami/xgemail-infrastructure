@@ -35,12 +35,14 @@ aws:
       asg_min_size:                                               [1,1,1]
       health_check_grace_period:                                  "600"
       instance_size:                                              "t2.small"
+      lifecycle_hook_name:                                        "{{vpc.cloud_email.name}}-encryption-delivery-Terminating-LifeCycleHook"
       stack_number:                                               [1,2,3]
       zone_index:                                                 [0,1,2]
     es:
       asg_min_size:                                               [1,1,1]
       health_check_grace_period:                                  "600"
       instance_size:                                              "t2.small"
+      lifecycle_hook_name:                                        "{{vpc.cloud_email.name}}-encryption-submit-Terminating-LifeCycleHook"
       stack_number:                                               [1,2,3]
       zone_index:                                                 [0,1,2]
     id:

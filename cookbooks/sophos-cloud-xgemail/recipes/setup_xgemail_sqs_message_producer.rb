@@ -48,11 +48,13 @@ XGEMAIL_UTILS_DIR                            = node['xgemail']['xgemail_utils_fi
 PRODUCER_SCRIPT_PATH                         = "#{SQS_MESSAGE_PROCESSOR_DIR}/#{PRODUCER_SCRIPT}"
 XGEMAIL_BUCKET_NAME                          = node['xgemail']['xgemail_bucket_name']
 XGEMAIL_QUEUE_URL                            = node['xgemail']['xgemail_queue_url']
+XGEMAIL_SERVICE_QUEUE_URL                    = node['xgemail']['xgemail_service_queue_url']
 XGEMAIL_MESSAGE_HISTORY_BUCKET_NAME          = node['xgemail']['msg_history_bucket_name']
 XGEMAIL_MESSAGE_HISTORY_QUEUE_URL            = node['xgemail']['msg_history_queue_url']
 XGEMAIL_POLICY_S3_BUCKET_NAME                = node['xgemail']['xgemail_policy_bucket_name']
 RELAY_DOMAINS_FILENAME                       = node['xgemail']['relay_domains_filename']
 RELAY_DOMAINS_FILE                           = "/etc/postfix-#{INSTANCE_NAME}/#{RELAY_DOMAINS_FILENAME}"
+POLICY_STORAGE_PATH                          = node['xgemail']['policy_efs_mount_dir']
 
 if NODE_TYPE == ENCRYPTION_SUBMIT
   XGEMAIL_CUSTOMER_SUBMIT_BUCKET_NAME        = node['xgemail']['xgemail_customer_submit_bucket_name']
@@ -88,10 +90,12 @@ template PRODUCER_SCRIPT_PATH do
       :sqs_msg_producer_policy_s3_bucket_name => XGEMAIL_POLICY_S3_BUCKET_NAME,
       :sqs_msg_producer_process_timeout_seconds => SQS_MESSAGE_PRODUCER_PROCESS_TIMEOUT_SECONDS,
       :sqs_msg_producer_s3_bucket_name => XGEMAIL_BUCKET_NAME,
+      :sqs_msg_producer_service_sqs_url => XGEMAIL_SERVICE_QUEUE_URL,
       :sqs_msg_producer_sqs_url => XGEMAIL_QUEUE_URL,
       :sqs_msg_producer_submit_ip => NODE_IP,
       :sqs_msg_producer_ttl_in_days => SQS_MESSAGE_PRODUCER_TTL_IN_DAYS,
-      :relay_domains_file => RELAY_DOMAINS_FILE
+      :relay_domains_file => RELAY_DOMAINS_FILE,
+      :policy_storage_path => POLICY_STORAGE_PATH
   )
 end
 
