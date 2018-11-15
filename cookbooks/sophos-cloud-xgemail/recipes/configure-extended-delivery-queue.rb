@@ -26,7 +26,7 @@ CONFIGURATION_COMMANDS =
   node['xgemail']['common_instance_config_params'] +
   [
     # Disable inet services for default instance
-    'master_service_disable = inet'
+    'master_service_disable = inet',
     # Run an instance of the smtp process that enforces TLS encryption
     'smtp_encrypt unix - - n - - smtp { -o smtp_tls_security_level = encrypt }'
   ]
@@ -95,7 +95,7 @@ end
     'smtp_tls_ciphers=high',
     'smtp_tls_mandatory_ciphers=high',
     'smtp_tls_loglevel=1',
-    'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache'
+    'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache',
     "header_checks = regexp:#{HEADER_CHECKS_PATH}"
 ].each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
