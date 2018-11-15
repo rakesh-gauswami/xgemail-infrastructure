@@ -42,7 +42,7 @@ CONFIGURATION_COMMANDS =
 if ACCOUNT == 'sandbox'
   TRANSPORT_FILE = "/etc/#{instance_name(INSTANCE_NAME)}/#{TRANSPORT_FILENAME}"
   file TRANSPORT_FILE do
-    content "#{node['sandbox']['mail_transport_entry']}\n" + '* retry: domain is unknown'
+    content "#{node['sandbox']['mail_transport_entry']}\n"
     mode '0644'
     owner 'root'
   end
