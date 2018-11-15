@@ -27,6 +27,8 @@ CONFIGURATION_COMMANDS =
   [
     # Disable inet services for default instance
     'master_service_disable = inet'
+    # Run an instance of the smtp process that enforces TLS encryption
+    'smtp_encrypt unix - - n - - smtp { -o smtp_tls_security_level = encrypt }'
   ]
 
 MANAGED_SERVICES_IN_START_ORDER = [
@@ -76,6 +78,15 @@ HOP_COUNT_DELIVERY_INSTANCE = node['xgemail']['hop_count_delivery_instance']
 
 include_recipe 'sophos-cloud-xgemail::common-postfix-multi-instance-config'
 
+HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
+
+file '#{HEADER_CHECKS_PATH}' do
+  content "/^X-xgemail-tls-encrypt: yes$/i FILTER smtp_encrypt:"
+  mode '0750'
+  owner 'root'
+  group 'root'
+end
+
 [
     'bounce_queue_lifetime=0',
     "hopcount_limit = #{HOP_COUNT_DELIVERY_INSTANCE}",
@@ -85,6 +96,7 @@ include_recipe 'sophos-cloud-xgemail::common-postfix-multi-instance-config'
     'smtp_tls_mandatory_ciphers=high',
     'smtp_tls_loglevel=1',
     'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache'
+    "header_checks = regexp:#{HEADER_CHECKS_PATH}"
 ].each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
 end
