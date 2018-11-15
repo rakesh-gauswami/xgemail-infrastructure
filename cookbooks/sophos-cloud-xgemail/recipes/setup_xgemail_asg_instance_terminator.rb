@@ -39,8 +39,8 @@ directory XGEMAIL_FILES_DIR do
 end
 
 # Write script to script path on instance
-template "#{XGEMAIL_FILES_DIR}/asg-instance-terminator.py" do
-  source 'instance-terminator.py.erb'
+template "#{XGEMAIL_FILES_DIR}/instance-terminator.py" do
+  source 'asg-instance-terminator.py.erb'
   mode '0750'
   owner 'root'
   group 'root'
