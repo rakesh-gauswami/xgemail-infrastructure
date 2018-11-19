@@ -48,15 +48,11 @@ file '#{HEADER_CHECKS_PATH}' do
   group 'root'
 end
 
-MASTER_CONFIGURATION_COMMANDS =
-  [
-    # Run an instance of the smtp process that enforces TLS encryption
-    'smtp_encrypt unix - - n - - smtp { -o smtp_tls_security_level = encrypt }'
-  ]
-
-MASTER_CONFIGURATION_COMMANDS.each do | cur |
-  execute "postconf '#{cur}'"
-end
+# Run an instance of the smtp process that enforces TLS encryption
+MASTER_CONFIG_CMD = "smtp_encrypt unix - - n - - smtp"
+MASTER_CONFIG_PARAM = "smtp_tls_security_level=encrypt"
+execute "postconf -c /etc/#{instance_name(instance)} -M smtp_encrypt/unix ='#{MASTER_CONFIG_CMD}'"
+execute "postconf -c /etc/#{instance_name(instance)} -P smtp_encrypt/unix/#{MASTER_CONFIG_PARAM}"
 
 CONFIGURATION_COMMANDS =
   [
