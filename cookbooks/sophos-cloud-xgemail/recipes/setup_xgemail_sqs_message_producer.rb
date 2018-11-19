@@ -54,11 +54,8 @@ XGEMAIL_POLICY_S3_BUCKET_NAME                = node['xgemail']['xgemail_policy_b
 RELAY_DOMAINS_FILENAME                       = node['xgemail']['relay_domains_filename']
 RELAY_DOMAINS_FILE                           = "/etc/postfix-#{INSTANCE_NAME}/#{RELAY_DOMAINS_FILENAME}"
 POLICY_STORAGE_PATH                          = node['xgemail']['policy_efs_mount_dir']
-
-if NODE_TYPE == ENCRYPTION_SUBMIT
-  XGEMAIL_CUSTOMER_SUBMIT_BUCKET_NAME        = node['xgemail']['xgemail_customer_submit_bucket_name']
-  XGEMAIL_CUSTOMER_SUBMIT_QUEUE_URL          = node['xgemail']['xgemail_customer_submit_queue_url']
-end
+XGEMAIL_CUSTOMER_SUBMIT_BUCKET_NAME          = node['xgemail']['xgemail_customer_submit_bucket_name']
+XGEMAIL_CUSTOMER_SUBMIT_QUEUE_URL            = node['xgemail']['xgemail_customer_submit_queue_url']
 
 # Configs use by sqsmsgproducer
 if NODE_TYPE == SUBMIT
