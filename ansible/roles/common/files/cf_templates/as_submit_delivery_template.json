@@ -636,6 +636,7 @@
                     "    \"station_vpc_name\"                       : \"{{station_vpc_name}}\",\n",
                     "    \"sxl_dbl\"                                : \"{{sxl_dbl}}\",\n",
                     "    \"sxl_rbl\"                                : \"{{sxl_rbl}}\",\n",
+                    "    \"volume_cleanup\"                         : \"True\",\n",
                     "    \"xgemail_policy_bucket_name\"             : \"{{xgemail_policy_bucket_name}}\",\n",
                     "    \"xgemail_bucket_name\"                    : \"{{xgemail_bucket_name}}\",\n",
                     "    \"xgemail_customer_submit_bucket_name\"    : \"{{xgemail_customer_submit_bucket_name}}\",\n",
@@ -791,7 +792,7 @@
                 "command": {
                   "Fn::Join": ["", [
                     "knife node run_list set -z `knife node list -z` \"",
-                    "recipe[sophos-cloud-xgemail::setup_xgemail_asg_instance_terminator],",
+                    "recipe[sophos-cloud-xgemail::setup_xgemail_instance_terminator],",
                     "recipe[sophos-cloud-xgemail::configure-policy-efs-mount],",
                     "recipe[sophos-cloud-ntpd::default],",
                     "recipe[sophos-cloud-fluentd::configure],",
