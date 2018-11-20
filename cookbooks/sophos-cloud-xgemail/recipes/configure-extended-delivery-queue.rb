@@ -26,9 +26,7 @@ CONFIGURATION_COMMANDS =
   node['xgemail']['common_instance_config_params'] +
   [
     # Disable inet services for default instance
-    'master_service_disable = inet',
-    # Run an instance of the smtp process that enforces TLS encryption
-    'smtp_encrypt unix - - n - - smtp { -o smtp_tls_security_level = encrypt }'
+    'master_service_disable = inet'
   ]
 
 MANAGED_SERVICES_IN_START_ORDER = [
@@ -86,6 +84,12 @@ file '#{HEADER_CHECKS_PATH}' do
   owner 'root'
   group 'root'
 end
+
+# Run an instance of the smtp process that enforces TLS encryption
+MASTER_CONFIG_CMD = "smtp_encrypt unix - - n - - smtp"
+MASTER_CONFIG_PARAM = "smtp_tls_security_level=encrypt"
+execute "postconf -c /etc/#{instance_name(instance)} -M smtp_encrypt/unix ='#{MASTER_CONFIG_CMD}'"
+execute "postconf -c /etc/#{instance_name(instance)} -P smtp_encrypt/unix/#{MASTER_CONFIG_PARAM}"
 
 [
     'bounce_queue_lifetime=0',
