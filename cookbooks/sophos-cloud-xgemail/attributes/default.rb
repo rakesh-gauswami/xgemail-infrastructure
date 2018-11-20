@@ -251,12 +251,27 @@ default['xgemail']['postfix_instance_data'] = {
     :msg_size_limit => SUBMIT_MESSAGE_SIZE_LIMIT_BYTES,
     :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
   },
+  # internet-submit
+  'internet-submit' => {
+    :instance_name => 'is',
+    :port => 25,
+    :msg_size_limit => SUBMIT_MESSAGE_SIZE_LIMIT_BYTES,
+    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+  },
   # customer-submit
   'customer-submit' => {
     :instance_name => 'cs',
     :port => 25,
     :msg_size_limit => SUBMIT_MESSAGE_SIZE_LIMIT_BYTES,
     :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+  },
+  # customer-delivery
+  'customer-delivery' => {
+    :instance_name => 'cd',
+    :port => 25,
+    # Give delivery queues extra padding because extra content may be created during processing
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800),
+    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
   },
   # customer-delivery
   'delivery' => {

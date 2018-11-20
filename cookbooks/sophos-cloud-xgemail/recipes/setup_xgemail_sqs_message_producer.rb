@@ -28,6 +28,7 @@ include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_processors_struc
 
 #constants to use
 SUBMIT = 'submit'
+INTERNET_SUBMIT = 'internet-submit'
 CUSTOMER_SUBMIT = 'customer-submit'
 ENCRYPTION_SUBMIT = 'encryption-submit'
 
@@ -58,7 +59,7 @@ XGEMAIL_CUSTOMER_SUBMIT_BUCKET_NAME          = node['xgemail']['xgemail_customer
 XGEMAIL_CUSTOMER_SUBMIT_QUEUE_URL            = node['xgemail']['xgemail_customer_submit_queue_url']
 
 # Configs use by sqsmsgproducer
-if NODE_TYPE == SUBMIT
+if NODE_TYPE == SUBMIT or NODE_TYPE == INTERNET_SUBMIT
   XGEMAIL_SUBMIT_TYPE                   = 'INTERNET'
 elsif NODE_TYPE == CUSTOMER_SUBMIT
   XGEMAIL_SUBMIT_TYPE                   = 'CUSTOMER'
@@ -126,7 +127,7 @@ PIPE_COMMAND='pipe ' +
 end
 
 # Activate new service by postfix configs
-if NODE_TYPE == SUBMIT
+if NODE_TYPE == SUBMIT or NODE_TYPE == INTERNET_SUBMIT
   # Update transports to use new pipe service
   [
       "default_transport = #{SERVICE_NAME}",

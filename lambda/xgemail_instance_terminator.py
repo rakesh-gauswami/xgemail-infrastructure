@@ -26,9 +26,10 @@ print('Loading function')
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+region = os.environ['AWS_REGION']
 ssm_document_name = os.environ['SSM_DOCUMENT_NAME']
 
-session = boto3.session.Session(region_name=os.environ['AWS_REGION'])
+session = boto3.session.Session(region_name=region)
 ssm = session.client('ssm')
 """:type: pyboto3.ssm """
 
@@ -60,8 +61,12 @@ def send_ssm_command(region, time, autocaling_group_name, instance_id, lifecycle
     logger.info("Executing Instance Terminator SSM Document, for Instance Id: {} in AutoScaling Group: {}".format(instance_id, autocaling_group_name))
     try:
         ssmresponse = ssm.send_command(
-            InstanceIds=[instance_id],
+            CloudWatchOutputConfig={
+                'CloudWatchOutputEnabled': True
+            },
+            Comment='Terminate {}'.format(instance_id),
             DocumentName=ssm_document_name,
+            InstanceIds=[instance_id],
             Parameters={
                 'Region': [region],
                 'Time': [time],

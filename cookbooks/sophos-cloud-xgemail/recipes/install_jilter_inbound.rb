@@ -15,7 +15,7 @@ NODE_TYPE = node['xgemail']['cluster_type']
 ACCOUNT = node['sophos_cloud']['account']
 
 # Make sure we're on an internet submit node
-if NODE_TYPE != 'submit' && NODE_TYPE !='jilter-inbound'
+if NODE_TYPE != 'submit' && NODE_TYPE != 'internet-submit' && NODE_TYPE !='jilter-inbound'
   return
 end
 

@@ -44,7 +44,7 @@ MULTI_POLICY_CONSUMER_UTILS_SCRIPT_PATH = "#{PACKAGE_DIR}/#{MULTI_POLICY_CONSUME
 
 MULTI_POLICY_QUEUE_NAME                 = "#{STATION_VPC_ID}-Xgemail_multi_policy"
 
-if NODE_TYPE == 'submit'
+if NODE_TYPE == 'submit' or NODE_TYPE == 'internet-submit'
   POLICY_DIR                  = "config/policies/endpoints/"
   DOMAINS_DIR                 = "config/policies/domains/"
 
