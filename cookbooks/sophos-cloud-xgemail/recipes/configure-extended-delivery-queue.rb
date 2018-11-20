@@ -76,7 +76,7 @@ HOP_COUNT_DELIVERY_INSTANCE = node['xgemail']['hop_count_delivery_instance']
 
 include_recipe 'sophos-cloud-xgemail::common-postfix-multi-instance-config'
 
-HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
+HEADER_CHECKS_PATH = "/etc/#{instance_name(INSTANCE_NAME)}/header_checks"
 
 file '#{HEADER_CHECKS_PATH}' do
   content "/^X-Sophos-Enforce-TLS: yes$/i FILTER smtp_encrypt:"
@@ -88,8 +88,8 @@ end
 # Run an instance of the smtp process that enforces TLS encryption
 MASTER_CONFIG_CMD = "smtp_encrypt unix - - n - - smtp"
 MASTER_CONFIG_PARAM = "smtp_tls_security_level=encrypt"
-execute "postconf -c /etc/#{instance_name(instance)} -M smtp_encrypt/unix ='#{MASTER_CONFIG_CMD}'"
-execute "postconf -c /etc/#{instance_name(instance)} -P smtp_encrypt/unix/#{MASTER_CONFIG_PARAM}"
+execute "postconf -c /etc/#{instance_name(INSTANCE_NAME)} -M smtp_encrypt/unix ='#{MASTER_CONFIG_CMD}'"
+execute "postconf -c /etc/#{instance_name(INSTANCE_NAME)} -P smtp_encrypt/unix/#{MASTER_CONFIG_PARAM}"
 
 [
     'bounce_queue_lifetime=0',
