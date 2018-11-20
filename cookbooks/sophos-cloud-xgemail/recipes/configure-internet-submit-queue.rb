@@ -12,7 +12,7 @@
 ACCOUNT =   node['sophos_cloud']['environment']
 NODE_TYPE = node['xgemail']['cluster_type']
 
-if NODE_TYPE != 'submit'
+if NODE_TYPE != 'submit' && NODE_TYPE != 'internet-submit'
   return
 end
 

@@ -1,12 +1,12 @@
 #
-# Cookbook Name:: sophos-cloud-xgemail
-# Recipe:: setup_xgemail_instance_terminator
+# Cookbook Name:: ${<COOKBOOK>}
+# Recipe:: setup_xgemail_sqs_lifecycle_poller_cron.rb
 #
-# Copyright 2018, Sophos
+# Copyright 2017, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
-# This recipe installs a Python script that is executed by a SSM Command in the event of an EC2 Instance Termination Lifecycle Hook
+# This recipe installs cron job to poll xgemail sqs lifecycle events queue for termination notifications
 #
 
 # Include Helper library
@@ -29,6 +29,7 @@ ALARM_TOPIC_ARN         = node['xgemail']['alarm_topic_arn']
 CONSUMER_SERVICE_NAME   = node['xgemail']['sqs_message_consumer_service_name']
 SNS_POLICY_ARN          = node['xgemail']['xgemail_policy_arn']
 SQS_POLICY_QUEUE_NAME   = "#{ACCOUNT}-xgemail-policy-#{INSTANCE_ID}"
+VOLUME_CLEANUP          = node['xgemail']['volume_cleanup']
 
 
 directory XGEMAIL_FILES_DIR do
@@ -49,13 +50,14 @@ template "#{XGEMAIL_FILES_DIR}/instance-terminator.py" do
     :aws_region => AWS_REGION,
     :sqs_consumer_service_name => CONSUMER_SERVICE_NAME,
     :sns_policy_arn => SNS_POLICY_ARN,
-    :sqs_policy_queue_name => SQS_POLICY_QUEUE_NAME
+    :sqs_policy_queue_name => SQS_POLICY_QUEUE_NAME,
+    :volume_cleanup => VOLUME_CLEANUP
   )
 end
 
 # Add rsyslog config file to redirect lifecycle messages to its own log file.
 file '/etc/rsyslog.d/00-xgemail-lifecycle.conf' do
-  content "if $syslogtag == '[instance-terminator]' and $syslogseverity <= '5' then /var/log/xgemail/lifecycle.log\n& ~"
+  content "if $syslogtag == '[instance-terminator]' then /var/log/xgemail/lifecycle.log\n& ~"
   mode '0600'
   owner 'root'
   group 'root'
