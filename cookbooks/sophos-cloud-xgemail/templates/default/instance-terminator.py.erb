@@ -64,11 +64,15 @@ class Terminator(object):
         """:type: pyboto3.ec2 """
 
         # Create SQS Client
-        self.sqs = boto3.client('sqs', region_name=self.aws_region)
+        self.sqs = boto3.resource('sqs', region_name=self.aws_region)
+        """:type: pyboto3.sqs """
+        self.sqs_client = self.sqs.meta.client
         """:type: pyboto3.sqs """
 
         # Create SNS Client
-        self.sns = boto3.client('sns', region_name=self.aws_region)
+        self.sns = boto3.resource('sns', region_name=self.aws_region)
+        """:type: pyboto3.sns """
+        self.sns_client = self.sns.meta.client
         """:type: pyboto3.sns """
 
         # Create SSM Client
@@ -234,49 +238,6 @@ class Terminator(object):
         self.send_sns_alert(error_message)
         return False
 
-    def get_subscription_arn(self, topic_arn, instance, next_token=None):
-        """
-        Finds SNS Subscription Arn.
-        """
-        subs = None
-        self.logger.info('Getting all subscriptions in topic.')
-        try:
-            if next_token:
-                subs = self.sns.list_subscriptions_by_topic(TopicArn=topic_arn, NextToken=next_token)
-            else:
-                subs = self.sns.list_subscriptions_by_topic(TopicArn=topic_arn)
-        except botocore.exceptions.ClientError as e:
-            raise e
-        self.logger.info('Looping through Policy Subscriptions.')
-        for s in subs['Subscriptions']:
-            if s['Endpoint'][-19:] in instance:
-                return s['SubscriptionArn']
-        if subs.get('NextToken'):
-            return self.get_subscription_arn(self, topic_arn, instance, subs.get('NextToken'))
-        return None
-
-    def sns_unsubscribe(self, arn):
-        """
-        Unsubscribes SQS Queue Subscription from SNS Topic.
-        """
-        self.logger.info("Unsubscribing SNS Subscription {}.".format(arn))
-        try:
-            return self.sns.unsubscribe(SubscriptionArn=arn)
-        except botocore.exceptions.ClientError as e:
-            self.logger.exception("Exception unsubscribing subscription {} from SNS Topic : {}".format(
-                arn, e.response['Error']['Code']))
-
-    def sqs_delete_queue(self, url):
-        """
-        Deletes SQS Queue.
-        """
-        self.logger.info("Deleting SQS queue {}".format(url))
-        try:
-            return self.sqs.delete_queue(QueueUrl=url)
-        except botocore.exceptions.ClientError as e:
-            self.logger.exception("Exception deleting SQS Queue {} : {}".format(
-                url, e.response['Error']['Code']))
-
     def check_postfix_queue(self):
         """
         Check the postfix queue.
@@ -369,14 +330,17 @@ class Terminator(object):
                 if service.startswith('xgemail-'):
                     self.service_controller(service, 'stop')
             # Also Remove Policy SNS subscription and delete SQS queue for this instance
-            self.logger.info('Getting policy queue URL.')
-            sqs_policy_queue_url = self.sqs.get_queue_url(QueueName=self.sqs_policy_queue_name)['QueueUrl']
+            sqs_policy_queue = self.sqs.get_queue_by_name(QueueName=self.sqs_policy_queue_name)
+            sqs_policy_queue_dlq = self.sqs.get_queue_by_name(QueueName=self.sqs_policy_queue_name + '-DLQ')
+            sns_policy_topic = self.sns.Topic(self.sns_policy_arn)
             self.logger.info('Getting policy subscription ARN.')
-            sns_policy_subscription_arn = self.get_subscription_arn(topic_arn=self.sns_policy_arn, instance=self.instance.id)
-            self.sns_unsubscribe(arn=sns_policy_subscription_arn)
-            self.sqs_delete_queue(url=sqs_policy_queue_url)
-            self.logger.info("Deleting SQS policy dead letter queue for this instance.")
-            self.sqs_delete_queue(url=self.sqs.get_queue_url(QueueName=self.sqs_policy_queue_name + '-DLQ')['QueueUrl'])
+            sns_policy_subscription = [s for s in sns_policy_topic.subscriptions.all() if s.attributes['Endpoint'] == sqs_policy_queue.attributes['QueueArn']]
+            self.logger.info("Unsubscribing SNS Subscription {}.".format(sns_policy_subscription.arn))
+            sns_policy_subscription.delete()
+            self.logger.info("Deleting SQS queue {}".format(sqs_policy_queue.url))
+            sqs_policy_queue.delete()
+            self.logger.info("Deleting SQS queue {}".format(sqs_policy_queue_dlq.url))
+            sqs_policy_queue_dlq.delete()
 
         if self.postfix_queue_count != 0:
             self.logger.critical("The Postfix queue is NOT empty! Unmounting and detaching volume for further investigation.")
