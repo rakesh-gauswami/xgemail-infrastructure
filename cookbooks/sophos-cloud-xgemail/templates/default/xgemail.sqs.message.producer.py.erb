@@ -214,7 +214,7 @@ def upload_metadata_to_s3(s3_file_path, expires, metadata, direction):
         exit(EX_TEMPFAIL)
 
 def get_submit_bucket_name(direction):
-    if (SUBMIT_TYPE == 'ENCRYPTION') and (direction == INBOUND_MESSAGE_DIRECTION):
+    if (SUBMIT_TYPE == 'ENCRYPTION') and (direction != INBOUND_MESSAGE_DIRECTION):
       return CUSTOMER_SUBMIT_BUCKET_NAME
     else:
       return SUBMIT_BUCKET_NAME
@@ -318,7 +318,7 @@ def send_msg_processing_sqs_message(sqs_message_json, direction, customer_id = N
         exit(EX_TEMPFAIL)
 
 def get_sqs_url(direction):
-    if (SUBMIT_TYPE == 'ENCRYPTION') and (direction = INBOUND_MESSAGE_DIRECTION)
+    if (SUBMIT_TYPE == 'ENCRYPTION') and (direction != INBOUND_MESSAGE_DIRECTION)
       return CUSTOMER_SUBMIT_SQS_URL
     else:
       return SUBMIT_SQS_URL
@@ -611,7 +611,7 @@ def main():
             logger.debug("Recipient's domain: [{0}]".format(domain))
             sender = metadata.get_sender_address()
             customer_domains = get_customer_domains()
-            if recipient_domain in customer_domains:
+            if recipient_domain.lower() in customer_domains.lower():
               direction = INBOUND_MESSAGE_DIRECTION
             else:
               direction = OUTBOUND_MESSAGE_DIRECTION
