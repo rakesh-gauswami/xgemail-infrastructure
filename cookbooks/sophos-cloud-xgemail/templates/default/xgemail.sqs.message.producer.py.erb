@@ -93,6 +93,7 @@ INBOUND_MESSAGE_DIRECTION = "INBOUND"
 OUTBOUND_MESSAGE_DIRECTION = "OUTBOUND"
 POLICY_ID_PATH_VALUE = "/00/"
 SQS_BATCH_SIZE = 10
+DELIVER_INBOUND_HEADER = "X-Sophos-Deliver-Inbound: True"
 
 awshandler = AwsHandler(AWS_REGION)
 
@@ -570,17 +571,12 @@ def multi_policy_flow(metadata, direction, domain, sender, message):
                 history_job
             )
 
-def get_customer_domains():
-    domains = []
-    with open(RELAY_DOMAINS_FILE, 'r') as f:
-        for domain in f.readlines():
-            # file is formatted like so:
-            #   example1.com OK
-            #   example2.com OK
-            #   ...
-            # but we only need the domain name
-            domains.append(domain.split(' ')[0])
-    return domains
+def get_direction(message):
+    if DELIVER_INBOUND_HEADER in message:
+      return INBOUND_MESSAGE_DIRECTION
+    else:
+      return OUTBOUND_MESSAGE_DIRECTION
+
 
 # accepts data from postfix and send message and metadata to S3 and
 # a json object to SQS which provides pointer to the message in S3
@@ -608,10 +604,8 @@ def main():
 
         elif 'ENCRYPTION' == SUBMIT_TYPE:
             domain = metadata.get_recipient_domain()
-            logger.debug("Customer's domain: [{0}]".format(domain))
             sender = metadata.get_sender_address()
-            customer_domains = get_customer_domains()
-            direction = INBOUND_MESSAGE_DIRECTION if domain in customer_domains else OUTBOUND_MESSAGE_DIRECTION
+            direction = get_direction(plaintext_message)
 
         else:
             raise ("Wrong submit type [{0}]".format(SUBMIT_TYPE))
