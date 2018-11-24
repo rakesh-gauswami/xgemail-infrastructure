@@ -93,8 +93,7 @@ if NODE_TYPE == 'delivery' || NODE_TYPE == 'customer-delivery' || NODE_TYPE == '
   SQS_MESSAGE_CONSUMER_SERVICE_NAME
 ]
 else
-# TODO We need to move the condition NODE_TYPE == 'encryption-submit' here after our jilter service is available
-  if NODE_TYPE == 'submit' || NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit'
+  if NODE_TYPE == 'submit' || NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit' || NODE_TYPE == 'encryption-submit'
     if ACCOUNT != 'sandbox'
        MANAGED_SERVICES_IN_START_ORDER = [
           JILTER_SERVICE_NAME,
