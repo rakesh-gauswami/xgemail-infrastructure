@@ -26,6 +26,8 @@ import multipolicyreaderutils
 import os
 import re
 import signal
+import email
+from email.parser import HeaderParser
 from awshandler import AwsHandler
 from common.metadata import Metadata
 from common.sqsmessage import SqsMessage
@@ -93,7 +95,9 @@ INBOUND_MESSAGE_DIRECTION = "INBOUND"
 OUTBOUND_MESSAGE_DIRECTION = "OUTBOUND"
 POLICY_ID_PATH_VALUE = "/00/"
 SQS_BATCH_SIZE = 10
-DELIVER_INBOUND_HEADER = "X-Sophos-Deliver-Inbound: True"
+
+# Definition of the header "X-Sophos-Deliver-Inbound: True" for the email package
+DELIVER_INBOUND_HEADER = ("X-Sophos-Deliver-Inbound", "True")
 
 awshandler = AwsHandler(AWS_REGION)
 
@@ -572,10 +576,14 @@ def multi_policy_flow(metadata, direction, domain, sender, message):
             )
 
 def get_direction(message):
-    if DELIVER_INBOUND_HEADER in message:
-      return INBOUND_MESSAGE_DIRECTION
-    else:
-      return OUTBOUND_MESSAGE_DIRECTION
+    direction = OUTBOUND_MESSAGE_DIRECTION
+    parser = email.parser.HeaderParser()
+    headers = parser.parsestr(message)
+    for header in headers.items():
+        if header == DELIVER_INBOUND_HEADER:
+            direction = INBOUND_MESSAGE_DIRECTION
+            break
+    return direction
 
 
 # accepts data from postfix and send message and metadata to S3 and
