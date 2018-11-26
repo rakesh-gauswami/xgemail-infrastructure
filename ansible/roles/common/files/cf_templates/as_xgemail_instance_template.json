@@ -482,17 +482,37 @@
                 { "Ref": "BundleVersion" }
               ]]
             },
-            "PropagateAtLaunch": "true"
+            "PropagateAtLaunch": true
           },
           {
             "Key": "BuildResultKey",
-            "Value": { "Ref": "BuildVersion"},
-            "PropagateAtLaunch": "true"
+            "Value": { "Ref": "BuildVersion" },
+            "PropagateAtLaunch": true
           },
           {
             "Key": "BundleVersion",
-            "Value": { "Ref": "BundleVersion"},
-            "PropagateAtLaunch": "true"
+            "Value": { "Ref": "BundleVersion" },
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "Application",
+            "Value": { "Ref": "XgemailServiceType" },
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "ServiceCategory",
+            "Value": { "Fn::Sub": "${VpcName}:email" },
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "ServiceType",
+            "Value": { "Fn::Sub": "${VpcName}:${XgemailServiceType}" },
+            "PropagateAtLaunch": true
           }
         ]
       },
