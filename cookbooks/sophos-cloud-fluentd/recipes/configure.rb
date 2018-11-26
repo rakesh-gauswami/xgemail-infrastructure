@@ -22,7 +22,7 @@ SERVER_IP                     = node['ipaddress']
 MAILLOG_FILTER_PATTERNS       = "(\\.#{REGION}\\.compute\\.internal|table\\shash:|sm-msp-queue|:\\sstatistics:\\s)"
 
 # Configs
-if NODE_TYPE    == 'delivery'
+if NODE_TYPE == 'delivery' || NODE_TYPE == 'customer-delivery'
   SERVER_TYPE           = 'CUSTOMER_DELIVERY'
   SERVER_TYPE_XDELIVERY = 'CUSTOMER_XDELIVERY'
   DIRECTION             = 'INBOUND'
