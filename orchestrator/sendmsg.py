@@ -92,6 +92,7 @@ if __name__ == "__main__":
     parser.add_argument('--keepdate', dest='keepdate', action = 'store_true', help = 'Keep the original date in the eml file (if exists)')
     parser.add_argument('--readreceipt', dest='readreceipt', action = 'store_true', help = 'Request a read receipt')
     parser.add_argument('--subject', help = 'Subject of the email')
+    parser.add_argument('--port', default=SMTP_PORT, help = 'set port')
 
     args = parser.parse_args()
 
@@ -110,6 +111,7 @@ if __name__ == "__main__":
     env = ENVIRONMENT
     requested_read_receipt = args.readreceipt
     direction = args.direction
+    SMTP_PORT = args.port
 
     message_as_string = read_file(eml_file)
     server = get_server(region, env.lower())
@@ -122,6 +124,7 @@ if __name__ == "__main__":
     print 'Recipient(s):\t\t{0}'.format(recipients)
     print 'Server:\t\t\t{0}'.format(server)
     print 'Direction:\t\t{0}'.format(direction)
+    print 'Port:\t\t{0}'.format(SMTP_PORT)
     print 'Environment:\t\t{0}'.format(env)
     print 'Region:\t\t\t{0}'.format(region)
     print 'Generate Message-ID:\t{0}'.format(generate_message_id)

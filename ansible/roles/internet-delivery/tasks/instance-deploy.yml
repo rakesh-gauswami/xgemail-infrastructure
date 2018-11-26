@@ -8,7 +8,7 @@
   async: 100
   poll: 0
   cloudformation:
-    stack_name: "{{vpc.cloud_email.name}}-xgemail-internet-delivery-0000-{{item.0}}"
+    stack_name: "{{stack.ec2.asg.id}}-0000-{{item.0}}"
     state: present
     region:  "{{account.region}}"
     disable_rollback: true
@@ -34,6 +34,7 @@
       InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.XgemailInternetDeliveryInstanceProfile}}"
       InstanceType:                         "{{aws.asg.id.instance_size}}"
       KeyName:                              "public-{{account.region}}"
+      LifecycleHookName:                    "{{aws.asg.id.lifecycle_hook_name}}"
       LoadBalancerName:                     "{{elb_stack_output.stack_outputs.LoadBalancerId}}"
       PublicIpAddressEnabled:               "true"
       S3CookbookRepositoryURL:              "//cloud-{{account.name}}-templates/{{build.branch}}/xgemail-infrastructure/cookbooks.enc"

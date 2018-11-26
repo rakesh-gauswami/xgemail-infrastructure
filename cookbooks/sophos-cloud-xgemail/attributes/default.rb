@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Attribute:: default
 #
-# Copyright 2017, Sophos
+# Copyright 2018, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -127,6 +127,16 @@ default['xgemail']['smtpd_authorized_xclient_hosts'] = "81.136.243.94"
 # Increase Postfix default process limit from default 100 to 200
 default['xgemail']['postfix_default_process_limit'] = 200
 
+# Ensure max hops on delivery instances is larger than max hops on submit instances.
+# This ensures that we will reject messages on the submit side rather than having to deal with
+# bounces when the max hop value is reached on the delivery side. This especially comes into
+# play when a mail loop is occurring due to misconfiguration.
+#
+# The above can be guaranteed as long as the number of new headers added by Sophos Email
+# as part of its processing is smaller than (hop_count_delivery_instance - hop_count_submit_instance).
+default['xgemail']['hop_count_delivery_instance'] = 100
+default['xgemail']['hop_count_submit_instance'] = 50
+
 ## IP blacklist settings
 default['xgemail']['sxl_rbl'] = nil
 
@@ -197,6 +207,7 @@ default['xgemail']['internet_submit_recipient_cron_minute_frequency'] = 5
 default['xgemail']['xgemail_sqs_lifecycle_poller_cron_minute_frequency'] = 1
 
 default['xgemail']['recipient_access_filename'] = 'recipient_access'
+default['xgemail']['relay_domains_filename']  = 'relay_domains'
 default['xgemail']['s3_encryption_algorithm'] = 'AES256'
 default['xgemail']['soft_retry_senders_map_filename'] = 'soft_retry_senders_map'
 default['xgemail']['tls_high_cipherlist'] = 'TLSv1.2+FIPS:kRSA+FIPS:!eNULL:!aNULL'
@@ -240,12 +251,27 @@ default['xgemail']['postfix_instance_data'] = {
     :msg_size_limit => SUBMIT_MESSAGE_SIZE_LIMIT_BYTES,
     :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
   },
+  # internet-submit
+  'internet-submit' => {
+    :instance_name => 'is',
+    :port => 25,
+    :msg_size_limit => SUBMIT_MESSAGE_SIZE_LIMIT_BYTES,
+    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+  },
   # customer-submit
   'customer-submit' => {
     :instance_name => 'cs',
     :port => 25,
     :msg_size_limit => SUBMIT_MESSAGE_SIZE_LIMIT_BYTES,
     :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+  },
+  # customer-delivery
+  'customer-delivery' => {
+    :instance_name => 'cd',
+    :port => 25,
+    # Give delivery queues extra padding because extra content may be created during processing
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800),
+    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
   },
   # customer-delivery
   'delivery' => {
@@ -278,8 +304,28 @@ default['xgemail']['postfix_instance_data'] = {
     # Give delivery queues extra padding because extra content may be created during processing
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600),
     :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+  },
+  # encryption-delivery
+  'encryption-delivery' => {
+    :instance_name => 'ed',
+    :port => 25,
+    # Give delivery queues extra padding because extra content may be created during processing
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800),
+    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+  },
+  # encryption-submit
+  'encryption-submit' => {
+    :instance_name => 'es',
+    :port => 25,
+    # Give delivery queues extra padding because extra content may be created during processing
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800),
+    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
   }
 }
+
+## The Postfix instance name for the encryption-delivery node
+default['xgemail']['encryption_delivery_postfix_instance_name'] = 'ed'
+default['xgemail']['encryption_submit_postfix_instance_name'] = 'es'
 
 default['xgemail']['common_instance_config_params'] = [
   # Disable special handling of owner- prefix

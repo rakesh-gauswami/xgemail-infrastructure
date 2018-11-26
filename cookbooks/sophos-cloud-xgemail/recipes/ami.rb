@@ -105,6 +105,10 @@ yum_package 'xfsprogs' do
   action :install
 end
 
+yum_package 'amazon-ssm-agent' do
+  action :upgrade
+end
+
 PACKAGES_DIR = '/opt/sophos/packages'
 DEPLOYMENT_DIR = '/opt/sophos/xgemail'
 

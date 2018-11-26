@@ -116,6 +116,10 @@
       "Type": "AWS::EC2::KeyPair::KeyName",
       "Description": "Key pair used to SSH to the instance"
     },
+    "LifecycleHookName": {
+      "Description": "Name of the Lifecycle Hook.",
+      "Type": "String"
+    },
     "LoadBalancerName": {
       "Description": "Name for the ELB to attach to the Auto Scaling Group",
       "Type": "List<String>"
@@ -207,6 +211,11 @@
       "Description" : "Name of the S3 Bucket where XGEMAIL messages are sent",
       "Type" : "String"
     },
+    "XgemailCustomerSubmitBucketName" : {
+      "Description" : "Name of the S3 Bucket where XGEMAIL messages from the customer-submit are sent",
+      "Type" : "String",
+      "Default": ""
+    },
     "XgemailMinSizeDataGB" : {
       "Description" : "Total GB to reserve for storing data files",
       "Type" : "Number",
@@ -248,6 +257,11 @@
       "Type" : "String",
       "Default": ""
     },
+    "XgemailSubmitServiceQueueUrl" : {
+      "Description" : "URL for the SQS Queue where XGEMAIL submit micro service messages are sent",
+      "Type" : "String",
+      "Default": ""
+    },
     "StationVpcId" : {
       "Description" : "Cloud Station VPC id ",
       "Type" : "String",
@@ -265,6 +279,11 @@
     },
     "XgemailQueueUrl" : {
       "Description" : "URL for the SQS Queue where XGEMAIL messages are sent",
+      "Type" : "String",
+      "Default": ""
+    },
+    "XgemailCustomerSubmitQueueUrl" : {
+      "Description" : "URL for the SQS Queue where XGEMAIL messages from the customer-submit are sent",
       "Type" : "String",
       "Default": ""
     },
@@ -434,20 +453,13 @@
         "HealthCheckGracePeriod": { "Ref": "HealthCheckGracePeriod" },
         "HealthCheckType": { "Ref": "HealthCheckType" },
         "LaunchConfigurationName": { "Ref": "JavaAutoScalingLaunchConfig" },
-        "LifecycleHookSpecificationList": [
+        "LifecycleHookSpecificationList" : [
           {
-            "LifecycleHookName": {
-              "Fn::Join":  ["-",[
-                { "Ref": "VpcName"},
-                { "Ref": "XgemailServiceType" },
-                "Terminating-LifeCycleHook"
-              ]]
-            },
-            "DefaultResult": "CONTINUE",
-            "HeartbeatTimeout": "300",
-            "LifecycleTransition": "autoscaling:EC2_INSTANCE_TERMINATING",
-            "NotificationTargetARN": { "Ref": "AutoScalingNotificationTopicARN" },
-            "RoleARN": { "Ref": "AutoScalingInstanceRoleArn" }
+            "LifecycleHookName": { "Ref": "LifecycleHookName" },
+            "HeartbeatTimeout" : "300",
+            "LifecycleTransition" : "autoscaling:EC2_INSTANCE_TERMINATING",
+            "NotificationTargetARN" : { "Ref": "AutoScalingNotificationTopicARN" },
+            "RoleARN" : { "Ref": "AutoScalingInstanceRoleArn" }
           }
         ],
         "LoadBalancerNames": { "Ref": "LoadBalancerName" },
@@ -474,12 +486,32 @@
           },
           {
             "Key": "BuildResultKey",
-            "Value": { "Ref": "BuildVersion"},
+            "Value": { "Ref": "BuildVersion" },
             "PropagateAtLaunch": "true"
           },
           {
             "Key": "BundleVersion",
-            "Value": { "Ref": "BundleVersion"},
+            "Value": { "Ref": "BundleVersion" },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "Application",
+            "Value": { "Ref": "XgemailServiceType" },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "ServiceCategory",
+            "Value": { "Fn::Sub": "${VpcName}:email" },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "ServiceType",
+            "Value": { "Fn::Sub": "${VpcName}:${XgemailServiceType}" },
             "PropagateAtLaunch": "true"
           }
         ]
@@ -528,54 +560,58 @@
                   "Fn::Join": [ "", [
                     "{\n",
                     "  \"sophos_cloud\" : {\n",
-                    "    \"application_name\"                 : \"{{cluster}}\",\n",
-                    "    \"application_type\"                 : \"xgemail\",\n",
-                    "    \"availability_zone\"                : \"{{availability_zone}}\",\n",
-                    "    \"connections\"                      : \"cloud-{{environment}}-connections\",\n",
-                    "    \"configs\"                          : \"cloud-{{environment}}-configs\",\n",
-                    "    \"context\"                          : \"{{environment}}\",\n",
-                    "    \"environment\"                      : \"{{environment}}\",\n",
-                    "    \"branch\"                           : \"{{branch}}\",\n",
-                    "    \"cluster\"                          : \"{{cluster}}\",\n",
-                    "    \"client-endpoint\"                  : \"{{region}}\",\n",
-                    "    \"is_java_app\"                      : \"no\",\n",
-                    "    \"region\"                           : \"{{region}}\",\n",
-                    "    \"vpc_id\"                           : \"{{vpc_id}}\",\n",
-                    "    \"vpc_name\"                         : \"{{vpc_name}}\"\n",
+                    "    \"application_name\"                     : \"{{cluster}}\",\n",
+                    "    \"application_type\"                     : \"xgemail\",\n",
+                    "    \"availability_zone\"                    : \"{{availability_zone}}\",\n",
+                    "    \"connections\"                          : \"cloud-{{environment}}-connections\",\n",
+                    "    \"configs\"                              : \"cloud-{{environment}}-configs\",\n",
+                    "    \"context\"                              : \"{{environment}}\",\n",
+                    "    \"environment\"                          : \"{{environment}}\",\n",
+                    "    \"branch\"                               : \"{{branch}}\",\n",
+                    "    \"cluster\"                              : \"{{cluster}}\",\n",
+                    "    \"client-endpoint\"                      : \"{{region}}\",\n",
+                    "    \"is_java_app\"                          : \"no\",\n",
+                    "    \"region\"                               : \"{{region}}\",\n",
+                    "    \"vpc_id\"                               : \"{{vpc_id}}\",\n",
+                    "    \"vpc_name\"                             : \"{{vpc_name}}\"\n",
                     "  },\n",
                     "  \"cert\" : {\n",
-                    "    \"mx\"                               : \"mx\",\n",
-                    "    \"should_install_mx\"                : \"true\"\n",
+                    "    \"mx\"                                   : \"mx\",\n",
+                    "    \"should_install_mx\"                    : \"true\"\n",
                     "  },\n",
                     "  \"volumes\" : {\n",
-                    "    \"volume_min_iops\"                  : \"{{volume_min_iops}}\",\n",
-                    "    \"volume_min_size_data_gb\"          : \"{{volume_min_size_data_gb}}\",\n",
-                    "    \"volume_mount_point\"               : \"storage\",\n",
-                    "    \"volume_set_id\"                    : \"{{volume_set_id}}\",\n",
-                    "    \"volume_snapshot_hour\"             : \"0\",\n",
-                    "    \"volume_snapshot_weekday\"          : \"0\",\n",
-                    "    \"volume_tracker_sdb_domain\"        : \"{{volume_tracker_sdb_domain}}\"\n",
+                    "    \"volume_min_iops\"                      : \"{{volume_min_iops}}\",\n",
+                    "    \"volume_min_size_data_gb\"              : \"{{volume_min_size_data_gb}}\",\n",
+                    "    \"volume_mount_point\"                   : \"storage\",\n",
+                    "    \"volume_set_id\"                        : \"{{volume_set_id}}\",\n",
+                    "    \"volume_snapshot_hour\"                 : \"0\",\n",
+                    "    \"volume_snapshot_weekday\"              : \"0\",\n",
+                    "    \"volume_tracker_sdb_domain\"            : \"{{volume_tracker_sdb_domain}}\"\n",
                     "  },\n",
                     "  \"xgemail\" : {\n",
-                    "    \"alarm_topic_arn\"                  : \"{{alarm_topic_arn}}\",\n",
-                    "    \"cluster_type\"                     : \"{{cluster_type}}\",\n",
-                    "    \"lifecycle_topic_arn\"              : \"{{lifecycle_topic_arn}}\",\n",
-                    "    \"msg_history_bucket_name\"          : \"{{msg_history_bucket_name}}\",\n",
-                    "    \"msg_history_queue_url\"            : \"{{msg_history_queue_url}}\",\n",
-                    "    \"msg_history_status_queue_url\"     : \"{{msg_history_delivery_status_queue_url}}\",\n",
-                    "    \"msg_history_status_sns_arn\"       : \"{{msg_history_delivery_status_sns_arn}}\",\n",
-                    "    \"msg_notifier_queue_url\"           : \"{{msg_notifier_queue_url}}\",\n",
-                    "    \"notification_sns_arn\"             : \"{{notification_sns_arn}}\",\n",
-                    "    \"policy_efs_file_system_id\"        : \"{{policy_efs_file_system_id}}\",\n",
-                    "    \"sxl_dbl\"                          : \"{{sxl_dbl}}\",\n",
-                    "    \"sxl_rbl\"                          : \"{{sxl_rbl}}\",\n",
-                    "    \"station_vpc_id\"                   : \"{{station_vpc_id}}\",\n",
-                    "    \"station_vpc_name\"                 : \"{{station_vpc_name}}\",\n",
-                    "    \"xgemail_policy_bucket_name\"       : \"{{xgemail_policy_bucket_name}}\",\n",
-                    "    \"xgemail_bucket_name\"              : \"{{xgemail_bucket_name}}\",\n",
-                    "    \"xgemail_policy_arn\"               : \"{{xgemail_policy_arn}}\",\n",
-                    "    \"xgemail_sns_sqs_url\"              : \"{{xgemail_sns_sqs_url}}\",\n",
-                    "    \"xgemail_queue_url\"                : \"{{xgemail_queue_url}}\"\n",
+                    "    \"alarm_topic_arn\"                      : \"{{alarm_topic_arn}}\",\n",
+                    "    \"cluster_type\"                         : \"{{cluster_type}}\",\n",
+                    "    \"lifecycle_topic_arn\"                  : \"{{lifecycle_topic_arn}}\",\n",
+                    "    \"msg_history_bucket_name\"              : \"{{msg_history_bucket_name}}\",\n",
+                    "    \"msg_history_queue_url\"                : \"{{msg_history_queue_url}}\",\n",
+                    "    \"msg_history_status_queue_url\"         : \"{{msg_history_delivery_status_queue_url}}\",\n",
+                    "    \"msg_history_status_sns_arn\"           : \"{{msg_history_delivery_status_sns_arn}}\",\n",
+                    "    \"msg_notifier_queue_url\"               : \"{{msg_notifier_queue_url}}\",\n",
+                    "    \"notification_sns_arn\"                 : \"{{notification_sns_arn}}\",\n",
+                    "    \"policy_efs_file_system_id\"            : \"{{policy_efs_file_system_id}}\",\n",
+                    "    \"sxl_dbl\"                              : \"{{sxl_dbl}}\",\n",
+                    "    \"sxl_rbl\"                              : \"{{sxl_rbl}}\",\n",
+                    "    \"station_vpc_id\"                       : \"{{station_vpc_id}}\",\n",
+                    "    \"station_vpc_name\"                     : \"{{station_vpc_name}}\",\n",
+                    "    \"volume_cleanup\"                       : \"False\",\n",
+                    "    \"xgemail_policy_bucket_name\"           : \"{{xgemail_policy_bucket_name}}\",\n",
+                    "    \"xgemail_bucket_name\"                  : \"{{xgemail_bucket_name}}\",\n",
+                    "    \"xgemail_customer_submit_bucket_name\"  : \"{{xgemail_customer_submit_bucket_name}}\",\n",
+                    "    \"xgemail_customer_submit_queue_url\"    : \"{{xgemail_customer_submit_queue_url}}\",\n",
+                    "    \"xgemail_policy_arn\"                   : \"{{xgemail_policy_arn}}\",\n",
+                    "    \"xgemail_service_queue_url\"            : \"{{xgemail_service_queue_url}}\",\n",
+                    "    \"xgemail_sns_sqs_url\"                  : \"{{xgemail_sns_sqs_url}}\",\n",
+                    "    \"xgemail_queue_url\"                    : \"{{xgemail_queue_url}}\"\n",
                     "  }\n",
                     "}\n"
                   ]]
@@ -612,7 +648,10 @@
                   "volume_tracker_sdb_domain":                { "Ref": "VolumeTrackerSimpleDbDomain" },
                   "xgemail_policy_bucket_name":               { "Ref": "XgemailPolicyBucketName" },
                   "xgemail_bucket_name":                      { "Ref": "XgemailBucketName" },
+                  "xgemail_customer_submit_bucket_name":      { "Ref": "XgemailCustomerSubmitBucketName" },
+                  "xgemail_customer_submit_queue_url":        { "Ref": "XgemailCustomerSubmitQueueUrl" },
                   "xgemail_policy_arn":                       { "Ref": "XgemailPolicyArn" },
+                  "xgemail_service_queue_url":                { "Ref": "XgemailSubmitServiceQueueUrl" },
                   "xgemail_sns_sqs_url":                      { "Ref": "XgemailSnsSqsQueueUrl" },
                   "xgemail_queue_url":                        { "Ref": "XgemailQueueUrl" }
                 },
@@ -755,6 +794,7 @@
                     "knife node run_list set -z `knife node list -z` \"",
                     "recipe[sophos-cloud-mount::default],",
                     "recipe[sophos-cloud-mount::install],",
+                    "recipe[sophos-cloud-xgemail::setup_xgemail_instance_terminator],",
                     "recipe[sophos-cloud-xgemail::configure-policy-efs-mount],",
                     "recipe[sophos-cloud-ntpd::default],",
                     "recipe[sophos-cloud-fluentd::configure],",
@@ -763,7 +803,6 @@
                     "recipe[sophos-cloud-xgemail::setup_xgemail_utils_structure],",
                     "recipe[sophos-cloud-xgemail::configure-postfix],",
                     "recipe[sophos-cloud-xgemail::configure_postfix_snmp_logicmonitor],",
-                    "recipe[sophos-cloud-xgemail::setup_xgemail_sqs_lifecycle_poller_cron],",
                     "recipe[sophos-cloud-xgemail::configure_monit],",
                     "recipe[sophos-cloud-xgemail::run_install_cleanup]",
                     "\""

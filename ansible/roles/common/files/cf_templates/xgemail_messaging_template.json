@@ -51,6 +51,18 @@
       "Description": "Endpoint URL for delivery SQS queue",
       "Type": "String"
     },
+    "EncryptionDeliveryEventsTopicArn": {
+      "Description": "TopicArn for encryption delivery events SNS",
+      "Type": "String"
+    },
+    "EncryptionDeliveryQueueArn": {
+      "Description": "Endpoint for encryption delivery SQS queue",
+      "Type": "String"
+    },
+    "EncryptionDeliveryQueueUrl": {
+      "Description": "Endpoint URL for encryption delivery SQS queue",
+      "Type": "String"
+    },
     "EmergencyInboxQueueArn": {
       "Description": "Endpoint for emergency inbox SQS queue",
       "Type": "String"
@@ -232,6 +244,14 @@
         "Endpoint": { "Ref": "DeliveryQueueArn" },
         "Protocol": "sqs",
         "TopicArn": { "Ref": "SuccessEventsTopicArn"}
+      }
+    },
+    "EncryptionDeliveryQueueToEncryptionDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "EncryptionDeliveryQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "EncryptionDeliveryEventsTopicArn"}
       }
     },
     "EmergencyInboxQueueToSuccessSnsSubsciption": {

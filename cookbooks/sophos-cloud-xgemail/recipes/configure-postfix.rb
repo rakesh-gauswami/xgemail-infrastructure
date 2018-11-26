@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: configure-postfix
 #
-# Copyright 2017, Sophos
+# Copyright 2018, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -73,6 +73,8 @@ include_recipe 'sophos-cloud-xgemail::configure-internet-submit-queue'
 include_recipe 'sophos-cloud-xgemail::configure-customer-submit-queue'
 include_recipe 'sophos-cloud-xgemail::configure-customer-delivery-queue'
 include_recipe 'sophos-cloud-xgemail::configure-internet-delivery-queue'
+include_recipe 'sophos-cloud-xgemail::configure-encryption-delivery-queue'
+include_recipe 'sophos-cloud-xgemail::configure-encryption-submit-queue'
 
 if ACCOUNT == 'sandbox'
   include_recipe 'sophos-cloud-xgemail::configure-extended-delivery-queue'
@@ -85,13 +87,14 @@ MANAGED_SERVICES_IN_START_ORDER =
 
 NODE_TYPE = node['xgemail']['cluster_type']
 
-if NODE_TYPE == 'delivery' || NODE_TYPE == 'internet-delivery'
+if NODE_TYPE == 'delivery' || NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'encryption-delivery'
   MANAGED_SERVICES_IN_START_ORDER = [
   'postfix',
   SQS_MESSAGE_CONSUMER_SERVICE_NAME
 ]
 else
-  if NODE_TYPE == 'submit' || NODE_TYPE == 'customer-submit'
+# TODO We need to move the condition NODE_TYPE == 'encryption-submit' here after our jilter service is available
+  if NODE_TYPE == 'submit' || NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit'
     if ACCOUNT != 'sandbox'
        MANAGED_SERVICES_IN_START_ORDER = [
           JILTER_SERVICE_NAME,

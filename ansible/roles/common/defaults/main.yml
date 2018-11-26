@@ -15,6 +15,8 @@ ec2:
     cd:                                                 "XGEMAIL-DELIVERY"
     cs:                                                 "XGEMAIL-CUSTOMER-SUBMIT"
     cx:                                                 "XGEMAIL-XDELIVERY"
+    ed:                                                 "XGEMAIL-ENCRYPTION-DELIVERY"
+    es:                                                 "XGEMAIL-ENCRYPTION-SUBMIT"
     id:                                                 "XGEMAIL-INTERNET-DELIVERY"
     is:                                                 "XGEMAIL-SUBMIT"
     ix:                                                 "XGEMAIL-INTERNET-XDELIVERY"
@@ -36,6 +38,7 @@ kinesis:
 lambda:
   eip_monitor_lambda_function:                          "Xgemail-Eip-Monitor"
   eip_rotation_lambda_function:                         "Xgemail-Eip-Rotation"
+  instance_terminator_lambda_function:                  "Xgemail-Instance-Terminator"
 # CloudEmail S3 Bucket Names.
 s3:
   customer_submit_bucket:                               "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-cust-submit"
@@ -54,12 +57,14 @@ sqs:
   customer_delivery_sqs_queue:                          "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Customer_Delivery"
   customer_submit_sqs_queue:                            "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Customer_Submit"
   customer_delivery_sqs_queue_sns_listener:             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Customer_Delivery_SNS_Listener"
+  encryption_delivery_sqs_queue_sns_listener:           "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Encryption_Delivery_SNS_Listener"
   dqs_sqs_queue:                                        "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_DQS"
   delay_sqs_queue:                                      "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Delay"
   emergency_inbox_sqs_queue:                            "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Emergency_Inbox_Delivery"
   emergency_inbox_sqs_queue_sns_listener:               "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Emergency_Inbox_Delivery_SNS_Listener"
   internet_delivery_sqs_queue:                          "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Internet_Delivery"
   internet_delivery_sqs_queue_sns_listener:             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Internet_Delivery_SNS_Listener"
+  internet_submit_service_sqs_queue:                    "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Internet_Submit_Service"
   internet_submit_sqs_queue:                            "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Internet_Submit"
   lifecycle_sqs_sns:                                    "{{account.name}}-Xgemail-LifeCycleEvents-Processing"
   msg_history_sqs_queue:                                "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_MessageHistoryEvent_Delivery"
@@ -80,6 +85,7 @@ sqs:
 sns:
   arn_prefix:                                           "arn:aws:sns:{{account.region}}:{{aws_account_id}}:"
   alarm_sns_topic:                                      "{{account.name}}-xgemail-alarm-topic"
+  encryption_delivery_events_sns_topic:                 "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-encryption-delivery-events-SNS"
   delay_sns_topic:                                      "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-delay-SNS"
   deleted_events_sns_topic:                             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-deleted-events-SNS"
   internet_delivery_sns_topic:                          "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-internet-delivery-SNS"
@@ -116,22 +122,29 @@ stack:
       cloud_station_security_groups:                    "{{vpc.cloud_station.name}}-SecurityGroups"
     asg:
       bastion:                                          "{{vpc.cloud_email.name}}-BastionHost"
-      customer_delivery_asg:                            "{{vpc.cloud_email.name}}-xgemail-delivery-0000-"
-      customer_submit_asg:                              "{{vpc.cloud_email.name}}-xgemail-customer-submit-0000-"
-      customer_xdelivery_asg:                           "{{vpc.cloud_email.name}}-xgemail-xdelivery-0000-"
-      internet_delivery_asg:                            "{{vpc.cloud_email.name}}-xgemail-internet-delivery-0000-"
-      internet_submit_asg:                              "{{vpc.cloud_email.name}}-xgemail-submit-0000-"
-      internet_xdelivery_asg:                           "{{vpc.cloud_email.name}}-xgemail-internet-xdelivery-0000-"
+      cd:                                               "{{vpc.cloud_email.name}}-xgemail-customer-delivery"
+      cs:                                               "{{vpc.cloud_email.name}}-xgemail-customer-submit"
+      cx:                                               "{{vpc.cloud_email.name}}-xgemail-xdelivery-0000-"
+      id:                                               "{{vpc.cloud_email.name}}-xgemail-internet-delivery"
+      is:                                               "{{vpc.cloud_email.name}}-xgemail-internet-submit"
+      ix:                                               "{{vpc.cloud_email.name}}-xgemail-internet-xdelivery-0000-"
+      ed:                                               "{{vpc.cloud_email.name}}-xgemail-encryption-delivery"
+      es:                                               "{{vpc.cloud_email.name}}-xgemail-encryption-submit"
     elb:
-      customer_submit_elb:                              "{{vpc.cloud_email.name}}-XGEMAIL-customer-submit-ELB"
-      internet_submit_elb:                              "{{vpc.cloud_email.name}}-XGEMAIL-submit-ELB"
-      customer_delivery_elb:                            "{{vpc.cloud_email.name}}-XGEMAIL-delivery-ELB"
-      internet_delivery_elb:                            "{{vpc.cloud_email.name}}-XGEMAIL-internet-delivery-ELB"
-      customer_xdelivery_elb:                           "{{vpc.cloud_email.name}}-XGEMAIL-xdelivery-ELB"
-      internet_xdelivery_elb:                           "{{vpc.cloud_email.name}}-XGEMAIL-internet-xdelivery-ELB"
+      cs:                                               "{{vpc.cloud_email.name}}-XGEMAIL-customer-submit-ELB"
+      is:                                               "{{vpc.cloud_email.name}}-XGEMAIL-submit-ELB"
+      cd:                                               "{{vpc.cloud_email.name}}-XGEMAIL-delivery-ELB"
+      id:                                               "{{vpc.cloud_email.name}}-XGEMAIL-internet-delivery-ELB"
+      cx:                                               "{{vpc.cloud_email.name}}-XGEMAIL-xdelivery-ELB"
+      ix:                                               "{{vpc.cloud_email.name}}-XGEMAIL-internet-xdelivery-ELB"
+      ed:                                               "{{vpc.cloud_email.name}}-XGEMAIL-encryption-delivery-ELB"
+      es:                                               "{{vpc.cloud_email.name}}-XGEMAIL-encryption-submit-ELB"
   efs:
     policy_efs_volume:                                  "{{vpc.cloud_email.name}}-xgemail-policy-EFS-volume"
     policy_efs_mount_target:                            "{{vpc.cloud_email.name}}-xgemail-policy-EFS-volume-mount-target"
+  events:
+    rule:
+      lifecycle_lambda:                                 "{{vpc.cloud_email.name}}-xgemail-lifecycle-termination-events-rule"
   es:
     toc_elasticsearch_domain:                           "{{vpc.cloud_email.name}}-XGEMAIL-ToC-ES-Domain"
   kinesis:
@@ -140,6 +153,7 @@ stack:
   lambda:
     eip_monitor_lambda_function:                        "{{vpc.cloud_email.name}}-Lambda-XgemailEipMonitor"
     eip_rotation_lambda_function:                       "{{vpc.cloud_email.name}}-Lambda-XgemailEipRotation"
+    instance_terminator_lambda_function:                "{{vpc.cloud_email.name}}-Lambda-XgemailInstanceTerminator"
   route53:
     customer_delivery_route53:                          "{{vpc.cloud_email.name}}-XGEMAIL-delivery-ROUTE53"
     internet_delivery_route53:                          "{{vpc.cloud_email.name}}-XGEMAIL-internet-delivery-ROUTE53"
@@ -148,6 +162,8 @@ stack:
     customer_submit_a_route53:                          "{{vpc.cloud_email.name}}-XGEMAIL-customer-submit-A-RECORD-ROUTE53"
     customer_delivery_a_route53:                        "{{vpc.cloud_email.name}}-XGEMAIL-delivery-A-RECORD-A-ROUTE53"
     customer_delivery_b_route53:                        "{{vpc.cloud_email.name}}-XGEMAIL-delivery-A-RECORD-B-ROUTE53"
+    encryption_delivery_route53:                        "{{vpc.cloud_email.name}}-XGEMAIL-encryption-delivery-ROUTE53"
+    encryption_submit_route53:                          "{{vpc.cloud_email.name}}-XGEMAIL-encryption-submit-ROUTE53"
     mx_01_route53:                                      "{{vpc.cloud_email.name}}-XGEmailMX01-Cname"
     mx_02_route53:                                      "{{vpc.cloud_email.name}}-XGEmailMX02-Cname"
   s3:
@@ -164,12 +180,14 @@ stack:
     customer_delivery_sqs_queue:                        "{{vpc.cloud_email.name}}-XGEMAIL-delivery-SQS"
     customer_submit_sqs_queue:                          "{{vpc.cloud_email.name}}-XGEMAIL-customer-submit-SQS"
     customer_delivery_sqs_queue_sns_listener:           "{{vpc.cloud_email.name}}-XGEMAIL-delivery-SQS-SNS-listener"
+    encryption_delivery_sqs_queue_sns_listener:         "{{vpc.cloud_email.name}}-XGEMAIL-encryption-delivery-SQS-SNS-listener"
     internet_delivery_sqs_queue_sns_listener:           "{{vpc.cloud_email.name}}-XGEMAIL-internet-delivery-SQS-SNS-listener"
     dqs_sqs_queue:                                      "{{vpc.cloud_email.name}}-XGEMAIL-dqs-SQS"
     delay_sqs_queue:                                    "{{vpc.cloud_email.name}}-XGEMAIL-delay-SQS"
     emergency_inbox_sqs_queue:                          "{{vpc.cloud_email.name}}-XGEMAIL-emergency-inbox-SQS"
     emergency_inbox_sqs_queue_sns_listener:             "{{vpc.cloud_email.name}}-XGEMAIL-emergency-inbox-SQS-SNS-listener"
     internet_delivery_sqs_queue:                        "{{vpc.cloud_email.name}}-XGEMAIL-internet-delivery-SQS"
+    internet_submit_service_sqs_queue:                  "{{vpc.cloud_email.name}}-XGEMAIL-internet-submit-service-SQS"
     internet_submit_sqs_queue:                          "{{vpc.cloud_email.name}}-XGEMAIL-submit-SQS"
     msg_history_status_sqs_queue:                       "{{vpc.cloud_email.name}}-XGEMAIL-msg-history-delivery-status-SQS"
     msg_history_status_sqs_queue_sns_listener:          "{{vpc.cloud_email.name}}-XGEMAIL-msg-history-delivery-status-SQS-SNS-listener"
@@ -196,6 +214,7 @@ stack:
     internet_delivery_sns_topic:                        "{{vpc.cloud_email.name}}-xgemail-internet-delivery-SNS"
     quarantined_events_sns_topic:                       "{{vpc.cloud_email.name}}-xgemail-quarantined-events-SNS"
     success_events_sns_topic:                           "{{vpc.cloud_email.name}}-xgemail-success-events-SNS"
+    encryption_delivery_events_sns_topic:               "{{vpc.cloud_email.name}}-xgemail-encryption-delivery-events-SNS"
     notification_sns_topic:                             "{{vpc.cloud_email.name}}-xgemail-notification-SNS"
   ssm:
     ssm_documents:                                      "{{vpc.cloud_email.name}}-SSM-Documents"
@@ -216,10 +235,14 @@ template:
     asg:
       bastion:                                          "{{tmp_artifacts_dir}}/as_bastion_template.json"
       as_xgemail_instance_template:                     "{{tmp_artifacts_dir}}/as_xgemail_instance_template.json"
+      as_submit_delivery_template:                      "{{tmp_artifacts_dir}}/as_submit_delivery_template.json"
       as_xgemail_xdelivery_template:                    "{{tmp_artifacts_dir}}/as_xgemail_xdelivery_template.json"
   efs:
     efs_template:                                       "{{tmp_artifacts_dir}}/efs_template.json"
     efs_mount_target_template:                          "{{tmp_artifacts_dir}}/efs_mount_target_template.json"
+  events:
+    rule:
+      events_rule_lifecycle_lambda_template:            "{{tmp_artifacts_dir}}/events_rule_lifecycle_lambda_template.json"
   es:
     es_domain_template:                                 "{{tmp_artifacts_dir}}/es_domain_template.json"
   iam:
@@ -236,6 +259,7 @@ template:
   lambda:
     lambda_xgemail_eip_monitor_template:                "{{tmp_artifacts_dir}}/lambda_xgemail_eip_monitor_template.json"
     lambda_xgemail_eip_rotation_template:               "{{tmp_artifacts_dir}}/lambda_xgemail_eip_rotation_template.json"
+    lambda_xgemail_instance_terminator_template:        "{{tmp_artifacts_dir}}/lambda_xgemail_instance_terminator_template.json"
   route53:
     route53_record_basic_template:                      "{{tmp_artifacts_dir}}/route53_record_basic_template.json"
     route53_record_template:                            "{{tmp_artifacts_dir}}/route53_record_template.json"

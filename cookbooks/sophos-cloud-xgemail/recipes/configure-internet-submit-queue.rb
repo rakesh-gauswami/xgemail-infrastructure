@@ -12,7 +12,7 @@
 ACCOUNT =   node['sophos_cloud']['environment']
 NODE_TYPE = node['xgemail']['cluster_type']
 
-if NODE_TYPE != 'submit'
+if NODE_TYPE != 'submit' && NODE_TYPE != 'internet-submit'
   return
 end
 
@@ -69,6 +69,8 @@ SXL_RBL_RESPONSE_CODES = "127.0.4.[1;5;6;8;13;14;18;21]"
 
 # Hosts authorized to make use of the XCLIENT extension
 SMTPD_AUTHORIZED_XCLIENT_HOSTS = node["xgemail"]["smtpd_authorized_xclient_hosts"]
+
+HOP_COUNT_SUBMIT_INSTANCE = node['xgemail']['hop_count_submit_instance']
 
 RBL_REPLY_MAPS_FILENAME = 'rbl_reply_maps'
 
@@ -149,6 +151,8 @@ if ACCOUNT != 'sandbox'
   execute CREATE_SERVER_PEM_COMMAND
 
   [
+    "hopcount_limit = #{HOP_COUNT_SUBMIT_INSTANCE}",
+
     'smtpd_upstream_proxy_protocol = haproxy',
 
     # Server side TLS configuration
@@ -190,6 +194,7 @@ if ACCOUNT != 'sandbox'
   include_recipe 'sophos-cloud-xgemail::setup_dh_params'
   include_recipe 'sophos-cloud-xgemail::install_jilter_inbound'
   include_recipe 'sophos-cloud-xgemail::setup_flag_toggle_internet_submit'
+  include_recipe 'sophos-cloud-xgemail::setup_routing_managers'
   include_recipe 'sophos-cloud-xgemail::setup_internet_submit_domain_updater_cron'
   include_recipe 'sophos-cloud-xgemail::setup_internet_submit_recipient_updater_cron'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
@@ -205,6 +210,7 @@ else
   end
 
   include_recipe 'sophos-cloud-xgemail::setup_flag_toggle_internet_submit'
+  include_recipe 'sophos-cloud-xgemail::setup_routing_managers'
   include_recipe 'sophos-cloud-xgemail::setup_internet_submit_domain_updater_cron'
   include_recipe 'sophos-cloud-xgemail::setup_internet_submit_recipient_updater_cron'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'

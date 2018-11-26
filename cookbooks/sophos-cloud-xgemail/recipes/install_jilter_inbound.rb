@@ -12,9 +12,10 @@
 package 'tar'
 
 NODE_TYPE = node['xgemail']['cluster_type']
+ACCOUNT = node['sophos_cloud']['account']
 
 # Make sure we're on an internet submit node
-if NODE_TYPE != 'submit'
+if NODE_TYPE != 'submit' && NODE_TYPE != 'internet-submit' && NODE_TYPE !='jilter-inbound'
   return
 end
 
@@ -44,7 +45,11 @@ SERVICE_USER = node['xgemail']['jilter_user']
 POLICY_BUCKET_NAME   = node['xgemail']['xgemail_policy_bucket_name']
 ACTIVE_PROFILE = node['xgemail']['xgemail_active_profile']
 
-include_recipe 'sophos-cloud-xgemail::install_jilter_common'
+if ACCOUNT == 'sandbox'
+  include_recipe 'sophos-cloud-xgemail::install_jilter_code_sandbox'
+else
+  include_recipe 'sophos-cloud-xgemail::install_jilter_common'
+end
 
 # Modify /etc/rsyslog.conf
 execute 'modify_rsyslog.conf' do
@@ -128,20 +133,6 @@ user SERVICE_USER do
   shell '/sbin/nologin'
 end
 
-# Create the Jilter service
-template 'xgemail.jilter.service.sh' do
-  path JILTER_SCRIPT_PATH
-  source 'xgemail.jilter.inbound.service.sh.erb'
-  mode '0700'
-  owner SERVICE_USER
-  group SERVICE_USER
-  variables(
-      :deployment_dir => DEPLOYMENT_DIR,
-      :property_path => JILTER_APPLICATION_PROPERTIES_PATH,
-      :active_profile => ACTIVE_PROFILE
-  )
-end
-
 # Create the jilter application properties
 template 'xgemail.jilter.properties' do
   path JILTER_APPLICATION_PROPERTIES_PATH
@@ -154,31 +145,69 @@ template 'xgemail.jilter.properties' do
   )
 end
 
-template 'xgemail-jilter-service' do
-  path "/etc/init.d/#{JILTER_SERVICE_NAME}"
-  source 'xgemail.jilter.service.init.erb'
-  mode '0755'
-  owner 'root'
-  group 'root'
-  variables(
-      :service => JILTER_SERVICE_NAME,
-      :script_path => JILTER_SCRIPT_PATH,
-      :user => SERVICE_USER
-  )
-end
+if ACCOUNT != 'sandbox'
 
-service 'xgemail-jilter-service' do
-  service_name JILTER_SERVICE_NAME
-  init_command "/etc/init.d/#{JILTER_SERVICE_NAME}"
-  supports :restart => true, :start => true, :stop => true, :reload => true
-  subscribes :enable, 'template[xgemail-jilter-service]', :immediately
-end
+  # Create the Jilter service
+  template 'xgemail.jilter.service.sh' do
+    path JILTER_SCRIPT_PATH
+    source 'xgemail.jilter.inbound.service.sh.erb'
+    mode '0700'
+    owner SERVICE_USER
+    group SERVICE_USER
+    variables(
+        :deployment_dir => DEPLOYMENT_DIR,
+        :property_path => JILTER_APPLICATION_PROPERTIES_PATH,
+        :active_profile => ACTIVE_PROFILE
+    )
+  end
 
-# Update postfix to call jilter
-[
-    'smtpd_milters = inet:localhost:9876',
-    'milter_connect_macros = {client_addr}, {j}',
-    'milter_end_of_data_macros = {i}'
-].each do | cur |
-  execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+  template 'xgemail-jilter-service' do
+    path "/etc/init.d/#{JILTER_SERVICE_NAME}"
+    source 'xgemail.jilter.service.init.erb'
+    mode '0755'
+    owner 'root'
+    group 'root'
+    variables(
+        :service => JILTER_SERVICE_NAME,
+        :script_path => JILTER_SCRIPT_PATH,
+        :user => SERVICE_USER
+    )
+  end
+
+  service 'xgemail-jilter-service' do
+    service_name JILTER_SERVICE_NAME
+    init_command "/etc/init.d/#{JILTER_SERVICE_NAME}"
+    supports :restart => true, :start => true, :stop => true, :reload => true
+    subscribes :enable, 'template[xgemail-jilter-service]', :immediately
+  end
+
+  # Update postfix to call jilter
+  [
+      'smtpd_milters = inet:localhost:9876',
+      'milter_connect_macros = {client_addr}, {j}',
+      'milter_end_of_data_macros = {i}'
+  ].each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+  end
+
+else
+
+  APPLICATION = node['xgemail']['application']
+  DIRECTION   = node['xgemail']['direction']
+
+   # Create the Jilter service
+  template 'xgemail.jilter.service.sh' do
+    path JILTER_SCRIPT_PATH
+    source 'xgemail.jilter.sandbox.sh.erb'
+    mode '0700'
+    owner SERVICE_USER
+    group SERVICE_USER
+    variables(
+        :deployment_dir => DEPLOYMENT_DIR,
+        :property_path  => JILTER_APPLICATION_PROPERTIES_PATH,
+        :active_profile => ACTIVE_PROFILE,
+        :direction      => DIRECTION,
+        :application    => APPLICATION
+    )
+  end
 end

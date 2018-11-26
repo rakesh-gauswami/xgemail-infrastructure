@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: common-postfix-multi-instance-config
 #
-# Copyright 2016, Sophos
+# Copyright 2018, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -12,12 +12,6 @@
 #
 
 ACCOUNT =  node['sophos_cloud']['environment']
-
-if ACCOUNT == 'sandbox'
-  chef_gem 'aws-sdk' do
-    action [:install]
-  end
-end
 
 require 'aws-sdk'
 
@@ -95,7 +89,7 @@ if ACCOUNT == 'sandbox'
 
   # Update postfix to call jilter as external service
   # only for submit instances
-  if NODE_TYPE == 'submit'
+  if NODE_TYPE == 'submit' or NODE_TYPE == 'internet-submit'
     [
         'smtpd_milters = inet:jilter-inbound:9876',
         'milter_connect_macros = {client_addr}, {j}',

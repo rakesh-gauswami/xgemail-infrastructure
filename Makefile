@@ -39,6 +39,7 @@ LOCAL_TARGETS = 	.check.ansible \
 
 # Build Group 1 - Python Bamboo
 GROUP_1 = 	.check.python \
+			.check.pyunit.local \
 			$(EOL)
 
 # Build Group 2 - Python Local
@@ -64,6 +65,8 @@ PYUNIT_LOCAL_DIRS :=  \
 		./bamboo \
 		./lambda \
 		./tools \
+		./cookbooks/sophos-cloud-xgemail/files/default \
+		./cookbooks/sophos-cloud-xgemail/templates/default \
 		$(EOL)
 
 # Use this target to run all checks.
@@ -248,11 +251,11 @@ NUM_BASH_FILES=$(shell echo $(BASH_FILES) | wc -w)
 	#@touch $@
 
 PYTHON_FILES := $(shell find ./cookbooks -name '*.py')
-PYTHON_FILES += $(shell find ./hopper -name '*.py')
+PYTHON_FILES += $(shell find ./utils -name '*.py')
 PYTHON_FILES += $(shell find ./bamboo -name '*.py')
 PYTHON_FILES += $(shell find ./bamboo/xgemail -name '*.py')
-PYTHON_FILES += ./hopper/xgemail_send_eml.py
-PYTHON_FILES += ./hopper/xgemail_terminate_instance.py
+PYTHON_FILES += ./utils/xgemail_send_eml.py
+PYTHON_FILES += ./utils/xgemail_terminate_instance.py
 PYTHON_FILES += ./lambda/xgemail_eip_monitor.py
 PYTHON_FILES += ./lambda/xgemail_eip_rotation.py
 

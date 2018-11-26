@@ -23,13 +23,12 @@ if ENVIRONMENT == "sandbox"
 
     default['xgemail']['cluster_type']     = ENV['INSTANCE_TYPE']
 
-    default['xgemail']['xgemail_bucket_name']        = 'xgemail-submit'
-    default['xgemail']['xgemail_queue_url']          = 'http://localstack:4576/queue/sandbox-Xgemail_Internet_Submit'
+    default['xgemail']['direction']        = ENV['DIRECTION']
+    default['xgemail']['application']      = ENV['APPLICATION']
+
     default['xgemail']['msg_history_bucket_name']    = 'xgemail-msg-history'
     default['xgemail']['msg_history_queue_url']      = 'http://localstack:4576/queue/sandbox-Xgemail_MessageHistoryEvent_Delivery'
     default['xgemail']['xgemail_policy_bucket_name'] = 'xgemail-policy'
-
-    default['xgemail']['xgemail_sns_sqs_url']        = 'http://localstack:4576/queue/sandbox-Xgemail_Customer_Delivery_SNS_Listener'
     default['xgemail']['mail_pic_api_auth']          = 'xgemail-local-mail'
     default['xgemail']['msg_history_status_sns_arn'] = 'arn:aws:sns:local:xgemail-msg-history-delivery-status-SNS'
     default['sophos_cloud']['connections']           = 'cloud-sandbox-connections'
@@ -39,11 +38,31 @@ if ENVIRONMENT == "sandbox"
     default['xgemail']['xgemail_active_profile']     = 'sandbox'
     default['xgemail']['station_vpc_name']           = 'pic'
 
-
-    if INSTANCE_TYPE == "customer-submit"
-        default['ec2']['instance_id'] = ENV['INSTANCE_ID']
+    if INSTANCE_TYPE == "internet-submit" || INSTANCE_TYPE == "customer-delivery"
+        default['xgemail']['xgemail_bucket_name'] = 'xgemail-submit'
+        default['xgemail']['xgemail_queue_url']   = 'http://localstack:4576/queue/sandbox-Xgemail_Internet_Submit'
+        default['xgemail']['xgemail_sns_sqs_url'] = 'http://localstack:4576/queue/sandbox-Xgemail_Customer_Delivery_SNS_Listener'
     end
 
+    if INSTANCE_TYPE == "customer-submit" || INSTANCE_TYPE == "internet-delivery"
+        default['ec2']['instance_id'] = ENV['INSTANCE_ID']
+        default['xgemail']['xgemail_bucket_name'] = 'xgemail-cust-submit'
+        default['xgemail']['xgemail_queue_url']   = 'http://localstack:4576/queue/sandbox-Xgemail_Customer_Submit'
+        default['xgemail']['xgemail_sns_sqs_url'] = 'http://localstack:4576/queue/sandbox-Xgemail_Internet_Delivery_SNS_Listener'
+    end
+
+    if INSTANCE_TYPE == "jilter-inbound" || INSTANCE_TYPE == "jilter_outbound"
+        default['xgemail']['jilter_version'] = ENV['JILTER_VERSION']
+        default['sophos_cloud']['thirdparty']  = '//cloud-sandbox-3rdparty'
+        default['xgemail']['postfix_instance_data']['jilter-outbound'] =
+          {
+            :instance_name => 'jilter-outbound'
+          }
+        default['xgemail']['postfix_instance_data']['jilter-inbound'] =
+            {
+                :instance_name => 'jilter-inbound'
+            }
+    end
     default['sandbox']['mail_transport_entry']     = 'sophos.com smtp:mailcatcher:1025'
     default['sandbox']['mail_relay_domain']        = 'sophos.com OK'
     default['sandbox']['mail_recipient_access']    = 'sophos.com OK'

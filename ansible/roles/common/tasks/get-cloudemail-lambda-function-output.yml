@@ -1,0 +1,12 @@
+---
+
+- name: "Gather {{stack.lambda.instance_terminator_lambda_function}} CloudFormation Stack Output"
+  cloudformation_facts:
+    stack_name: "{{stack.lambda.instance_terminator_lambda_function}}"
+    region: "{{account.region}}"
+  register: lambda_instance_terminator_output
+
+- name: "Print {{stack.lambda.instance_terminator_lambda_function}} CloudFormation Stack Output"
+  debug:
+    var: lambda_instance_terminator_output
+    verbosity: 3

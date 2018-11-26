@@ -148,8 +148,14 @@ module SophosCloudXgemail
       case type
         when 'submit'
           return "mx-01-#{region}.#{account}.hydra.sophos.com"
+        when 'internet-submit'
+          return "mx-01-#{region}.#{account}.hydra.sophos.com"
         when 'customer-submit'
           return "relay-#{region}.#{account}.hydra.sophos.com"
+        when 'encryption-delivery'
+          return "encryption-#{region}.#{account}.hydra.sophos.com"
+        when 'encryption-submit'
+          return "encryption-#{region}.#{account}.hydra.sophos.com"
         when 'internet-delivery', 'internet-xdelivery'
           if account == 'sandbox'
             # Return docker instance fully qualified domain name

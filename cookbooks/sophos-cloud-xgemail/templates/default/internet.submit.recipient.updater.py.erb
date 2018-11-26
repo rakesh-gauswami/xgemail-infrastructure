@@ -24,6 +24,7 @@ RECIPIENT_ACCESS_FILENAME = '<%= @recipient_access_filename %>'
 RELAY_DOMAINS_FILENAME = '<%= @relay_domains_filename %>'
 MAIL_PIC_API_AUTH = '<%= @mail_pic_api_auth %>'
 CONNECTIONS_BUCKET = '<%= @connections_bucket %>'
+MAIL_PIC_RESPONSE_TIMEOUT = <%= @mail_pic_api_response_timeout %>
 
 # logging to syslog setup
 logging.getLogger("botocore").setLevel(logging.WARNING)
@@ -36,23 +37,30 @@ formatter = logging.Formatter(
 handler.formatter = formatter
 logger.addHandler(handler)
 
-PIC_XGEMAIL_API_URL = 'https://%s/mail/api/xgemail' % (PIC_FQDN)
-PIC_ADDRESSES_URL = PIC_XGEMAIL_API_URL + '/addresses'
-MAIL_PIC_RESPONSE_TIMEOUT = <%= @mail_pic_api_response_timeout %>
+ACCOUNT = '<%= @account %>'
 
-logger.info('internet submit recipients cron - pic url [%s]', PIC_XGEMAIL_API_URL)
-
-def get_passphrase():
+if ACCOUNT != 'sandbox':
+  def get_passphrase():
     s3 = boto3.client('s3')
     passphrase = s3.get_object(Bucket=CONNECTIONS_BUCKET, Key=MAIL_PIC_API_AUTH)
     return base64.b64encode('mail:' + passphrase['Body'].read())
 
-auth = get_passphrase()
+  auth = get_passphrase()
 
-HEADERS = {
-    'content-type': 'application/json',
+  HEADERS = {
+    'Content-type': 'application/json',
     'Authorization': 'Basic ' + auth
-}
+  }
+  PIC_XGEMAIL_API_URL = 'https://%s/mail/api/xgemail' % (PIC_FQDN)
+else:
+  HEADERS = {
+    'Content-type': 'application/json',
+    'Authorization': 'Basic'
+  }
+  PIC_XGEMAIL_API_URL = 'http://%s/mail-services/api/xgemail' % (PIC_FQDN)
+
+logger.info('internet submit recipients cron - pic url [%s]', PIC_XGEMAIL_API_URL)
+PIC_ADDRESSES_URL = PIC_XGEMAIL_API_URL + '/addresses'
 
 POSTFIX_CONFIG_DIR = subprocess.check_output(
     [

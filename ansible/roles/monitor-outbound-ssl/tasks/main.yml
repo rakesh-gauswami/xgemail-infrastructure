@@ -1,0 +1,13 @@
+---
+- file:
+    path: '{{ role_path }}/BUILT'
+    state: directory
+    mode: 0750
+  register:
+    msg_output_work_dir
+
+- name: "Include SSL Generation task."
+  include_tasks: generate-certs.yml
+
+- name: "Cleanup Temporary directories"
+  include_tasks: cleanup.yml
