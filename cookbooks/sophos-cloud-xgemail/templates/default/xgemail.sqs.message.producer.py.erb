@@ -213,6 +213,11 @@ def upload_metadata_to_s3(s3_file_path, expires, metadata, direction):
         logger.exception("Failed in uploading metadata to S3 [{0}]".format(e))
         exit(EX_TEMPFAIL)
 
+# Retrieves the S3 bucket depending on the direction (inbound or outbound).
+# This logic is used on the encryption-submit instance only and there are two
+# S3 buckets defined on this instance. For the rest instances there is no direction
+# switching, so the SUBMIT_BUCKET_NAME is used only, which has the specific value
+# for the particular instance.
 def get_submit_bucket_name(direction):
     if (SUBMIT_TYPE == 'ENCRYPTION') and (direction != INBOUND_MESSAGE_DIRECTION):
       return CUSTOMER_SUBMIT_BUCKET_NAME
@@ -317,6 +322,11 @@ def send_msg_processing_sqs_message(sqs_message_json, direction, customer_id = N
         logger.exception("Failed in uploading message processing SQS job [{0}]".format(e))
         exit(EX_TEMPFAIL)
 
+# Retrieves the SQS URL depending on the direction (inbound or outbound).
+# This logic is used on the encryption-submit instance only and there are two
+# SQS URLs defined on this instance. For the rest instances there is no direction
+# switching, so the SUBMIT_SQS_URL is used only, which has the specific value
+# for the particular instance.
 def get_sqs_url(direction):
     if (SUBMIT_TYPE == 'ENCRYPTION') and (direction != INBOUND_MESSAGE_DIRECTION)
       return CUSTOMER_SUBMIT_SQS_URL
