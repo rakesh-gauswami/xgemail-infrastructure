@@ -63,7 +63,7 @@ if ENVIRONMENT == "sandbox"
                 :instance_name => 'jilter-inbound'
             }
     end
-    default['sandbox']['mail_transport_entry']     = 'sophos.com smtp:mailcatcher:1025'
+    default['sandbox']['mail_transport_entry']     = '* smtp:mailcatcher:1025'
     default['sandbox']['mail_relay_domain']        = 'sophos.com OK'
     default['sandbox']['mail_recipient_access']    = 'sophos.com OK'
 end
