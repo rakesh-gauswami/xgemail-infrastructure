@@ -80,15 +80,15 @@ class RoutingManagerTest(unittest.TestCase):
 
     @mock.patch('random.random')
     def test_perform_routing_without_customer_file_do_routing(self, mock_random):
-        self.manually_write_routing_config_with_percentage(0.33)
-        mock_random.return_value =  0.55
+        self.manually_write_routing_config_with_percentage(0.55)
+        mock_random.return_value =  0.33
         self.assertTrue(self.routing_manager.perform_routing('customer-missing'))
 
 
     @mock.patch('random.random')
     def test_perform_routing_without_customer_file_no_routing(self, mock_random):
-        self.manually_write_routing_config_with_percentage(0.33)
-        mock_random.return_value = 0.11
+        self.manually_write_routing_config_with_percentage(0.11)
+        mock_random.return_value = 0.33
         self.assertFalse(self.routing_manager.perform_routing('customer-missing'))
 
     @mock.patch('random.random')
