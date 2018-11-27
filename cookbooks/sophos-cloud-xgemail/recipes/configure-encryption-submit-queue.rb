@@ -47,7 +47,7 @@ HOP_COUNT_SUBMIT_INSTANCE = node['xgemail']['hop_count_submit_instance']
 
 # Add xgemail certificate
 remote_file "/etc/ssl/certs/#{CERT_NAME}.crt" do
-  source "file://tmp/sophos/certificates/api-mcs-mob-prod.crt"
+  source "file:///tmp/sophos/certificates/api-mcs-mob-prod.crt"
   owner 'root'
   group 'root'
   mode 0444
@@ -55,7 +55,7 @@ end
 
 # Add xgemail key
 remote_file "/etc/ssl/private/#{CERT_NAME}.key" do
-  source "file://tmp/sophos/certificates/appserver.key"
+  source "file:///tmp/sophos/certificates/appserver.key"
   owner 'root'
   group 'root'
   mode 0440
