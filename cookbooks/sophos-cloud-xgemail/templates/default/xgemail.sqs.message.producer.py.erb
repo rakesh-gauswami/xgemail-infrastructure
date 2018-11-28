@@ -328,7 +328,7 @@ def send_msg_processing_sqs_message(sqs_message_json, direction, customer_id = N
 # switching, so the SUBMIT_SQS_URL is used only, which has the specific value
 # for the particular instance.
 def get_sqs_url(direction):
-    if (SUBMIT_TYPE == 'ENCRYPTION') and (direction != INBOUND_MESSAGE_DIRECTION)
+    if (SUBMIT_TYPE == 'ENCRYPTION') and (direction != INBOUND_MESSAGE_DIRECTION):
       return CUSTOMER_SUBMIT_SQS_URL
     else:
       return SUBMIT_SQS_URL
