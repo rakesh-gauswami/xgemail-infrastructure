@@ -81,6 +81,7 @@ def send_ssm_command(region, time, autocaling_group_name, instance_id, lifecycle
     else:
         ssm_status = ssmresponse['Command']['Status']
         if ssm_status == 'Success':
+            logger.info("===SSM_STATUS=== {}".format(ssm_status))
             return True
         while ssm_status == 'Pending' or ssm_status == 'InProgress':
             sleep(3)
@@ -88,5 +89,6 @@ def send_ssm_command(region, time, autocaling_group_name, instance_id, lifecycle
                 CommandId=ssmresponse['Command']['CommandId']
             )['Commands'][0]['Status']
         if ssm_status != 'Success':
+            logger.warning("===SSM_STATUS=== {}".format(ssm_status))
             return False
         return True

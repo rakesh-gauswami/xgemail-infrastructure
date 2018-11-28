@@ -457,6 +457,26 @@
             },
             {
               "Action": [
+                "sns:ListTopics",
+                "sns:Publish"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    ":",
+                    [
+                      "arn:aws:sns",
+                      { "Ref": "AWS::Region" },
+                      { "Ref": "AWS::AccountId" },
+                      "*"
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Action": [
                 "ssm:DescribeDocument",
                 "ssm:GetCommandInvocation",
                 "ssm:ListInstanceAssociations",

@@ -115,6 +115,7 @@
     disable_rollback:                       true
     template:                               "{{template.lambda.lambda_xgemail_instance_terminator_template}}"
     template_parameters:
+      DeadLetterTargetArn:                  "{{sns.arn_prefix}}{{sns.alarm_sns_topic}}"
       Environment:                          "{{account.name}}"
       FunctionName:                         "{{lambda.instance_terminator_lambda_function}}"
       HandlerName:                          xgemail_instance_terminator.instance_terminator
