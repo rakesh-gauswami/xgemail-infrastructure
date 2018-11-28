@@ -20,6 +20,11 @@
   },
 
   "Parameters": {
+    "DeadLetterTargetArn": {
+      "Description": "Configures how Lambda handles events that it can't process.",
+      "Type": "String",
+      "Default": ""
+    },
     "Environment": {
       "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
       "Type": "String"
@@ -76,9 +81,9 @@
     "Timeout": {
       "Description": "Timeout in seconds.",
       "Type": "Number",
-      "Default": "300",
+      "Default": "900",
       "MinValue": "30",
-      "MaxValue": "300"
+      "MaxValue": "900"
     }
   },
 
@@ -97,6 +102,9 @@
           "S3Key": { "Ref": "S3Key" }
         },
         "Description": { "Ref": "FunctionDescription" },
+        "DeadLetterConfig" : {
+          "TargetArn" : { "Ref": "DeadLetterTargetArn" },
+        },
         "Environment": {
           "Variables": {
             "SSM_DOCUMENT_NAME": { "Ref": "SsmDocumentName" }
