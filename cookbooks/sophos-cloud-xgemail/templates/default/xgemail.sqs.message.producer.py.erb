@@ -621,7 +621,7 @@ def main():
             logger.debug("Recipient's domain: [{0}]".format(domain))
             sender = metadata.get_sender_address()
             customer_domains = get_customer_domains()
-            if recipient_domain.lower() in customer_domains.lower():
+            if recipient_domain.lower() in (domain.lower() for domain in customer_domains):
               direction = INBOUND_MESSAGE_DIRECTION
             else:
               direction = OUTBOUND_MESSAGE_DIRECTION
