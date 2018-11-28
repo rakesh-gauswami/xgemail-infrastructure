@@ -35,7 +35,6 @@ ssm = session.client('ssm')
 
 
 def instance_terminator(event, context):
-    logger.info("got event {}".format(event))
     logger.info("Received event: {}".format(json.dumps(event)))
     logger.info("Log stream name: {}".format(context.log_stream_name))
     logger.info("Log group name: {}".format(context.log_group_name))

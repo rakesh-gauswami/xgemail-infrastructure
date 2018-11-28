@@ -213,11 +213,16 @@ def upload_metadata_to_s3(s3_file_path, expires, metadata, direction):
         logger.exception("Failed in uploading metadata to S3 [{0}]".format(e))
         exit(EX_TEMPFAIL)
 
+# Retrieves the S3 bucket depending on the direction (inbound or outbound).
+# This logic is used on the encryption-submit instance only and there are two
+# S3 buckets defined on this instance. For the rest instances there is no direction
+# switching, so the SUBMIT_BUCKET_NAME is used only, which has the specific value
+# for the particular instance.
 def get_submit_bucket_name(direction):
-    if 'ENCRYPTION' == SUBMIT_TYPE:
-        return SUBMIT_BUCKET_NAME if direction == INBOUND_MESSAGE_DIRECTION else CUSTOMER_SUBMIT_BUCKET_NAME
+    if (SUBMIT_TYPE == 'ENCRYPTION') and (direction != INBOUND_MESSAGE_DIRECTION):
+      return CUSTOMER_SUBMIT_BUCKET_NAME
     else:
-        return SUBMIT_BUCKET_NAME
+      return SUBMIT_BUCKET_NAME
 
 # uploads message history parent file to message history bucket
 def upload_msg_history_to_s3(s3_file_path, expires, metadata):
@@ -317,11 +322,16 @@ def send_msg_processing_sqs_message(sqs_message_json, direction, customer_id = N
         logger.exception("Failed in uploading message processing SQS job [{0}]".format(e))
         exit(EX_TEMPFAIL)
 
+# Retrieves the SQS URL depending on the direction (inbound or outbound).
+# This logic is used on the encryption-submit instance only and there are two
+# SQS URLs defined on this instance. For the rest instances there is no direction
+# switching, so the SUBMIT_SQS_URL is used only, which has the specific value
+# for the particular instance.
 def get_sqs_url(direction):
-    if 'ENCRYPTION' == SUBMIT_TYPE:
-        return SUBMIT_SQS_URL if direction == INBOUND_MESSAGE_DIRECTION else CUSTOMER_SUBMIT_SQS_URL
+    if (SUBMIT_TYPE == 'ENCRYPTION') and (direction != INBOUND_MESSAGE_DIRECTION)
+      return CUSTOMER_SUBMIT_SQS_URL
     else:
-       return SUBMIT_SQS_URL
+      return SUBMIT_SQS_URL
 
 def get_plaintext_message():
     stdin_no = sys.stdin.fileno()
@@ -607,11 +617,14 @@ def main():
             domain = get_from_sender_domain(metadata)
 
         elif 'ENCRYPTION' == SUBMIT_TYPE:
-            domain = metadata.get_recipient_domain()
-            logger.debug("Customer's domain: [{0}]".format(domain))
+            recipient_domain = metadata.get_recipient_domain()
+            logger.debug("Recipient's domain: [{0}]".format(domain))
             sender = metadata.get_sender_address()
             customer_domains = get_customer_domains()
-            direction = INBOUND_MESSAGE_DIRECTION if domain in customer_domains else OUTBOUND_MESSAGE_DIRECTION
+            if recipient_domain.lower() in customer_domains.lower():
+              direction = INBOUND_MESSAGE_DIRECTION
+            else:
+              direction = OUTBOUND_MESSAGE_DIRECTION
 
         else:
             raise ("Wrong submit type [{0}]".format(SUBMIT_TYPE))

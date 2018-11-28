@@ -33,6 +33,7 @@ BOUNCE_HANDLER_SCRIPT = 'xgemail.message.bouncer.py'
 NOTIFICATION_EVENT_FILE_NAME = 'notificationsubmitinfo.py'
 BOUNCE_HANDLER_SCRIPT_PATH = "#{INTERNET_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_DIR}/#{BOUNCE_HANDLER_SCRIPT}"
 AWS_REGION = node['sophos_cloud']['region']
+ACCOUNT    = node['sophos_cloud']['context']
 
 # Exit codes from sysexits
 EX_TEMPFAIL = node['xgemail']['temp_failure_code']
@@ -94,7 +95,12 @@ if NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'internet-xdelivery'
 
  file TRANSPORT_MAPS_FILENAME do
    path lazy { "#{postmulti_config_dir(INSTANCE_NAME)}/#{TRANSPORT_MAPS_FILENAME}" }
-   content "bounces@sophos-email.com #{SERVICE_NAME}:\n"
+   transport_content = "bounces@sophos-email.com #{SERVICE_NAME}:\n"
+   sandbox_transport_content = ''
+   if ACCOUNT == 'sandbox'
+     sandbox_transport_content = "#{node['sandbox']['mail_transport_entry']}\n"
+   end
+   content sandbox_transport_content + transport_content
    notifies :run, "execute[#{TRANSPORT_MAPS_FILENAME}]", :immediately
  end
 
