@@ -276,7 +276,7 @@ class Terminator(object):
 
         # If there are still messages in the Postfix queue
         while self.postfix_queue_count != 0:
-            self.logger.warning("There are %d email messages still in the queue. We need to wait for them to drain." % self.postfix_queue_count)
+            self.logger.warning("There are {} email messages still in the queue. We need to wait for them to drain.".format(self.postfix_queue_count))
 
             for lifecycle_hook.heartbeat_request_count in range(1, 100, 1):
                 while lifecycle_hook.time_check():
@@ -305,7 +305,7 @@ class Terminator(object):
                             continue
 
                         elif self.postfix_queue_count >= last_count:
-                            error_message = "CRITICAL! *** %d *** Undelivered messages are stuck in the email queue." % self.postfix_queue_count
+                            error_message = "CRITICAL! *** {} *** Undelivered messages are stuck in the email queue.".format(self.postfix_queue_count)
                             self.logger.critical(error_message)
                             self.send_sns_alert(error_message)
 
@@ -397,7 +397,7 @@ class LifecycleHook(object):
         seconds_buffer = 60
         elapsed_time = datetime.strptime(datetime.now().strftime(self.aws_time_format), self.aws_time_format) - self.heartbeat_start_time
         elapsed_time.total_seconds()
-        self.logger.info("Time Check - Elapsed Time: %f04.1f seconds, Heartbeat Timeout: %d seconds, Heartbeat Request Count: {}".format(elapsed_time.total_seconds(), self.heartbeat_timeout, self.heartbeat_request_count))
+        self.logger.info("Time Check - Elapsed Time: {:04.1f} seconds, Heartbeat Timeout: {} seconds, Heartbeat Request Count: {}".format(elapsed_time.total_seconds(), self.heartbeat_timeout, self.heartbeat_request_count))
         if elapsed_time.total_seconds() <= self.heartbeat_timeout - seconds_buffer:
             return True
         else:

@@ -174,6 +174,8 @@ if account != 'sandbox'
 else
 
   [
+      'relay_domains = static:ALL',
+
       # RBL response configuration
       "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_FILENAME}"
   ] .each do | cur |

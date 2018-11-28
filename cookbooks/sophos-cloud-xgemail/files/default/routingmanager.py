@@ -92,7 +92,7 @@ class RoutingManager(object):
 
         chance = random.random()
 
-        if routing_percentage <= chance:
+        if chance <= routing_percentage:
             return True
         else:
             return False
