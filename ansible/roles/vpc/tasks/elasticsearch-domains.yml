@@ -1,4 +1,36 @@
 ---
+# CloudEmail Elasticsearch Cluster
+- name: "Deploy CloudEmail Elasticsearch Domains {{stack.es.xgemail_elasticsearch_domain}} to {{account.name}}-{{account.region}}"
+  cloudformation:
+    stack_name:                   "{{stack.es.toc_elasticsearch_domain}}"
+    state:                        present
+    region:                       "{{account.region}}"
+    disable_rollback:             true
+    template:                     "{{template.es.es_domain_template}}"
+    template_parameters:
+      Environment:                "{{account.name}}"
+      EbsVolumeSize:              "{{aws.es.toc_elasticsearch_domain.ebs_volume_size}}"
+      HopperIpAccess:             "{{hopper_public_ip}}"
+      HostedZoneName:             "{{hostedzone}}."
+      MasterNodeType:             "{{aws.es.toc_elasticsearch_domain.master_node_type}}"
+      NodeType:                   "{{aws.es.toc_elasticsearch_domain.node_type}}"
+      NumberOfInstances:          "{{aws.es.toc_elasticsearch_domain.instance_number}}"
+      NumberOfMasterInstances:    "{{aws.es.toc_elasticsearch_domain.master_instance_number}}"
+      SnapshotStartHour:          "{{aws.es.toc_elasticsearch_domain.snapshot_start_hour}}"
+      VpcNameLowerCase:           "{{vpc.cloud_email.name|lower}}"
+      ZoneAwareness:              "{{aws.es.toc_elasticsearch_domain.zone_awareness}}"
+  register: xgemail_es_stack
+
+- debug:
+    var: xgemail_es_stack
+    verbosity: 3
+
+- name: "Display CloudEmail Elasticsearch Domain Stack Output"
+  debug:
+    msg: "{{xgemail_es_stack.stack_outputs}}"
+    verbosity: 2
+
+# ToC Elasticsearch Cluster
 - name: "Deploy ToC Elasticsearch Domains {{stack.es.toc_elasticsearch_domain}} to {{account.name}}-{{account.region}}"
   cloudformation:
     stack_name:                   "{{stack.es.toc_elasticsearch_domain}}"
