@@ -26,6 +26,8 @@ import multipolicyreaderutils
 import os
 import re
 import signal
+import email
+from email.parser import HeaderParser
 from awshandler import AwsHandler
 from common.metadata import Metadata
 from common.sqsmessage import SqsMessage
@@ -93,6 +95,9 @@ INBOUND_MESSAGE_DIRECTION = "INBOUND"
 OUTBOUND_MESSAGE_DIRECTION = "OUTBOUND"
 POLICY_ID_PATH_VALUE = "/00/"
 SQS_BATCH_SIZE = 10
+
+# Definition of the header "X-Sophos-Deliver-Inbound: True" for the email package
+DELIVER_INBOUND_HEADER = ("X-Sophos-Deliver-Inbound", "True")
 
 awshandler = AwsHandler(AWS_REGION)
 
@@ -580,17 +585,16 @@ def multi_policy_flow(metadata, direction, domain, sender, message):
                 history_job
             )
 
-def get_customer_domains():
-    domains = []
-    with open(RELAY_DOMAINS_FILE, 'r') as f:
-        for domain in f.readlines():
-            # file is formatted like so:
-            #   example1.com OK
-            #   example2.com OK
-            #   ...
-            # but we only need the domain name
-            domains.append(domain.split(' ')[0])
-    return domains
+def get_direction(message):
+    direction = OUTBOUND_MESSAGE_DIRECTION
+    parser = email.parser.HeaderParser()
+    headers = parser.parsestr(message)
+    for header in headers.items():
+        if header == DELIVER_INBOUND_HEADER:
+            direction = INBOUND_MESSAGE_DIRECTION
+            break
+    return direction
+
 
 # accepts data from postfix and send message and metadata to S3 and
 # a json object to SQS which provides pointer to the message in S3
@@ -617,14 +621,9 @@ def main():
             domain = get_from_sender_domain(metadata)
 
         elif 'ENCRYPTION' == SUBMIT_TYPE:
-            recipient_domain = metadata.get_recipient_domain()
-            logger.debug("Recipient's domain: [{0}]".format(domain))
+            domain = metadata.get_recipient_domain()
             sender = metadata.get_sender_address()
-            customer_domains = get_customer_domains()
-            if recipient_domain.lower() in (domain.lower() for domain in customer_domains):
-              direction = INBOUND_MESSAGE_DIRECTION
-            else:
-              direction = OUTBOUND_MESSAGE_DIRECTION
+            direction = get_direction(plaintext_message)
 
         else:
             raise ("Wrong submit type [{0}]".format(SUBMIT_TYPE))
