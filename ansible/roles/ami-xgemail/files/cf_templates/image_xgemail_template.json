@@ -137,6 +137,11 @@
       "Type": "String"
     },
 
+    "JilterEncryptionVersion": {
+      "Description": "Encryption Jilter version",
+      "Type": "String"
+    },
+
     "KeyPairName": {
       "Description": "Name of an existing Amazon EC2 key pair for RDP access",
       "Type": "AWS::EC2::KeyPair::KeyName",
@@ -364,6 +369,7 @@
                       "    \"xgemail\": {",
                       "        \"jilter_inbound_version\":      \"{{jilter_inbound_version}}\",",
                       "        \"jilter_outbound_version\":     \"{{jilter_outbound_version}}\"",
+                      "        \"jilter_encryption_version\":   \"{{jilter_encryption_version}}\"",
                       "    }",
                       "}",
                       ""
@@ -381,6 +387,7 @@
                   "jdk_version":                                { "Ref": "JdkVersion" },
                   "jilter_inbound_version":                     { "Ref": "JilterInboundVersion"},
                   "jilter_outbound_version":                    { "Ref": "JilterOutboundVersion"},
+                  "jilter_encryption_version":                  { "Ref": "JilterEncryptionVersion"},
                   "region":                                     { "Ref": "AWS::Region" },
                   "s3_3rdparty_repo_url":                       { "Ref": "S3Sophos3rdPartyRepositoryUrl" },
                   "s3_app_repo_url":                            { "Ref": "S3SophosAppRepositoryUrl" },
