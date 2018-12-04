@@ -2,23 +2,25 @@
 # CloudEmail Elasticsearch Cluster
 - name: "Deploy CloudEmail Elasticsearch Domains {{stack.es.xgemail_elasticsearch_domain}} to {{account.name}}-{{account.region}}"
   cloudformation:
-    stack_name:                   "{{stack.es.toc_elasticsearch_domain}}"
+    stack_name:                   "{{stack.es.xgemail_elasticsearch_domain}}"
     state:                        present
     region:                       "{{account.region}}"
     disable_rollback:             true
     template:                     "{{template.es.es_domain_template}}"
     template_parameters:
+      EbsVolumeSize:              "{{aws.es.xgemail_elasticsearch_domain.ebs_volume_size}}"
+      ElasticsearchVersion:       "{{aws.es.xgemail_elasticsearch_domain.es_version}}"
       Environment:                "{{account.name}}"
-      EbsVolumeSize:              "{{aws.es.toc_elasticsearch_domain.ebs_volume_size}}"
+      EsName:                     "{{aws.es.xgemail_elasticsearch_domain.es_name}}"
       HopperIpAccess:             "{{hopper_public_ip}}"
       HostedZoneName:             "{{hostedzone}}."
-      MasterNodeType:             "{{aws.es.toc_elasticsearch_domain.master_node_type}}"
-      NodeType:                   "{{aws.es.toc_elasticsearch_domain.node_type}}"
-      NumberOfInstances:          "{{aws.es.toc_elasticsearch_domain.instance_number}}"
-      NumberOfMasterInstances:    "{{aws.es.toc_elasticsearch_domain.master_instance_number}}"
-      SnapshotStartHour:          "{{aws.es.toc_elasticsearch_domain.snapshot_start_hour}}"
+      MasterNodeType:             "{{aws.es.xgemail_elasticsearch_domain.master_node_type}}"
+      NodeType:                   "{{aws.es.xgemail_elasticsearch_domain.node_type}}"
+      NumberOfInstances:          "{{aws.es.xgemail_elasticsearch_domain.instance_number}}"
+      NumberOfMasterInstances:    "{{aws.es.xgemail_elasticsearch_domain.master_instance_number}}"
+      SnapshotStartHour:          "{{aws.es.xgemail_elasticsearch_domain.snapshot_start_hour}}"
       VpcNameLowerCase:           "{{vpc.cloud_email.name|lower}}"
-      ZoneAwareness:              "{{aws.es.toc_elasticsearch_domain.zone_awareness}}"
+      ZoneAwareness:              "{{aws.es.xgemail_elasticsearch_domain.zone_awareness}}"
   register: xgemail_es_stack
 
 - debug:
@@ -39,8 +41,10 @@
     disable_rollback:             true
     template:                     "{{template.es.es_domain_template}}"
     template_parameters:
-      Environment:                "{{account.name}}"
       EbsVolumeSize:              "{{aws.es.toc_elasticsearch_domain.ebs_volume_size}}"
+      ElasticsearchVersion:       "{{aws.es.toc_elasticsearch_domain.es_version}}"
+      Environment:                "{{account.name}}"
+      EsName:                     "{{aws.es.toc_elasticsearch_domain.es_name}}"
       HopperIpAccess:             "{{hopper_public_ip}}"
       HostedZoneName:             "{{hostedzone}}."
       MasterNodeType:             "{{aws.es.toc_elasticsearch_domain.master_node_type}}"
