@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-# This is a utility script to monitor CPU percentage utilization of java process and
-# for a period and log the java stack trace of the processes' to a file
+# This is a utility script to monitor CPU percentage utilization of java processes
+# for a period and log the java stack trace of the threads of the process to a file
 # 
 # Author: Daniel Kwasi Yeboah-Kordieh
 # Copyright: Copyright (c) 1997-2018. All rights reserved.
@@ -15,7 +15,7 @@ utilization=${CPU[1]}
 pid=${CPU[0]}
 
 if [ $(echo "$utilization > 90 " | bc) -eq 1 ]; then
-    echo "cholotelo: DUMP FOR PROCESS ID <$pid> for user <$user> at time <$(date -u)>" >> java_process_dump.txt
+    echo "cholotelo: DUMP FOR PROCESS ID <$pid> for user <$user> at time <$(date -u)>" >> $1
     echo "$(jstack -F $pid)" >> $1
 else
     echo "Nothing to update"
