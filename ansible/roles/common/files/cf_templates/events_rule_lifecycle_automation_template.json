@@ -1,0 +1,193 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Deploys A CloudWatch Event Rule on AWS.",
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2018, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ],
+
+    "Comments": [
+      { "Ref": "Description" },
+      "Deploys a CloudWatch Event Rule on AWS."
+    ]
+  },
+
+  "Parameters": {
+    "EventDetailType": {
+      "Description": "Identifies, in combination with the source field, the fields and values that appear in the detail field.",
+      "Type": "String"
+    },
+    "EventSource": {
+      "Description": "Identifies the service that sourced the event.",
+      "Type": "String"
+    },
+    "EventState": {
+      "Description": "Indicates whether the rule is enabled.",
+      "Type": "String",
+      "Default": "ENABLED"
+    },
+    "LifecycleHookNames": {
+      "Description": "The AutoScaling Group LifecycleHook Names.",
+      "Type": "CommaDelimitedList"
+    },
+    "LifecycleTransition": {
+      "Description": "The state of the EC2 instance to attach the lifecycle hook to.",
+      "Type": "String"
+    },
+    "TargetsArn": {
+      "Description": "The Amazon Resource Name (ARN) of the target.",
+      "Type": "String"
+    },
+    "TargetsId": {
+      "Description": "A unique, user-defined identifier for the target.",
+      "Type": "String"
+    }
+  },
+
+  "Resources": {
+    "CloudWatchEventsRule": {
+      "Type": "AWS::Events::Rule",
+      "Properties": {
+        "EventPattern": {
+          "source": [
+            { "Ref": "EventSource" }
+          ],
+          "account": [
+            { "Ref": "AWS::AccountId" }
+          ],
+          "region": [
+            { "Ref": "AWS::Region" }
+          ],
+          "detail-type": [
+            { "Ref": "EventDetailType" }
+          ],
+          "detail": {
+            "LifecycleHookName": { "Ref": "LifecycleHookNames" },
+            "LifecycleTransition": [
+              { "Ref": "LifecycleTransition" }
+            ]
+          }
+        },
+        "State": { "Ref": "EventState" },
+        "Targets": [
+          {
+            "Arn": { "Fn::Join": ["", [ "arn:aws:ssm:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":document/", { "Ref": "TargetsArn" } ] ] },
+            "Id": { "Ref": "TargetsId" },
+            "RoleArn": { "Ref": "CloudWatchSsmAutomationExecutionRole" },
+            "InputTransformer": {
+              "InputPathsMap" : {
+                "region" : "$.region",
+                "time" : "$.time",
+                "autocaling_group_name" : "$.detail.AutoScalingGroupName",
+                "instance_id" : "$.detail.EC2InstanceId",
+                "lifecycle_hook_name" : "$.detail.LifecycleHookName",
+                "lifecycle_action_token" : "$.detail.LifecycleActionToken"
+              },
+              "InputTemplate" : "\"{ \\\"Region\\\": \\\"<region>\\\", \\\"Time\\\":  \\\"<time>\\\", \\\"AutoScalingGroupName\\\":  \\\"<autocaling_group_name>\\\", \\\"InstanceId\\\":  \\\"<instance_id>\\\", \\\"LifecycleHookName\\\":  \\\"<lifecycle_hook_name>\\\", \\\"LifecycleActionToken\\\":  \\\"<lifecycle_action_token>\\\"}\"",
+             }
+          }
+        ]
+      }
+    },
+
+    "CloudWatchSsmAutomationExecutionRole" : {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [ "events.amazonaws.com" ]
+            },
+            "Action": [ "sts:AssumeRole" ]
+          }]
+        },
+        "Path": "/"
+      }
+    },
+    "CloudWatchSsmAutomationExecutionRolePolicies": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "ssm:*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:logs:*:*:*"
+              ]
+            },
+            {
+              "Action": [
+                "ec2:CreateTags",
+                "ec2:DescribeAddresses"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ]
+        },
+        "PolicyName": "root",
+        "Roles": [
+          {
+            "Ref": "CloudWatchSsmAutomationExecutionRole"
+          }
+        ]
+      },
+      "Type": "AWS::IAM::Policy"
+    },
+
+    "LifecycleRuleLambdaPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": { "Ref": "TargetsArn" },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "events.amazonaws.com",
+        "SourceArn": {
+          "Fn::GetAtt" : [ "CloudWatchEventsRule", "Arn" ]
+        }
+      }
+    }
+  },
+
+  "Outputs": {
+    "CloudWatchSsmAutomationExecutionRole": {
+      "Description": "CloudWatch SSM Automation Execution role",
+      "Value": { "Ref": "CloudWatchSsmAutomationExecutionRole" }
+    },
+    "CloudWatchSsmAutomationExecutionRoleArn": {
+      "Description": "CloudWatch SSM Automation Execution role ARN",
+      "Value": { "Fn::GetAtt" : [ "CloudWatchSsmAutomationExecutionRole", "Arn" ] }
+    },
+    "CloudWatchEventsRule": {
+      "Description": "Resource name of the CloudWatch Events Rule.",
+      "Value": { "Ref": "CloudWatchEventsRule" }
+    },
+    "CloudWatchEventsRuleArn": {
+      "Description": "The ARN of the CloudWatch Events Rule.",
+      "Value": {
+        "Fn::GetAtt": [ "CloudWatchEventsRule", "Arn" ]
+      }
+    }
+  }
+}
