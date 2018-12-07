@@ -346,6 +346,18 @@
         "prod"
       ]
     },
+    "PreProd": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "Environment"
+            },
+            "prod"
+          ]
+        }
+      ]
+    },
     "UseSpotPrice": {
       "Fn::And": [
         {
@@ -509,7 +521,7 @@
       "UpdatePolicy": {
         "AutoScalingRollingUpdate": {
           "MaxBatchSize": { "Ref": "DeployMaxBatchSize" },
-          "MinInstancesInService": { "Ref": "DeployMinInstancesInService" },
+          "MinInstancesInService": { "Fn::If": ["PreProd", "0", { "Ref": "DeployMinInstancesInService" } ]},
           "PauseTime": { "Ref": "DeployTimeout" },
           "SuspendProcesses": [
             "HealthCheck",
