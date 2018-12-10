@@ -90,6 +90,14 @@ def build_policy_map(recipients, aws_region = None, policy_bucket_name = None, p
 
             customer_policy = read_policy(recipient, aws_region, policy_bucket_name, read_from_s3)
 
+            if not customer_policy:
+                logger.warn(
+                    "Unable to build policy map and split by recipient because customer_policy was None for recipient {0}".format(
+                        recipient
+                    )
+                )
+                return None, None
+
             if customer_id is None:
                 customer_id = retrieve_customer_id(customer_policy)
 
