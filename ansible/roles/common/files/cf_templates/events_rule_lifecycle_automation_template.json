@@ -76,14 +76,9 @@
         "State": { "Ref": "EventState" },
         "Targets": [
           {
-            "Arn": { "Fn::Join": ["", [ "arn:aws:ssm:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":document/", { "Ref": "TargetsArn" } ] ] },
+            "Arn": { "Fn::Join": ["", [ "arn:aws:ssm:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":automation-definition/", { "Ref": "TargetsArn" } ] ] },
             "Id": { "Ref": "TargetsId" },
-            "RoleArn": {
-              "Fn::GetAtt": [
-                "CloudWatchSsmAutomationExecutionRole",
-                "Arn"
-              ]
-            },
+            "RoleArn": { "Fn::GetAtt": [ "CloudWatchSsmAutomationExecutionRole", "Arn" ] },
             "InputTransformer": {
               "InputPathsMap" : {
                 "region" : "$.region",
@@ -93,7 +88,7 @@
                 "lifecycle_hook_name" : "$.detail.LifecycleHookName",
                 "lifecycle_action_token" : "$.detail.LifecycleActionToken"
               },
-              "InputTemplate" : "\"{ \\\"Region\\\": \\\"<region>\\\", \\\"Time\\\":  \\\"<time>\\\", \\\"AutoScalingGroupName\\\":  \\\"<autocaling_group_name>\\\", \\\"InstanceId\\\":  \\\"<instance_id>\\\", \\\"LifecycleHookName\\\":  \\\"<lifecycle_hook_name>\\\", \\\"LifecycleActionToken\\\":  \\\"<lifecycle_action_token>\\\"}\"",
+              "InputTemplate" : "\"{\\\"Region\\\":[\\\"region\\\"],\\\"Time\\\":[\\\"time\\\"],\\\"AutoScalingGroupName\\\":[\\\"autocaling_group_name\\\"],\\\"InstanceId\\\":[\\\"instance_id\\\"],\\\"LifecycleHookName\\\":[\\\"lifecycle_hook_name\\\"],\\\"LifecycleActionToken\\\":[\\\"lifecycle_action_token\\\"]}\""
              }
           }
         ]
@@ -190,8 +185,7 @@
     },
     "CloudWatchEventsRuleArn": {
       "Description": "The ARN of the CloudWatch Events Rule.",
-      "Value": {
-        "Fn::GetAtt": [ "CloudWatchEventsRule", "Arn" ]
+      "Value": { "Fn::GetAtt": [ "CloudWatchEventsRule", "Arn" ]
       }
     }
   }
