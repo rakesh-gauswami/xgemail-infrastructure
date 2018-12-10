@@ -155,18 +155,6 @@
         ]
       },
       "Type": "AWS::IAM::Policy"
-    },
-
-    "LifecycleRuleLambdaPermission": {
-      "Type": "AWS::Lambda::Permission",
-      "Properties": {
-        "FunctionName": { "Ref": "TargetsArn" },
-        "Action": "lambda:InvokeFunction",
-        "Principal": "events.amazonaws.com",
-        "SourceArn": {
-          "Fn::GetAtt" : [ "CloudWatchEventsRule", "Arn" ]
-        }
-      }
     }
   },
 
