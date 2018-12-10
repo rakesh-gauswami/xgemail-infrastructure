@@ -47,7 +47,7 @@ POLICY_S3_BUCKET_NAME = "<%= @sqs_msg_producer_policy_s3_bucket_name %>"
 PROCESS_TIMEOUT_SECONDS = <%= @sqs_msg_producer_process_timeout_seconds %>
 POLICY_STORAGE_PATH = "<%= @policy_storage_path %>"
 
-# Either 'INTERNET' or 'CUSTOMER'
+# Either 'INTERNET' or 'CUSTOMER' or 'ENCRYPTION'
 SUBMIT_TYPE = "<%= @xgemail_submit_type %>"
 
 S3_ENCRYPTION_ALGORITHM = "<%= @s3_encryption_algorithm %>"
@@ -95,6 +95,10 @@ INBOUND_MESSAGE_DIRECTION = "INBOUND"
 OUTBOUND_MESSAGE_DIRECTION = "OUTBOUND"
 POLICY_ID_PATH_VALUE = "/00/"
 SQS_BATCH_SIZE = 10
+
+# Submit message types to be transmitted to the appropriate PIC for encrypted messages
+SQS_MESSAGE_SUBMIT_TYPE_INBOUND = "INTERNET"
+SQS_MESSAGE_SUBMIT_TYPE_OUTBOUND = "CUSTOMER"
 
 # Definition of the header "X-Sophos-Deliver-Inbound: True" for the email package
 DELIVER_INBOUND_HEADER = ("X-Sophos-Deliver-Inbound", "True")
@@ -445,16 +449,29 @@ def upload_documents(metadata, compressed_message, s3_file_path, direction):
             metadata
         )
 
+def get_submit_message_type_for_encryption(direction):
+    if direction == OUTBOUND_MESSAGE_DIRECTION:
+        return SQS_MESSAGE_SUBMIT_TYPE_OUTBOUND
+    else:
+        return SQS_MESSAGE_SUBMIT_TYPE_INBOUND
+
 def base_policy_flow(metadata, direction, domain, sender, message):
     queue_id = metadata.get_queue_id()
 
-    s3_file_path = formatterutils.get_s3_path(
+    tmp_file_path = formatterutils.get_s3_path(
         ROOT_DIR,
         TIMESTAMP_FORMAT,
         SUBMIT_HOST_IP,
         queue_id,
         domain
     )
+
+    if 'ENCRYPTION' == SUBMIT_TYPE:
+      s3_file_path = formatterutils.get_s3_file_path(tmp_file_path, '-ENCR')
+      sqs_message_submit_type = get_submit_message_type_for_encryption(direction)
+    else:
+      s3_file_path = tmp_file_path
+      sqs_message_submit_type = SUBMIT_TYPE
 
     # create a sqs object
     sqs_message = SqsMessage(
@@ -465,7 +482,7 @@ def base_policy_flow(metadata, direction, domain, sender, message):
         AKM_KEY,
         NONCE.encode('base64','strict'),
         MESSAGE_KEY.encode('base64','strict'),
-        SUBMIT_TYPE
+        sqs_message_submit_type
     )
 
     upload_documents(
@@ -492,7 +509,6 @@ def base_policy_flow(metadata, direction, domain, sender, message):
         send_msg_history_sqs_event(
             sqs_history.get_sqs_json()
         )
-
 
 # Mail flow goes through multi_policy_flow if multi-policy flag is enabled
 # but if there are error conditions such as file read error etc, the mail
@@ -621,9 +637,13 @@ def main():
             domain = get_from_sender_domain(metadata)
 
         elif 'ENCRYPTION' == SUBMIT_TYPE:
-            domain = metadata.get_recipient_domain()
-            sender = metadata.get_sender_address()
             direction = get_direction(plaintext_message)
+            sender = metadata.get_sender_address()
+            if direction == OUTBOUND_MESSAGE_DIRECTION:
+              metadata = get_metadata_for_outbound(metadata, plaintext_message)
+              domain = get_from_sender_domain(metadata)
+            else:
+              domain = metadata.get_recipient_domain()
 
         else:
             raise ("Wrong submit type [{0}]".format(SUBMIT_TYPE))
