@@ -123,7 +123,7 @@
     "InstanceType": {
       "Description": "Amazon EC2 instance type",
       "Type": "String",
-      "Default": "c3.large",
+      "Default": "c3.large"
     },
     "KeyName": {
       "Type": "AWS::EC2::KeyPair::KeyName",
@@ -457,12 +457,15 @@
           }
         ],
         "LoadBalancerNames": { "Ref": "LoadBalancerName" },
-        "MetricsCollection" : {
-          "Fn::If": [ "EnableDetailedMonitoring",
-            { "Granularity" : "1Minute", },
-            { "Ref" : "AWS::NoValue" }
-          ]
-        },
+        "MetricsCollection" : [
+          {
+            "Fn::If": [
+              "EnableDetailedMonitoring",
+              { "Granularity": "1Minute" },
+              { "Ref": "AWS::NoValue" }
+            ]
+          }
+        ],
         "MinSize": { "Ref": "AutoScalingMinSize" },
         "MaxSize": { "Ref": "AutoScalingMaxSize" },
         "TerminationPolicies": [ "NewestInstance", "Default" ],
@@ -856,7 +859,7 @@
               "DeleteOnTermination": { "Ref": "EbsDeleteOnTermination" },
               "VolumeSize": { "Ref": "XgemailMinSizeDataGB" },
               "VolumeType": { "Ref": "EbsVolumeType" }
-            },
+            }
           }
         ],
         "AssociatePublicIpAddress": { "Ref": "PublicIpAddressEnabled" },
