@@ -79,11 +79,11 @@
             "Arn": { "Fn::Join": ["", [ "arn:aws:ssm:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":document/", { "Ref": "TargetsArn" } ] ] },
             "Id": { "Ref": "TargetsId" },
             "RoleArn": {
-                    "Fn::GetAtt": [
-                        "CloudWatchSsmAutomationExecutionRole",
-                        "Arn"
-                    ]
-                }
+              "Fn::GetAtt": [
+                "CloudWatchSsmAutomationExecutionRole",
+                "Arn"
+              ]
+            },
             "InputTransformer": {
               "InputPathsMap" : {
                 "region" : "$.region",
