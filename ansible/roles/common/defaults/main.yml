@@ -29,6 +29,7 @@ iam:
   policy:
     cloud_station_api_cs_s3_ro_policy:                  "ApiPolicyCustSubmitBucketROAccess"
     policy_publish_to_firehose:                         "PublishToFirehoseStream-firehose-log-shipper-stream-{{account.region}}-{{vpc.cloud_email.name}}"
+    xgemail_elasticsearch_access:                       "XgemailElasticsearchAccess"
 # CloudEmail Kinesis Firehose Delivery Stream Names:
 kinesis:
   firehose:
@@ -116,6 +117,7 @@ stack:
       cloud_station_api_cs_s3_ro_policy:                "policy-xgemail-cust-submit-api-services-s3-ro-access"
       firehose_log_shipper_stream:                      "policies-firehose-log-shipper-publish-to-s3-{{vpc.cloud_email.name}}"
       policy_publish_to_firehose:                       "policies-ec2-instance-publish-to-firehose-log-shipper-{{vpc.cloud_email.name}}"
+      xgemail_elasticsearch_access:                     "policy-xgemail-elasticsearch-access"
   ec2:
     sg:
       cloud_email_security_groups:                      "{{vpc.cloud_email.name}}-SecurityGroups"
@@ -147,6 +149,7 @@ stack:
       lifecycle_lambda:                                 "{{vpc.cloud_email.name}}-xgemail-lifecycle-termination-events-rule"
   es:
     toc_elasticsearch_domain:                           "{{vpc.cloud_email.name}}-XGEMAIL-ToC-ES-Domain"
+    xgemail_elasticsearch_domain:                       "{{vpc.cloud_email.name}}-XGEMAIL-ES-Domain"
   kinesis:
     firehose:
       firehose_log_shipper_stream:                      "firehose-log-shipper-stream-{{vpc.cloud_email.name}}"
@@ -251,6 +254,7 @@ template:
       roles_simple_template:                            "{{tmp_artifacts_dir}}/roles_simple_template.json"
     policy:
       policy_s3_ro_template:                            "{{tmp_artifacts_dir}}/policy_s3_ro_template.json"
+      policy_elasticsearch_access_template:             "{{tmp_artifacts_dir}}/policy_elasticsearch_access_template.json"
       policy_firehose_publish_to_s3_template:           "{{tmp_artifacts_dir}}/policy_firehose_publish_to_s3_template.json"
       policy_publish_to_firehose_template:              "{{tmp_artifacts_dir}}/policy_publish_to_firehose_template.json"
   kinesis:
