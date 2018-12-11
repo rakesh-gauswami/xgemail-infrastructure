@@ -186,6 +186,7 @@ end
 [
     'smtpd_milters = inet:localhost:9876',
     'milter_connect_macros = {client_addr}, {j}',
+    'milter_mail_macros = {mail_addr}, {mail_host), {tls_version}',
     'milter_end_of_data_macros = {i}'
 ].each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
