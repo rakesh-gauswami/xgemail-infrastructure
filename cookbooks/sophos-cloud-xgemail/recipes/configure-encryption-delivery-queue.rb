@@ -34,7 +34,20 @@ SOPHOS_ACCOUNT = node['sophos_cloud']['environment']
 SMTP_PORT = INSTANCE_DATA[:port]
 
 DESTINATION_PORT = 25
-DESTINATION_HOST = "euw-smtp.emailencryption.sophos.com:#{DESTINATION_PORT}"
+DESTINATION_HOST_EU_WEST    = 'euw-smtp.emailencryption.sophos.com'
+DESTINATION_HOST_EU_CENTRAL = 'euc-smtp.emailencryption.sophos.com'
+DESTINATION_HOST_US_WEST    = 'us-smtp.emailencryption.sophos.com'
+DESTINATION_HOST_US_EAST    = 'us-smtp.emailencryption.sophos.com'
+
+if AWS_REGION == 'eu-west-1'
+  DESTINATION_HOST = "#{DESTINATION_HOST_EU_WEST}:#{DESTINATION_PORT}"
+elsif AWS_REGION == 'eu-central-1'
+  DESTINATION_HOST = "#{DESTINATION_HOST_EU_CENTRAL}:#{DESTINATION_PORT}"
+elsif AWS_REGION == 'us-west-2'
+  DESTINATION_HOST = "#{DESTINATION_HOST_US_WEST}:#{DESTINATION_PORT}"
+elsif AWS_REGION == 'us-east-2'
+  DESTINATION_HOST = "#{DESTINATION_HOST_US_EAST}:#{DESTINATION_PORT}"
+end
 
 HOP_COUNT_DELIVERY_INSTANCE = node['xgemail']['hop_count_delivery_instance']
 
