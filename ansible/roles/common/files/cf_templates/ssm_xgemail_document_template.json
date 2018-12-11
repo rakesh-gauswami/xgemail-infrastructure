@@ -118,7 +118,7 @@
                 ]
               }
             }
-          ],
+          ]
         },
         "DocumentType": "Command"
       }
@@ -231,7 +231,7 @@
                 "ec2:DeleteVolume",
                 "ec2:DescribeVolumes",
                 "ec2:DetachVolume",
-                "ec2:DeleteVolume",
+                "ec2:DeleteVolume"
 
               ],
               "Effect": "Allow",
@@ -284,11 +284,18 @@
             },
             {
               "Action": [
+                "ssm:DescribeAutomationExecutions",
+                "ssm:DescribeAutomationStepExecutions",
                 "ssm:DescribeDocument",
+                "ssm:GetAutomationExecution",
                 "ssm:GetCommandInvocation",
-                "ssm:ListInstanceAssociations",
+                "ssm:GetDocument",
                 "ssm:ListCommands",
-                "ssm:SendCommand"
+                "ssm:ListInstanceAssociations",
+                "ssm:ListDocuments",
+                "ssm:ListDocumentVersions",
+                "ssm:SendCommand",
+                "ssm:StartAutomationExecution"
               ],
               "Effect": "Allow",
               "Resource": [
