@@ -35,6 +35,11 @@
   tags:
     - vpc
 
+- name: "Include CloudEmail VPC Elasticsearch Domains Creation Task."
+  include_tasks: elasticsearch-domains.yml
+  tags:
+    - vpc
+
 - name: "Include CloudEmail VPC IAM Policies Creation Task."
   include_tasks: iam-policies.yml
   tags:
@@ -57,11 +62,6 @@
 
 - name: "Include CloudEmail VPC Messaging Creation Task."
   include_tasks: xgemail-messaging.yml
-  tags:
-    - vpc
-
-- name: "Include CloudEmail VPC Elasticsearch Domains Creation Task."
-  include_tasks: elasticsearch-domains.yml
   tags:
     - vpc
 

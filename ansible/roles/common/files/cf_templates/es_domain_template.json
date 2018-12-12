@@ -22,10 +22,18 @@
       "MaxValue": "1500",
       "ConstraintDescription": "The minimum and maximum size of an EBS volume depends on the EBS volume type and the instance type to which it is attached."
     },
+    "ElasticsearchVersion": {
+      "Description": "The version of Elasticsearch to use.",
+      "Type": "String"
+    },
     "Environment": {
       "Description": "(dev, dev2, dev3, dev4, dev5, qa, etc...)",
       "Type": "String",
       "AllowedValues": [ "dev", "dev2", "dev3", "dev4", "dev5", "qa", "prod", "inf", "qainf" ]
+    },
+    "EsName": {
+      "Description": "The name to use for Route53 record set.",
+      "Type": "String"
     },
     "HopperIpAccess": {
       "Description": "Public IP of Hopper for ssh tunnel access.",
@@ -83,7 +91,7 @@
     "ElasticSearchDomain": {
       "Type": "AWS::Elasticsearch::Domain",
       "Properties": {
-        "ElasticsearchVersion": "5.5",
+        "ElasticsearchVersion": { "Ref": "ElasticsearchVersion" },
         "ElasticsearchClusterConfig": {
           "DedicatedMasterEnabled": "true",
           "InstanceCount": { "Ref": "NumberOfInstances" },
@@ -147,7 +155,7 @@
             "Value": {
               "Fn::Join": [ ".",
                 [
-                  "toc-es",
+                  { "Ref": "EsName" },
                   { "Ref": "VpcNameLowerCase" },
                   { "Ref": "AWS::Region" },
                   { "Ref": "Environment" },
@@ -173,7 +181,7 @@
         "Name": {
           "Fn::Join": [ ".",
             [
-              "toc-es",
+              { "Ref": "EsName" },
               { "Ref": "VpcNameLowerCase" },
               { "Ref": "AWS::Region" },
               { "Ref": "Environment" },
@@ -181,7 +189,15 @@
             ]
           ]
         },
-        "Comment": "RecordSet built for ToC ElasticSearch Domain",
+        "Comment": {
+          "Fn::Join": [ "",
+            [
+              "RecordSet built for ",
+              { "Ref": "EsName" },
+              " ElasticSearch Domain"
+            ]
+          ]
+        },
         "HostedZoneName": {
           "Fn::Join": [ ".",
             [

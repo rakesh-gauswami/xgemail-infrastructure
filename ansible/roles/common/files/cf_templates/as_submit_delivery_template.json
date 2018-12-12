@@ -123,7 +123,7 @@
     "InstanceType": {
       "Description": "Amazon EC2 instance type",
       "Type": "String",
-      "Default": "c3.large",
+      "Default": "c3.large"
     },
     "KeyName": {
       "Type": "AWS::EC2::KeyPair::KeyName",
@@ -318,6 +318,10 @@
         "Name": "US East (N. Virginia)",
         "PrivateDns": "ec2.internal"
       },
+      "us-east-2": {
+        "Name": "US East (Ohio)",
+        "PrivateDns": "us-east-2.compute.internal"
+      },
       "us-west-1": {
         "Name": "US West (N. California)",
         "PrivateDns": "us-west-1.compute.internal"
@@ -340,6 +344,18 @@
           "Ref": "Environment"
         },
         "prod"
+      ]
+    },
+    "PreProd": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "Environment"
+            },
+            "prod"
+          ]
+        }
       ]
     },
     "UseSpotPrice": {
@@ -441,12 +457,15 @@
           }
         ],
         "LoadBalancerNames": { "Ref": "LoadBalancerName" },
-        "MetricsCollection" : {
-          "Fn::If": [ "EnableDetailedMonitoring",
-            { "Granularity" : "1Minute", },
-            { "Ref" : "AWS::NoValue" }
-          ]
-        },
+        "MetricsCollection" : [
+          {
+            "Fn::If": [
+              "EnableDetailedMonitoring",
+              { "Granularity": "1Minute" },
+              { "Ref": "AWS::NoValue" }
+            ]
+          }
+        ],
         "MinSize": { "Ref": "AutoScalingMinSize" },
         "MaxSize": { "Ref": "AutoScalingMaxSize" },
         "TerminationPolicies": [ "NewestInstance", "Default" ],
@@ -505,7 +524,7 @@
       "UpdatePolicy": {
         "AutoScalingRollingUpdate": {
           "MaxBatchSize": { "Ref": "DeployMaxBatchSize" },
-          "MinInstancesInService": { "Ref": "DeployMinInstancesInService" },
+          "MinInstancesInService": { "Fn::If": ["PreProd", "0", { "Ref": "DeployMinInstancesInService" } ]},
           "PauseTime": { "Ref": "DeployTimeout" },
           "SuspendProcesses": [
             "HealthCheck",
@@ -840,7 +859,7 @@
               "DeleteOnTermination": { "Ref": "EbsDeleteOnTermination" },
               "VolumeSize": { "Ref": "XgemailMinSizeDataGB" },
               "VolumeType": { "Ref": "EbsVolumeType" }
-            },
+            }
           }
         ],
         "AssociatePublicIpAddress": { "Ref": "PublicIpAddressEnabled" },
@@ -856,6 +875,7 @@
         },
         "SecurityGroups": { "Ref": "SecurityGroups" },
         "IamInstanceProfile": { "Ref": "InstanceProfile" },
+        "SpotPrice": { "Fn::If": ["UseSpotPrice",  {"Ref": "SpotPrice"}, {"Ref": "AWS::NoValue"} ]},
         "UserData": {
           "Fn::Base64": {
             "Fn::Join": [ "", [
