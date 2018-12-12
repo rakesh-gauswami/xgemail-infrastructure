@@ -92,7 +92,7 @@
       ElasticsearchDomainArn: "{{xgemail_es_stack.stack_outputs.ElasticSearchDomainArn}}"
       RoleNames:              >
                               {{cloud_station_iam_region_output.ansible_facts.cloudformation[stack.iam.role.cloud_station_region_roles].stack_outputs.ApiInstRole}},
-                              {{cloud_station_iam_region_output.ansible_facts.cloudformation[stack.iam.role.cloud_station_region_roles].stack_outputs.CoreInstRole}}
+                              {{cloud_station_iam_region_output.ansible_facts.cloudformation[stack.iam.role.cloud_station_region_roles].stack_outputs.CoreInstRole}},
                               {{cloud_station_iam_region_output.ansible_facts.cloudformation[stack.iam.role.cloud_station_region_roles].stack_outputs.XgemailInstRole}}
       PolicyName:             "{{iam.policy.xgemail_elasticsearch_access}}"
   register: es_policy_stack
