@@ -118,6 +118,9 @@ JILTER_INBOUND_PACKAGE_NAME = "xgemail-jilter-inbound-#{JILTER_INBOUND_VERSION}"
 JILTER_OUTBOUND_VERSION = node['xgemail']['jilter_outbound_version']
 JILTER_OUTBOUND_PACKAGE_NAME = "xgemail-jilter-outbound-#{JILTER_OUTBOUND_VERSION}"
 
+JILTER_ENCRYPTION_VERSION = node['xgemail']['jilter_encryption_version']
+JILTER_ENCRYPTION_PACKAGE_NAME = "xgemail-jilter-encryption-#{JILTER_ENCRYPTION_VERSION}"
+
 POSTFIX3_RPM = "postfix3-sophos-#{node['xgemail']['postfix3_version']}.el6.x86_64.rpm"
 
 directory PACKAGES_DIR do
@@ -174,6 +177,27 @@ end
 # Create a sym link to xgemail-jilter-outbound
 link "#{DEPLOYMENT_DIR}/xgemail-jilter-outbound" do
   to "#{DEPLOYMENT_DIR}/#{JILTER_OUTBOUND_PACKAGE_NAME}"
+end
+
+execute 'download_jilter_encryption' do
+  user 'root'
+  cwd "#{PACKAGES_DIR}"
+  command <<-EOH
+      aws --region us-west-2 s3 cp s3:#{sophos_thirdparty}/xgemail/#{JILTER_ENCRYPTION_PACKAGE_NAME}.tar .
+  EOH
+end
+
+execute 'extract_jilter_encryption_package' do
+  user 'root'
+  cwd "#{PACKAGES_DIR}"
+  command <<-EOH
+      tar xf #{JILTER_ENCRYPTION_PACKAGE_NAME}.tar -C #{DEPLOYMENT_DIR}
+  EOH
+end
+
+# Create a sym link to xgemail-jilter-encryption
+link "#{DEPLOYMENT_DIR}/xgemail-jilter-encryption" do
+  to "#{DEPLOYMENT_DIR}/#{JILTER_ENCRYPTION_PACKAGE_NAME}"
 end
 
 execute 'remove_postfix_package' do
