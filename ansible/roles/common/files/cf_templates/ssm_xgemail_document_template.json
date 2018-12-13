@@ -169,20 +169,27 @@
             {
               "name": "getVolumeId",
               "action": "aws:executeAwsApi",
-              "maxAttempts": "3",
-              "timeoutSeconds": "60",
+              "maxAttempts": 3,
+              "timeoutSeconds": 60,
               "onFailure": "Continue",
               "inputs": {
                 "Service": "ec2",
-                "Api": "DescribeInstances",
-                "InstanceIds": [
-                  "{{ InstanceId }}"
+                "Api": "DescribeVolumes",
+                "Filters": [
+                  {
+                    "Key": "attachment.instance-id",
+                    "Values": [ "{{InstanceId}}" ]
+                  },
+                  {
+                    "Key": "attachment.device",
+                    "Values": [ "/dev/xvdi" ]
+                  }
                 ]
               },
               "outputs": [
                 {
                   "Name": "VolumeId",
-                  "Selector": "$.Reservations[0].Instances[0].BlockDeviceMappings[?DeviceName=='/dev/xvdi'].Ebs.VolumeId",
+                  "Selector": "$.Volumes[0].Attachments[0].VolumeId",
                   "Type": "String"
                 }
               ],
@@ -199,7 +206,7 @@
                 "InstanceIds": [ "{{InstanceId}}" ],
                 "Parameters": {
                   "commands": [
-                    "/opt/sophos/xgemail/instance-terminator.py -r {{ Region }} -t {{ Time }} -a {{ AutoScalingGroupName }} -i {{ InstanceId }} -l {{ LifecycleHookName }} -k {{ LifecycleActionToken }}"
+                    "/opt/sophos/xgemail/instance-terminator.py -r {{Region}} -t {{Time}} -a {{AutoScalingGroupName}} -i {{InstanceId}} -l {{LifecycleHookName}} -k {{LifecycleActionToken}}"
                   ]
                 }
               },
@@ -219,12 +226,12 @@
                 "Choices": [
                   {
                     "NextStep": "volumeEmpty",
-                    "Variable": "{{ terminationAutomation.QueueCount }}",
+                    "Variable": "{{terminationAutomation.QueueCount}}",
                     "NumericEquals": 0
                   },
                   {
                     "NextStep": "volumeNotEmpty",
-                    "Variable": "{{ terminationAutomation.QueueCount }}",
+                    "Variable": "{{terminationAutomation.QueueCount}}",
                     "NumericGreaterOrEquals": 1
                   }
                 ],
@@ -241,19 +248,19 @@
                 "Service": "autoscaling",
                 "Api": "CompleteLifecycleAction",
                 "AutoScalingGroupName": [
-                  "{{ AutoScalingGroupName }}"
+                  "{{AutoScalingGroupName}}"
                 ],
                 "InstanceId": [
-                  "{{ InstanceId }}"
+                  "{{InstanceId}}"
                 ],
                 "LifecycleActionResult": [
                   "CONTINUE"
                 ],
                 "LifecycleActionToken": [
-                  "{{ LifecycleActionToken }}"
+                  "{{LifecycleActionToken}}"
                 ],
                 "LifecycleHookName": [
-                  "{{ LifecycleHookName }}"
+                  "{{LifecycleHookName}}"
                 ]
               },
               "nextStep": "sendAlert"
@@ -268,19 +275,19 @@
                 "Service": "autoscaling",
                 "Api": "CompleteLifecycleAction",
                 "AutoScalingGroupName": [
-                  "{{ AutoScalingGroupName }}"
+                  "{{AutoScalingGroupName}}"
                 ],
                 "InstanceId": [
-                  "{{ InstanceId }}"
+                  "{{InstanceId}}"
                 ],
                 "LifecycleActionResult": [
                   "CONTINUE"
                 ],
                 "LifecycleActionToken": [
-                  "{{ LifecycleActionToken }}"
+                  "{{LifecycleActionToken}}"
                 ],
                 "LifecycleHookName": [
-                  "{{ LifecycleHookName }}"
+                  "{{LifecycleHookName}}"
                 ]
               },
               "nextStep": "describeVolume"
@@ -292,7 +299,7 @@
                 "Service": "ec2",
                 "Api": "DescribeVolumes",
                 "VolumeId": [
-                  "{{ getVolumeId.VolumeId }}"
+                  "{{getVolumeId.VolumeId}}"
                 ],
                 "PropertySelector": "$.Volumes[0].State",
                 "DesiredValues": [ "available" ]
@@ -308,7 +315,7 @@
               "inputs": {
                 "Service": "ec2",
                 "Api": "DeleteVolumes",
-                "VolumeId": "{{ getVolumeId.VolumeId }}"
+                "VolumeId": "{{getVolumeId.VolumeId}}"
               }
             },
             {
@@ -321,8 +328,8 @@
                 "Service": "sns",
                 "Api": "Publish",
                 "TopicArn": { "Ref": "AlarmTopicArn" },
-                "Subject": "Alarm for Volume Id: {{ getVolumeId.VolumeId }} from EC2 Instance: {{ InstanceId }} in Region: {{ Region }}",
-                "Message": "CRITICAL! *** {{ terminationAutomation.QueueCount }} *** Undelivered messages are stuck in the email queue."
+                "Subject": "Alarm for Volume Id: {{getVolumeId.VolumeId}} from EC2 Instance: {{InstanceId}} in Region: {{Region}}",
+                "Message": "CRITICAL! *** {{terminationAutomation.QueueCount}} *** Undelivered messages are stuck in the email queue."
               }
             }
           ]
