@@ -53,9 +53,9 @@ class Terminator(object):
         self.sqs_consumer_service = "<%= @sqs_consumer_service_name %>"
         self.sns_policy_arn = "<%= @sns_policy_arn %>"
         self.sqs_policy_queue_name = "<%= @sqs_policy_queue_name %>"
-        self.volume_cleanup = <%= @volume_cleanup %>
+        #self.volume_cleanup = <%= @volume_cleanup %>
         self.postfix_queue_count = None
-        #self.volume_device_name = '/dev/xvdi'
+        self.volume_device_name = '/dev/xvdi'
 
         # Create EC2 Resource
         self.ec2 = boto3.resource('ec2', region_name=self.aws_region)

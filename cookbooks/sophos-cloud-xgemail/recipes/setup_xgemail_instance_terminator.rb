@@ -29,7 +29,6 @@ ALARM_TOPIC_ARN         = node['xgemail']['alarm_topic_arn']
 CONSUMER_SERVICE_NAME   = node['xgemail']['sqs_message_consumer_service_name']
 SNS_POLICY_ARN          = node['xgemail']['xgemail_policy_arn']
 SQS_POLICY_QUEUE_NAME   = "#{ACCOUNT}-xgemail-policy-#{INSTANCE_ID}"
-VOLUME_CLEANUP          = node['xgemail']['volume_cleanup']
 
 
 directory XGEMAIL_FILES_DIR do
