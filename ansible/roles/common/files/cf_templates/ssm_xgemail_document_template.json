@@ -191,8 +191,8 @@
             {
               "name": "terminationAutomation",
               "action": "aws:runCommand",
-              "maxAttempts": "1",
-              "timeoutSeconds": "900",
+              "maxAttempts": 1,
+              "timeoutSeconds": 900,
               "onFailure": "step:volumeNotEmpty",
               "inputs": {
                 "DocumentName": "AWS-RunShellScript",
@@ -207,7 +207,7 @@
                 {
                   "Name": "QueueCount",
                   "Selector": "$.QueueCount",
-                  "Type": "String"
+                  "Type": "Integer"
                 }
               ],
               "nextStep": "branchOnQueueCount"
@@ -220,12 +220,12 @@
                   {
                     "NextStep": "volumeEmpty",
                     "Variable": "{{ terminationAutomation.QueueCount }}",
-                    "NumericEquals": "0"
+                    "NumericEquals": 0
                   },
                   {
                     "NextStep": "volumeNotEmpty",
                     "Variable": "{{ terminationAutomation.QueueCount }}",
-                    "NumericGreaterOrEquals": "1"
+                    "NumericGreaterOrEquals": 1
                   }
                 ],
                 "Default": "volumeEmpty"
@@ -234,8 +234,8 @@
             {
               "name": "volumeNotEmpty",
               "action": "aws:executeAwsApi",
-              "maxAttempts": "3",
-              "timeoutSeconds": "60",
+              "maxAttempts": 3,
+              "timeoutSeconds": 60,
               "onFailure": "Continue",
               "inputs": {
                 "Service": "autoscaling",
@@ -261,8 +261,8 @@
             {
               "name": "volumeEmpty",
               "action": "aws:executeAwsApi",
-              "maxAttempts": "3",
-              "timeoutSeconds": "60",
+              "maxAttempts": 3,
+              "timeoutSeconds": 60,
               "onFailure": "step:describeVolume",
               "inputs": {
                 "Service": "autoscaling",
@@ -302,9 +302,9 @@
             {
               "name": "deleteVolume",
               "action": "aws:executeAwsApi",
-              "maxAttempts": "3",
-              "timeoutSeconds": "60",
-              "isEnd": "true",
+              "maxAttempts": 3,
+              "timeoutSeconds": 60,
+              "isEnd": true,
               "inputs": {
                 "Service": "ec2",
                 "Api": "DeleteVolumes",
@@ -314,9 +314,9 @@
             {
               "name": "sendAlert",
               "action": "aws:executeAwsApi",
-              "maxAttempts": "3",
-              "timeoutSeconds": "60",
-              "isEnd": "true",
+              "maxAttempts": 3,
+              "timeoutSeconds": 60,
+              "isEnd": true,
               "inputs": {
                 "Service": "sns",
                 "Api": "Publish",
@@ -429,7 +429,9 @@
                 "sqs:ListQueues"
               ],
               "Effect": "Allow",
-              "Resource": [ "*" ]
+              "Resource": [
+                "*"
+              ]
             },
             {
               "Action": [
