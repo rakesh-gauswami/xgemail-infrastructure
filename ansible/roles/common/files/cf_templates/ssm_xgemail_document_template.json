@@ -210,33 +210,7 @@
                   ]
                 }
               },
-              "outputs": [
-                {
-                  "Name": "QueueCount",
-                  "Selector": "$.QueueCount",
-                  "Type": "Integer"
-                }
-              ],
-              "nextStep": "branchOnQueueCount"
-            },
-            {
-              "name": "branchOnQueueCount",
-              "action": "aws:branch",
-              "inputs": {
-                "Choices": [
-                  {
-                    "NextStep": "volumeEmpty",
-                    "Variable": "{{terminationAutomation.QueueCount}}",
-                    "NumericEquals": 0
-                  },
-                  {
-                    "NextStep": "volumeNotEmpty",
-                    "Variable": "{{terminationAutomation.QueueCount}}",
-                    "NumericGreaterOrEquals": 1
-                  }
-                ],
-                "Default": "volumeEmpty"
-              }
+              "nextStep": "volumeEmpty"
             },
             {
               "name": "volumeNotEmpty",
