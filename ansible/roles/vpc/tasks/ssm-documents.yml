@@ -6,6 +6,8 @@
     region:                  "{{account.region}}"
     disable_rollback:        true
     template:                "{{template.ssm.ssm_xgemail_document_template}}"
+    template_parameters:
+      AlarmTopicArn:         "{{sns.arn_prefix}}{{sns.lifecycle_sqs_sns}}"
   register: ssm_stack
 
 - debug:

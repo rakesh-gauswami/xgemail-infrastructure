@@ -18,6 +18,13 @@
     ]
   },
 
+   "Parameters": {
+    "AlarmTopicArn": {
+      "Description": "ARN for SNS Topic that should receive alarm notifications",
+      "Type": "String"
+    }
+   },
+
   "Resources" : {
     "PostfixService": {
       "Type": "AWS::SSM::Document",
@@ -160,19 +167,162 @@
           },
           "mainSteps":[
             {
-              "name":"terminationAutomation",
-              "action":"aws:runCommand",
-              "maxAttempts": "1",
-              "timeoutSeconds": "900",
+              "name": "getVolumeId",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": "3",
+              "timeoutSeconds": "60",
               "onFailure": "Continue",
               "inputs": {
+                "Service": "ec2",
+                "Api": "DescribeInstances",
+                "InstanceIds": [
+                  "{{ InstanceId }}"
+                ]
+              },
+              "outputs": [
+                {
+                  "Name": "VolumeId",
+                  "Selector": "$.Reservations[0].Instances[0].BlockDeviceMappings[?DeviceName=='/dev/xvdi'].Ebs.VolumeId",
+                  "Type": "String"
+                }
+              ],
+              "nextStep": "terminationAutomation"
+            },
+            {
+              "name": "terminationAutomation",
+              "action": "aws:runCommand",
+              "maxAttempts": "1",
+              "timeoutSeconds": "900",
+              "onFailure": "step:volumeNotEmpty",
+              "inputs": {
                 "DocumentName": "AWS-RunShellScript",
-                "InstanceIds": ["{{InstanceId}}"],
+                "InstanceIds": [ "{{InstanceId}}" ],
                 "Parameters": {
                   "commands": [
                     "/opt/sophos/xgemail/instance-terminator.py -r {{ Region }} -t {{ Time }} -a {{ AutoScalingGroupName }} -i {{ InstanceId }} -l {{ LifecycleHookName }} -k {{ LifecycleActionToken }}"
                   ]
                 }
+              },
+              "outputs": [
+                {
+                  "Name": "QueueCount",
+                  "Selector": "$.QueueCount",
+                  "Type": "String"
+                }
+              ],
+              "nextStep": "branchOnQueueCount"
+            },
+            {
+              "name": "branchOnQueueCount",
+              "action": "aws:branch",
+              "inputs": {
+                "Choices": [
+                  {
+                    "NextStep": "volumeEmpty",
+                    "Variable": "{{ terminationAutomation.QueueCount }}",
+                    "NumericEquals": "0"
+                  },
+                  {
+                    "NextStep": "volumeNotEmpty",
+                    "Variable": "{{ terminationAutomation.QueueCount }}",
+                    "NumericGreaterOrEquals": "1"
+                  }
+                ],
+                "Default": "volumeEmpty"
+              }
+            },
+            {
+              "name": "volumeNotEmpty",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": "3",
+              "timeoutSeconds": "60",
+              "onFailure": "Continue",
+              "inputs": {
+                "Service": "autoscaling",
+                "Api": "CompleteLifecycleAction",
+                "AutoScalingGroupName": [
+                  "{{ AutoScalingGroupName }}"
+                ],
+                "InstanceId": [
+                  "{{ InstanceId }}"
+                ],
+                "LifecycleActionResult": [
+                  "CONTINUE"
+                ],
+                "LifecycleActionToken": [
+                  "{{ LifecycleActionToken }}"
+                ],
+                "LifecycleHookName": [
+                  "{{ LifecycleHookName }}"
+                ]
+              },
+              "nextStep": "sendAlert"
+            },
+            {
+              "name": "volumeEmpty",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": "3",
+              "timeoutSeconds": "60",
+              "onFailure": "step:describeVolume",
+              "inputs": {
+                "Service": "autoscaling",
+                "Api": "CompleteLifecycleAction",
+                "AutoScalingGroupName": [
+                  "{{ AutoScalingGroupName }}"
+                ],
+                "InstanceId": [
+                  "{{ InstanceId }}"
+                ],
+                "LifecycleActionResult": [
+                  "CONTINUE"
+                ],
+                "LifecycleActionToken": [
+                  "{{ LifecycleActionToken }}"
+                ],
+                "LifecycleHookName": [
+                  "{{ LifecycleHookName }}"
+                ]
+              },
+              "nextStep": "describeVolume"
+            },
+            {
+              "name": "describeVolume",
+              "action": "aws:assertAwsResourceProperty",
+              "inputs": {
+                "Service": "ec2",
+                "Api": "DescribeVolumes",
+                "VolumeId": [
+                  "{{ getVolumeId.VolumeId }}"
+                ],
+                "PropertySelector": "$.Volumes[0].State",
+                "DesiredValues": [ "available" ]
+              },
+              "nextStep": "deleteVolume"
+            },
+            {
+              "name": "deleteVolume",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": "3",
+              "timeoutSeconds": "60",
+              "isEnd": "true",
+              "inputs": {
+                "Service": "ec2",
+                "Api": "DeleteVolumes",
+                "VolumeId": "{{ getVolumeId.VolumeId }}"
+              }
+            },
+            {
+              "name": "sendAlert",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": "3",
+              "timeoutSeconds": "60",
+              "isEnd": "true",
+              "inputs": {
+                "Service": "sns",
+                "Api": "Publish",
+                "TopicArn": { "Ref": "AlarmTopicArn" },
+                "Subject": "Alarm for Volume Id: {{ getVolumeId.VolumeId }} from EC2 Instance: {{ InstanceId }} in Region: {{ Region }}",
+                "Message": "CRITICAL! *** {{ terminationAutomation.QueueCount }} *** Undelivered messages are stuck in the email queue."
               }
             }
           ]
@@ -232,7 +382,6 @@
                 "ec2:DescribeVolumes",
                 "ec2:DetachVolume",
                 "ec2:DeleteVolume"
-
               ],
               "Effect": "Allow",
               "Resource": [

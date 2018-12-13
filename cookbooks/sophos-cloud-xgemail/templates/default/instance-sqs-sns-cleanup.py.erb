@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+# vim: autoindent expandtab filetype=python shiftwidth=4 softtabstop=4 tabstop=4
+
+"""
+Processes CloudWatch Event generated from Lifecycle Hook in order to perform an orderly shutdown of EC2 Instance.
+
+Copyright 2018, Sophos Limited. All rights reserved.
+
+'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
+Sophos Limited and Sophos Group.  All other product and company
+names mentioned are trademarks or registered trademarks of their
+respective owners.
+"""
+
+import argparse
+import boto3
+import botocore
+import sys
+import os
+import json
+import logging
+import logging.handlers
+import subprocess
+from time import sleep
+from datetime import datetime
+from botocore.exceptions import ClientError, WaiterError
+
+
+# logging to syslog setup
+logger = logging.getLogger('instance-terminator')
+logger.setLevel(logging.INFO)
+syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
+formatter = logging.Formatter(
+    '[%(name)s] %(process)d %(levelname)s %(message)s'
+)
+syslog_handler.formatter = formatter
+logger.addHandler(syslog_handler)
