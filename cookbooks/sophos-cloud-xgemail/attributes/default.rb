@@ -85,14 +85,14 @@ default['xgemail']['savdid_version'] = '2.4'
 default['xgemail']['savdid_cxmail_version'] = 'Cloud:Email:1.0.0'
 
 # Jilter settings
-default['xgemail']['libspfjni'] = '1.0.0-SNAPSHOT'
+default['xgemail']['libspfjni'] = '2.0.0-SNAPSHOT'
 default['xgemail']['libspf2_version'] = '1.2.10-9'
 default['xgemail']['jilter_user'] = 'jilter'
 default['xgemail']['jilter_service_name'] = 'xgemail-jilter-service'
 default['xgemail']['xgemail_active_profile'] = 'aws'
 
 # DKIM specific
-default['xgemail']['libdkimjni'] = '1.0.0-SNAPSHOT'
+default['xgemail']['libdkimjni'] = '2.0.0-SNAPSHOT'
 default['xgemail']['libopendkim_version'] = '2.11.0'
 
 default['xgemail']['policy_efs_mount_dir'] = '/policy-storage'
