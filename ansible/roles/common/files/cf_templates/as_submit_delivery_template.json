@@ -931,6 +931,12 @@
               "/opt/sophos/bin/set_instance_tag.py LastHealth UserDataStarted\n",
               "\n",
 
+              "# Set XgemailVolume tag to make it easy to find.\n",
+              "INSTANCE_ID=$(curl http://169.254.169.254/latest/meta-data/instance-id) \n",
+              "VOLUME_ID='$(aws ec2 describe-instances --instance-ids  ${INSTANCE_ID} --query \"Reservations[*].Instances[*].BlockDeviceMappings[?DeviceName=='/dev/xvdi'].Ebs.VolumeId\" --region ", { "Ref": "AWS::Region" }, "--output text)'\n",
+              "/opt/sophos/bin/set_instance_tag.py XgemailVolume ${VOLUME_ID}\n",
+              "\n",
+
               "/opt/aws/bin/cfn-init --verbose ",
               " --stack ", { "Ref": "AWS::StackName" },
               " --resource XgemailAutoScalingLaunchConfig ",
