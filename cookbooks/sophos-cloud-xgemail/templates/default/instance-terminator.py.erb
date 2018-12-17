@@ -507,4 +507,5 @@ if __name__ == '__main__':
     t.service_controller('postfix', 'stop')
     if t.postfix_instance == 'postfix-is' or t.postfix_instance == 'postfix-cs':
         t.sqs_sns_cleanup()
+    t.cleanup_volume()
     sys.exit(queue_count)

@@ -167,35 +167,6 @@
           },
           "mainSteps":[
             {
-              "name": "getVolumeId",
-              "action": "aws:executeAwsApi",
-              "maxAttempts": 3,
-              "timeoutSeconds": 60,
-              "onFailure": "Continue",
-              "inputs": {
-                "Service": "ec2",
-                "Api": "DescribeVolumes",
-                "Filters": [
-                  {
-                    "Key": "Name=attachment.instance-id",
-                    "Values": [ "{{InstanceId}}" ]
-                  },
-                  {
-                    "Key": "Name=attachment.device",
-                    "Values": [ "/dev/xvdi" ]
-                  }
-                ]
-              },
-              "outputs": [
-                {
-                  "Name": "VolumeId",
-                  "Selector": "$.Volumes[0].Attachments[0].VolumeId",
-                  "Type": "String"
-                }
-              ],
-              "nextStep": "terminationAutomation"
-            },
-            {
               "name": "terminationAutomation",
               "action": "aws:runCommand",
               "maxAttempts": 1,
@@ -221,21 +192,11 @@
               "inputs": {
                 "Service": "autoscaling",
                 "Api": "CompleteLifecycleAction",
-                "AutoScalingGroupName": [
-                  "{{AutoScalingGroupName}}"
-                ],
-                "InstanceId": [
-                  "{{InstanceId}}"
-                ],
-                "LifecycleActionResult": [
-                  "CONTINUE"
-                ],
-                "LifecycleActionToken": [
-                  "{{LifecycleActionToken}}"
-                ],
-                "LifecycleHookName": [
-                  "{{LifecycleHookName}}"
-                ]
+                "AutoScalingGroupName": "{{AutoScalingGroupName}}",
+                "InstanceId": "{{InstanceId}}",
+                "LifecycleActionResult": "CONTINUE",
+                "LifecycleActionToken": "{{LifecycleActionToken}}",
+                "LifecycleHookName": "{{LifecycleHookName}}"
               },
               "nextStep": "sendAlert"
             },
@@ -244,52 +205,15 @@
               "action": "aws:executeAwsApi",
               "maxAttempts": 3,
               "timeoutSeconds": 60,
-              "onFailure": "step:describeVolume",
+              "isEnd": true,
               "inputs": {
                 "Service": "autoscaling",
                 "Api": "CompleteLifecycleAction",
-                "AutoScalingGroupName": [
-                  "{{AutoScalingGroupName}}"
-                ],
-                "InstanceId": [
-                  "{{InstanceId}}"
-                ],
-                "LifecycleActionResult": [
-                  "CONTINUE"
-                ],
-                "LifecycleActionToken": [
-                  "{{LifecycleActionToken}}"
-                ],
-                "LifecycleHookName": [
-                  "{{LifecycleHookName}}"
-                ]
-              },
-              "nextStep": "describeVolume"
-            },
-            {
-              "name": "describeVolume",
-              "action": "aws:assertAwsResourceProperty",
-              "inputs": {
-                "Service": "ec2",
-                "Api": "DescribeVolumes",
-                "VolumeId": [
-                  "{{getVolumeId.VolumeId}}"
-                ],
-                "PropertySelector": "$.Volumes[0].State",
-                "DesiredValues": [ "available" ]
-              },
-              "nextStep": "deleteVolume"
-            },
-            {
-              "name": "deleteVolume",
-              "action": "aws:executeAwsApi",
-              "maxAttempts": 3,
-              "timeoutSeconds": 60,
-              "isEnd": true,
-              "inputs": {
-                "Service": "ec2",
-                "Api": "DeleteVolumes",
-                "VolumeId": "{{getVolumeId.VolumeId}}"
+                "AutoScalingGroupName": "{{AutoScalingGroupName}}",
+                "InstanceId": "{{InstanceId}}",
+                "LifecycleActionResult": "CONTINUE",
+                "LifecycleActionToken": "{{LifecycleActionToken}}",
+                "LifecycleHookName": "{{LifecycleHookName}}"
               }
             },
             {
