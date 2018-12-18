@@ -44,8 +44,6 @@ template "#{XGEMAIL_FILES_DIR}/instance-terminator.py" do
   owner 'root'
   group 'root'
   variables(
-    :alarm_topic_arn => ALARM_TOPIC_ARN,
-    :aws_region => AWS_REGION,
     :sqs_consumer_service_name => CONSUMER_SERVICE_NAME,
     :sns_policy_arn => SNS_POLICY_ARN,
     :sqs_policy_queue_name => SQS_POLICY_QUEUE_NAME

@@ -23,7 +23,7 @@ import logging.handlers
 import subprocess
 from time import sleep
 from datetime import datetime
-from botocore.exceptions import ClientError, WaiterError
+from botocore.exceptions import ClientError
 
 
 # logging to syslog setup
@@ -49,13 +49,10 @@ class Terminator(object):
         self.autoscaling_group_name = asg
         self.lifecycle_hook_name = hook
         self.lifecycle_action_token = token
-        self.sns_alarm_topic_arn = "<%= @alarm_topic_arn %>"
         self.sqs_consumer_service = "<%= @sqs_consumer_service_name %>"
         self.sns_policy_arn = "<%= @sns_policy_arn %>"
         self.sqs_policy_queue_name = "<%= @sqs_policy_queue_name %>"
-        #self.volume_cleanup = <%= @volume_cleanup %>
         self.postfix_queue_count = None
-        self.volume_device_name = '/dev/xvdi'
 
         # Create EC2 Resource
         self.ec2 = boto3.resource('ec2', region_name=self.aws_region)
@@ -81,48 +78,6 @@ class Terminator(object):
         """:type: pyboto3.ssm """
 
         self.instance = self.ec2.Instance(instance)
-        self.volume = self.ec2_get_volume()
-
-    def ec2_get_volume(self):
-        for v in self.instance.block_device_mappings:
-            if v['DeviceName'] == self.volume_device_name:
-                return self.ec2.Volume(v['Ebs']['VolumeId'])
-        return None
-
-    def ec2_detach_volume(self, force=False):
-        """
-       Detach Ebs Volume from EC2 Instance.
-        """
-        try:
-            self.volume.detach_from_instance(
-                Device=self.volume_device_name,
-                Force=force,
-                InstanceId=self.instance.id
-            )
-            self.ec2c.get_waiter('volume_available').wait(
-                VolumeIds=[self.volume.id],
-                WaiterConfig={
-                    'Delay': self.delay
-                }
-            )
-            self.logger.info("Volume Detached")
-            return True
-        except (ClientError, WaiterError) as e:
-            self.logger.exception("Exception detaching Volume: {}".format(e.response['Error']['Code']))
-            return False
-
-    def ec2_delete_volume(self):
-        """
-       Delete Ebs Volume.
-        """
-        self.volume.delete()
-        self.ec2c.get_waiter('volume_deleted').wait(
-            VolumeIds=[self.volume.id],
-            WaiterConfig={
-                'Delay': self.delay
-            }
-        )
-        logger.info("Volume Deleted")
 
     def get_postfix_instance(self):
         """
@@ -160,24 +115,6 @@ class Terminator(object):
             sys.exit(process.returncode)
 
         return out.strip()
-
-    def send_sns_alert(self, message):
-        """
-        Send provided message as an alarm to specified Amazon Web Services SNS Topic.
-        """
-        if not message:
-            self.logger.info("Function: send_sns_alert - Need a message to send an alert.")
-            sys.exit(1)
-        try:
-            response = self.sns.publish(
-                TopicArn=self.sns_alarm_topic_arn,
-                Subject="Alarm from EC2 Instance: {} in Region: {}".format(self.instance.id, self.aws_region),
-                Message=message
-            )
-            self.logger.info("SNS MessageId: {}".format(response['MessageId']))
-        except botocore.exceptions.ClientError as e:
-            self.logger.exception("Exception sending SNS alert to alarm topic {} : {}".format(
-                self.sns_alarm_topic_arn, e.response['Error']['Code']))
 
     def service_controller(self, service, action):
         """
@@ -220,8 +157,7 @@ class Terminator(object):
             self.logger.info("Xgemail SQS Consumer Service is already Stopped.")
             return True
 
-        error_message = "CRITICAL! cannot stop Xgemail SQS Consumer!"
-        self.send_sns_alert(error_message)
+        self.logger.critical("CRITICAL! cannot stop Xgemail SQS Consumer!")
         return False
 
     def check_postfix_queue(self):
@@ -237,7 +173,6 @@ class Terminator(object):
             path = ("/storage/{}/{}".format(self.postfix_instance, q))
             for root, dirs, files in os.walk(path):
                 messages += len(files)
-
         return messages
 
     def process_event(self):
@@ -293,7 +228,6 @@ class Terminator(object):
                         elif self.postfix_queue_count >= last_count:
                             error_message = "CRITICAL! *** {} *** Undelivered messages are stuck in the email queue.".format(self.postfix_queue_count)
                             self.logger.critical(error_message)
-                            #self.send_sns_alert(error_message)
                             return self.postfix_queue_count
 
                 if self.postfix_queue_count == 0:
@@ -304,18 +238,18 @@ class Terminator(object):
 
             if self.postfix_queue_count == 0:
                 self.logger.info("The Postfix queue is empty.")
-                #break
                 return self.postfix_queue_count
 
             self.logger.critical("LIFECYCLE HOOK EXHAUSTED!")
             return self.postfix_queue_count
 
     def sqs_sns_cleanup(self):
-        #Unsubscribe SQS Queue from SNS Topic
+        """
+        Unsubscribe SQS Queue from SNS Topic
+        """
         for service in os.listdir('/etc/init.d/'):
             if service.startswith('xgemail-'):
                 self.service_controller(service, 'stop')
-        # Also Remove Policy SNS subscription and delete SQS queue for this instance
         try:
             sqs_policy_queue = self.sqs.get_queue_by_name(QueueName=self.sqs_policy_queue_name)
             sqs_policy_queue_dlq = self.sqs.get_queue_by_name(QueueName=self.sqs_policy_queue_name + '-DLQ')
@@ -331,25 +265,6 @@ class Terminator(object):
         except ClientError as e:
             self.logger.exception("Exception during SQS and SNS cleanup: {}".format(e.response['Error']['Code']))
             pass
-
-    def cleanup_volume(self):
-        if self.postfix_queue_count == 0:
-            self.logger.info("The Postfix queue is empty! Unmounting, detaching, and deleting volume.")
-            # Unmount Volume
-            self.run_cmd(['umount', self.volume_device_name])
-            sleep(5)
-            self.logger.info("Volume Unmounted")
-            # Detach the volume
-            self.logger.info("Detaching Ebs Volume: {} from EC2 Instance: {}.".format(self.volume.id, self.instance.id))
-            self.ec2_detach_volume()
-            self.volume.reload()
-            if self.volume.state != 'available':
-                self.logger.info("Volume is still not available. Force detaching.")
-                self.ec2_detach_volume(force=True)
-            # Delete the volume
-            self.logger.info("Deleting Ebs Volume: {}.".format(self.volume.id))
-            self.ec2_delete_volume()
-        sys.exit(0)
 
 
 class LifecycleHook(object):
@@ -456,7 +371,6 @@ if __name__ == '__main__':
     response = {}
     response["QueueCount"] = queue_count
     print json.dumps(response)
-     # Stop Services
     t.service_controller('postfixStats', 'stop')
     t.service_controller('postfix', 'stop')
     if t.postfix_instance == 'postfix-is' or t.postfix_instance == 'postfix-cs':

@@ -165,7 +165,7 @@
               "description":"The Lifecycle Action Token."
             }
           },
-          "mainSteps":[
+          "mainSteps": [
             {
               "name": "getVolumeId",
               "action": "aws:executeAwsApi",
@@ -199,7 +199,7 @@
               "name": "terminationAutomation",
               "action": "aws:runCommand",
               "maxAttempts": 1,
-              "timeoutSeconds": 900,
+              "timeoutSeconds": 3600,
               "onFailure": "step:volumeNotEmpty",
               "inputs": {
                 "DocumentName": "AWS-RunShellScript",
@@ -239,8 +239,8 @@
                 "Service": "sns",
                 "Api": "Publish",
                 "TopicArn": { "Ref": "AlarmTopicArn" },
-                "Subject": "Alarm for Volume Id: {{getVolumeId.VolumeId}} from EC2 Instance: {{InstanceId}} in Region: {{Region}}",
-                "Message": "CRITICAL! ****** Undelivered messages are stuck in the email queue."
+                "Subject": "Alarm for Undelivered messages that are stuck in the email queue on Volume Id: {{getVolumeId.VolumeId}}.",
+                "Message": "Region: {{Region}} Volume Id: {{getVolumeId.VolumeId}} EC2 Instance: {{InstanceId}}"
               }
             },
             {
@@ -263,12 +263,11 @@
               "name": "describeVolume",
               "action": "aws:waitForAwsResourceProperty",
               "timeoutSeconds": 120,
+              "onFailure": "Continue",
               "inputs": {
                 "Service": "ec2",
                 "Api": "DescribeVolumes",
-                "VolumeIds": [
-                  "{{getVolumeId.VolumeId}}"
-                ],
+                "VolumeIds": [ "{{getVolumeId.VolumeId}}" ],
                 "PropertySelector": "$.Volumes[0].State",
                 "DesiredValues": [ "available" ]
               },
@@ -286,6 +285,9 @@
                 "VolumeId": "{{getVolumeId.VolumeId}}"
               }
             }
+          ],
+          "outputs": [
+            "getVolumeId.VolumeId"
           ]
         }
       }
