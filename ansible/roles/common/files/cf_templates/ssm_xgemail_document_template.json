@@ -230,6 +230,20 @@
               "nextStep": "sendAlert"
             },
             {
+              "name": "sendAlert",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": 3,
+              "timeoutSeconds": 60,
+              "isEnd": true,
+              "inputs": {
+                "Service": "sns",
+                "Api": "Publish",
+                "TopicArn": { "Ref": "AlarmTopicArn" },
+                "Subject": "Alarm for Volume Id: {{getVolumeId.VolumeId}} from EC2 Instance: {{InstanceId}} in Region: {{Region}}",
+                "Message": "CRITICAL! ****** Undelivered messages are stuck in the email queue."
+              }
+            },
+            {
               "name": "volumeEmpty",
               "action": "aws:executeAwsApi",
               "maxAttempts": 3,
@@ -248,6 +262,7 @@
             {
               "name": "describeVolume",
               "action": "aws:waitForAwsResourceProperty",
+              "timeoutSeconds": 120,
               "inputs": {
                 "Service": "ec2",
                 "Api": "DescribeVolumes",
@@ -269,20 +284,6 @@
                 "Service": "ec2",
                 "Api": "DeleteVolumes",
                 "VolumeId": "{{getVolumeId.VolumeId}}"
-              }
-            },
-            {
-              "name": "sendAlert",
-              "action": "aws:executeAwsApi",
-              "maxAttempts": 3,
-              "timeoutSeconds": 60,
-              "isEnd": true,
-              "inputs": {
-                "Service": "sns",
-                "Api": "Publish",
-                "TopicArn": { "Ref": "AlarmTopicArn" },
-                "Subject": "Alarm for Volume Id: {{getVolumeId.VolumeId}} from EC2 Instance: {{InstanceId}} in Region: {{Region}}",
-                "Message": "CRITICAL! ****** Undelivered messages are stuck in the email queue."
               }
             }
           ]
