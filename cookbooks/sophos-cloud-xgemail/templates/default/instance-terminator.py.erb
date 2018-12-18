@@ -349,52 +349,6 @@ class Terminator(object):
             # Delete the volume
             self.logger.info("Deleting Ebs Volume: {}.".format(self.volume.id))
             self.ec2_delete_volume()
-        # Unsubscribe SQS Queue from SNS Topic
-        # if self.postfix_instance == 'postfix-is' or self.postfix_instance == 'postfix-cs':
-        #     for service in os.listdir('/etc/init.d/'):
-        #         if service.startswith('xgemail-'):
-        #             self.service_controller(service, 'stop')
-        #     # Also Remove Policy SNS subscription and delete SQS queue for this instance
-        #     try:
-        #         sqs_policy_queue = self.sqs.get_queue_by_name(QueueName=self.sqs_policy_queue_name)
-        #         sqs_policy_queue_dlq = self.sqs.get_queue_by_name(QueueName=self.sqs_policy_queue_name + '-DLQ')
-        #         sns_policy_topic = self.sns.Topic(self.sns_policy_arn)
-        #         self.logger.info('Getting policy subscription ARN.')
-        #         sns_policy_subscription = [s for s in sns_policy_topic.subscriptions.all() if s.attributes['Endpoint'] == sqs_policy_queue.attributes['QueueArn']][0]
-        #         self.logger.info("Unsubscribing SNS Subscription {}.".format(sns_policy_subscription.arn))
-        #         sns_policy_subscription.delete()
-        #         self.logger.info("Deleting SQS queue {}".format(sqs_policy_queue.url))
-        #         sqs_policy_queue.delete()
-        #         self.logger.info("Deleting SQS queue {}".format(sqs_policy_queue_dlq.url))
-        #         sqs_policy_queue_dlq.delete()
-        #     except ClientError as e:
-        #         self.logger.exception("Exception during SQS and SNS cleanup: {}".format(e.response['Error']['Code']))
-        #         pass
-        #
-        # if self.postfix_queue_count != 0:
-        #     self.logger.critical("The Postfix queue is NOT empty! Unmounting and detaching volume for further investigation.")
-        #
-        # if self.volume_cleanup:
-        #     if self.postfix_queue_count == 0:
-        #         self.logger.info("The Postfix queue is empty! Unmounting, detaching, and deleting volume.")
-        #         # Unmount Volume
-        #         self.run_cmd(['umount', self.volume_device_name])
-        #         sleep(5)
-        #         self.logger.info("Volume Unmounted")
-        #         # Detach the volume
-        #         self.logger.info("Detaching Ebs Volume: {} from EC2 Instance: {}.".format(self.volume.id, self.instance.id))
-        #         self.ec2_detach_volume()
-        #         self.volume.reload()
-        #         if self.volume.state != 'available':
-        #             self.logger.info("Volume is still not available. Force detaching.")
-        #             self.ec2_detach_volume(force=True)
-        #         # Delete the volume
-        #         self.logger.info("Deleting Ebs Volume: {}.".format(self.volume.id))
-        #         self.ec2_delete_volume()
-        # # Complete ASG hook
-        # self.logger.info('Completing lifecycle action.')
-        # lifecycle_hook.complete_lifecycle_action()
-
         sys.exit(0)
 
 
@@ -507,5 +461,4 @@ if __name__ == '__main__':
     t.service_controller('postfix', 'stop')
     if t.postfix_instance == 'postfix-is' or t.postfix_instance == 'postfix-cs':
         t.sqs_sns_cleanup()
-    #t.cleanup_volume()
     sys.exit(queue_count)
