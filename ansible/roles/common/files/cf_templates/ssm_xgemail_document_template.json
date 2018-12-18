@@ -167,6 +167,35 @@
           },
           "mainSteps":[
             {
+              "name": "getVolumeId",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": 3,
+              "timeoutSeconds": 60,
+              "onFailure": "Continue",
+              "inputs": {
+                "Service": "ec2",
+                "Api": "DescribeVolumes",
+                "Filters": [
+                  {
+                    "Name": "attachment.instance-id",
+                    "Values": [ "{{InstanceId}}" ]
+                  },
+                  {
+                    "Name": "attachment.device",
+                    "Values": [ "/dev/xvdi" ]
+                  }
+                ]
+              },
+              "outputs": [
+                {
+                  "Name": "VolumeId",
+                  "Selector": "$.Volumes[0].Attachments[0].VolumeId",
+                  "Type": "String"
+                }
+              ],
+              "nextStep": "terminationAutomation"
+            },
+            {
               "name": "terminationAutomation",
               "action": "aws:runCommand",
               "maxAttempts": 1,
@@ -205,7 +234,6 @@
               "action": "aws:executeAwsApi",
               "maxAttempts": 3,
               "timeoutSeconds": 60,
-              "isEnd": true,
               "inputs": {
                 "Service": "autoscaling",
                 "Api": "CompleteLifecycleAction",
@@ -214,6 +242,33 @@
                 "LifecycleActionResult": "CONTINUE",
                 "LifecycleActionToken": "{{LifecycleActionToken}}",
                 "LifecycleHookName": "{{LifecycleHookName}}"
+              },
+              "nextStep": "describeVolume"
+            },
+            {
+              "name": "describeVolume",
+              "action": "aws:assertAwsResourceProperty",
+              "inputs": {
+                "Service": "ec2",
+                "Api": "DescribeVolumes",
+                "VolumeId": [
+                  "{{getVolumeId.VolumeId}}"
+                ],
+                "PropertySelector": "$.Volumes[0].State",
+                "DesiredValues": [ "available" ]
+              },
+              "nextStep": "deleteVolume"
+            },
+            {
+              "name": "deleteVolume",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": 3,
+              "timeoutSeconds": 60,
+              "isEnd": true,
+              "inputs": {
+                "Service": "ec2",
+                "Api": "DeleteVolumes",
+                "VolumeId": "{{getVolumeId.VolumeId}}"
               }
             },
             {
