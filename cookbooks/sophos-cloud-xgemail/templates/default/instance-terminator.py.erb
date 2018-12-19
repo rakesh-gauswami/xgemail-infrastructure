@@ -262,6 +262,7 @@ class Terminator(object):
             sqs_policy_queue.delete()
             self.logger.info("Deleting SQS queue {}".format(sqs_policy_queue_dlq.url))
             sqs_policy_queue_dlq.delete()
+            self.logger.info("Finished SQS and SNS Cleanup.")
         except ClientError as e:
             self.logger.exception("Exception during SQS and SNS cleanup: {}".format(e.response['Error']['Code']))
             pass
