@@ -77,6 +77,7 @@ template 'xgemail.jilter.service.sh' do
   owner SERVICE_USER
   group SERVICE_USER
   variables(
+    :deployment_dir => DEPLOYMENT_DIR,
     :active_profile => ACTIVE_PROFILE
   )
 end
