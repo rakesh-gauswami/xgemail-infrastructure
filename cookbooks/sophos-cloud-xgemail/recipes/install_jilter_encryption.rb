@@ -32,8 +32,11 @@ JILTER_SERVICE_NAME = node['xgemail']['jilter_service_name']
 JILTER_PACKAGE_NAME = 'xgemail-jilter-encryption'
 JILTER_SCRIPT_DIR = "#{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}/scripts"
 JILTER_SCRIPT_PATH = "#{JILTER_SCRIPT_DIR}/xgemail.jilter.service.sh"
+JILTER_CONF_DIR = "#{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}/conf"
+JILTER_APPLICATION_PROPERTIES_PATH = "#{JILTER_CONF_DIR}/jilter-application.properties"
 
 SERVICE_USER = node['xgemail']['jilter_user']
+POLICY_BUCKET_NAME   = node['xgemail']['xgemail_policy_bucket_name']
 ACTIVE_PROFILE = node['xgemail']['xgemail_active_profile']
 
 include_recipe 'sophos-cloud-xgemail::install_jilter_common'
@@ -79,6 +82,18 @@ template 'xgemail.jilter.service.sh' do
   variables(
     :deployment_dir => DEPLOYMENT_DIR,
     :active_profile => ACTIVE_PROFILE
+  )
+end
+
+# Create the jilter application properties
+template 'xgemail.jilter.properties' do
+  path JILTER_APPLICATION_PROPERTIES_PATH
+  source 'jilter-encryption-application.properties.erb'
+  mode '0700'
+  owner SERVICE_USER
+  group SERVICE_USER
+  variables(
+      :policy_bucket => POLICY_BUCKET_NAME
   )
 end
 
