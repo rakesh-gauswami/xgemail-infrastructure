@@ -29,8 +29,6 @@ ALARM_TOPIC_ARN         = node['xgemail']['alarm_topic_arn']
 CONSUMER_SERVICE_NAME   = node['xgemail']['sqs_message_consumer_service_name']
 SNS_POLICY_ARN          = node['xgemail']['xgemail_policy_arn']
 SQS_POLICY_QUEUE_NAME   = "#{ACCOUNT}-xgemail-policy-#{INSTANCE_ID}"
-VOLUME_CLEANUP          = node['xgemail']['volume_cleanup']
-
 
 directory XGEMAIL_FILES_DIR do
   mode '0755'
@@ -46,12 +44,9 @@ template "#{XGEMAIL_FILES_DIR}/instance-terminator.py" do
   owner 'root'
   group 'root'
   variables(
-    :alarm_topic_arn => ALARM_TOPIC_ARN,
-    :aws_region => AWS_REGION,
     :sqs_consumer_service_name => CONSUMER_SERVICE_NAME,
     :sns_policy_arn => SNS_POLICY_ARN,
-    :sqs_policy_queue_name => SQS_POLICY_QUEUE_NAME,
-    :volume_cleanup => VOLUME_CLEANUP
+    :sqs_policy_queue_name => SQS_POLICY_QUEUE_NAME
   )
 end
 

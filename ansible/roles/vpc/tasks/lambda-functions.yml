@@ -92,44 +92,15 @@
     verbosity: 2
 
 # Instance Terminator Lambda Function
-- name: "Create a zip archive of instance terminator lambda function"
-  archive:
-    path: /work/lambda/xgemail_instance_terminator.py
-    dest: "{{tmp_artifacts_dir}}/xgemail_instance_terminator.zip"
-    format: zip
-
-- name: "Upload the eip rotation lambda function for {{stack.lambda.instance_terminator_lambda_function}} to the config bucket {{s3.lambda_bucket}}"
-  s3:
-    mode:               put
-    region:             "{{account.region}}"
-    bucket:             "{{s3.lambda_bucket}}"
-    object:             "lambda/{{build.number}}/xgemail_instance_terminator.zip"
-    src:                "{{tmp_artifacts_dir}}/xgemail_instance_terminator.zip"
-    overwrite:          always
-
 - name: "Deploy Instance Terminator Lambda Function {{stack.lambda.instance_terminator_lambda_function}} to {{account.name}}-{{account.region}}"
   cloudformation:
     stack_name:                             "{{stack.lambda.instance_terminator_lambda_function}}"
-    state:                                  present
+    state:                                  absent
     region:                                 "{{account.region}}"
     disable_rollback:                       true
     template:                               "{{template.lambda.lambda_xgemail_instance_terminator_template}}"
-    template_parameters:
-      DeadLetterTargetArn:                  "{{sns.arn_prefix}}{{sns.alarm_sns_topic}}"
-      Environment:                          "{{account.name}}"
-      FunctionName:                         "{{lambda.instance_terminator_lambda_function}}"
-      HandlerName:                          xgemail_instance_terminator.instance_terminator
-      IAMRoleArn:                           "{{iam_stack.stack_outputs.InstanceTerminatorLambdaExecutionRoleArn}}"
-      S3Bucket:                             "{{s3.lambda_bucket}}"
-      S3Key:                                "lambda/{{build.number}}/xgemail_instance_terminator.zip"
-      SsmDocumentName:                      "{{ssm_stack.stack_outputs.InstanceTerminator}}"
   register: instance_terminator_stack
 
 - debug:
     var: instance_terminator_stack
     verbosity: 3
-
-- name: "Display Instance Terminator Lambda Function Stack Output"
-  debug:
-    msg: "{{instance_terminator_stack.stack_outputs}}"
-    verbosity: 2

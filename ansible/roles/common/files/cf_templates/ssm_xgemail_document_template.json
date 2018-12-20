@@ -18,6 +18,13 @@
     ]
   },
 
+   "Parameters": {
+    "AlarmTopicArn": {
+      "Description": "ARN for SNS Topic that should receive alarm notifications",
+      "Type": "String"
+    }
+   },
+
   "Resources" : {
     "PostfixService": {
       "Type": "AWS::SSM::Document",
@@ -118,10 +125,310 @@
                 ]
               }
             }
-          ],
+          ]
         },
         "DocumentType": "Command"
       }
+    },
+
+    "TerminationAutomation": {
+      "Type": "AWS::SSM::Document",
+      "Properties": {
+        "DocumentType": "Automation",
+        "Content": {
+          "schemaVersion": "0.3",
+          "assumeRole": { "Fn::GetAtt" : [ "TerminationAutomationRole", "Arn" ] },
+          "description": "Safe shutdown of an EC2 instance",
+          "parameters": {
+            "Region": {
+              "type":"String",
+              "description":"The AWS Region."
+            },
+            "Time": {
+              "type":"String",
+              "description":"The timestamp on the Lifecycle Hook."
+            },
+            "AutoScalingGroupName": {
+              "type":"String",
+              "description":"The AutoScaling Group Name."
+            },
+            "InstanceId": {
+              "type":"String",
+              "description":"The EC2 Instance Id."
+            },
+            "LifecycleHookName": {
+              "type":"String",
+              "description":"The Lifecycle Hook Name."
+            },
+            "LifecycleActionToken": {
+              "type":"String",
+              "description":"The Lifecycle Action Token."
+            }
+          },
+          "mainSteps": [
+            {
+              "name": "getVolumeId",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": 3,
+              "timeoutSeconds": 60,
+              "onFailure": "Continue",
+              "inputs": {
+                "Service": "ec2",
+                "Api": "DescribeVolumes",
+                "Filters": [
+                  {
+                    "Name": "attachment.instance-id",
+                    "Values": [ "{{InstanceId}}" ]
+                  },
+                  {
+                    "Name": "attachment.device",
+                    "Values": [ "/dev/xvdi" ]
+                  }
+                ]
+              },
+              "outputs": [
+                {
+                  "Name": "VolumeId",
+                  "Selector": "$.Volumes[0].Attachments[0].VolumeId",
+                  "Type": "String"
+                }
+              ],
+              "nextStep": "terminationAutomation"
+            },
+            {
+              "name": "terminationAutomation",
+              "action": "aws:runCommand",
+              "maxAttempts": 1,
+              "timeoutSeconds": 3600,
+              "onFailure": "step:volumeNotEmpty",
+              "inputs": {
+                "DocumentName": "AWS-RunShellScript",
+                "InstanceIds": [ "{{InstanceId}}" ],
+                "Parameters": {
+                  "commands": [
+                    "/opt/sophos/xgemail/instance-terminator.py -r {{Region}} -t {{Time}} -a {{AutoScalingGroupName}} -i {{InstanceId}} -l {{LifecycleHookName}} -k {{LifecycleActionToken}}"
+                  ]
+                }
+              },
+              "nextStep": "volumeEmpty"
+            },
+            {
+              "name": "volumeNotEmpty",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": 3,
+              "timeoutSeconds": 60,
+              "onFailure": "Continue",
+              "inputs": {
+                "Service": "autoscaling",
+                "Api": "CompleteLifecycleAction",
+                "AutoScalingGroupName": "{{AutoScalingGroupName}}",
+                "InstanceId": "{{InstanceId}}",
+                "LifecycleActionResult": "CONTINUE",
+                "LifecycleActionToken": "{{LifecycleActionToken}}",
+                "LifecycleHookName": "{{LifecycleHookName}}"
+              },
+              "nextStep": "sendAlert"
+            },
+            {
+              "name": "sendAlert",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": 3,
+              "timeoutSeconds": 60,
+              "isEnd": true,
+              "inputs": {
+                "Service": "sns",
+                "Api": "Publish",
+                "TopicArn": { "Ref": "AlarmTopicArn" },
+                "Subject": "Undelivered messages stuck in email queue on Volume Id {{getVolumeId.VolumeId}}",
+                "Message": "Region: {{Region}} Volume Id: {{getVolumeId.VolumeId}} EC2 Instance: {{InstanceId}}"
+              }
+            },
+            {
+              "name": "volumeEmpty",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": 3,
+              "timeoutSeconds": 60,
+              "inputs": {
+                "Service": "autoscaling",
+                "Api": "CompleteLifecycleAction",
+                "AutoScalingGroupName": "{{AutoScalingGroupName}}",
+                "InstanceId": "{{InstanceId}}",
+                "LifecycleActionResult": "CONTINUE",
+                "LifecycleActionToken": "{{LifecycleActionToken}}",
+                "LifecycleHookName": "{{LifecycleHookName}}"
+              },
+              "nextStep": "describeVolume"
+            },
+            {
+              "name": "describeVolume",
+              "action": "aws:waitForAwsResourceProperty",
+              "timeoutSeconds": 120,
+              "onFailure": "Continue",
+              "inputs": {
+                "Service": "ec2",
+                "Api": "DescribeVolumes",
+                "VolumeIds": [ "{{getVolumeId.VolumeId}}" ],
+                "PropertySelector": "$.Volumes[0].State",
+                "DesiredValues": [ "available" ]
+              },
+              "nextStep": "deleteVolume"
+            },
+            {
+              "name": "deleteVolume",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": 3,
+              "timeoutSeconds": 60,
+              "isEnd": true,
+              "inputs": {
+                "Service": "ec2",
+                "Api": "DeleteVolume",
+                "VolumeId": "{{getVolumeId.VolumeId}}"
+              }
+            }
+          ],
+          "outputs": [
+            "getVolumeId.VolumeId"
+          ]
+        }
+      }
+    },
+
+    "TerminationAutomationRole" : {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [
+                "ec2.amazonaws.com",
+                "ssm.amazonaws.com"
+              ]
+            },
+            "Action": [ "sts:AssumeRole" ]
+          }]
+        },
+        "Path": "/"
+      }
+    },
+    "TerminationAutomationRolePolicies": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "iam:PassRole"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "autoscaling:CompleteLifecycleAction",
+                "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:RecordLifecycleActionHeartbeat",
+                "autoscaling:UpdateAutoScalingGroup"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "ec2:CreateTags",
+                "ec2:DescribeInstances",
+                "ec2:DeleteVolume",
+                "ec2:DescribeVolumes",
+                "ec2:DetachVolume",
+                "ec2:DeleteVolume"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:logs:*:*:*"
+              ]
+            },
+            {
+              "Action": [
+                "sns:GetSubscriptionAttributes",
+                "sns:ListSubscriptionsByTopic",
+                "sns:ListTopics",
+                "sns:Publish",
+                "sns:Unsubscribe"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    ":",
+                    [
+                      "arn:aws:sns",
+                      { "Ref": "AWS::Region" },
+                      { "Ref": "AWS::AccountId" },
+                      "*"
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Action": [
+                "sqs:DeleteQueue",
+                "sqs:GetQueueUrl",
+                "sqs:ListQueues"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "ssm:DescribeAutomationExecutions",
+                "ssm:DescribeAutomationStepExecutions",
+                "ssm:DescribeDocument",
+                "ssm:DescribeInstanceInformation",
+                "ssm:GetAutomationExecution",
+                "ssm:GetCommandInvocation",
+                "ssm:GetConnectionStatus",
+                "ssm:GetDocument",
+                "ssm:ListCommandInvocations",
+                "ssm:ListCommands",
+                "ssm:ListInstanceAssociations",
+                "ssm:ListDocuments",
+                "ssm:ListDocumentVersions",
+                "ssm:SendCommand",
+                "ssm:StartAutomationExecution"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ]
+        },
+        "PolicyName": "root",
+        "Roles": [
+          {
+            "Ref": "TerminationAutomationRole"
+          }
+        ]
+      },
+      "Type": "AWS::IAM::Policy"
     }
   },
 
@@ -137,6 +444,18 @@
     "InstanceTerminator" : {
       "Description" : "SSM Instance Terminator document name",
       "Value" : { "Ref" : "InstanceTerminator" }
+    },
+    "TerminationAutomation" : {
+      "Description" : "SSM Instance Terminator Automation Document name",
+      "Value" : { "Ref" : "TerminationAutomation" }
+    },
+    "TerminationAutomationRole": {
+      "Description": "AutomationTermination role",
+      "Value": { "Ref": "TerminationAutomationRole" }
+    },
+    "TerminationAutomationRoleArn": {
+      "Description": "Instance Terminator Automation role ARN",
+      "Value": { "Fn::GetAtt" : [ "TerminationAutomationRole", "Arn" ] }
     }
   }
 }
