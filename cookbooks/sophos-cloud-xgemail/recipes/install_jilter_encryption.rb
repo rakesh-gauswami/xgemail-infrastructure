@@ -66,6 +66,14 @@ directory JILTER_SCRIPT_DIR do
   recursive true
 end
 
+# Create the jilter application properties directory
+directory JILTER_CONF_DIR do
+  mode '0755'
+  owner 'root'
+  group 'root'
+  recursive true
+end
+
 # Create jilter user
 user SERVICE_USER do
   system true
