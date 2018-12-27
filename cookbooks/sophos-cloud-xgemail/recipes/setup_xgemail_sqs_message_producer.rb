@@ -15,6 +15,15 @@
 
 NODE_TYPE = node['xgemail']['cluster_type']
 
+#Submit tpes to use
+SUBMIT = 'submit'
+INTERNET_SUBMIT = 'internet-submit'
+CUSTOMER_SUBMIT = 'customer-submit'
+
+if NODE_TYPE != SUBMIT && NODE_TYPE != INTERNET_SUBMIT && NODE_TYPE != CUSTOMER_SUBMIT
+  return
+end
+
 INSTANCE_DATA = node['xgemail']['postfix_instance_data'][NODE_TYPE]
 raise "Unsupported node type [#{NODE_TYPE}]" if INSTANCE_DATA.nil?
 
@@ -25,11 +34,6 @@ SMTPD_PORT = INSTANCE_DATA[:port]
 raise "Invalid smtpd port for node type [#{NODE_TYPE}]" if SMTPD_PORT.nil?
 
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_processors_structure'
-
-#constants to use
-SUBMIT = 'submit'
-INTERNET_SUBMIT = 'internet-submit'
-CUSTOMER_SUBMIT = 'customer-submit'
 
 AWS_REGION                                   = node['sophos_cloud']['region']
 MESSAGEPROCESSOR_USER                        = node['xgemail']['sqs_message_processor_user']

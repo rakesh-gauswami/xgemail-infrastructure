@@ -37,15 +37,10 @@ from datetime import timedelta
 from email.parser import Parser
 from email.utils import parseaddr
 from logging.handlers import SysLogHandler
-from routingmanager import RoutingManager
 
 # Constants
 AWS_REGION = "<%= @sqs_msg_producer_aws_region %>"
-MSG_HISTORY_BUCKET_NAME = "<%= @sqs_msg_producer_msg_history_s3_bucket_name %>"
-MSG_HISTORY_SQS_URL = "<%= @sqs_msg_producer_msg_history_sqs_url %>"
-POLICY_S3_BUCKET_NAME = "<%= @sqs_msg_producer_policy_s3_bucket_name %>"
 PROCESS_TIMEOUT_SECONDS = <%= @sqs_msg_producer_process_timeout_seconds %>
-POLICY_STORAGE_PATH = "<%= @policy_storage_path %>"
 
 SUBMIT_TYPE = "<%= @xgemail_submit_type %>"
 
@@ -54,11 +49,9 @@ SUBMIT_BUCKET_NAME = "<%= @sqs_msg_producer_s3_bucket_name %>"
 CUSTOMER_SUBMIT_BUCKET_NAME = "<%= @sqs_msg_producer_s3_customer_submit_bucket_name %>"
 SUBMIT_HOST_IP = "<%= @sqs_msg_producer_submit_ip %>"
 SUBMIT_SQS_URL = "<%= @sqs_msg_producer_sqs_url %>"
-SUBMIT_SERVICE_SQS_URL = "<%= @sqs_msg_producer_service_sqs_url %>"
 CUSTOMER_SUBMIT_SQS_URL = "<%= @sqs_msg_producer_customer_submit_sqs_url %>"
 
 TTL_IN_DAYS = <%= @sqs_msg_producer_ttl_in_days %>
-RELAY_DOMAINS_FILE = "<%= @relay_domains_file %>"
 
 # Exit codes from sysexits
 EX_TEMPFAIL = <%= @sqs_msg_producer_ex_temp_failure_code %>
@@ -88,22 +81,13 @@ DOMAIN_NAME_REGEX_PATTERN = "[a-zA-Z0-9][-a-zA-Z0-9]*(\\.[-a-zA-Z0-9]+)*\\.[a-zA
 
 # Other constants
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
-MESSAGE_HISTORY_UNKNOWN_DESIGNATION = "UNKNOWN"
-MESSAGE_HISTORY_ACCEPTED_EVENT = "ACCEPTED"
 INBOUND_MESSAGE_DIRECTION = "INBOUND"
 OUTBOUND_MESSAGE_DIRECTION = "OUTBOUND"
-POLICY_ID_PATH_VALUE = "/00/"
-SQS_BATCH_SIZE = 10
 
 # Definition of the header "X-Sophos-Deliver-Inbound: True" for the email package
 DELIVER_INBOUND_HEADER = ("X-Sophos-Deliver-Inbound", "True")
 
 awshandler = AwsHandler(AWS_REGION)
-
-routingmanager = RoutingManager(
-    POLICY_STORAGE_PATH,
-    SUBMIT_TYPE + "-SUBMIT"
-)
 
 #postfix pipe sends metadata as sysargs.
 def get_metadata():
@@ -228,90 +212,10 @@ def get_submit_bucket_name(direction):
     else:
       return SUBMIT_BUCKET_NAME
 
-# uploads message history parent file to message history bucket
-def upload_msg_history_to_s3(s3_file_path, expires, metadata):
-    try:
-        msg_history_file_path = messagehistoryformatter.get_s3_msg_history_path(
-            s3_file_path
-        )
-        logger.info("Processing message history [{0}]".format(msg_history_file_path))
-
-        #TODO: Encrypt msg history object after V1
-
-        # metadata_magic_bytes, schema_version, nonce_length, gzip_metadata_json):
-        formatted_msg_history = messagehistoryformatter.get_formatted_msg_history(
-            gziputils.gzip_data(
-                json.dumps(metadata.get_metadata_json())
-            )
-        )
-
-        # upload msg history to message history bucket
-        upload_to_s3(
-            MSG_HISTORY_BUCKET_NAME,
-            msg_history_file_path,
-            formatted_msg_history,
-            expires
-        )
-
-        logger.info("Uploaded message history to S3 [{0}]".format(msg_history_file_path))
-
-    except Exception as e:
-        logger.exception("Failed in uploading message history to S3 [{0}]".format(e))
-        exit(EX_TEMPFAIL)
-
-
-# Send an accepted message history event to msg history SQS
-def prepare_msg_history_event(s3_file_path, metadata, sqs_message, direction, sender):
-    try:
-        # create a message history event object
-        msg_history_event = MessageHistoryEvent(
-            metadata.schema_version,
-            s3_file_path,
-            metadata.accepting_server_ip,
-            metadata.queue_id,
-            sqs_message.akm_key,
-            sqs_message.nonce,
-            sqs_message.message_key,
-            datetime.utcnow().strftime(DATETIME_FORMAT),
-            MESSAGE_HISTORY_ACCEPTED_EVENT,
-            MESSAGE_HISTORY_UNKNOWN_DESIGNATION,
-            None,
-            metadata.recipients,
-            False,
-            direction,
-            sender
-        )
-
-        return msg_history_event
-
-    except Exception as e:
-        logger.exception("Failed in uploading message history event to SQS [{0}]".format(e))
-        exit(EX_TEMPFAIL)
-
-def send_msg_history_sqs_event(sqs_history_json):
-    try:
-        logger.info("Processing message history event SQS job [{0}]".format(sqs_history_json))
-        logger.info("Added message history event SQS job response [{0}]".format
-            (add_to_sqs(
-            MSG_HISTORY_SQS_URL,
-            sqs_history_json)
-        )
-        )
-
-    except Exception as e:
-        logger.exception("Failed in uploading message processing SQS job [{0}]".format(e))
-        exit(EX_TEMPFAIL)
-
 # sends msg processing sqs messages to sqs
 def send_msg_processing_sqs_message(sqs_message_json, direction, customer_id = None):
 
     receiving_queue = get_sqs_url(direction)
-
-    # Check if we should route to the microservice
-    # Enforce that we only do this for internet submit for now.
-    # This can be removed once we have an outbound microservice
-    if 'INTERNET' == SUBMIT_TYPE and routingmanager.perform_routing(customer_id):
-        receiving_queue = SUBMIT_SERVICE_SQS_URL
 
     try:
         logger.info("Processing SQS job [{0}] in queue [{1}]".format(sqs_message_json, receiving_queue))
@@ -440,7 +344,7 @@ def upload_documents(metadata, compressed_message, s3_file_path, direction):
 def base_policy_flow(metadata, direction, domain, sender, message):
     queue_id = metadata.get_queue_id()
 
-    s3_file_path = formatterutils.get_s3_path(
+    tmp_file_path = formatterutils.get_s3_path(
         ROOT_DIR,
         TIMESTAMP_FORMAT,
         SUBMIT_HOST_IP,
@@ -457,7 +361,7 @@ def base_policy_flow(metadata, direction, domain, sender, message):
         AKM_KEY,
         NONCE.encode('base64','strict'),
         MESSAGE_KEY.encode('base64','strict'),
-        SUBMIT_TYPE
+        sqs_message_submit_type
     )
 
     upload_documents(
@@ -487,21 +391,24 @@ def get_direction(message):
 # a json object to SQS which provides pointer to the message in S3
 def main():
     try:
-        if 'ENCRYPTION' == SUBMIT_TYPE:
+        if 'ENCRYPTION' != SUBMIT_TYPE:
           raise ("Wrong submit type [{0}]".format(SUBMIT_TYPE))
 
-        metadata = get_metadata()
         domain = None
-        direction = None
-        sender = None
+        metadata = get_metadata()
         plaintext_message = get_plaintext_message()
-        domain = metadata.get_recipient_domain()
-        sender = metadata.get_sender_address()
         direction = get_direction(plaintext_message)
+        sender = metadata.get_sender_address()
+        if direction == OUTBOUND_MESSAGE_DIRECTION:
+          metadata = get_metadata_for_outbound(metadata, plaintext_message)
+          domain = get_from_sender_domain(metadata)
+        else:
+          domain = metadata.get_recipient_domain()
 
         logger.info("Metadata json info [{0}]".format(metadata))
 
         base_policy_flow(metadata, direction, domain, sender, plaintext_message)
+
     except BaseException as e:
         logger.exception("Failed in processing email [{0}]".format(e))
         exit(EX_TEMPFAIL)
