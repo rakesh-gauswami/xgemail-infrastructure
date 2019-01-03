@@ -100,8 +100,8 @@ SQS_BATCH_SIZE = 10
 SQS_MESSAGE_SUBMIT_TYPE_INBOUND = "INTERNET"
 SQS_MESSAGE_SUBMIT_TYPE_OUTBOUND = "CUSTOMER"
 
-# Definition of the header "X-Sophos-Deliver-Inbound: True" for the email package
-DELIVER_INBOUND_HEADER = ("X-Sophos-Deliver-Inbound", "True")
+# Definition of the header "X-Sophos-Deliver-Inbound: true" for the email package
+DELIVER_INBOUND_HEADER = ("X-Sophos-Deliver-Inbound", "true")
 
 awshandler = AwsHandler(AWS_REGION)
 
@@ -442,18 +442,29 @@ def upload_documents(metadata, compressed_message, s3_file_path, direction):
         direction
     )
 
-    if 'ENCRYPTION' != SUBMIT_TYPE:
+    if should_upload_msg_history(direction):
         upload_msg_history_to_s3(
             s3_file_path,
             expires,
             metadata
         )
 
+
+def should_upload_msg_history(direction):
+    if 'ENCRYPTION' != SUBMIT_TYPE:
+        return TRUE
+    elif INBOUND_MESSAGE_DIRECTION == direction:
+        return True
+    else:
+        return False
+
+
 def get_submit_message_type_for_encryption(direction):
     if direction == OUTBOUND_MESSAGE_DIRECTION:
         return SQS_MESSAGE_SUBMIT_TYPE_OUTBOUND
     else:
         return SQS_MESSAGE_SUBMIT_TYPE_INBOUND
+
 
 def base_policy_flow(metadata, direction, domain, sender, message):
     queue_id = metadata.get_queue_id()
@@ -497,7 +508,7 @@ def base_policy_flow(metadata, direction, domain, sender, message):
         direction
     )
 
-    if 'ENCRYPTION' != SUBMIT_TYPE:
+    if should_upload_msg_history(direction):
         sqs_history = prepare_msg_history_event(
             s3_file_path,
             metadata,
