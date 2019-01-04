@@ -25,6 +25,11 @@
   tags:
     - always
 
+- name: "Include {{kms.key.alias}} KMS Key Metadata."
+  include_tasks: get-kms-key-id.yml
+  tags:
+    - vpc
+
 - name: "Include {{stack.vpc.cloud_station_vpc}} CloudFormation Stack Output."
   include_tasks: get-cloudstation-vpc-output.yml
   tags:

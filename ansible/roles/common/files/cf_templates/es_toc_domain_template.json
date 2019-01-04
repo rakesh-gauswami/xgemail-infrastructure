@@ -45,10 +45,6 @@
       "AllowedPattern": "(?!-)[a-zA-Z0-9-.]{1,63}(?<!-)",
       "ConstraintDescription": "must be a valid DNS zone name."
     },
-    "KmsKeyId": {
-      "Description": "The KMS key ID.",
-      "Type": "String"
-    },
     "MasterNodeType": {
       "Description": "The compute and memory capacity of the master nodes in the ElasticSearch Domain",
       "Type": "String"
@@ -96,10 +92,6 @@
       "Type": "AWS::Elasticsearch::Domain",
       "Properties": {
         "ElasticsearchVersion": { "Ref": "ElasticsearchVersion" },
-        "EncryptionAtRestOptions": {
-          "Enabled" : "True",
-          "KmsKeyId" : { "Ref": "KmsKeyId" }
-        },
         "ElasticsearchClusterConfig": {
           "DedicatedMasterEnabled": "true",
           "InstanceCount": { "Ref": "NumberOfInstances" },

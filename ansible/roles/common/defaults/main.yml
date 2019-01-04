@@ -35,6 +35,9 @@ kinesis:
   firehose:
     arn_prefix:                                         "arn:aws:firehose:{{account.region}}:{{aws_account_id}}:deliverystream/"
     firehose_log_shipper_stream:                        "firehose-log-shipper-stream-{{account.region}}-{{vpc.cloud_email.name}}"
+kms:
+  key:
+    alias:                                              "cloud-{{account.name}}-storage"
 # CloudEmail Lambda Function Names:
 lambda:
   eip_monitor_lambda_function:                          "Xgemail-Eip-Monitor"
@@ -248,6 +251,7 @@ template:
       events_rule_lifecycle_automation_template:        "{{tmp_artifacts_dir}}/events_rule_lifecycle_automation_template.json"
   es:
     es_domain_template:                                 "{{tmp_artifacts_dir}}/es_domain_template.json"
+    es_toc_domain_template:                             "{{tmp_artifacts_dir}}/es_toc_domain_template.json"
   iam:
     role:
       roles_xgemail_template:                           "{{tmp_artifacts_dir}}/roles_xgemail_template.json"
