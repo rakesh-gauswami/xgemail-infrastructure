@@ -131,7 +131,7 @@
           "Fn::If": [
             "EnableEncryptionAtRest",
             {
-              "Enabled" : "True",
+              "Enabled" : { "Ref": "EncryptionAtRest" },
               "KmsKeyId" : { "Ref": "KmsKeyId" }
             },
             { "Ref" : "AWS::NoValue" }
