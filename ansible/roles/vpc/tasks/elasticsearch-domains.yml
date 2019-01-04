@@ -10,6 +10,7 @@
     template_parameters:
       EbsVolumeSize:              "{{aws.es.xgemail_elasticsearch_domain.ebs_volume_size}}"
       ElasticsearchVersion:       "{{aws.es.xgemail_elasticsearch_domain.es_version}}"
+      EncryptionAtRest:           "{{aws.es.xgemail_elasticsearch_domain.encryption_at_rest}}"
       Environment:                "{{account.name}}"
       EsName:                     "{{aws.es.xgemail_elasticsearch_domain.es_name}}"
       HopperIpAccess:             "{{hopper_public_ip}}"
@@ -40,7 +41,7 @@
     state:                        present
     region:                       "{{account.region}}"
     disable_rollback:             true
-    template:                     "{{template.es.es_toc_domain_template}}"
+    template:                     "{{template.es.es_domain_template}}"
     template_parameters:
       EbsVolumeSize:              "{{aws.es.toc_elasticsearch_domain.ebs_volume_size}}"
       ElasticsearchVersion:       "{{aws.es.toc_elasticsearch_domain.es_version}}"
