@@ -35,6 +35,9 @@ kinesis:
   firehose:
     arn_prefix:                                         "arn:aws:firehose:{{account.region}}:{{aws_account_id}}:deliverystream/"
     firehose_log_shipper_stream:                        "firehose-log-shipper-stream-{{account.region}}-{{vpc.cloud_email.name}}"
+kms:
+  key:
+    alias:                                              "cloud-{{account.name}}-storage"
 # CloudEmail Lambda Function Names:
 lambda:
   eip_monitor_lambda_function:                          "Xgemail-Eip-Monitor"

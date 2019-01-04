@@ -1,0 +1,22 @@
+---
+
+- name: "Describe {{kms.key.alias}} KMS Key"
+  command: >
+    aws kms describe-key
+      --region {{account.region}}
+      --key-id alias/{{kms.key.alias}}
+  register: storage_kms_key_metadata
+
+- name: "Print {{kms.key.alias}} KMS Key Metadata"
+  debug:
+    var: storage_kms_key_metadata
+    verbosity: 3
+
+- name: Parse the output for the Key Id
+  set_fact:
+    storage_kms_key_id: "{{storage_kms_key_metadata.stdout | from_json | json_query('KeyMetadata.KeyId')}}"
+
+- name: "Print {{kms.key.alias}} KMS Key Id"
+  debug:
+    var: storage_kms_key_id
+    verbosity: 3
