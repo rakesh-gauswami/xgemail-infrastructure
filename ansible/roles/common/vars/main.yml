@@ -205,6 +205,11 @@ aws:
       template:                                                   "{{template.sns.sns_simple_template}}"
       template_parameters:
         TopicName:                                                "{{sns.deleted_events_sns_topic}}"
+    scan_events_sns_topic:
+      stack_name:                                                 "{{stack.sns.scan_events_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                                                "{{sns.scan_events_sns_topic}}"
     internet_delivery_sns_topic:
       stack_name:                                                 "{{stack.sns.internet_delivery_sns_topic}}"
       template:                                                   "{{template.sns.sns_simple_template}}"
