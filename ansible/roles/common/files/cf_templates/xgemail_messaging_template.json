@@ -83,6 +83,14 @@
       "Description": "Endpoint URL for Internet delivery SQS queue",
       "Type": "String"
     },
+    "InternetSubmitServiceQueueArn": {
+      "Description": "Endpoint for Internet submit service SQS queue",
+      "Type": "String"
+    },
+    "InternetSubmitServiceQueueUrl": {
+      "Description": "Endpoint URL for Internet submit service SQS queue",
+      "Type": "String"
+    },
     "MessageHistoryQueueArn": {
       "Description": "Endpoint for message history SQS queue",
       "Type": "String"
@@ -272,6 +280,14 @@
         "Endpoint": { "Ref": "InternetDeliveryQueueArn" },
         "Protocol": "sqs",
         "TopicArn": { "Ref": "InternetDeliveryTopicArn"}
+      }
+    },
+    "InternetSubmitServiceQueueToScanEventsSnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "InternetSubmitServiceQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "ScanEventsTopicArn"}
       }
     },
     "MessageHistoryDeliveryStatusQueueToMessageHistoryDeliveryStatusSnsSubscription": {
