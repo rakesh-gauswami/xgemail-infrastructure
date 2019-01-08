@@ -26,15 +26,15 @@ print('Loading function')
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+region = os.environ['AWS_REGION']
 ssm_document_name = os.environ['SSM_DOCUMENT_NAME']
 
-session = boto3.session.Session(region_name=os.environ['AWS_REGION'])
+session = boto3.session.Session(region_name=region)
 ssm = session.client('ssm')
 """:type: pyboto3.ssm """
 
 
 def instance_terminator(event, context):
-    logger.info("got event {}".format(event))
     logger.info("Received event: {}".format(json.dumps(event)))
     logger.info("Log stream name: {}".format(context.log_stream_name))
     logger.info("Log group name: {}".format(context.log_group_name))
@@ -60,8 +60,12 @@ def send_ssm_command(region, time, autocaling_group_name, instance_id, lifecycle
     logger.info("Executing Instance Terminator SSM Document, for Instance Id: {} in AutoScaling Group: {}".format(instance_id, autocaling_group_name))
     try:
         ssmresponse = ssm.send_command(
-            InstanceIds=[instance_id],
+            CloudWatchOutputConfig={
+                'CloudWatchOutputEnabled': True
+            },
+            Comment='Terminate {}'.format(instance_id),
             DocumentName=ssm_document_name,
+            InstanceIds=[instance_id],
             Parameters={
                 'Region': [region],
                 'Time': [time],
@@ -77,6 +81,7 @@ def send_ssm_command(region, time, autocaling_group_name, instance_id, lifecycle
     else:
         ssm_status = ssmresponse['Command']['Status']
         if ssm_status == 'Success':
+            logger.info("===SSM_STATUS=== {}".format(ssm_status))
             return True
         while ssm_status == 'Pending' or ssm_status == 'InProgress':
             sleep(3)
@@ -84,5 +89,6 @@ def send_ssm_command(region, time, autocaling_group_name, instance_id, lifecycle
                 CommandId=ssmresponse['Command']['CommandId']
             )['Commands'][0]['Status']
         if ssm_status != 'Success':
+            logger.warning("===SSM_STATUS=== {}".format(ssm_status))
             return False
         return True

@@ -36,7 +36,7 @@ template '/etc/monit.d/submit.conf' do
   mode '0644'
   owner 'root'
   group 'root'
-  only_if { NODE_TYPE == 'submit' }
+  only_if { NODE_TYPE == 'submit' || NODE_TYPE == 'internet-submit' }
 end
 
 template '/etc/monit.d/customer-submit.conf' do
@@ -52,7 +52,7 @@ template '/etc/monit.d/delivery.conf' do
   mode '0644'
   owner 'root'
   group 'root'
-  only_if { NODE_TYPE == 'delivery' || NODE_TYPE == 'internet-delivery' }
+  only_if { NODE_TYPE == 'delivery' || NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' }
 end
 
 # Restart rsyslog service

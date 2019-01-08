@@ -22,7 +22,7 @@ SERVER_IP                     = node['ipaddress']
 MAILLOG_FILTER_PATTERNS       = "(\\.#{REGION}\\.compute\\.internal|table\\shash:|sm-msp-queue|:\\sstatistics:\\s)"
 
 # Configs
-if NODE_TYPE    == 'delivery'
+if NODE_TYPE == 'delivery' || NODE_TYPE == 'customer-delivery'
   SERVER_TYPE           = 'CUSTOMER_DELIVERY'
   SERVER_TYPE_XDELIVERY = 'CUSTOMER_XDELIVERY'
   DIRECTION             = 'INBOUND'
@@ -68,7 +68,7 @@ template 'fluentd-source-jilter' do
   variables(
       :application_name => NODE_TYPE
   )
-  only_if { NODE_TYPE == 'submit' || NODE_TYPE == 'customer-submit' }
+  only_if { NODE_TYPE == 'submit' || NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit' }
 end
 
 # All instances except extended delivery - Start Order: 10
@@ -107,7 +107,7 @@ template 'fluentd-source-multi-policy' do
   variables(
     :application_name => NODE_TYPE
   )
-  only_if { NODE_TYPE == 'submit' }
+  only_if { NODE_TYPE == 'submit' || NODE_TYPE == 'internet-submit' }
 end
 
 # internet-submit and customer-submit - Start Order: 10
@@ -120,7 +120,7 @@ template 'fluentd-source-policy' do
   variables(
     :application_name => NODE_TYPE
   )
-  only_if { NODE_TYPE == 'submit' || NODE_TYPE == 'customer-submit' }
+  only_if { NODE_TYPE == 'submit' || NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit' }
 end
 
 # All delivery instances - Start Order: 10
@@ -133,7 +133,7 @@ template 'fluentd-source-sqsmsgconsumer' do
   variables(
     :application_name => NODE_TYPE
   )
-  only_if { NODE_TYPE == 'delivery' || NODE_TYPE == 'internet-delivery' }
+  only_if { NODE_TYPE == 'delivery' || NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' }
 end
 
 # internet-submit and customer-submit - Start Order: 10
@@ -145,7 +145,7 @@ template '/etc/td-agent.d/10-source-sqsmsgproducer.conf' do
   variables(
     :application_name => NODE_TYPE
   )
-  only_if { NODE_TYPE == 'submit' || NODE_TYPE == 'customer-submit' }
+  only_if { NODE_TYPE == 'submit' || NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit' }
 end
 
 # All instances - Start Order: 10
@@ -200,7 +200,7 @@ template 'fluentd-match-msg-stats-reject' do
     :maillog_filter_patterns => MAILLOG_FILTER_PATTERNS,
     :region => REGION
   )
-  only_if { NODE_TYPE == 'submit' }
+  only_if { NODE_TYPE == 'submit' || NODE_TYPE == 'internet-submit' }
 end
 
 #  - Start Order: 65
@@ -217,6 +217,7 @@ template 'fluentd-match-msg-delivery' do
   )
  only_if {
             NODE_TYPE == 'delivery' ||
+            NODE_TYPE == 'customer-delivery' ||
             NODE_TYPE == 'xdelivery' ||
             NODE_TYPE == 'internet-delivery' ||
             NODE_TYPE == 'internet-xdelivery'
@@ -233,6 +234,7 @@ template 'fluentd-filter-msg-delivery' do
   group 'root'
   only_if {
             NODE_TYPE == 'delivery' ||
+            NODE_TYPE == 'customer-delivery' ||
             NODE_TYPE == 'xdelivery' ||
             NODE_TYPE == 'internet-delivery' ||
             NODE_TYPE == 'internet-xdelivery'
@@ -246,7 +248,7 @@ template 'fluentd-filter-msg-stats-reject' do
   mode '0644'
   owner 'root'
   group 'root'
-  only_if { NODE_TYPE == 'submit' }
+  only_if { NODE_TYPE == 'submit' || NODE_TYPE == 'internet-submit' }
 end
 
 # All instances - Start Order: 70
@@ -280,6 +282,7 @@ template 'fluentd-filter-transform-msg-delivery' do
   )
  only_if {
             NODE_TYPE == 'delivery' ||
+            NODE_TYPE == 'customer-delivery' ||
             NODE_TYPE == 'xdelivery' ||
             NODE_TYPE == 'internet-delivery' ||
             NODE_TYPE == 'internet-xdelivery'
@@ -300,6 +303,7 @@ template 'fluentd-match-sns-msg-delivery' do
   )
  only_if {
             NODE_TYPE == 'delivery' ||
+            NODE_TYPE == 'customer-delivery' ||
             NODE_TYPE == 'xdelivery' ||
             NODE_TYPE == 'internet-delivery' ||
             NODE_TYPE == 'internet-xdelivery'
@@ -332,7 +336,7 @@ template 'fluentd-match-sns-msg-stats-reject' do
     :region => REGION,
     :sns_topic => MSG_STATS_REJECT_SNS_TOPIC
   )
-  only_if { NODE_TYPE == 'submit' }
+  only_if { NODE_TYPE == 'submit' || NODE_TYPE == 'internet-submit' }
 end
 
 cookbook_file 'postfix grok patterns' do

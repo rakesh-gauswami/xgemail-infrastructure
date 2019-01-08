@@ -17,7 +17,7 @@ POLICY_MOUNT_DNS_NAME = "#{POLICY_FILE_SYSTEM_ID}.efs.#{AWS_REGION}.amazonaws.co
 
 #Only mount drive for submit and customer submit nodes
 
-if NODE_TYPE == 'submit' || NODE_TYPE == 'customer-submit'
+if NODE_TYPE == 'submit' || NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit'
 
   # Create the mount directory
   directory POLICY_EFS_MOUNT_DIR do

@@ -85,14 +85,14 @@ default['xgemail']['savdid_version'] = '2.4'
 default['xgemail']['savdid_cxmail_version'] = 'Cloud:Email:1.0.0'
 
 # Jilter settings
-default['xgemail']['libspfjni'] = '1.0.0-SNAPSHOT'
+default['xgemail']['libspfjni'] = '1.0.131-SNAPSHOT'
 default['xgemail']['libspf2_version'] = '1.2.10-9'
 default['xgemail']['jilter_user'] = 'jilter'
 default['xgemail']['jilter_service_name'] = 'xgemail-jilter-service'
 default['xgemail']['xgemail_active_profile'] = 'aws'
 
 # DKIM specific
-default['xgemail']['libdkimjni'] = '1.0.0-SNAPSHOT'
+default['xgemail']['libdkimjni'] = '1.0.131-SNAPSHOT'
 default['xgemail']['libopendkim_version'] = '2.11.0'
 
 default['xgemail']['policy_efs_mount_dir'] = '/policy-storage'
@@ -251,12 +251,27 @@ default['xgemail']['postfix_instance_data'] = {
     :msg_size_limit => SUBMIT_MESSAGE_SIZE_LIMIT_BYTES,
     :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
   },
+  # internet-submit
+  'internet-submit' => {
+    :instance_name => 'is',
+    :port => 25,
+    :msg_size_limit => SUBMIT_MESSAGE_SIZE_LIMIT_BYTES,
+    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+  },
   # customer-submit
   'customer-submit' => {
     :instance_name => 'cs',
     :port => 25,
     :msg_size_limit => SUBMIT_MESSAGE_SIZE_LIMIT_BYTES,
     :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+  },
+  # customer-delivery
+  'customer-delivery' => {
+    :instance_name => 'cd',
+    :port => 25,
+    # Give delivery queues extra padding because extra content may be created during processing
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800),
+    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
   },
   # customer-delivery
   'delivery' => {

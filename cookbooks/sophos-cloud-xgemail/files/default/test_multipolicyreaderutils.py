@@ -215,5 +215,11 @@ class MultiPolicyReaderUtilsTest(unittest.TestCase):
             True
         )
 
+    def test_retrieve_customer_id(self):
+        self.assertEquals(
+            multipolicyreaderutils.retrieve_customer_id(self.mock_policy),
+            "76656a08-c17b-47d6-aafd-ef8fc7c250a0"
+        )
+
 if __name__ == "__main__":
     unittest.main()

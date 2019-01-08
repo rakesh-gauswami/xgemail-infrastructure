@@ -9,7 +9,7 @@
   poll: 0
   cloudformation:
     stack_name: "{{vpc.cloud_email.name}}-xgemail-encryption-submit-0000-{{item.0}}"
-    state: present
+    state: absent
     region:  "{{account.region}}"
     disable_rollback: true
     template: "{{template.ec2.asg.as_xgemail_instance_template}}"
@@ -33,9 +33,8 @@
       HealthCheckType:                      "ELB"
       InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.XgemailEncryptionSubmitInstanceProfile}}"
       InstanceType:                         "{{aws.asg.es.instance_size}}"
-      KeyName:                              "private-{{account.region}}"
-      LifecycleHookName:                    "{{aws.asg.es.lifecycle_hook_name}}"
       KeyName:                              "public-{{account.region}}"
+      LifecycleHookName:                    "{{aws.asg.es.lifecycle_hook_name}}"
       LoadBalancerName:                     "{{elb_stack_output.stack_outputs.LoadBalancerId}}"
       PublicIpAddressEnabled:               "true"
       S3CookbookRepositoryURL:              "//cloud-{{account.name}}-templates/{{build.branch}}/xgemail-infrastructure/cookbooks.enc"
@@ -53,6 +52,7 @@
       VpcName:                              "{{vpc.cloud_email.name}}"
       XgemailBucketName:                    "{{s3.submit_bucket}}"
       XgemailCustomerSubmitBucketName:      "{{s3.customer_submit_bucket}}"
+      XgemailPolicyBucketName:              "{{s3.policy_bucket}}"
       XgemailMinSizeDataGB:                 "{{xgemail_size_data_gb}}"
       XgemailQueueUrl:                      "{{sqs.url_prefix}}{{sqs.internet_submit_sqs_queue}}"
       XgemailCustomerSubmitQueueUrl:        "{{sqs.url_prefix}}{{sqs.customer_submit_sqs_queue}}"

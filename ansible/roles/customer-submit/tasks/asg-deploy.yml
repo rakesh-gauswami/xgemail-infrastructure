@@ -1,0 +1,64 @@
+---
+
+- name: "Create ASG Stack in AWS"
+  cloudformation:
+    stack_name: "{{stack.ec2.asg.cs}}"
+    state: present
+    region:  "{{account.region}}"
+    disable_rollback: no
+    template: "{{template.ec2.asg.as_submit_delivery_template}}"
+    template_parameters:
+      AesDecryptionKey:                     "{{aes_decryption_key}}"
+      AlarmTopicArn:                        "{{sns.arn_prefix}}{{sns.alarm_sns_topic}}"
+      AmiId:                                "{{ami_parent_id}}"
+      AutoScalingInstanceRoleArn:           "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.AutoScalingInstanceRoleArn}}"
+      AutoScalingMinSize:                   "{{aws.asg.cs.as_min_size}}"
+      AutoScalingMaxSize:                   "{{aws.asg.cs.as_max_size}}"
+      AutoScalingNotificationTopicARN:      "{{sns.arn_prefix}}{{sns.lifecycle_sqs_sns}}"
+      AvailabilityZones:                    "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.AvailabilityZones}}"
+      Branch:                               "{{build.branch}}"
+      BuildVersion:                         "{{build.result_key}}"
+      BundleVersion:                        "{{ami_build}}"
+      DeployMaxBatchSize:                   "{{aws.asg.cs.as_max_batch_size}}"
+      DeployMinInstancesInService:          "{{aws.asg.cs.as_min_service}}"
+      Environment:                          "{{account.name}}"
+      HealthCheckGracePeriod:               "{{aws.asg.cs.health_check_grace_period}}"
+      HealthCheckType:                      "ELB"
+      InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.XgemailCustomerSubmitInstanceProfile}}"
+      InstanceType:                         "{{aws.asg.cs.instance_size}}"
+      KeyName:                              "public-{{account.region}}"
+      LifecycleHookName:                    "{{aws.asg.cs.lifecycle_hook_name}}"
+      LoadBalancerName:                     "{{elb_stack_output.stack_outputs.LoadBalancerId}}"
+      PublicIpAddressEnabled:               "true"
+      S3CookbookRepositoryURL:              "//cloud-{{account.name}}-templates/{{build.branch}}/xgemail-infrastructure/cookbooks.enc"
+      ScaleInOnWeekends:                    "{{weekend_scale_down}}"
+      ScaleInCron:                          "{{cron_scale_down}}"
+      ScaleOutCron:                         "{{cron_scale_up}}"
+      SecurityGroups:                       "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.XgemailCustomerSubmitSecurityGroup}},{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.SecurityGroupBase}}"
+      SpotPrice:                            "{{instance_size_xgemail_spot_price}}"
+      StationVpcId:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}"
+      StationVpcName:                       "{{vpc.cloud_station.name}}"
+      Vpc:                                  "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.Vpc}}"
+      VpcZoneIdentifiers:                   "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PublicSubnetA}},{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PublicSubnetB}},{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PublicSubnetC}}"
+      VpcName:                              "{{vpc.cloud_email.name}}"
+      XgemailBucketName:                    "{{s3.customer_submit_bucket}}"
+      XgemailMinSizeDataGB:                 "{{xgemail_size_data_gb}}"
+      XgemailMsgHistoryBucketName:          "{{s3.msg_history_bucket}}"
+      XgemailMsgHistoryQueueUrl:            "{{sqs.url_prefix}}{{sqs.msg_history_sqs_queue}}"
+      XgemailPolicyArn:                     "{{sns.arn_prefix}}{{sns.relay_control_sns_topic}}"
+      XgemailPolicyBucketName:              "{{s3.policy_bucket}}"
+      XgemailPolicyEfsFileSystemId:         "{{cloud_email_efs_output.ansible_facts.cloudformation[stack.efs.policy_efs_volume].stack_outputs.FileSystemId}}"
+      XgemailQueueUrl:                      "{{sqs.url_prefix}}{{sqs.customer_submit_sqs_queue}}"
+      XgemailServiceType:                   "customer-submit"
+      XgemailSxlDbl:                        "{{xgemail_sxl_dbl}}"
+      XgemailSxlRbl:                        "{{xgemail_sxl_rbl}}"
+  register: asg_stack_output
+
+- debug:
+    var: asg_stack_output
+    verbosity: 3
+
+- name: "Display ASG Stack Output"
+  debug:
+    msg: "{{asg_stack_output.stack_outputs}}"
+    verbosity: 2

@@ -8,8 +8,8 @@
   async: 100
   poll: 0
   cloudformation:
-    stack_name: "{{vpc.cloud_email.name}}-xgemail-internet-delivery-0000-{{item.0}}"
-    state: present
+    stack_name: "{{stack.ec2.asg.id}}-0000-{{item.0}}"
+    state: absent
     region:  "{{account.region}}"
     disable_rollback: true
     template: "{{template.ec2.asg.as_xgemail_instance_template}}"

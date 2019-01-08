@@ -63,11 +63,11 @@
                              {{iam_stack.stack_outputs.XgemailCustomerSubmitInstanceRole}},
                              {{iam_stack.stack_outputs.XgemailDeliveryInstanceRole}},
                              {{iam_stack.stack_outputs.XgemailCustomerDeliveryInstanceRole}},
-                             {{iam_stack.stack_outputs.XgemailEncryptionSubmitInstanceRole}},
-                             {{iam_stack.stack_outputs.XgemailEncryptionDeliveryInstanceRole}},
                              {{iam_stack.stack_outputs.XgemailInternetDeliveryInstanceRole}},
                              {{iam_stack.stack_outputs.XgemailXdeliveryInstanceRole}},
-                             {{iam_stack.stack_outputs.XgemailInternetXdeliveryInstanceRole}}
+                             {{iam_stack.stack_outputs.XgemailInternetXdeliveryInstanceRole}},
+                             {{iam_stack.stack_outputs.XgemailEncryptionSubmitInstanceRole}},
+                             {{iam_stack.stack_outputs.XgemailEncryptionDeliveryInstanceRole}}
       PolicyName:            "{{iam.policy.policy_publish_to_firehose}}"
   register: log_shipper_policy_stack
 
@@ -78,4 +78,30 @@
 - name: "Display Kinesis Firehose Log Shipper IAM Policy Stack Output"
   debug:
     msg: "{{log_shipper_policy_stack.stack_outputs}}"
+    verbosity: 2
+
+# IAM Policy for EC2 Instances to Elasticsearch Domain
+- name: "Create IAM Policy for EC2 Instances to Access AWS Elasticsearch Domain {{stack.iam.policy.xgemail_elasticsearch_access}} to {{account.name}}-{{account.region}}"
+  cloudformation:
+    stack_name:               "{{stack.iam.policy.xgemail_elasticsearch_access}}"
+    state:                    present
+    region:                   "{{account.region}}"
+    disable_rollback:         true
+    template:                 "{{template.iam.policy.policy_elasticsearch_access_template}}"
+    template_parameters:
+      ElasticsearchDomainArn: "{{xgemail_es_stack.stack_outputs.ElasticSearchDomainArn}}"
+      RoleNames:              >
+                              {{cloud_station_iam_region_output.ansible_facts.cloudformation[stack.iam.role.cloud_station_region_roles].stack_outputs.ApiInstRole}},
+                              {{cloud_station_iam_region_output.ansible_facts.cloudformation[stack.iam.role.cloud_station_region_roles].stack_outputs.CoreInstRole}},
+                              {{cloud_station_iam_region_output.ansible_facts.cloudformation[stack.iam.role.cloud_station_region_roles].stack_outputs.XgemailInstRole}}
+      PolicyName:             "{{iam.policy.xgemail_elasticsearch_access}}"
+  register: es_policy_stack
+
+- debug:
+    var: es_policy_stack
+    verbosity: 3
+
+- name: "Display Elasticsearch IAM Policy Stack Output"
+  debug:
+    msg: "{{es_policy_stack.stack_outputs}}"
     verbosity: 2

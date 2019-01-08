@@ -26,6 +26,8 @@ import multipolicyreaderutils
 import os
 import re
 import signal
+import email
+from email.parser import HeaderParser
 from awshandler import AwsHandler
 from common.metadata import Metadata
 from common.sqsmessage import SqsMessage
@@ -35,6 +37,7 @@ from datetime import timedelta
 from email.parser import Parser
 from email.utils import parseaddr
 from logging.handlers import SysLogHandler
+from routingmanager import RoutingManager
 
 # Constants
 AWS_REGION = "<%= @sqs_msg_producer_aws_region %>"
@@ -42,13 +45,19 @@ MSG_HISTORY_BUCKET_NAME = "<%= @sqs_msg_producer_msg_history_s3_bucket_name %>"
 MSG_HISTORY_SQS_URL = "<%= @sqs_msg_producer_msg_history_sqs_url %>"
 POLICY_S3_BUCKET_NAME = "<%= @sqs_msg_producer_policy_s3_bucket_name %>"
 PROCESS_TIMEOUT_SECONDS = <%= @sqs_msg_producer_process_timeout_seconds %>
+POLICY_STORAGE_PATH = "<%= @policy_storage_path %>"
+
+# Either 'INTERNET' or 'CUSTOMER' or 'ENCRYPTION'
 SUBMIT_TYPE = "<%= @xgemail_submit_type %>"
+
 S3_ENCRYPTION_ALGORITHM = "<%= @s3_encryption_algorithm %>"
 SUBMIT_BUCKET_NAME = "<%= @sqs_msg_producer_s3_bucket_name %>"
 CUSTOMER_SUBMIT_BUCKET_NAME = "<%= @sqs_msg_producer_s3_customer_submit_bucket_name %>"
 SUBMIT_HOST_IP = "<%= @sqs_msg_producer_submit_ip %>"
 SUBMIT_SQS_URL = "<%= @sqs_msg_producer_sqs_url %>"
+SUBMIT_SERVICE_SQS_URL = "<%= @sqs_msg_producer_service_sqs_url %>"
 CUSTOMER_SUBMIT_SQS_URL = "<%= @sqs_msg_producer_customer_submit_sqs_url %>"
+
 TTL_IN_DAYS = <%= @sqs_msg_producer_ttl_in_days %>
 RELAY_DOMAINS_FILE = "<%= @relay_domains_file %>"
 
@@ -87,7 +96,19 @@ OUTBOUND_MESSAGE_DIRECTION = "OUTBOUND"
 POLICY_ID_PATH_VALUE = "/00/"
 SQS_BATCH_SIZE = 10
 
+# Submit message types to be transmitted to the appropriate PIC for encrypted messages
+SQS_MESSAGE_SUBMIT_TYPE_INBOUND = "INTERNET"
+SQS_MESSAGE_SUBMIT_TYPE_OUTBOUND = "CUSTOMER"
+
+# Definition of the header "X-Sophos-Deliver-Inbound: true" for the email package
+DELIVER_INBOUND_HEADER = ("X-Sophos-Deliver-Inbound", "true")
+
 awshandler = AwsHandler(AWS_REGION)
+
+routingmanager = RoutingManager(
+    POLICY_STORAGE_PATH,
+    SUBMIT_TYPE + "-SUBMIT"
+)
 
 #postfix pipe sends metadata as sysargs.
 def get_metadata():
@@ -201,11 +222,16 @@ def upload_metadata_to_s3(s3_file_path, expires, metadata, direction):
         logger.exception("Failed in uploading metadata to S3 [{0}]".format(e))
         exit(EX_TEMPFAIL)
 
+# Retrieves the S3 bucket depending on the direction (inbound or outbound).
+# This logic is used on the encryption-submit instance only and there are two
+# S3 buckets defined on this instance. For the rest instances there is no direction
+# switching, so the SUBMIT_BUCKET_NAME is used only, which has the specific value
+# for the particular instance.
 def get_submit_bucket_name(direction):
-    if 'ENCRYPTION' == SUBMIT_TYPE:
-        return SUBMIT_BUCKET_NAME if direction == INBOUND_MESSAGE_DIRECTION else CUSTOMER_SUBMIT_BUCKET_NAME
+    if (SUBMIT_TYPE == 'ENCRYPTION') and (direction != INBOUND_MESSAGE_DIRECTION):
+      return CUSTOMER_SUBMIT_BUCKET_NAME
     else:
-        return SUBMIT_BUCKET_NAME
+      return SUBMIT_BUCKET_NAME
 
 # uploads message history parent file to message history bucket
 def upload_msg_history_to_s3(s3_file_path, expires, metadata):
@@ -282,12 +308,21 @@ def send_msg_history_sqs_event(sqs_history_json):
         exit(EX_TEMPFAIL)
 
 # sends msg processing sqs messages to sqs
-def send_msg_processing_sqs_message(sqs_message_json, direction):
+def send_msg_processing_sqs_message(sqs_message_json, direction, customer_id = None):
+
+    receiving_queue = get_sqs_url(direction)
+
+    # Check if we should route to the microservice
+    # Enforce that we only do this for internet submit for now.
+    # This can be removed once we have an outbound microservice
+    if 'INTERNET' == SUBMIT_TYPE and routingmanager.perform_routing(customer_id):
+        receiving_queue = SUBMIT_SERVICE_SQS_URL
+
     try:
-        logger.info("Processing SQS job [{0}]".format(sqs_message_json))
+        logger.info("Processing SQS job [{0}] in queue [{1}]".format(sqs_message_json, receiving_queue))
         logger.info("Added SQS job response [{0}]".format
             (add_to_sqs(
-                get_sqs_url(direction),
+                receiving_queue,
                 sqs_message_json)
             )
         )
@@ -296,11 +331,16 @@ def send_msg_processing_sqs_message(sqs_message_json, direction):
         logger.exception("Failed in uploading message processing SQS job [{0}]".format(e))
         exit(EX_TEMPFAIL)
 
+# Retrieves the SQS URL depending on the direction (inbound or outbound).
+# This logic is used on the encryption-submit instance only and there are two
+# SQS URLs defined on this instance. For the rest instances there is no direction
+# switching, so the SUBMIT_SQS_URL is used only, which has the specific value
+# for the particular instance.
 def get_sqs_url(direction):
-    if 'ENCRYPTION' == SUBMIT_TYPE:
-        return SUBMIT_SQS_URL if direction == INBOUND_MESSAGE_DIRECTION else CUSTOMER_SUBMIT_SQS_URL
+    if (SUBMIT_TYPE == 'ENCRYPTION') and (direction != INBOUND_MESSAGE_DIRECTION):
+      return CUSTOMER_SUBMIT_SQS_URL
     else:
-       return SUBMIT_SQS_URL
+      return SUBMIT_SQS_URL
 
 def get_plaintext_message():
     stdin_no = sys.stdin.fileno()
@@ -402,23 +442,47 @@ def upload_documents(metadata, compressed_message, s3_file_path, direction):
         direction
     )
 
-    if 'ENCRYPTION' != SUBMIT_TYPE:
+    if should_upload_msg_history(direction):
         upload_msg_history_to_s3(
             s3_file_path,
             expires,
             metadata
         )
 
+
+def should_upload_msg_history(direction):
+    if 'ENCRYPTION' != SUBMIT_TYPE:
+        return True
+    elif INBOUND_MESSAGE_DIRECTION == direction:
+        return True
+    else:
+        return False
+
+
+def get_submit_message_type_for_encryption(direction):
+    if direction == OUTBOUND_MESSAGE_DIRECTION:
+        return SQS_MESSAGE_SUBMIT_TYPE_OUTBOUND
+    else:
+        return SQS_MESSAGE_SUBMIT_TYPE_INBOUND
+
+
 def base_policy_flow(metadata, direction, domain, sender, message):
     queue_id = metadata.get_queue_id()
 
-    s3_file_path = formatterutils.get_s3_path(
+    tmp_file_path = formatterutils.get_s3_path(
         ROOT_DIR,
         TIMESTAMP_FORMAT,
         SUBMIT_HOST_IP,
         queue_id,
         domain
     )
+
+    if 'ENCRYPTION' == SUBMIT_TYPE:
+      s3_file_path = formatterutils.get_s3_file_path(tmp_file_path, '-ENCR')
+      sqs_message_submit_type = get_submit_message_type_for_encryption(direction)
+    else:
+      s3_file_path = tmp_file_path
+      sqs_message_submit_type = SUBMIT_TYPE
 
     # create a sqs object
     sqs_message = SqsMessage(
@@ -429,7 +493,7 @@ def base_policy_flow(metadata, direction, domain, sender, message):
         AKM_KEY,
         NONCE.encode('base64','strict'),
         MESSAGE_KEY.encode('base64','strict'),
-        SUBMIT_TYPE
+        sqs_message_submit_type
     )
 
     upload_documents(
@@ -444,7 +508,7 @@ def base_policy_flow(metadata, direction, domain, sender, message):
         direction
     )
 
-    if 'ENCRYPTION' != SUBMIT_TYPE:
+    if should_upload_msg_history(direction):
         sqs_history = prepare_msg_history_event(
             s3_file_path,
             metadata,
@@ -457,13 +521,12 @@ def base_policy_flow(metadata, direction, domain, sender, message):
             sqs_history.get_sqs_json()
         )
 
-
 # Mail flow goes through multi_policy_flow if multi-policy flag is enabled
 # but if there are error conditions such as file read error etc, the mail
 # fall back to base_policy_flow.
 def multi_policy_flow(metadata, direction, domain, sender, message):
     recipients = metadata.get_recipients()
-    policy_list = multipolicyreaderutils.build_policy_map(recipients, AWS_REGION, POLICY_S3_BUCKET_NAME)
+    (policy_list, customer_id) = multipolicyreaderutils.build_policy_map(recipients, AWS_REGION, POLICY_S3_BUCKET_NAME)
     if not policy_list:
         return base_policy_flow(metadata, direction, domain, sender, message)
 
@@ -513,7 +576,8 @@ def multi_policy_flow(metadata, direction, domain, sender, message):
             for processing_job in sqs_message_json_queue:
                 send_msg_processing_sqs_message(
                     processing_job,
-                    direction
+                    direction,
+                    customer_id
                 )
             sqs_message_json_queue = []
 
@@ -538,7 +602,8 @@ def multi_policy_flow(metadata, direction, domain, sender, message):
         for processing_job in sqs_message_json_queue:
             send_msg_processing_sqs_message(
                 processing_job,
-                direction
+                direction,
+                customer_id
             )
 
     if len(sqs_history_json_queue) > 0:
@@ -547,17 +612,16 @@ def multi_policy_flow(metadata, direction, domain, sender, message):
                 history_job
             )
 
-def get_customer_domains():
-    domains = []
-    with open(RELAY_DOMAINS_FILE, 'r') as f:
-        for domain in f.readlines():
-            # file is formatted like so:
-            #   example1.com OK
-            #   example2.com OK
-            #   ...
-            # but we only need the domain name
-            domains.append(domain.split(' ')[0])
-    return domains
+def get_direction(message):
+    direction = OUTBOUND_MESSAGE_DIRECTION
+    parser = email.parser.HeaderParser()
+    headers = parser.parsestr(message)
+    for header in headers.items():
+        if header == DELIVER_INBOUND_HEADER:
+            direction = INBOUND_MESSAGE_DIRECTION
+            break
+    return direction
+
 
 # accepts data from postfix and send message and metadata to S3 and
 # a json object to SQS which provides pointer to the message in S3
@@ -584,11 +648,13 @@ def main():
             domain = get_from_sender_domain(metadata)
 
         elif 'ENCRYPTION' == SUBMIT_TYPE:
-            domain = metadata.get_recipient_domain()
-            logger.debug("Customer's domain: [{0}]".format(domain))
+            direction = get_direction(plaintext_message)
             sender = metadata.get_sender_address()
-            customer_domains = get_customer_domains()
-            direction = INBOUND_MESSAGE_DIRECTION if domain in customer_domains else OUTBOUND_MESSAGE_DIRECTION
+            if direction == OUTBOUND_MESSAGE_DIRECTION:
+              metadata = get_metadata_for_outbound(metadata, plaintext_message)
+              domain = get_from_sender_domain(metadata)
+            else:
+              domain = metadata.get_recipient_domain()
 
         else:
             raise ("Wrong submit type [{0}]".format(SUBMIT_TYPE))

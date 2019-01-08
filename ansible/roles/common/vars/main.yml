@@ -5,6 +5,10 @@
 aws:
   asg:
     cd:
+      as_min_size:                                                "1"
+      as_max_size:                                                "6"
+      as_min_service:                                             "1"
+      as_max_batch_size:                                          "1"
       asg_min_size:                                               [0,0,0,0,0,0,1,1,1,1,1,1]
       health_check_grace_period:                                  "600"
       instance_size:                                              "t2.small"
@@ -12,6 +16,10 @@ aws:
       stack_number:                                               [1,2,3,4,5,6,7,8,9,10,11,12]
       zone_index:                                                 [0,1,2,0,1,2,0,1,2,0,1,2]
     cs:
+      as_min_size:                                                "1"
+      as_max_size:                                                "3"
+      as_min_service:                                             "1"
+      as_max_batch_size:                                          "1"
       asg_min_size:                                               [0,0,0,1,1,1]
       health_check_grace_period:                                  "2100"
       instance_size:                                              "t2.small"
@@ -24,6 +32,10 @@ aws:
       stack_number:                                               [1,2,3]
       zone_index:                                                 [0,1,2]
     ed:
+      as_min_size:                                                "1"
+      as_max_size:                                                "3"
+      as_min_service:                                             "1"
+      as_max_batch_size:                                          "1"
       asg_min_size:                                               [1,1,1]
       health_check_grace_period:                                  "600"
       instance_size:                                              "t2.small"
@@ -31,6 +43,10 @@ aws:
       stack_number:                                               [1,2,3]
       zone_index:                                                 [0,1,2]
     es:
+      as_min_size:                                                "1"
+      as_max_size:                                                "3"
+      as_min_service:                                             "1"
+      as_max_batch_size:                                          "1"
       asg_min_size:                                               [1,1,1]
       health_check_grace_period:                                  "600"
       instance_size:                                              "t2.small"
@@ -38,6 +54,10 @@ aws:
       stack_number:                                               [1,2,3]
       zone_index:                                                 [0,1,2]
     id:
+      as_min_size:                                                "1"
+      as_max_size:                                                "6"
+      as_min_service:                                             "1"
+      as_max_batch_size:                                          "1"
       asg_min_size:                                               [0,0,0,0,0,0,1,1,1,1,1,1]
       health_check_grace_period:                                  "600"
       instance_size:                                              "t2.small"
@@ -45,8 +65,12 @@ aws:
       stack_number:                                               [1,2,3,4,5,6,7,8,9,10,11,12]
       zone_index:                                                 [0,1,2,0,1,2,0,1,2,0,1,2]
     is:
+      as_min_size:                                                "1"
+      as_max_size:                                                "3"
+      as_min_service:                                             "1"
+      as_max_batch_size:                                          "1"
       asg_min_size:                                               [0,0,0,1,1,1]
-      health_check_grace_period:                                  "1200"
+      health_check_grace_period:                                  "1500"
       instance_size:                                              "t2.small"
       lifecycle_hook_name:                                        "{{vpc.cloud_email.name}}-internet-submit-Terminating-LifeCycleHook"
       stack_number:                                               [1,2,3,4,5,6]
@@ -65,8 +89,21 @@ aws:
   es:
     toc_elasticsearch_domain:
       ebs_volume_size:                                            "10"
-      master_node_type:                                           't2.small.elasticsearch'
+      es_version:                                                 "5.5"
+      es_name:                                                    "toc-es"
+      master_node_type:                                           "t2.small.elasticsearch"
       node_type:                                                  "t2.medium.elasticsearch"
+      instance_number:                                            "1"
+      master_instance_number:                                     "2"
+      snapshot_start_hour:                                        "4"
+      zone_awareness:                                             "false"
+    xgemail_elasticsearch_domain:
+      ebs_volume_size:                                            "10"
+      encryption_at_rest:                                         "false"
+      es_version:                                                 "5.6"
+      es_name:                                                    "es"
+      master_node_type:                                           "t2.small.elasticsearch"
+      node_type:                                                  "t2.small.elasticsearch"
       instance_number:                                            "1"
       master_instance_number:                                     "2"
       snapshot_start_hour:                                        "4"
@@ -276,7 +313,7 @@ aws:
       template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                                                "{{sqs.delay_sqs_queue}}"
-        DelaySeconds:                                             "600"
+        DelaySeconds:                                             "240"
     emergency_inbox_sqs_queue:
       stack_name:                                                 "{{stack.sqs.emergency_inbox_sqs_queue}}"
       state:                                                      absent
