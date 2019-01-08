@@ -100,7 +100,7 @@ sns:
   policy_sns_topic:                                     "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-policy-SNS"
   quarantined_events_sns_topic:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-quarantined-events-SNS"
   relay_control_sns_topic:                              "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-relay-control-SNS"
-  scan_events_topic:                                    "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-scan-events-SNS"
+  scan_events_sns_topic:                                "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-scan-events-SNS"
   success_events_sns_topic:                             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-success-events-SNS"
   notification_sns_topic:                               "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-notification-SNS"
 sdb:
@@ -223,7 +223,7 @@ stack:
     success_events_sns_topic:                           "{{vpc.cloud_email.name}}-xgemail-success-events-SNS"
     encryption_delivery_events_sns_topic:               "{{vpc.cloud_email.name}}-xgemail-encryption-delivery-events-SNS"
     notification_sns_topic:                             "{{vpc.cloud_email.name}}-xgemail-notification-SNS"
-    scan_events_topic:                                  "{{vpc.cloud_email.name}}-xgemail-scan-events-SNS"
+    scan_events_sns_topic:                              "{{vpc.cloud_email.name}}-xgemail-scan-events-SNS"
   ssm:
     ssm_documents:                                      "{{vpc.cloud_email.name}}-SSM-Documents"
   msg:
