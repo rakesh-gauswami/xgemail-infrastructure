@@ -287,7 +287,12 @@
       "Properties": {
         "Endpoint": { "Ref": "InternetSubmitServiceQueueArn" },
         "Protocol": "sqs",
-        "TopicArn": { "Ref": "ScanEventsTopicArn"}
+        "TopicArn": { "Ref": "ScanEventsTopicArn"},
+        "FilterPolicy": {
+          "service": [
+            "internet-submit"
+          ]
+        }
       }
     },
     "MessageHistoryDeliveryStatusQueueToMessageHistoryDeliveryStatusSnsSubscription": {
