@@ -26,6 +26,12 @@
       "Description": "The version of Elasticsearch to use.",
       "Type": "String"
     },
+    "EncryptionAtRest":{
+      "Description": "Whether the domain should encrypt data at rest.",
+      "Type": "String",
+      "AllowedValues": [ "true", "false"],
+      "Default": "false"
+    },
     "Environment": {
       "Description": "(dev, dev2, dev3, dev4, dev5, qa, etc...)",
       "Type": "String",
@@ -44,6 +50,11 @@
       "Description": "The DNS name of an existing Amazon Route 53 hosted zone",
       "AllowedPattern": "(?!-)[a-zA-Z0-9-.]{1,63}(?<!-)",
       "ConstraintDescription": "must be a valid DNS zone name."
+    },
+    "KmsKeyId": {
+      "Description": "The KMS key ID.",
+      "Type": "String",
+      "Default": ""
     },
     "MasterNodeType": {
       "Description": "The compute and memory capacity of the master nodes in the ElasticSearch Domain",
@@ -87,6 +98,17 @@
     }
   },
 
+  "Conditions": {
+    "EnableEncryptionAtRest": {
+      "Fn::Equals": [
+        {
+          "Ref": "EncryptionAtRest"
+        },
+        "true"
+      ]
+    }
+  },
+
   "Resources": {
     "ElasticSearchDomain": {
       "Type": "AWS::Elasticsearch::Domain",
@@ -104,6 +126,16 @@
           "EBSEnabled": "true",
           "VolumeSize": { "Ref": "EbsVolumeSize" },
           "VolumeType": "gp2"
+        },
+        "EncryptionAtRestOptions": {
+          "Fn::If": [
+            "EnableEncryptionAtRest",
+            {
+              "Enabled" : { "Ref": "EncryptionAtRest" },
+              "KmsKeyId" : { "Ref": "KmsKeyId" }
+            },
+            { "Ref" : "AWS::NoValue" }
+          ]
         },
         "SnapshotOptions": {
           "AutomatedSnapshotStartHour": { "Ref": "SnapshotStartHour" }

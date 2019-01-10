@@ -93,9 +93,6 @@ SQS_BATCH_SIZE = 10
 SQS_MESSAGE_SUBMIT_TYPE_INBOUND = "INTERNET"
 SQS_MESSAGE_SUBMIT_TYPE_OUTBOUND = "CUSTOMER"
 
-# Definition of the header "X-Sophos-Deliver-Inbound: True" for the email package
-DELIVER_INBOUND_HEADER = ("X-Sophos-Deliver-Inbound", "True")
-
 awshandler = AwsHandler(AWS_REGION)
 
 routingmanager = RoutingManager(
@@ -249,7 +246,7 @@ def upload_msg_history_to_s3(s3_file_path, expires, metadata):
 
 
 # Send an accepted message history event to msg history SQS
-def prepare_msg_history_event(s3_file_path, metadata, sqs_message, direction, sender):
+def prepare_msg_history_event(s3_file_path, metadata, sqs_message, sender):
     try:
         # create a message history event object
         msg_history_event = MessageHistoryEvent(
@@ -266,7 +263,6 @@ def prepare_msg_history_event(s3_file_path, metadata, sqs_message, direction, se
             None,
             metadata.recipients,
             False,
-            direction,
             sender
         )
 
@@ -456,7 +452,6 @@ def base_policy_flow(metadata, domain, sender, message):
                 s3_file_path,
                 metadata,
                 sqs_message,
-                direction,
                 sender
             )
 
@@ -529,7 +524,6 @@ def multi_policy_flow(metadata, domain, sender, message):
             new_s3_file_path,
             this_policy_metadata,
             sqs_message,
-            direction,
             sender
         )
         sqs_history_json_queue.append(sqs_history.get_sqs_json())
@@ -560,7 +554,6 @@ def main():
     try:
         metadata = get_metadata()
         domain = None
-        direction = None
         sender = None
 
         plaintext_message = get_plaintext_message()

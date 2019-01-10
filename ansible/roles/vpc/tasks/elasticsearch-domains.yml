@@ -10,10 +10,12 @@
     template_parameters:
       EbsVolumeSize:              "{{aws.es.xgemail_elasticsearch_domain.ebs_volume_size}}"
       ElasticsearchVersion:       "{{aws.es.xgemail_elasticsearch_domain.es_version}}"
+      EncryptionAtRest:           "{{aws.es.xgemail_elasticsearch_domain.encryption_at_rest}}"
       Environment:                "{{account.name}}"
       EsName:                     "{{aws.es.xgemail_elasticsearch_domain.es_name}}"
       HopperIpAccess:             "{{hopper_public_ip}}"
       HostedZoneName:             "{{hostedzone}}."
+      KmsKeyId:                   "{{storage_kms_key_id}}"
       MasterNodeType:             "{{aws.es.xgemail_elasticsearch_domain.master_node_type}}"
       NodeType:                   "{{aws.es.xgemail_elasticsearch_domain.node_type}}"
       NumberOfInstances:          "{{aws.es.xgemail_elasticsearch_domain.instance_number}}"

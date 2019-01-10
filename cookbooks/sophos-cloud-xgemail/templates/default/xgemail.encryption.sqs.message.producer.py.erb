@@ -84,8 +84,8 @@ DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 INBOUND_MESSAGE_DIRECTION = "INBOUND"
 OUTBOUND_MESSAGE_DIRECTION = "OUTBOUND"
 
-# Definition of the header "X-Sophos-Deliver-Inbound: True" for the email package
-DELIVER_INBOUND_HEADER = ("X-Sophos-Deliver-Inbound", "True")
+# Definition of the header "X-Sophos-Deliver-Inbound: true" for the email package
+DELIVER_INBOUND_HEADER = ("X-Sophos-Deliver-Inbound", "true")
 
 awshandler = AwsHandler(AWS_REGION)
 
@@ -211,6 +211,80 @@ def get_submit_bucket_name(direction):
       return CUSTOMER_SUBMIT_BUCKET_NAME
     else:
       return SUBMIT_BUCKET_NAME
+
+# uploads message history parent file to message history bucket
+def upload_msg_history_to_s3(s3_file_path, expires, metadata):
+    try:
+        msg_history_file_path = messagehistoryformatter.get_s3_msg_history_path(
+            s3_file_path
+        )
+        logger.info("Processing message history [{0}]".format(msg_history_file_path))
+
+        #TODO: Encrypt msg history object after V1
+
+        # metadata_magic_bytes, schema_version, nonce_length, gzip_metadata_json):
+        formatted_msg_history = messagehistoryformatter.get_formatted_msg_history(
+            gziputils.gzip_data(
+                json.dumps(metadata.get_metadata_json())
+            )
+        )
+
+        # upload msg history to message history bucket
+        upload_to_s3(
+            MSG_HISTORY_BUCKET_NAME,
+            msg_history_file_path,
+            formatted_msg_history,
+            expires
+        )
+
+        logger.info("Uploaded message history to S3 [{0}]".format(msg_history_file_path))
+
+    except Exception as e:
+        logger.exception("Failed in uploading message history to S3 [{0}]".format(e))
+        exit(EX_TEMPFAIL)
+
+
+# Send an accepted message history event to msg history SQS
+def prepare_msg_history_event(s3_file_path, metadata, sqs_message, direction, sender):
+    try:
+        # create a message history event object
+        msg_history_event = MessageHistoryEvent(
+            metadata.schema_version,
+            s3_file_path,
+            metadata.accepting_server_ip,
+            metadata.queue_id,
+            sqs_message.akm_key,
+            sqs_message.nonce,
+            sqs_message.message_key,
+            datetime.utcnow().strftime(DATETIME_FORMAT),
+            MESSAGE_HISTORY_ACCEPTED_EVENT,
+            MESSAGE_HISTORY_UNKNOWN_DESIGNATION,
+            None,
+            metadata.recipients,
+            False,
+            direction,
+            sender
+        )
+
+        return msg_history_event
+
+    except Exception as e:
+        logger.exception("Failed in uploading message history event to SQS [{0}]".format(e))
+        exit(EX_TEMPFAIL)
+
+def send_msg_history_sqs_event(sqs_history_json):
+    try:
+        logger.info("Processing message history event SQS job [{0}]".format(sqs_history_json))
+        logger.info("Added message history event SQS job response [{0}]".format
+            (add_to_sqs(
+            MSG_HISTORY_SQS_URL,
+            sqs_history_json)
+        )
+        )
+
+    except Exception as e:
+        logger.exception("Failed in uploading message processing SQS job [{0}]".format(e))
+        exit(EX_TEMPFAIL)
 
 # sends msg processing sqs messages to sqs
 def send_msg_processing_sqs_message(sqs_message_json, direction, customer_id = None):
@@ -341,6 +415,30 @@ def upload_documents(metadata, compressed_message, s3_file_path, direction):
         direction
     )
 
+    if should_upload_msg_history(direction):
+        upload_msg_history_to_s3(
+          s3_file_path,
+          expires,
+          metadata
+        )
+
+
+def should_upload_msg_history(direction):
+    if 'ENCRYPTION' != SUBMIT_TYPE:
+        return True
+    elif INBOUND_MESSAGE_DIRECTION == direction:
+        return True
+    else:
+        return False
+
+
+def get_submit_message_type_for_encryption(direction):
+    if direction == OUTBOUND_MESSAGE_DIRECTION:
+        return SQS_MESSAGE_SUBMIT_TYPE_OUTBOUND
+    else:
+        return SQS_MESSAGE_SUBMIT_TYPE_INBOUND
+
+
 def base_policy_flow(metadata, direction, domain, sender, message):
     queue_id = metadata.get_queue_id()
 
@@ -351,6 +449,13 @@ def base_policy_flow(metadata, direction, domain, sender, message):
         queue_id,
         domain
     )
+
+    if 'ENCRYPTION' == SUBMIT_TYPE:
+      s3_file_path = formatterutils.get_s3_file_path(tmp_file_path, '-ENCR')
+      sqs_message_submit_type = get_submit_message_type_for_encryption(direction)
+    else:
+      s3_file_path = tmp_file_path
+      sqs_message_submit_type = SUBMIT_TYPE
 
     # create a sqs object
     sqs_message = SqsMessage(
@@ -375,6 +480,21 @@ def base_policy_flow(metadata, direction, domain, sender, message):
         sqs_message.get_sqs_json(),
         direction
     )
+
+    if should_upload_msg_history(direction):
+
+        sqs_history = prepare_msg_history_event(
+          s3_file_path,
+          metadata,
+          sqs_message,
+          direction,
+          sender
+         )
+
+        send_msg_history_sqs_event(
+          sqs_history.get_sqs_json()
+         )
+
 
 def get_direction(message):
     direction = OUTBOUND_MESSAGE_DIRECTION
