@@ -23,7 +23,6 @@
       DeployMinInstancesInService:          "{{aws.asg.is.as_min_service}}"
       Environment:                          "{{account.name}}"
       HealthCheckGracePeriod:               "{{aws.asg.is.health_check_grace_period}}"
-      HealthCheckType:                      "ELB"
       InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.XgemailInternetSubmitInstanceProfile}}"
       InstanceType:                         "{{aws.asg.is.instance_size}}"
       KeyName:                              "public-{{account.region}}"
