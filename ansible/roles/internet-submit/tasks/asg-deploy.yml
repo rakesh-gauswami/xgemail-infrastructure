@@ -6,7 +6,7 @@
     state: present
     region:  "{{account.region}}"
     disable_rollback: no
-    template: "{{template.ec2.asg.as_submit_delivery_template}}"
+    template: "{{template.ec2.asg.as_internet_submit_template}}"
     template_parameters:
       AesDecryptionKey:                     "{{aes_decryption_key}}"
       AlarmTopicArn:                        "{{sns.arn_prefix}}{{sns.alarm_sns_topic}}"
@@ -29,7 +29,6 @@
       KeyName:                              "public-{{account.region}}"
       LifecycleHookName:                    "{{aws.asg.is.lifecycle_hook_name}}"
       LoadBalancerName:                     "{{elb_stack_output.stack_outputs.LoadBalancerId}}"
-      PublicIpAddressEnabled:               "true"
       S3CookbookRepositoryURL:              "//cloud-{{account.name}}-templates/{{build.branch}}/xgemail-infrastructure/cookbooks.enc"
       ScaleInOnWeekends:                    "{{weekend_scale_down}}"
       ScaleInCron:                          "{{cron_scale_down}}"
@@ -41,7 +40,7 @@
       Vpc:                                  "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.Vpc}}"
       VpcZoneIdentifiers:                   "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PublicSubnetA}},{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PublicSubnetB}},{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PublicSubnetC}}"
       VpcName:                              "{{vpc.cloud_email.name}}"
-      XgemailBucketName:                    "{{s3.submit_bucket}}"
+      XgemailBucketName:                    "{{s3.internet_submit_bucket}}"
       XgemailMinSizeDataGB:                 "{{xgemail_size_data_gb}}"
       XgemailMsgHistoryBucketName:          "{{s3.msg_history_bucket}}"
       XgemailMsgHistoryQueueUrl:            "{{sqs.url_prefix}}{{sqs.msg_history_sqs_queue}}"
