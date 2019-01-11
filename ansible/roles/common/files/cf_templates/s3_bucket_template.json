@@ -188,7 +188,46 @@
             "Type": "String",
             "AllowedValues": [ "Enabled", "Suspended", "Ignore" ],
             "Default": "Ignore"
+        },
+        "LambdaNotificationEvent": {
+            "Description": "The S3 bucket event for which to invoke the Lambda function.",
+            "Type": "String",
+            "Default": "s3:ObjectCreated:*",
+            "AllowedValues": [
+                "s3:ObjectCreated:*",
+                "s3:ObjectCreated:Put",
+                "s3:ObjectCreated:Post",
+                "s3:ObjectCreated:Copy",
+                "s3:ObjectCreated:CompleteMultipartUpload",
+                "s3:ObjectRemoved:*",
+                "s3:ObjectRemoved:Delete",
+                "s3:ObjectRemoved:DeleteMarkerCreated",
+                "s3:ReducedRedundancyLostObject"
+            ]
+        },
+
+        "LambdaNotificationFilterName": {
+            "Description": "Whether the filter matches the prefix or suffix of object key names.",
+            "Type": "String",
+            "Default": "prefix",
+            "AllowedValues": [
+                "prefix",
+                "suffix"
+            ]
+        },
+
+        "LambdaNotificationFilterValue": {
+            "Description": "The value that the filter searches for in object key names.",
+            "Type": "String",
+            "Default": ""
+        },
+
+        "LambdaNotificationFunctionArn": {
+            "Description": "The ARN of the Lambda function that S3 invokes when the specified event type occurs.",
+            "Type": "String",
+            "Default": ""
         }
+
     },
     "Mappings": {
 
@@ -266,6 +305,8 @@
         },
         "EnableElbGlacierTransition": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "ElbGlacierTransitionInDays"},"0"]}]},
         "EnableGlacierTransition": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "GlacierTransitionInDays"},"0"]}]},
+        "EnableLambdaNotification": { "Fn::Not": [{ "Fn::Equals": [ { "Ref": "LambdaNotificationFunctionArn" }, "NO VALUE" ] }] },
+        "EnableLambdaNotificationFilter": { "Fn::Not": [{ "Fn::Equals": [ { "Ref": "LambdaNotificationFilterValue" }, "NO VALUE" ] }] },
         "EnableQueueNotification": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "SQSNotificationQueue"},"NO VALUE"]}]},
         "EnableTopicNotification": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "SNSNotificationTopic"},"NO VALUE"]}]},
         "EnableVersioning": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "VersioningStatus"},"Ignore"]}]},
@@ -386,6 +427,30 @@
                     ]
                 },
                 "NotificationConfiguration": {
+                    "LambdaConfigurations": {
+                        "Fn::If": [
+                            "EnableLambdaNotification",
+                            [{
+                                "Event": { "Ref": "LambdaNotificationEvent" },
+                                "Filter": {
+                                    "Fn::If": [
+                                        "EnableLambdaNotificationFilter",
+                                        {
+                                            "S3Key": {
+                                                "Rules": [{
+                                                    "Name": { "Ref": "LambdaNotificationFilterName" },
+                                                    "Value": { "Ref": "LambdaNotificationFilterValue" }
+                                                }]
+                                            }
+                                        },
+                                        { "Ref": "AWS::NoValue" }
+                                    ]
+                                },
+                                "Function": { "Ref": "LambdaNotificationFunctionArn" }
+                            }],
+                            { "Ref": "AWS::NoValue" }
+                        ]
+                    },
                     "QueueConfigurations": [
                         {
                             "Fn::If": [

@@ -168,7 +168,11 @@ aws:
         S3LifeCycleDelete:                                        "30"
         S3PolicyCreate:                                           "true"
         SubmitBucketPolicy:                                       "true"
+        LambdaNotificationFunctionArn:                            "{{lambda.antispam_data_collection_for_labs_arn}}"
+        LambdaNotificationFilterName:                             "suffix"
+        LambdaNotificationFilterValue:                            "CYREN.HEADER"
         S3PolicyPrincipalList:                                    "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
+
     lambda_bucket:
       stack_name:                                                 "{{stack.s3.lambda_bucket}}"
       template:                                                   "{{template.s3.s3_bucket_template}}"

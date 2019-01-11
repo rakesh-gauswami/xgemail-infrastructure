@@ -43,6 +43,7 @@ lambda:
   eip_monitor_lambda_function:                          "Xgemail-Eip-Monitor"
   eip_rotation_lambda_function:                         "Xgemail-Eip-Rotation"
   instance_terminator_lambda_function:                  "Xgemail-Instance-Terminator"
+  antispam_data_collection_for_labs_arn:                 "arn:aws:lambda:{{account.region}}:{{aws_account_id}}:function:tf-xgemail-antispam-data-collection-{{account.region}}-{{account.name}}-lambda"
 # CloudEmail S3 Bucket Names.
 s3:
   customer_submit_bucket:                               "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-cust-submit"
