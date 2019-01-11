@@ -1,0 +1,952 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+
+    "Description": "S3 Bucket Template for Sophos Cloud VPC.",
+
+    "Metadata": {
+        "Copyright": [
+            "Copyright 2018, Sophos Limited. All rights reserved.",
+            "",
+            "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+            "Sophos Limited and Sophos Group.  All other product and company",
+            "names mentioned are trademarks or registered trademarks of their",
+            "respective owners."
+        ],
+
+        "Comments": [
+            { "Ref": "Description" },
+            ""
+        ]
+    },
+
+    "Parameters": {
+
+        "AllowElbAccessLogs": {
+            "Description": "Should we Allow access logs from the region to write to this bucket",
+            "Type": "String",
+            "AllowedValues": [ "true", "false" ],
+            "Default": "false"
+        },
+
+        "Environment": {
+            "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
+            "Type": "String"
+        },
+
+        "BucketEncryptionKmsKeyId" : {
+            "Description": "KeyId for default bucket encryption policy",
+            "Type": "String",
+            "Default": "NO VALUE"
+        },
+
+        "CloudBillingTagValue": {
+            "Description": "CloudBilling Tag Value for the Resource",
+            "Type": "String",
+            "Default": ""
+        },
+
+        "ElbGlacierTransitionInDays": {
+            "Description": "Number of Days before Transitioning ELB logs to Glacier",
+            "Type": "Number",
+            "MinValue": "0",
+            "MaxValue": "365",
+            "Default": "0"
+        },
+
+        "GlacierTransitionInDays": {
+            "Description": "Number of Days before Transitioning to Glacier",
+            "Type": "Number",
+            "MinValue": "0",
+            "MaxValue": "365",
+            "Default": "0"
+        },
+
+        "LoggingBucket": {
+            "Description": "Is this a logging bucket?",
+            "Type": "String",
+            "AllowedValues": [ "true", "false" ],
+            "Default": "false"
+        },
+
+        "SubmitBucketPolicy": {
+            "Description": "Give Macro Detection team access to the xgemail submit bucket",
+            "Type": "String",
+            "AllowedValues": [ "true", "false" ],
+            "Default": "false"
+        },
+
+        "RequireEncryptionForUploads": {
+            "Description": "Require all objects uploaded to this bucket to be encrypted with the specified sse type or none.",
+            "Type": "String",
+            "AllowedValues": [ "kms", "sse-s3", "none" ],
+            "Default": "none"
+        },
+
+        "S3BucketName": {
+            "Description": "Name of the S3 bucket",
+            "Type": "String",
+            "ConstraintDescription": "S3BucketName must be between 3 and 63 characters in length.",
+            "MinLength": "3",
+            "MaxLength": "63"
+        },
+
+        "S3BucketDestinationName": {
+            "Description": "Name of the destination S3 bucket",
+            "Type": "String",
+            "Default": "NO VALUE"
+        },
+
+        "S3LifeCycleDelete": {
+            "Description": "Specify a number of days to keep files in the bucket, a value of 0 keeps the files stored in the bucket.",
+            "Type": "Number",
+            "MinValue": "0",
+            "MaxValue" : "365",
+            "Default": "0"
+        },
+
+        "S3LifeCycleDeleteMultipartUpload": {
+            "Description": "Specify a number of days to keep multipart uploads available, a value of 0 keeps them available forever.",
+            "Type": "Number",
+            "MinValue": "0",
+            "MaxValue": "365",
+            "Default": "0"
+        },
+
+        "S3LifeCycleDeleteVersioning": {
+            "Description": "Specify a number of days to keep files in the bucket with VersioningStatus enabled or suspended, a value of 0 keeps the files stored in the bucket.",
+            "Type": "Number",
+            "MinValue": "0",
+            "MaxValue" : "365",
+            "Default": "0"
+        },
+
+        "S3PolicyActionList": {
+            "Description": "Comma-delimited list of S3 Object Policy Actions",
+            "Type" : "CommaDelimitedList",
+            "Default": "s3:GetObject, s3:PutObject, s3:RestoreObject"
+        },
+
+        "S3PolicyActionDenyList": {
+            "Description": "Comma-delimited list of S3 Object Policy Actions to deny",
+            "Type" : "CommaDelimitedList",
+            "Default": ""
+        },
+
+        "S3PolicyCreate": {
+            "Description": "Specify true to create a Bucket Policy otherwise specify false",
+            "Type": "String",
+            "AllowedValues": [ "true", "false" ],
+            "Default": "true"
+        },
+
+        "S3PolicyPrincipalList": {
+            "Description": "S3 Bucket Policy Principal ARN or Canonical User ID",
+            "Type" : "CommaDelimitedList",
+            "Default": "arn:aws:iam::############:role/build-system-<account> or canonical user id string"
+        },
+
+        "S3PolicyPrincipalListType": {
+            "Description": "S3 Bucket Policy Principal Type (AWS or CanonicalUser)",
+            "Type" : "String",
+            "Default": "AWS",
+            "AllowedValues": [ "AWS", "CanonicalUser" ]
+        },
+
+        "S3PolicyPrincipalDenyList": {
+            "Description": "S3 Bucket Policy Principal ARN or Canonical User ID",
+            "Type" : "CommaDelimitedList",
+            "Default": "arn:aws:iam::############:role/build-system-<account> or canonical user id string"
+        },
+
+        "S3PolicyPrincipalDenyListType": {
+            "Description": "S3 Bucket Policy Principal Type (AWS or CanonicalUser)",
+            "Type" : "String",
+            "Default": "AWS",
+            "AllowedValues": [ "AWS", "CanonicalUser" ]
+        },
+
+        "S3ReplicationRole": {
+            "Description": "Role to be used for S3 replication",
+            "Type": "String",
+            "Default": "NO VALUE"
+        },
+
+        "SNSNotificationTopic": {
+            "Description": "SNS Topic Notification ARN",
+            "Type": "String",
+            "Default": "NO VALUE"
+        },
+
+        "SQSNotificationQueue": {
+            "Description": "SQS Queue Notification ARN",
+            "Type": "String",
+            "Default": "NO VALUE"
+        },
+
+        "VersioningStatus": {
+            "Description": "Enabled, Suspend or Ignore Versioning",
+            "Type": "String",
+            "AllowedValues": [ "Enabled", "Suspended", "Ignore" ],
+            "Default": "Ignore"
+        },
+        "LambdaNotificationEvent": {
+            "Description": "The S3 bucket event for which to invoke the Lambda function.",
+            "Type": "String",
+            "Default": "s3:ObjectCreated:*",
+            "AllowedValues": [
+                "s3:ObjectCreated:*",
+                "s3:ObjectCreated:Put",
+                "s3:ObjectCreated:Post",
+                "s3:ObjectCreated:Copy",
+                "s3:ObjectCreated:CompleteMultipartUpload",
+                "s3:ObjectRemoved:*",
+                "s3:ObjectRemoved:Delete",
+                "s3:ObjectRemoved:DeleteMarkerCreated",
+                "s3:ReducedRedundancyLostObject"
+            ]
+        },
+
+        "LambdaNotificationFilterName": {
+            "Description": "Whether the filter matches the prefix or suffix of object key names.",
+            "Type": "String",
+            "Default": "prefix",
+            "AllowedValues": [
+                "prefix",
+                "suffix"
+            ]
+        },
+
+        "LambdaNotificationFilterValue": {
+            "Description": "The value that the filter searches for in object key names.",
+            "Type": "String",
+            "Default": ""
+        },
+
+        "LambdaNotificationFunctionArn": {
+            "Description": "The ARN of the Lambda function that S3 invokes when the specified event type occurs.",
+            "Type": "String",
+            "Default": ""
+        }
+
+    },
+    "Mappings": {
+
+        "ElbAccountMapping": {
+            "us-east-1": {
+                "RegionName": "US East (N. Virginia)",
+                "AccountId": "127311923021"
+            },
+            "us-east-2": {
+                "RegionName": "US East (Ohio)",
+                "AccountId": "033677994240"
+            },
+            "us-west-2": {
+                "RegionName": "US West (Oregon)",
+                "AccountId": "797873946194"
+            },
+            "eu-west-1": {
+                "RegionName": "EU (Ireland)",
+                "AccountId": "156460612806"
+            },
+            "eu-central-1": {
+                "RegionName": "EU (Frankfurt)",
+                "AccountId": "054676820928"
+            }
+        }
+    },
+    "Conditions" : {
+        "CreateBucket": { "Fn::Equals" : [ { "Ref" : "LoggingBucket" }, "false" ] },
+        "CreateCloudBillingTag": {
+            "Fn::Not": [
+                { "Fn::Equals": [ { "Ref": "CloudBillingTagValue" }, "" ] }
+            ]
+        },
+        "CreatePolicy": {
+            "Fn::And" : [
+                { "Fn::Equals" : [ { "Ref" : "S3PolicyCreate" }, "true" ] },
+                { "Fn::Equals" : [ { "Ref" : "LoggingBucket" }, "false" ] }
+            ]
+        },
+        "CreateLoggingBucket":
+        {
+            "Fn::Equals" : [ { "Ref" : "LoggingBucket" }, "true" ]
+        },
+        "CreateLoggingPolicy": {
+            "Fn::And" : [
+                { "Fn::Equals" : [ { "Ref" : "S3PolicyCreate" }, "true" ] },
+                { "Fn::Equals" : [ { "Ref" : "LoggingBucket" }, "true" ] }
+            ]
+        },
+        "DenySomeActions": {
+            "Fn::Not": [{
+                "Fn::Equals": [ { "Fn::Join": [ "", { "Ref": "S3PolicyActionDenyList" } ] }, "" ]
+            }]
+        },
+        "EnableLifecycle": {
+            "Fn::Or": [
+                { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "ElbGlacierTransitionInDays"},"0"]}]},
+                { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "GlacierTransitionInDays"},"0"]}]},
+                { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "S3LifeCycleDeleteVersioning"},"0"]}]},
+                { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "S3LifeCycleDelete"},"0"]}]}
+            ]
+        },
+        "EnableElbAccessLogs": {
+            "Fn::Equals" : [ { "Ref" : "AllowElbAccessLogs" }, "true" ]
+        },
+        "EnableExpiration": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "S3LifeCycleDelete"},"0"]}]},
+        "EnableVersioningExpiration": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "S3LifeCycleDeleteVersioning"},"0"]}]},
+        "EnableMultipartUploadExpiration": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "S3LifeCycleDeleteMultipartUpload"},"0"]}]},
+        "EnableLifeCycleExpiration": {
+            "Fn::Or": [
+                { "Condition": "EnableExpiration" },
+                { "Condition": "EnableVersioningExpiration" },
+                { "Condition": "EnableMultipartUploadExpiration" }
+            ]
+        },
+        "EnableElbGlacierTransition": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "ElbGlacierTransitionInDays"},"0"]}]},
+        "EnableGlacierTransition": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "GlacierTransitionInDays"},"0"]}]},
+        "EnableLambdaNotification": { "Fn::Not": [{ "Fn::Equals": [ { "Ref": "LambdaNotificationFunctionArn" }, "NO VALUE" ] }] },
+        "EnableLambdaNotificationFilter": { "Fn::Not": [{ "Fn::Equals": [ { "Ref": "LambdaNotificationFilterValue" }, "NO VALUE" ] }] },
+        "EnableQueueNotification": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "SQSNotificationQueue"},"NO VALUE"]}]},
+        "EnableTopicNotification": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "SNSNotificationTopic"},"NO VALUE"]}]},
+        "EnableVersioning": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "VersioningStatus"},"Ignore"]}]},
+        "EnableReplicationConfiguration": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "S3ReplicationRole"},"NO VALUE"]}]},
+        "HasBucketEncryption": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "BucketEncryptionKmsKeyId"},"NO VALUE"]}]},
+        "RequireKmsEncryptionForUploads": { "Fn::Equals": [ {"Ref": "RequireEncryptionForUploads"}, "kms" ]},
+        "RequireS3EncryptionForUploads": { "Fn::Equals": [ {"Ref": "RequireEncryptionForUploads"}, "sse-s3" ]},
+        "SetPrincipal": { "Fn::Not": [ {"Fn::Equals": [ {"Fn::Select": [0,{ "Ref": "S3PolicyPrincipalList"}]},"arn:aws:iam::############:role/build-system-<account> or canonical user id string"]}]},
+        "UseAWSPolicyPrincipalList": { "Fn::Equals": [ { "Ref": "S3PolicyPrincipalListType" }, "AWS" ]},
+        "UseAWSPolicyPrincipalDenyList": { "Fn::Equals": [ { "Ref": "S3PolicyPrincipalDenyListType" }, "AWS" ]},
+        "IsSubmitBucket": { "Fn::Equals": [ { "Ref": "SubmitBucketPolicy" }, "true" ]}
+    },
+
+    "Resources": {
+        "S3Bucket": {
+            "Condition" : "CreateBucket",
+            "Properties": {
+                "BucketName": { "Ref": "S3BucketName" },
+                "BucketEncryption" : {
+                    "Fn::If": [
+                        "HasBucketEncryption",
+                        {
+                            "ServerSideEncryptionConfiguration": [
+                                {
+                                    "ServerSideEncryptionByDefault": {
+                                        "KMSMasterKeyID" : { "Ref" : "BucketEncryptionKmsKeyId"},
+                                        "SSEAlgorithm" : "aws:kms"
+                                    }
+                                }
+                            ]
+                        },
+                        { "Ref" : "AWS::NoValue" }
+                    ]
+                },
+                "LifecycleConfiguration" : {
+                    "Fn::If": [
+                        "EnableLifecycle",
+                        {
+                            "Rules": [
+                                {
+                                    "Fn::If": [
+                                        "EnableElbGlacierTransition",
+                                        {
+                                            "Id": "elb-logs-glacier-transition",
+                                            "Prefix": "elb-logs/",
+                                            "Status": "Enabled",
+                                            "Transition": {
+                                                "StorageClass": "Glacier",
+                                                "TransitionInDays": { "Ref" : "ElbGlacierTransitionInDays" }
+                                            }
+                                        },
+                                        { "Ref" : "AWS::NoValue" }
+                                    ]
+                                },
+                                {
+                                    "Fn::If": [
+                                        "EnableElbGlacierTransition",
+                                        {
+                                            "Id": "mcs-logs-glacier-transition",
+                                            "Prefix": "mcs-logs/",
+                                            "Status": "Enabled",
+                                            "Transition": {
+                                                "StorageClass": "Glacier",
+                                                "TransitionInDays": { "Ref" : "ElbGlacierTransitionInDays" }
+                                            }
+                                        },
+                                        { "Ref" : "AWS::NoValue" }
+                                    ]
+                                },
+                                {
+                                    "Fn::If": [
+                                        "EnableGlacierTransition",
+                                        {
+                                            "Transition": {
+                                                "StorageClass": "Glacier",
+                                                "TransitionInDays": { "Ref" : "GlacierTransitionInDays" }
+                                            },
+                                            "Status": { "Fn::If": [ "EnableGlacierTransition", "Enabled", "Disabled" ] }
+                                        },
+                                        { "Ref" : "AWS::NoValue" }
+                                    ]
+                                },
+                                {
+                                    "AbortIncompleteMultipartUpload": {
+                                        "Fn::If": [
+                                            "EnableMultipartUploadExpiration",
+                                            {
+                                                "DaysAfterInitiation": { "Ref": "S3LifeCycleDeleteMultipartUpload" }
+                                            },
+                                            { "Ref": "AWS::NoValue" }
+                                        ]
+                                    },
+                                    "ExpirationInDays": {
+                                        "Fn::If": [
+                                            "EnableExpiration",
+                                            { "Ref": "S3LifeCycleDelete" },
+                                            { "Ref": "AWS::NoValue" }
+                                        ]
+                                    },
+                                    "NoncurrentVersionExpirationInDays": {
+                                        "Fn::If": [
+                                            "EnableVersioningExpiration",
+                                            { "Ref": "S3LifeCycleDeleteVersioning" },
+                                            { "Ref": "AWS::NoValue" }
+                                        ]
+                                    },
+                                    "Status" : {
+                                        "Fn::If": [
+                                            "EnableLifeCycleExpiration",
+                                            "Enabled",
+                                            "Disabled"
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        { "Ref" : "AWS::NoValue" }
+                    ]
+                },
+                "NotificationConfiguration": {
+                    "LambdaConfigurations": {
+                        "Fn::If": [
+                            "EnableLambdaNotification",
+                            [{
+                                "Event": { "Ref": "LambdaNotificationEvent" },
+                                "Filter": {
+                                    "Fn::If": [
+                                        "EnableLambdaNotificationFilter",
+                                        {
+                                            "S3Key": {
+                                                "Rules": [{
+                                                    "Name": { "Ref": "LambdaNotificationFilterName" },
+                                                    "Value": { "Ref": "LambdaNotificationFilterValue" }
+                                                }]
+                                            }
+                                        },
+                                        { "Ref": "AWS::NoValue" }
+                                    ]
+                                },
+                                "Function": { "Ref": "LambdaNotificationFunctionArn" }
+                            }],
+                            { "Ref": "AWS::NoValue" }
+                        ]
+                    },
+                    "QueueConfigurations": [
+                        {
+                            "Fn::If": [
+                                "EnableQueueNotification",
+                                {
+                                    "Event": "s3:ObjectCreated:*",
+                                    "Queue": { "Ref" : "SQSNotificationQueue" }
+                                },
+                                { "Ref" : "AWS::NoValue" }
+                            ]
+                        }
+                    ],
+                    "TopicConfigurations": [
+                        {
+                            "Fn::If": [
+                                "EnableTopicNotification",
+                                {
+                                    "Event": "s3:ObjectCreated:*",
+                                    "Topic": { "Ref" : "SNSNotificationTopic" }
+                                },
+                                { "Ref" : "AWS::NoValue" }
+                            ]
+                        }
+                    ]
+                },
+                "ReplicationConfiguration" : {
+                    "Fn::If": [
+                        "EnableReplicationConfiguration",
+                        {
+                            "Role": {"Ref" : "S3ReplicationRole"},
+                            "Rules": [
+                                {
+                                    "Status": "Enabled",
+                                    "Prefix": "",
+                                    "Destination": {
+                                        "Bucket": {
+                                            "Fn::Join": ["", ["arn:aws:s3:::",  {"Ref": "S3BucketDestinationName"}
+                                            ]]
+                                        },
+                                        "StorageClass": "STANDARD"
+                                    }
+                                }
+                            ]
+                        },
+                        { "Ref" : "AWS::NoValue" }
+                    ]
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [ "", [
+                                {
+                                    "Ref": "Environment"
+                                },
+                                "-" ,
+                                {
+                                    "Ref": "AWS::StackName"
+                                }
+                            ] ]
+                        }
+                    },
+                    {
+                        "Fn::If": [
+                            "CreateCloudBillingTag",
+                            {
+                                "Key": "CloudBillingV1",
+                                "Value": { "Ref": "CloudBillingTagValue" }
+                            },
+                            { "Ref": "AWS::NoValue" }
+                        ]
+                    }
+                ],
+                "VersioningConfiguration": {
+                    "Fn::If": [
+                        "EnableVersioning",
+                        { "Status": { "Ref" : "VersioningStatus" } },
+                        { "Ref" : "AWS::NoValue" }
+                    ]
+                }
+            },
+            "Type": "AWS::S3::Bucket"
+        },
+
+        "S3BucketDeleteRule": {
+            "Condition" : "CreateLoggingBucket",
+            "Properties": {
+                "BucketName": { "Ref": "S3BucketName" },
+                "BucketEncryption" : {
+                    "Fn::If": [
+                        "HasBucketEncryption",
+                        {
+                            "ServerSideEncryptionConfiguration": [
+                                {
+                                    "ServerSideEncryptionByDefault": {
+                                        "KMSMasterKeyID" : { "Ref" : "BucketEncryptionKmsKeyId"},
+                                        "SSEAlgorithm" : "aws:kms"
+                                    }
+                                }
+                            ]
+                        },
+                        { "Ref" : "AWS::NoValue" }
+                    ]
+                },
+                "LifecycleConfiguration" : {
+                    "Fn::If": [
+                        "EnableLifecycle",
+                        {
+                            "Rules": [
+                                {
+                                    "Fn::If": [
+                                        "EnableElbGlacierTransition",
+                                        {
+                                            "Id": "elb-logs-glacier-transition",
+                                            "Prefix": "elb-logs/",
+                                            "Status": "Enabled",
+                                            "Transition": {
+                                                "StorageClass": "Glacier",
+                                                "TransitionInDays": { "Ref" : "ElbGlacierTransitionInDays" }
+                                            }
+                                        },
+                                        { "Ref" : "AWS::NoValue" }
+                                    ]
+                                },
+                                {
+                                    "Fn::If": [
+                                        "EnableElbGlacierTransition",
+                                        {
+                                            "Id": "mcs-logs-glacier-transition",
+                                            "Prefix": "mcs-logs/",
+                                            "Status": "Enabled",
+                                            "Transition": {
+                                                "StorageClass": "Glacier",
+                                                "TransitionInDays": { "Ref" : "ElbGlacierTransitionInDays" }
+                                            }
+                                        },
+                                        { "Ref" : "AWS::NoValue" }
+                                    ]
+                                },
+                                {
+                                    "Fn::If": [
+                                        "EnableGlacierTransition",
+                                        {
+                                            "Transition": {
+                                                "StorageClass": "Glacier",
+                                                "TransitionInDays": { "Ref" : "GlacierTransitionInDays" }
+                                            },
+                                            "Status": { "Fn::If": [ "EnableGlacierTransition", "Enabled", "Disabled" ] }
+                                        },
+                                        { "Ref" : "AWS::NoValue" }
+                                    ]
+                                },
+                                {
+                                    "Fn::If": [
+                                        "EnableExpiration",
+                                        {
+                                            "ExpirationInDays" : { "Ref" : "S3LifeCycleDelete" },
+                                            "Status" : { "Fn::If": [ "EnableExpiration", "Enabled", "Disabled" ] }
+                                        },
+                                        { "Ref" : "AWS::NoValue" }
+                                    ]
+                                }
+
+                            ]
+                        },
+                        { "Ref" : "AWS::NoValue" }
+                    ]
+                },
+                "NotificationConfiguration": {
+                    "QueueConfigurations": [
+                        {
+                            "Fn::If": [
+                                "EnableQueueNotification",
+                                {
+                                    "Event": "s3:ObjectCreated:*",
+                                    "Queue": { "Ref" : "SQSNotificationQueue" }
+                                },
+                                { "Ref" : "AWS::NoValue" }
+                            ]
+                        }
+                    ]
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [ "", [
+                                {
+                                    "Ref": "Environment"
+                                },
+                                "-" ,
+                                {
+                                    "Ref": "AWS::StackName"
+                                }
+                            ] ]
+                        }
+                    },
+                    {
+                        "Fn::If": [
+                            "CreateCloudBillingTag",
+                            {
+                                "Key": "CloudBillingV1",
+                                "Value": { "Ref": "CloudBillingTagValue" }
+                            },
+                            { "Ref": "AWS::NoValue" }
+                        ]
+                    }
+                ],
+                "VersioningConfiguration": {
+                    "Fn::If": [
+                        "EnableVersioning",
+                        { "Status": { "Ref" : "VersioningStatus" } },
+                        { "Ref" : "AWS::NoValue" }
+                    ]
+                }
+            },
+            "Type": "AWS::S3::Bucket"
+        },
+
+        "S3BucketPolicy": {
+            "Type": "AWS::S3::BucketPolicy",
+            "Condition" : "CreatePolicy",
+            "Properties": {
+                "Bucket": { "Ref": "S3Bucket" },
+                "PolicyDocument": {
+                    "Statement": [
+                        {
+                            "Fn::If": [
+                                "DenySomeActions",
+                                {
+                                    "Sid": "Deny actions for all users",
+                                    "Action": { "Ref": "S3PolicyActionDenyList" },
+                                    "Effect": "Deny",
+                                    "Resource": {
+                                        "Fn::Join": ["", ["arn:aws:s3:::", {
+                                            "Ref": "S3Bucket"
+                                        } , "/*" ]]
+                                    },
+                                    "Principal": {
+                                        "Fn::If": [
+                                            "UseAWSPolicyPrincipalDenyList",
+                                            { "AWS": { "Ref": "S3PolicyPrincipalDenyList" } },
+                                            { "CanonicalUser": { "Ref": "S3PolicyPrincipalDenyList" } }
+                                        ]
+                                    }
+                                },
+                                { "Ref": "AWS::NoValue" }
+                            ]
+                        },
+                        {
+                            "Fn::If": [
+                                "RequireKmsEncryptionForUploads",
+                                {
+                                    "Sid": "RequireKmsEncryptionForUploads",
+                                    "Action": "s3:PutObject",
+                                    "Effect": "Deny",
+                                    "Resource": {
+                                        "Fn::Join": ["", ["arn:aws:s3:::",{
+                                            "Ref": "S3Bucket"
+                                        }, "/*" ]]
+                                    },
+                                    "Principal": "*",
+                                    "Condition": {
+                                        "StringNotEquals": {
+                                            "s3:x-amz-server-side-encryption":"aws:kms"
+                                        }
+                                    }
+                                },
+                                { "Ref": "AWS::NoValue" }
+                            ]
+                        },
+                        {
+                            "Fn::If": [
+                                "RequireS3EncryptionForUploads",
+                                {
+                                    "Sid": "RequireS3EncryptionForUploads",
+                                    "Action": "s3:PutObject",
+                                    "Effect": "Deny",
+                                    "Resource": {
+                                        "Fn::Join": ["", ["arn:aws:s3:::",{
+                                            "Ref": "S3Bucket"
+                                        }, "/*" ]]
+                                    },
+                                    "Principal": "*",
+                                    "Condition": {
+                                        "StringNotEquals": {
+                                            "s3:x-amz-server-side-encryption":"AES256"
+                                        }
+                                    }
+                                },
+                                { "Ref": "AWS::NoValue" }
+                            ]
+                        },
+                        {
+                            "Fn::If": [
+                                "SetPrincipal",
+                                {
+                                    "Sid": "Allow actions for specific users",
+                                    "Action": { "Ref": "S3PolicyActionList" },
+                                    "Effect": "Allow",
+                                    "Resource": {
+                                        "Fn::Join": ["", ["arn:aws:s3:::", {
+                                            "Ref": "S3Bucket"
+                                        } , "/*" ]]
+                                    },
+                                    "Principal": {
+                                        "Fn::If": [
+                                            "UseAWSPolicyPrincipalList",
+                                            { "AWS": { "Ref": "S3PolicyPrincipalList" } },
+                                            { "CanonicalUser": { "Ref": "S3PolicyPrincipalList" } }
+                                        ]
+                                    }
+                                },
+                                { "Ref": "AWS::NoValue" }
+                                ]
+                        },
+                        {
+                            "Fn::If": [
+                                "IsSubmitBucket",
+                                {
+                                    "Sid": "Allow Macro Detection team access to submit bucket",
+                                    "Action": "s3:ListBucket",
+                                    "Effect": "Allow",
+                                    "Resource": {
+                                        "Fn::Join": ["", ["arn:aws:s3:::", {
+                                            "Ref": "S3Bucket"
+                                        } ]]
+                                    },
+                                    "Principal": {
+                                        "AWS": "arn:aws:iam::459806747212:role/dsml_processing"
+                                    }
+                                },
+                                { "Ref": "AWS::NoValue" }
+                                ]
+                        },
+                        {
+                            "Fn::If": [
+                                "IsSubmitBucket",
+                                {
+                                    "Sid": "Allow Macro Detection team access to submit bucket",
+                                    "Action": "s3:GetObject",
+                                    "Effect": "Allow",
+                                    "Resource": {
+                                        "Fn::Join": ["", ["arn:aws:s3:::", {
+                                            "Ref": "S3Bucket"
+                                        } , "/*" ]]
+                                    },
+                                    "Principal": {
+                                        "AWS": "arn:aws:iam::459806747212:role/dsml_processing"
+                                    }
+                                },
+                                { "Ref": "AWS::NoValue" }
+                                ]
+                        }
+                    ]
+                }
+            }
+       },
+
+        "S3BucketAllowElbLogsPolicy": {
+            "Type": "AWS::S3::BucketPolicy",
+            "Condition": "EnableElbAccessLogs",
+            "Properties": {
+                "Bucket": { "Ref": "S3BucketName" },
+                "PolicyDocument": {
+                    "Statement": [
+                        {
+                            "Sid": "AllowELBsToWriteAccessLogs",
+                            "Action": "s3:PutObject",
+                            "Effect": "Allow",
+                            "Resource": [
+                                {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "arn:aws:s3:::",
+                                            {
+                                                "Ref": "S3BucketName"
+                                            },
+                                            "/elb-logs/*"
+                                        ]
+                                    ]
+                                },
+                                {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "arn:aws:s3:::",
+                                            {
+                                                "Ref": "S3BucketName"
+                                            },
+                                            "/mcs-logs/*"
+                                        ]
+                                    ]
+                                },
+                                {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "arn:aws:s3:::",
+                                            {
+                                                "Ref": "S3BucketName"
+                                            },
+                                            "/elb-logs"
+                                        ]
+                                    ]
+                                },
+                                {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "arn:aws:s3:::",
+                                            {
+                                                "Ref": "S3BucketName"
+                                            },
+                                            "/mcs-logs"
+                                        ]
+                                    ]
+                                }
+                            ],
+                            "Principal": {
+                                "AWS": [
+                                    {
+                                        "Fn::FindInMap": [
+                                            "ElbAccountMapping",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "AccountId"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+
+        "S3BucketPolicyDeleteRule": {
+            "Type": "AWS::S3::BucketPolicy",
+            "Condition" : "CreateLoggingPolicy",
+            "Properties": {
+                "Bucket": { "Ref": "S3BucketDeleteRule" },
+                "PolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": { "Ref": "S3PolicyActionList" },
+                            "Effect": "Allow",
+                            "Resource": {
+                                "Fn::Join": ["", ["arn:aws:s3:::", {
+                                    "Ref": "S3BucketDeleteRule"
+                                } , "/*" ]]
+                            },
+                            "Principal": {
+                                "Fn::If": [
+                                    "UseAWSPolicyPrincipalList",
+                                    { "AWS": { "Ref": "S3PolicyPrincipalList" } },
+                                    { "CanonicalUser": { "Ref": "S3PolicyPrincipalList" } }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    },
+
+    "Outputs": {
+        "S3BucketName": {
+            "Description": "Name of the S3 Bucket",
+            "Value": { "Ref": "S3BucketName"}
+        },
+
+        "S3BucketEncryptionKmsKeyId": {
+            "Description": "Key used for default bucket encryption",
+            "Condition": "HasBucketEncryption",
+            "Value": { "Ref": "BucketEncryptionKmsKeyId"}
+        },
+
+        "S3BucketResourceName": {
+            "Description": "Name of the S3 Bucket Resource",
+            "Condition" : "CreateBucket",
+            "Value": { "Ref": "S3Bucket"}
+        },
+
+        "S3BucketResourceArn": {
+            "Description": "Arn of the S3 Bucket Resource",
+            "Condition" : "CreateBucket",
+            "Value": { "Fn::GetAtt": ["S3Bucket", "Arn"]}
+        },
+
+        "S3BucketResourceName": {
+            "Description": "Name of the S3 Bucket Resource",
+            "Condition" : "CreateLoggingBucket",
+            "Value": { "Ref": "S3BucketDeleteRule"}
+        }
+    }
+}
