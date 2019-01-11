@@ -15,15 +15,6 @@
 
 NODE_TYPE = node['xgemail']['cluster_type']
 
-#Submit tpes to use
-SUBMIT = 'submit'
-INTERNET_SUBMIT = 'internet-submit'
-CUSTOMER_SUBMIT = 'customer-submit'
-
-if NODE_TYPE != SUBMIT && NODE_TYPE != INTERNET_SUBMIT && NODE_TYPE != CUSTOMER_SUBMIT
-  return
-end
-
 INSTANCE_DATA = node['xgemail']['postfix_instance_data'][NODE_TYPE]
 raise "Unsupported node type [#{NODE_TYPE}]" if INSTANCE_DATA.nil?
 
@@ -56,6 +47,12 @@ XGEMAIL_MESSAGE_HISTORY_BUCKET_NAME          = node['xgemail']['msg_history_buck
 XGEMAIL_MESSAGE_HISTORY_QUEUE_URL            = node['xgemail']['msg_history_queue_url']
 XGEMAIL_POLICY_S3_BUCKET_NAME                = node['xgemail']['xgemail_policy_bucket_name']
 POLICY_STORAGE_PATH                          = node['xgemail']['policy_efs_mount_dir']
+
+# TODO Once we retire the old submit instances this logic needs to be removed
+#constants to use
+SUBMIT = 'submit'
+INTERNET_SUBMIT = 'internet-submit'
+CUSTOMER_SUBMIT = 'customer-submit'
 
 # Configs use by sqsmsgproducer
 if NODE_TYPE == SUBMIT or NODE_TYPE == INTERNET_SUBMIT
