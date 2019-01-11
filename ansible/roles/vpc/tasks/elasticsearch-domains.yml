@@ -34,6 +34,36 @@
     msg: "{{xgemail_es_stack.stack_outputs}}"
     verbosity: 2
 
+# Enable AWS Elasticsearch Logging to CloudWatch
+vars:
+  policy_document:
+      Version: 2012-10-17
+      Statement:
+        - Sid: ElasticsearchToCloudWatchErrorLogs
+          Effect: Allow
+          Principal:
+            Service: es.amazonaws.com
+          Action:
+            - logs:PutLogEvents
+            - logs:PutLogEventsBatch
+            - logs:CreateLogStream
+          Resource: "{{xgemail_es_stack.stack_outputs.CloudWatchErrorLogsArn}}"
+
+- name: "Grant Amazon Elasticsearch permissions to write to the ErrorLog log group"
+  command: >
+    aws logs put-resource-policy
+      --policy-name
+      --policy-document {{policy_document | to_json }}
+  register: es_cw_error_log_policy
+
+- name: "Enable Amazon Elasticsearch logging to ErrorLog log group"
+  command: >
+    aws es update-elasticsearch-domain-config
+      --domain-name "{{xgemail_es_stack.stack_outputs.ElasticSearchDomain}}"
+      --log-publishing-options
+      \"ES_APPLICATION_LOGS={CloudWatchLogsLogGroupArn={{xgemail_es_stack.stack_outputs.CloudWatchErrorLogsArn}},Enabled=true}\"
+  register: es_update_log_config
+
 # ToC Elasticsearch Cluster
 - name: "Deploy ToC Elasticsearch Domains {{stack.es.toc_elasticsearch_domain}} to {{account.name}}-{{account.region}}"
   cloudformation:

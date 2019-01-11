@@ -56,6 +56,12 @@
       "Type": "String",
       "Default": ""
     },
+    "LoggingEnabled":{
+      "Description": "Whether the domain should enable logging to CloudWatch.",
+      "Type": "String",
+      "AllowedValues": [ "true", "false"],
+      "Default": "false"
+    },
     "MasterNodeType": {
       "Description": "The compute and memory capacity of the master nodes in the ElasticSearch Domain",
       "Type": "String"
@@ -103,6 +109,14 @@
       "Fn::Equals": [
         {
           "Ref": "EncryptionAtRest"
+        },
+        "true"
+      ]
+    },
+    "EnableLogging": {
+      "Fn::Equals": [
+        {
+          "Ref": "LoggingEnabled"
         },
         "true"
       ]
@@ -206,6 +220,20 @@
       }
     },
 
+    "CloudWatchErrorLogs": {
+      "Type" : "AWS::Logs::LogGroup",
+      "Properties" : {
+        "LogGroupName" : {"Fn::Join": [ "/",
+          [
+            "/aws/elasticsearch",
+            { "Ref": "ElasticSearchDomain" },
+            "ErrorLog"
+          ]
+        ]},
+        "RetentionInDays" : "30"
+      }
+    },
+
     "ElasticSearchDomainRecordSet": {
       "Type": "AWS::Route53::RecordSet",
       "DependsOn": "ElasticSearchDomain",
@@ -253,6 +281,20 @@
   },
 
   "Outputs": {
+    "CloudWatchErrorLogs": {
+      "Description": "CloudWatch Elasticsearch ErrorLog Log Group Name",
+      "Value": { "Ref": "CloudWatchErrorLogs" }
+
+    },
+    "CloudWatchErrorLogsArn": {
+      "Description": "CloudWatch Elasticsearch ErrorLog Log Group Arn",
+      "Value": {
+        "Fn::GetAtt": [
+          "CloudWatchErrorLogs",
+          "Arn"
+        ]
+      }
+    },
     "ElasticSearchDomain": {
       "Description": "ElasticSearchDomain Id",
       "Value": { "Ref": "ElasticSearchDomain" }
