@@ -35,21 +35,20 @@
     verbosity: 2
 
 # Enable AWS Elasticsearch Logging to CloudWatch
-- name: "Apply CloudWatch resource policy for {{xgemail_es_stack.stack_outputs.ElasticSearchDomain}}"
-  vars:
-    policy_document:
-        Version: 2012-10-17
-        Statement:
-          -
-            Sid: ElasticsearchToCloudWatchErrorLogs
-            Effect: Allow
-            Principal:
-              Service: es.amazonaws.com
-            Action:
-              - logs:PutLogEvents
-              - logs:PutLogEventsBatch
-              - logs:CreateLogStream
-            Resource: "{{xgemail_es_stack.stack_outputs.CloudWatchErrorLogsArn}}"
+vars:
+  policy_document:
+      Version: 2012-10-17
+      Statement:
+        -
+          Sid: ElasticsearchToCloudWatchErrorLogs
+          Effect: Allow
+          Principal:
+            Service: es.amazonaws.com
+          Action:
+            - logs:PutLogEvents
+            - logs:PutLogEventsBatch
+            - logs:CreateLogStream
+          Resource: "{{xgemail_es_stack.stack_outputs.CloudWatchErrorLogsArn}}"
 
 - name: "Grant Amazon Elasticsearch permissions to write to the ErrorLog log group"
   command: >
