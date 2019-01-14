@@ -8,9 +8,9 @@
 # names mentioned are trademarks or registered trademarks of their
 # respective owners.
 #
-# Representation of a message attributes
+# Representation of message attributes for scan event
 
-class MessageAttributes:
+class ScanEventAttributes:
     def __init__(self,
                  service,
                  event,
@@ -20,10 +20,10 @@ class MessageAttributes:
         self.version = version
 
     def __str__(self):
-        message_attributes_json = self.get_message_attributes_json()
-        return ', '.join('%s=%s' % (key, value) for (key, value) in message_attributes_json.iteritems())
+        scan_event_attributes_json = self.get_scan_event_attributes_json()
+        return ', '.join('%s=%s' % (key, value) for (key, value) in scan_event_attributes_json.iteritems())
 
-    def get_message_attributes_json(self):
+    def get_scan_event_attributes_json(self):
         return self.__dict__
 
     def get_service(self):
