@@ -4,77 +4,59 @@
 # The variables are organized into namespaces
 aws:
   asg:
-    cd:
-      as_min_size:                                                "1"
-      as_max_size:                                                "6"
-      as_min_service:                                             "1"
-      as_max_batch_size:                                          "1"
-      asg_min_size:                                               [0,0,0,0,0,0,1,1,1,1,1,1]
-      health_check_grace_period:                                  "600"
-      instance_size:                                              "t2.small"
-      lifecycle_hook_name:                                        "{{vpc.cloud_email.name}}-customer-delivery-Terminating-LifeCycleHook"
-      stack_number:                                               [1,2,3,4,5,6,7,8,9,10,11,12]
-      zone_index:                                                 [0,1,2,0,1,2,0,1,2,0,1,2]
-    cs:
-      as_min_size:                                                "1"
-      as_max_size:                                                "3"
-      as_min_service:                                             "1"
-      as_max_batch_size:                                          "1"
-      asg_min_size:                                               [0,0,0,1,1,1]
-      health_check_grace_period:                                  "2100"
-      instance_size:                                              "t2.small"
-      lifecycle_hook_name:                                        "{{vpc.cloud_email.name}}-customer-submit-Terminating-LifeCycleHook"
-      stack_number:                                               [1,2,3,4,5,6]
-      zone_index:                                                 [0,1,2,0,1,2]
-    cx:
-      health_check_grace_period:                                  "600"
-      instance_size:                                              "t2.small"
-      stack_number:                                               [1,2,3]
-      zone_index:                                                 [0,1,2]
-    ed:
-      as_min_size:                                                "1"
-      as_max_size:                                                "3"
-      as_min_service:                                             "1"
-      as_max_batch_size:                                          "1"
-      asg_min_size:                                               [1,1,1]
-      health_check_grace_period:                                  "600"
-      instance_size:                                              "t2.small"
-      lifecycle_hook_name:                                        "{{vpc.cloud_email.name}}-encryption-delivery-Terminating-LifeCycleHook"
-      stack_number:                                               [1,2,3]
-      zone_index:                                                 [0,1,2]
-    es:
-      as_min_size:                                                "1"
-      as_max_size:                                                "3"
-      as_min_service:                                             "1"
-      as_max_batch_size:                                          "1"
-      asg_min_size:                                               [1,1,1]
-      health_check_grace_period:                                  "600"
-      instance_size:                                              "t2.small"
-      lifecycle_hook_name:                                        "{{vpc.cloud_email.name}}-encryption-submit-Terminating-LifeCycleHook"
-      stack_number:                                               [1,2,3]
-      zone_index:                                                 [0,1,2]
-    id:
-      as_min_size:                                                "1"
-      as_max_size:                                                "6"
-      as_min_service:                                             "1"
-      as_max_batch_size:                                          "1"
-      asg_min_size:                                               [0,0,0,0,0,0,1,1,1,1,1,1]
-      health_check_grace_period:                                  "600"
-      instance_size:                                              "t2.small"
-      lifecycle_hook_name:                                        "{{vpc.cloud_email.name}}-internet-delivery-Terminating-LifeCycleHook"
-      stack_number:                                               [1,2,3,4,5,6,7,8,9,10,11,12]
-      zone_index:                                                 [0,1,2,0,1,2,0,1,2,0,1,2]
     is:
       as_min_size:                                                "1"
       as_max_size:                                                "3"
       as_min_service:                                             "1"
       as_max_batch_size:                                          "1"
-      asg_min_size:                                               [0,0,0,1,1,1]
       health_check_grace_period:                                  "1500"
       instance_size:                                              "t2.small"
       lifecycle_hook_name:                                        "{{vpc.cloud_email.name}}-internet-submit-Terminating-LifeCycleHook"
-      stack_number:                                               [1,2,3,4,5,6]
-      zone_index:                                                 [0,1,2,0,1,2]
+    cd:
+      as_min_size:                                                "1"
+      as_max_size:                                                "6"
+      as_min_service:                                             "1"
+      as_max_batch_size:                                          "1"
+      health_check_grace_period:                                  "600"
+      instance_size:                                              "t2.small"
+      lifecycle_hook_name:                                        "{{vpc.cloud_email.name}}-customer-delivery-Terminating-LifeCycleHook"
+    cs:
+      as_min_size:                                                "1"
+      as_max_size:                                                "3"
+      as_min_service:                                             "1"
+      as_max_batch_size:                                          "1"
+      health_check_grace_period:                                  "2100"
+      instance_size:                                              "t2.small"
+      lifecycle_hook_name:                                        "{{vpc.cloud_email.name}}-customer-submit-Terminating-LifeCycleHook"
+    id:
+      as_min_size:                                                "1"
+      as_max_size:                                                "6"
+      as_min_service:                                             "1"
+      as_max_batch_size:                                          "1"
+      health_check_grace_period:                                  "600"
+      instance_size:                                              "t2.small"
+      lifecycle_hook_name:                                        "{{vpc.cloud_email.name}}-internet-delivery-Terminating-LifeCycleHook"
+    es:
+      as_min_size:                                                "1"
+      as_max_size:                                                "3"
+      as_min_service:                                             "1"
+      as_max_batch_size:                                          "1"
+      health_check_grace_period:                                  "600"
+      instance_size:                                              "t2.small"
+      lifecycle_hook_name:                                        "{{vpc.cloud_email.name}}-encryption-submit-Terminating-LifeCycleHook"
+    ed:
+      as_min_size:                                                "1"
+      as_max_size:                                                "3"
+      as_min_service:                                             "1"
+      as_max_batch_size:                                          "1"
+      health_check_grace_period:                                  "600"
+      instance_size:                                              "t2.small"
+      lifecycle_hook_name:                                        "{{vpc.cloud_email.name}}-encryption-delivery-Terminating-LifeCycleHook"
+    cx:
+      health_check_grace_period:                                  "600"
+      instance_size:                                              "t2.small"
+      stack_number:                                               [1,2,3]
+      zone_index:                                                 [0,1,2]
     ix:
       health_check_grace_period:                                  "600"
       instance_size:                                              "t2.small"
@@ -159,13 +141,13 @@ aws:
         S3LifeCycleDelete:                                        "30"
         S3PolicyCreate:                                           "true"
         S3PolicyPrincipalList:                                    "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
-    submit_bucket:
-      stack_name:                                                 "{{stack.s3.submit_bucket}}"
+    internet_submit_bucket:
+      stack_name:                                                 "{{stack.s3.internet_submit_bucket}}"
       template:                                                   "{{template.s3.s3_bucket_template}}"
       template_parameters:
         Environment:                                              "{{account.name}}"
         RequireEncryptionForUploads:                              "sse-s3"
-        S3BucketName:                                             "{{s3.submit_bucket}}"
+        S3BucketName:                                             "{{s3.internet_submit_bucket}}"
         S3LifeCycleDelete:                                        "30"
         S3PolicyCreate:                                           "true"
         SubmitBucketPolicy:                                       "true"
