@@ -457,18 +457,9 @@
           }
         ],
         "LoadBalancerNames": { "Ref": "LoadBalancerName" },
-        "MetricsCollection" : [
-          {
-            "Fn::If": [
-              "EnableDetailedMonitoring",
-              { "Granularity": "1Minute" },
-              { "Ref": "AWS::NoValue" }
-            ]
-          }
-        ],
         "MinSize": { "Ref": "AutoScalingMinSize" },
         "MaxSize": { "Ref": "AutoScalingMaxSize" },
-        "TerminationPolicies": [ "NewestInstance", "Default" ],
+        "TerminationPolicies": [ "Default" ],
         "VPCZoneIdentifier": { "Ref": "VpcZoneIdentifiers" },
         "Tags": [
           {
@@ -525,6 +516,7 @@
         "AutoScalingRollingUpdate": {
           "MaxBatchSize": { "Ref": "DeployMaxBatchSize" },
           "MinInstancesInService": { "Fn::If": ["PreProd", "0", { "Ref": "DeployMinInstancesInService" } ]},
+          "MinSuccessfulInstancesPercent": "50",
           "PauseTime": { "Ref": "DeployTimeout" },
           "SuspendProcesses": [
             "HealthCheck",
