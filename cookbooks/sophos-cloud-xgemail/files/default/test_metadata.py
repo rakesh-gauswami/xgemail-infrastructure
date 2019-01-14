@@ -56,7 +56,8 @@ class MetadataTest(unittest.TestCase):
             "sender_address": "sender@address.com", 
             "recipient_domain": "r-domain.com", 
             "queue_id": "42c6b66mZYz1V", 
-            "sender_ip": "1.2.3.4"
+            "sender_ip": "1.2.3.4",
+            "is_microservice_request": False
         }
         self.assertEquals(
             json.dumps(self.metadata.get_metadata_json(), sort_keys=True), 
