@@ -57,6 +57,7 @@ RELAY_DOMAINS_FILE                           = "/etc/postfix-#{INSTANCE_NAME}/#{
 POLICY_STORAGE_PATH                          = node['xgemail']['policy_efs_mount_dir']
 XGEMAIL_CUSTOMER_SUBMIT_BUCKET_NAME          = node['xgemail']['xgemail_customer_submit_bucket_name']
 XGEMAIL_CUSTOMER_SUBMIT_QUEUE_URL            = node['xgemail']['xgemail_customer_submit_queue_url']
+XGEMAIL_SCAN_EVENTS                          = node['xgemail']['scan_events_sns_topic']
 
 # Configs use by sqsmsgproducer
 if NODE_TYPE == SUBMIT or NODE_TYPE == INTERNET_SUBMIT
@@ -78,6 +79,7 @@ template PRODUCER_SCRIPT_PATH do
       :xgemail_submit_type => XGEMAIL_SUBMIT_TYPE,
       :xgemail_utils_path => XGEMAIL_UTILS_DIR,
       :s3_encryption_algorithm => S3_ENCRYPTION_ALGORITHM,
+      :sns_scan_events_sns_topic => XGEMAIL_SCAN_EVENTS,
       :sqs_msg_producer_aws_region => AWS_REGION,
       :sqs_msg_producer_buffer_size => SQS_MESSAGE_PRODUCER_BUFFER_SIZE,
       :sqs_msg_producer_email_root_dir => SQS_MESSAGE_PRODUCER_EMAIL_ROOT_DIR,
