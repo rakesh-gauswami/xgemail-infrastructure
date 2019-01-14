@@ -26,6 +26,9 @@ MAIL_PIC_RESPONSE_TIMEOUT = <%= @mail_pic_api_response_timeout %>
 MAIL_PIC_API_AUTH = '<%= @mail_pic_api_auth %>'
 CONNECTIONS_BUCKET = '<%= @connections_bucket %>'
 
+ENC_CONFIG_BUCKET = '<%= @policy_bucket %>'
+ENC_CONFIG_KEY = 'config/outbound-relay-control/encryption/'
+
 # logging to syslog setup
 logging.getLogger("botocore").setLevel(logging.WARNING)
 logger = logging.getLogger('cd-transport-updater')
@@ -64,6 +67,22 @@ response = requests.get(
 )
 response.raise_for_status()
 
+# Check if bucket in 'bucket_path' exists or not
+def check_bucket(s3, key_path):
+    try:
+      s3.head_object(Bucket = ENC_CONFIG_BUCKET, Key = key_path)
+      logger.info("key (%s) exists!", key_path)
+      return True
+    except botocore.exceptions.ClientError as e:
+      # If a client error is thrown, then check that it was a 404 error.
+      # If it was a 404 error, then the key does not exist.
+      error_code = int(e.response['Error']['Code'])
+      if error_code == 403:
+          logger.info("Private bucket. Forbidden Access!")
+          return True
+      elif error_code == 404:
+          return False
+
 # Expecting JSON in this form
 #   {
 #     "destination": "10.11.12.13",
@@ -76,7 +95,13 @@ def parse_domain_response(domain_name, destinations_json) :
   port = destination_json['port']
   type = destination_json['type']
 
-  ret_val = domain_name + ' smtp:'
+  s3 = boto3.client('s3')
+  enc_bucket = ENC_CONFIG_KEY + domain_name + '.ENC_CONFIG'
+
+  if (check_bucket(s3, enc_bucket) == True):
+    ret_val = domain_name + ' smtp:'
+  else:
+    ret_val = domain_name + ' smtp_encrypt:'
 
   if (type != 'MX'):
     ret_val += '['
