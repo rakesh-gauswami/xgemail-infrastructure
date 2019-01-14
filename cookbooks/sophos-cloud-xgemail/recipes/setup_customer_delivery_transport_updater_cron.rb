@@ -102,8 +102,8 @@ template CRON_SCRIPT_PATH do
     :transport_filename => TRANSPORT_FILENAME,
     :mail_pic_api_response_timeout => MAIL_PIC_API_RESPONSE_TIMEOUT,
     :mail_pic_api_auth => MAIL_PIC_API_AUTH,
-    :connections_bucket => CONNECTIONS_BUCKET
-    :policy_bucket => POLICY_BUCKET
+    :connections_bucket => CONNECTIONS_BUCKET,
+    :policy_bucket => POLICY_BUCKET,
     :enc_config_key => ENC_CONFIG_KEY
   )
   notifies :run, "execute[#{CRON_SCRIPT_PATH}]", :immediately
