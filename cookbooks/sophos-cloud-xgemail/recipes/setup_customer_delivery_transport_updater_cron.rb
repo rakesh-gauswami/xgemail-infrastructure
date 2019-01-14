@@ -34,7 +34,7 @@ TRANSPORT_FILENAME    = 'transport'
 MAIL_PIC_API_RESPONSE_TIMEOUT = node['xgemail']['mail_pic_apis_response_timeout_seconds']
 MAIL_PIC_API_AUTH     = node['xgemail']['mail_pic_api_auth']
 POLICY_BUCKET         = node['xgemail']['xgemail_policy_bucket_name']
-ENC_CONFIG_KEY        = 'config/outbound-relay-control/encryption/'
+ENC_CONFIG_KEY        = node['xgemail']['enc_config_key']
 
 CONFIGURATION_COMMANDS =
   [
