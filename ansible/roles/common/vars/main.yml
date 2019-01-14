@@ -140,13 +140,13 @@ aws:
         S3LifeCycleDelete:                                        "30"
         S3PolicyCreate:                                           "true"
         S3PolicyPrincipalList:                                    "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
-    submit_bucket:
-      stack_name:                                                 "{{stack.s3.submit_bucket}}"
+    internet_submit_bucket:
+      stack_name:                                                 "{{stack.s3.internet_submit_bucket}}"
       template:                                                   "{{template.s3.s3_bucket_template}}"
       template_parameters:
         Environment:                                              "{{account.name}}"
         RequireEncryptionForUploads:                              "sse-s3"
-        S3BucketName:                                             "{{s3.submit_bucket}}"
+        S3BucketName:                                             "{{s3.internet_submit_bucket}}"
         S3LifeCycleDelete:                                        "30"
         S3PolicyCreate:                                           "true"
         SubmitBucketPolicy:                                       "true"
