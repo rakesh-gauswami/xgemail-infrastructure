@@ -16,6 +16,7 @@
       HopperIpAccess:             "{{hopper_public_ip}}"
       HostedZoneName:             "{{hostedzone}}."
       KmsKeyId:                   "{{storage_kms_key_id}}"
+      LoggingEnabled:             "{{aws.es.xgemail_elasticsearch_domain.logging_enabled}}"
       MasterNodeType:             "{{aws.es.xgemail_elasticsearch_domain.master_node_type}}"
       NodeType:                   "{{aws.es.xgemail_elasticsearch_domain.node_type}}"
       NumberOfInstances:          "{{aws.es.xgemail_elasticsearch_domain.instance_number}}"
@@ -33,6 +34,27 @@
   debug:
     msg: "{{xgemail_es_stack.stack_outputs}}"
     verbosity: 2
+
+# Update awscli to latest version
+- name: "Update awscli to the latest version"
+  command: pip install -U awscli
+
+# Enable AWS Elasticsearch Logging to CloudWatch
+- name: "Grant Amazon Elasticsearch permissions to write to the ErrorLog log group"
+  command: >
+    aws logs put-resource-policy
+      --policy-name AES-cloudemail-es-domain-error-logs
+      --policy-document '{ "Version": "2012-10-17", "Statement": [{ "Sid": "ElasticsearchToCloudWatchErrorLogs", "Effect": "Allow", "Principal": { "Service": "es.amazonaws.com"}, "Action":[ "logs:PutLogEvents"," logs:PutLogEventsBatch","logs:CreateLogStream"],"Resource": "{{xgemail_es_stack.stack_outputs.CloudWatchErrorLogsArn}}"}]}'
+      --region {{account.region}}
+  register: es_cw_error_log_policy
+
+- name: "Enable Amazon Elasticsearch logging to ErrorLog log group"
+  command: >
+    aws es update-elasticsearch-domain-config
+      --domain-name "{{xgemail_es_stack.stack_outputs.ElasticSearchDomain}}"
+      --log-publishing-options "ES_APPLICATION_LOGS={CloudWatchLogsLogGroupArn={{xgemail_es_stack.stack_outputs.CloudWatchErrorLogsArn}},Enabled=true}"
+      --region {{account.region}}
+  register: es_update_log_config
 
 # ToC Elasticsearch Cluster
 - name: "Deploy ToC Elasticsearch Domains {{stack.es.toc_elasticsearch_domain}} to {{account.name}}-{{account.region}}"
