@@ -150,21 +150,15 @@ def get_metadata():
         logger.exception("Failed in preparing metadata [{0}]".format(e))
         exit(EX_TEMPFAIL)
 
-def publish_to_topic(topic_arn, message_json, message_attributes):
-    if message_attributes is not None:
-        attributes_json = {
-            key: {'Type': 'String', 'Value': value} for key, value in message_attributes.get_scan_event_attributes_json.items()
-        }
-        return awshandler.publish_to_sns_topic(
-            topic_arn,
-            json.dumps(message_json),
-            json.dumps(attributes_json)
-        )
-    else:
-        return awshandler.publish_to_sns_topic(
-          topic_arn,
-          json.dumps(message_json)
-        )
+def publish_to_topic(topic_arn, message_json, message_attributes = {}):
+    attributes_json = {
+        key: {'Type': 'String', 'Value': value} for key, value in message_attributes.get_scan_event_attributes_json.items()
+    }
+    return awshandler.publish_to_sns_topic(
+        topic_arn,
+        json.dumps(message_json),
+        json.dumps(attributes_json)
+    )
 
 def add_to_sqs(sqs_url, sqs_json):
     return awshandler.add_to_sqs(
