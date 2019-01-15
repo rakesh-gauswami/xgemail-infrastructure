@@ -34,11 +34,6 @@ raise "Invalid smtpd port for node type [#{NODE_TYPE}]" if SMTPD_PORT.nil?
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_processors_structure'
 
 #constants to use
-SUBMIT = 'submit'
-INTERNET_SUBMIT = 'internet-submit'
-CUSTOMER_SUBMIT = 'customer-submit'
-ENCRYPTION_SUBMIT = 'encryption-submit'
-
 AWS_REGION                                   = node['sophos_cloud']['region']
 MESSAGEPROCESSOR_USER                        = node['xgemail']['sqs_message_processor_user']
 NODE_IP                                      = node['ipaddress']
@@ -66,11 +61,7 @@ XGEMAIL_CUSTOMER_SUBMIT_BUCKET_NAME          = node['xgemail']['xgemail_customer
 XGEMAIL_CUSTOMER_SUBMIT_QUEUE_URL            = node['xgemail']['xgemail_customer_submit_queue_url']
 
 # Configs use by sqsmsgproducer
-if NODE_TYPE == ENCRYPTION_SUBMIT
-  XGEMAIL_SUBMIT_TYPE                   = 'ENCRYPTION'
-else
-  raise "Unsupported node type to setup sqsmsgproducer [#{NODE_TYPE}]"
-end
+XGEMAIL_SUBMIT_TYPE                          = 'ENCRYPTION'
 
 template PRODUCER_SCRIPT_PATH do
   source "#{PRODUCER_SCRIPT}.erb"
@@ -124,19 +115,14 @@ PIPE_COMMAND='pipe ' +
 end
 
 # Activate new service by postfix configs
-if NODE_TYPE == ENCRYPTION_SUBMIT
-  # Update transports to use new pipe service
-  [
-      "default_transport = #{SERVICE_NAME}",
-      "relay_transport = #{SERVICE_NAME}",
-      "#{SERVICE_NAME}_destination_concurrency_limit = #{SUBMIT_DESTINATION_CONCUR_LIMIT}",
-      "#{SERVICE_NAME}_initial_destination_concurrency = #{SUBMIT_DESTINATION_CONCUR_LIMIT}"
-  ].each do | cur |
-    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
-  end
-
-else
-  raise "Unsupported node type to setup postfix config [#{NODE_TYPE}]"
+# Update transports to use new pipe service
+[
+  "default_transport = #{SERVICE_NAME}",
+  "relay_transport = #{SERVICE_NAME}",
+  "#{SERVICE_NAME}_destination_concurrency_limit = #{SUBMIT_DESTINATION_CONCUR_LIMIT}",
+  "#{SERVICE_NAME}_initial_destination_concurrency = #{SUBMIT_DESTINATION_CONCUR_LIMIT}"
+].each do | cur |
+  execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
 end
 
 # Add rsyslog config file to redirect sqsmsgproducer messages to its own log file.
