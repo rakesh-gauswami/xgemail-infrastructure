@@ -4,7 +4,7 @@
 # where that process is using more than 90% cpu.
 
 # If that process is a java process,
-# the java stack trace of the threads of the process are logged to a file.
+# the java stack trace of the threads of the process is logged to a file.
 # In addition, this logs the 5 most active threads of the java process,
 # their pids, how long they have been up and what percentage of cpu
 # they are using.
@@ -12,7 +12,7 @@
 # usage: $ bash java_threads_cpu_percentage_monitor.sh <output_file>
 #
 # Author: Daniel Kwasi Yeboah-Kordieh
-# Copyright: Copyright (c) 1997-2018. All rights reserved.
+# Copyright: Copyright (c) 1997-2019. All rights reserved.
 # Company: Sophos Limited or one of its affiliates.
 
 pushd "/tmp/"
