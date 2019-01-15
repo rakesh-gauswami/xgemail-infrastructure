@@ -25,7 +25,7 @@ time=${CPU[3]}
 command=${CPU[4]}
 
 if [ $(echo "$utilization > 90 " | bc) -eq 1 ]; then
-    echo "Command <$command> with PROCESS ID <$pid> for user <$user> at time <$(date -u)> used cpu <$utilization> and has been up for <$time>" >> $1
+    echo "PROCESS_LOG: Command <$command> with PROCESS ID <$pid> for user <$user> at time <$(date -u)> used cpu <$utilization> and has been up for <$time>" >> $1
     if [ $command == "java" ]; then
       threads=($(top -b -n1 -H | grep 'java' | head -5 | awk '{print $1, $9, $11}'))
       echo "$(jstack -F $pid)" >> $1
@@ -50,11 +50,11 @@ if [ $(echo "$utilization > 90 " | bc) -eq 1 ]; then
       t5_usage=${threads[13]}
       t5_time_up=${threads[14]}
 
-      echo "$pid: Most active thread had pid <$t1_id> with usage <$t1_usage> running for <$t1_time_up>" >> $1
-      echo "$pid: 2nd Most active thread had pid <$t2_id> with usage <$t2_usage> running for <$t2_time_up>" >> $1
-      echo "$pid: 3rd Most active thread had pid <$t3_id> with usage <$t3_usage> running for <$t3_time_up>" >> $1
-      echo "$pid: 4th Most active thread had pid <$t4_id> with usage <$t4_usage> running for <$t4_time_up>" >> $1
-      echo "$pid: 5th Most active thread had pid <$t5_id> with usage <$t5_usage> running for <$t5_time_up>" >> $1
+      echo "THREAD_LOG: $pid: Most active thread had pid <$t1_id> with usage <$t1_usage> running for <$t1_time_up>" >> $1
+      echo "THREAD_LOG: $pid: 2nd Most active thread had pid <$t2_id> with usage <$t2_usage> running for <$t2_time_up>" >> $1
+      echo "THREAD_LOG: $pid: 3rd Most active thread had pid <$t3_id> with usage <$t3_usage> running for <$t3_time_up>" >> $1
+      echo "THREAD_LOG: $pid: 4th Most active thread had pid <$t4_id> with usage <$t4_usage> running for <$t4_time_up>" >> $1
+      echo "THREAD_LOG: $pid: 5th Most active thread had pid <$t5_id> with usage <$t5_usage> running for <$t5_time_up>" >> $1
     fi
 
 
