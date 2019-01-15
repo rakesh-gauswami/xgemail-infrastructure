@@ -17,9 +17,7 @@ class QueueLog:
         'internet-xdelivery': 'INTERNET_XDELIVERY',
         'customer-submit': 'CUSTOMER_SUBMIT',
         'customer-delivery': 'CUSTOMER_DELIVERY',
-        'customer-xdelivery': 'CUSTOMER_XDELIVERY',
-        'delivery': 'CUSTOMER_DELIVERY',
-        'submit': 'INTERNET_SUBMIT'
+        'customer-xdelivery': 'CUSTOMER_XDELIVERY'
     }
 
     def __init__(self,
