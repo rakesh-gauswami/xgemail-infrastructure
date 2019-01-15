@@ -162,6 +162,8 @@ default['xgemail']['sqs_lifecycle_poller_message_retention_period'] = '3600'
 ## Policy and message processors utils
 default['xgemail']['xgemail_utils_files_dir'] = "#{XGEMAIL_FILES_DIR}/utils"
 
+default['xgemail']['enc_config_key'] = 'config/outbound-relay-control/encryption/'
+
 default['xgemail']['temp_failure_code'] = 75
 
 ## SQS Message Processors settings
