@@ -53,6 +53,7 @@
     aws es update-elasticsearch-domain-config
       --domain-name "{{xgemail_es_stack.stack_outputs.ElasticSearchDomain}}"
       --log-publishing-options "ES_APPLICATION_LOGS={CloudWatchLogsLogGroupArn={{xgemail_es_stack.stack_outputs.CloudWatchErrorLogsArn}},Enabled=true}"
+      --region {{account.region}}
   register: es_update_log_config
 
 # ToC Elasticsearch Cluster
