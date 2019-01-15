@@ -1,7 +1,7 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
 
-  "Description": "Sophos Email AutoScaling Group template for Sophos Cloud used for internet-submit EC2 Instances.",
+  "Description": "Sophos Email AutoScaling Group template for Sophos Cloud used for customer-delivery EC2 Instances.",
 
   "Metadata": {
     "Copyright": [
@@ -14,7 +14,7 @@
     ],
 
     "Comments": [
-      "Sophos Email AutoScaling Group template for Sophos Cloud used for internet-submit EC2 Instances."
+      "Sophos Email AutoScaling Group template for Sophos Cloud used for customer-delivery EC2 Instances."
     ]
   },
 
@@ -89,6 +89,18 @@
       "Description": "The amount of time to wait until the Auto Scaling group receives the required number of valid signals.",
       "Type": "String",
       "Default": "PT1H"
+    },
+    "EbsDeleteOnTermination": {
+      "Description": "Indicates whether to delete the volume when the instance is terminated.",
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [ "true", "false" ]
+    },
+    "EbsVolumeType": {
+      "Description": "Indicates whether to delete the volume when the instance is terminated.",
+      "Type": "String",
+      "Default": "gp2",
+      "AllowedValues": [ "gp2", "standard" ]
     },
     "Environment": {
       "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
@@ -193,24 +205,19 @@
       "Type": "String",
       "Default": ""
     },
-    "XgemailPolicyArn" : {
-      "Description" : "ARN for the SNS Topic where XGEMAIL policies are sent",
+    "XgemailMsgHistoryStatusQueueUrl" : {
+      "Description" : "URL for the SQS Queue where Message History delivery status events are sent",
+      "Type" : "String",
+      "Default": ""
+    },
+    "XgemailMsgHistoryStatusSnsArn": {
+      "Description" : "ARN for the SNS Topic where Message History delivery status events are published",
       "Type" : "String",
       "Default": ""
     },
     "XgemailPolicyBucketName" : {
       "Description" : "Name of the S3 Bucket where XGEMAIL policy docs are stored",
       "Type" : "String",
-      "Default": ""
-    },
-    "XgemailPolicyEfsFileSystemId" : {
-      "Description": "The id of the EFS file system used to store policy",
-      "Type" : "String",
-      "Default": ""
-    },
-    "XgemailQueueUrl": {
-      "Description": "URL for the SQS Queue where XGEMAIL messages are sent",
-      "Type": "String",
       "Default": ""
     },
     "XgemailSnsSqsQueueUrl": {
@@ -222,11 +229,6 @@
       "Description": "Service type for the xgemail instance (Defaults to unknown so not to break builds)",
       "Type": "String",
       "Default": "unknown"
-    },
-    "XgemailSubmitServiceQueueUrl" : {
-      "Description" : "URL for the SQS Queue where XGEMAIL submit micro service messages are sent",
-      "Type" : "String",
-      "Default": ""
     },
     "XgemailSxlDbl": {
       "Description": "SXL Domain Blacklist used by Xgemail Submit Servers",
@@ -584,17 +586,15 @@
                     "    \"lifecycle_topic_arn\"                    : \"{{lifecycle_topic_arn}}\",\n",
                     "    \"msg_history_bucket_name\"                : \"{{msg_history_bucket_name}}\",\n",
                     "    \"msg_history_queue_url\"                  : \"{{msg_history_queue_url}}\",\n",
-                    "    \"policy_efs_file_system_id\"              : \"{{policy_efs_file_system_id}}\",\n",
+                    "    \"msg_history_status_queue_url\"           : \"{{msg_history_delivery_status_queue_url}}\",\n",
+                    "    \"msg_history_status_sns_arn\"             : \"{{msg_history_delivery_status_sns_arn}}\",\n",
                     "    \"station_vpc_id\"                         : \"{{station_vpc_id}}\",\n",
                     "    \"station_vpc_name\"                       : \"{{station_vpc_name}}\",\n",
                     "    \"sxl_dbl\"                                : \"{{sxl_dbl}}\",\n",
                     "    \"sxl_rbl\"                                : \"{{sxl_rbl}}\",\n",
                     "    \"xgemail_policy_bucket_name\"             : \"{{xgemail_policy_bucket_name}}\",\n",
                     "    \"xgemail_bucket_name\"                    : \"{{xgemail_bucket_name}}\",\n",
-                    "    \"xgemail_policy_arn\"                     : \"{{xgemail_policy_arn}}\",\n",
-                    "    \"xgemail_service_queue_url\"              : \"{{xgemail_service_queue_url}}\",\n",
-                    "    \"xgemail_sns_sqs_url\"                    : \"{{xgemail_sns_sqs_url}}\",\n",
-                    "    \"xgemail_queue_url\"                      : \"{{xgemail_queue_url}}\"\n",
+                    "    \"xgemail_sns_sqs_url\"                    : \"{{xgemail_sns_sqs_url}}\"\n",
                     "  }\n",
                     "}\n"
                   ]]
@@ -609,7 +609,8 @@
                   "lifecycle_topic_arn":                            { "Ref": "AutoScalingNotificationTopicARN" },
                   "msg_history_bucket_name":                        { "Ref": "XgemailMsgHistoryBucketName" },
                   "msg_history_queue_url":                          { "Ref": "XgemailMsgHistoryQueueUrl" },
-                  "policy_efs_file_system_id":                      { "Ref": "XgemailPolicyEfsFileSystemId" },
+                  "msg_history_delivery_status_queue_url":          { "Ref": "XgemailMsgHistoryStatusQueueUrl" },
+                  "msg_history_delivery_status_sns_arn":            { "Ref": "XgemailMsgHistoryStatusSnsArn"},
                   "region":                                         { "Ref": "AWS::Region" },
                   "stack":                                          { "Ref": "AWS::StackName" },
                   "station_vpc_id":                                 { "Ref": "StationVpcId" },
@@ -619,10 +620,7 @@
                   "vpc_id":                                         { "Ref": "Vpc" },
                   "vpc_name":                                       { "Ref": "VpcName" },
                   "xgemail_bucket_name":                            { "Ref": "XgemailBucketName" },
-                  "xgemail_policy_arn":                             { "Ref": "XgemailPolicyArn" },
                   "xgemail_policy_bucket_name":                     { "Ref": "XgemailPolicyBucketName" },
-                  "xgemail_queue_url":                              { "Ref": "XgemailQueueUrl" },
-                  "xgemail_service_queue_url":                      { "Ref": "XgemailSubmitServiceQueueUrl" },
                   "xgemail_sns_sqs_url":                            { "Ref": "XgemailSnsSqsQueueUrl" }
                 },
                 "mode": "000444",
@@ -781,13 +779,13 @@
           {
             "DeviceName": "/dev/xvdi",
             "Ebs": {
-              "DeleteOnTermination": "false",
+              "DeleteOnTermination": { "Ref": "EbsDeleteOnTermination" },
               "VolumeSize": { "Ref": "XgemailMinSizeDataGB" },
-              "VolumeType": "gp2"
+              "VolumeType": { "Ref": "EbsVolumeType" }
             }
           }
         ],
-        "AssociatePublicIpAddress": "true",
+        "AssociatePublicIpAddress": "false",
         "ImageId": { "Ref": "AmiId" },
         "InstanceType": { "Ref": "InstanceType" },
         "KeyName": { "Ref": "KeyName" },
