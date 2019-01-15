@@ -283,11 +283,13 @@
 
   "Outputs": {
     "CloudWatchErrorLogs": {
+      "Condition": "EnableLogging",
       "Description": "CloudWatch Elasticsearch ErrorLog Log Group Name",
       "Value": { "Ref": "CloudWatchErrorLogs" }
 
     },
     "CloudWatchErrorLogsArn": {
+      "Condition": "EnableLogging",
       "Description": "CloudWatch Elasticsearch ErrorLog Log Group Arn",
       "Value": {
         "Fn::GetAtt": [
