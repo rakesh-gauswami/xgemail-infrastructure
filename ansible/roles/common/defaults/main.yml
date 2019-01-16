@@ -51,7 +51,7 @@ s3:
   msg_stats_bucket:                                     "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-msg-stats"
   policy_bucket:                                        "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-policy"
   quarantine_bucket:                                    "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-quarantine"
-  submit_bucket:                                        "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-submit"
+  internet_submit_bucket:                               "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-submit"
   lambda_bucket:                                        "cloud-{{account.name}}-{{account.region}}-lambda"
   logs_bucket:                                          "logs-sophos-msg-{{account.name}}-{{account.region}}"
 # CloudEmail SQS Queue Names.
@@ -179,7 +179,7 @@ stack:
     msg_stats_bucket:                                   "{{vpc.cloud_email.name}}-XGEMAIL-msg-stats-bucket-S3"
     policy_bucket:                                      "{{vpc.cloud_email.name}}-XGEMAIL-policy-bucket-S3"
     quarantine_bucket:                                  "{{vpc.cloud_email.name}}-XGEMAIL-quarantine-bucket-S3"
-    submit_bucket:                                      "{{vpc.cloud_email.name}}-XGEMAIL-submit-bucket-S3"
+    internet_submit_bucket:                             "{{vpc.cloud_email.name}}-XGEMAIL-submit-bucket-S3"
     lambda_bucket:                                      "{{vpc.cloud_email.name}}-{{account.name}}-{{account.region}}-lambda-bucket-S3"
   sqs:
     lifecycle_sqs_sns:                                  "{{account.name}}-Xgemail-LifeCycleEvents-Processing"
@@ -240,6 +240,9 @@ template:
       sg_xgemail_template:                              "{{tmp_artifacts_dir}}/sg_xgemail_template.json"
     asg:
       bastion:                                          "{{tmp_artifacts_dir}}/as_bastion_template.json"
+      as_customer_delivery_template:                    "{{tmp_artifacts_dir}}/as_customer_delivery_template.json"
+      as_customer_submit_template:                      "{{tmp_artifacts_dir}}/as_customer_submit_template.json"
+      as_internet_submit_template:                      "{{tmp_artifacts_dir}}/as_internet_submit_template.json"
       as_xgemail_instance_template:                     "{{tmp_artifacts_dir}}/as_xgemail_instance_template.json"
       as_submit_delivery_template:                      "{{tmp_artifacts_dir}}/as_submit_delivery_template.json"
       as_xgemail_xdelivery_template:                    "{{tmp_artifacts_dir}}/as_xgemail_xdelivery_template.json"
