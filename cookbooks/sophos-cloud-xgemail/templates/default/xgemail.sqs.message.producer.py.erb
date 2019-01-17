@@ -152,7 +152,7 @@ def get_metadata():
 
 def publish_to_topic(topic_arn, message_json, message_attributes = {}):
     attributes_json = {
-        key: {'Type': 'String', 'Value': value} for key, value in message_attributes.get_scan_event_attributes_json.items()
+        key: {'DataType': 'String', 'StringValue': value} for key, value in message_attributes.get_scan_event_attributes_json.items()
     }
     return awshandler.publish_to_sns_topic(
         topic_arn,
