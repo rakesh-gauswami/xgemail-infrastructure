@@ -16,6 +16,9 @@
 # Company: Sophos Limited or one of its affiliates.
 
 pushd "/tmp/"
+# Obtain info about the process using the most cpu resources.
+# The process using the most resources will be the 8th line of the output of the unix 'top' command.
+# This, hence, retrieves the first 8 lines and of that retrieves the last line
 CPU=($(top -b -n1 | head -8 | tail -1 | awk '{print $1, $9, $2, $11, $12}'))
 
 user=${CPU[2]}
@@ -27,6 +30,8 @@ command=${CPU[4]}
 if [ $(echo "$utilization > 90 " | bc) -eq 1 ]; then
     echo "PROCESS_LOG: Command <$command> with PROCESS ID <$pid> for user <$user> at time <$(date -u)> used cpu <$utilization> and has been up for <$time>" >> $1
     if [ $command == "java" ]; then
+
+      # obtain information about the top 5 java threads using the most cpu resources
       threads=($(top -b -n1 -H | grep 'java' | head -5 | awk '{print $1, $9, $11}'))
       echo "$(jstack -F $pid)" >> $1
 
