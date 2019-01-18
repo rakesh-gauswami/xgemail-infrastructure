@@ -132,30 +132,6 @@
     }
   },
   "Conditions": {
-    "EnableLambdaNotification": {
-      "Fn::Not": [
-        {
-          "Fn::Equals": [
-            {
-              "Ref": "LambdaNotificationFunctionArn"
-            },
-            "NO VALUE"
-          ]
-        }
-      ]
-    },
-    "EnableLambdaNotificationFilter": {
-      "Fn::Not": [
-        {
-          "Fn::Equals": [
-            {
-              "Ref": "LambdaNotificationFilterValue"
-            },
-            "NO VALUE"
-          ]
-        }
-      ]
-    },
     "CreatePolicy": {
       "Fn::Equals": [
         {
@@ -213,46 +189,30 @@
           ]
         },
         "NotificationConfiguration": {
-          "LambdaConfigurations": {
-            "Fn::If": [
-              "EnableLambdaNotification",
-              [
-                {
-                  "Event": {
-                    "Ref": "LambdaNotificationEvent"
-                  },
-                  "Filter": {
-                    "Fn::If": [
-                      "EnableLambdaNotificationFilter",
-                      {
-                        "S3Key": {
-                          "Rules": [
-                            {
-                              "Name": {
-                                "Ref": "LambdaNotificationFilterName"
-                              },
-                              "Value": {
-                                "Ref": "LambdaNotificationFilterValue"
-                              }
-                            }
-                          ]
-                        }
+          "LambdaConfigurations" : [
+            {
+              "Function": {
+                "Ref": "LambdaNotificationFunctionArn"
+              },
+              "Event": {
+                "Ref": "LambdaNotificationEvent"
+              },
+              "Filter" :{
+                "S3Key": {
+                  "Rules": [
+                    {
+                      "Name": {
+                        "Ref": "LambdaNotificationFilterName"
                       },
-                      {
-                        "Ref": "AWS::NoValue"
+                      "Value": {
+                        "Ref": "LambdaNotificationFilterValue"
                       }
-                    ]
-                  },
-                  "Function": {
-                    "Ref": "LambdaNotificationFunctionArn"
-                  }
+                    }
+                  ]
                 }
-              ],
-              {
-                "Ref": "AWS::NoValue"
               }
-            ]
-          }
+            }
+          ]
         },
         "Tags": [
           {
@@ -274,7 +234,6 @@
         ]
       }
     },
-
     "S3BucketPolicy": {
       "Type": "AWS::S3::BucketPolicy",
       "Condition" : "CreatePolicy",
@@ -416,7 +375,6 @@
         }
       }
     }
-
   },
 
   "Outputs": {
