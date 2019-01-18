@@ -33,8 +33,8 @@ def main():
 
     failed = False
     for path in paths:
-        #TODO: This file exceeds the maximum length of 51,200 bytes. Implement a way to include this in the check
-        if 'roles_xgemail_template.json' | 'sg_xgemail_template.json' in path:
+        # TODO: This file exceeds the maximum length of 51,200 bytes. Implement a way to include this in the check
+        if 'roles_xgemail_template.json' in path or 'sg_xgemail_template.json' in path:
             continue
         if not check_cloudformation(path):
             failed = True
