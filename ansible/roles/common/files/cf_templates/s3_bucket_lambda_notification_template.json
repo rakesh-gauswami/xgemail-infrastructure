@@ -1,6 +1,8 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
+
   "Description": "S3 Bucket Template for Sophos Cloud VPC.",
+
   "Metadata": {
     "Copyright": [
       "Copyright 2019, Sophos Limited. All rights reserved.",
@@ -10,10 +12,12 @@
       "names mentioned are trademarks or registered trademarks of their",
       "respective owners."
     ],
+
     "Comments": [
       "Custom S3Bucket template for Xgemail"
     ]
   },
+
   "Parameters": {
     "Environment": {
       "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
@@ -71,16 +75,28 @@
     "S3PolicyCreate": {
       "Description": "Specify true to create a Bucket Policy otherwise specify false",
       "Type": "String",
-      "AllowedValues": [
-        "true",
-        "false"
-      ],
+      "AllowedValues": [ "true", "false" ],
       "Default": "true"
     },
     "S3PolicyActionList": {
       "Description": "Comma-delimited list of S3 Object Policy Actions",
       "Type": "CommaDelimitedList",
       "Default": "s3:GetObject, s3:PutObject, s3:RestoreObject"
+    },
+    "RequireEncryptionForUploads": {
+      "Description": "Require all objects uploaded to this bucket to be encrypted with the specified sse type or none.",
+      "Type": "String",
+      "AllowedValues": [
+        "kms",
+        "sse-s3",
+        "none"
+      ],
+      "Default": "none"
+    },
+    "S3PolicyPrincipalList": {
+      "Description": "S3 Bucket Policy Principal ARN or Canonical User ID",
+      "Type": "CommaDelimitedList",
+      "Default": "arn:aws:iam::############:role/build-system-<account> or canonical user id string"
     },
     "S3PolicyPrincipalListType": {
       "Description": "S3 Bucket Policy Principal Type (AWS or CanonicalUser)",
@@ -104,6 +120,15 @@
         "AWS",
         "CanonicalUser"
       ]
+    },
+    "SubmitBucketPolicy": {
+      "Description": "Give Macro Detection team access to the xgemail submit bucket",
+      "Type": "String",
+      "AllowedValues": [
+        "true",
+        "false"
+      ],
+      "Default": "false"
     }
   },
   "Conditions": {
@@ -147,23 +172,7 @@
         "sse-s3"
       ]
     },
-    "SetPrincipal": {
-      "Fn::Not": [
-        {
-          "Fn::Equals": [
-            {
-              "Fn::Select": [
-                0,
-                {
-                  "Ref": "S3PolicyPrincipalList"
-                }
-              ]
-            },
-            "arn:aws:iam::############:role/build-system-<account> or canonical user id string"
-          ]
-        }
-      ]
-    },
+    "SetPrincipal": { "Fn::Not": [ {"Fn::Equals": [ {"Fn::Select": [0,{ "Ref": "S3PolicyPrincipalList"}]},"arn:aws:iam::############:role/build-system-<account> or canonical user id string"]}]},
     "IsSubmitBucket": {
       "Fn::Equals": [
         {
@@ -193,15 +202,11 @@
     "S3Bucket": {
       "Type": "AWS::S3::Bucket",
       "Properties": {
-        "BucketName": {
-          "Ref": "S3BucketName"
-        },
+        "BucketName": { "Ref": "S3BucketName" },
         "LifecycleConfiguration": {
           "Rules": [
             {
-              "ExpirationInDays": {
-                "Ref": "S3LifeCycleDelete"
-              }
+              "ExpirationInDays": {  "Ref": "S3LifeCycleDelete"  }
             }
           ]
         },
@@ -252,8 +257,7 @@
             "Key": "Name",
             "Value": {
               "Fn::Join": [
-                "",
-                [
+                "", [
                   {
                     "Ref": "Environment"
                   },
@@ -268,9 +272,10 @@
         ]
       }
     },
+
     "S3BucketPolicy": {
       "Type": "AWS::S3::BucketPolicy",
-      "Condition": "CreatePolicy",
+      "Condition" : "CreatePolicy",
       "Properties": {
         "Bucket": {
           "Ref": "S3Bucket"
@@ -409,18 +414,27 @@
         }
       }
     }
+
   },
+
   "Outputs": {
     "S3BucketName": {
       "Description": "Name of the S3 Bucket",
-      "Value": {
-        "Ref": "S3BucketName"
-      }
+      "Value": { "Ref": "S3BucketName" }
     },
     "S3BucketResourceName": {
       "Description": "Name of the S3 Bucket Resource",
       "Value": {
         "Ref": "S3Bucket"
+      }
+    },
+    "S3BucketResourceArn": {
+      "Description": "Arn of the S3 Bucket Resource",
+      "Value": {
+        "Fn::GetAtt": [
+          "S3Bucket",
+          "Arn"
+        ]
       }
     }
   }
