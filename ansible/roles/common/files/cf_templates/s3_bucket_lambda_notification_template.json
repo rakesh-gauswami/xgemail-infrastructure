@@ -3,7 +3,7 @@
   "Description": "S3 Bucket Template for Sophos Cloud VPC.",
   "Metadata": {
     "Copyright": [
-      "Copyright 2018, Sophos Limited. All rights reserved.",
+      "Copyright 2019, Sophos Limited. All rights reserved.",
       "",
       "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
       "Sophos Limited and Sophos Group.  All other product and company",
@@ -11,10 +11,7 @@
       "respective owners."
     ],
     "Comments": [
-      {
-        "Ref": "Description"
-      },
-      ""
+      "Custom S3Bucket template for Xgemail"
     ]
   },
   "Parameters": {
@@ -22,36 +19,12 @@
       "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
       "Type": "String"
     },
-    "BucketEncryptionKmsKeyId": {
-      "Description": "KeyId for default bucket encryption policy",
-      "Type": "String",
-      "Default": "NO VALUE"
-    },
-    "SubmitBucketPolicy": {
-      "Description": "Give Macro Detection team access to the xgemail submit bucket",
-      "Type": "String",
-      "AllowedValues": [
-        "true",
-        "false"
-      ],
-      "Default": "false"
-    },
-    "RequireEncryptionForUploads": {
-      "Description": "Require all objects uploaded to this bucket to be encrypted with the specified sse type or none.",
-      "Type": "String",
-      "AllowedValues": [
-        "kms",
-        "sse-s3",
-        "none"
-      ],
-      "Default": "none"
-    },
     "S3BucketName": {
       "Description": "Name of the S3 bucket",
       "Type": "String",
       "ConstraintDescription": "S3BucketName must be between 3 and 63 characters in length.",
-      "MinLength": "3",
-      "MaxLength": "63"
+      "MinLength": 3,
+      "MaxLength": 63
     },
     "S3LifeCycleDelete": {
       "Description": "Specify a number of days to keep files in the bucket, a value of 0 keeps the files stored in the bucket.",
@@ -59,58 +32,6 @@
       "MinValue": "0",
       "MaxValue": "365",
       "Default": "0"
-    },
-    "S3LifeCycleDeleteMultipartUpload": {
-      "Description": "Specify a number of days to keep multipart uploads available, a value of 0 keeps them available forever.",
-      "Type": "Number",
-      "MinValue": "0",
-      "MaxValue": "365",
-      "Default": "0"
-    },
-    "S3LifeCycleDeleteVersioning": {
-      "Description": "Specify a number of days to keep files in the bucket with VersioningStatus enabled or suspended, a value of 0 keeps the files stored in the bucket.",
-      "Type": "Number",
-      "MinValue": "0",
-      "MaxValue": "365",
-      "Default": "0"
-    },
-    "S3PolicyActionList": {
-      "Description": "Comma-delimited list of S3 Object Policy Actions",
-      "Type": "CommaDelimitedList",
-      "Default": "s3:GetObject, s3:PutObject, s3:RestoreObject"
-    },
-    "S3PolicyActionDenyList": {
-      "Description": "Comma-delimited list of S3 Object Policy Actions to deny",
-      "Type": "CommaDelimitedList",
-      "Default": ""
-    },
-    "S3PolicyPrincipalList": {
-      "Description": "S3 Bucket Policy Principal ARN or Canonical User ID",
-      "Type": "CommaDelimitedList",
-      "Default": "arn:aws:iam::############:role/build-system-<account> or canonical user id string"
-    },
-    "S3PolicyPrincipalListType": {
-      "Description": "S3 Bucket Policy Principal Type (AWS or CanonicalUser)",
-      "Type": "String",
-      "Default": "AWS",
-      "AllowedValues": [
-        "AWS",
-        "CanonicalUser"
-      ]
-    },
-    "S3PolicyPrincipalDenyList": {
-      "Description": "S3 Bucket Policy Principal ARN or Canonical User ID",
-      "Type": "CommaDelimitedList",
-      "Default": "arn:aws:iam::############:role/build-system-<account> or canonical user id string"
-    },
-    "S3PolicyPrincipalDenyListType": {
-      "Description": "S3 Bucket Policy Principal Type (AWS or CanonicalUser)",
-      "Type": "String",
-      "Default": "AWS",
-      "AllowedValues": [
-        "AWS",
-        "CanonicalUser"
-      ]
     },
     "LambdaNotificationEvent": {
       "Description": "The S3 bucket event for which to invoke the Lambda function.",
@@ -150,105 +71,42 @@
     "S3PolicyCreate": {
       "Description": "Specify true to create a Bucket Policy otherwise specify false",
       "Type": "String",
-      "AllowedValues": [ "true", "false" ],
+      "AllowedValues": [
+        "true",
+        "false"
+      ],
       "Default": "true"
+    },
+    "S3PolicyActionList": {
+      "Description": "Comma-delimited list of S3 Object Policy Actions",
+      "Type": "CommaDelimitedList",
+      "Default": "s3:GetObject, s3:PutObject, s3:RestoreObject"
+    },
+    "S3PolicyPrincipalListType": {
+      "Description": "S3 Bucket Policy Principal Type (AWS or CanonicalUser)",
+      "Type": "String",
+      "Default": "AWS",
+      "AllowedValues": [
+        "AWS",
+        "CanonicalUser"
+      ]
+    },
+    "S3PolicyPrincipalDenyList": {
+      "Description": "S3 Bucket Policy Principal ARN or Canonical User ID",
+      "Type": "CommaDelimitedList",
+      "Default": "arn:aws:iam::############:role/build-system-<account> or canonical user id string"
+    },
+    "S3PolicyPrincipalDenyListType": {
+      "Description": "S3 Bucket Policy Principal Type (AWS or CanonicalUser)",
+      "Type": "String",
+      "Default": "AWS",
+      "AllowedValues": [
+        "AWS",
+        "CanonicalUser"
+      ]
     }
   },
   "Conditions": {
-    "DenySomeActions": {
-      "Fn::Not": [
-        {
-          "Fn::Equals": [
-            {
-              "Fn::Join": [
-                "",
-                {
-                  "Ref": "S3PolicyActionDenyList"
-                }
-              ]
-            },
-            ""
-          ]
-        }
-      ]
-    },
-    "EnableLifecycle": {
-      "Fn::Or": [
-        {
-          "Fn::Not": [
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "S3LifeCycleDeleteVersioning"
-                },
-                "0"
-              ]
-            }
-          ]
-        },
-        {
-          "Fn::Not": [
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "S3LifeCycleDelete"
-                },
-                "0"
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    "EnableExpiration": {
-      "Fn::Not": [
-        {
-          "Fn::Equals": [
-            {
-              "Ref": "S3LifeCycleDelete"
-            },
-            "0"
-          ]
-        }
-      ]
-    },
-    "EnableVersioningExpiration": {
-      "Fn::Not": [
-        {
-          "Fn::Equals": [
-            {
-              "Ref": "S3LifeCycleDeleteVersioning"
-            },
-            "0"
-          ]
-        }
-      ]
-    },
-    "EnableMultipartUploadExpiration": {
-      "Fn::Not": [
-        {
-          "Fn::Equals": [
-            {
-              "Ref": "S3LifeCycleDeleteMultipartUpload"
-            },
-            "0"
-          ]
-        }
-      ]
-    },
-    "EnableLifeCycleExpiration": {
-      "Fn::Or": [
-        {
-          "Condition": "EnableExpiration"
-        },
-        {
-          "Condition": "EnableVersioningExpiration"
-        },
-        {
-          "Condition": "EnableMultipartUploadExpiration"
-        }
-      ]
-    },
     "EnableLambdaNotification": {
       "Fn::Not": [
         {
@@ -273,24 +131,12 @@
         }
       ]
     },
-    "HasBucketEncryption": {
-      "Fn::Not": [
-        {
-          "Fn::Equals": [
-            {
-              "Ref": "BucketEncryptionKmsKeyId"
-            },
-            "NO VALUE"
-          ]
-        }
-      ]
-    },
-    "RequireKmsEncryptionForUploads": {
+    "CreatePolicy": {
       "Fn::Equals": [
         {
-          "Ref": "RequireEncryptionForUploads"
+          "Ref": "S3PolicyCreate"
         },
-        "kms"
+        "true"
       ]
     },
     "RequireS3EncryptionForUploads": {
@@ -318,6 +164,14 @@
         }
       ]
     },
+    "IsSubmitBucket": {
+      "Fn::Equals": [
+        {
+          "Ref": "SubmitBucketPolicy"
+        },
+        "true"
+      ]
+    },
     "UseAWSPolicyPrincipalList": {
       "Fn::Equals": [
         {
@@ -333,103 +187,21 @@
         },
         "AWS"
       ]
-    },
-    "IsSubmitBucket": {
-      "Fn::Equals": [
-        {
-          "Ref": "SubmitBucketPolicy"
-        },
-        "true"
-      ]
-    },
-    "CreatePolicy": {
-      "Fn::Equals": [
-        {
-          "Ref": "S3PolicyCreate"
-        },
-        "true"
-      ]
     }
   },
   "Resources": {
     "S3Bucket": {
+      "Type": "AWS::S3::Bucket",
       "Properties": {
         "BucketName": {
           "Ref": "S3BucketName"
         },
-        "BucketEncryption": {
-          "Fn::If": [
-            "HasBucketEncryption",
-            {
-              "ServerSideEncryptionConfiguration": [
-                {
-                  "ServerSideEncryptionByDefault": {
-                    "KMSMasterKeyID": {
-                      "Ref": "BucketEncryptionKmsKeyId"
-                    },
-                    "SSEAlgorithm": "aws:kms"
-                  }
-                }
-              ]
-            },
-            {
-              "Ref": "AWS::NoValue"
-            }
-          ]
-        },
         "LifecycleConfiguration": {
-          "Fn::If": [
-            "EnableLifecycle",
+          "Rules": [
             {
-              "Rules": [
-                {
-                  "AbortIncompleteMultipartUpload": {
-                    "Fn::If": [
-                      "EnableMultipartUploadExpiration",
-                      {
-                        "DaysAfterInitiation": {
-                          "Ref": "S3LifeCycleDeleteMultipartUpload"
-                        }
-                      },
-                      {
-                        "Ref": "AWS::NoValue"
-                      }
-                    ]
-                  },
-                  "ExpirationInDays": {
-                    "Fn::If": [
-                      "EnableExpiration",
-                      {
-                        "Ref": "S3LifeCycleDelete"
-                      },
-                      {
-                        "Ref": "AWS::NoValue"
-                      }
-                    ]
-                  },
-                  "NoncurrentVersionExpirationInDays": {
-                    "Fn::If": [
-                      "EnableVersioningExpiration",
-                      {
-                        "Ref": "S3LifeCycleDeleteVersioning"
-                      },
-                      {
-                        "Ref": "AWS::NoValue"
-                      }
-                    ]
-                  },
-                  "Status": {
-                    "Fn::If": [
-                      "EnableLifeCycleExpiration",
-                      "Enabled",
-                      "Disabled"
-                    ]
-                  }
-                }
-              ]
-            },
-            {
-              "Ref": "AWS::NoValue"
+              "ExpirationInDays": {
+                "Ref": "S3LifeCycleDelete"
+              }
             }
           ]
         },
@@ -494,91 +266,17 @@
             }
           }
         ]
-      },
-      "Type": "AWS::S3::Bucket"
+      }
     },
     "S3BucketPolicy": {
       "Type": "AWS::S3::BucketPolicy",
-      "Condition" : "CreatePolicy",
+      "Condition": "CreatePolicy",
       "Properties": {
         "Bucket": {
           "Ref": "S3Bucket"
         },
         "PolicyDocument": {
           "Statement": [
-            {
-              "Fn::If": [
-                "DenySomeActions",
-                {
-                  "Sid": "Deny actions for all users",
-                  "Action": {
-                    "Ref": "S3PolicyActionDenyList"
-                  },
-                  "Effect": "Deny",
-                  "Resource": {
-                    "Fn::Join": [
-                      "",
-                      [
-                        "arn:aws:s3:::",
-                        {
-                          "Ref": "S3Bucket"
-                        },
-                        "/*"
-                      ]
-                    ]
-                  },
-                  "Principal": {
-                    "Fn::If": [
-                      "UseAWSPolicyPrincipalDenyList",
-                      {
-                        "AWS": {
-                          "Ref": "S3PolicyPrincipalDenyList"
-                        }
-                      },
-                      {
-                        "CanonicalUser": {
-                          "Ref": "S3PolicyPrincipalDenyList"
-                        }
-                      }
-                    ]
-                  }
-                },
-                {
-                  "Ref": "AWS::NoValue"
-                }
-              ]
-            },
-            {
-              "Fn::If": [
-                "RequireKmsEncryptionForUploads",
-                {
-                  "Sid": "RequireKmsEncryptionForUploads",
-                  "Action": "s3:PutObject",
-                  "Effect": "Deny",
-                  "Resource": {
-                    "Fn::Join": [
-                      "",
-                      [
-                        "arn:aws:s3:::",
-                        {
-                          "Ref": "S3Bucket"
-                        },
-                        "/*"
-                      ]
-                    ]
-                  },
-                  "Principal": "*",
-                  "Condition": {
-                    "StringNotEquals": {
-                      "s3:x-amz-server-side-encryption": "aws:kms"
-                    }
-                  }
-                },
-                {
-                  "Ref": "AWS::NoValue"
-                }
-              ]
-            },
             {
               "Fn::If": [
                 "RequireS3EncryptionForUploads",
@@ -719,26 +417,10 @@
         "Ref": "S3BucketName"
       }
     },
-    "S3BucketEncryptionKmsKeyId": {
-      "Description": "Key used for default bucket encryption",
-      "Condition": "HasBucketEncryption",
-      "Value": {
-        "Ref": "BucketEncryptionKmsKeyId"
-      }
-    },
     "S3BucketResourceName": {
       "Description": "Name of the S3 Bucket Resource",
       "Value": {
         "Ref": "S3Bucket"
-      }
-    },
-    "S3BucketResourceArn": {
-      "Description": "Arn of the S3 Bucket Resource",
-      "Value": {
-        "Fn::GetAtt": [
-          "S3Bucket",
-          "Arn"
-        ]
       }
     }
   }
