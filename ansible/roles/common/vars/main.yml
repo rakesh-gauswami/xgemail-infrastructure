@@ -145,7 +145,7 @@ aws:
         S3PolicyPrincipalList:                                    "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
     internet_submit_bucket:
       stack_name:                                                 "{{stack.s3.internet_submit_bucket}}"
-      template:                                                   "{{template.s3.s3_bucket_template}}"
+      template:                                                   "{{template.s3.s3_bucket_lambda_notification_template}}"
       template_parameters:
         Environment:                                              "{{account.name}}"
         RequireEncryptionForUploads:                              "sse-s3"
@@ -153,6 +153,9 @@ aws:
         S3LifeCycleDelete:                                        "30"
         S3PolicyCreate:                                           "true"
         SubmitBucketPolicy:                                       "true"
+        LambdaNotificationFunctionArn:                            "{{lambda.arn_prefix}}{{lambda.antispam_data_collection_for_labs_lambda_function}}"
+        LambdaNotificationFilterName:                             "suffix"
+        LambdaNotificationFilterValue:                            "CYREN.HEADER"
         S3PolicyPrincipalList:                                    "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
     lambda_bucket:
       stack_name:                                                 "{{stack.s3.lambda_bucket}}"

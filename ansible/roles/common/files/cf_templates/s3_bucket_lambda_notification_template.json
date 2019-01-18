@@ -1,0 +1,401 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "S3 Bucket Template for Sophos Cloud VPC.",
+
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2019, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ],
+
+    "Comments": [
+      "Custom S3Bucket template for Xgemail"
+    ]
+  },
+
+  "Parameters": {
+    "Environment": {
+      "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
+      "Type": "String"
+    },
+    "S3BucketName": {
+      "Description": "Name of the S3 bucket",
+      "Type": "String",
+      "ConstraintDescription": "S3BucketName must be between 3 and 63 characters in length.",
+      "MinLength": 3,
+      "MaxLength": 63
+    },
+    "S3LifeCycleDelete": {
+      "Description": "Specify a number of days to keep files in the bucket, a value of 0 keeps the files stored in the bucket.",
+      "Type": "Number",
+      "MinValue": "0",
+      "MaxValue": "365",
+      "Default": "0"
+    },
+    "LambdaNotificationEvent": {
+      "Description": "The S3 bucket event for which to invoke the Lambda function.",
+      "Type": "String",
+      "Default": "s3:ObjectCreated:*",
+      "AllowedValues": [
+        "s3:ObjectCreated:*",
+        "s3:ObjectCreated:Put",
+        "s3:ObjectCreated:Post",
+        "s3:ObjectCreated:Copy",
+        "s3:ObjectCreated:CompleteMultipartUpload",
+        "s3:ObjectRemoved:*",
+        "s3:ObjectRemoved:Delete",
+        "s3:ObjectRemoved:DeleteMarkerCreated",
+        "s3:ReducedRedundancyLostObject"
+      ]
+    },
+    "LambdaNotificationFilterName": {
+      "Description": "Whether the filter matches the prefix or suffix of object key names.",
+      "Type": "String",
+      "Default": "prefix",
+      "AllowedValues": [
+        "prefix",
+        "suffix"
+      ]
+    },
+    "LambdaNotificationFilterValue": {
+      "Description": "The value that the filter searches for in object key names.",
+      "Type": "String",
+      "Default": ""
+    },
+    "LambdaNotificationFunctionArn": {
+      "Description": "The ARN of the Lambda function that S3 invokes when the specified event type occurs.",
+      "Type": "String",
+      "Default": ""
+    },
+    "S3PolicyCreate": {
+      "Description": "Specify true to create a Bucket Policy otherwise specify false",
+      "Type": "String",
+      "AllowedValues": [ "true", "false" ],
+      "Default": "true"
+    },
+    "S3PolicyActionList": {
+      "Description": "Comma-delimited list of S3 Object Policy Actions",
+      "Type": "CommaDelimitedList",
+      "Default": "s3:GetObject, s3:PutObject, s3:RestoreObject"
+    },
+    "RequireEncryptionForUploads": {
+      "Description": "Require all objects uploaded to this bucket to be encrypted with the specified sse type or none.",
+      "Type": "String",
+      "AllowedValues": [
+        "kms",
+        "sse-s3",
+        "none"
+      ],
+      "Default": "none"
+    },
+    "S3PolicyPrincipalList": {
+      "Description": "S3 Bucket Policy Principal ARN or Canonical User ID",
+      "Type": "CommaDelimitedList",
+      "Default": "arn:aws:iam::############:role/build-system-<account> or canonical user id string"
+    },
+    "S3PolicyPrincipalListType": {
+      "Description": "S3 Bucket Policy Principal Type (AWS or CanonicalUser)",
+      "Type": "String",
+      "Default": "AWS",
+      "AllowedValues": [
+        "AWS",
+        "CanonicalUser"
+      ]
+    },
+    "S3PolicyPrincipalDenyList": {
+      "Description": "S3 Bucket Policy Principal ARN or Canonical User ID",
+      "Type": "CommaDelimitedList",
+      "Default": "arn:aws:iam::############:role/build-system-<account> or canonical user id string"
+    },
+    "S3PolicyPrincipalDenyListType": {
+      "Description": "S3 Bucket Policy Principal Type (AWS or CanonicalUser)",
+      "Type": "String",
+      "Default": "AWS",
+      "AllowedValues": [
+        "AWS",
+        "CanonicalUser"
+      ]
+    },
+    "SubmitBucketPolicy": {
+      "Description": "Give Macro Detection team access to the xgemail submit bucket",
+      "Type": "String",
+      "AllowedValues": [
+        "true",
+        "false"
+      ],
+      "Default": "false"
+    }
+  },
+  "Conditions": {
+    "CreatePolicy": {
+      "Fn::Equals": [
+        {
+          "Ref": "S3PolicyCreate"
+        },
+        "true"
+      ]
+    },
+    "RequireS3EncryptionForUploads": {
+      "Fn::Equals": [
+        {
+          "Ref": "RequireEncryptionForUploads"
+        },
+        "sse-s3"
+      ]
+    },
+    "SetPrincipal": { "Fn::Not": [ {"Fn::Equals": [ {"Fn::Select": [0,{ "Ref": "S3PolicyPrincipalList"}]},"arn:aws:iam::############:role/build-system-<account> or canonical user id string"]}]},
+    "IsSubmitBucket": {
+      "Fn::Equals": [
+        {
+          "Ref": "SubmitBucketPolicy"
+        },
+        "true"
+      ]
+    },
+    "UseAWSPolicyPrincipalList": {
+      "Fn::Equals": [
+        {
+          "Ref": "S3PolicyPrincipalListType"
+        },
+        "AWS"
+      ]
+    },
+    "UseAWSPolicyPrincipalDenyList": {
+      "Fn::Equals": [
+        {
+          "Ref": "S3PolicyPrincipalDenyListType"
+        },
+        "AWS"
+      ]
+    }
+  },
+  "Resources": {
+    "S3Bucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": { "Ref": "S3BucketName" },
+        "LifecycleConfiguration": {
+          "Rules": [
+            {
+              "ExpirationInDays": {  "Ref": "S3LifeCycleDelete"  },
+              "Status" : "Enabled"
+
+            }
+          ]
+        },
+        "NotificationConfiguration": {
+          "LambdaConfigurations" : [
+            {
+              "Function": {
+                "Ref": "LambdaNotificationFunctionArn"
+              },
+              "Event": {
+                "Ref": "LambdaNotificationEvent"
+              },
+              "Filter" :{
+                "S3Key": {
+                  "Rules": [
+                    {
+                      "Name": {
+                        "Ref": "LambdaNotificationFilterName"
+                      },
+                      "Value": {
+                        "Ref": "LambdaNotificationFilterValue"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "", [
+                  {
+                    "Ref": "Environment"
+                  },
+                  "-",
+                  {
+                    "Ref": "AWS::StackName"
+                  }
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "S3BucketPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Condition" : "CreatePolicy",
+      "Properties": {
+        "Bucket": {
+          "Ref": "S3Bucket"
+        },
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Fn::If": [
+                "RequireS3EncryptionForUploads",
+                {
+                  "Sid": "RequireS3EncryptionForUploads",
+                  "Action": "s3:PutObject",
+                  "Effect": "Deny",
+                  "Resource": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:aws:s3:::",
+                        {
+                          "Ref": "S3Bucket"
+                        },
+                        "/*"
+                      ]
+                    ]
+                  },
+                  "Principal": "*",
+                  "Condition": {
+                    "StringNotEquals": {
+                      "s3:x-amz-server-side-encryption": "AES256"
+                    }
+                  }
+                },
+                {
+                  "Ref": "AWS::NoValue"
+                }
+              ]
+            },
+            {
+              "Fn::If": [
+                "SetPrincipal",
+                {
+                  "Sid": "Allow actions for specific users",
+                  "Action": {
+                    "Ref": "S3PolicyActionList"
+                  },
+                  "Effect": "Allow",
+                  "Resource": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:aws:s3:::",
+                        {
+                          "Ref": "S3Bucket"
+                        },
+                        "/*"
+                      ]
+                    ]
+                  },
+                  "Principal": {
+                    "Fn::If": [
+                      "UseAWSPolicyPrincipalList",
+                      {
+                        "AWS": {
+                          "Ref": "S3PolicyPrincipalList"
+                        }
+                      },
+                      {
+                        "CanonicalUser": {
+                          "Ref": "S3PolicyPrincipalList"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "Ref": "AWS::NoValue"
+                }
+              ]
+            },
+            {
+              "Fn::If": [
+                "IsSubmitBucket",
+                {
+                  "Sid": "Allow Macro Detection team access to submit bucket",
+                  "Action": "s3:ListBucket",
+                  "Effect": "Allow",
+                  "Resource": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:aws:s3:::",
+                        {
+                          "Ref": "S3Bucket"
+                        }
+                      ]
+                    ]
+                  },
+                  "Principal": {
+                    "AWS": "arn:aws:iam::459806747212:role/dsml_processing"
+                  }
+                },
+                {
+                  "Ref": "AWS::NoValue"
+                }
+              ]
+            },
+            {
+              "Fn::If": [
+                "IsSubmitBucket",
+                {
+                  "Sid": "Allow Macro Detection team access to submit bucket",
+                  "Action": "s3:GetObject",
+                  "Effect": "Allow",
+                  "Resource": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:aws:s3:::",
+                        {
+                          "Ref": "S3Bucket"
+                        },
+                        "/*"
+                      ]
+                    ]
+                  },
+                  "Principal": {
+                    "AWS": "arn:aws:iam::459806747212:role/dsml_processing"
+                  }
+                },
+                {
+                  "Ref": "AWS::NoValue"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+
+  "Outputs": {
+    "S3BucketName": {
+      "Description": "Name of the S3 Bucket",
+      "Value": { "Ref": "S3BucketName" }
+    },
+    "S3BucketResourceName": {
+      "Description": "Name of the S3 Bucket Resource",
+      "Value": {
+        "Ref": "S3Bucket"
+      }
+    },
+    "S3BucketResourceArn": {
+      "Description": "Arn of the S3 Bucket Resource",
+      "Value": {
+        "Fn::GetAtt": [
+          "S3Bucket",
+          "Arn"
+        ]
+      }
+    }
+  }
+}
