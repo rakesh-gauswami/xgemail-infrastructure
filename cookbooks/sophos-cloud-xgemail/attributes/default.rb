@@ -124,8 +124,8 @@ default['xgemail']['sxl_dbl_response_codes'] = "127.0.1.[1;3;4;5]"
 # https://wiki.sophos.net/display/NSG/VBSpam+Integration+into+Sophos+Email
 default['xgemail']['smtpd_authorized_xclient_hosts'] = "81.136.243.94"
 
-# Increase Postfix default process limit from default 100 to 200
-default['xgemail']['postfix_default_process_limit'] = 200
+# Increase Postfix default process limit from default 100 to 300
+default['xgemail']['postfix_default_process_limit'] = 300
 
 # Ensure max hops on delivery instances is larger than max hops on submit instances.
 # This ensures that we will reject messages on the submit side rather than having to deal with
