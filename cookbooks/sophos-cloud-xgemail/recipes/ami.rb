@@ -224,6 +224,11 @@ execute 'enable_postfix_service' do
   command 'chkconfig --level 2345 postfix on'
 end
 
+yum_package 'sendmail' do
+  action :remove
+  flush_cache [:before]
+end
+
 # Install Sophos Anti-Virus.
 bash 'install_savi_client' do
   user 'root'
