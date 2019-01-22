@@ -1,7 +1,7 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
 
-  "Description": "Sophos Email AutoScaling Group template for Sophos Cloud used for internet-submit EC2 Instances.",
+  "Description": "Sophos Email AutoScaling Group template for Sophos Cloud used for customer-submit EC2 Instances.",
 
   "Metadata": {
     "Copyright": [
@@ -14,7 +14,7 @@
     ],
 
     "Comments": [
-      "Sophos Email AutoScaling Group template for Sophos Cloud used for internet-submit EC2 Instances."
+      "Sophos Email AutoScaling Group template for Sophos Cloud used for customer-submit EC2 Instances."
     ]
   },
 
@@ -89,6 +89,18 @@
       "Description": "The amount of time to wait until the Auto Scaling group receives the required number of valid signals.",
       "Type": "String",
       "Default": "PT1H"
+    },
+    "EbsDeleteOnTermination": {
+      "Description": "Indicates whether to delete the volume when the instance is terminated.",
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [ "true", "false" ]
+    },
+    "EbsVolumeType": {
+      "Description": "Indicates whether to delete the volume when the instance is terminated.",
+      "Type": "String",
+      "Default": "gp2",
+      "AllowedValues": [ "gp2", "standard" ]
     },
     "Environment": {
       "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
@@ -213,20 +225,10 @@
       "Type": "String",
       "Default": ""
     },
-    "XgemailSnsSqsQueueUrl": {
-      "Description": "URL for the SNS-SQS Queue where XGEMAIL messages are sent",
-      "Type": "String",
-      "Default": ""
-    },
     "XgemailServiceType": {
       "Description": "Service type for the xgemail instance (Defaults to unknown so not to break builds)",
       "Type": "String",
       "Default": "unknown"
-    },
-    "XgemailSubmitServiceQueueUrl" : {
-      "Description" : "URL for the SQS Queue where XGEMAIL submit micro service messages are sent",
-      "Type" : "String",
-      "Default": ""
     },
     "XgemailSxlDbl": {
       "Description": "SXL Domain Blacklist used by Xgemail Submit Servers",
@@ -592,8 +594,6 @@
                     "    \"xgemail_policy_bucket_name\"             : \"{{xgemail_policy_bucket_name}}\",\n",
                     "    \"xgemail_bucket_name\"                    : \"{{xgemail_bucket_name}}\",\n",
                     "    \"xgemail_policy_arn\"                     : \"{{xgemail_policy_arn}}\",\n",
-                    "    \"xgemail_service_queue_url\"              : \"{{xgemail_service_queue_url}}\",\n",
-                    "    \"xgemail_sns_sqs_url\"                    : \"{{xgemail_sns_sqs_url}}\",\n",
                     "    \"xgemail_queue_url\"                      : \"{{xgemail_queue_url}}\"\n",
                     "  }\n",
                     "}\n"
@@ -621,9 +621,7 @@
                   "xgemail_bucket_name":                            { "Ref": "XgemailBucketName" },
                   "xgemail_policy_arn":                             { "Ref": "XgemailPolicyArn" },
                   "xgemail_policy_bucket_name":                     { "Ref": "XgemailPolicyBucketName" },
-                  "xgemail_queue_url":                              { "Ref": "XgemailQueueUrl" },
-                  "xgemail_service_queue_url":                      { "Ref": "XgemailSubmitServiceQueueUrl" },
-                  "xgemail_sns_sqs_url":                            { "Ref": "XgemailSnsSqsQueueUrl" }
+                  "xgemail_queue_url":                              { "Ref": "XgemailQueueUrl" }
                 },
                 "mode": "000444",
                 "owner": "root"
@@ -781,9 +779,9 @@
           {
             "DeviceName": "/dev/xvdi",
             "Ebs": {
-              "DeleteOnTermination": "false",
+              "DeleteOnTermination": { "Ref": "EbsDeleteOnTermination" },
               "VolumeSize": { "Ref": "XgemailMinSizeDataGB" },
-              "VolumeType": "gp2"
+              "VolumeType": { "Ref": "EbsVolumeType" }
             }
           }
         ],
