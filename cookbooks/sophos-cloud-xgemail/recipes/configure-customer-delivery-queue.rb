@@ -39,15 +39,6 @@ SMTP_PORT = XDELIVERY_INSTANCE_DATA[:port]
 
 SMTP_FALLBACK_RELAY = "xdelivery-cloudemail-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com:#{SMTP_PORT}"
 
-HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
-
-file "#{HEADER_CHECKS_PATH}" do
-  content "/^X-Sophos-Enforce-TLS: yes$/i FILTER smtp_encrypt:"
-  mode '0644'
-  owner 'root'
-  group 'root'
-end
-
 # Run an instance of the smtp process that enforces TLS encryption
 [
   "smtp_encrypt/unix = smtp_encrypt unix - - n - - smtp"
@@ -69,8 +60,7 @@ CONFIGURATION_COMMANDS =
     'smtp_tls_ciphers=high',
     'smtp_tls_mandatory_ciphers=high',
     'smtp_tls_loglevel=1',
-    'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache',
-    "header_checks = regexp:#{HEADER_CHECKS_PATH}"
+    'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache'
   ]
 
 CONFIGURATION_COMMANDS.each do | cur |

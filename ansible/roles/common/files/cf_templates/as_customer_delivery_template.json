@@ -1,11 +1,11 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
 
-  "Description": "Sophos Email instance template for Sophos Cloud used for internet-submit customer-submit internet-delivery and customer-delivery.",
+  "Description": "Sophos Email AutoScaling Group template for Sophos Cloud used for customer-delivery EC2 Instances.",
 
   "Metadata": {
     "Copyright": [
-      "Copyright 2018, Sophos Limited. All rights reserved.",
+      "Copyright 2019, Sophos Limited. All rights reserved.",
       "",
       "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
       "Sophos Limited and Sophos Group.  All other product and company",
@@ -14,7 +14,7 @@
     ],
 
     "Comments": [
-      "Sophos Email instance template for Sophos Cloud used for internet-submit customer-submit internet-delivery and customer-delivery.."
+      "Sophos Email AutoScaling Group template for Sophos Cloud used for customer-delivery EC2 Instances."
     ]
   },
 
@@ -110,12 +110,6 @@
       "Description": "The seconds after an instance comes into service that health checks starts.",
       "Type": "Number"
     },
-    "HealthCheckType": {
-      "Description": "The service you want the health status from, Amazon EC2 or Elastic Load Balancer.",
-      "Type": "String",
-      "Default": "ELB",
-      "AllowedValues": [ "EC2", "ELB" ]
-    },
     "InstanceProfile": {
       "Description": "Instance profile for accessing aws resources",
       "Type": "String"
@@ -136,12 +130,6 @@
     "LoadBalancerName": {
       "Description": "Name for the ELB to attach to the Auto Scaling Group",
       "Type": "List<String>"
-    },
-    "PublicIpAddressEnabled": {
-      "Description": "Whether or not we have a public IP address",
-      "Type": "String",
-      "Default": "false",
-      "AllowedValues": [ "false", "true" ]
     },
     "S3CookbookRepositoryURL": {
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
@@ -201,16 +189,6 @@
       "Description": "Name of the S3 Bucket where XGEMAIL messages are sent",
       "Type": "String"
     },
-    "XgemailCustomerSubmitBucketName" : {
-      "Description" : "Name of the S3 Bucket where XGEMAIL messages from the customer-submit are sent",
-      "Type" : "String",
-      "Default": ""
-    },
-    "XgemailCustomerSubmitQueueUrl" : {
-      "Description" : "URL for the SQS Queue where XGEMAIL messages from the customer-submit are sent",
-      "Type" : "String",
-      "Default": ""
-    },
     "XgemailMinSizeDataGB": {
       "Description": "Total GB to reserve for storing data files",
       "Type": "Number",
@@ -237,34 +215,9 @@
       "Type" : "String",
       "Default": ""
     },
-    "XgemailNotificationSnsArn": {
-      "Description" : "ARN for the SNS Topic where notifications are published",
-      "Type" : "String",
-      "Default": ""
-    },
-    "XgemailNotifierQueueUrl" : {
-      "Description" : "URL for the SQS Queue where XGEMAIL messages are sent",
-      "Type" : "String",
-      "Default": ""
-    },
-    "XgemailPolicyArn" : {
-      "Description" : "ARN for the SNS Topic where XGEMAIL policies are sent",
-      "Type" : "String",
-      "Default": ""
-    },
     "XgemailPolicyBucketName" : {
       "Description" : "Name of the S3 Bucket where XGEMAIL policy docs are stored",
       "Type" : "String",
-      "Default": ""
-    },
-    "XgemailPolicyEfsFileSystemId" : {
-      "Description": "The id of the EFS file system used to store policy",
-      "Type" : "String",
-      "Default": ""
-    },
-    "XgemailQueueUrl": {
-      "Description": "URL for the SQS Queue where XGEMAIL messages are sent",
-      "Type": "String",
       "Default": ""
     },
     "XgemailSnsSqsQueueUrl": {
@@ -276,11 +229,6 @@
       "Description": "Service type for the xgemail instance (Defaults to unknown so not to break builds)",
       "Type": "String",
       "Default": "unknown"
-    },
-    "XgemailSubmitServiceQueueUrl" : {
-      "Description" : "URL for the SQS Queue where XGEMAIL submit micro service messages are sent",
-      "Type" : "String",
-      "Default": ""
     },
     "XgemailSxlDbl": {
       "Description": "SXL Domain Blacklist used by Xgemail Submit Servers",
@@ -445,7 +393,7 @@
         "AvailabilityZones": { "Ref": "AvailabilityZones" },
         "Cooldown": "200",
         "HealthCheckGracePeriod": { "Ref": "HealthCheckGracePeriod" },
-        "HealthCheckType": { "Ref": "HealthCheckType" },
+        "HealthCheckType": "ELB",
         "LaunchConfigurationName": { "Ref": "XgemailAutoScalingLaunchConfig" },
         "LifecycleHookSpecificationList" : [
           {
@@ -640,21 +588,13 @@
                     "    \"msg_history_queue_url\"                  : \"{{msg_history_queue_url}}\",\n",
                     "    \"msg_history_status_queue_url\"           : \"{{msg_history_delivery_status_queue_url}}\",\n",
                     "    \"msg_history_status_sns_arn\"             : \"{{msg_history_delivery_status_sns_arn}}\",\n",
-                    "    \"msg_notifier_queue_url\"                 : \"{{msg_notifier_queue_url}}\",\n",
-                    "    \"notification_sns_arn\"                   : \"{{notification_sns_arn}}\",\n",
-                    "    \"policy_efs_file_system_id\"              : \"{{policy_efs_file_system_id}}\",\n",
                     "    \"station_vpc_id\"                         : \"{{station_vpc_id}}\",\n",
                     "    \"station_vpc_name\"                       : \"{{station_vpc_name}}\",\n",
                     "    \"sxl_dbl\"                                : \"{{sxl_dbl}}\",\n",
                     "    \"sxl_rbl\"                                : \"{{sxl_rbl}}\",\n",
                     "    \"xgemail_policy_bucket_name\"             : \"{{xgemail_policy_bucket_name}}\",\n",
                     "    \"xgemail_bucket_name\"                    : \"{{xgemail_bucket_name}}\",\n",
-                    "    \"xgemail_customer_submit_bucket_name\"    : \"{{xgemail_customer_submit_bucket_name}}\",\n",
-                    "    \"xgemail_customer_submit_queue_url\"      : \"{{xgemail_customer_submit_queue_url}}\",\n",
-                    "    \"xgemail_policy_arn\"                     : \"{{xgemail_policy_arn}}\",\n",
-                    "    \"xgemail_service_queue_url\"              : \"{{xgemail_service_queue_url}}\",\n",
-                    "    \"xgemail_sns_sqs_url\"                    : \"{{xgemail_sns_sqs_url}}\",\n",
-                    "    \"xgemail_queue_url\"                      : \"{{xgemail_queue_url}}\"\n",
+                    "    \"xgemail_sns_sqs_url\"                    : \"{{xgemail_sns_sqs_url}}\"\n",
                     "  }\n",
                     "}\n"
                   ]]
@@ -671,9 +611,6 @@
                   "msg_history_queue_url":                          { "Ref": "XgemailMsgHistoryQueueUrl" },
                   "msg_history_delivery_status_queue_url":          { "Ref": "XgemailMsgHistoryStatusQueueUrl" },
                   "msg_history_delivery_status_sns_arn":            { "Ref": "XgemailMsgHistoryStatusSnsArn"},
-                  "msg_notifier_queue_url":                         { "Ref": "XgemailNotifierQueueUrl" },
-                  "notification_sns_arn":                           { "Ref": "XgemailNotificationSnsArn" },
-                  "policy_efs_file_system_id":                      { "Ref": "XgemailPolicyEfsFileSystemId" },
                   "region":                                         { "Ref": "AWS::Region" },
                   "stack":                                          { "Ref": "AWS::StackName" },
                   "station_vpc_id":                                 { "Ref": "StationVpcId" },
@@ -683,12 +620,7 @@
                   "vpc_id":                                         { "Ref": "Vpc" },
                   "vpc_name":                                       { "Ref": "VpcName" },
                   "xgemail_bucket_name":                            { "Ref": "XgemailBucketName" },
-                  "xgemail_customer_submit_bucket_name":            { "Ref": "XgemailCustomerSubmitBucketName" },
-                  "xgemail_customer_submit_queue_url":              { "Ref": "XgemailCustomerSubmitQueueUrl" },
-                  "xgemail_policy_arn":                             { "Ref": "XgemailPolicyArn" },
                   "xgemail_policy_bucket_name":                     { "Ref": "XgemailPolicyBucketName" },
-                  "xgemail_queue_url":                              { "Ref": "XgemailQueueUrl" },
-                  "xgemail_service_queue_url":                      { "Ref": "XgemailSubmitServiceQueueUrl" },
                   "xgemail_sns_sqs_url":                            { "Ref": "XgemailSnsSqsQueueUrl" }
                 },
                 "mode": "000444",
@@ -853,7 +785,7 @@
             }
           }
         ],
-        "AssociatePublicIpAddress": { "Ref": "PublicIpAddressEnabled" },
+        "AssociatePublicIpAddress": "false",
         "ImageId": { "Ref": "AmiId" },
         "InstanceType": { "Ref": "InstanceType" },
         "KeyName": { "Ref": "KeyName" },
@@ -958,6 +890,10 @@
     "Branch": {
       "Description": "Branch we are using so we know for things like ansible",
       "Value": { "Ref": "Branch" }
+    },
+    "BuildVersion": {
+      "Description": "Version of the application from Bamboo",
+      "Value": { "Ref": "BuildVersion" }
     },
     "LaunchConfig": {
       "Description": "Auto Scaling Launch Configuration Name.",
