@@ -27,7 +27,6 @@ raise "Invalid smtpd port for node type [#{NODE_TYPE}]" if SMTPD_PORT.nil?
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_processors_structure'
 
 #constants to use
-SUBMIT = 'submit'
 INTERNET_SUBMIT = 'internet-submit'
 CUSTOMER_SUBMIT = 'customer-submit'
 ENCRYPTION_SUBMIT = 'encryption-submit'
