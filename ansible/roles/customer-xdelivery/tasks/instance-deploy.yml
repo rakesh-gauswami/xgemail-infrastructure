@@ -47,6 +47,7 @@
       XgemailMinSizeDataGB:                 "{{xgemail_size_data_gb}}"
       XgemailMsgHistoryStatusQueueUrl:      "{{sqs.url_prefix}}{{sqs.msg_history_status_sqs_queue_sns_listener}}"
       XgemailMsgHistoryStatusSnsArn:        "{{sns.arn_prefix}}{{sns.msg_history_status_sns_topic}}"
+      XgemailPolicyBucketName:              "{{s3.policy_bucket}}"
       XgemailServiceType:                   "xdelivery"
   with_together:
     - "{{aws.asg.cx.stack_number}}"
