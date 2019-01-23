@@ -6,7 +6,7 @@
     state: present
     region:  "{{account.region}}"
     disable_rollback: no
-    template: "{{template.ec2.asg.as_submit_delivery_template}}"
+    template: "{{template.ec2.asg.as_customer_delivery_template}}"
     template_parameters:
       AesDecryptionKey:                     "{{aes_decryption_key}}"
       AlarmTopicArn:                        "{{sns.arn_prefix}}{{sns.alarm_sns_topic}}"
@@ -23,13 +23,11 @@
       DeployMinInstancesInService:          "{{aws.asg.cd.as_min_service}}"
       Environment:                          "{{account.name}}"
       HealthCheckGracePeriod:               "{{aws.asg.cd.health_check_grace_period}}"
-      HealthCheckType:                      "ELB"
       InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.XgemailCustomerDeliveryInstanceProfile}}"
       InstanceType:                         "{{aws.asg.cd.instance_size}}"
       KeyName:                              "private-{{account.region}}"
       LifecycleHookName:                    "{{aws.asg.cd.lifecycle_hook_name}}"
       LoadBalancerName:                     "{{elb_stack_output.stack_outputs.LoadBalancerId}}"
-      PublicIpAddressEnabled:               "false"
       S3CookbookRepositoryURL:              "//cloud-{{account.name}}-templates/{{build.branch}}/xgemail-infrastructure/cookbooks.enc"
       ScaleInOnWeekends:                    "{{weekend_scale_down}}"
       ScaleInCron:                          "{{cron_scale_down}}"
@@ -47,6 +45,7 @@
       XgemailMsgHistoryQueueUrl:            "{{sqs.url_prefix}}{{sqs.msg_history_sqs_queue}}"
       XgemailMsgHistoryStatusQueueUrl:      "{{sqs.url_prefix}}{{sqs.msg_history_status_sqs_queue_sns_listener}}"
       XgemailMsgHistoryStatusSnsArn:        "{{sns.arn_prefix}}{{sns.msg_history_status_sns_topic}}"
+      XgemailPolicyBucketName:              "{{s3.policy_bucket}}"
       XgemailSnsSqsQueueUrl:                "{{sqs.url_prefix}}{{sqs.customer_delivery_sqs_queue_sns_listener}}"
       XgemailServiceType:                   "customer-delivery"
       XgemailSxlDbl:                        "{{xgemail_sxl_dbl}}"

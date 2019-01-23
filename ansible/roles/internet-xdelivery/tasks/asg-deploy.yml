@@ -16,7 +16,7 @@
     template_parameters:
       AesDecryptionKey:                     "{{aes_decryption_key}}"
       AmiId:                                "{{ami_parent_id}}"
-      AutoScalingMinSize:                   "1"
+      AutoScalingMinSize:                   "{{item.1}}"
       AutoScalingMaxSize:                   "1"
       AutoScalingNotificationTopicARN:      "{{sns.arn_prefix}}{{sns.lifecycle_sqs_sns}}"
       AvailabilityZoneIndex:                "{{item.1}}"
@@ -49,6 +49,7 @@
       XgemailServiceType:                   "internet-xdelivery"
   with_together:
     - "{{aws.asg.ix.stack_number}}"
+    - "{{aws.asg.cx.asg_min_size}}"
     - "{{aws.asg.ix.zone_index}}"
   register: ix_stack_async_results
 
