@@ -23,7 +23,7 @@
       XgemailMsgHistoryBucketName:              "{{s3.msg_history_bucket}}"
       XgemailPolicyBucketName:                  "{{s3.policy_bucket}}"
       XgemailQuarantineBucketName:              "{{s3.quarantine_bucket}}"
-      XgemailInternetSubmitBucketName:          "{{s3.internet_submit_bucket}}"
+      XgemailSubmitBucketName:                  "{{s3.submit_bucket}}"
       XgemailCustomerSubmitBucketName:          "{{s3.customer_submit_bucket}}"
   register: iam_stack
 
@@ -31,9 +31,33 @@
   var: iam_stack
   verbosity: 3
 
+# Upload monitor template
+- name: "Upload the config file for {{stack.iam.role.cloud_email_monitor_roles}} to the config bucket {{cloud_applications}}"
+  s3:
+    mode:               put
+    region:             "{{account.region}}"
+    bucket:             "{{cloud_applications}}"
+    object:             "{{build.branch}}/xgemail-infrastructure/roles_xgemail_monitor_template.json"
+    src:                "{{template.iam.role.roles_xgemail_monitor_template}}"
+    overwrite:          always
+
+# IAM Role for CloudEmail Monitor
+- name: "Deploy {{stack.iam.role.cloud_email_monitor_roles}} to {{account.name}} {{account.region}}"
+  cloudformation:
+    stack_name:                                 "{{stack.iam.role.cloud_email_monitor_roles}}"
+    state:                                      present
+    region:                                     "{{account.region}}"
+    disable_rollback:                           true
+    template_url:                               "https://s3.amazonaws.com/cloud-inf-templates/{{build.branch}}/xgemail-infrastructure/roles_xgemail_monitor_template.json"
+  register: iam_monitor_stack
+
+- debug:
+  var: iam_monitor_stack
+  verbosity: 3
+
 - name: "Display IAM Stack Output"
   debug:
-    msg: "{{iam_stack.stack_outputs}}"
+    msg: "{{iam_monitor_stack.stack_outputs}}"
     verbosity: 2
 
 # IAM Role for Kinesis Firehose Delivery Stream
