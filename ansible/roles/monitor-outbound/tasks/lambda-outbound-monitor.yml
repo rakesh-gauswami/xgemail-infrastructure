@@ -30,28 +30,28 @@
     state:                                  present
     region:                                 "{{account.region}}"
     disable_rollback:                       true
-    template:                               "{{template.lambda.lambda_xgemail_outbound_monitor_send_template}}"
+    template:                               "{{template.lambda.lambda_xgemail_outbound_monitor_template}}"
     template_parameters:
-      Environment:                          "{{account.name}}"
       EuCentral1Id:                         "6c5cba1d-35fe-4de1-b5f5-97f5e013df99"
       EuCentral1PrivKeyPath:                "sophos-email-monitor.net.key"
       EuCentral1PubKeyPath:                 "sophos-email-monitor.net.crt"
       EuCentral1PubKeyThumbprintPath:       "sophos-email-monitor.net_sha1.txt"
       Euwest1Id:                            "16404cae-a875-45be-94eb-4d55bb974e9e"
-      EuWest1PrivKeyPath:
-      Euwest1PubKeyPath:
-      Euwest1PubKeyThumbprintPath:
+      EuWest1PrivKeyPath:                   "sophos-email-monitor.org.key"
+      Euwest1PubKeyPath:                    "sophos-email-monitor.org.crt"
+      Euwest1PubKeyThumbprintPath:          "sophos-email-monitor.org_sha1.txt"
       FunctionName:                         "{{lambda.outbound_monitor_send_lambda_function}}"
       HandlerName:                          xgemail_outbound_monitor_send.monitor_handler
-      IAMRoleArn:                           "{{iam_stack.stack_outputs.LambdaXgemailOutboundMonitorSendRoleArn}}"
+      IAMRoleArn:                           "{{cloud_email_monitor_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_monitor_roles].stack_outputs.LambdaXgemailOutboundMonitorSendRoleArn}}"
       S3Bucket:                             "{{s3.lambda_bucket}}"
       S3BucketforCerts:                     "cloud-{{account.name}}-connections"
       S3Key:                                "lambda/{{build.number}}/xgemail_outbound_monitor_send.zip"
       ScheduleExpression:                   rate(1 minute)
+      TenantId:                             "baf0da6e-b644-43a5-98a8-e14ed39b8d02"
       UsEast2Id:                            "3611d007-d145-4721-97bb-fb129bd2788c"
-      Useast2PrivKeyPath:                   "sophos-email-monitor.us.key"
-      Useast2PubKeyPath:                    "sophos-email-monitor.us.crt"
-      Useast2PubKeyThumbprintPath:          "sophos-email-monitor.us_sha1.txt"
+      UsEast2PrivKeyPath:                   "sophos-email-monitor.us.key"
+      UsEast2PubKeyPath:                    "sophos-email-monitor.us.crt"
+      UsEast2PubKeyThumbprintPath:          "sophos-email-monitor.us_sha1.txt"
       UsWest2Id:                            "d6c9b096-233d-409d-bb8e-07b4d5b1defb"
       UsWest2PrivKeyPath:                   "sophos-email-monitor.com.key"
       UsWest2PubKeyPath:                    "sophos-email-monitor.com.crt"
@@ -62,7 +62,7 @@
     var: outbound_monitor_send_stack
     verbosity: 3
 
-- name: "Display Outbound Monitor Lambda Function Stack Output"
+- name: "Display Outbound Monitor Send Lambda Function Stack Output"
   debug:
     msg: "{{outbound_monitor_send_stack.stack_outputs}}"
     verbosity: 2
@@ -90,22 +90,38 @@
     state:                                  present
     region:                                 "{{account.region}}"
     disable_rollback:                       true
-    template:                               "{{template.lambda.lambda_xgemail_outbound_monitor_receive_template}}"
+    template:                               "{{template.lambda.lambda_xgemail_outbound_monitor_template}}"
     template_parameters:
-      Environment:                          "{{account.name}}"
+      EuCentral1Id:                         "6c5cba1d-35fe-4de1-b5f5-97f5e013df99"
+      EuCentral1PrivKeyPath:                "sophos-email-monitor.net.key"
+      EuCentral1PubKeyPath:                 "sophos-email-monitor.net.crt"
+      EuCentral1PubKeyThumbprintPath:       "sophos-email-monitor.net_sha1.txt"
+      Euwest1Id:                            "16404cae-a875-45be-94eb-4d55bb974e9e"
+      EuWest1PrivKeyPath:                   "sophos-email-monitor.org.key"
+      Euwest1PubKeyPath:                    "sophos-email-monitor.org.crt"
+      Euwest1PubKeyThumbprintPath:          "sophos-email-monitor.org_sha1.txt"
       FunctionName:                         "{{lambda.outbound_monitor_receive_lambda_function}}"
       HandlerName:                          xgemail_outbound_monitor_receive.monitor_handler
-      IAMRoleArn:                           "{{iam_stack.stack_outputs.LambdaXgemailMonitorReceiveRoleArn}}"
-      S3Bucket:                             "{{s3.lambda_bucket}}"
-      S3Key:                                "lambda/{{build.number}}/xgemail_outbound_monitor_receive.zip"
-      ScheduleExpression:                   rate(1 minutes)
-  register: outbound_monitor_send_stack
+      IAMRoleArn:                           "{{cloud_email_monitor_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_monitor_roles].stack_outputs.LambdaXgemailOutboundMonitorReceiveRoleArn}}"      S3Bucket:                             "{{s3.lambda_bucket}}"
+      S3BucketforCerts:                     "cloud-{{account.name}}-connections"
+      S3Key:                                "lambda/{{build.number}}/xgemail_monitor_receive.zip"
+      ScheduleExpression:                   rate(1 minute)
+      TenantId:                             "baf0da6e-b644-43a5-98a8-e14ed39b8d02"
+      UsEast2Id:                            "3611d007-d145-4721-97bb-fb129bd2788c"
+      UsEast2PrivKeyPath:                   "sophos-email-monitor.us.key"
+      UsEast2PubKeyPath:                    "sophos-email-monitor.us.crt"
+      UsEast2PubKeyThumbprintPath:          "sophos-email-monitor.us_sha1.txt"
+      UsWest2Id:                            "d6c9b096-233d-409d-bb8e-07b4d5b1defb"
+      UsWest2PrivKeyPath:                   "sophos-email-monitor.com.key"
+      UsWest2PubKeyPath:                    "sophos-email-monitor.com.crt"
+      UsWest2PubKeyThumbprintPath:          "sophos-email-monitor.com_sha1.txt"
+  register: outbound_monitor_receive_stack
 
 - debug:
-    var: outbound_monitor_send_stack
+    var: outbound_monitor_receive_stack
     verbosity: 3
 
-- name: "Display outbound Monitor Lambda Function Stack Output"
+- name: "Display outbound Monitor Receive Lambda Function Stack Output"
   debug:
-    msg: "{{outbound_monitor_send_stack.stack_outputs}}"
+    msg: "{{outbound_monitor_receive_stack.stack_outputs}}"
     verbosity: 2

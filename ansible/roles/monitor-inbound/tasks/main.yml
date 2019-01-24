@@ -2,15 +2,9 @@
 
 - name: "Include Inbound lambda function."
   include_tasks: lambda-inbound-monitor.yml
-  tags:
-    - vpc
 
-#- name: "Include Route53 Creation Task."
-#  include_tasks: route53-deploy.yml
-#  tags:
-#    - vpc
-#
-#- name: "Include SES Task."
-#  include_tasks: ses-sendreceive.yml
-#  tags:
-#    - vpc
+- name: "Include Route53 Creation Task."
+  include_tasks: route53-deploy.yml
+
+- name: "Include SES Task."
+  include_tasks: ses-sendreceive.yml

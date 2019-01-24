@@ -3,7 +3,7 @@
   "Description": "Creates/Updates/Deletes a lambda outbound function stored in S3 and creates lambda environment variables.",
   "Metadata": {
     "Copyright": [
-      "Copyright 2018, Sophos Limited. All rights reserved.",
+      "Copyright 2019, Sophos Limited. All rights reserved.",
       "",
       "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
       "Sophos Limited and Sophos Group.  All other product and company",
@@ -42,7 +42,7 @@
     "Runtime": {
       "Description": "The scripting runtime the code runs on.",
       "Type": "String",
-      "Default": "nodejs"
+      "Default": "nodejs8.10"
     },
     "S3Bucket": {
       "Description": "The S3 bucket where the code has been placed.",
@@ -182,28 +182,28 @@
           "S3Key": { "Ref": "S3Key" }
         },
         "Description": { "Ref": "FunctionDescription" },
-        "Environment": {
-          "Variables": {
-            "XGEMAIL_EU_CENTRAL_1_CLIENT_ID": { "Ref": "EuCentral1Id" },
-            "XGEMAIL_EU_WEST_1_CLIENT_ID": { "Ref": "Euwest1Id" },
-            "XGEMAIL_US_EAST_2_CLIENT_ID": { "Ref": "UsEast2Id" },
-            "XGEMAIL_US_WEST_2_CLIENT_ID": { "Ref": "UsWest2Id" },
-            "XGEMAIL_EU_CENTRAL_1_PRIVATE_KEY_LOCATION": { "Ref": "EuCentral1PrivKeyPath" },
-            "XGEMAIL_EU_WEST_1_PRIVATE_KEY_LOCATION": { "Ref": "EuWest1PrivKeyPath" },
-            "XGEMAIL_US_EAST_2_PRIVATE_KEY_LOCATION": { "Ref": "UsEast2PrivKeyPath" },
-            "XGEMAIL_US_WEST_2_PRIVATE_KEY_LOCATION": { "Ref": "UsWest2PrivKeyPath" },
-            "XGEMAIL_EU_CENTRAL_1_PUBLIC_KEY_THUMBPRINT_LOCATION": { "Ref": "EuCentral1PubKeyThumbprintPath" },
-            "XGEMAIL_EU_WEST_1_PUBLIC_KEY_THUMBPRINT_LOCATION": { "Ref": "Euwest1PubKeyThumbprintPath" },
-            "XGEMAIL_US_EAST_2_PUBLIC_KEY_THUMBPRINT_LOCATION": { "Ref": "UsEast2PubKeyThumbprintPath" },
-            "XGEMAIL_US_WEST_2_PUBLIC_KEY_THUMBPRINT_LOCATION": { "Ref": "UsWest2PubKeyThumbprintPath" },
-            "XGEMAIL_EU_CENTRAL_1_PUBLIC_KEY_LOCATION": { "Ref": "EuCentral1PubKeyPath" },
-            "XGEMAIL_EU_WEST_1_PUBLIC_KEY_LOCATION": { "Ref": "Euwest1PubKeyPath" },
-            "XGEMAIL_US_EAST_2_PUBLIC_KEY_LOCATION": { "Ref": "UsEast2PubKeyPath" },
-            "XGEMAIL_US_WEST_2_PUBLIC_KEY_LOCATION": { "Ref": "UsWest2PubKeyPath" },
-            "XGEMAIL_TENANT_ID": { "Ref": "TenantId" },
-            "XGEMAIL_ROUNDTRIP_KEYS_BUCKET_NAME": { "Ref": "S3BucketforCerts" }
-          }
-        },
+        "Environment":  {
+              "Variables": {
+                "XGEMAIL_EU_CENTRAL_1_CLIENT_ID": { "Ref": "EuCentral1Id" },
+                "XGEMAIL_EU_WEST_1_CLIENT_ID": { "Ref": "Euwest1Id" },
+                "XGEMAIL_US_EAST_2_CLIENT_ID": { "Ref": "UsEast2Id" },
+                "XGEMAIL_US_WEST_2_CLIENT_ID": { "Ref": "UsWest2Id" },
+                "XGEMAIL_EU_CENTRAL_1_PRIVATE_KEY_LOCATION": { "Ref": "EuCentral1PrivKeyPath" },
+                "XGEMAIL_EU_WEST_1_PRIVATE_KEY_LOCATION": { "Ref": "EuWest1PrivKeyPath" },
+                "XGEMAIL_US_EAST_2_PRIVATE_KEY_LOCATION": { "Ref": "UsEast2PrivKeyPath" },
+                "XGEMAIL_US_WEST_2_PRIVATE_KEY_LOCATION": { "Ref": "UsWest2PrivKeyPath" },
+                "XGEMAIL_EU_CENTRAL_1_PUBLIC_KEY_THUMBPRINT_LOCATION": { "Ref": "EuCentral1PubKeyThumbprintPath" },
+                "XGEMAIL_EU_WEST_1_PUBLIC_KEY_THUMBPRINT_LOCATION": { "Ref": "Euwest1PubKeyThumbprintPath" },
+                "XGEMAIL_US_EAST_2_PUBLIC_KEY_THUMBPRINT_LOCATION": { "Ref": "UsEast2PubKeyThumbprintPath" },
+                "XGEMAIL_US_WEST_2_PUBLIC_KEY_THUMBPRINT_LOCATION": { "Ref": "UsWest2PubKeyThumbprintPath" },
+                "XGEMAIL_EU_CENTRAL_1_PUBLIC_KEY_LOCATION": { "Ref": "EuCentral1PubKeyPath" },
+                "XGEMAIL_EU_WEST_1_PUBLIC_KEY_LOCATION": { "Ref": "Euwest1PubKeyPath" },
+                "XGEMAIL_US_EAST_2_PUBLIC_KEY_LOCATION": { "Ref": "UsEast2PubKeyPath" },
+                "XGEMAIL_US_WEST_2_PUBLIC_KEY_LOCATION": { "Ref": "UsWest2PubKeyPath" },
+                "XGEMAIL_TENANT_ID": { "Ref": "TenantId" },
+                "XGEMAIL_ROUNDTRIP_KEYS_BUCKET_NAME": { "Ref": "S3BucketforCerts" }
+              }
+          },
         "FunctionName": {
           "Fn::If": [
             "HasFunctionName",

@@ -1,5 +1,4 @@
 ---
-
 - name: "Gather {{stack.iam.role.cloud_email_roles}} CloudFormation Stack Output"
   cloudformation_facts:
     stack_name: "{{stack.iam.role.cloud_email_roles}}"
@@ -10,3 +9,17 @@
   debug:
     var: cloud_email_iam_output
     verbosity: 3
+
+# IAM Role output for Cloud Email Monitor
+
+- name: "Gather {{stack.iam.role.cloud_email_monitor_roles}} CloudFormation Stack Output"
+  cloudformation_facts:
+    stack_name: "{{stack.iam.role.cloud_email_monitor_roles}}"
+    region: "{{account.region}}"
+  register: cloud_email_monitor_iam_output
+
+- name: "Print {{stack.iam.role.cloud_email_monitor_roles}} CloudFormation Stack Output"
+  debug:
+    var: cloud_email_monitor_iam_output
+    verbosity: 3
+

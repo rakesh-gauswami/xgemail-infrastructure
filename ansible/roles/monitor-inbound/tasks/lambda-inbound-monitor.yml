@@ -1,13 +1,13 @@
 ---
 # Inbound Monitor Send Lambda Function
-- name: "Create a zip archive of Inbound monitor send lambda function"
+- name: "Create a zip archive of inbound monitor send lambda function"
   archive:
     path:
     - /work/lambda/xgemail_monitor_send.js
     dest: "{{tmp_artifacts_dir}}/xgemail_monitor_send.zip"
     format: zip
 
-- name: "Upload the Inbound monitor send lambda function for {{stack.lambda.inbound_monitor_send_lambda_function}} to the config bucket {{s3.lambda_bucket}}"
+- name: "Upload inbound monitor send lambda function for {{stack.lambda.inbound_monitor_send_lambda_function}} to the config bucket {{s3.lambda_bucket}}"
   s3:
     mode:               put
     region:             "{{account.region}}"
@@ -16,18 +16,17 @@
     src:                "{{tmp_artifacts_dir}}/xgemail_monitor_send.zip"
     overwrite:          always
 
-- name: "Deploy Inbound Monitor Send Lambda Function {{stack.lambda.inbound_monitor_send_lambda_function}} to {{account.name}}-{{account.region}}"
+- name: "Deploy inbound monitor send lambda function {{stack.lambda.inbound_monitor_send_lambda_function}} to {{account.name}}-{{account.region}}"
   cloudformation:
     stack_name:                             "{{stack.lambda.inbound_monitor_send_lambda_function}}"
     state:                                  present
     region:                                 "{{account.region}}"
     disable_rollback:                       true
-    template:                               "{{template.lambda.lambda_xgemail_inbound_monitor_send_template}}"
+    template:                               "{{template.lambda.lambda_xgemail_inbound_monitor_template}}"
     template_parameters:
-      Environment:                          "{{account.name}}"
       FunctionName:                         "{{lambda.inbound_monitor_send_lambda_function}}"
       HandlerName:                          xgemail_inbound_monitor_send.monitor_handler
-      IAMRoleArn:                           "{{iam_stack.stack_outputs.LambdaXgemailMonitorSendRoleArn}}"
+      IAMRoleArn:                           "{{cloud_email_monitor_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_monitor_roles].stack_outputs.LambdaXgemailMonitorSendRoleArn}}"
       S3Bucket:                             "{{s3.lambda_bucket}}"
       S3Key:                                "lambda/{{build.number}}/xgemail_monitor_send.zip"
       ScheduleExpression:                   rate(1 minute)
@@ -37,13 +36,13 @@
     var: inbound_monitor_send_stack
     verbosity: 3
 
-- name: "Display Inbound Monitor Lambda Function Stack Output"
+- name: "Display inbound monitor send lambda function stack output"
   debug:
     msg: "{{inbound_monitor_send_stack.stack_outputs}}"
     verbosity: 2
 
 # Inbound Monitor Receive Lambda Function
-- name: "Create a zip archive of Inbound monitor receive lambda function"
+- name: "Create a zip archive of inbound monitor receive lambda function"
   archive:
     path:
     - /work/lambda/xgemail_monitor_receive.js
@@ -65,22 +64,21 @@
     state:                                  present
     region:                                 "{{account.region}}"
     disable_rollback:                       true
-    template:                               "{{template.lambda.lambda_xgemail_inbound_monitor_receive_template}}"
+    template:                               "{{template.lambda.lambda_xgemail_inbound_monitor_template}}"
     template_parameters:
-      Environment:                          "{{account.name}}"
       FunctionName:                         "{{lambda.inbound_monitor_receive_lambda_function}}"
-      HandlerName:                          xgemail_outbound_monitor_receive.monitor_handler
-      IAMRoleArn:                           "{{iam_stack.stack_outputs.LambdaXgemailMonitorReceiveRoleArn}}"
+      HandlerName:                          xgemail_inbound_monitor_receive.monitor_handler
+      IAMRoleArn:                           "{{cloud_email_monitor_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_monitor_roles].stack_outputs.LambdaXgemailMonitorReceiveRoleArn}}"
       S3Bucket:                             "{{s3.lambda_bucket}}"
       S3Key:                                "lambda/{{build.number}}/xgemail_monitor_receive.zip"
-      ScheduleExpression:                   rate(1 minutes)
-  register: outbound_monitor_send_stack
+      ScheduleExpression:                   rate(1 minute)
+  register: inbound_monitor_receive_stack
 
 - debug:
-    var: outbound_monitor_send_stack
+    var: inbound_monitor_receive_stack
     verbosity: 3
 
-- name: "Display Inbound Monitor Lambda Function Stack Output"
+- name: "Display Inbound Monitor Receive Lambda Function Stack Output"
   debug:
-    msg: "{{outbound_monitor_send_stack.stack_outputs}}"
+    msg: "{{inbound_monitor_receive_stack.stack_outputs}}"
     verbosity: 2

@@ -43,7 +43,11 @@ lambda:
   arn_prefix:                                           "arn:aws:lambda:{{account.region}}:{{aws_account_id}}:function:"
   eip_monitor_lambda_function:                          "Xgemail-Eip-Monitor"
   eip_rotation_lambda_function:                         "Xgemail-Eip-Rotation"
+  inbound_monitor_receive_lambda_function:              "Xgemail-Monitor-Receive"
+  inbound_monitor_send_lambda_function:                 "Xgemail-Monitor-Send"
   instance_terminator_lambda_function:                  "Xgemail-Instance-Terminator"
+  outbound_monitor_receive_lambda_function:             "Xgemail-Outbound-Monitor-Receive"
+  outbound_monitor_send_lambda_function:                "Xgemail-Outbound-Monitor-Send"
   antispam_data_collection_for_labs_lambda_function:    "tf-xgemail-antispam-data-collection-{{account.name}}-{{account.region}}-lambda"
 # CloudEmail S3 Bucket Names.
 s3:
@@ -116,6 +120,7 @@ stack:
   iam:
     role:
       cloud_email_roles:                                "{{vpc.cloud_email.name}}-IAMRoles"
+      cloud_email_monitor_roles:                        "{{vpc.cloud_email.name}}-IAMMonitorRoles"
       cloud_station_region_roles:                       "{{vpc.cloud_station.name}}-RegionIAMRoles"
       cloud_station_roles:                              "{{vpc.cloud_station.name}}-IAMRoles"
       firehose_log_shipper_stream:                      "roles-firehose-log-shipper-publish-to-s3-{{vpc.cloud_email.name}}"
@@ -162,7 +167,11 @@ stack:
   lambda:
     eip_monitor_lambda_function:                        "{{vpc.cloud_email.name}}-Lambda-XgemailEipMonitor"
     eip_rotation_lambda_function:                       "{{vpc.cloud_email.name}}-Lambda-XgemailEipRotation"
+    inbound_monitor_receive_lambda_function:            "{{vpc.cloud_email.name}}-Lambda-Xgemail-Monitor-Receive"
+    inbound_monitor_send_lambda_function:               "{{vpc.cloud_email.name}}-Lambda-Xgemail-Monitor-Send"
     instance_terminator_lambda_function:                "{{vpc.cloud_email.name}}-Lambda-XgemailInstanceTerminator"
+    outbound_monitor_receive_lambda_function:           "{{vpc.cloud_email.name}}-Lambda-Xgemail-Outbound-Monitor-Receive"
+    outbound_monitor_send_lambda_function:              "{{vpc.cloud_email.name}}-Lambda-Xgemail-Outbound-Monitor-Send"
   route53:
     customer_delivery_route53:                          "{{vpc.cloud_email.name}}-XGEMAIL-delivery-ROUTE53"
     internet_delivery_route53:                          "{{vpc.cloud_email.name}}-XGEMAIL-internet-delivery-ROUTE53"
@@ -173,6 +182,7 @@ stack:
     customer_delivery_b_route53:                        "{{vpc.cloud_email.name}}-XGEMAIL-delivery-A-RECORD-B-ROUTE53"
     encryption_delivery_route53:                        "{{vpc.cloud_email.name}}-XGEMAIL-encryption-delivery-ROUTE53"
     encryption_submit_route53:                          "{{vpc.cloud_email.name}}-XGEMAIL-encryption-submit-ROUTE53"
+    email_monitor_route53:                              "{{vpc.cloud_email.name}}-XGEMAIL-monitor-ROUTE53"
     mx_01_route53:                                      "{{vpc.cloud_email.name}}-XGEmailMX01-Cname"
     mx_02_route53:                                      "{{vpc.cloud_email.name}}-XGEmailMX02-Cname"
   s3:
@@ -184,6 +194,8 @@ stack:
     quarantine_bucket:                                  "{{vpc.cloud_email.name}}-XGEMAIL-quarantine-bucket-S3"
     internet_submit_bucket:                             "{{vpc.cloud_email.name}}-XGEMAIL-submit-bucket-S3"
     lambda_bucket:                                      "{{vpc.cloud_email.name}}-{{account.name}}-{{account.region}}-lambda-bucket-S3"
+  ses:
+    email_monitor_ses:                                  "{{vpc.cloud_email.name}}-XGEMAIL-monitor-SES"
   sqs:
     lifecycle_sqs_sns:                                  "{{account.name}}-Xgemail-LifeCycleEvents-Processing"
     customer_delivery_sqs_queue:                        "{{vpc.cloud_email.name}}-XGEMAIL-delivery-SQS"
@@ -263,6 +275,7 @@ template:
   iam:
     role:
       roles_xgemail_template:                           "{{tmp_artifacts_dir}}/roles_xgemail_template.json"
+      roles_xgemail_monitor_template:                   "{{tmp_artifacts_dir}}/roles_xgemail_monitor_template.json"
       roles_simple_template:                            "{{tmp_artifacts_dir}}/roles_simple_template.json"
     policy:
       policy_s3_ro_template:                            "{{tmp_artifacts_dir}}/policy_s3_ro_template.json"
@@ -275,6 +288,8 @@ template:
   lambda:
     lambda_xgemail_eip_monitor_template:                "{{tmp_artifacts_dir}}/lambda_xgemail_eip_monitor_template.json"
     lambda_xgemail_eip_rotation_template:               "{{tmp_artifacts_dir}}/lambda_xgemail_eip_rotation_template.json"
+    lambda_xgemail_inbound_monitor_template:            "{{tmp_artifacts_dir}}/lambda_template.json"
+    lambda_xgemail_outbound_monitor_template:           "{{tmp_artifacts_dir}}/lambda_outbound_template.json"
     lambda_xgemail_instance_terminator_template:        "{{tmp_artifacts_dir}}/lambda_xgemail_instance_terminator_template.json"
   route53:
     route53_record_basic_template:                      "{{tmp_artifacts_dir}}/route53_record_basic_template.json"
@@ -282,6 +297,9 @@ template:
   s3:
     s3_bucket_template:                                 "{{tmp_artifacts_dir}}/s3_bucket_template.json"
     s3_policy_bucket_template:                          "{{tmp_artifacts_dir}}/s3_policy_bucket_template.json"
+  ses:
+    ses_template:                                       "{{tmp_artifacts_dir}}/ses_template.json"
+    ses_domain_verification_template:                   "{{tmp_artifacts_dir}}/ses_custom_resources_template.json"
     s3_bucket_lambda_notification_template:             "{{tmp_artifacts_dir}}/s3_bucket_lambda_notification_template.json"
 
   sqs:

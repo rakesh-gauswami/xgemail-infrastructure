@@ -1,7 +1,7 @@
 ---
-- name: "Deploy {{stack.route53.mx_01_02_sophos_email_monitor_route53}} to {{account.name}} {{account.region}}"
+- name: "Deploy {{stack.route53.email_monitor_route53}} to {{account.name}} {{account.region}}"
   cloudformation:
-    stack_name: "{{stack.route53.mx_01_02_sophos_email_monitor_route53}}"
+    stack_name: "{{stack.route53.email_monitor_route53}}"
     state: present
     region: "{{account.region}}"
     disable_rollback: true
@@ -11,17 +11,44 @@
       RecordType:                    "MX"
       Region:                        "us-west-2"
       HostedZoneId:                  { Ref: "HostedZoneId" }
-    with_items:
-      - HostedZoneName
-      - ResourceRecords
-      - ServiceName
-  register: email_monitor_stack_output
+      ServiceName:                   "mx-01"
+  with_together:
+    - ['sophos-email-monitor.com.', 'sophos-email-monitor.net.', 'sophos-email-monitor.org.', 'sophos-email-monitor.us.', 'sophos-email-recipient.com.']
+    - ['10 mx-01-us-west-2.prod.hydra.sophos.com.', '10 mx-01-eu-central-1.prod.hydra.sophos.com.', '10 mx-01-eu-west-1.prod.hydra.sophos.com.', '10 mx-01-us-east-2.prod.hydra.sophos.com.', '10 inbound-smtp.us-west-2.amazonaws.com.']
+  register: mx_01_stack_output
 
 - debug:
-    var: email_monitor_stack_output
+    var: mx_01_stack_output
     verbosity: 3
 
-- name: "Display MX-01, MX-02 Route53 Stack Output"
+- name: "Display MX-01 Route53 Stack Output"
   debug:
-    msg: "{{email_monitor_stack_output.stack_outputs}}"
+    msg: "{{mx_01_stack_output.stack_outputs}}"
+    verbosity: 2
+
+- name: "Deploy {{stack.route53.email_monitor_route53}} to {{account.name}} {{account.region}}"
+  cloudformation:
+    stack_name: "{{stack.route53.email_monitor_route53}}"
+    state: present
+    region: "{{account.region}}"
+    disable_rollback: true
+    template: "{{template.route53.route53_record_basic_template}}"
+    template_parameters:
+      Environment:                   "{{account.name}}"
+      RecordType:                    "MX"
+      Region:                        "us-west-2"
+      HostedZoneId:                  { Ref: "HostedZoneId" }
+      ServiceName:                   "mx-02"
+  with_together:
+    - ['sophos-email-monitor.com.', 'sophos-email-monitor.net.', 'sophos-email-monitor.org.', 'sophos-email-monitor.us.']
+    - ['20 mx-02-us-west-2.prod.hydra.sophos.com.', '20 mx-02-eu-central-1.prod.hydra.sophos.com.', '20 mx-02-eu-west-1.prod.hydra.sophos.com.', '20 mx-02-us-east-2.prod.hydra.sophos.com.']
+  register: mx_02_stack_output
+
+- debug:
+    var: mx_02_stack_output
+    verbosity: 3
+
+- name: "Display MX-02 Route53 Stack Output"
+  debug:
+    msg: "{{mx_02_stack_output.stack_outputs}}"
     verbosity: 2
