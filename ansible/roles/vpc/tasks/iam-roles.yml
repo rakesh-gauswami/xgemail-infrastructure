@@ -23,13 +23,18 @@
       XgemailMsgHistoryBucketName:              "{{s3.msg_history_bucket}}"
       XgemailPolicyBucketName:                  "{{s3.policy_bucket}}"
       XgemailQuarantineBucketName:              "{{s3.quarantine_bucket}}"
-      XgemailSubmitBucketName:                  "{{s3.submit_bucket}}"
+      XgemailSubmitBucketName:                  "{{s3.internet_submit_bucket}}"
       XgemailCustomerSubmitBucketName:          "{{s3.customer_submit_bucket}}"
   register: iam_stack
 
 - debug:
   var: iam_stack
   verbosity: 3
+
+- name: "Display IAM Stack Output"
+  debug:
+    msg: "{{iam_stack.stack_outputs}}"
+    verbosity: 2
 
 # Upload monitor template
 - name: "Upload the config file for {{stack.iam.role.cloud_email_monitor_roles}} to the config bucket {{cloud_applications}}"
@@ -55,7 +60,7 @@
   var: iam_monitor_stack
   verbosity: 3
 
-- name: "Display IAM Stack Output"
+- name: "Display IAM Monitor Stack Output"
   debug:
     msg: "{{iam_monitor_stack.stack_outputs}}"
     verbosity: 2
