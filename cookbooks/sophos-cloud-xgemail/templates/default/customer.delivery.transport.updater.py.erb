@@ -69,6 +69,8 @@ response.raise_for_status()
 
 # Check if bucket in 'bucket_path' exists or not
 def check_bucket(s3, key_path):
+  if not ENC_CONFIG_BUCKET:
+    return False
   try:
     s3.head_object(Bucket = ENC_CONFIG_BUCKET, Key = key_path)
     logger.debug("key (%s) exists!", key_path)

@@ -146,8 +146,6 @@ module SophosCloudXgemail
       region = node['sophos_cloud']['region']
       account = node['sophos_cloud']['environment']
       case type
-        when 'submit'
-          return "mx-01-#{region}.#{account}.hydra.sophos.com"
         when 'internet-submit'
           return "mx-01-#{region}.#{account}.hydra.sophos.com"
         when 'customer-submit'

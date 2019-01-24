@@ -41,7 +41,7 @@ POLLER_SCRIPT               = 'xgemail.sqs.policy.poller.py'
 POLLER_SCRIPT_PATH          = "#{PACKAGE_DIR}/#{POLLER_SCRIPT}"
 TEMP_FAILURE_CODE           = node['xgemail']['temp_failure_code']
 
-if NODE_TYPE == 'submit' or NODE_TYPE == 'internet-submit'
+if NODE_TYPE == 'internet-submit'
   POLICY_DIR                  = "spf/domains/"
 
   CONFIGS = [
