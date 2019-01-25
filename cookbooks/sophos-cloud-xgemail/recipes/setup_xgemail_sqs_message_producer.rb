@@ -52,18 +52,8 @@ XGEMAIL_SERVICE_QUEUE_URL                    = node['xgemail']['xgemail_service_
 XGEMAIL_MESSAGE_HISTORY_BUCKET_NAME          = node['xgemail']['msg_history_bucket_name']
 XGEMAIL_MESSAGE_HISTORY_QUEUE_URL            = node['xgemail']['msg_history_queue_url']
 XGEMAIL_POLICY_S3_BUCKET_NAME                = node['xgemail']['xgemail_policy_bucket_name']
-RELAY_DOMAINS_FILENAME                       = node['xgemail']['relay_domains_filename']
-RELAY_DOMAINS_FILE                           = "/etc/postfix-#{INSTANCE_NAME}/#{RELAY_DOMAINS_FILENAME}"
 POLICY_STORAGE_PATH                          = node['xgemail']['policy_efs_mount_dir']
-XGEMAIL_CUSTOMER_SUBMIT_BUCKET_NAME          = node['xgemail']['xgemail_customer_submit_bucket_name']
-XGEMAIL_CUSTOMER_SUBMIT_QUEUE_URL            = node['xgemail']['xgemail_customer_submit_queue_url']
 XGEMAIL_SCAN_EVENTS                          = node['xgemail']['scan_events_sns_topic']
-
-# TODO Once we retire the old submit instances this logic needs to be removed
-#constants to use
-SUBMIT = 'submit'
-INTERNET_SUBMIT = 'internet-submit'
-CUSTOMER_SUBMIT = 'customer-submit'
 
 # Configs use by sqsmsgproducer
 if NODE_TYPE == INTERNET_SUBMIT
