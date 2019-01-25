@@ -124,8 +124,8 @@ default['xgemail']['sxl_dbl_response_codes'] = "127.0.1.[1;3;4;5]"
 # https://wiki.sophos.net/display/NSG/VBSpam+Integration+into+Sophos+Email
 default['xgemail']['smtpd_authorized_xclient_hosts'] = "81.136.243.94"
 
-# Increase Postfix default process limit from default 100 to 200
-default['xgemail']['postfix_default_process_limit'] = 200
+# Increase Postfix default process limit from default 100 to 300
+default['xgemail']['postfix_default_process_limit'] = 300
 
 # Ensure max hops on delivery instances is larger than max hops on submit instances.
 # This ensures that we will reject messages on the submit side rather than having to deal with
@@ -248,13 +248,6 @@ POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST = 500
 
 default['xgemail']['postfix_instance_data'] = {
   # internet-submit
-  'submit' => {
-    :instance_name => 'is',
-    :port => 25,
-    :msg_size_limit => SUBMIT_MESSAGE_SIZE_LIMIT_BYTES,
-    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
-  },
-  # internet-submit
   'internet-submit' => {
     :instance_name => 'is',
     :port => 25,
@@ -270,14 +263,6 @@ default['xgemail']['postfix_instance_data'] = {
   },
   # customer-delivery
   'customer-delivery' => {
-    :instance_name => 'cd',
-    :port => 25,
-    # Give delivery queues extra padding because extra content may be created during processing
-    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800),
-    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
-  },
-  # customer-delivery
-  'delivery' => {
     :instance_name => 'cd',
     :port => 25,
     # Give delivery queues extra padding because extra content may be created during processing

@@ -17,7 +17,7 @@ aws:
       as_max_size:                                                "6"
       as_min_service:                                             "1"
       as_max_batch_size:                                          "1"
-      health_check_grace_period:                                  "600"
+      health_check_grace_period:                                  "900"
       instance_size:                                              "t2.small"
       lifecycle_hook_name:                                        "{{vpc.cloud_email.name}}-customer-delivery-Terminating-LifeCycleHook"
     cs:
@@ -145,7 +145,7 @@ aws:
         S3PolicyPrincipalList:                                    "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
     internet_submit_bucket:
       stack_name:                                                 "{{stack.s3.internet_submit_bucket}}"
-      template:                                                   "{{template.s3.s3_bucket_template}}"
+      template:                                                   "{{template.s3.s3_bucket_lambda_notification_template}}"
       template_parameters:
         Environment:                                              "{{account.name}}"
         RequireEncryptionForUploads:                              "sse-s3"
@@ -153,6 +153,9 @@ aws:
         S3LifeCycleDelete:                                        "30"
         S3PolicyCreate:                                           "true"
         SubmitBucketPolicy:                                       "true"
+        LambdaNotificationFunctionArn:                            "{{lambda.arn_prefix}}{{lambda.antispam_data_collection_for_labs_lambda_function}}"
+        LambdaNotificationFilterName:                             "suffix"
+        LambdaNotificationFilterValue:                            "CYREN.HEADER"
         S3PolicyPrincipalList:                                    "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
     lambda_bucket:
       stack_name:                                                 "{{stack.s3.lambda_bucket}}"
@@ -190,6 +193,11 @@ aws:
       template:                                                   "{{template.sns.sns_simple_template}}"
       template_parameters:
         TopicName:                                                "{{sns.deleted_events_sns_topic}}"
+    scan_events_sns_topic:
+      stack_name:                                                 "{{stack.sns.scan_events_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                                                "{{sns.scan_events_sns_topic}}"
     internet_delivery_sns_topic:
       stack_name:                                                 "{{stack.sns.internet_delivery_sns_topic}}"
       template:                                                   "{{template.sns.sns_simple_template}}"
