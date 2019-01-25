@@ -167,6 +167,42 @@
           },
           "mainSteps": [
             {
+              "name": "getInstanceDeleteOnTermination",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": 3,
+              "timeoutSeconds": 60,
+              "onFailure": "Continue",
+              "inputs": {
+                "Service": "ec2",
+                "Api": "DescribeInstances",
+                "InstanceIds": [
+                  "{{ InstanceId }}"
+                ]
+              },
+              "outputs": [
+                {
+                  "Name": "DeleteOnTermination",
+                  "Selector": "$.Reservations[0].Instances[0].BlockDeviceMappings[4].Ebs.DeleteOnTermination",
+                  "Type": "Boolean"
+                }
+              ],
+              "nextStep": "branchOnDeleteOnTermination"
+            },
+            {
+              "name": "branchOnDeleteOnTermination",
+              "action": "aws:branch",
+              "inputs": {
+                "Choices": [
+                  {
+                    "NextStep": "getVolumeId",
+                    "Variable": "{{ getInstanceDeleteOnTermination.DeleteOnTermination }}",
+                    "BooleanEquals": "False"
+                  }
+                ]
+              },
+              "isEnd": true
+            },
+            {
               "name": "getVolumeId",
               "action": "aws:executeAwsApi",
               "maxAttempts": 3,
