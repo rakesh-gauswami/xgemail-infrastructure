@@ -26,12 +26,6 @@ raise "Invalid smtpd port for node type [#{NODE_TYPE}]" if SMTPD_PORT.nil?
 
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_processors_structure'
 
-#constants to use
-SUBMIT = 'submit'
-INTERNET_SUBMIT = 'internet-submit'
-CUSTOMER_SUBMIT = 'customer-submit'
-ENCRYPTION_SUBMIT = 'encryption-submit'
-
 AWS_REGION                                   = node['sophos_cloud']['region']
 MESSAGEPROCESSOR_USER                        = node['xgemail']['sqs_message_processor_user']
 NODE_IP                                      = node['ipaddress']
@@ -54,6 +48,12 @@ XGEMAIL_MESSAGE_HISTORY_QUEUE_URL            = node['xgemail']['msg_history_queu
 XGEMAIL_POLICY_S3_BUCKET_NAME                = node['xgemail']['xgemail_policy_bucket_name']
 POLICY_STORAGE_PATH                          = node['xgemail']['policy_efs_mount_dir']
 XGEMAIL_SCAN_EVENTS                          = node['xgemail']['scan_events_sns_topic']
+
+# TODO Once we retire the old submit instances this logic needs to be removed
+#constants to use
+SUBMIT = 'submit'
+INTERNET_SUBMIT = 'internet-submit'
+CUSTOMER_SUBMIT = 'customer-submit'
 
 # Configs use by sqsmsgproducer
 if NODE_TYPE == INTERNET_SUBMIT
