@@ -543,6 +543,7 @@ def multi_policy_flow(metadata, direction, domain, sender, message, message_attr
             sqs_message_json_queue = []
 
         # batch history sqs
+        # noinspection CookbookSourceRoot
         sqs_history = prepare_msg_history_event(
             new_s3_file_path,
             this_policy_metadata,
