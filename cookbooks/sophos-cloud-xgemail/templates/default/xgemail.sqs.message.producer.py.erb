@@ -313,14 +313,13 @@ def publish_msg_processing_message(message_json, direction, message_attributes =
         send_msg_processing_sqs_message(message_json, direction)
 
 # sends msg processing sqs messages to sqs
-def send_msg_processing_sqs_message(sqs_message_json, customer_id = None):
+def send_msg_processing_sqs_message(sqs_message_json):
 
-    receiving_queue = SUBMIT_SQS_URL
     try:
         logger.info("Processing SQS job [{0}]".format(sqs_message_json))
         logger.info("Added SQS job response [{0}]".format
             (add_to_sqs(
-                receiving_queue,
+                SUBMIT_SQS_URL,
                 sqs_message_json)
             )
         )
