@@ -40,6 +40,8 @@ from logging.handlers import SysLogHandler
 
 # Constants
 AWS_REGION = "<%= @sqs_msg_producer_aws_region %>"
+MSG_HISTORY_BUCKET_NAME = "<%= @sqs_msg_producer_msg_history_s3_bucket_name %>"
+MSG_HISTORY_SQS_URL = "<%= @sqs_msg_producer_msg_history_sqs_url %>"
 PROCESS_TIMEOUT_SECONDS = <%= @sqs_msg_producer_process_timeout_seconds %>
 
 SUBMIT_TYPE = "<%= @xgemail_submit_type %>"
@@ -83,6 +85,10 @@ DOMAIN_NAME_REGEX_PATTERN = "[a-zA-Z0-9][-a-zA-Z0-9]*(\\.[-a-zA-Z0-9]+)*\\.[a-zA
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 INBOUND_MESSAGE_DIRECTION = "INBOUND"
 OUTBOUND_MESSAGE_DIRECTION = "OUTBOUND"
+
+# Submit message types to be transmitted to the appropriate PIC for encrypted messages
+SQS_MESSAGE_SUBMIT_TYPE_INBOUND = "INTERNET"
+SQS_MESSAGE_SUBMIT_TYPE_OUTBOUND = "CUSTOMER"
 
 # Definition of the header "X-Sophos-Deliver-Inbound: true" for the email package
 DELIVER_INBOUND_HEADER = ("X-Sophos-Deliver-Inbound", "true")
