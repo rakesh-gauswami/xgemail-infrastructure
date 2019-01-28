@@ -23,7 +23,6 @@ import messageformatter
 import messagehistoryformatter
 import metadataformatter
 import multipolicyreaderutils
-import serviceroutingutils
 import os
 import re
 import signal
@@ -290,9 +289,11 @@ def send_msg_processing_sqs_message(sqs_message_json, customer_id = None):
 
     receiving_queue = SUBMIT_SQS_URL
 
-    if serviceroutingutils.route_to_microservice(SUBMIT_TYPE, customer_id):
+    # Check if we should route to the microservice
+    # Enforce that we only do this for internet submit for now.
+    # This can be removed once we have an outbound microservice
+    if 'INTERNET' == SUBMIT_TYPE and routingmanager.perform_routing(customer_id):
         receiving_queue = SUBMIT_SERVICE_SQS_URL
-
 
     try:
         logger.info("Processing SQS job [{0}]".format(sqs_message_json))

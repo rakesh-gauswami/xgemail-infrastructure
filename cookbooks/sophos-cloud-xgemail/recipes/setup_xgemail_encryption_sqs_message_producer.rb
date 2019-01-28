@@ -37,7 +37,7 @@ include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_processors_struc
 AWS_REGION                                   = node['sophos_cloud']['region']
 MESSAGEPROCESSOR_USER                        = node['xgemail']['sqs_message_processor_user']
 NODE_IP                                      = node['ipaddress']
-PRODUCER_SCRIPT                              = 'xgemail.sqs.message.producer.py'
+PRODUCER_SCRIPT                              = 'xgemail.encryption.sqs.message.producer.py'
 S3_ENCRYPTION_ALGORITHM                      = node['xgemail']['s3_encryption_algorithm']
 SQS_MESSAGE_PRODUCER_BUFFER_SIZE             = node['xgemail']['sqs_message_producer_buffer_size']
 SQS_MESSAGE_PROCESSOR_DIR                    = node['xgemail']['sqs_message_processor_dir']
