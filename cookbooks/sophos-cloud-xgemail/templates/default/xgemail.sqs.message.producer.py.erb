@@ -37,6 +37,7 @@ from email.parser import Parser
 from email.utils import parseaddr
 from logging.handlers import SysLogHandler
 from routingmanager import RoutingManager
+from scaneventattributes import ScanEventAttributes
 
 # Constants
 AWS_REGION = "<%= @sqs_msg_producer_aws_region %>"
@@ -49,6 +50,7 @@ POLICY_STORAGE_PATH = "<%= @policy_storage_path %>"
 # Either 'INTERNET' or 'CUSTOMER'
 SUBMIT_TYPE = "<%= @xgemail_submit_type %>"
 
+SCAN_EVENTS_TOPIC = "<%= @sns_scan_events_sns_topic %>"
 S3_ENCRYPTION_ALGORITHM = "<%= @s3_encryption_algorithm %>"
 SUBMIT_BUCKET_NAME = "<%= @sqs_msg_producer_s3_bucket_name %>"
 SUBMIT_HOST_IP = "<%= @sqs_msg_producer_submit_ip %>"
@@ -135,6 +137,16 @@ def get_metadata():
     except Exception as e:
         logger.exception("Failed in preparing metadata [{0}]".format(e))
         exit(EX_TEMPFAIL)
+
+def publish_to_topic(topic_arn, message_json, message_attributes = {}):
+    attributes_json = {
+        key: {'DataType': 'String', 'StringValue': value} for key, value in message_attributes.get_scan_event_attributes_json.items()
+    }
+    return awshandler.publish_to_sns_topic(
+        topic_arn,
+        json.dumps(message_json),
+        json.dumps(attributes_json)
+    )
 
 def add_to_sqs(sqs_url, sqs_json):
     return awshandler.add_to_sqs(
@@ -285,15 +297,25 @@ def send_msg_history_sqs_event(sqs_history_json):
         logger.exception("Failed in uploading message processing SQS job [{0}]".format(e))
         exit(EX_TEMPFAIL)
 
+
+# publishes msg processing messages to topic
+def publish_msg_processing_message(message_json, direction, message_attributes = None, customer_id = None):
+    # Check if we should route to the microservice
+    # Enforce that we only do this for internet submit for now.
+    # This can be removed once we have an outbound microservice
+    if 'INTERNET' == SUBMIT_TYPE and routingmanager.perform_routing(customer_id):
+        # publish to topic
+        publish_to_topic(
+            SCAN_EVENTS_TOPIC,
+            message_json,
+            message_attributes
+        )
+    else:
+        send_msg_processing_sqs_message(message_json, direction)
+
 # sends msg processing sqs messages to sqs
-def send_msg_processing_sqs_message(sqs_message_json, customer_id = None):
-
+def send_msg_processing_sqs_message(sqs_message_json, direction):
     receiving_queue = SUBMIT_SQS_URL
-
-    if serviceroutingutils.route_to_microservice(SUBMIT_TYPE, customer_id):
-        receiving_queue = SUBMIT_SERVICE_SQS_URL
-
-
     try:
         logger.info("Processing SQS job [{0}]".format(sqs_message_json))
         logger.info("Added SQS job response [{0}]".format
@@ -302,7 +324,6 @@ def send_msg_processing_sqs_message(sqs_message_json, customer_id = None):
                 sqs_message_json)
             )
         )
-
     except Exception as e:
         logger.exception("Failed in uploading message processing SQS job [{0}]".format(e))
         exit(EX_TEMPFAIL)
@@ -460,11 +481,15 @@ def base_policy_flow(metadata, direction, domain, sender, message):
 # Mail flow goes through multi_policy_flow if multi-policy flag is enabled
 # but if there are error conditions such as file read error etc, the mail
 # fall back to base_policy_flow.
-def multi_policy_flow(metadata, direction, domain, sender, message):
+def multi_policy_flow(metadata, direction, domain, sender, message, message_attributes = None):
     recipients = metadata.get_recipients()
     (policy_list, customer_id) = multipolicyreaderutils.build_policy_map(recipients, AWS_REGION, POLICY_S3_BUCKET_NAME)
+
+    # Message routing information in meatdata pertaining to micro-service
+    metadata.set_microservice_request(routingmanager.perform_routing(customer_id))
+
     if not policy_list:
-        return base_policy_flow(metadata, direction, domain, sender, message)
+        return base_policy_flow(metadata, direction, domain, sender, message, message_attributes, customer_id)
 
     queue_id = metadata.get_queue_id()
     s3_file_path = formatterutils.get_s3_path(
@@ -509,8 +534,10 @@ def multi_policy_flow(metadata, direction, domain, sender, message):
         sqs_message_json_queue.append(sqs_message.get_sqs_json())
         if len(sqs_message_json_queue) == SQS_BATCH_SIZE:
             for processing_job in sqs_message_json_queue:
-                send_msg_processing_sqs_message(
+                publish_msg_processing_message(
                     processing_job,
+                    direction,
+                    message_attributes,
                     customer_id
                 )
             sqs_message_json_queue = []
@@ -535,8 +562,10 @@ def multi_policy_flow(metadata, direction, domain, sender, message):
     #send the remaining if any
     if len(sqs_message_json_queue) > 0:
         for processing_job in sqs_message_json_queue:
-            send_msg_processing_sqs_message(
+            publish_msg_processing_message(
                 processing_job,
+                direction,
+                message_attributes,
                 customer_id
             )
 
@@ -554,6 +583,7 @@ def main():
         domain = None
         direction = None
         sender = None
+        message_attributes = None
 
         plaintext_message = get_plaintext_message()
 
@@ -561,8 +591,13 @@ def main():
             domain = metadata.get_recipient_domain()
             direction = INBOUND_MESSAGE_DIRECTION
             sender = metadata.get_sender_address()
+            message_attributes = ScanEventAttributes(
+                "internet-submit",
+                "ACCEPTED",
+                "v1"
+            )
             if multipolicyreaderutils.get_multi_policy_enabled():
-                return multi_policy_flow(metadata, direction, domain, sender, plaintext_message)
+                return multi_policy_flow(metadata, direction, domain, sender, plaintext_message, message_attributes)
 
         elif 'CUSTOMER' == SUBMIT_TYPE:
             direction = OUTBOUND_MESSAGE_DIRECTION
@@ -574,7 +609,7 @@ def main():
 
         logger.info("Metadata json info [{0}]".format(metadata))
 
-        base_policy_flow(metadata, direction, domain, sender, plaintext_message)
+        base_policy_flow(metadata, direction, domain, sender, plaintext_message, message_attributes)
     except BaseException as e:
         logger.exception("Failed in processing email [{0}]".format(e))
         exit(EX_TEMPFAIL)
