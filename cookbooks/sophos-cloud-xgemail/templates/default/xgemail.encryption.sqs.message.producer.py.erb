@@ -120,7 +120,8 @@ def get_metadata():
                             date_recorded,
                             recipient_domain,
                             recipient_list)
-        #logging metadata info
+
+        # required logging for EncryptionServiceTest automation test
         logger.info("Input email metadata info [{0}]".format(metadata))
         return metadata
     except Exception as e:
@@ -148,6 +149,8 @@ def upload_message_to_s3(s3_file_path, expires, compressed_message, direction):
         message_file_path = messageformatter.get_s3_message_path(
             s3_file_path
         )
+
+        # required logging for XgemailTestBase automation test
         logger.info("Processing message [{0}]".format(message_file_path))
 
         #TODO: Encrypt mime message bytes after V1
@@ -164,7 +167,7 @@ def upload_message_to_s3(s3_file_path, expires, compressed_message, direction):
             expires
         )
 
-        logger.info("Uploaded message to S3 [{0}]".format(message_file_path))
+        logger.debug("Uploaded message to S3 [{0}]".format(message_file_path))
 
     except Exception as e:
         logger.exception("Failed in uploading message to S3 [{0}]".format(e))
@@ -176,7 +179,7 @@ def upload_metadata_to_s3(s3_file_path, expires, metadata, direction):
         metadata_file_path = metadataformatter.get_s3_metadata_path(
             s3_file_path
         )
-        logger.info("Processing metadata [{0}]".format(metadata_file_path))
+        logger.debug("Processing metadata [{0}]".format(metadata_file_path))
 
         #TODO: Encrypt metadata object after V1
 
@@ -195,7 +198,7 @@ def upload_metadata_to_s3(s3_file_path, expires, metadata, direction):
             expires
         )
 
-        logger.info("Uploaded metadata to S3 [{0}]".format(metadata_file_path))
+        logger.debug("Uploaded metadata to S3 [{0}]".format(metadata_file_path))
 
     except Exception as e:
         logger.exception("Failed in uploading metadata to S3 [{0}]".format(e))
@@ -218,7 +221,7 @@ def upload_msg_history_to_s3(s3_file_path, expires, metadata):
         msg_history_file_path = messagehistoryformatter.get_s3_msg_history_path(
             s3_file_path
         )
-        logger.info("Processing message history [{0}]".format(msg_history_file_path))
+        logger.debug("Processing message history [{0}]".format(msg_history_file_path))
 
         #TODO: Encrypt msg history object after V1
 
@@ -237,7 +240,7 @@ def upload_msg_history_to_s3(s3_file_path, expires, metadata):
             expires
         )
 
-        logger.info("Uploaded message history to S3 [{0}]".format(msg_history_file_path))
+        logger.debug("Uploaded message history to S3 [{0}]".format(msg_history_file_path))
 
     except Exception as e:
         logger.exception("Failed in uploading message history to S3 [{0}]".format(e))
@@ -274,14 +277,8 @@ def prepare_msg_history_event(s3_file_path, metadata, sqs_message, direction, se
 
 def send_msg_history_sqs_event(sqs_history_json):
     try:
-        logger.info("Processing message history event SQS job [{0}]".format(sqs_history_json))
-        logger.info("Added message history event SQS job response [{0}]".format
-            (add_to_sqs(
-            MSG_HISTORY_SQS_URL,
-            sqs_history_json)
-        )
-        )
-
+        logger.debug("Processing message history event SQS job [{0}]".format(sqs_history_json))
+        add_to_sqs(MSG_HISTORY_SQS_URL, sqs_history_json)
     except Exception as e:
         logger.exception("Failed in uploading message processing SQS job [{0}]".format(e))
         exit(EX_TEMPFAIL)
@@ -292,14 +289,8 @@ def send_msg_processing_sqs_message(sqs_message_json, direction, customer_id = N
     receiving_queue = get_sqs_url(direction)
 
     try:
-        logger.info("Processing SQS job [{0}] in queue [{1}]".format(sqs_message_json, receiving_queue))
-        logger.info("Added SQS job response [{0}]".format
-            (add_to_sqs(
-                receiving_queue,
-                sqs_message_json)
-            )
-        )
-
+        logger.debug("Processing SQS job [{0}] in queue [{1}]".format(sqs_message_json, receiving_queue))
+        add_to_sqs(receiving_queue, sqs_message_json)
     except Exception as e:
         logger.exception("Failed in uploading message processing SQS job [{0}]".format(e))
         exit(EX_TEMPFAIL)
@@ -355,7 +346,7 @@ def get_metadata_for_outbound(metadata, message):
         raise Exception("Invalid parsed_from_address tuple: [{0}]".format(parsed_from_address))
 
     from_sender = parsed_from_address[1]
-    logger.info("Parsed from header sender: [{0}]".format(from_sender))
+    logger.debug("Parsed from header sender: [{0}]".format(from_sender))
 
     if from_sender is None or not from_sender:
         raise Exception("From header cannot be null or empty in outbound")
@@ -525,6 +516,7 @@ def main():
         else:
           domain = metadata.get_recipient_domain()
 
+        # required logging for XgemailTestBase automation test
         logger.info("Metadata json info [{0}]".format(metadata))
 
         base_policy_flow(metadata, direction, domain, sender, plaintext_message)
@@ -540,7 +532,7 @@ def main():
 # we temporarily fail processing which in turn will make Postfix
 # queue the email for a later delivery attempt.
 def signal_handler(signum, frame):
-    logger.info('Handling signal <{0}>. Processing took longer than {1}s to complete'.format(signum, PROCESS_TIMEOUT_SECONDS))
+    logger.warning('Handling signal <{0}>. Processing took longer than {1}s to complete'.format(signum, PROCESS_TIMEOUT_SECONDS))
     exit(EX_TEMPFAIL)
 
 if __name__ == "__main__":
