@@ -430,8 +430,6 @@ def upload_documents(metadata, compressed_message, s3_file_path, direction):
 
 
 def should_upload_msg_history(direction):
-    if 'ENCRYPTION' != SUBMIT_TYPE:
-        return True
     elif INBOUND_MESSAGE_DIRECTION == direction:
         return True
     else:
@@ -456,12 +454,8 @@ def base_policy_flow(metadata, direction, domain, sender, message):
         domain
     )
 
-    if 'ENCRYPTION' == SUBMIT_TYPE:
-      s3_file_path = formatterutils.get_s3_file_path(tmp_file_path, '-ENCR')
-      sqs_message_submit_type = get_submit_message_type_for_encryption(direction)
-    else:
-      s3_file_path = tmp_file_path
-      sqs_message_submit_type = SUBMIT_TYPE
+    s3_file_path = formatterutils.get_s3_file_path(tmp_file_path, '-ENCR')
+    sqs_message_submit_type = get_submit_message_type_for_encryption(direction)
 
     # create a sqs object
     sqs_message = SqsMessage(
