@@ -310,11 +310,11 @@ def publish_msg_processing_message(message_json, direction, message_attributes =
             message_attributes
         )
     else:
-        send_msg_processing_sqs_message(message_json, direction)
+        send_msg_processing_sqs_message(message_json)
+
 
 # sends msg processing sqs messages to sqs
 def send_msg_processing_sqs_message(sqs_message_json):
-
     try:
         logger.info("Processing SQS job [{0}]".format(sqs_message_json))
         logger.info("Added SQS job response [{0}]".format
