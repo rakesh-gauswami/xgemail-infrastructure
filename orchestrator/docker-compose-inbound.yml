@@ -20,6 +20,47 @@ services:
     networks:
       - novanet
 
+  mail-inbound:
+      image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/mail-inbound:latest
+      container_name: mail-inbound
+      hostname: mail-inbound
+      domainname: sandbox.sophos
+      ports:
+        - '8080:8080'
+      environment:
+        - SPRING_PROFILES_ACTIVE=local
+        - APPLICATION_NAME=mail-inbound
+        - AWS_REGION=us-east-1
+        - ENVIRONMENT=local
+        - AUTH_ENABLED=false
+        - LPAS_ENABLED=true
+        - LPAS_ENDPOINT=http://lpas-fake:8080
+        - API_CONNECT_TIMEOUT_MS=30000
+        - API_READ_TIMEOUT_MS=30000
+        - TOC_MAX_MESSAGE_MB_SIZE_FOR_REWRITE=10
+        - TOC_HOST_NAME=protection.sophos.com
+        - TOC_SECRET_URI=file:///some-bucket/toc.secret-uri.com
+        - MAIL_PIC_API_CREDENTIALS_BUCKET_NAME=mock_s3_bucket
+        - MAIL_PIC_API_CREDENTIALS_FILE=mock_file
+        - MAIL_PIC_API_ROOT_URL=https://mock_url/mail/api/xgemail
+        - INTERNET_SUBMIT_BUCKET=sandbox-cloudemail-xgemail-submit
+        - INTERNET_SUBMIT_STORAGE_ROOT=s3://sandbox-cloudemail-xgemail-submit
+        - CUSTOMER_SUBMIT_STORAGE_ROOT=http://localstack:4576/s3/some-policy/path
+        - SAVI_HOST_NAME=localhost
+        - SAVI_PORT=4010
+        - MALWARE_SERVICE_ENABLED=false
+        - CONTENT_FILTERING_ENABLED=false
+        - INTERNET_SUBMIT_SERVICE_QUEUE=vpc-000000-sandbox-Internet_Submit_Service_Queue
+        - POLICY_BUCKET=sandbox-cloudemail-xgemail-policy
+        - POLICY_STORAGE_ROOT=s3://sandbox-cloudemail-xgemail-policy
+        - MAILBOX_LOCAL_PART_FILE_PATH=config/policies/domains/
+        - MAILBOX_POLICY_FILE_PATH=config/policies/endpoints/
+        - SQS_ENDPOINT=http://localstack:4576
+        - S3_ENDPOINT=http://localstack:4572
+        - SNS_ENDPOINT=http://localstack:4575
+      networks:
+        - novanet
+
   postfix-is:
     image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:latest
     container_name: postfix-is
@@ -124,7 +165,6 @@ services:
       - "sasi-daemon"
     networks:
       - novanet
-
 
 networks:
   novanet:
