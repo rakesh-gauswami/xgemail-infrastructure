@@ -35,7 +35,7 @@ ec2 = session.resource('ec2')
 """:type: pyboto3.ec2 """
 ec2_client = ec2.meta.client
 """:type: pyboto3.ec2 """
-ssm = boto3.client('ssm')
+ssm = session.client('ssm')
 """:type: pyboto3.ssm """
 
 
@@ -47,6 +47,44 @@ def eip_rotation_handler(event, context):
     print("Request ID:", context.aws_request_id)
     print("Mem. limits(MB):", context.memory_limit_in_mb)
 
+    if 'EC2InstanceId' in event['Detail']:
+        ec2_instance = ec2.Instance(event['detail']['EC2InstanceId'])
+        if initial_eip(instance=ec2_instance):
+            complete_lifecycle_action(
+                autocaling_group_name=event['detail']['AutoScalingGroupName'],
+                lifecycle_hook_name=event['detail']['LifecycleHookName'],
+                lifecycle_action_token=event['detail']['LifecycleActionToken'],
+                lifecycle_action_result='CONTINUE'
+            )
+        else:
+            complete_lifecycle_action(
+                autocaling_group_name=event['detail']['AutoScalingGroupName'],
+                lifecycle_hook_name=event['detail']['LifecycleHookName'],
+                lifecycle_action_token=event['detail']['LifecycleActionToken'],
+                lifecycle_action_result='ABANDON'
+            )
+    else:
+        rotate_eip()
+
+
+def initial_eip(instance):
+    """
+    If triggered via Lifecycle Hook then just assign an EIP.
+    """
+    new_eip = get_clean_eip()
+    if associate_address(allocation_id=new_eip['AllocationId'], instance_id=instance.id):
+        logger.info("Successfully attached EIP on Instance: {}.".format(instance.id))
+        return True
+    else:
+        logger.error("Unable to attach EIP to Instance: {}.".format(instance.id))
+        return False
+    logger.info("===FINISHED=== Attaching initial EIP.")
+
+
+def rotate_eip():
+    """
+    If triggered from scheduled event rotate all EIP's.
+    """
     for instance in get_instances_by_name():
         if (datetime.now(instance.launch_time.tzinfo) - instance.launch_time).total_seconds() <= 1800:
             logger.info("Instance Id: {} was recently deployed. Skipping".format(instance.id))
@@ -66,7 +104,7 @@ def eip_rotation_handler(event, context):
                 logger.info("There was a problem with EIP rotation for Instance: {}.".format(instance.id))
                 continue
         else:
-            logger.info("Unable to stop Postfix Service on Instance:: {}.".format(instance.id))
+            logger.info("Unable to stop Postfix Service on Instance: {}.".format(instance.id))
             continue
     logger.info("===FINISHED=== Rotating Outbound Delivery EIP's.")
 
@@ -243,3 +281,20 @@ def disassociate_address(eip):
         return False
     else:
         return True
+
+
+def complete_lifecycle_action(autoscaling_group_name, lifecycle_hook_name, lifecycle_action_token, lifecycle_action_result):
+    """
+    Completes the lifecycle action for the specified token or instance with the specified result.
+    """
+    asg = session.resource('autoscaling')
+    """:type: pyboto3.autoscaling """
+    try:
+        asg.complete_lifecycle_action(
+            LifecycleHookName=lifecycle_hook_name,
+            AutoScalingGroupName=autoscaling_group_name,
+            LifecycleActionToken=lifecycle_action_token,
+            LifecycleActionResult=lifecycle_action_result,
+        )
+    except ClientError as e:
+        logger.exception("Exception completing lifecycle hook {}".format(e.response['Error']['Code']))

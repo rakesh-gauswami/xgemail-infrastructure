@@ -1,5 +1,31 @@
 ---
 
+# Instance Launching Events Rule
+- name: "Deploy Instance Launching Events Rule {{stack.events.rule.lifecycle_lambda}} to {{account.name}}-{{account.region}}"
+  cloudformation:
+    stack_name:                             "{{stack.events.rule.lifecycle_lambda}}"
+    state:                                  present
+    region:                                 "{{account.region}}"
+    disable_rollback:                       true
+    template:                               "{{template.events.rule.events_rule_lifecycle_lambda}}"
+    template_parameters:
+      EventDetailType:                       "EC2 Instance-launch Lifecycle Action"
+      EventSource:                           "aws.autoscaling"
+      LifecycleHookNames:                    "{{aws.asg.id.lifecycle_hook_name_launching}}"
+      LifecycleTransition:                   "autoscaling:EC2_INSTANCE_LAUNCHING"
+      TargetsArn:                            "{{eip_rotation_stack.stack_outputs.LambdaFunctionArn}}"
+      TargetsId:                             "eip_rotation_handler"
+  register: events_rule_lifecycle_lambda_stack
+
+- debug:
+    var: events_rule_lifecycle_lambda_stack
+    verbosity: 3
+
+- name: "Display Instance Launching Events Rule Stack Output"
+  debug:
+    msg: "{{events_rule_lifecycle_lambda_stack.stack_outputs}}"
+    verbosity: 2
+
 # Instance Termination Events Rule
 - name: "Deploy Instance Termination Events Rule {{stack.events.rule.lifecycle_automation}} to {{account.name}}-{{account.region}}"
   cloudformation:
