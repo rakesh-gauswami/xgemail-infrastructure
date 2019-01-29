@@ -40,6 +40,8 @@ from logging.handlers import SysLogHandler
 
 # Constants
 AWS_REGION = "<%= @sqs_msg_producer_aws_region %>"
+MSG_HISTORY_BUCKET_NAME = "<%= @sqs_msg_producer_msg_history_s3_bucket_name %>"
+MSG_HISTORY_SQS_URL = "<%= @sqs_msg_producer_msg_history_sqs_url %>"
 PROCESS_TIMEOUT_SECONDS = <%= @sqs_msg_producer_process_timeout_seconds %>
 
 SUBMIT_TYPE = "<%= @xgemail_submit_type %>"
@@ -81,8 +83,14 @@ DOMAIN_NAME_REGEX_PATTERN = "[a-zA-Z0-9][-a-zA-Z0-9]*(\\.[-a-zA-Z0-9]+)*\\.[a-zA
 
 # Other constants
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+MESSAGE_HISTORY_UNKNOWN_DESIGNATION = "UNKNOWN"
+MESSAGE_HISTORY_ACCEPTED_EVENT = "ACCEPTED"
 INBOUND_MESSAGE_DIRECTION = "INBOUND"
 OUTBOUND_MESSAGE_DIRECTION = "OUTBOUND"
+
+# Submit message types to be transmitted to the appropriate PIC for encrypted messages
+SQS_MESSAGE_SUBMIT_TYPE_INBOUND = "INTERNET"
+SQS_MESSAGE_SUBMIT_TYPE_OUTBOUND = "CUSTOMER"
 
 # Definition of the header "X-Sophos-Deliver-Inbound: true" for the email package
 DELIVER_INBOUND_HEADER = ("X-Sophos-Deliver-Inbound", "true")
@@ -424,9 +432,7 @@ def upload_documents(metadata, compressed_message, s3_file_path, direction):
 
 
 def should_upload_msg_history(direction):
-    if 'ENCRYPTION' != SUBMIT_TYPE:
-        return True
-    elif INBOUND_MESSAGE_DIRECTION == direction:
+    if INBOUND_MESSAGE_DIRECTION == direction:
         return True
     else:
         return False
@@ -450,12 +456,8 @@ def base_policy_flow(metadata, direction, domain, sender, message):
         domain
     )
 
-    if 'ENCRYPTION' == SUBMIT_TYPE:
-      s3_file_path = formatterutils.get_s3_file_path(tmp_file_path, '-ENCR')
-      sqs_message_submit_type = get_submit_message_type_for_encryption(direction)
-    else:
-      s3_file_path = tmp_file_path
-      sqs_message_submit_type = SUBMIT_TYPE
+    s3_file_path = formatterutils.get_s3_file_path(tmp_file_path, '-ENCR')
+    sqs_message_submit_type = get_submit_message_type_for_encryption(direction)
 
     # create a sqs object
     sqs_message = SqsMessage(

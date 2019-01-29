@@ -37,7 +37,7 @@ include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_processors_struc
 AWS_REGION                                   = node['sophos_cloud']['region']
 MESSAGEPROCESSOR_USER                        = node['xgemail']['sqs_message_processor_user']
 NODE_IP                                      = node['ipaddress']
-PRODUCER_SCRIPT                              = 'xgemail.sqs.message.producer.py'
+PRODUCER_SCRIPT                              = 'xgemail.encryption.sqs.message.producer.py'
 S3_ENCRYPTION_ALGORITHM                      = node['xgemail']['s3_encryption_algorithm']
 SQS_MESSAGE_PRODUCER_BUFFER_SIZE             = node['xgemail']['sqs_message_producer_buffer_size']
 SQS_MESSAGE_PROCESSOR_DIR                    = node['xgemail']['sqs_message_processor_dir']
@@ -53,10 +53,6 @@ XGEMAIL_QUEUE_URL                            = node['xgemail']['xgemail_queue_ur
 XGEMAIL_SERVICE_QUEUE_URL                    = node['xgemail']['xgemail_service_queue_url']
 XGEMAIL_MESSAGE_HISTORY_BUCKET_NAME          = node['xgemail']['msg_history_bucket_name']
 XGEMAIL_MESSAGE_HISTORY_QUEUE_URL            = node['xgemail']['msg_history_queue_url']
-XGEMAIL_POLICY_S3_BUCKET_NAME                = node['xgemail']['xgemail_policy_bucket_name']
-RELAY_DOMAINS_FILENAME                       = node['xgemail']['relay_domains_filename']
-RELAY_DOMAINS_FILE                           = "/etc/postfix-#{INSTANCE_NAME}/#{RELAY_DOMAINS_FILENAME}"
-POLICY_STORAGE_PATH                          = node['xgemail']['policy_efs_mount_dir']
 XGEMAIL_CUSTOMER_SUBMIT_BUCKET_NAME          = node['xgemail']['xgemail_customer_submit_bucket_name']
 XGEMAIL_CUSTOMER_SUBMIT_QUEUE_URL            = node['xgemail']['xgemail_customer_submit_queue_url']
 
@@ -79,6 +75,8 @@ template PRODUCER_SCRIPT_PATH do
       :sqs_msg_producer_process_timeout_seconds => SQS_MESSAGE_PRODUCER_PROCESS_TIMEOUT_SECONDS,
       :sqs_msg_producer_s3_bucket_name => XGEMAIL_BUCKET_NAME,
       :sqs_msg_producer_s3_customer_submit_bucket_name => XGEMAIL_CUSTOMER_SUBMIT_BUCKET_NAME,
+      :sqs_msg_producer_msg_history_s3_bucket_name => XGEMAIL_MESSAGE_HISTORY_BUCKET_NAME,
+      :sqs_msg_producer_msg_history_sqs_url => XGEMAIL_MESSAGE_HISTORY_QUEUE_URL,
       :sqs_msg_producer_sqs_url => XGEMAIL_QUEUE_URL,
       :sqs_msg_producer_customer_submit_sqs_url => XGEMAIL_CUSTOMER_SUBMIT_QUEUE_URL,
       :sqs_msg_producer_submit_ip => NODE_IP,
