@@ -1,11 +1,11 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
 
-  "Description": "XGEMAIL instance template for Sophos Cloud; used for Extended Delivery 'xdelivery'.",
+  "Description": "Sophos Email AutoScaling Group template for Sophos Cloud used for internet-xdelivery EC2 Instances.",
 
   "Metadata": {
     "Copyright": [
-      "Copyright 2018, Sophos Limited. All rights reserved.",
+      "Copyright 2019, Sophos Limited. All rights reserved.",
       "",
       "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
       "Sophos Limited and Sophos Group.  All other product and company",
@@ -183,28 +183,8 @@
       "MinValue": "1",
       "MaxValue": "16384"
     },
-    "XgemailMsgHistoryStatusQueueUrl" : {
-      "Description" : "URL for the SQS Queue where Message History delivery status events are sent",
-      "Type" : "String",
-      "Default": ""
-    },
     "XgemailMsgHistoryStatusSnsArn": {
       "Description" : "ARN for the SNS Topic where Message History delivery status events are published",
-      "Type" : "String",
-      "Default": ""
-    },
-    "XgemailNotificationSnsArn": {
-      "Description" : "ARN for the SNS Topic where notifications are published",
-      "Type" : "String",
-      "Default": ""
-    },
-    "XgemailNotifierQueueUrl" : {
-      "Description" : "URL for the SQS Queue where XGEMAIL messages are sent",
-      "Type" : "String",
-      "Default": ""
-    },
-    "XgemailPolicyBucketName" : {
-      "Description" : "Name of the S3 Bucket where XGEMAIL policy docs are stored",
       "Type" : "String",
       "Default": ""
     },
@@ -354,16 +334,6 @@
         "LoadBalancerNames": { "Ref": "LoadBalancerName" },
         "MaxSize": { "Ref": "AutoScalingMaxSize" },
         "MinSize": { "Ref": "AutoScalingMinSize" },
-        "NotificationConfiguration": {
-          "NotificationTypes": [
-            "autoscaling:EC2_INSTANCE_LAUNCH",
-            "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
-            "autoscaling:EC2_INSTANCE_TERMINATE",
-            "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
-            "autoscaling:TEST_NOTIFICATION"
-          ],
-          "TopicARN": { "Ref": "AutoScalingNotificationTopicARN" }
-        },
         "Tags": [
           {
             "Key": "Name",
@@ -378,14 +348,36 @@
               ]
             },
             "PropagateAtLaunch": true
-          }, {
+          },
+          {
             "Key": "BuildResultKey",
             "Value": { "Ref": "BuildVersion" },
-            "PropagateAtLaunch": true
-          }, {
+            "PropagateAtLaunch": "true"
+          },
+          {
             "Key": "BundleVersion",
             "Value": { "Ref": "BundleVersion" },
-            "PropagateAtLaunch": true
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "Application",
+            "Value": { "Ref": "XgemailServiceType" },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "ServiceCategory",
+            "Value": { "Fn::Sub": "${VpcName}:email" },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "ServiceType",
+            "Value": { "Fn::Sub": "${VpcName}:${XgemailServiceType}" },
+            "PropagateAtLaunch": "true"
           }
         ],
         "VPCZoneIdentifier": [
@@ -455,13 +447,9 @@
                       "  },\n",
                       "  \"xgemail\" : {\n",
                       "    \"cluster_type\"                   : \"{{cluster_type}}\",\n",
-                      "    \"msg_history_status_queue_url\"   : \"{{msg_history_status_queue_url}}\",\n",
                       "    \"msg_history_status_sns_arn\"     : \"{{msg_history_delivery_status_sns_arn}}\",\n",
-                      "    \"msg_notifier_queue_url\"         : \"{{msg_notifier_queue_url}}\",\n",
-                      "    \"notification_sns_arn\"           : \"{{notification_sns_arn}}\",\n",
                       "    \"station_vpc_id\"                 : \"{{station_vpc_id}}\",\n",
-                      "    \"station_vpc_name\"               : \"{{station_vpc_name}}\",\n",
-                      "    \"xgemail_policy_bucket_name\"     : \"{{xgemail_policy_bucket_name}}\"\n",
+                      "    \"station_vpc_name\"               : \"{{station_vpc_name}}\"\n",
                       "  }\n",
                       "}\n"
                     ]
@@ -476,10 +464,7 @@
                   "cluster":                                  { "Ref": "XgemailServiceType" },
                   "cluster_type":                             { "Ref": "XgemailServiceType" },
                   "environment":                              { "Ref": "Environment" },
-                  "msg_history_status_queue_url":             { "Ref": "XgemailMsgHistoryStatusQueueUrl" },
                   "msg_history_delivery_status_sns_arn":      { "Ref": "XgemailMsgHistoryStatusSnsArn"},
-                  "msg_notifier_queue_url":                   { "Ref": "XgemailNotifierQueueUrl" },
-                  "notification_sns_arn":                     { "Ref": "XgemailNotificationSnsArn" },
                   "region":                                   { "Ref": "AWS::Region" },
                   "station_vpc_id":                           { "Ref": "StationVpcId" },
                   "stack":                                    { "Ref": "AWS::StackName" },
@@ -489,8 +474,7 @@
                   "volume_set_id":                            { "Ref": "VolumeSetId" },
                   "volume_tracker_sdb_domain":                { "Ref": "VolumeTrackerSimpleDbDomain" },
                   "vpc_id":                                   { "Ref": "Vpc" },
-                  "vpc_name":                                 { "Ref": "VpcName" },
-                  "xgemail_policy_bucket_name":               { "Ref": "XgemailPolicyBucketName" }
+                  "vpc_name":                                 { "Ref": "VpcName" }
                 },
                 "owner": "root",
                 "mode": "000444"
@@ -835,6 +819,29 @@
           }
         }
       }
+    }
+  },
+
+  "Outputs": {
+    "AmiId": {
+      "Description": "ID of the Ami we are using",
+      "Value": { "Ref" : "AmiId" }
+    },
+    "AutoScalingGroup": {
+      "Description": "Auto Scaling Group Name.",
+      "Value": { "Ref": "XgemailAutoScalingGroup" }
+    },
+    "Branch": {
+      "Description": "Branch we are using so we know for things like ansible",
+      "Value": { "Ref": "Branch" }
+    },
+    "BuildVersion": {
+      "Description": "Version of the application from Bamboo",
+      "Value": { "Ref": "BuildVersion" }
+    },
+    "LaunchConfig": {
+      "Description": "Auto Scaling Launch Configuration Name.",
+      "Value": { "Ref": "XgemailAutoScalingLaunchConfig" }
     }
   }
 }
