@@ -51,14 +51,14 @@ def eip_rotation_handler(event, context):
         ec2_instance = ec2.Instance(event['detail']['EC2InstanceId'])
         if initial_eip(instance=ec2_instance):
             complete_lifecycle_action(
-                autocaling_group_name=event['detail']['AutoScalingGroupName'],
+                autoscaling_group_name=event['detail']['AutoScalingGroupName'],
                 lifecycle_hook_name=event['detail']['LifecycleHookName'],
                 lifecycle_action_token=event['detail']['LifecycleActionToken'],
                 lifecycle_action_result='CONTINUE'
             )
         else:
             complete_lifecycle_action(
-                autocaling_group_name=event['detail']['AutoScalingGroupName'],
+                autoscaling_group_name=event['detail']['AutoScalingGroupName'],
                 lifecycle_hook_name=event['detail']['LifecycleHookName'],
                 lifecycle_action_token=event['detail']['LifecycleActionToken'],
                 lifecycle_action_result='ABANDON'
