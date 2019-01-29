@@ -47,7 +47,7 @@ def eip_rotation_handler(event, context):
     print("Request ID:", context.aws_request_id)
     print("Mem. limits(MB):", context.memory_limit_in_mb)
 
-    if 'EC2InstanceId' in event['Detail']:
+    if 'EC2InstanceId' in event['detail']:
         ec2_instance = ec2.Instance(event['detail']['EC2InstanceId'])
         if initial_eip(instance=ec2_instance):
             complete_lifecycle_action(
