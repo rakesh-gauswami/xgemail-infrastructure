@@ -79,7 +79,7 @@ include_recipe 'sophos-cloud-xgemail::common-postfix-multi-instance-config'
 HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
 
 file "#{HEADER_CHECKS_PATH}" do
-  content "/^X-Sophos-Enforce-TLS: yes$/i FILTER smtp_encrypt:"
+  content "/^X-Sophos-Enforce-TLS: yes$|^X-Sophos-TLS-Probe: SUCCESS$/i FILTER smtp_encrypt:"
   mode '0644'
   owner 'root'
   group 'root'
