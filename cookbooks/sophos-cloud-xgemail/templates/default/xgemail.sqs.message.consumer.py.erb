@@ -227,6 +227,8 @@ def add_headers(message, message_path, headers):
             header_keys.append(header_key)
             parsed_message[header_key] = header_value
 
+        # required logging for DelayQueueTest, NonSpamEmailTest,
+        # SandstormSasiDelayMRTest, SandstormSasiDelayTest
         logger.info(
             'Added headers for message [%s]: %s',
             message_path,
@@ -343,7 +345,7 @@ while True:
                 origin_sqs_queue = SNS_SQS_URL
                 sqs_message = parse_sqs_message(msg["Body"], msg["ReceiptHandle"])
 
-            logger.info("Polled SQS message [{0}] from queue [{1}]".format(sqs_message, origin_sqs_queue))
+            logger.debug("Polled SQS message [{0}] from queue [{1}]".format(sqs_message, origin_sqs_queue))
 
             #attempt to retrieve headers. If unsuccessful, continue. Message will stay in queue and this will be
             #reattempted at a later time
@@ -391,6 +393,7 @@ while True:
             sender = metadata["sender_address"]
             recipients = metadata["recipients"]
 
+            # required logging for EncryptionServiceTest automation test
             logger.info(
                 "Email and metadata retrieved from S3. "
                 "QueueId: {0} - sender: {1} - recipients: [<{2}>]"
@@ -423,7 +426,7 @@ while True:
                     sqs_message.receipt
                 )
 
-                logger.info(
+                logger.debug(
                     "Removed message [{0}] from SQS".format(sqs_message.message_path)
                 )
 
