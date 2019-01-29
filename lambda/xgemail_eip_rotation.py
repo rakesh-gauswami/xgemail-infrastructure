@@ -48,8 +48,10 @@ def eip_rotation_handler(event, context):
     print("Mem. limits(MB):", context.memory_limit_in_mb)
 
     if 'EC2InstanceId' in event['detail']:
+        logger.info("Lambda Function triggered from Instance Launching Lifecycle Hook.")
         ec2_instance = ec2.Instance(event['detail']['EC2InstanceId'])
         if initial_eip(instance=ec2_instance):
+            logger.info("Completing lifecycle action with CONTINUE")
             complete_lifecycle_action(
                 autoscaling_group_name=event['detail']['AutoScalingGroupName'],
                 lifecycle_hook_name=event['detail']['LifecycleHookName'],
@@ -57,6 +59,7 @@ def eip_rotation_handler(event, context):
                 lifecycle_action_result='CONTINUE'
             )
         else:
+            logger.error("Completing lifecycle action with ABANDON")
             complete_lifecycle_action(
                 autoscaling_group_name=event['detail']['AutoScalingGroupName'],
                 lifecycle_hook_name=event['detail']['LifecycleHookName'],
@@ -64,6 +67,7 @@ def eip_rotation_handler(event, context):
                 lifecycle_action_result='ABANDON'
             )
     else:
+        logger.info("Lambda Function triggered from CloudWatch Scheduled Event for EIP Roation.")
         rotate_eip()
 
 
@@ -287,7 +291,7 @@ def complete_lifecycle_action(autoscaling_group_name, lifecycle_hook_name, lifec
     """
     Completes the lifecycle action for the specified token or instance with the specified result.
     """
-    asg = session.resource('autoscaling')
+    asg = session.client('autoscaling')
     """:type: pyboto3.autoscaling """
     try:
         asg.complete_lifecycle_action(
