@@ -47,7 +47,7 @@ end
     'notadirectoryexception.py',
     'recipientsplitconfig.py',
     'recoverableexception.py',
-    'routingmanager.py'
+    'routingmanager.py',
     'scaneventattributes.py'
 ].each do | cur |
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{cur}" do
