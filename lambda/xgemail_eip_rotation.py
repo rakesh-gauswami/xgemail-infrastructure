@@ -16,6 +16,7 @@ import logging
 import json
 import time
 import os
+import socket
 from datetime import datetime, timedelta
 from botocore.exceptions import ClientError
 
@@ -77,12 +78,11 @@ def initial_eip(instance):
     """
     new_eip = get_clean_eip()
     if associate_address(allocation_id=new_eip['AllocationId'], instance_id=instance.id):
-        logger.info("Successfully attached EIP on Instance: {}.".format(instance.id))
+        logger.info("===FINISHED=== Attaching initial EIP on Instance: {}.".format(instance.id))
         return True
     else:
         logger.error("Unable to attach EIP to Instance: {}.".format(instance.id))
         return False
-    logger.info("===FINISHED=== Attaching initial EIP.")
 
 
 def rotate_eip():
@@ -97,7 +97,7 @@ def rotate_eip():
         if current_eip is None:
             continue
         new_eip = get_clean_eip()
-        hostname = 'delivery-' + new_eip['PublicIp'].replace('.', '-') + '-' + region + '.' + account + '.hydra.sophos.com'
+        hostname = socket.gethostbyaddr(new_eip['PublicIp'])[0]
         if postfix_service(instance_id=instance.id, cmd='stop'):
             if disassociate_address(eip=current_eip):
                 if associate_address(allocation_id=new_eip['AllocationId'], instance_id=instance.id):
