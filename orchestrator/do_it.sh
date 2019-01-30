@@ -37,6 +37,7 @@ EMERGENCY_INBOX_SQS_QUEUE="sandbox-Xgemail_Emergency_Inbox_Delivery"
 EMERGENCY_INBOX_SQS_QUEUE_SNS_LISTENER="sandbox-Xgemail_Emergency_Inbox_Delivery_SNS_Listener"
 INTERNET_DELIVERY_SQS_QUEUE="sandbox-Xgemail_Internet_Delivery"
 INTERNET_DELIVERY_SQS_QUEUE_SNS_LISTENER="sandbox-Xgemail_Internet_Delivery_SNS_Listener"
+INTERNET_SUBMIT_SERVICE_SQS_QUEUE="sandbox-Xgemail_Internet_Submit_Service"
 INTERNET_SUBMIT_SQS_QUEUE="sandbox-Xgemail_Internet_Submit"
 
 #MSG Queues
@@ -72,6 +73,7 @@ EMERGENCY_INBOX_SQS_QUEUE_DLQ="sandbox-Xgemail_Emergency_Inbox_Delivery-DLQ"
 EMERGENCY_INBOX_SQS_QUEUE_SNS_LISTENER_DLQ="sandbox-Xgemail_Emergency_Inbox_Delivery_SNS_Listener-DLQ"
 INTERNET_DELIVERY_SQS_QUEUE_DLQ="sandbox-Xgemail_Internet_Delivery-DLQ"
 INTERNET_DELIVERY_SQS_QUEUE_SNS_LISTENER_DLQ="sandbox-Xgemail_Internet_Delivery_SNS_Listener-DLQ"
+INTERNET_SUBMIT_SERVICE_SQS_QUEUE_DLQ="sandbox-Xgemail_Internet_Submit_Service-DLQ"
 INTERNET_SUBMIT_SQS_QUEUE_DLQ="sandbox-Xgemail_Internet_Submit-DLQ"
 MSG_HISTORY_SQS_QUEUE_DLQ="sandbox-Xgemail_MessageHistoryEvent_Delivery-DLQ"
 MSG_HISTORY_SQS_QUEUE_SNS_LISTENER_DLQ="sandbox-Xgemail_MessageHistoryEvent_Delivery_SNS_Listener-DLQ"
@@ -95,6 +97,7 @@ MULTI_POLICY_SNS_TOPIC="XGEMAIL-multi-policy-SNS"
 POLICY_SNS_TOPIC="xgemail-policy-SNS"
 QUARANTINED_EVENTS_SNS_TOPIC="xgemail-quarantined-events-SNS"
 RELAY_CONTROL_SNS_TOPIC="xgemail-relay-control-SNS"
+SCAN_EVENTS_SNS_TOPIC="xgemail-scan-events-SNS"
 SUCCESS_EVENTS_SNS_TOPIC="xgemail-success-events-SNS"
 
 
@@ -174,6 +177,9 @@ awslocal sqs create-queue --queue-name ${INTERNET_DELIVERY_SQS_QUEUE} | jq .
 gprintf "CREATING INTERNET_DELIVERY_SQS_QUEUE_SNS_LISTENER"
 awslocal sqs create-queue --queue-name ${INTERNET_DELIVERY_SQS_QUEUE_SNS_LISTENER} | jq .
 
+gprintf "CREATING INTERNET_SUBMIT_SERVICE_SQS_QUEUE"
+awslocal sqs create-queue --queue-name ${INTERNET_SUBMIT_SERVICE_SQS_QUEUE} | jq .
+
 gprintf "CREATING INTERNET_SUBMIT_SQS_QUEUE"
 awslocal sqs create-queue --queue-name ${INTERNET_SUBMIT_SQS_QUEUE} | jq .
 
@@ -251,6 +257,8 @@ awslocal sqs create-queue --queue-name ${INTERNET_DELIVERY_SQS_QUEUE_DLQ} | jq .
 
 awslocal sqs create-queue --queue-name ${INTERNET_DELIVERY_SQS_QUEUE_SNS_LISTENER_DLQ} | jq .
 
+awslocal sqs create-queue --queue-name ${INTERNET_SUBMIT_SERVICE_SQS_QUEUE_DLQ} | jq
+
 awslocal sqs create-queue --queue-name ${INTERNET_SUBMIT_SQS_QUEUE_DLQ} | jq .
 
 awslocal sqs create-queue --queue-name ${MSG_HISTORY_SQS_QUEUE_DLQ} | jq .
@@ -304,6 +312,9 @@ awslocal sns create-topic --name ${QUARANTINED_EVENTS_SNS_TOPIC} | jq .
 
 gprintf "CREATING RELAY_CONTROL_SNS_TOPIC"
 awslocal sns create-topic --name ${RELAY_CONTROL_SNS_TOPIC} | jq .
+
+gprintf "CREATING SCAN_EVENTS_SNS_TOPIC"
+awslocal sns create-topic --name ${SCAN_EVENTS_SNS_TOPIC} | jq .
 
 gprintf "CREATING SUCCESS_EVENTS_SNS_TOPIC"
 awslocal sns create-topic --name ${SUCCESS_EVENTS_SNS_TOPIC} | jq .
@@ -369,7 +380,10 @@ awslocal sns subscribe \
     --topic-arn arn:aws:sns:us-east-1:123456789012:${QUARANTINED_EVENTS_SNS_TOPIC} \
     --protocol sqs \
     --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${QUARANTINE_SQS_QUEUE_SNS_LISTENER} | jq .
-
+awslocal sns subscribe \
+    --topic-arn arn:aws:sns:us-east-1:123456789012:${SCAN_EVENTS_SNS_TOPIC} \
+    --protocol sqs \
+    --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${INTERNET_SUBMIT_SERVICE_SQS_QUEUE} | jq .
 awslocal sns subscribe \
     --topic-arn arn:aws:sns:us-east-1:123456789012:${SUCCESS_EVENTS_SNS_TOPIC} \
     --protocol sqs \
