@@ -16,6 +16,12 @@ if NODE_TYPE != 'xdelivery' && NODE_TYPE != 'internet-xdelivery'
   return
 end
 
+INSTANCE_DATA = node['xgemail']['postfix_instance_data'][NODE_TYPE]
+raise "Unsupported node type [#{NODE_TYPE}]" if INSTANCE_DATA.nil?
+
+SMTPD_PORT = INSTANCE_DATA[:port]
+raise "Invalid smtpd port for node type [#{NODE_TYPE}]" if SMTPD_PORT.nil?
+
 LOCAL_CERT_PATH = node['sophos_cloud']['local_cert_path']
 LOCAL_KEY_PATH = node['sophos_cloud']['local_key_path']
 
@@ -116,27 +122,16 @@ end
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf -M '#{cur}'" )
 end
 [
-  "8025/inet/smtpd_tls_security_level=may",
-  "8025/inet/smtpd_tls_cert_file=/etc/ssl/certs/#{CERT_NAME}.crt",
-  "8025/inet/smtpd_tls_key_file=/etc/ssl/private/#{CERT_NAME}.key"
-].each do | cur |
-  execute print_postmulti_cmd( INSTANCE_NAME, "postconf -P '#{cur}'" )
-end
-[
   "smtp_encrypt/unix/smtp_tls_security_level=encrypt"
 ].each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf -P '#{cur}'" )
 end
 
-
-# Run an instance of the smtp process that enforces TLS encryption
+# Settings for TLS encryption mode
 [
-  "smtp_encrypt/unix = smtp_encrypt unix - - n - - smtp"
-].each do | cur |
-  execute print_postmulti_cmd( INSTANCE_NAME, "postconf -M '#{cur}'" )
-end
-[
-  "smtp_encrypt/unix/smtp_tls_security_level=encrypt"
+  "#{SMTPD_PORT}/inet/smtpd_tls_security_level=may",
+  "#{SMTPD_PORT}/inet/smtpd_tls_cert_file=/etc/ssl/certs/#{CERT_NAME}.crt",
+  "#{SMTPD_PORT}/inet/smtpd_tls_key_file=/etc/ssl/private/#{CERT_NAME}.key"
 ].each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf -P '#{cur}'" )
 end
