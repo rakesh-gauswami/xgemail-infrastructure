@@ -229,9 +229,6 @@ def get_clean_eip():
             Filters=[
                 {
                     'Name': 'tag:Name', 'Values': ['xgemail-outbound']
-                },
-                {
-                    'Name': 'tag:blacklist', 'Values': ['0']
                 }
             ]
         )['Addresses']
@@ -239,7 +236,7 @@ def get_clean_eip():
         logger.exception("Unable to describe addresses. {}".format(e))
 
     add_tags_dict(addresses)
-    addresses.sort(key=lambda address: address['TagsDict']['detached'])
+    addresses.sort(key=lambda address: (address['TagsDict']['blacklist'], address['TagsDict']['detached']))
     for address in addresses:
         if 'AssociationId' not in address:
             return address
