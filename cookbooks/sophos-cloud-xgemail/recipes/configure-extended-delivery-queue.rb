@@ -116,9 +116,9 @@ end
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf -M '#{cur}'" )
 end
 [
-  "smtp_encrypt/unix/smtp_tls_security_level=encrypt"
-  "smtpd_tls_security_level=may"
-  "smtpd_tls_cert_file=/etc/ssl/certs/#{CERT_NAME}.crt"
+  "smtp_encrypt/unix/smtp_tls_security_level=encrypt",
+  "smtpd_tls_security_level=may",
+  "smtpd_tls_cert_file=/etc/ssl/certs/#{CERT_NAME}.crt",
   "smtpd_tls_key_file=/etc/ssl/private/#{CERT_NAME}.key"
 ].each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf -P '#{cur}'" )
