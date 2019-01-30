@@ -16,6 +16,14 @@ if NODE_TYPE != 'xdelivery' && NODE_TYPE != 'internet-xdelivery'
   return
 end
 
+LOCAL_CERT_PATH = node['sophos_cloud']['local_cert_path']
+LOCAL_KEY_PATH = node['sophos_cloud']['local_key_path']
+
+CERT_NAME = node['xgemail']['cert']
+
+CERT_FILE = "#{LOCAL_CERT_PATH}/#{CERT_NAME}.crt"
+KEY_FILE = "#{LOCAL_KEY_PATH}/#{CERT_NAME}.key"
+
 # Include Helper library
 ::Chef::Recipe.send(:include, ::SophosCloudXgemail::Helper)
 ::Chef::Resource.send(:include, ::SophosCloudXgemail::Helper)
@@ -34,6 +42,22 @@ MANAGED_SERVICES_IN_START_ORDER = [
 ]
 
 if ACCOUNT != 'sandbox'
+  # Add xgemail certificate
+  remote_file "/etc/ssl/certs/#{CERT_NAME}.crt" do
+    source "file:///tmp/sophos/certificates/api-mcs-mob-prod.crt"
+    owner 'root'
+    group 'root'
+    mode 0444
+  end
+
+  # Add xgemail key
+  remote_file "/etc/ssl/private/#{CERT_NAME}.key" do
+    source "file:///tmp/sophos/certificates/appserver.key"
+    owner 'root'
+    group 'root'
+    mode 0440
+  end
+
   service 'postfix' do
     supports :restart => true, :start => true, :stop => true, :reload => true
     action :nothing
@@ -93,6 +117,9 @@ end
 end
 [
   "smtp_encrypt/unix/smtp_tls_security_level=encrypt"
+  "smtpd_tls_security_level=may"
+  "smtpd_tls_cert_file=/etc/ssl/certs/#{CERT_NAME}.crt"
+  "smtpd_tls_key_file=/etc/ssl/private/#{CERT_NAME}.key"
 ].each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf -P '#{cur}'" )
 end
