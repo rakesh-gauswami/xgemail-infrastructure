@@ -346,6 +346,18 @@
           "Statement": [
             {
               "Action": [
+                "autoscaling:CompleteLifecycleAction",
+                "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:RecordLifecycleActionHeartbeat",
+                "autoscaling:UpdateAutoScalingGroup"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
                 "lambda:*"
               ],
               "Effect": "Allow",
