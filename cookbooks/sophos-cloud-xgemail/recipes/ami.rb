@@ -111,10 +111,6 @@ end
 
 # Packages required by postfix 2.4.1.2:
 
-yum_package 'm4' do
-  action :upgrade
-end
-
 yum_package 'libuuid' do
   action :upgrade
 end
