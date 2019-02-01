@@ -477,9 +477,6 @@ def multi_policy_flow(metadata, direction, domain, sender, message, message_attr
     recipients = metadata.get_recipients()
     (policy_list, customer_id) = multipolicyreaderutils.build_policy_map(recipients, AWS_REGION, POLICY_S3_BUCKET_NAME)
 
-    # Message routing information in meatdata pertaining to micro-service
-    metadata.set_microservice_request(routingmanager.perform_routing(customer_id))
-
     if not policy_list:
         return base_policy_flow(metadata, direction, domain, sender, message, message_attributes, customer_id)
 

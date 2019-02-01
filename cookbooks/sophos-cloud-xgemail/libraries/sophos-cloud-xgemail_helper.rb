@@ -99,49 +99,6 @@ module SophosCloudXgemail
 
   end
   module AwsHelper
-    def associate_clean_ip ()
-      begin
-        ec2 = Aws::EC2::Client.new(region: node['sophos_cloud']['region'])
-        resp = ec2.describe_addresses({
-            filters: [
-                {
-                    name: 'tag:Name',
-                    values: [
-                        'xgemail-outbound'
-                    ]
-                },
-                {
-                    name: 'tag:blacklist',
-                    values: [
-                        '0'
-                    ]
-                }
-            ],
-        })[:addresses].select{ |addr| !addr.association_id }
-        Chef::Log.debug(resp)
-        resp.each do |a|
-          Chef::Log.debug(a)
-            association = ec2.associate_address({
-                allocation_id: a.allocation_id,
-                instance_id: node['ec2']['instance_id'],
-            })
-            Chef::Log.info("Associated EIP: #{a.public_ip} Association Id: #{association.association_id}")
-            return a.public_ip
-        end
-      rescue Aws::EC2::Errors::ResourceAlreadyAssociated => e
-        Chef::Log.warn("Try again. EIP already in use. #{e.code}: #{e.message}")
-          sleep(1)
-          retry
-      rescue Aws::EC2::Errors::RequestLimitExceeded => e
-        Chef::Log.warn("Rate Limited. #{e.code}: #{e.message}")
-          sleep(30)
-          retry
-      rescue Aws::EC2::Errors::ServiceError => e
-          Chef::Log.error("Unhandled ServiceError Exception: #{e.code}: #{e.message}")
-          raise "ERROR: Unhandled ServiceError Exception: #{e.code}: #{e.message}"
-      end
-    end
-
     def get_hostname ( type )
       region = node['sophos_cloud']['region']
       account = node['sophos_cloud']['environment']
@@ -160,7 +117,7 @@ module SophosCloudXgemail
             return node['fqdn']
           else
             # Get a clean EIP from the pool and associate to the instance, errors are handled within the function
-            eip = associate_clean_ip()
+            eip = node['cloud']['public_ipv4']
             begin
               # Lookup the reverse DNS record of the EIP and use it as postfix hostname
               Chef::Log.info("Getting reverse DNS of EIP: #{eip}")

@@ -346,6 +346,18 @@
           "Statement": [
             {
               "Action": [
+                "autoscaling:CompleteLifecycleAction",
+                "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:RecordLifecycleActionHeartbeat",
+                "autoscaling:UpdateAutoScalingGroup"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
                 "lambda:*"
               ],
               "Effect": "Allow",
@@ -520,6 +532,36 @@
         ]
       },
       "Type": "AWS::IAM::Policy"
+    },
+
+    "XgemailDeliveryInstanceProfile" : {
+      "Type" : "AWS::IAM::InstanceProfile",
+      "Properties" : {
+        "Path" : "/",
+        "Roles" : [
+          {
+            "Ref" : "XgemailDeliveryInstanceRole"
+          }
+        ]
+      }
+    },
+    "XgemailDeliveryInstanceRole" : {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "ManagedPolicyArns": [ "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM" ],
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": ["sts:AssumeRole"],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": ["ec2.amazonaws.com"]
+              }
+            }
+          ]
+        },
+        "Path": "/"
+      }
     },
 
     "XgemailCustomerDeliveryInstanceProfile" : {
@@ -984,6 +1026,36 @@
             "Ref" : "XgemailInternetDeliveryInstanceRole"
           }
         ]
+      }
+    },
+
+    "XgemailSubmitInstanceProfile" : {
+      "Type" : "AWS::IAM::InstanceProfile",
+      "Properties" : {
+        "Path" : "/",
+        "Roles" : [
+          {
+            "Ref" : "XgemailSubmitInstanceRole"
+          }
+        ]
+      }
+    },
+    "XgemailSubmitInstanceRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "ManagedPolicyArns": [ "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM" ],
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": [ "sts:AssumeRole" ],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [ "ec2.amazonaws.com" ]
+              }
+            }
+          ]
+        },
+        "Path": "/"
       }
     },
 
