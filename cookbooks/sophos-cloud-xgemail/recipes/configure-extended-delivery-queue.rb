@@ -181,6 +181,7 @@ else
     ].each do | cur |
       execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
     end
+  end
 end
 
 if NODE_TYPE == 'xdelivery'
