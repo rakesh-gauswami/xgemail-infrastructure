@@ -3,7 +3,7 @@
 # This script provides convenient functions to start and operate xgemail
 # sandbox
 #
-# Copyright: Copyright (c) 1997-2018. All rights reserved.
+# Copyright: Copyright (c) 1997-2019. All rights reserved.
 # Company: Sophos Limited or one of its affiliates.
 
 : 'Set XGEMAIL_HOME environment variable
@@ -112,7 +112,7 @@ function deploy_inbound {
 
     docker-compose -f ${orchestrator_location}${base_compose} -f ${orchestrator_location}${inbound_compose} up -d
 
-    deploy_wars "mail-service" "false" "mail" "mailinbound"
+    deploy_wars "mail-service" "false" "mail"
 
     provision_localstack
 
@@ -120,7 +120,7 @@ function deploy_inbound {
 
     deploy_jilter inbound
 
-    check_tomcat_startup ${email_tomcat_url} "mail" "mailinbound"
+    check_tomcat_startup ${email_tomcat_url} "mail"
 }
 
 : 'This function creates, starts and provisions the base containers required for
@@ -170,7 +170,7 @@ function deploy_all {
 
     docker-compose -f ${orchestrator_location}${base_compose} -f ${orchestrator_location}${inbound_compose} -f ${orchestrator_location}${outbound_compose} up -d
 
-    deploy_wars "mail-service" "false" "mail" "mailinbound" "mailoutbound"
+    deploy_wars "mail-service" "false" "mail" "mailoutbound"
 
     provision_localstack
 
@@ -178,7 +178,7 @@ function deploy_all {
 
     deploy_jilter all
 
-    check_tomcat_startup ${email_tomcat_url} "mail" "mailoutbound" "mailinbound"
+    check_tomcat_startup ${email_tomcat_url} "mail" "mailoutbound"
 }
 
 : 'This function runs the script to provision postfix instances.
@@ -766,7 +766,7 @@ Commands                                                                        
 help         get usage info
 initialize   setup steps before starting up nova
 deploy       deploy, provision and start containers                                 inbound | outbound | all                                           ui
-hot_deploy   hot deploy artifacts(NOTE: artifacts have to be built first)           mail | mailinbound | mailoutbound
+hot_deploy   hot deploy artifacts(NOTE: artifacts have to be built first)           mail | mail-inbound | mailoutbound
                                                                                     jilter-inbound | jilter-outbound
                                                                                     postfix-is | postfix-cd | postfix-cs | postfix-id |
                                                                                     ui_wars
@@ -823,10 +823,8 @@ case "$1" in
               deploy_wars "mail-service" "true" "mail"
               check_tomcat_startup ${email_tomcat_url} "mail"
               ;;
-
-            mailinbound)
-              deploy_wars "mail-service" "true" "mailinbound"
-              check_tomcat_startup ${email_tomcat_url} "mailinbound"
+            mail-inbound)
+              docker-compose -f ${orchestrator_location}${inbound_compose} restart mail-inbound
               ;;
 
             mailoutbound)
@@ -859,7 +857,7 @@ case "$1" in
               provision_postfix postfix-id
               ;;
             *)
-              echo "Usage: $0 <mail | mailinbound | mailoutbound | ui_wars | jilter-inbound | jilter-outbound | postfix-is | postfix-cd | postfix-cs | postfix-id>"
+              echo "Usage: $0 <mail | mail-inbound | mailoutbound | ui_wars | jilter-inbound | jilter-outbound | postfix-is | postfix-cd | postfix-cs | postfix-id>"
               ;;
         esac
         ;;

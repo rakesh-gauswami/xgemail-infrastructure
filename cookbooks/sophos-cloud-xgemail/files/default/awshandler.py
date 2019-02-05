@@ -44,11 +44,12 @@ class AwsHandler(object):
             MessageBody=message_body)
 
     # publishes data to sns topic
-    def publish_to_sns_topic(self, topic_arn, message_body):
+    def publish_to_sns_topic(self, topic_arn, message_body, message_attributes = {}):
         return self.sns_client.publish(
-            TargetArn=topic_arn,
-            Message=message_body
-        )
+                TargetArn=topic_arn,
+                Message=message_body,
+                MessageAttributes=message_attributes
+            )
 
     def download_message_from_s3(self, bucket, sqs_message):
         # remove leading slash and append proper data type

@@ -3,7 +3,7 @@
 - name: "Deploy CloudEmail Elasticsearch Domains {{stack.es.xgemail_elasticsearch_domain}} to {{account.name}}-{{account.region}}"
   cloudformation:
     stack_name:                   "{{stack.es.xgemail_elasticsearch_domain}}"
-    state:                        present
+    state:                        absent
     region:                       "{{account.region}}"
     disable_rollback:             true
     template:                     "{{template.es.es_domain_template}}"

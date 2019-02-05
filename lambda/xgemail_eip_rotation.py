@@ -16,6 +16,7 @@ import logging
 import json
 import time
 import os
+import socket
 from datetime import datetime, timedelta
 from botocore.exceptions import ClientError
 
@@ -35,7 +36,7 @@ ec2 = session.resource('ec2')
 """:type: pyboto3.ec2 """
 ec2_client = ec2.meta.client
 """:type: pyboto3.ec2 """
-ssm = boto3.client('ssm')
+ssm = session.client('ssm')
 """:type: pyboto3.ssm """
 
 
@@ -47,6 +48,47 @@ def eip_rotation_handler(event, context):
     print("Request ID:", context.aws_request_id)
     print("Mem. limits(MB):", context.memory_limit_in_mb)
 
+    if 'EC2InstanceId' in event['detail']:
+        logger.info("Lambda Function triggered from Instance Launching Lifecycle Hook.")
+        ec2_instance = ec2.Instance(event['detail']['EC2InstanceId'])
+        if initial_eip(instance=ec2_instance):
+            logger.info("Completing lifecycle action with CONTINUE")
+            complete_lifecycle_action(
+                autoscaling_group_name=event['detail']['AutoScalingGroupName'],
+                lifecycle_hook_name=event['detail']['LifecycleHookName'],
+                lifecycle_action_token=event['detail']['LifecycleActionToken'],
+                lifecycle_action_result='CONTINUE'
+            )
+        else:
+            logger.error("Completing lifecycle action with ABANDON")
+            complete_lifecycle_action(
+                autoscaling_group_name=event['detail']['AutoScalingGroupName'],
+                lifecycle_hook_name=event['detail']['LifecycleHookName'],
+                lifecycle_action_token=event['detail']['LifecycleActionToken'],
+                lifecycle_action_result='ABANDON'
+            )
+    else:
+        logger.info("Lambda Function triggered from CloudWatch Scheduled Event for EIP Roation.")
+        rotate_eip()
+
+
+def initial_eip(instance):
+    """
+    If triggered via Lifecycle Hook then just assign an EIP.
+    """
+    new_eip = get_clean_eip()
+    if associate_address(allocation_id=new_eip['AllocationId'], instance_id=instance.id):
+        logger.info("===FINISHED=== Attaching initial EIP on Instance: {}.".format(instance.id))
+        return True
+    else:
+        logger.error("Unable to attach EIP to Instance: {}.".format(instance.id))
+        return False
+
+
+def rotate_eip():
+    """
+    If triggered from scheduled event rotate all EIP's.
+    """
     for instance in get_instances_by_name():
         if (datetime.now(instance.launch_time.tzinfo) - instance.launch_time).total_seconds() <= 1800:
             logger.info("Instance Id: {} was recently deployed. Skipping".format(instance.id))
@@ -55,7 +97,7 @@ def eip_rotation_handler(event, context):
         if current_eip is None:
             continue
         new_eip = get_clean_eip()
-        hostname = 'delivery-' + new_eip['PublicIp'].replace('.', '-') + '-' + region + '.' + account + '.hydra.sophos.com'
+        hostname = socket.gethostbyaddr(new_eip['PublicIp'])[0]
         if postfix_service(instance_id=instance.id, cmd='stop'):
             if disassociate_address(eip=current_eip):
                 if associate_address(allocation_id=new_eip['AllocationId'], instance_id=instance.id):
@@ -66,7 +108,7 @@ def eip_rotation_handler(event, context):
                 logger.info("There was a problem with EIP rotation for Instance: {}.".format(instance.id))
                 continue
         else:
-            logger.info("Unable to stop Postfix Service on Instance:: {}.".format(instance.id))
+            logger.info("Unable to stop Postfix Service on Instance: {}.".format(instance.id))
             continue
     logger.info("===FINISHED=== Rotating Outbound Delivery EIP's.")
 
@@ -187,9 +229,6 @@ def get_clean_eip():
             Filters=[
                 {
                     'Name': 'tag:Name', 'Values': ['xgemail-outbound']
-                },
-                {
-                    'Name': 'tag:blacklist', 'Values': ['0']
                 }
             ]
         )['Addresses']
@@ -197,7 +236,7 @@ def get_clean_eip():
         logger.exception("Unable to describe addresses. {}".format(e))
 
     add_tags_dict(addresses)
-    addresses.sort(key=lambda address: address['TagsDict']['detached'])
+    addresses.sort(key=lambda address: (int(address['TagsDict']['blacklist']), address['TagsDict']['detached']))
     for address in addresses:
         if 'AssociationId' not in address:
             return address
@@ -243,3 +282,20 @@ def disassociate_address(eip):
         return False
     else:
         return True
+
+
+def complete_lifecycle_action(autoscaling_group_name, lifecycle_hook_name, lifecycle_action_token, lifecycle_action_result):
+    """
+    Completes the lifecycle action for the specified token or instance with the specified result.
+    """
+    asg = session.client('autoscaling')
+    """:type: pyboto3.autoscaling """
+    try:
+        asg.complete_lifecycle_action(
+            LifecycleHookName=lifecycle_hook_name,
+            AutoScalingGroupName=autoscaling_group_name,
+            LifecycleActionToken=lifecycle_action_token,
+            LifecycleActionResult=lifecycle_action_result,
+        )
+    except ClientError as e:
+        logger.exception("Exception completing lifecycle hook {}".format(e.response['Error']['Code']))

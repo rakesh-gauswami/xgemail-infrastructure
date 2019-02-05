@@ -76,6 +76,28 @@ HOP_COUNT_DELIVERY_INSTANCE = node['xgemail']['hop_count_delivery_instance']
 
 include_recipe 'sophos-cloud-xgemail::common-postfix-multi-instance-config'
 
+HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
+
+file "#{HEADER_CHECKS_PATH}" do
+  content "/^X-Sophos-Enforce-TLS: yes$|^X-Sophos-TLS-Probe: SUCCESS$/i FILTER smtp_encrypt:"
+  mode '0644'
+  owner 'root'
+  group 'root'
+end
+
+# Run an instance of the smtp process that enforces TLS encryption
+[
+  "smtp_encrypt/unix = smtp_encrypt unix - - n - - smtp"
+].each do | cur |
+  execute print_postmulti_cmd( INSTANCE_NAME, "postconf -M '#{cur}'" )
+end
+[
+  "smtp_encrypt/unix/smtp_tls_security_level=encrypt"
+].each do | cur |
+  execute print_postmulti_cmd( INSTANCE_NAME, "postconf -P '#{cur}'" )
+end
+
+
 # Run an instance of the smtp process that enforces TLS encryption
 [
   "smtp_encrypt/unix = smtp_encrypt unix - - n - - smtp"
@@ -96,7 +118,8 @@ end
     'smtp_tls_ciphers=high',
     'smtp_tls_mandatory_ciphers=high',
     'smtp_tls_loglevel=1',
-    'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache'
+    'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache',
+    "header_checks = regexp:#{HEADER_CHECKS_PATH}"
 ].each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
 end
@@ -120,19 +143,3 @@ else
     end
   end
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

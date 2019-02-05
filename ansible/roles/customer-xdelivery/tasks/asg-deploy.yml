@@ -12,7 +12,7 @@
     state: present
     region:  "{{account.region}}"
     disable_rollback: true
-    template: "{{template.ec2.asg.as_xgemail_xdelivery_template}}"
+    template: "{{template.ec2.asg.as_xgemail_customer_xdelivery_template}}"
     template_parameters:
       AesDecryptionKey:                     "{{aes_decryption_key}}"
       AmiId:                                "{{ami_parent_id}}"
@@ -27,12 +27,10 @@
       EbsMinIops:                           "{{xgemail_iops_data_gb}}"
       Environment:                          "{{account.name}}"
       HealthCheckGracePeriod:               "{{aws.asg.cx.health_check_grace_period}}"
-      HealthCheckType:                      "ELB"
       InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.XgemailXdeliveryInstanceProfile}}"
       InstanceType:                         "{{aws.asg.cx.instance_size}}"
       KeyName:                              "private-{{account.region}}"
       LoadBalancerName:                     "{{elb_stack_output.stack_outputs.LoadBalancerId}}"
-      PublicIpAddressEnabled:               "false"
       S3CookbookRepositoryURL:              "//cloud-{{account.name}}-templates/{{build.branch}}/xgemail-infrastructure/cookbooks.enc"
       ScaleDownOnWeekends:                  "{{weekend_scale_down}}"
       SecurityGroups:                       "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.XgemailXdeliverySecurityGroup}},{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.SecurityGroupBase}}"
