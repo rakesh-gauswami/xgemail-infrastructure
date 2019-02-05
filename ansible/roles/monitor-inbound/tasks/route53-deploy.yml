@@ -1,23 +1,85 @@
 ---
-- name: "Deploy {{stack.route53.email_monitor_route53}} to {{account.name}} {{account.region}}"
+- name: "Deploy {{stack.route53.email_monitor_com_route53}} to {{account.name}} {{account.region}}"
   cloudformation:
-    stack_name: "{{stack.route53.email_monitor_route53}}"
+    stack_name: "{{stack.route53.email_monitor_com_route53}}"
     state: present
     region: "{{account.region}}"
     disable_rollback: true
     template: "{{template.route53.route53_record_basic_template}}"
     template_parameters:
       RecordType:                    "MX"
-      HostedZoneName:                "{{ item.hostedzonename }}"
-      ResourceRecords:               "{{ item.resourcerecords }}"
-  with_items:
-    - { hostedzonename: 'sophos-email-monitor.com.', resourcerecords: '10 mx-01-us-west-2.prod.hydra.sophos.com.,20 mx-02-us-west-2.prod.hydra.sophos.com.' }
-    - { hostedzonename: 'sophos-email-monitor.net.', resourcerecords: '10 mx-01-eu-central-1.prod.hydra.sophos.com.,20 mx-02-eu-central-1.prod.hydra.sophos.com.' }
-    - { hostedzonename: 'sophos-email-monitor.org.', resourcerecords: '10 mx-01-eu-west-1.prod.hydra.sophos.com.,20 mx-02-eu-west-1.prod.hydra.sophos.com.' }
-    - { hostedzonename: 'sophos-email-monitor.us.', resourcerecords: '10 mx-01-us-east-2.prod.hydra.sophos.com.,20 mx-02-us-east-2.prod.hydra.sophos.com.' }
-    - { hostedzonename: 'sophos-email-recipient.com.', resourcerecords: '10 inbound-smtp.us-west-2.amazonaws.com.' }
-  register: mx_01_stack_output
+      HostedZoneName:                "sophos-email-monitor.com."
+      ResourceRecords:               "10 mx-01-us-west-2.prod.hydra.sophos.com.,20 mx-02-us-west-2.prod.hydra.sophos.com."
+  register: sophos_email_monitor_com_stack_output
 
-- debug:
-    var: mx_01_stack_output
-    verbosity: 3
+ - debug:
+     var: sophos_email_monitor_com_stack_output
+     verbosity: 3
+
+- name: "Deploy {{stack.route53.email_monitor_net_route53}} to {{account.name}} {{account.region}}"
+  cloudformation:
+    stack_name: "{{stack.route53.email_monitor_net_route53}}"
+    state: present
+    region: "{{account.region}}"
+    disable_rollback: true
+    template: "{{template.route53.route53_record_basic_template}}"
+    template_parameters:
+      RecordType:                    "MX"
+      HostedZoneName:                "sophos-email-monitor.net."
+      ResourceRecords:               "10 mx-01-eu-central-1.prod.hydra.sophos.com.,20 mx-02-eu-central-1.prod.hydra.sophos.com."
+  register: sophos_email_monitor_net_stack_output
+
+ - debug:
+     var: sophos_email_monitor_net_stack_output
+     verbosity: 3
+
+- name: "Deploy {{stack.route53.email_monitor_org_route53}} to {{account.name}} {{account.region}}"
+  cloudformation:
+    stack_name: "{{stack.route53.email_monitor_org_route53}}"
+    state: present
+    region: "{{account.region}}"
+    disable_rollback: true
+    template: "{{template.route53.route53_record_basic_template}}"
+    template_parameters:
+      RecordType:                    "MX"
+      HostedZoneName:                "sophos-email-monitor.org."
+      ResourceRecords:               "10 mx-01-eu-west-1.prod.hydra.sophos.com.,20 mx-02-eu-west-1.prod.hydra.sophos.com."
+  register: sophos_email_monitor_org_stack_output
+
+ - debug:
+     var: sophos_email_monitor_org_stack_output
+     verbosity: 3
+
+- name: "Deploy {{stack.route53.email_monitor_us_route53}} to {{account.name}} {{account.region}}"
+  cloudformation:
+    stack_name: "{{stack.route53.email_monitor_us_route53}}"
+    state: present
+    region: "{{account.region}}"
+    disable_rollback: true
+    template: "{{template.route53.route53_record_basic_template}}"
+    template_parameters:
+      RecordType:                    "MX"
+      HostedZoneName:                "sophos-email-monitor.us."
+      ResourceRecords:               "10 mx-01-us-east-2.prod.hydra.sophos.com.,20 mx-02-us-east-2.prod.hydra.sophos.com."
+  register: sophos_email_monitor_us_stack_output
+
+ - debug:
+     var: sophos_email_monitor_us_stack_output
+     verbosity: 3
+
+- name: "Deploy {{stack.route53.email_recipient_com_route53}} to {{account.name}} {{account.region}}"
+  cloudformation:
+    stack_name: "{{stack.route53.email_recipient_com_route53}}"
+    state: present
+    region: "{{account.region}}"
+    disable_rollback: true
+    template: "{{template.route53.route53_record_basic_template}}"
+    template_parameters:
+      RecordType:                    "MX"
+      HostedZoneName:                "sophos-email-recipient.com."
+      ResourceRecords:               "10 inbound-smtp.us-west-2.amazonaws.com."
+  register: sophos_email_recipient_com_stack_output
+
+ - debug:
+     var: sophos_email_recipient_com_stack_output
+     verbosity: 3

@@ -120,7 +120,7 @@ stack:
   iam:
     role:
       cloud_email_roles:                                "{{vpc.cloud_email.name}}-IAMRoles"
-      cloud_email_monitor_roles:                        "{{vpc.cloud_email.name}}-IAMMonitorRoles"
+      cloud_email_monitor_roles:                        "{{account.name}}-XgemailMonitorRoles"
       cloud_station_region_roles:                       "{{vpc.cloud_station.name}}-RegionIAMRoles"
       cloud_station_roles:                              "{{vpc.cloud_station.name}}-IAMRoles"
       firehose_log_shipper_stream:                      "roles-firehose-log-shipper-publish-to-s3-{{vpc.cloud_email.name}}"
@@ -167,11 +167,11 @@ stack:
   lambda:
     eip_monitor_lambda_function:                        "{{vpc.cloud_email.name}}-Lambda-XgemailEipMonitor"
     eip_rotation_lambda_function:                       "{{vpc.cloud_email.name}}-Lambda-XgemailEipRotation"
-    inbound_monitor_receive_lambda_function:            "{{vpc.cloud_email.name}}-Lambda-Xgemail-Monitor-Receive"
-    inbound_monitor_send_lambda_function:               "{{vpc.cloud_email.name}}-Lambda-Xgemail-Monitor-Send"
+    inbound_monitor_receive_lambda_function:            "{{account.name}}-Lambda-XgemailMonitorReceive"
+    inbound_monitor_send_lambda_function:               "{{account.name}}-Lambda-XgemailMonitorSend"
     instance_terminator_lambda_function:                "{{vpc.cloud_email.name}}-Lambda-XgemailInstanceTerminator"
-    outbound_monitor_receive_lambda_function:           "{{vpc.cloud_email.name}}-Lambda-Xgemail-Outbound-Monitor-Receive"
-    outbound_monitor_send_lambda_function:              "{{vpc.cloud_email.name}}-Lambda-Xgemail-Outbound-Monitor-Send"
+    outbound_monitor_receive_lambda_function:           "{{account.name}}-Lambda-XgemailOutboundMonitorReceive"
+    outbound_monitor_send_lambda_function:              "{{account.name}}-Lambda-XgemailOutboundMonitor-Send"
   route53:
     customer_delivery_route53:                          "{{vpc.cloud_email.name}}-XGEMAIL-delivery-ROUTE53"
     internet_delivery_route53:                          "{{vpc.cloud_email.name}}-XGEMAIL-internet-delivery-ROUTE53"
@@ -182,7 +182,11 @@ stack:
     customer_delivery_b_route53:                        "{{vpc.cloud_email.name}}-XGEMAIL-delivery-A-RECORD-B-ROUTE53"
     encryption_delivery_route53:                        "{{vpc.cloud_email.name}}-XGEMAIL-encryption-delivery-ROUTE53"
     encryption_submit_route53:                          "{{vpc.cloud_email.name}}-XGEMAIL-encryption-submit-ROUTE53"
-    email_monitor_route53:                              "{{vpc.cloud_email.name}}-XGEMAIL-monitor-ROUTE53"
+    email_monitor_com_route53:                          "{{vpc.cloud_email.name}}-mx-sophos-email-monitor-com"
+    email_monitor_net_route53:                          "{{vpc.cloud_email.name}}-mx-sophos-email-monitor-net"
+    email_monitor_org_route53:                          "{{vpc.cloud_email.name}}-mx-sophos-email-monitor-org"
+    email_monitor_us_route53:                           "{{vpc.cloud_email.name}}-mx-sophos-email-monitor-us"
+    email_recipient_com_route53:                        "{{vpc.cloud_email.name}}-mx-sophos-email-recipient-com"
     mx_01_route53:                                      "{{vpc.cloud_email.name}}-XGEmailMX01-Cname"
     mx_02_route53:                                      "{{vpc.cloud_email.name}}-XGEmailMX02-Cname"
   s3:
@@ -195,7 +199,7 @@ stack:
     internet_submit_bucket:                             "{{vpc.cloud_email.name}}-XGEMAIL-submit-bucket-S3"
     lambda_bucket:                                      "{{vpc.cloud_email.name}}-{{account.name}}-{{account.region}}-lambda-bucket-S3"
   ses:
-    email_monitor_ses:                                  "{{vpc.cloud_email.name}}-XGEMAIL-monitor-SES"
+    email_monitor_ses:                                  "{{account.name}}-SES"
   sqs:
     lifecycle_sqs_sns:                                  "{{account.name}}-Xgemail-LifeCycleEvents-Processing"
     customer_delivery_sqs_queue:                        "{{vpc.cloud_email.name}}-XGEMAIL-delivery-SQS"
