@@ -30,32 +30,6 @@
     var: xgemail_es_stack
     verbosity: 3
 
-- name: "Display CloudEmail Elasticsearch Domain Stack Output"
-  debug:
-    msg: "{{xgemail_es_stack.stack_outputs}}"
-    verbosity: 2
-
-# Update awscli to latest version
-- name: "Update awscli to the latest version"
-  command: pip install -U awscli
-
-# Enable AWS Elasticsearch Logging to CloudWatch
-- name: "Grant Amazon Elasticsearch permissions to write to the ErrorLog log group"
-  command: >
-    aws logs put-resource-policy
-      --policy-name AES-cloudemail-es-domain-error-logs
-      --policy-document '{ "Version": "2012-10-17", "Statement": [{ "Sid": "ElasticsearchToCloudWatchErrorLogs", "Effect": "Allow", "Principal": { "Service": "es.amazonaws.com"}, "Action":[ "logs:PutLogEvents"," logs:PutLogEventsBatch","logs:CreateLogStream"],"Resource": "{{xgemail_es_stack.stack_outputs.CloudWatchErrorLogsArn}}"}]}'
-      --region {{account.region}}
-  register: es_cw_error_log_policy
-
-- name: "Enable Amazon Elasticsearch logging to ErrorLog log group"
-  command: >
-    aws es update-elasticsearch-domain-config
-      --domain-name "{{xgemail_es_stack.stack_outputs.ElasticSearchDomain}}"
-      --log-publishing-options "ES_APPLICATION_LOGS={CloudWatchLogsLogGroupArn={{xgemail_es_stack.stack_outputs.CloudWatchErrorLogsArn}},Enabled=true}"
-      --region {{account.region}}
-  register: es_update_log_config
-
 # ToC Elasticsearch Cluster
 - name: "Deploy ToC Elasticsearch Domains {{stack.es.toc_elasticsearch_domain}} to {{account.name}}-{{account.region}}"
   cloudformation:
