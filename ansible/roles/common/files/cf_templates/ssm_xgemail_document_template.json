@@ -171,7 +171,6 @@
               "action": "aws:executeAwsApi",
               "maxAttempts": 3,
               "timeoutSeconds": 60,
-              "onFailure": "Continue",
               "inputs": {
                 "Service": "ec2",
                 "Api": "DescribeInstances",
@@ -186,7 +185,8 @@
                   "Type": "Boolean"
                 }
               ],
-              "nextStep": "branchOnDeleteOnTermination"
+              "nextStep": "branchOnDeleteOnTermination",
+              "onFailure": "Continue"
             },
             {
               "name": "branchOnDeleteOnTermination",
@@ -207,7 +207,6 @@
               "action": "aws:executeAwsApi",
               "maxAttempts": 3,
               "timeoutSeconds": 60,
-              "onFailure": "Continue",
               "inputs": {
                 "Service": "ec2",
                 "Api": "DescribeVolumes",
@@ -229,14 +228,14 @@
                   "Type": "String"
                 }
               ],
-              "nextStep": "terminationAutomation"
+              "nextStep": "terminationAutomation",
+              "onFailure": "Continue"
             },
             {
               "name": "terminationAutomation",
               "action": "aws:runCommand",
               "maxAttempts": 1,
               "timeoutSeconds": 3600,
-              "onFailure": "step:volumeNotEmpty",
               "inputs": {
                 "DocumentName": "AWS-RunShellScript",
                 "InstanceIds": [ "{{InstanceId}}" ],
@@ -246,14 +245,14 @@
                   ]
                 }
               },
-              "nextStep": "volumeEmpty"
+              "nextStep": "volumeEmpty",
+              "onFailure": "step:volumeNotEmpty"
             },
             {
               "name": "volumeNotEmpty",
               "action": "aws:executeAwsApi",
               "maxAttempts": 3,
               "timeoutSeconds": 60,
-              "onFailure": "Continue",
               "inputs": {
                 "Service": "autoscaling",
                 "Api": "CompleteLifecycleAction",
@@ -263,21 +262,22 @@
                 "LifecycleActionToken": "{{LifecycleActionToken}}",
                 "LifecycleHookName": "{{LifecycleHookName}}"
               },
-              "nextStep": "sendAlert"
+              "nextStep": "sendAlert",
+              "onFailure": "Continue"
             },
             {
               "name": "sendAlert",
               "action": "aws:executeAwsApi",
               "maxAttempts": 3,
               "timeoutSeconds": 60,
-              "isEnd": true,
               "inputs": {
                 "Service": "sns",
                 "Api": "Publish",
                 "TopicArn": { "Ref": "AlarmTopicArn" },
                 "Subject": "Undelivered messages stuck in email queue on Volume Id {{getVolumeId.VolumeId}}",
                 "Message": "Region: {{Region}} Volume Id: {{getVolumeId.VolumeId}} EC2 Instance: {{InstanceId}}"
-              }
+              },
+              "isEnd": true
             },
             {
               "name": "volumeEmpty",
@@ -299,7 +299,6 @@
               "name": "describeVolume",
               "action": "aws:waitForAwsResourceProperty",
               "timeoutSeconds": 120,
-              "onFailure": "Continue",
               "inputs": {
                 "Service": "ec2",
                 "Api": "DescribeVolumes",
@@ -307,23 +306,25 @@
                 "PropertySelector": "$.Volumes[0].State",
                 "DesiredValues": [ "available" ]
               },
-              "nextStep": "deleteVolume"
+              "nextStep": "deleteVolume",
+              "onFailure": "Continue"
             },
             {
               "name": "deleteVolume",
               "action": "aws:executeAwsApi",
               "maxAttempts": 3,
               "timeoutSeconds": 60,
-              "isEnd": true,
               "inputs": {
                 "Service": "ec2",
                 "Api": "DeleteVolume",
                 "VolumeId": "{{getVolumeId.VolumeId}}"
-              }
+              },
+              "isEnd": true
             }
           ],
           "outputs": [
-            "getVolumeId.VolumeId"
+            "getVolumeId.VolumeId",
+            "getInstanceDeleteOnTermination.DeleteOnTermination"
           ]
         }
       }

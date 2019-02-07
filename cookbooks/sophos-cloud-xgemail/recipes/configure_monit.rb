@@ -67,5 +67,5 @@ end
 
 # Add and start Monit service
 service 'monit' do
-    action [ :enable, :start ]
+    action :enable
 end

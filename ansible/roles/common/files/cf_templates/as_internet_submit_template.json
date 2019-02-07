@@ -828,6 +828,7 @@
               "  if [ \"$exit_code\" == 0 ]; then\n",
               "    /opt/sophos/bin/set_instance_tag.py LastHealth UserDataSuccess\n",
               "    /opt/sophos/bin/ebs-delete-on-termination.py\n",
+              "    /sbin/service monit start\n",
               "  else\n",
               "    /opt/sophos/bin/set_instance_tag.py LastHealth UserDataFailure\n",
               "  fi\n",
