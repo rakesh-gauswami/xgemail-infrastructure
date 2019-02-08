@@ -6,7 +6,13 @@
   register:
     msg_output_work_dir
 
-- include_vars: domain_names.yml
+- name: "Import Account Variables."
+  include_vars:
+    extensions: ['yml']
+    dir: "{{ account.name }}"
+    depth: 1
+  tags:
+    - always
 
 - name: "Include SSL Generation task."
   include_tasks: generate-certs.yml
