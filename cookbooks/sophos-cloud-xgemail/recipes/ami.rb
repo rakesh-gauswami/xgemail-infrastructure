@@ -109,6 +109,7 @@ yum_package 'amazon-ssm-agent' do
   action :upgrade
 end
 
+SOPHOS_BIN_DIR = '/opt/sophos/bin'
 PACKAGES_DIR = '/opt/sophos/packages'
 DEPLOYMENT_DIR = '/opt/sophos/xgemail'
 
@@ -123,6 +124,13 @@ JILTER_ENCRYPTION_PACKAGE_NAME = "xgemail-jilter-encryption-#{JILTER_ENCRYPTION_
 
 POSTFIX3_RPM = "postfix3-sophos-#{node['xgemail']['postfix3_version']}.el6.x86_64.rpm"
 
+directory SOPHOS_BIN_DIR do
+  mode '0755'
+  owner 'root'
+  group 'root'
+  recursive true
+end
+
 directory PACKAGES_DIR do
   mode '0755'
   owner 'root'
@@ -135,6 +143,13 @@ directory DEPLOYMENT_DIR do
   owner 'root'
   group 'root'
   recursive true
+end
+
+cookbook_file "#{SOPHOS_BIN_DIR}/ebs-delete-on-termination.py" do
+  source 'ebs-delete-on-termination.py'
+  mode '0755'
+  owner 'root'
+  group 'root'
 end
 
 execute 'download_jilter_inbound' do
