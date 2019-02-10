@@ -57,9 +57,6 @@ def get_metadata_binary(formatted_s3_metadata):
 
     # Add schema version check with tech debt story: XGE-9131
 
-    if not formatterutils.is_correct_version(SCHEMA_VERSION, formatted_s3_metadata[9:17]):
-        raise ValueError("Metadata file format error: invalid metadata version bytes!")
-
     if not formatterutils.is_unencypted_data(formatted_s3_metadata[17:21]):
         raise ValueError("Metadata file format error: invalid metadata nonce length bytes!")
 
