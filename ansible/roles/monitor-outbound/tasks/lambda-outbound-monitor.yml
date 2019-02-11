@@ -100,12 +100,12 @@
       EuWest1PrivKeyPath:                   "{{eu_west_1_private_key}}"
       Euwest1PubKeyPath:                    "{{eu_west_1_public_key}}"
       Euwest1PubKeyThumbprintPath:          "{{eu_west_1_public_thumb_print}}"
-      FunctionName:                         "{{lambda.outbound_monitor_send_lambda_function}}"
-      HandlerName:                          xgemail_outbound_monitor_send.monitor_handler
-      IAMRoleArn:                           "{{cloud_email_monitor_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_monitor_roles].stack_outputs.LambdaXgemailOutboundMonitorSendRoleArn}}"
+      FunctionName:                         "{{lambda.outbound_monitor_receive_lambda_function}}"
+      HandlerName:                          xgemail_outbound_monitor_receive.monitor_handler
+      IAMRoleArn:                           "{{cloud_email_monitor_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_monitor_roles].stack_outputs.LambdaXgemailOutboundMonitorReceiveRoleArn}}"
       S3Bucket:                             "{{s3.lambda_bucket}}"
       S3BucketforCerts:                     "cloud-{{account.name}}-connections"
-      S3Key:                                "lambda/{{build.number}}/xgemail_outbound_monitor_send.zip"
+      S3Key:                                "lambda/{{build.number}}/xgemail_outbound_monitor_receive.zip"
       ScheduleExpression:                   rate(1 minute)
       TenantId:                             "{{tenant_id}}"
       UsEast2Id:                            "{{us_east_2_id}}"
