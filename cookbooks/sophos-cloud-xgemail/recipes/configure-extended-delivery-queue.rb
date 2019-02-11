@@ -16,6 +16,15 @@ if NODE_TYPE != 'xdelivery' && NODE_TYPE != 'internet-xdelivery'
   return
 end
 
+LOCAL_CERT_PATH = node['sophos_cloud']['local_cert_path']
+LOCAL_KEY_PATH = node['sophos_cloud']['local_key_path']
+
+CERT_NAME = node['xgemail']['cert']
+
+CERT_FILE = "#{LOCAL_CERT_PATH}/#{CERT_NAME}.crt"
+KEY_FILE = "#{LOCAL_KEY_PATH}/#{CERT_NAME}.key"
+SERVER_PEM_FILE = "#{LOCAL_CERT_PATH}/server.pem"
+
 # Include Helper library
 ::Chef::Recipe.send(:include, ::SophosCloudXgemail::Helper)
 ::Chef::Resource.send(:include, ::SophosCloudXgemail::Helper)
@@ -34,6 +43,43 @@ MANAGED_SERVICES_IN_START_ORDER = [
 ]
 
 if ACCOUNT != 'sandbox'
+  if NODE_TYPE == 'internet-xdelivery'
+    GLOBAL_SIGN_DIR = "#{LOCAL_CERT_PATH}/3rdparty/global-sign"
+    GLOBAL_SIGN_INTERMEDIARY = "#{GLOBAL_SIGN_DIR}/global-sign-sha256-intermediary.crt"
+    GLOBAL_SIGN_ROOT = "#{GLOBAL_SIGN_DIR}/global-sign-root.crt"
+
+    # Add xgemail certificate
+    remote_file "/etc/ssl/certs/#{CERT_NAME}.crt" do
+      source "file:///tmp/sophos/certificates/api-mcs-mob-prod.crt"
+      owner 'root'
+      group 'root'
+      mode 0444
+    end
+
+    # Add xgemail key
+    remote_file "/etc/ssl/private/#{CERT_NAME}.key" do
+      source "file:///tmp/sophos/certificates/appserver.key"
+      owner 'root'
+      group 'root'
+      mode 0440
+    end
+
+    CREATE_SERVER_PEM_COMMAND = 'cat ' +
+      "'#{CERT_FILE}' " +
+      "'#{GLOBAL_SIGN_INTERMEDIARY}' " +
+      "'#{GLOBAL_SIGN_ROOT}' " +
+      "> '#{SERVER_PEM_FILE}'"
+
+    file SERVER_PEM_FILE do
+      owner 'root'
+      group 'root'
+      mode '0444'
+      action :create
+    end
+
+    execute CREATE_SERVER_PEM_COMMAND
+  end
+
   service 'postfix' do
     supports :restart => true, :start => true, :stop => true, :reload => true
     action :nothing
@@ -76,52 +122,66 @@ HOP_COUNT_DELIVERY_INSTANCE = node['xgemail']['hop_count_delivery_instance']
 
 include_recipe 'sophos-cloud-xgemail::common-postfix-multi-instance-config'
 
-HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
+if NODE_TYPE == 'internet-xdelivery'
+  HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
 
-file "#{HEADER_CHECKS_PATH}" do
-  content "/^X-Sophos-Enforce-TLS: yes$|^X-Sophos-TLS-Probe: SUCCESS$/i FILTER smtp_encrypt:"
-  mode '0644'
-  owner 'root'
-  group 'root'
-end
+  file "#{HEADER_CHECKS_PATH}" do
+    content "/^X-Sophos-Enforce-TLS: yes$|^X-Sophos-TLS-Probe: SUCCESS$/i FILTER smtp_encrypt:"
+    mode '0644'
+    owner 'root'
+    group 'root'
+  end
 
-# Run an instance of the smtp process that enforces TLS encryption
-[
-  "smtp_encrypt/unix = smtp_encrypt unix - - n - - smtp"
-].each do | cur |
-  execute print_postmulti_cmd( INSTANCE_NAME, "postconf -M '#{cur}'" )
-end
-[
-  "smtp_encrypt/unix/smtp_tls_security_level=encrypt"
-].each do | cur |
-  execute print_postmulti_cmd( INSTANCE_NAME, "postconf -P '#{cur}'" )
-end
+  # Run an instance of the smtp process that enforces TLS encryption
+  [
+    "smtp_encrypt/unix = smtp_encrypt unix - - n - - smtp"
+  ].each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf -M '#{cur}'" )
+  end
+  [
+    "smtp_encrypt/unix/smtp_tls_security_level=encrypt"
+  ].each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf -P '#{cur}'" )
+  end
 
+  [
+      # Server side TLS configuration
+      'smtpd_tls_security_level = may',
+      'smtpd_tls_ciphers = high',
+      'smtpd_tls_mandatory_ciphers = high',
+      'smtpd_tls_loglevel = 1',
+      'smtpd_tls_received_header = yes',
+      "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
+      "smtpd_tls_key_file = #{KEY_FILE}",
 
-# Run an instance of the smtp process that enforces TLS encryption
-[
-  "smtp_encrypt/unix = smtp_encrypt unix - - n - - smtp"
-].each do | cur |
-  execute print_postmulti_cmd( INSTANCE_NAME, "postconf -M '#{cur}'" )
-end
-[
-  "smtp_encrypt/unix/smtp_tls_security_level=encrypt"
-].each do | cur |
-  execute print_postmulti_cmd( INSTANCE_NAME, "postconf -P '#{cur}'" )
-end
-
-[
-    'bounce_queue_lifetime=0',
-    "hopcount_limit = #{HOP_COUNT_DELIVERY_INSTANCE}",
-    'mynetworks = 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16',
-    'smtp_tls_security_level=may',
-    'smtp_tls_ciphers=high',
-    'smtp_tls_mandatory_ciphers=high',
-    'smtp_tls_loglevel=1',
-    'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache',
-    "header_checks = regexp:#{HEADER_CHECKS_PATH}"
-].each do | cur |
-  execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+      'bounce_queue_lifetime=0',
+      "hopcount_limit = #{HOP_COUNT_DELIVERY_INSTANCE}",
+      'mynetworks = 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16',
+      'smtp_tls_security_level=may',
+      'smtp_tls_ciphers=high',
+      'smtp_tls_mandatory_ciphers=high',
+      'smtp_tls_loglevel=1',
+      'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache',
+      "header_checks = regexp:#{HEADER_CHECKS_PATH}"
+  ].each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+  end
+else
+  if NODE_TYPE == 'xdelivery'
+    [
+      'bounce_queue_lifetime=0',
+      "hopcount_limit = #{HOP_COUNT_DELIVERY_INSTANCE}",
+      'mynetworks = 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16',
+      'smtp_tls_security_level=may',
+      'smtp_tls_ciphers=high',
+      'smtp_tls_mandatory_ciphers=high',
+      'smtp_tls_loglevel=1',
+      'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache',
+      "header_checks = regexp:#{HEADER_CHECKS_PATH}"
+    ].each do | cur |
+      execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+    end
+  end
 end
 
 if NODE_TYPE == 'xdelivery'
