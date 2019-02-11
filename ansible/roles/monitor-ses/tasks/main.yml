@@ -1,0 +1,8 @@
+---
+
+- name: "Include {{stack.lambda.inbound_monitor_receive_lambda_function}} CloudFormation Stack Output."
+  include_tasks: get-cloudemail-monitor-lambda-function-output.yml
+
+- name: "Include SES Task."
+  include_tasks: ses-sendreceive.yml
+
