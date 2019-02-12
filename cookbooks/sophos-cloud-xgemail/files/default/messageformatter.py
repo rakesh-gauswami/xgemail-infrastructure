@@ -55,8 +55,7 @@ def get_message_binary(formatted_s3_message):
     if not is_message_file(formatted_s3_message[0:8]):
         raise ValueError("Message file format error: invalid message magic bytes!")
 
-    if not formatterutils.is_correct_version(SCHEMA_VERSION, formatted_s3_message[8:16]):
-        raise ValueError("Message file format error: invalid message version bytes!")
+    # Add schema version check with tech debt story: XGE-9131
 
     if not formatterutils.is_unencypted_data(formatted_s3_message[16:20]):
         raise ValueError("Message file format error: invalid message nonce length bytes!")
