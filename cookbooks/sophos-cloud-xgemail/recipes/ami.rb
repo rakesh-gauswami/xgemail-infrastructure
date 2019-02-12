@@ -230,7 +230,7 @@ execute 'download_postfix3-sophos-rpm' do
   user 'root'
   cwd "#{PACKAGES_DIR}"
   command <<-EOH
-      aws --region us-west-2 s3 cp s3:#{sophos_thirdparty}/xgemail/postfix3-sophos/output/#{POSTFIX3_RPM} .
+      aws --region us-west-2 s3 cp s3:#{sophos_thirdparty}/xgemail/#{POSTFIX3_RPM} .
   EOH
 end
 
