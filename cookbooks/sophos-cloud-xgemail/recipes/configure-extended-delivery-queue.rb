@@ -176,8 +176,7 @@ else
       'smtp_tls_ciphers=high',
       'smtp_tls_mandatory_ciphers=high',
       'smtp_tls_loglevel=1',
-      'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache',
-      "header_checks = regexp:#{HEADER_CHECKS_PATH}"
+      'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache'
     ].each do | cur |
       execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
     end
