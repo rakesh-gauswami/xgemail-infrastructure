@@ -109,6 +109,12 @@ yum_package 'amazon-ssm-agent' do
   action :upgrade
 end
 
+# Packages required by postfix 2.4.1.2:
+
+yum_package 'libuuid' do
+  action :upgrade
+end
+
 SOPHOS_BIN_DIR = '/opt/sophos/bin'
 PACKAGES_DIR = '/opt/sophos/packages'
 DEPLOYMENT_DIR = '/opt/sophos/xgemail'
@@ -224,7 +230,7 @@ execute 'download_postfix3-sophos-rpm' do
   user 'root'
   cwd "#{PACKAGES_DIR}"
   command <<-EOH
-      aws --region us-west-2 s3 cp s3:#{sophos_thirdparty}/xgemail/postfix3-sophos/output/#{POSTFIX3_RPM} .
+      aws --region us-west-2 s3 cp s3:#{sophos_thirdparty}/xgemail/#{POSTFIX3_RPM} .
   EOH
 end
 
