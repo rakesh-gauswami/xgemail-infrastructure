@@ -88,7 +88,8 @@
       "Properties": {
         "DocumentType": "Automation",
         "Content": {
-          "schemaVersion": "2.2",
+          "schemaVersion": "0.3",
+          "assumeRole": { "Fn::GetAtt" : [ "TerminationAutomationRole", "Arn" ] },
           "description": "Terminate an EC2 instance in an AutoScaling Group",
           "parameters": {
             "InstanceId": {
@@ -414,6 +415,7 @@
                 "autoscaling:CompleteLifecycleAction",
                 "autoscaling:DescribeAutoScalingInstances",
                 "autoscaling:RecordLifecycleActionHeartbeat",
+                "autoscaling:TerminateInstanceInAutoScalingGroup",
                 "autoscaling:UpdateAutoScalingGroup"
               ],
               "Effect": "Allow",
