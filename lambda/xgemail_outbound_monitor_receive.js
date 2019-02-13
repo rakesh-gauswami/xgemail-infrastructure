@@ -12,10 +12,10 @@ const EU_CENTRAL_1_NAMESPACE = "xgemail-outbound-monitor-eu-central-1";
 const EU_WEST_1_NAMESPACE = "xgemail-outbound-monitor-eu-west-1";
 
 const NAMESPACEMAP = {
-    "sophos-email-monitor.us": US_EAST_2_NAMESPACE,
-    "sophos-email-monitor.com" : US_WEST_2_NAMESPACE,
-    "sophos-email-monitor.net": EU_CENTRAL_1_NAMESPACE,
-    "sophos-email-monitor.org": EU_WEST_1_NAMESPACE
+    "process.env.XGEMAIL_US_EAST_2_HOSTED_ZONE_NAME": US_EAST_2_NAMESPACE,
+    "process.env.XGEMAIL_US_WEST_2_HOSTED_ZONE_NAME" : US_WEST_2_NAMESPACE,
+    "process.env.XGEMAIL_EU_CENTRAL_1_HOSTED_ZONE_NAME": EU_CENTRAL_1_NAMESPACE,
+    "process.env.XGEMAIL_EU_WEST_1_HOSTED_ZONE_NAME": EU_WEST_1_NAMESPACE
 };
 
 exports.handler = (event, context, callback) => {

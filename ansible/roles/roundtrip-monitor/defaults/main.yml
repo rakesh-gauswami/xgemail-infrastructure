@@ -1,0 +1,41 @@
+vpc:
+  cloud_email:
+    name: CloudEmail
+lambda:
+  inbound_monitor_receive_lambda_function:              "Xgemail-Monitor-Receive"
+  inbound_monitor_send_lambda_function:                 "Xgemail-Monitor-Send"
+  outbound_monitor_receive_lambda_function:             "Xgemail-Outbound-Monitor-Receive"
+  outbound_monitor_send_lambda_function:                "Xgemail-Outbound-Monitor-Send"
+s3:
+  lambda_bucket:                                       "cloud-{{account.name}}-{{account.region}}-lambda"
+
+template:
+  iam:
+    role:
+      roles_xgemail_monitor_template:                   "{{role_path}}/files/cf_templates/roles_xgemail_monitor_template.json"
+  lambda:
+    lambda_xgemail_inbound_monitor_template:            "{{role_path}}/files/cf_templates/lambda_template.json"
+    lambda_xgemail_outbound_monitor_template:           "{{role_path}}/files/cf_templates/lambda_outbound_template.json"
+  route53:
+    route53_record_basic_template:                      "{{role_path}}/../common/files/cf_templates/route53_record_basic_template.json"
+    route53_record_template:                            "{{role_path}}/../common/files/cf_templates/route53_record_template.json"
+  ses:
+    ses_template:                                       "{{role_path}}/files/cf_templates/ses_template.json"
+    ses_domain_verification_template:                   "{{role_path}}/files/cf_templates/ses_custom_resources_template.json"
+stack:
+  iam:
+    role:
+      cloud_email_monitor_roles:                        "{{account.name}}-XgemailMonitorRoles"
+  lambda:
+    inbound_monitor_receive_lambda_function:            "{{account.name}}-Lambda-XgemailMonitorReceive"
+    inbound_monitor_send_lambda_function:               "{{account.name}}-Lambda-XgemailMonitorSend"
+    outbound_monitor_receive_lambda_function:           "{{account.name}}-Lambda-XgemailOutboundMonitorReceive"
+    outbound_monitor_send_lambda_function:              "{{account.name}}-Lambda-XgemailOutboundMonitorSend"
+  route53:
+    email_monitor_com_route53:                          "{{vpc.cloud_email.name}}-mx-sophos-email-monitor-com"
+    email_monitor_net_route53:                          "{{vpc.cloud_email.name}}-mx-sophos-email-monitor-net"
+    email_monitor_org_route53:                          "{{vpc.cloud_email.name}}-mx-sophos-email-monitor-org"
+    email_monitor_us_route53:                           "{{vpc.cloud_email.name}}-mx-sophos-email-monitor-us"
+    email_recipient_com_route53:                        "{{vpc.cloud_email.name}}-mx-sophos-email-recipient-com"
+  ses:
+    email_monitor_ses:                                  "{{account.name}}-SES"

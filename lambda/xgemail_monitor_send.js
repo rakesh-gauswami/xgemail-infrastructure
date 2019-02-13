@@ -10,9 +10,9 @@
 
 var aws = require('aws-sdk');
 
-//Sending from us-west-2
+//Sending from SES region
 var ses = new aws.SES({
-    region: 'us-west-2'
+    region: process.env.XGEMAIL_SES_REGION
 });
 
 exports.handler = (event, context, callback) => {
@@ -20,10 +20,10 @@ exports.handler = (event, context, callback) => {
     console.log('Incoming: ', event);
     //Domains for mailboxes are already verified in AWS otherwise sending email will result in error.
     var mailboxes= [
-        'us.east.2.prod@sophos-email-monitor.us',
-        'us.west.2.prod@sophos-email-monitor.com',
-        'eu.west.1.prod@sophos-email-monitor.org',
-        'eu.central.1.prod@sophos-email-monitor.net'
+        process.env.XGEMAIL_EU_CENTRAL_1_SENDER_ADDRESS,
+        process.env.XGEMAIL_EU_WEST_1_SENDER_ADDRESS,
+        process.env.XGEMAIL_US_EAST_2_SENDER_ADDRESS,
+        process.env.XGEMAIL_US_WEST_2_SENDER_ADDRESS
     ];
 
     var index_mailboxes = 0;
@@ -43,7 +43,7 @@ exports.handler = (event, context, callback) => {
                     Data: 'Sophos Email Monitor ' + date
                 }
             },
-            Source: 'monitor.sender@sophos-email-monitor.com'
+            Source: process.env.XGEMAIL_US_WEST_2_RECIPIENT_ADDRESS
         };
         console.log('Sending email to ', recipient);
         // Send email via AWS-SDK API.
