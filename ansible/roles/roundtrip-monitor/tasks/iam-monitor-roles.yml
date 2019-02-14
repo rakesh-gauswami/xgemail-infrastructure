@@ -1,0 +1,19 @@
+---
+# IAM Role for CloudEmail Monitor
+- name: "Deploy {{stack.iam.role.cloud_email_monitor_roles}} to {{account.name}} {{account.region}}"
+  cloudformation:
+    stack_name:                                 "{{stack.iam.role.cloud_email_monitor_roles}}"
+    state:                                      present
+    region:                                     "{{account.region}}"
+    disable_rollback:                           true
+    template:                                   "{{template.iam.role.roles_xgemail_monitor_template}}"
+  register: iam_monitor_stack
+
+- debug:
+  var: iam_monitor_stack
+  verbosity: 3
+
+- name: "Display IAM Monitor Stack Output"
+  debug:
+    msg: "{{iam_monitor_stack.stack_outputs}}"
+    verbosity: 2
