@@ -83,6 +83,54 @@
       }
     },
 
+    "TerminateAutoScalingInstance": {
+      "Type": "AWS::SSM::Document",
+      "Properties": {
+        "DocumentType": "Automation",
+        "Content": {
+          "schemaVersion": "0.3",
+          "assumeRole": { "Fn::GetAtt" : [ "TerminationAutomationRole", "Arn" ] },
+          "description": "Terminate an EC2 instance in an AutoScaling Group",
+          "parameters": {
+            "InstanceId": {
+              "type": "String",
+              "description": "The EC2 Instance Id."
+            },
+            "ShouldDecrementDesiredCapacity": {
+              "type": "Boolean",
+              "default": false,
+              "allowedValues": [
+                true,
+                false
+              ],
+              "description": "Indicates whether terminating the instance also decrements the size of the Auto Scaling group."
+            }
+          },
+          "mainSteps":[
+            {
+              "name": "terminateInstanceInAutoScalingGroup",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": 3,
+              "timeoutSeconds": 60,
+              "inputs": {
+                "Service": "autoscaling",
+                "Api": "TerminateInstanceInAutoScalingGroup",
+                "InstanceId": "{{InstanceId}}",
+                "ShouldDecrementDesiredCapacity": "{{ShouldDecrementDesiredCapacity}}"
+              },
+              "outputs": [
+                {
+                  "Name": "StatusMessage",
+                  "Selector": "$.Activity.StatusMessage",
+                  "Type": "String"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+
     "InstanceTerminator": {
       "Type": "AWS::SSM::Document",
       "Properties":{
@@ -367,6 +415,7 @@
                 "autoscaling:CompleteLifecycleAction",
                 "autoscaling:DescribeAutoScalingInstances",
                 "autoscaling:RecordLifecycleActionHeartbeat",
+                "autoscaling:TerminateInstanceInAutoScalingGroup",
                 "autoscaling:UpdateAutoScalingGroup"
               ],
               "Effect": "Allow",
