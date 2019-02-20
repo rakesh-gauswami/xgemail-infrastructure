@@ -262,7 +262,7 @@ def prepare_msg_history_event(s3_file_path, metadata, sqs_message, direction, se
     try:
         # create a message history event object
         msg_history_event = MessageHistoryEvent(
-            metadata.schema_version,
+            messagehistoryformatter.SCHEMA_VERSION,
             s3_file_path,
             metadata.accepting_server_ip,
             metadata.queue_id,
