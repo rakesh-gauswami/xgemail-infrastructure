@@ -24,6 +24,74 @@
       "Description": "List of Domains to add to SES",
       "ConstraintDescription": "must be a comma-separated list of valid domain names."
     },
+    "UsWest2aFilterName": {
+      "Description": "SES Filter name for US West 2a",
+      "Type": "String"
+    },
+    "Policy": {
+      "Description": "SES Filter name for US West 2a",
+      "Type": "String"
+    },
+    "UsWest2bFilterName": {
+      "Description": "SES Filter name for US West 2b",
+      "Type": "String"
+    },
+    "UsEast2aFilterName": {
+      "Description": "SES Filter name for US East 2a",
+      "Type": "String"
+    },
+    "UsEast2bFilterName": {
+      "Description": "SES Filter name for US East 2b",
+      "Type": "String"
+    },
+    "EuCentral1aFilterName": {
+      "Description": "SES Filter name for EU Central 1a",
+      "Type": "String"
+    },
+    "EuCentral1bFilterName": {
+      "Description": "SES Filter name for EU Central 1b",
+      "Type": "String"
+    },
+    "EuWest1aFilterName": {
+      "Description": "SES Filter name for EU West 1a",
+      "Type": "String"
+    },
+    "EuWest1bFilterName": {
+      "Description": "SES Filter name for EU West 1b",
+      "Type": "String"
+    },
+    "UsWest2aCidrRange": {
+      "Description": "IP Address range for US West 2a",
+      "Type": "String"
+    },
+    "UsWest2bCidrRange": {
+      "Description": "IP Address range for US West 2b",
+      "Type": "String"
+    },
+    "UsEast2aCidrRange": {
+      "Description": "IP Address range for US East 2a",
+      "Type": "String"
+    },
+    "UsEast2bCidrRange": {
+      "Description": "IP Address range for US East 2b",
+      "Type": "String"
+    },
+    "EuCentral1aCidrRange": {
+      "Description": "IP Address range for EU Central 1a",
+      "Type": "String"
+    },
+    "EuCentral1bCidrRange": {
+      "Description": "IP Address range for EU Central 1b",
+      "Type": "String"
+    },
+    "EuWest1aCidrRange": {
+      "Description": "IP Address range for EU West 1a",
+      "Type": "String"
+    },
+    "EuWest1bCidrRange": {
+      "Description": "IP Address range for EU West 1b",
+      "Type": "String"
+    },
     "InboundMailRecipients": {
       "Type": "CommaDelimitedList",
       "Description": "List of email addresses to add to SES",
@@ -54,6 +122,15 @@
     "SesInvokeOutboundLambdaFunctionArn": {
       "Description": "The ARN of the Outbound Lambda Function SES will invoke.",
       "Type": "String"
+    }
+  },
+
+  "Conditions": {
+    "UseRuleSet" : {
+      "Fn::Equals": [
+        {"Ref": "RuleSetName"},
+        "NONE"
+      ]
     }
   },
 
@@ -223,160 +300,6 @@
       }
     },
 
-    "SesRuleLambdaFunction": {
-      "Type": "AWS::Lambda::Function",
-      "DependsOn": "LambdaExecutionRole",
-      "Properties": {
-        "Code": {
-          "ZipFile": {
-            "Fn::Join": [
-              "", [
-                "import boto3\n",
-                "import botocore\n",
-                "import logging\n",
-                "import cfnresponse\n",
-                "logger = logging.getLogger()\n",
-                "logger.setLevel(logging.INFO)\n",
-                "session = boto3.Session()\n",
-                "ses = session.client('ses', region_name='",{ "Ref": "AWS::Region" },"')\n",
-                "\n",
-                "def rule_handler(event, context):\n",
-                "    response_data = {}\n",
-                "    try:\n",
-                "        logger.info('Event: %s' % str(event))\n",
-                "        logger.info('Context: %s' % str(context))\n",
-                "        request_type = event['RequestType']\n",
-                "        logger.info('Type: %s' % request_type)\n",
-                "        rule_set_name = event['ResourceProperties']['RuleSetName']\n",
-                "        receipt_rules = event['ResourceProperties']['Rules']\n",
-                "        if request_type in ['Create', 'Update']:\n",
-                "            result = ses.describe_active_receipt_rule_set()\n",
-                "            rule_exists = False\n",
-                "            rule_names = []\n",
-                "            for receipt_rule in receipt_rules:\n",
-                "                rule_name = receipt_rule['Name']\n",
-                "                if receipt_rule['Enabled'] == 'True':\n",
-                "                    receipt_rule['Enabled'] = True\n",
-                "                else:\n",
-                "                    receipt_rule['Enabled'] = False\n",
-                "                if receipt_rule['ScanEnabled'] == 'True':\n",
-                "                    receipt_rule['ScanEnabled'] = True\n",
-                "                else:\n",
-                "                    receipt_rule['ScanEnabled'] = False\n",
-                "                if 'Metadata' in result and 'Name' in result['Metadata']:\n",
-                "                    rule_set_name = result['Metadata']['Name']\n",
-                "                    rule_names = map(lambda rule: rule['Name'], result['Rules'])\n",
-                "                    rule_exists = rule_name in rule_names\n",
-                "                else:\n",
-                "                    logger.info('New receipt rule set: %s' % rule_set_name)\n",
-                "                    try:\n",
-                "                        ses.create_receipt_rule_set(RuleSetName=rule_set_name)\n",
-                "                    except botocore.exceptions.ClientError as e:\n",
-                "                        if e.response['Error']['Code'] == 'AlreadyExists':\n",
-                "                            continue\n",
-                "                    ses.set_active_receipt_rule_set(RuleSetName=rule_set_name)\n",
-                "                if not rule_exists:\n",
-                "                    logger.info('New receipt rule %s in receipt rule set %s' % (receipt_rule, rule_set_name))\n",
-                "                    ses.create_receipt_rule(RuleSetName=rule_set_name, Rule=receipt_rule)\n",
-                "                    rule_names.insert(0, rule_name)\n",
-                "                    ses.reorder_receipt_rule_set(RuleSetName=rule_set_name, RuleNames=rule_names)\n",
-                "                result = ses.describe_active_receipt_rule_set()\n",
-                "            response_data['ReceiptRuleSet'] = result['Metadata']['Name']\n",
-                "            response_data['ReceiptRules'] = ', '.join(map(lambda rule: rule['Name'], result['Rules']))\n",
-                "        elif request_type == 'Delete':\n",
-                "            result = ses.describe_active_receipt_rule_set()\n",
-                "            for receipt_rule in receipt_rules:\n",
-                "                rule_name = receipt_rule['Name']\n",
-                "                if 'Metadata' in result and 'Name' in result['Metadata']:\n",
-                "                    logger.info('Active rule set exists.')\n",
-                "                    active_rule_set_name = result['Metadata']['Name']\n",
-                "                    rule_names = map(lambda rule: rule['Name'], result['Rules'])\n",
-                "                    rule_exists = rule_name in rule_names\n",
-                "                    if rule_exists:\n",
-                "                        logger.info('Rule %s exists. Deleting it.' % rule_name)\n",
-                "                        ses.delete_receipt_rule(RuleSetName=active_rule_set_name, RuleName=rule_name)\n",
-                "                    result = ses.describe_active_receipt_rule_set()\n",
-                "            if active_rule_set_name == rule_set_name:\n",
-                "                logger.info('RuleSet %s exists. Deleting it.' % rule_set_name)\n",
-                "                ses.set_active_receipt_rule_set()\n",
-                "                ses.delete_receipt_rule_set(RuleSetName=active_rule_set_name)\n",
-                "        cfnresponse.send(event, context, cfnresponse.SUCCESS, response_data)\n",
-                "    except Exception as e:\n",
-                "        logger.info('Exception occured: %s' % str(e))\n",
-                "        cfnresponse.send(event, context, cfnresponse.FAILED, response_data)\n",
-                "        raise e\n",
-                ""
-              ]
-            ]
-          }
-        },
-        "Handler": "index.rule_handler",
-        "Runtime": "python2.7",
-        "Timeout": "30",
-        "Role": { "Fn::GetAtt": [ "LambdaExecutionRole", "Arn" ] }
-      }
-    },
-
-    "SesFilterLambdaFunction": {
-      "Type": "AWS::Lambda::Function",
-      "DependsOn": "LambdaExecutionRole",
-      "Properties": {
-        "Code": {
-          "ZipFile": {
-            "Fn::Join": [
-              "", [
-                "import boto3\n",
-                "import botocore\n",
-                "import logging\n",
-                "import cfnresponse\n",
-                "logger = logging.getLogger()\n",
-                "logger.setLevel(logging.INFO)\n",
-                "session = boto3.Session()\n",
-                "ses = session.client('ses', region_name='",{ "Ref": "AWS::Region" },"')\n",
-                "\n",
-                "def filter_handler(event, context):\n",
-                "    response_data = {}\n",
-                "    try:\n",
-                "        logger.info('Event: %s' % str(event))\n",
-                "        logger.info('Context: %s' % str(context))\n",
-                "        request_type = event['RequestType']\n",
-                "        logger.info('Type: %s' % request_type)\n",
-                "        receipt_filters = event['ResourceProperties']['IpAddresFilters']\n",
-                "        if request_type in ['Create', 'Update']:\n",
-                "            receipt_filters_list = ses.list_receipt_filters()\n",
-                "            for receipt_filter in receipt_filters:\n",
-                "                filter_names = map(lambda name: name['Name'], receipt_filters_list['Filters'])\n",
-                "                filter_cidrs = map(lambda cidr: cidr['IpFilter']['Cidr'], receipt_filters_list['Filters'])\n",
-                "                if receipt_filter['IpFilter']['Cidr'] not in filter_cidrs:\n",
-                "                    if receipt_filter['Name'] in filter_names:\n",
-                "                        logger.info('Filter name %s already exists. Deleting it.' % receipt_filter['Name'])\n",
-                "                        ses.delete_receipt_filter(FilterName=receipt_filter['Name'])\n",
-                "                    logger.info('Creating receipt filter: %s' % receipt_filter)\n",
-                "                    ses.create_receipt_filter(Filter=receipt_filter)\n",
-                "            receipt_filters_list = ses.list_receipt_filters()\n",
-                "            response_data['FilterNames'] = ', '.join(map(lambda name: name['Name'], receipt_filters_list['Filters']))\n",
-                "            response_data['FilterIpAddresses'] = ', '.join(map(lambda cidr: cidr['IpFilter']['Cidr'], receipt_filters_list['Filters']))\n",
-                "        elif request_type == 'Delete':\n",
-                "            for receipt_filter in receipt_filters:\n",
-                "                logger.info('Deleting filter: %s' % receipt_filter['Name'])\n",
-                "                ses.delete_receipt_filter(FilterName=receipt_filter['Name'])\n",
-                "        cfnresponse.send(event, context, cfnresponse.SUCCESS, response_data)\n",
-                "    except Exception as e:\n",
-                "        logger.info('Exception occured: %s' % str(e))\n",
-                "        cfnresponse.send(event, context, cfnresponse.FAILED, response_data)\n",
-                "        raise e\n",
-                ""
-              ]
-            ]
-          }
-        },
-        "Handler": "index.filter_handler",
-        "Runtime": "python2.7",
-        "Timeout": "30",
-        "Role": { "Fn::GetAtt": [ "LambdaExecutionRole", "Arn" ] }
-      }
-    },
-
     "SesDomains": {
       "Type": "Custom::SesDomain",
       "DependsOn": "SesDomainLambdaFunction",
@@ -386,18 +309,29 @@
       }
     },
 
-
     "SesReceiptRuleSet": {
       "Type": "AWS::SES::ReceiptRuleSet",
       "Properties": {
         "RuleSetName": {
-          "Ref": "RuleSetName"
+          "Fn::If": [
+            "UseRuleSet",
+            { "Ref": "NewRuleSetName" },
+            { "Ref": "RuleSetName" }
+          ]
         }
       }
     },
-    "ReceiptRule1": {
+
+    "NewRuleSetName": {
+      "Type": "AWS::SES::ReceiptRuleSet",
+      "Condition": "UseRuleSet",
+      "Properties": {
+        "RuleSetName": "us-west-2-rule-set"
+      }
+    },
+
+    "InboundReceiptRule": {
       "Type": "AWS::SES::ReceiptRule",
-      "DependsOn": [ "PermissionForSesToInvokeLambda", "SesRuleLambdaFunction" ],
       "Properties": {
         "RuleSetName": { "Ref": "RuleSetName" },
         "Rule": {
@@ -416,7 +350,8 @@
         }
       }
     },
-    "ReceiptRule2": {
+
+    "OutboundReceiptRule": {
       "Type": "AWS::SES::ReceiptRule",
       "Properties": {
         "RuleSetName": { "Ref": "RuleSetName" },
@@ -437,71 +372,118 @@
       }
     },
 
-    "SesFilters": {
-      "Type": "Custom::SesFilter",
-      "DependsOn": "SesFilterLambdaFunction",
+    "EuCentral1aFilter": {
+      "Type": "AWS::SES::ReceiptFilter",
       "Properties": {
-        "ServiceToken": { "Fn::GetAtt": [ "SesFilterLambdaFunction", "Arn" ] },
-        "IpAddresFilters": [
-          {
-            "Name": "prod-us-east-2a",
-            "IpFilter": {
-              "Policy": "Allow",
-              "Cidr": "18.220.12.142/32"
-            }
-          },
-          {
-            "Name": "prod-us-east-2b",
-            "IpFilter": {
-              "Policy": "Allow",
-              "Cidr": "18.216.7.10/32"
-            }
-          },
-          {
-            "Name": "prod-us-west-2a",
-            "IpFilter": {
-              "Policy": "Allow",
-              "Cidr": "50.112.39.248/32"
-            }
-          },
-          {
-            "Name": "prod-us-west-2b",
-            "IpFilter": {
-              "Policy": "Allow",
-              "Cidr": "52.41.236.76/32"
-            }
-          },
-          {
-            "Name": "prod-eu-west-1a",
-            "IpFilter": {
-              "Policy": "Allow",
-              "Cidr": "52.31.106.198/32"
-            }
-          },
-          {
-            "Name": "prod-eu-west-1b",
-            "IpFilter": {
-              "Policy": "Allow",
-              "Cidr": "52.208.126.243/32"
-            }
-          },
-          {
-            "Name": "prod-eu-central-1a",
-            "IpFilter": {
-              "Policy": "Allow",
-              "Cidr": "52.29.100.147/32"
-            }
-          },
-          {
-            "Name": "prod-eu-central-1b",
-            "IpFilter": {
-              "Policy": "Allow",
-              "Cidr": "52.58.166.242/32"
-            }
+        "Filter":
+        {
+          "Name": {"Ref": "EuCentral1aFilterName"},
+          "IpFilter": {
+            "Policy": {"Ref": "Policy"},
+            "Cidr": {"Ref": "EuCentral1aCidrRange"}
           }
-        ]
+        }
       }
     },
+
+    "EuCentral1bFilter": {
+      "Type": "AWS::SES::ReceiptFilter",
+      "Properties": {
+        "Filter":
+        {
+          "Name": {"Ref": "EuCentral1bFilterName"},
+          "IpFilter": {
+            "Policy": {"Ref": "Policy"},
+            "Cidr": {"Ref": "EuCentral1bCidrRange"}
+          }
+        }
+      }
+    },
+
+    "EuWest1aFilter": {
+      "Type": "AWS::SES::ReceiptFilter",
+      "Properties": {
+        "Filter":
+        {
+          "Name": {"Ref": "EuWest1aFilterName"},
+          "IpFilter": {
+            "Policy": {"Ref": "Policy"},
+            "Cidr": {"Ref": "EuWest1aCidrRange"}
+          }
+        }
+      }
+    },
+
+    "EuWest1bFilter": {
+      "Type": "AWS::SES::ReceiptFilter",
+      "Properties": {
+        "Filter":
+        {
+          "Name": {"Ref": "EuWest1bFilterName"},
+          "IpFilter": {
+            "Policy": {"Ref": "Policy"},
+            "Cidr": {"Ref": "EuWest1bCidrRange"}
+          }
+        }
+      }
+    },
+
+    "UsEast2aFilter": {
+      "Type": "AWS::SES::ReceiptFilter",
+      "Properties": {
+        "Filter":
+        {
+          "Name": {"Ref": "UsEast2aFilterName"},
+          "IpFilter": {
+            "Policy": {"Ref": "Policy"},
+            "Cidr": {"Ref": "UsEast2aCidrRange"}
+          }
+        }
+      }
+    },
+
+    "UsEast2bFilter": {
+      "Type": "AWS::SES::ReceiptFilter",
+      "Properties": {
+        "Filter":
+        {
+          "Name": {"Ref": "UsEast2bFilterName"},
+          "IpFilter": {
+            "Policy": {"Ref": "Policy"},
+            "Cidr": {"Ref": "UsEast2bCidrRange"}
+          }
+        }
+      }
+    },
+
+    "UsWest2aFilter": {
+      "Type": "AWS::SES::ReceiptFilter",
+      "Properties": {
+        "Filter":
+        {
+          "Name": {"Ref": "UsWest2aFilterName"},
+          "IpFilter": {
+            "Policy": {"Ref": "Policy"},
+            "Cidr": {"Ref": "UsWest2aCidrRange"}
+          }
+        }
+      }
+    },
+
+    "UsWest2bFilter": {
+      "Type": "AWS::SES::ReceiptFilter",
+      "Properties": {
+        "Filter":
+        {
+          "Name": {"Ref": "UsWest2bFilterName"},
+          "IpFilter": {
+            "Policy": {"Ref": "Policy"},
+            "Cidr": {"Ref": "UsWest2bCidrRange"}
+          }
+        }
+      }
+    },
+
     "PermissionForSesToInvokeLambda": {
       "Type": "AWS::Lambda::Permission",
       "Properties": {
@@ -513,6 +495,7 @@
         "SourceAccount": { "Ref": "AWS::AccountId" }
       }
     },
+
     "PermissionForSesToInvokeOutboundLambda": {
       "Type": "AWS::Lambda::Permission",
       "Properties": {
@@ -527,25 +510,21 @@
   },
 
   "Outputs": {
-
     "SesDomains": {
       "Description": "SES Domains.",
       "Value": { "Fn::GetAtt": [ "SesDomains", "Identities" ] }
     },
-
-    "SesReceiptRuleSet": {
-      "Description": "SES Receipt Rule Set Name.",
-      "Value": { "Ref": "SesReceiptRuleSet" }
+    "ReceiptRuleSet": {
+      "Description": "Ses Receipt RuleSet.",
+      "Value": { "Ref": "RuleSetName" }
     },
-
-    "SesConfigSet": {
+    "InboundReceiptRule": {
       "Description": "Ses Receipt Rules.",
-      "Value": { "Ref": "ReceiptRule1" }
+      "Value": { "Ref": "InboundReceiptRule" }
     },
-
-    "SesFilterIpAddresses": {
-      "Description": "SES Filter IP Address.",
-      "Value": { "Fn::GetAtt": [ "SesFilters", "FilterIpAddresses" ] }
+    "OutboundReceiptRule": {
+      "Description": "Ses Receipt Rules.",
+      "Value": { "Ref": "OutboundReceiptRule" }
     }
   }
 }

@@ -3,8 +3,8 @@
 - name: "Create a zip archive of inbound monitor send lambda function"
   archive:
     path:
-    - /work/lambda/xgemail_monitor_send.js
-    dest: "{{role_path}}/xgemail_monitor_send.zip"
+    - /work/lambda/xgemail_inbound_monitor_send.js
+    dest: "{{role_path}}/xgemail_inbound_monitor_send.zip"
     format: zip
 
 - name: "Upload inbound monitor send lambda function for {{stack.lambda.inbound_monitor_send_lambda_function}} to the config bucket {{s3.lambda_bucket}}"
@@ -12,8 +12,8 @@
     mode:               put
     region:             "{{account.region}}"
     bucket:             "{{s3.lambda_bucket}}"
-    object:             "lambda/{{build.number}}/xgemail_monitor_send.zip"
-    src:                "{{role_path}}/xgemail_monitor_send.zip"
+    object:             "lambda/{{build.number}}/xgemail_inbound_monitor_send.zip"
+    src:                "{{role_path}}/xgemail_inbound_monitor_send.zip"
     overwrite:          always
 
 - name: "Gather {{stack.iam.role.cloud_email_monitor_roles}} CloudFormation Stack Output"
@@ -41,7 +41,7 @@
       HandlerName:                          xgemail_inbound_monitor_send.monitor_handler
       IAMRoleArn:                           "{{cloud_email_monitor_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_monitor_roles].stack_outputs.LambdaXgemailMonitorSendRoleArn}}"
       S3Bucket:                             "{{s3.lambda_bucket}}"
-      S3Key:                                "lambda/{{build.number}}/xgemail_monitor_send.zip"
+      S3Key:                                "lambda/{{build.number}}/xgemail_inbound_monitor_send.zip"
       ScheduleExpression:                   rate(1 minute)
       SesRegion:                            "{{ses_region}}"
       UsEast2SenderAddress:                 "{{us_east_2_sender_address}}"
@@ -62,8 +62,8 @@
 - name: "Create a zip archive of inbound monitor receive lambda function"
   archive:
     path:
-    - /work/lambda/xgemail_monitor_receive.js
-    dest: "{{role_path}}/xgemail_monitor_receive.zip"
+    - /work/lambda/xgemail_inbound_monitor_receive.js
+    dest: "{{role_path}}/xgemail_inbound_monitor_receive.zip"
     format: zip
 
 - name: "Upload the Inbound monitor receive lambda function for {{stack.lambda.inbound_monitor_receive_lambda_function}} to the config bucket {{s3.lambda_bucket}}"
@@ -71,8 +71,8 @@
     mode:               put
     region:             "{{account.region}}"
     bucket:             "{{s3.lambda_bucket}}"
-    object:             "lambda/{{build.number}}/xgemail_monitor_receive.zip"
-    src:                "{{role_path}}/xgemail_monitor_receive.zip"
+    object:             "lambda/{{build.number}}/xgemail_inbound_monitor_receive.zip"
+    src:                "{{role_path}}/xgemail_inbound_monitor_receive.zip"
     overwrite:          always
 
 - name: "Deploy Inbound Monitor Receive Lambda Function {{stack.lambda.inbound_monitor_receive_lambda_function}} to {{account.name}}-{{account.region}}"
@@ -89,7 +89,7 @@
       HandlerName:                          xgemail_inbound_monitor_receive.monitor_handler
       IAMRoleArn:                           "{{cloud_email_monitor_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_monitor_roles].stack_outputs.LambdaXgemailMonitorReceiveRoleArn}}"
       S3Bucket:                             "{{s3.lambda_bucket}}"
-      S3Key:                                "lambda/{{build.number}}/xgemail_monitor_receive.zip"
+      S3Key:                                "lambda/{{build.number}}/xgemail_inbound_monitor_receive.zip"
       ScheduleExpression:                   rate(1 minute)
       SesRegion:                            "{{ses_region}}"
       UsEast2SenderAddress:                 "{{us_east_2_sender_address}}"
