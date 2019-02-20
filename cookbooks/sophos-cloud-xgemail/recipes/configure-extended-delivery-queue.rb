@@ -113,6 +113,7 @@ end
 [
     'bounce_queue_lifetime=0',
     "hopcount_limit = #{HOP_COUNT_DELIVERY_INSTANCE}",
+    'maximal_queue_lifetime=20',
     'mynetworks = 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16',
     'smtp_tls_security_level=may',
     'smtp_tls_ciphers=high',
