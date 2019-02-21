@@ -24,40 +24,8 @@
       "Description": "List of Domains to add to SES",
       "ConstraintDescription": "must be a comma-separated list of valid domain names."
     },
-    "UsWest2aFilterName": {
-      "Description": "SES Filter name for US West 2a",
-      "Type": "String"
-    },
     "Policy": {
       "Description": "SES Filter name for US West 2a",
-      "Type": "String"
-    },
-    "UsWest2bFilterName": {
-      "Description": "SES Filter name for US West 2b",
-      "Type": "String"
-    },
-    "UsEast2aFilterName": {
-      "Description": "SES Filter name for US East 2a",
-      "Type": "String"
-    },
-    "UsEast2bFilterName": {
-      "Description": "SES Filter name for US East 2b",
-      "Type": "String"
-    },
-    "EuCentral1aFilterName": {
-      "Description": "SES Filter name for EU Central 1a",
-      "Type": "String"
-    },
-    "EuCentral1bFilterName": {
-      "Description": "SES Filter name for EU Central 1b",
-      "Type": "String"
-    },
-    "EuWest1aFilterName": {
-      "Description": "SES Filter name for EU West 1a",
-      "Type": "String"
-    },
-    "EuWest1bFilterName": {
-      "Description": "SES Filter name for EU West 1b",
       "Type": "String"
     },
     "UsWest2aCidrRange": {
@@ -377,7 +345,7 @@
       "Properties": {
         "Filter":
         {
-          "Name": {"Ref": "EuCentral1aFilterName"},
+          "Name": "eu-central-1a",
           "IpFilter": {
             "Policy": {"Ref": "Policy"},
             "Cidr": {"Ref": "EuCentral1aCidrRange"}
@@ -391,7 +359,7 @@
       "Properties": {
         "Filter":
         {
-          "Name": {"Ref": "EuCentral1bFilterName"},
+          "Name": "eu-central-1b",
           "IpFilter": {
             "Policy": {"Ref": "Policy"},
             "Cidr": {"Ref": "EuCentral1bCidrRange"}
@@ -405,7 +373,7 @@
       "Properties": {
         "Filter":
         {
-          "Name": {"Ref": "EuWest1aFilterName"},
+          "Name": "eu-west-1a",
           "IpFilter": {
             "Policy": {"Ref": "Policy"},
             "Cidr": {"Ref": "EuWest1aCidrRange"}
@@ -419,7 +387,7 @@
       "Properties": {
         "Filter":
         {
-          "Name": {"Ref": "EuWest1bFilterName"},
+          "Name": "eu-west-1b",
           "IpFilter": {
             "Policy": {"Ref": "Policy"},
             "Cidr": {"Ref": "EuWest1bCidrRange"}
@@ -433,7 +401,7 @@
       "Properties": {
         "Filter":
         {
-          "Name": {"Ref": "UsEast2aFilterName"},
+          "Name": "us-east-2a",
           "IpFilter": {
             "Policy": {"Ref": "Policy"},
             "Cidr": {"Ref": "UsEast2aCidrRange"}
@@ -447,7 +415,7 @@
       "Properties": {
         "Filter":
         {
-          "Name": {"Ref": "UsEast2bFilterName"},
+          "Name": "us-east-2b",
           "IpFilter": {
             "Policy": {"Ref": "Policy"},
             "Cidr": {"Ref": "UsEast2bCidrRange"}
@@ -461,7 +429,7 @@
       "Properties": {
         "Filter":
         {
-          "Name": {"Ref": "UsWest2aFilterName"},
+          "Name": "us-west-2a",
           "IpFilter": {
             "Policy": {"Ref": "Policy"},
             "Cidr": {"Ref": "UsWest2aCidrRange"}
@@ -475,7 +443,7 @@
       "Properties": {
         "Filter":
         {
-          "Name": {"Ref": "UsWest2bFilterName"},
+          "Name": "us-west-2b",
           "IpFilter": {
             "Policy": {"Ref": "Policy"},
             "Cidr": {"Ref": "UsWest2bCidrRange"}
