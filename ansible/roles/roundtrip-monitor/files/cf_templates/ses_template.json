@@ -24,10 +24,6 @@
       "Description": "List of Domains to add to SES",
       "ConstraintDescription": "must be a comma-separated list of valid domain names."
     },
-    "Policy": {
-      "Description": "SES Filter name for US West 2a",
-      "Type": "String"
-    },
     "UsWest2aCidrRange": {
       "Description": "IP Address range for US West 2a",
       "Type": "String"
@@ -347,7 +343,7 @@
         {
           "Name": "eu-central-1a",
           "IpFilter": {
-            "Policy": {"Ref": "Policy"},
+            "Policy": "Allow",
             "Cidr": {"Ref": "EuCentral1aCidrRange"}
           }
         }
@@ -361,7 +357,7 @@
         {
           "Name": "eu-central-1b",
           "IpFilter": {
-            "Policy": {"Ref": "Policy"},
+            "Policy": "Allow",
             "Cidr": {"Ref": "EuCentral1bCidrRange"}
           }
         }
@@ -375,7 +371,7 @@
         {
           "Name": "eu-west-1a",
           "IpFilter": {
-            "Policy": {"Ref": "Policy"},
+            "Policy": "Allow",
             "Cidr": {"Ref": "EuWest1aCidrRange"}
           }
         }
@@ -389,7 +385,7 @@
         {
           "Name": "eu-west-1b",
           "IpFilter": {
-            "Policy": {"Ref": "Policy"},
+            "Policy": "Allow",
             "Cidr": {"Ref": "EuWest1bCidrRange"}
           }
         }
@@ -403,7 +399,7 @@
         {
           "Name": "us-east-2a",
           "IpFilter": {
-            "Policy": {"Ref": "Policy"},
+            "Policy": "Allow",
             "Cidr": {"Ref": "UsEast2aCidrRange"}
           }
         }
@@ -417,7 +413,7 @@
         {
           "Name": "us-east-2b",
           "IpFilter": {
-            "Policy": {"Ref": "Policy"},
+            "Policy": "Allow",
             "Cidr": {"Ref": "UsEast2bCidrRange"}
           }
         }
@@ -431,7 +427,7 @@
         {
           "Name": "us-west-2a",
           "IpFilter": {
-            "Policy": {"Ref": "Policy"},
+            "Policy": "Allow",
             "Cidr": {"Ref": "UsWest2aCidrRange"}
           }
         }
@@ -445,7 +441,7 @@
         {
           "Name": "us-west-2b",
           "IpFilter": {
-            "Policy": {"Ref": "Policy"},
+            "Policy": "Allow",
             "Cidr": {"Ref": "UsWest2bCidrRange"}
           }
         }

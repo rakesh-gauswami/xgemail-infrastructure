@@ -4,17 +4,15 @@
     extensions: ['yml']
     dir: "{{ account.name }}"
     depth: 1
-  tags:
-    - always
 
 - name: "Include IAM Monitor Roles"
   include_tasks: iam-monitor-roles.yml
 
-- name: "Include Inbound lambda function."
+- name: "Include Inbound and Outbound monitor Send Receive lambda function."
   include_tasks: round-trip-monitor-deploy.yml
 
 - name: "Include Route53 Creation Task."
   include_tasks: route53-deploy.yml
 
-- name: "Include SES Task."
+- name: "Include SESTask."
   include_tasks: ses-sendreceive.yml
