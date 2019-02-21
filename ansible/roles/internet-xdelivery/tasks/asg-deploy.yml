@@ -12,14 +12,15 @@
     state: present
     region:  "{{account.region}}"
     disable_rollback: true
-    template: "{{template.ec2.asg.as_xgemail_xdelivery_template}}"
+    template: "{{template.ec2.asg.as_xgemail_internet_xdelivery_template}}"
     template_parameters:
       AesDecryptionKey:                     "{{aes_decryption_key}}"
       AmiId:                                "{{ami_parent_id}}"
+      AutoScalingInstanceRoleArn:           "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.AutoScalingInstanceRoleArn}}"
       AutoScalingMinSize:                   "{{item.1}}"
       AutoScalingMaxSize:                   "1"
       AutoScalingNotificationTopicARN:      "{{sns.arn_prefix}}{{sns.lifecycle_sqs_sns}}"
-      AvailabilityZoneIndex:                "{{item.1}}"
+      AvailabilityZoneIndex:                "{{item.2}}"
       AvailabilityZones:                    "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.AvailabilityZoneA}},{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.AvailabilityZoneB}},{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.AvailabilityZoneC}}"
       Branch:                               "{{build.branch}}"
       BuildVersion:                         "{{build.result_key}}"
@@ -27,12 +28,11 @@
       EbsMinIops:                           "{{xgemail_iops_data_gb}}"
       Environment:                          "{{account.name}}"
       HealthCheckGracePeriod:               "{{aws.asg.ix.health_check_grace_period}}"
-      HealthCheckType:                      "ELB"
       InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.XgemailInternetXdeliveryInstanceProfile}}"
       InstanceType:                         "{{aws.asg.ix.instance_size}}"
       KeyName:                              "public-{{account.region}}"
+      LifecycleHookLaunching:               "{{aws.asg.ix.lifecycle_hook_launching}}"
       LoadBalancerName:                     "{{elb_stack_output.stack_outputs.LoadBalancerId}}"
-      PublicIpAddressEnabled:               "true"
       S3CookbookRepositoryURL:              "//cloud-{{account.name}}-templates/{{build.branch}}/xgemail-infrastructure/cookbooks.enc"
       ScaleDownOnWeekends:                  "{{weekend_scale_down}}"
       SecurityGroups:                       "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.XgemailInternetXdeliverySecurityGroup}},{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.SecurityGroupBase}}"
@@ -49,7 +49,7 @@
       XgemailServiceType:                   "internet-xdelivery"
   with_together:
     - "{{aws.asg.ix.stack_number}}"
-    - "{{aws.asg.cx.asg_min_size}}"
+    - "{{aws.asg.ix.asg_min_size}}"
     - "{{aws.asg.ix.zone_index}}"
   register: ix_stack_async_results
 

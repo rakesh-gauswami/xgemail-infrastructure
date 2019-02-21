@@ -90,12 +90,6 @@
       "Type": "String",
       "Default": "PT1H"
     },
-    "EbsDeleteOnTermination": {
-      "Description": "Indicates whether to delete the volume when the instance is terminated.",
-      "Type": "String",
-      "Default": "false",
-      "AllowedValues": [ "true", "false" ]
-    },
     "EbsVolumeType": {
       "Description": "Indicates whether to delete the volume when the instance is terminated.",
       "Type": "String",
@@ -123,7 +117,7 @@
       "Type": "AWS::EC2::KeyPair::KeyName",
       "Description": "Key pair used to SSH to the instance"
     },
-    "LifecycleHookName": {
+    "LifecycleHookTerminating": {
       "Description": "Name of the Lifecycle Hook.",
       "Type": "String"
     },
@@ -372,7 +366,7 @@
         "LaunchConfigurationName": { "Ref": "XgemailAutoScalingLaunchConfig" },
         "LifecycleHookSpecificationList" : [
           {
-            "LifecycleHookName": { "Ref": "LifecycleHookName" },
+            "LifecycleHookName": { "Ref": "LifecycleHookTerminating" },
             "HeartbeatTimeout" : "300",
             "LifecycleTransition" : "autoscaling:EC2_INSTANCE_TERMINATING",
             "NotificationTargetARN" : { "Ref": "AutoScalingNotificationTopicARN" },
@@ -744,7 +738,7 @@
           {
             "DeviceName": "/dev/xvdi",
             "Ebs": {
-              "DeleteOnTermination": { "Ref": "EbsDeleteOnTermination" },
+              "DeleteOnTermination": "true",
               "VolumeSize": { "Ref": "XgemailMinSizeDataGB" },
               "VolumeType": { "Ref": "EbsVolumeType" }
             }
@@ -790,17 +784,18 @@
               "  # Set LastHealth tag so cloud list command shows progress.\n",
               "  if [ \"$exit_code\" == 0 ]; then\n",
               "    /opt/sophos/bin/set_instance_tag.py LastHealth UserDataSuccess\n",
+              "    /opt/sophos/bin/ebs-delete-on-termination.py\n",
+              "    /sbin/service monit start\n",
               "  else\n",
               "    /opt/sophos/bin/set_instance_tag.py LastHealth UserDataFailure\n",
+              "    # Upload logs before reporting failure to avoid race against termination.\n",
+              "    ACCOUNT='", { "Ref" : "Environment" }, "'\n",
+              "    BRANCH='", { "Ref": "Branch" }, "'\n",
+              "    DEPLOYMENT_NAME='", { "Ref": "XgemailServiceType" }, "'\n",
+              "    /opt/sophos/bin/upload_deployment_logs.py -a ${ACCOUNT} -b ${BRANCH} ${DEPLOYMENT_NAME} -c netstat_tuna.out='netstat -tuna'\n",
               "  fi\n",
               "\n",
 
-              "  # Upload logs before reporting failure to avoid race against termination.\n",
-              "  ACCOUNT='", { "Ref" : "Environment" }, "'\n",
-              "  BRANCH='", { "Ref": "Branch" }, "'\n",
-              "  DEPLOYMENT_NAME='", { "Ref": "XgemailServiceType" }, "'\n",
-              "  /opt/sophos/bin/upload_deployment_logs.py -a ${ACCOUNT} -b ${BRANCH} ${DEPLOYMENT_NAME} -c netstat_tuna.out='netstat -tuna'",
-              "\n",
               "  /opt/aws/bin/cfn-signal -e $exit_code",
               " --stack ", { "Ref": "AWS::StackName" },
               " --resource XgemailAutoScalingGroup",

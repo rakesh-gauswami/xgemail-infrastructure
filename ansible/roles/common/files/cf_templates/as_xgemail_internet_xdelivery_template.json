@@ -1,18 +1,17 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
 
-  "Description": "XGEMAIL instance template for Sophos Cloud; used for Extended Delivery 'xdelivery'.",
+  "Description": "Sophos Email AutoScaling Group template for Sophos Cloud used for internet-xdelivery EC2 Instances.",
 
   "Metadata": {
     "Copyright": [
-      "Copyright 2018, Sophos Limited. All rights reserved.",
+      "Copyright 2019, Sophos Limited. All rights reserved.",
       "",
       "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
       "Sophos Limited and Sophos Group.  All other product and company",
       "names mentioned are trademarks or registered trademarks of their",
       "respective owners."
     ],
-
     "Comments": [
       "Xgemail Extended Delivery Instances are for delivering email that is temporarily undeliverable.",
       "After a configurable number of attempts delivery instances will be able to transfer messages here.",
@@ -26,63 +25,56 @@
       "for each replica set member."
     ]
   },
-
   "Parameters": {
     "AesDecryptionKey": {
       "Description": "Decryption key for encrypted buckets",
       "Type": "String"
     },
-
     "AmiId": {
       "Description": "AMI ID to use as a base for the stack",
       "Type": "String"
     },
-
+    "AutoScalingInstanceRoleArn": {
+      "Description": "Arn of the AutoScaling Role.",
+      "Type": "String"
+    },
     "AutoScalingMaxSize": {
       "Description": "Maximum number of instances in the Auto Scaling Group",
       "Type": "String",
       "Default": "12"
     },
-
     "AutoScalingMinSize": {
       "Description": "Minimum number of instances in the Auto Scaling Group",
       "Type": "String",
       "Default": "3"
     },
-
     "AutoScalingNotificationTopicARN": {
       "Description": "ARN for SNS Topic that should receive launch and termination notifications",
       "Type": "String"
     },
-
     "AvailabilityZoneIndex": {
       "Description": "Zero-based index for selecting availability zone (0=a, 1=b, etc.)",
       "Type": "String",
       "AllowedPattern": "^[0-9]$"
     },
-
     "AvailabilityZones": {
       "Description": "List of Availability Zones with Public and Private Subnets",
       "Type": "List<String>",
       "ConstraintDescription": "must be a comma-separated list of valid Availability Zones for the selected VPC"
     },
-
     "Branch": {
       "Description": "(Develop, CPLAT-XXXX, etc...)",
       "Type": "String"
     },
-
     "BuildVersion": {
       "Description": "Version of the application from Bamboo",
       "Type": "String",
       "Default": "1.0"
     },
-
     "BundleVersion": {
       "Description": "Version of the AMI bundle",
       "Type": "Number"
     },
-
     "EbsMinIops": {
       "Description": "Total IOPS to reserve",
       "Type": "Number",
@@ -90,89 +82,41 @@
       "MinValue": "0",
       "MaxValue": "4000"
     },
-
     "Environment": {
       "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
       "Type": "String"
     },
-
     "HealthCheckGracePeriod": {
       "Description": "The seconds after an instance comes into service that health checks starts.",
       "Type": "Number",
-      "Default": "120",
-      "MinValue": "60",
-      "MaxValue": "600"
+      "Default": "600"
     },
-
-    "HealthCheckType": {
-      "Description": "The service you want the health status from, Amazon EC2 or Elastic Load Balancer.",
-      "Type": "String",
-      "Default": "EC2",
-      "AllowedValues": [
-        "EC2",
-        "ELB"
-      ]
-    },
-
     "InstanceProfile": {
       "Description": "Instance profile for accessing aws resources",
       "Type": "String"
     },
-
     "InstanceType": {
       "Description": "Amazon EC2 instance type",
       "Type": "String",
       "Default": "t3.large"
     },
-
     "KeyName": {
       "Description": "Key pair used to SSH to the instance",
       "Type": "AWS::EC2::KeyPair::KeyName"
     },
-
+    "LifecycleHookLaunching": {
+      "Description": "Name of the Launching Lifecycle Hook.",
+      "Type": "String"
+    },
     "LoadBalancerName": {
       "Description": "Name for the ELB to attach to the Auto Scaling Group",
       "Type": "List<String>"
     },
-
-    "LogGroupRetentionPeriod": {
-      "Description": "The length of time (in days) to retain logs for",
-      "Type": "Number",
-      "Default": "400",
-      "AllowedValues": [
-        "1",
-        "3",
-        "5",
-        "7",
-        "14",
-        "30",
-        "60",
-        "90",
-        "120",
-        "150",
-        "180",
-        "365",
-        "400",
-        "545",
-        "731",
-        "1827",
-        "3653"
-      ]
-    },
-
-    "PublicIpAddressEnabled": {
-      "Description": "Whether or not we have a public IP address",
-      "Type": "String",
-      "Default" : "false",
-      "AllowedValues" : [ "false", "true" ]
-    },
-
     "S3CookbookRepositoryURL": {
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
       "Type": "String",
       "Default": "//cloud-applications/develop/cookbooks.enc"
     },
-
     "ScaleDownOnWeekends": {
       "Description": "Enable scale down to zero on Saturday at midnight and scale back on Monday morning. (Times are UTC, NON PROD/QA ENVIRONMENT ONLY)",
       "Type": "String",
@@ -182,30 +126,25 @@
         "false"
       ]
     },
-
     "SecurityGroups": {
       "Description": "The security group that allows communication within the VPC.",
       "Type": "List<AWS::EC2::SecurityGroup::Id>"
     },
-
     "SpotPrice": {
       "Description": "Spot price",
       "Type": "String",
       "Default": "-1"
     },
-
     "StationVpcId" : {
       "Description" : "Cloud Station VPC id ",
       "Type" : "String",
       "Default": ""
     },
-
     "StationVpcName": {
       "Description": "Name of the CloudStation VPC",
       "Type": "String",
       "Default": "CloudStation"
     },
-
     "UpdateInterval": {
       "Description": "The interval in minutes cfn-hup watches stack modifications.",
       "Type": "Number",
@@ -213,76 +152,44 @@
       "MinValue": "1",
       "MaxValue": "30"
     },
-
     "VolumeSetId": {
       "Description": "Identifier to be combined with stack name and availability zone to associate volumes with an instance",
       "Type": "String",
       "Default": ""
     },
-
     "VolumeTrackerSimpleDbDomain": {
       "Description": "Name of Simple DB Domain used to track persistent EBS volumes",
       "Type": "String"
     },
-
     "Vpc": {
       "Description": "ID of an existing VPC",
       "Type": "AWS::EC2::VPC::Id"
     },
-
     "VpcName": {
       "Description": "Name of an existing VPC",
       "Type": "String",
       "Default": "CloudStation"
     },
-
     "VpcZoneIdentifiers": {
       "Description": "The list of Public Subnets for your VPC",
       "Type": "List<AWS::EC2::Subnet::Id>",
       "ConstraintDescription": "must be a comma-separated list of valid Public Subnets for the selected VPC"
     },
-
     "XgemailMinSizeDataGB": {
       "Description": "Total GB to reserve for storing data files",
       "Type": "Number",
       "MinValue": "1",
       "MaxValue": "16384"
     },
-
-    "XgemailMsgHistoryStatusQueueUrl" : {
-      "Description" : "URL for the SQS Queue where Message History delivery status events are sent",
-      "Type" : "String",
-      "Default": ""
-    },
-
     "XgemailMsgHistoryStatusSnsArn": {
       "Description" : "ARN for the SNS Topic where Message History delivery status events are published",
       "Type" : "String",
       "Default": ""
     },
-
-    "XgemailNotificationSnsArn": {
-      "Description" : "ARN for the SNS Topic where notifications are published",
-      "Type" : "String",
-      "Default": ""
-    },
-
-    "XgemailNotifierQueueUrl" : {
-      "Description" : "URL for the SQS Queue where XGEMAIL messages are sent",
-      "Type" : "String",
-      "Default": ""
-    },
-
     "XgemailServiceType": {
       "Description": "Service type for the xgemail instance (Defaults to unknown so not to break builds)",
       "Type": "String",
       "Default": "unknown"
-    },
-
-    "XgemailPolicyBucketName" : {
-      "Description" : "Name of the S3 Bucket where XGEMAIL policy docs are stored",
-      "Type" : "String",
-      "Default": ""
     }
   },
 
@@ -411,21 +318,20 @@
         ],
         "Cooldown": "200",
         "HealthCheckGracePeriod": { "Ref": "HealthCheckGracePeriod" },
-        "HealthCheckType": { "Ref": "HealthCheckType" },
+        "HealthCheckType": "ELB",
         "LaunchConfigurationName": { "Ref": "XgemailAutoScalingLaunchConfig" },
+        "LifecycleHookSpecificationList" : [
+          {
+            "LifecycleHookName": { "Ref": "LifecycleHookLaunching" },
+            "HeartbeatTimeout" : "300",
+            "LifecycleTransition" : "autoscaling:EC2_INSTANCE_LAUNCHING",
+            "NotificationTargetARN" : { "Ref": "AutoScalingNotificationTopicARN" },
+            "RoleARN" : { "Ref": "AutoScalingInstanceRoleArn" }
+          }
+        ],
         "LoadBalancerNames": { "Ref": "LoadBalancerName" },
         "MaxSize": { "Ref": "AutoScalingMaxSize" },
         "MinSize": { "Ref": "AutoScalingMinSize" },
-        "NotificationConfiguration": {
-          "NotificationTypes": [
-            "autoscaling:EC2_INSTANCE_LAUNCH",
-            "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
-            "autoscaling:EC2_INSTANCE_TERMINATE",
-            "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
-            "autoscaling:TEST_NOTIFICATION"
-          ],
-          "TopicARN": { "Ref": "AutoScalingNotificationTopicARN" }
-        },
         "Tags": [
           {
             "Key": "Name",
@@ -440,14 +346,36 @@
               ]
             },
             "PropagateAtLaunch": true
-          }, {
+          },
+          {
             "Key": "BuildResultKey",
             "Value": { "Ref": "BuildVersion" },
-            "PropagateAtLaunch": true
-          }, {
+            "PropagateAtLaunch": "true"
+          },
+          {
             "Key": "BundleVersion",
             "Value": { "Ref": "BundleVersion" },
-            "PropagateAtLaunch": true
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "Application",
+            "Value": { "Ref": "XgemailServiceType" },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "ServiceCategory",
+            "Value": { "Fn::Sub": "${VpcName}:email" },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "ServiceType",
+            "Value": { "Fn::Sub": "${VpcName}:${XgemailServiceType}" },
+            "PropagateAtLaunch": "true"
           }
         ],
         "VPCZoneIdentifier": [
@@ -517,11 +445,7 @@
                       "  },\n",
                       "  \"xgemail\" : {\n",
                       "    \"cluster_type\"                   : \"{{cluster_type}}\",\n",
-                      "    \"msg_history_status_queue_url\"   : \"{{msg_history_status_queue_url}}\",\n",
                       "    \"msg_history_status_sns_arn\"     : \"{{msg_history_delivery_status_sns_arn}}\",\n",
-                      "    \"msg_notifier_queue_url\"         : \"{{msg_notifier_queue_url}}\",\n",
-                      "    \"notification_sns_arn\"           : \"{{notification_sns_arn}}\",\n",
-                      "    \"xgemail_policy_bucket_name\"     : \"{{xgemail_policy_bucket_name}}\",\n",
                       "    \"station_vpc_id\"                 : \"{{station_vpc_id}}\",\n",
                       "    \"station_vpc_name\"               : \"{{station_vpc_name}}\"\n",
                       "  }\n",
@@ -538,10 +462,7 @@
                   "cluster":                                  { "Ref": "XgemailServiceType" },
                   "cluster_type":                             { "Ref": "XgemailServiceType" },
                   "environment":                              { "Ref": "Environment" },
-                  "msg_history_status_queue_url":             { "Ref": "XgemailMsgHistoryStatusQueueUrl" },
                   "msg_history_delivery_status_sns_arn":      { "Ref": "XgemailMsgHistoryStatusSnsArn"},
-                  "msg_notifier_queue_url":                   { "Ref": "XgemailNotifierQueueUrl" },
-                  "notification_sns_arn":                     { "Ref": "XgemailNotificationSnsArn" },
                   "region":                                   { "Ref": "AWS::Region" },
                   "station_vpc_id":                           { "Ref": "StationVpcId" },
                   "stack":                                    { "Ref": "AWS::StackName" },
@@ -551,8 +472,7 @@
                   "volume_set_id":                            { "Ref": "VolumeSetId" },
                   "volume_tracker_sdb_domain":                { "Ref": "VolumeTrackerSimpleDbDomain" },
                   "vpc_id":                                   { "Ref": "Vpc" },
-                  "vpc_name":                                 { "Ref": "VpcName" },
-                  "xgemail_policy_bucket_name":               { "Ref": "XgemailPolicyBucketName" }
+                  "vpc_name":                                 { "Ref": "VpcName" }
                 },
                 "owner": "root",
                 "mode": "000444"
@@ -810,7 +730,7 @@
         }
       },
       "Properties": {
-        "AssociatePublicIpAddress": { "Ref" : "PublicIpAddressEnabled" },
+        "AssociatePublicIpAddress": "true",
         "IamInstanceProfile": { "Ref": "InstanceProfile" },
         "ImageId": { "Ref": "AmiId" },
         "InstanceMonitoring": {
@@ -847,17 +767,17 @@
               "  # Set LastHealth tag so cloud list command shows progress.\n",
               "  if [ \"$exit_code\" == 0 ]; then\n",
               "    /opt/sophos/bin/set_instance_tag.py LastHealth UserDataSuccess\n",
+              "    /sbin/service monit start\n",
               "  else\n",
               "    /opt/sophos/bin/set_instance_tag.py LastHealth UserDataFailure\n",
+              "    # Upload logs before reporting failure to avoid race against termination.\n",
+              "    ACCOUNT='", { "Ref" : "Environment" }, "'\n",
+              "    BRANCH='", { "Ref": "Branch" }, "'\n",
+              "    DEPLOYMENT_NAME='", { "Ref": "XgemailServiceType" }, "'\n",
+              "    /opt/sophos/bin/upload_deployment_logs.py -a ${ACCOUNT} -b ${BRANCH} ${DEPLOYMENT_NAME} -c netstat_tuna.out='netstat -tuna'\n",
               "  fi\n",
               "\n",
 
-              "  # Upload logs before reporting failure to avoid race against termination.\n",
-              "  ACCOUNT='", { "Ref" : "Environment" }, "'\n",
-              "  BRANCH='", { "Ref": "Branch" }, "'\n",
-              "  DEPLOYMENT_NAME='", { "Ref": "XgemailServiceType" }, "'\n",
-              "  /opt/sophos/bin/upload_deployment_logs.py -a ${ACCOUNT} -b ${BRANCH} ${DEPLOYMENT_NAME} -c netstat_tuna.out='netstat -tuna'",
-              "\n",
               "  /opt/aws/bin/cfn-signal -e $exit_code",
               " --stack ", { "Ref": "AWS::StackName" },
               " --resource XgemailAutoScalingGroup",
@@ -897,6 +817,29 @@
           }
         }
       }
+    }
+  },
+
+  "Outputs": {
+    "AmiId": {
+      "Description": "ID of the Ami we are using",
+      "Value": { "Ref" : "AmiId" }
+    },
+    "AutoScalingGroup": {
+      "Description": "Auto Scaling Group Name.",
+      "Value": { "Ref": "XgemailAutoScalingGroup" }
+    },
+    "Branch": {
+      "Description": "Branch we are using so we know for things like ansible",
+      "Value": { "Ref": "Branch" }
+    },
+    "BuildVersion": {
+      "Description": "Version of the application from Bamboo",
+      "Value": { "Ref": "BuildVersion" }
+    },
+    "LaunchConfig": {
+      "Description": "Auto Scaling Launch Configuration Name.",
+      "Value": { "Ref": "XgemailAutoScalingLaunchConfig" }
     }
   }
 }

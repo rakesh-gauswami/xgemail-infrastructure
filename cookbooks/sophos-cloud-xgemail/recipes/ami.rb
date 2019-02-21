@@ -109,6 +109,13 @@ yum_package 'amazon-ssm-agent' do
   action :upgrade
 end
 
+# Packages required by postfix 2.4.1.2:
+
+yum_package 'libuuid' do
+  action :upgrade
+end
+
+SOPHOS_BIN_DIR = '/opt/sophos/bin'
 PACKAGES_DIR = '/opt/sophos/packages'
 DEPLOYMENT_DIR = '/opt/sophos/xgemail'
 
@@ -123,6 +130,13 @@ JILTER_ENCRYPTION_PACKAGE_NAME = "xgemail-jilter-encryption-#{JILTER_ENCRYPTION_
 
 POSTFIX3_RPM = "postfix3-sophos-#{node['xgemail']['postfix3_version']}.el6.x86_64.rpm"
 
+directory SOPHOS_BIN_DIR do
+  mode '0755'
+  owner 'root'
+  group 'root'
+  recursive true
+end
+
 directory PACKAGES_DIR do
   mode '0755'
   owner 'root'
@@ -135,6 +149,13 @@ directory DEPLOYMENT_DIR do
   owner 'root'
   group 'root'
   recursive true
+end
+
+cookbook_file "#{SOPHOS_BIN_DIR}/ebs-delete-on-termination.py" do
+  source 'ebs-delete-on-termination.py'
+  mode '0755'
+  owner 'root'
+  group 'root'
 end
 
 execute 'download_jilter_inbound' do
@@ -209,7 +230,7 @@ execute 'download_postfix3-sophos-rpm' do
   user 'root'
   cwd "#{PACKAGES_DIR}"
   command <<-EOH
-      aws --region us-west-2 s3 cp s3:#{sophos_thirdparty}/xgemail/postfix3-sophos/output/#{POSTFIX3_RPM} .
+      aws --region us-west-2 s3 cp s3:#{sophos_thirdparty}/xgemail/#{POSTFIX3_RPM} .
   EOH
 end
 
