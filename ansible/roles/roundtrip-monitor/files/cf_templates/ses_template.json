@@ -18,7 +18,6 @@
     ]
   },
   "Parameters": {
-
     "Domains": {
       "Type": "CommaDelimitedList",
       "Description": "List of Domains to add to SES",
@@ -88,16 +87,6 @@
       "Type": "String"
     }
   },
-
-  "Conditions": {
-    "UseRuleSet" : {
-      "Fn::Equals": [
-        {"Ref": "RuleSetName"},
-        "NONE"
-      ]
-    }
-  },
-
   "Resources": {
     "LambdaExecutionRole": {
       "Type": "AWS::IAM::Role",
@@ -276,21 +265,7 @@
     "SesReceiptRuleSet": {
       "Type": "AWS::SES::ReceiptRuleSet",
       "Properties": {
-        "RuleSetName": {
-          "Fn::If": [
-            "UseRuleSet",
-            { "Ref": "NewRuleSetName" },
-            { "Ref": "RuleSetName" }
-          ]
-        }
-      }
-    },
-
-    "NewRuleSetName": {
-      "Type": "AWS::SES::ReceiptRuleSet",
-      "Condition": "UseRuleSet",
-      "Properties": {
-        "RuleSetName": "us-west-2-rule-set"
+        "RuleSetName": { "Ref": "RuleSetName" }
       }
     },
 
