@@ -219,6 +219,10 @@
       "Type": "String",
       "Default": ""
     },
+    "XgemailScanEventsTopicArn": {
+      "Description": "Arn of scan events",
+      "Type": "String"
+    },
     "XgemailServiceType": {
       "Description": "Service type for the xgemail instance (Defaults to unknown so not to break builds)",
       "Type": "String",
@@ -615,7 +619,8 @@
                   "xgemail_bucket_name":                            { "Ref": "XgemailBucketName" },
                   "xgemail_policy_arn":                             { "Ref": "XgemailPolicyArn" },
                   "xgemail_policy_bucket_name":                     { "Ref": "XgemailPolicyBucketName" },
-                  "xgemail_queue_url":                              { "Ref": "XgemailQueueUrl" }
+                  "xgemail_queue_url":                              { "Ref": "XgemailQueueUrl" },
+                  "xgemail_scan_events_topic_arn":                  { "Ref": "XgemailScanEventsTopicArn" }
                 },
                 "mode": "000444",
                 "owner": "root"
