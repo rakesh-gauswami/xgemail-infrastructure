@@ -47,6 +47,10 @@
       InboundMailRecipients:                "{{inbound_mail_recipients}}"
       OutboundMailRecipients:               "{{outbound_mail_recipients}}"
       Domains:                              "{{domains}}"
+    tags:
+      ses_deploy:                           "{{ses.ses_deploy}}"
+
+
   register: ses_stack_output
 
 - debug:

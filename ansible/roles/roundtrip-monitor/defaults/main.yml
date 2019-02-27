@@ -7,7 +7,9 @@ lambda:
   outbound_monitor_receive_lambda_function:             "Xgemail-Outbound-Monitor-Receive"
   outbound_monitor_send_lambda_function:                "Xgemail-Outbound-Monitor-Send"
 s3:
-  lambda_bucket:                                       "cloud-{{account.name}}-{{account.region}}-lambda"
+  lambda_bucket:                                        "cloud-{{account.name}}-{{account.region}}-lambda"
+ses:
+  ses_deploy:                                           "{{lookup('env','SES_DEPLOY')}}"
 
 template:
   iam:
