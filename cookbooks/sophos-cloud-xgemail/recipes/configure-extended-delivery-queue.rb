@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: configure-extended-delivery-queue.rb
 #
-# Copyright 2017, Sophos
+# Copyright 2019, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -91,7 +91,6 @@ if ACCOUNT != 'sandbox'
     end
   end
 
-
   # First configure default instance
   CONFIGURATION_COMMANDS.each do | cur |
     execute "postconf '#{cur}'"
@@ -131,7 +130,6 @@ if NODE_TYPE == 'internet-xdelivery'
     owner 'root'
     group 'root'
   end
-
   # Run an instance of the smtp process that enforces TLS encryption
   [
     "smtp_encrypt/unix = smtp_encrypt unix - - n - - smtp"
@@ -143,7 +141,6 @@ if NODE_TYPE == 'internet-xdelivery'
   ].each do | cur |
     execute print_postmulti_cmd( INSTANCE_NAME, "postconf -P '#{cur}'" )
   end
-
   [
       # Server side TLS configuration
       'smtpd_tls_security_level = may',
@@ -153,7 +150,6 @@ if NODE_TYPE == 'internet-xdelivery'
       'smtpd_tls_received_header = yes',
       "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
       "smtpd_tls_key_file = #{KEY_FILE}",
-
       'bounce_queue_lifetime=0',
       "hopcount_limit = #{HOP_COUNT_DELIVERY_INSTANCE}",
       'mynetworks = 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16',
