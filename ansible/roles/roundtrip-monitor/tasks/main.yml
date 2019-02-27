@@ -14,5 +14,10 @@
 - name: "Include Route53 Creation Task."
   include_tasks: route53-deploy.yml
 
-- name: "Include SESTask."
+- name: "Include SES Cloud Formation Task."
   include_tasks: ses-sendreceive.yml
+  when: ses_deploy == 'new'
+
+- name: "Include Custom SES Task."
+  include_tasks: ses-custom-deploy.yml
+  when: ses_deploy == 'old'
