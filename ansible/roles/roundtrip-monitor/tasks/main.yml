@@ -16,8 +16,8 @@
 
 - name: "Include SES Cloud Formation Task."
   include_tasks: ses-sendreceive.yml
-  when: ses_deploy == 'new'
+  when: ses.ses_deploy == 'new'
 
 - name: "Include Custom SES Task."
   include_tasks: ses-custom-deploy.yml
-  when: ses_deploy == 'old'
+  when: ses.ses_deploy == 'old'
