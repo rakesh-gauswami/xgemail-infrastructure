@@ -49,7 +49,7 @@ POLICY_STORAGE_PATH = "<%= @policy_storage_path %>"
 # Either 'INTERNET' or 'CUSTOMER'
 SUBMIT_TYPE = "<%= @xgemail_submit_type %>"
 
-SCAN_EVENTS_TOPIC = "<%= @sns_scan_events_sns_topic %>"
+SCAN_EVENTS_TOPIC_ARN = "<%= @sns_scan_events_sns_topic_arn %>"
 S3_ENCRYPTION_ALGORITHM = "<%= @s3_encryption_algorithm %>"
 SUBMIT_BUCKET_NAME = "<%= @sqs_msg_producer_s3_bucket_name %>"
 SUBMIT_HOST_IP = "<%= @sqs_msg_producer_submit_ip %>"
@@ -141,12 +141,12 @@ def get_metadata():
 
 def publish_to_topic(topic_arn, message_json, message_attributes = {}):
     attributes_json = {
-        key: {'DataType': 'String', 'StringValue': value} for key, value in message_attributes.get_scan_event_attributes_json.items()
+        key: {'DataType': 'String', 'StringValue': value} for key, value in message_attributes.get_scan_event_attributes_json().items()
     }
     return awshandler.publish_to_sns_topic(
         topic_arn,
         json.dumps(message_json),
-        json.dumps(attributes_json)
+        attributes_json
     )
 
 def add_to_sqs(sqs_url, sqs_json):
@@ -301,7 +301,7 @@ def publish_msg_processing_message(message_json, direction, message_attributes =
     if 'INTERNET' == SUBMIT_TYPE and routingmanager.perform_routing(customer_id):
         # publish to topic
         publish_to_topic(
-            SCAN_EVENTS_TOPIC,
+            SCAN_EVENTS_TOPIC_ARN,
             message_json,
             message_attributes
         )
