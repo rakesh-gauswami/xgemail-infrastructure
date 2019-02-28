@@ -143,7 +143,9 @@ class AWSWrapper(object):
 
     def kms_list_aliases(self):
         return self._check_response(
-                self._kms_client.list_aliases(), "kms.list_aliases()")
+            self._kms_client.get_paginator('list_aliases').paginate().build_full_result(), "kms.list_aliases()"
+        )
+
 
     def sdb_get_attributes(self, domain, item):
         return self._check_response(
