@@ -143,7 +143,7 @@ class AWSWrapper(object):
 
     def kms_list_aliases(self):
         return self._check_response(
-            self._kms_client.get_paginator('list_aliases').paginate().build_full_result()
+            self._kms_client.get_paginator('list_aliases').paginate().build_full_result(), "kms.list_aliases()"
         )
 
 
