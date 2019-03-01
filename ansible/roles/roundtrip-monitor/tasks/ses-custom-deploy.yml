@@ -1,0 +1,17 @@
+- name: "Deploy SES {{stack.ses.email_monitor_ses}} to {{account.name}}-{{account.region}}"
+  cloudformation:
+    stack_name:                             "{{stack.ses.email_monitor_ses}}"
+    state:                                  absent
+    region:                                 "{{account.region}}"
+    disable_rollback:                       true
+    template:                               "{{template.ses.ses_custom_resources_template}}"
+    template_parameters:
+      RuleName:                             "xgemail-monitor-rule"
+      OutboundRuleName:                     "xgemail-outbound-monitor-rule"
+      RuleSetName:                          "{{ses_rule_set_name}}"
+      SesInvokeLambdaFunctionArn:           "arn:aws:lambda:{{account.region}}:{{aws_account_id}}:function:{{lambda.inbound_monitor_receive_lambda_function}}"
+      SesInvokeOutboundLambdaFunctionArn:   "arn:aws:lambda:{{account.region}}:{{aws_account_id}}:function:{{lambda.outbound_monitor_receive_lambda_function}}"
+      InboundMailRecipients:                "{{inbound_mail_recipients}}"
+      OutboundMailRecipients:               "{{outbound_mail_recipients}}"
+      Domains:                              "{{domains}}"
+  register: ses_stack_output

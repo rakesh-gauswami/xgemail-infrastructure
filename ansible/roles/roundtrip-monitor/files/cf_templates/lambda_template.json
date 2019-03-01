@@ -5,7 +5,7 @@
 
   "Metadata": {
     "Copyright": [
-      "Copyright 2016, Sophos Limited. All rights reserved.",
+      "Copyright 2019, Sophos Limited. All rights reserved.",
       "",
       "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
       "Sophos Limited and Sophos Group.  All other product and company",
@@ -32,6 +32,36 @@
       "Default": ""
     },
 
+    "EuCentral1SenderAddress": {
+      "Description": "EU central 1 sender mailbox account",
+      "Type": "String"
+    },
+
+    "EuWest1SenderAddress": {
+      "Description": "EU west 1 sender mailbox account",
+      "Type": "String"
+    },
+
+    "UsEast2SenderAddress": {
+      "Description": "US east 2 sender mailbox account",
+      "Type": "String"
+    },
+
+    "UsWest2RecipientAddress": {
+      "Description": "US west 2 recipient mailbox account",
+      "Type": "String"
+    },
+
+    "UsWest2SenderAddress": {
+      "Description": "US west 2 sender mailbox account",
+      "Type": "String"
+    },
+
+    "SesRegion": {
+      "Description": "SES region",
+      "Type": "String"
+    },
+
     "HandlerName": {
       "Description": "The name of the handler declared in source code.",
       "Type": "String"
@@ -51,7 +81,7 @@
     "Runtime": {
       "Description": "The scripting runtime the code runs on.",
       "Type": "String",
-      "Default": "nodejs"
+      "Default": "nodejs6.10"
     },
 
     "S3Bucket": {
@@ -107,6 +137,16 @@
           "S3Key": { "Ref": "S3Key" }
         },
         "Description": { "Ref": "FunctionDescription" },
+        "Environment":  {
+          "Variables": {
+            "XGEMAIL_SES_REGION": { "Ref": "SesRegion" },
+            "XGEMAIL_EU_CENTRAL_1_SENDER_ADDRESS": { "Ref": "EuCentral1SenderAddress"},
+            "XGEMAIL_EU_WEST_1_SENDER_ADDRESS": { "Ref": "EuWest1SenderAddress"},
+            "XGEMAIL_US_EAST_2_SENDER_ADDRESS": { "Ref": "UsEast2SenderAddress"},
+            "XGEMAIL_US_WEST_2_RECIPIENT_ADDRESS": { "Ref": "UsWest2RecipientAddress"},
+            "XGEMAIL_US_WEST_2_SENDER_ADDRESS": { "Ref": "UsWest2SenderAddress"}
+          }
+        },
         "FunctionName": {
           "Fn::If": [
             "HasFunctionName",

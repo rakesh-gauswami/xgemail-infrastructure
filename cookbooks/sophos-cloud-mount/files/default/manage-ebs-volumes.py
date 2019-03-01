@@ -142,8 +142,7 @@ class AWSWrapper(object):
         return self._ec2_resource.Volume(volume_id)
 
     def kms_list_aliases(self):
-        return self._check_response(
-                self._kms_client.list_aliases(), "kms.list_aliases()")
+        return self._kms_client.get_paginator('list_aliases').paginate().build_full_result()
 
     def sdb_get_attributes(self, domain, item):
         return self._check_response(
