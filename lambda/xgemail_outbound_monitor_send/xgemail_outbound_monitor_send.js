@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Sophos Limited. All rights reserved.
+ * Copyright 2019 Sophos Limited. All rights reserved.
  *
  * 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of Sophos Limited and Sophos Group. All other product
  * and company names mentioned are trademarks or registered trademarks of their respective owners.
@@ -19,18 +19,19 @@ const CLIENT_ASSERTION_TYPE = 'urn:ietf:params:oauth:client-assertion-type:jwt-b
 const ACCESS_TOKEN_HOST = 'login.microsoftonline.com';
 const TENANT_ID = process.env.XGEMAIL_TENANT_ID;
 const ACCESS_TOKEN_PATH = `/${TENANT_ID}/oauth2/v2.0/token`;
+const US_WEST_2_RECIPIENT_DOMAIN = process.env.XGEMAIL_US_WEST_2_RECIPIENT_HOSTED_ZONE_NAME;
 
 // send email constants
 const SEND_EMAIL_HOST = 'graph.microsoft.com';
 
 var regionalInfo = {};
-regionalInfo['EUCENTRAL1'] = {'client_id': process.env.XGEMAIL_EU_CENTRAL_1_CLIENT_ID, 'sender_address': 'eu.central.1.prod@sophos-email-monitor.net',
+regionalInfo['EUCENTRAL1'] = {'client_id': process.env.XGEMAIL_EU_CENTRAL_1_CLIENT_ID, 'sender_address': process.env.XGEMAIL_EU_CENTRAL_1_SENDER_ADDRESS,
     'private_key_location': process.env.XGEMAIL_EU_CENTRAL_1_PRIVATE_KEY_LOCATION, 'public_key_thumbprint_location': process.env.XGEMAIL_EU_CENTRAL_1_PUBLIC_KEY_THUMBPRINT_LOCATION};
-regionalInfo['USWEST2'] = {'client_id': process.env.XGEMAIL_US_WEST_2_CLIENT_ID, 'sender_address': 'us.west.2.prod@sophos-email-monitor.com',
+regionalInfo['USWEST2'] = {'client_id': process.env.XGEMAIL_US_WEST_2_CLIENT_ID, 'sender_address': process.env.XGEMAIL_US_WEST_2_SENDER_ADDRESS,
     'private_key_location': process.env.XGEMAIL_US_WEST_2_PRIVATE_KEY_LOCATION, 'public_key_thumbprint_location': process.env.XGEMAIL_US_WEST_2_PUBLIC_KEY_THUMBPRINT_LOCATION};
-regionalInfo['EUWEST1'] = {'client_id': process.env.XGEMAIL_EU_WEST_1_CLIENT_ID, 'sender_address': 'eu.west.1.prod@sophos-email-monitor.org',
+regionalInfo['EUWEST1'] = {'client_id': process.env.XGEMAIL_EU_WEST_1_CLIENT_ID, 'sender_address': process.env.XGEMAIL_EU_WEST_1_SENDER_ADDRESS,
     'private_key_location': process.env.XGEMAIL_EU_WEST_1_PRIVATE_KEY_LOCATION, 'public_key_thumbprint_location': process.env.XGEMAIL_EU_WEST_1_PUBLIC_KEY_THUMBPRINT_LOCATION};
-regionalInfo['USEAST2'] = {'client_id': process.env.XGEMAIL_US_EAST_2_CLIENT_ID, 'sender_address': 'us.e2.prod@sophos-email-monitor.us',
+regionalInfo['USEAST2'] = {'client_id': process.env.XGEMAIL_US_EAST_2_CLIENT_ID, 'sender_address': process.env.XGEMAIL_US_EAST_2_SENDER_ADDRESS,
     'private_key_location': process.env.XGEMAIL_US_EAST_2_PRIVATE_KEY_LOCATION, 'public_key_thumbprint_location': process.env.XGEMAIL_US_EAST_2_PUBLIC_KEY_THUMBPRINT_LOCATION};
 
 exports.handler = (event, context, callback) => {
@@ -130,7 +131,7 @@ function getAccessTokenAndSendMail(client_id, jwtToken, senderAddress, region) {
 // send email to senderAddress using input accessToken
 function sendEmail(senderAddress, accessToken, region) {
     var email_uuid = uuid.v4();
-    var recipient = `${email_uuid}@sophos-email-recipient.com`;
+    var recipient = `${email_uuid}@${US_WEST_2_RECIPIENT_DOMAIN}`;
     var date = new Date().toISOString();
 
     var emailSubject = `Sophos ${region} Outbound RoundTrip Monitoring ${date} with id ${email_uuid}`;
