@@ -23,7 +23,7 @@
       "Description": "Decryption key for encrypted buckets",
       "Type": "String"
     },
-    "AlarmScaleInOutEnabled": {
+    "AlarmScalingEnabled": {
       "Description": "Enable AutoScaling Alarms to trigger scaling policies.",
       "Type": "String",
       "Default": "false",
@@ -540,7 +540,7 @@
     "AlarmScaleOut": {
       "Type": "AWS::CloudWatch::Alarm",
       "Properties": {
-        "ActionsEnabled": { "Ref": "AlarmScaleInOutEnabled" },
+        "ActionsEnabled": { "Ref": "AlarmScalingEnabled" },
         "AlarmDescription": "Alarm when internet-submit ELB RequestCount exceeds threshold",
         "DatapointsToAlarm": "5",
         "EvaluationPeriods": "8",
@@ -565,7 +565,7 @@
     "AlarmScaleIn": {
       "Type": "AWS::CloudWatch::Alarm",
       "Properties": {
-        "ActionsEnabled": { "Ref": "AlarmScaleInOutEnabled" },
+        "ActionsEnabled": { "Ref": "AlarmScalingEnabled" },
         "AlarmDescription": "Alarm when internet-submit ELB RequestCount is below threshold",
         "DatapointsToAlarm": "3",
         "EvaluationPeriods": "10",
