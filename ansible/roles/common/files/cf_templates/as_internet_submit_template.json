@@ -537,36 +537,21 @@
       }
     },
 
-    "AlarmScaleOut": {
-      "Type": "AWS::CloudWatch::Alarm",
-      "Properties": {
-        "ActionsEnabled": { "Ref": "AlarmScalingEnabled" },
-        "AlarmDescription": "Alarm when internet-submit ELB RequestCount exceeds threshold",
-        "DatapointsToAlarm": "5",
-        "EvaluationPeriods": "8",
-        "Period": "60",
-        "Statistic": "Sum",
-        "Threshold": { "Ref": "AlarmScaleOutThreshold" },
-        "AlarmActions": [
-          { "Ref": "XgemailScaleOutPolicy" }
-        ],
-        "Namespace": "AWS/ELB",
-        "Dimensions": [
-          {
-            "Name": "LoadBalancerName",
-            "Value": { "Ref": "LoadBalancerName" }
-          }
-        ],
-        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
-        "MetricName": "RequestCount"
-      }
-    },
-
     "AlarmScaleIn": {
       "Type": "AWS::CloudWatch::Alarm",
       "Properties": {
         "ActionsEnabled": { "Ref": "AlarmScalingEnabled" },
-        "AlarmDescription": "Alarm when internet-submit ELB RequestCount is below threshold",
+        "AlarmDescription": {
+          "Fn::Join": [
+            ":", [
+              "Alarm when ",
+              { "Ref": "XgemailServiceType" },
+              " ELB RequestCount is below threshold of ", {
+                "Ref": "AlarmScaleInThreshold" },
+              " for a duration of time"
+            ]
+          ]
+        },
         "DatapointsToAlarm": "3",
         "EvaluationPeriods": "10",
         "Period": "60",
@@ -583,6 +568,41 @@
           }
         ],
         "ComparisonOperator": "LessThanThreshold",
+        "MetricName": "RequestCount"
+      }
+    },
+
+    "AlarmScaleOut": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "ActionsEnabled": { "Ref": "AlarmScalingEnabled" },
+        "AlarmDescription": {
+          "Fn::Join": [
+            ":", [
+              "Alarm when ",
+              { "Ref": "XgemailServiceType" },
+              " ELB RequestCount exceeds a threshold of ",
+              { "Ref": "AlarmScaleOutThreshold" },
+              " for a duration of time"
+            ]
+          ]
+        },
+        "DatapointsToAlarm": "5",
+        "EvaluationPeriods": "8",
+        "Period": "60",
+        "Statistic": "Sum",
+        "Threshold": { "Ref": "AlarmScaleOutThreshold" },
+        "AlarmActions": [
+          { "Ref": "XgemailScaleOutPolicy" }
+        ],
+        "Namespace": "AWS/ELB",
+        "Dimensions": [
+          {
+            "Name": "LoadBalancerName",
+            "Value": { "Ref": "LoadBalancerName" }
+          }
+        ],
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
         "MetricName": "RequestCount"
       }
     },
