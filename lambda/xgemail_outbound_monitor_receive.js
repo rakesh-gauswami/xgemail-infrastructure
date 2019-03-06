@@ -1,19 +1,30 @@
 /*
- * Copyright 2017 Sophos Limited. All rights reserved.
+ * Copyright 2019 Sophos Limited. All rights reserved.
  *
  * 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of Sophos Limited and Sophos Group. All other product
  * and company names mentioned are trademarks or registered trademarks of their respective owners.
  */
 var aws = require('aws-sdk');
 
+const US_EAST_2_NAMESPACE = "xgemail-outbound-monitor-us-east-2";
+const US_WEST_2_NAMESPACE = "xgemail-outbound-monitor-us-west-2";
+const EU_CENTRAL_1_NAMESPACE = "xgemail-outbound-monitor-eu-central-1";
+const EU_WEST_1_NAMESPACE = "xgemail-outbound-monitor-eu-west-1";
+const US_EAST_2_DOMAINNAME =  process.env.XGEMAIL_US_EAST_2_HOSTED_ZONE_NAME;
+const US_WEST_2_DOMAINNAME =  process.env.XGEMAIL_US_WEST_2_HOSTED_ZONE_NAME;
+const EU_CENTRAL_1_DOMAINNAME =  process.env.XGEMAIL_EU_CENTRAL_1_HOSTED_ZONE_NAME;
+const EU_WEST_1_DOMAINNAME =  process.env.XGEMAIL_EU_WEST_1_HOSTED_ZONE_NAME;
+
+const NAMESPACEMAP = {
+    "${US_EAST_2_DOMAINNAME}" : US_EAST_2_NAMESPACE,
+    "${US_WEST_2_DOMAINNAME}" : US_WEST_2_NAMESPACE,
+    "${EU_CENTRAL_1_DOMAINNAME}" : EU_CENTRAL_1_NAMESPACE,
+    "${EU_WEST_1_DOMAINNAME}" : EU_WEST_1_NAMESPACE
+};
+
 exports.handler = (event, context, callback) => {
     var sesNotification = event.Records[0].ses;
     var namespace = null;
-
-    const US_EAST_2_NAMESPACE = "xgemail-monitor-us-east-2";
-    const US_WEST_2_NAMESPACE = "xgemail-monitor-us-west-2";
-    const EU_CENTRAL_1_NAMESPACE = "xgemail-monitor-eu-central-1";
-    const EU_WEST_1_NAMESPACE = "xgemail-monitor-eu-west-1";
 
     // obtain the time when it was received by SES
     var timeReceivedSes = new Date(sesNotification.mail.timestamp);
@@ -23,23 +34,16 @@ exports.handler = (event, context, callback) => {
     var headersArray = sesNotification.mail.headers;
 
     // obtain the time when it was sent from the headers
-    var timeSent = sesNotification.mail.commonHeaders.date;
-    timeSent = new Date(timeSent);
-
-    var namespaceMap = {
-        "us-east-2.compute.internal": US_EAST_2_NAMESPACE,
-        "us-west-2.compute.internal" : US_WEST_2_NAMESPACE,
-        "eu-central-1.compute.internal": EU_CENTRAL_1_NAMESPACE,
-        "eu-west-1.compute.internal": EU_WEST_1_NAMESPACE
-    };
+    var timeSent = new Date(sesNotification.mail.commonHeaders.date);
+    var emailSubject = sesNotification.mail.commonHeaders.subject;
 
     outerloop:
         for(var i = 0; i < headersArray.length; i++) {
             var header = headersArray[i];
-            if (header.name === 'Received') {
-                for (var key in namespaceMap) {
+            if (header.name === 'Return-Path') {
+                for (var key in NAMESPACEMAP) {
                     if (header.value.includes(key)) {
-                        namespace = namespaceMap[key];
+                        namespace = NAMESPACEMAP[key];
                         break outerloop;
                     }
                 }
@@ -52,15 +56,16 @@ exports.handler = (event, context, callback) => {
 
     // calculate time interval between sent and received
     timeIntervalMillis = timeReceivedSes - timeSent;
-    console.log(sesNotification.mail.commonHeaders);
-    console.log("Email took " + timeIntervalMillis + " milliseconds");
+    console.log(`Email with subject <${emailSubject}> arrived at <${timeReceivedSes}> and was sent at <${timeSent}>`);
+    console.log(`Email with subject <${emailSubject}> took ${timeIntervalMillis} milliseconds`);
+
 
     //Write this value to CloudWatch if the timeSent was obtained
     if (timeIntervalMillis > 0) {
         var params = {
             MetricData: [
                 {
-                    MetricName: 'message-roundtrip-time',
+                    MetricName: 'outbound-message-roundtrip-time',
                     Dimensions: [
                         {
                             Name: 'roundTripTime',
@@ -79,9 +84,12 @@ exports.handler = (event, context, callback) => {
         var cw = new aws.CloudWatch({apiVersion: '2010-08-01'});
 
         cw.putMetricData(params, function(err, data) {
-            if (err) console.log(err, err.stack);
-            else     console.log(data);
-            callback(null, 'Successfully published to CloudWatch');
+            if (err) {
+                console.log(err, err.stack);
+            }
+            else {
+                console.log(`data for email with subject <${emailSubject}> successfully published to CloudWatch`);
+            }
         });
 
     }
@@ -89,4 +97,6 @@ exports.handler = (event, context, callback) => {
         var sentTimeNotFoundError = new Error("Error in obtaining sent timestamp");
         callback(sentTimeNotFoundError);
     }
+
+    callback(null, 'Xgemail Outbound Monitor Receive Lambda Triggered');
 };

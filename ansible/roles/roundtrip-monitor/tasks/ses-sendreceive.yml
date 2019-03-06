@@ -1,0 +1,59 @@
+---
+# Inbound Monitor receive lambda function output
+- name: "Gather {{stack.lambda.inbound_monitor_receive_lambda_function}} CloudFormation Stack Output"
+  cloudformation_facts:
+    stack_name: "{{stack.lambda.inbound_monitor_receive_lambda_function}}"
+    region: "{{account.region}}"
+  register: inbound_monitor_receive_lambda_output
+
+- name: "Print {{stack.lambda.inbound_monitor_receive_lambda_function}} CloudFormation Stack Output"
+  debug:
+    var: inbound_monitor_receive_lambda_output
+    verbosity: 3
+
+# Outbound Monitor receive lambda function output
+- name: "Gather {{stack.lambda.outbound_monitor_receive_lambda_function}} CloudFormation Stack Output"
+  cloudformation_facts:
+    stack_name: "{{stack.lambda.outbound_monitor_receive_lambda_function}}"
+    region: "{{account.region}}"
+  register: outbound_monitor_receive_lambda_output
+
+- name: "Print {{stack.lambda.outbound_monitor_receive_lambda_function}} CloudFormation Stack Output"
+  debug:
+    var: outbound_monitor_receive_lambda_output
+    verbosity: 3
+
+- name: "Deploy SES  {{stack.ses.email_monitor_ses}} to {{account.name}}-{{account.region}}"
+  cloudformation:
+    stack_name:                             "{{stack.ses.email_monitor_ses}}"
+    state:                                  present
+    region:                                 "{{account.region}}"
+    disable_rollback:                       true
+    template:                               "{{template.ses.ses_template}}"
+    template_parameters:
+      InboundRuleName:                      "xgemail-monitor-rule"
+      OutboundRuleName:                     "xgemail-outbound-monitor-rule"
+      RuleSetName:                          "{{ses_rule_set_name}}"
+      UsWest2aCidrRange:                    "{{us_west_2a_cidr}}"
+      UsWest2bCidrRange:                    "{{us_west_2b_cidr}}"
+      UsEast2aCidrRange:                    "{{us_east_2a_cidr}}"
+      UsEast2bCidrRange:                    "{{us_east_2b_cidr}}"
+      EuCentral1aCidrRange:                 "{{eu_central_1a_cidr}}"
+      EuCentral1bCidrRange:                 "{{eu_central_1b_cidr}}"
+      EuWest1aCidrRange:                    "{{eu_west_1a_cidr}}"
+      EuWest1bCidrRange:                    "{{eu_west_1b_cidr}}"
+      SesInvokeLambdaFunctionArn:           "{{inbound_monitor_receive_lambda_output.ansible_facts.cloudformation[stack.lambda.inbound_monitor_receive_lambda_function].stack_outputs.LambdaFunctionArn}}"
+      SesInvokeOutboundLambdaFunctionArn:   "{{outbound_monitor_receive_lambda_output.ansible_facts.cloudformation[stack.lambda.outbound_monitor_receive_lambda_function].stack_outputs.LambdaFunctionArn}}"
+      InboundMailRecipients:                "{{inbound_mail_recipients}}"
+      OutboundMailRecipients:               "{{outbound_mail_recipients}}"
+      Domains:                              "{{domains}}"
+  register: ses_stack_output
+
+- debug:
+    var: ses_stack_output
+    verbosity: 3
+
+- name: "Display SES Stack Output"
+  debug:
+    msg: "{{ses_stack_output.stack_outputs}}"
+    verbosity: 2
