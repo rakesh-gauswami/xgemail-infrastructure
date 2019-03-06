@@ -127,7 +127,7 @@ file RBL_REPLY_MAPS_FILENAME do
   content RBL_MAP_ENTRY
   notifies :run, "execute[#{RBL_REPLY_MAPS_FILENAME}]", :immediately
 end
-z
+
 if account != 'sandbox'
 
   CONFIGURATION_COMMANDS =

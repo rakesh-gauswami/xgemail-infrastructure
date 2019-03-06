@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: setup_xgemail_utils_structure
 #
-# Copyright 2018, Sophos
+# Copyright 2019, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
