@@ -133,7 +133,7 @@
     },
     "LoadBalancerName": {
       "Description": "Name for the ELB to attach to the Auto Scaling Group",
-      "Type": "List<String>"
+      "Type": "String"
     },
     "S3CookbookRepositoryURL": {
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
@@ -422,7 +422,7 @@
             "RoleARN" : { "Ref": "AutoScalingInstanceRoleArn" }
           }
         ],
-        "LoadBalancerNames": { "Ref": "LoadBalancerName" },
+        "LoadBalancerNames": [ { "Ref": "LoadBalancerName" } ],
         "MinSize": { "Ref": "AutoScalingMinSize" },
         "MaxSize": { "Ref": "AutoScalingMaxSize" },
         "TerminationPolicies": [ "Default" ],
