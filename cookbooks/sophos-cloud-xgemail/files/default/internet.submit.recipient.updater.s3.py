@@ -1,26 +1,27 @@
 #!/usr/bin/env python
 # vim: autoindent expandtab filetype=python shiftwidth=4 softtabstop=4 tabstop=4
 #
-# Polls XGEMAIL PIC for a list of recipients
+# Retrieves valid Sophos Email recipients from S3
 #
-# Copyright: Copyright (c) 1997-2016. All rights reserved.
-# Company: Sophos Limited or one of its affiliates.
+# Copyright 2018, Sophos Limited. All rights reserved.
+#
+# 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
+# Sophos Limited and Sophos Group.  All other product and company
+# names mentioned are trademarks or registered trademarks of their
+# respective owners.
+#
 
-from multiprocessing.dummy import Pool as ThreadPool
 import base64
 import boto3
-import base64
-import json
-import os
-import requests
-import subprocess
 import logging
-import sys
+import os
+import subprocess
+
 from logging.handlers import SysLogHandler
+from multiprocessing.dummy import Pool as ThreadPool
 
 # Constants
-PIC_CA_PATH = '/etc/ssl/certs/hmr-infrastructure-ca.crt'
-PIC_FQDN = 'mail-cloudstation-eu-west-1.dev.hydra.sophos.com'
+POLICY_BUCKET = 'private-cloud-dev-eu-west-1-cloudemail-xgemail-policy'
 POSTFIX_INSTANCE_NAME = 'postfix-is'
 # RECIPIENT_ACCESS_FILENAME = 'recipient_access'
 # FIXME: switch to above filename once testing is done
@@ -37,9 +38,9 @@ POSTFIX_CONFIG_DIR = subprocess.check_output(
 RECIPIENT_ACCESS_FILE = POSTFIX_CONFIG_DIR + '/' + RECIPIENT_ACCESS_FILENAME
 RECIPIENT_ACCESS_FILE_TMP = RECIPIENT_ACCESS_FILE + '.tmp'
 RELAY_DOMAINS_FILE = POSTFIX_CONFIG_DIR + '/' + RELAY_DOMAINS_FILENAME
-POLICY_BUCKET = 'private-cloud-dev-eu-west-1-cloudemail-xgemail-policy'
-S3_BUCKET = boto3.resource('s3').Bucket(name = POLICY_BUCKET)
 S3_CRAWL_THREADS = 10
+
+s3_bucket = boto3.resource('s3').Bucket(name = POLICY_BUCKET)
 
 # logging to syslog setup
 logging.getLogger("botocore").setLevel(logging.WARNING)
@@ -57,7 +58,7 @@ def retrieve_recipients_from_s3(domain):
   prefix_with_domain = '{}/{}/'.format(base_prefix, domain)
 
   recipients = set()
-  for obj in S3_BUCKET.objects.filter(Prefix = prefix_with_domain):
+  for obj in s3_bucket.objects.filter(Prefix = prefix_with_domain):
     base_64_encoded_localpart = obj.key.split('/')[4]
     localpart = base64.b64decode(base_64_encoded_localpart)
     email_address = '{}@{}'.format(localpart, domain)
