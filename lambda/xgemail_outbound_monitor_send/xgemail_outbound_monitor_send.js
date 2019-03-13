@@ -25,13 +25,13 @@ const US_WEST_2_RECIPIENT_DOMAIN = process.env.XGEMAIL_US_WEST_2_RECIPIENT_HOSTE
 const SEND_EMAIL_HOST = 'graph.microsoft.com';
 
 var regionalInfo = {};
-regionalInfo['EUCENTRAL1'] = {'client_id': process.env.XGEMAIL_EU_CENTRAL_1_CLIENT_ID, 'sender_address': process.env.XGEMAIL_EU_CENTRAL_1_MAILBOX_NAME,
+regionalInfo['EUCENTRAL1'] = {'client_id': process.env.XGEMAIL_EU_CENTRAL_1_CLIENT_ID, 'sender_address': process.env.XGEMAIL_EU_CENTRAL_1_SENDER_ADDRESS,
     'private_key_location': process.env.XGEMAIL_EU_CENTRAL_1_PRIVATE_KEY_LOCATION, 'public_key_thumbprint_location': process.env.XGEMAIL_EU_CENTRAL_1_PUBLIC_KEY_THUMBPRINT_LOCATION};
-regionalInfo['USWEST2'] = {'client_id': process.env.XGEMAIL_US_WEST_2_CLIENT_ID, 'sender_address': process.env.XGEMAIL_US_WEST_2_MAILBOX_NAME,
+regionalInfo['USWEST2'] = {'client_id': process.env.XGEMAIL_US_WEST_2_CLIENT_ID, 'sender_address': process.env.XGEMAIL_US_WEST_2_SENDER_ADDRESS,
     'private_key_location': process.env.XGEMAIL_US_WEST_2_PRIVATE_KEY_LOCATION, 'public_key_thumbprint_location': process.env.XGEMAIL_US_WEST_2_PUBLIC_KEY_THUMBPRINT_LOCATION};
-regionalInfo['EUWEST1'] = {'client_id': process.env.XGEMAIL_EU_WEST_1_CLIENT_ID, 'sender_address': process.env.XGEMAIL_EU_WEST_1_MAILBOX_NAME,
+regionalInfo['EUWEST1'] = {'client_id': process.env.XGEMAIL_EU_WEST_1_CLIENT_ID, 'sender_address': process.env.XGEMAIL_EU_WEST_1_SENDER_ADDRESS,
     'private_key_location': process.env.XGEMAIL_EU_WEST_1_PRIVATE_KEY_LOCATION, 'public_key_thumbprint_location': process.env.XGEMAIL_EU_WEST_1_PUBLIC_KEY_THUMBPRINT_LOCATION};
-regionalInfo['USEAST2'] = {'client_id': process.env.XGEMAIL_US_EAST_2_CLIENT_ID, 'sender_address': process.env.XGEMAIL_US_EAST_2_MAILBOX_NAME,
+regionalInfo['USEAST2'] = {'client_id': process.env.XGEMAIL_US_EAST_2_CLIENT_ID, 'sender_address': process.env.XGEMAIL_US_EAST_2_SENDER_ADDRESS,
     'private_key_location': process.env.XGEMAIL_US_EAST_2_PRIVATE_KEY_LOCATION, 'public_key_thumbprint_location': process.env.XGEMAIL_US_EAST_2_PUBLIC_KEY_THUMBPRINT_LOCATION};
 
 exports.handler = (event, context, callback) => {

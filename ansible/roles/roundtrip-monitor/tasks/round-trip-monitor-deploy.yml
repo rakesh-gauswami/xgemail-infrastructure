@@ -35,18 +35,18 @@
     disable_rollback:                       true
     template:                               "{{template.lambda.lambda_xgemail_inbound_monitor_template}}"
     template_parameters:
-      EuCentral1MailBoxName:                "{{eu_central_1_mailbox_name}}"
-      EuWest1MailBoxName:                   "{{eu_west_1_mailbox_name}}"
+      EuCentral1SenderAddress:              "{{eu_central_1_sender_address}}"
+      EuWest1SenderAddress:                 "{{eu_west_1_sender_address}}"
       FunctionName:                         "{{lambda.inbound_monitor_send_lambda_function}}"
-      HandlerName:                          xgemail_inbound_monitor_send.handler
+      HandlerName:                          xgemail_inbound_monitor_send.monitor_handler
       IAMRoleArn:                           "{{cloud_email_monitor_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_monitor_roles].stack_outputs.LambdaXgemailMonitorSendRoleArn}}"
       S3Bucket:                             "{{s3.lambda_bucket}}"
       S3Key:                                "lambda/{{build.number}}/xgemail_inbound_monitor_send.zip"
       ScheduleExpression:                   rate(1 minute)
       SesRegion:                            "{{ses_region}}"
-      UsEast2MailBoxName:                   "{{us_east_2_mailbox_name}}"
-      UsWest2MailBoxName:                   "{{us_west_2_mailbox_name}}"
-      UsWest2SenderMailBoxName:             "{{us_west_2_sender_mailbox_name}}"
+      UsEast2SenderAddress:                 "{{us_east_2_sender_address}}"
+      UsWest2RecipientAddress:              "{{us_west_2_recipient_address}}"
+      UsWest2SenderAddress:                 "{{us_west_2_sender_address}}"
   register: inbound_monitor_send_stack
 
 - debug:
@@ -83,17 +83,18 @@
     disable_rollback:                       true
     template:                               "{{template.lambda.lambda_xgemail_inbound_monitor_template}}"
     template_parameters:
-      EuCentral1MailBoxName:                "{{eu_central_1_mailbox_name}}"
-      EuWest1MailBoxName:                   "{{eu_west_1_mailbox_name}}"
+      EuCentral1SenderAddress:              "{{eu_central_1_sender_address}}"
+      EuWest1SenderAddress:                 "{{eu_west_1_sender_address}}"
       FunctionName:                         "{{lambda.inbound_monitor_receive_lambda_function}}"
-      HandlerName:                          xgemail_inbound_monitor_receive.handler
+      HandlerName:                          xgemail_inbound_monitor_receive.monitor_handler
       IAMRoleArn:                           "{{cloud_email_monitor_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_monitor_roles].stack_outputs.LambdaXgemailMonitorReceiveRoleArn}}"
       S3Bucket:                             "{{s3.lambda_bucket}}"
       S3Key:                                "lambda/{{build.number}}/xgemail_inbound_monitor_receive.zip"
+      ScheduleExpression:                   rate(1 minute)
       SesRegion:                            "{{ses_region}}"
-      UsEast2MailBoxName:                   "{{us_east_2_mailbox_name}}"
-      UsWest2MailBoxName:                   "{{us_west_2_mailbox_name}}"
-      UsWest2SenderMailBoxName:             "{{us_west_2_sender_mailbox_name}}"
+      UsEast2SenderAddress:                 "{{us_east_2_sender_address}}"
+      UsWest2RecipientAddress:              "{{us_west_2_recipient_address}}"
+      UsWest2SenderAddress:                 "{{us_west_2_sender_address}}"
   register: inbound_monitor_receive_lambda_output
 
 - debug:
@@ -118,15 +119,15 @@
       EuCentral1PrivKeyPath:                "{{eu_central_1_private_key}}"
       EuCentral1PubKeyPath:                 "{{eu_central_1_public_key}}"
       EuCentral1PubKeyThumbprintPath:       "{{eu_central_1_public_thumb_print}}"
-      EuCentral1MailBoxName:                 "{{eu_central_1_mailbox_name}}"
+      EuCentral1SenderAddress:              "{{eu_central_1_sender_address}}"
       Euwest1Id:                            "{{eu_west_1_id}}"
       EuWest1HostedZoneName:                "{{eu_west_1_hostedZoneName}}"
       EuWest1PrivKeyPath:                   "{{eu_west_1_private_key}}"
       Euwest1PubKeyPath:                    "{{eu_west_1_public_key}}"
       Euwest1PubKeyThumbprintPath:          "{{eu_west_1_public_thumb_print}}"
-      EuWest1MailBoxName:                   "{{eu_west_1_mailbox_name}}"
+      EuWest1SenderAddress:                 "{{eu_west_1_sender_address}}"
       FunctionName:                         "{{lambda.outbound_monitor_send_lambda_function}}"
-      HandlerName:                          xgemail_outbound_monitor_send.handler
+      HandlerName:                          xgemail_outbound_monitor_send.monitor_handler
       IAMRoleArn:                           "{{cloud_email_monitor_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_monitor_roles].stack_outputs.LambdaXgemailOutboundMonitorSendRoleArn}}"
       S3Bucket:                             "{{s3.lambda_bucket}}"
       S3BucketforCerts:                     "cloud-{{account.name}}-connections"
@@ -138,15 +139,14 @@
       UsEast2PrivKeyPath:                   "{{us_east_2_private_key}}"
       UsEast2PubKeyPath:                    "{{us_east_2_public_key}}"
       UsEast2PubKeyThumbprintPath:          "{{us_east_2_public_thumb_print}}"
-      UsEast2MailBoxName:                   "{{us_east_2_mailbox_name}}"
+      UsEast2SenderAddress:                 "{{us_east_2_sender_address}}"
       UsWest2Id:                            "{{us_west_2_id}}"
       UsWest2HostedZoneName:                "{{us_west_2_hostedZoneName}}"
-      UsWest2RecipientHostedZoneName:       "{{us_west_2_recipient_hostedZoneName}}"
       UsWest2PrivKeyPath:                   "{{us_west_2_private_key}}"
       UsWest2PubKeyPath:                    "{{us_west_2_public_key}}"
       UsWest2PubKeyThumbprintPath:          "{{us_west_2_public_thumb_print}}"
-      UsWest2MailBoxName:                   "{{us_west_2_mailbox_name}}"
-      UsWest2SenderMailBoxName:             "{{us_west_2_sender_mailbox_name}}"
+      UsWest2RecipientAddress:              "{{us_west_2_recipient_address}}"
+      UsWest2SenderAddress:                 "{{us_west_2_sender_address}}"
   register: outbound_monitor_send_stack
 
 - debug:
@@ -188,34 +188,34 @@
       EuCentral1PrivKeyPath:                "{{eu_central_1_private_key}}"
       EuCentral1PubKeyPath:                 "{{eu_central_1_public_key}}"
       EuCentral1PubKeyThumbprintPath:       "{{eu_central_1_public_thumb_print}}"
-      EuCentral1MailBoxName:                "{{eu_central_1_mailbox_name}}"
+      EuCentral1SenderAddress:              "{{eu_central_1_sender_address}}"
       Euwest1Id:                            "{{eu_west_1_id}}"
       EuWest1HostedZoneName:                "{{eu_west_1_hostedZoneName}}"
       EuWest1PrivKeyPath:                   "{{eu_west_1_private_key}}"
       Euwest1PubKeyPath:                    "{{eu_west_1_public_key}}"
       Euwest1PubKeyThumbprintPath:          "{{eu_west_1_public_thumb_print}}"
-      EuWest1MailBoxName:                   "{{eu_west_1_mailbox_name}}"
+      EuWest1SenderAddress:                 "{{eu_west_1_sender_address}}"
       FunctionName:                         "{{lambda.outbound_monitor_receive_lambda_function}}"
-      HandlerName:                          xgemail_outbound_monitor_receive.handler
+      HandlerName:                          xgemail_outbound_monitor_receive.monitor_handler
       IAMRoleArn:                           "{{cloud_email_monitor_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_monitor_roles].stack_outputs.LambdaXgemailOutboundMonitorReceiveRoleArn}}"
       S3Bucket:                             "{{s3.lambda_bucket}}"
       S3BucketforCerts:                     "cloud-{{account.name}}-connections"
       S3Key:                                "lambda/{{build.number}}/xgemail_outbound_monitor_receive.zip"
+      ScheduleExpression:                   rate(1 minute)
       TenantId:                             "{{tenant_id}}"
       UsEast2Id:                            "{{us_east_2_id}}"
       UsEast2HostedZoneName:                "{{us_east_2_hostedZoneName}}"
       UsEast2PrivKeyPath:                   "{{us_east_2_private_key}}"
       UsEast2PubKeyPath:                    "{{us_east_2_public_key}}"
       UsEast2PubKeyThumbprintPath:          "{{us_east_2_public_thumb_print}}"
-      UsEast2MailBoxName:                    "{{us_east_2_mailbox_name}}"
+      UsEast2SenderAddress:                 "{{us_east_2_sender_address}}"
       UsWest2Id:                            "{{us_west_2_id}}"
       UsWest2HostedZoneName:                "{{us_west_2_hostedZoneName}}"
-      UsWest2RecipientHostedZoneName:       "{{us_west_2_recipient_hostedZoneName}}"
       UsWest2PrivKeyPath:                   "{{us_west_2_private_key}}"
       UsWest2PubKeyPath:                    "{{us_west_2_public_key}}"
       UsWest2PubKeyThumbprintPath:          "{{us_west_2_public_thumb_print}}"
-      UsWest2MailBoxName:                   "{{us_west_2_mailbox_name}}"
-      UsWest2SenderMailBoxName:             "{{us_west_2_sender_mailbox_name}}"
+      UsWest2RecipientAddress:              "{{us_west_2_recipient_address}}"
+      UsWest2SenderAddress:                 "{{us_west_2_sender_address}}"
   register: outbound_monitor_receive_lambda_output
 
 - debug:
