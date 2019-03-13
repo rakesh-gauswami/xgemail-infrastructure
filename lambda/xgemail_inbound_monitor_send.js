@@ -20,10 +20,10 @@ exports.handler = (event, context, callback) => {
     console.log('Incoming: ', event);
     //Domains for mailboxes are already verified in AWS otherwise sending email will result in error.
     var mailboxes= [
-        process.env.XGEMAIL_EU_CENTRAL_1_SENDER_ADDRESS,
-        process.env.XGEMAIL_EU_WEST_1_SENDER_ADDRESS,
-        process.env.XGEMAIL_US_EAST_2_SENDER_ADDRESS,
-        process.env.XGEMAIL_US_WEST_2_SENDER_ADDRESS
+        process.env.XGEMAIL_EU_CENTRAL_1_MAILBOX_NAME,
+        process.env.XGEMAIL_EU_WEST_1_MAILBOX_NAME,
+        process.env.XGEMAIL_US_EAST_2_MAILBOX_NAME,
+        process.env.XGEMAIL_US_WEST_2_MAILBOX_NAME
     ];
 
     var index_mailboxes = 0;
@@ -43,7 +43,7 @@ exports.handler = (event, context, callback) => {
                     Data: 'Sophos Email Monitor ' + date
                 }
             },
-            Source: process.env.XGEMAIL_US_WEST_2_RECIPIENT_ADDRESS
+            Source: process.env.XGEMAIL_US_WEST_2_SENDER_MAILBOX_NAME
         };
         console.log('Sending email to ', recipient);
         // Send email via AWS-SDK API.
