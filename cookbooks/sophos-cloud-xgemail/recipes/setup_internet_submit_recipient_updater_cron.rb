@@ -89,9 +89,10 @@ end
 
 cookbook_file "#{CRON_SCRIPT_S3_RECIPIENT_READER_PATH}" do
   source "#{CRON_SCRIPT_S3_RECIPIENT_READER}"
-  mode '0644'
+  mode '0750'
   owner 'root'
   group 'root'
+  notifies :run, "execute[#{CRON_SCRIPT_S3_RECIPIENT_READER_PATH}]", :immediately
 end
 
 if ACCOUNT != 'sandbox'
