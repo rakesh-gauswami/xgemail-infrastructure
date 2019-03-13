@@ -112,7 +112,6 @@ if __name__ == "__main__":
         both the --env and the --region parameters otherwise the script will
         exit without retrieving any data from S3.
     """
-
     parser = argparse.ArgumentParser(description = 'Retrieve Sophos Email recipients from S3')
     parser.add_argument('--env', choices=['dev', 'dev3', 'qa', 'prod','inf'], help = 'the environment in which this script runs', required = True)
     parser.add_argument('--region', choices=['eu-central-1', 'eu-west-1', 'us-west-2', 'us-east-2'], help = 'the region in which this script runs', required = True)
