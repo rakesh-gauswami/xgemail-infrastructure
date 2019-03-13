@@ -43,18 +43,26 @@ handler.formatter = formatter
 logger.addHandler(handler)
 
 def read_domains_from_file(relay_domains_file):
+    """
+        Reads the file at the provided location and returns
+        the list of domains. This method assumes that the
+        file is of the following format:
+
+        example1.com OK
+        example2.com OK
+        ...
+    """
     domains = []
     with open(relay_domains_file, 'r') as f:
         for domain in f.readlines():
-            # file is formatted like so:
-            #   example1.com OK
-            #   example2.com OK
-            #   ...
-            # but we only need the domain name
             domains.append(domain.split(' ')[0])
     return domains
 
 def retrieve_recipients_from_s3(s3_bucket, domain):
+    """
+       Reads all objects under a given prefix from S3.
+       Returns a list of recipients as valid email addresses.
+    """
     prefix_with_domain = '{}/{}/'.format(BASE_DOMAINS_PREFIX, domain)
 
     recipients = set()
@@ -65,8 +73,21 @@ def retrieve_recipients_from_s3(s3_bucket, domain):
             logger.error('Error when attempting to decode key {}'.format(obj.key))
     return recipients
 
-def decode_email_address(path):
-    tokens = path.split('/')
+def decode_email_address(s3_path_with_domain_and_recipient):
+    """
+        Extracts both the base64 encoded localpart as well as
+        the domain from the provided string. It then decodes the localpart
+        and returns the complete email address.
+
+        The expected format of the provided string is as follows:
+
+        config/policies/domains/<domain-name>/<base64-encoded-localpart>
+
+        e.g.
+
+        config/policies/domains/lion.com/aGFrdW5hLm1hdGF0YQ==
+    """
+    tokens = s3_path_with_domain_and_recipient.split('/')
     domain = tokens[3]
     base_64_encoded_localpart = tokens[4]
 
@@ -75,6 +96,11 @@ def decode_email_address(path):
     return email_address
 
 if __name__ == "__main__":
+    """
+        Entrypoint into this script. In order to run, it requires at the very least
+        both the --env and the --region parameters otherwise the script will
+        exit without retrieving any data from S3.
+    """
     parser = argparse.ArgumentParser(description = 'Retrieve Sophos Email recipients from S3')
     parser.add_argument('--env', choices=['dev', 'dev3', 'qa', 'prod','inf'], help = 'the environment in which this script runs', required = True)
     parser.add_argument('--region', choices=['eu-central-1', 'eu-west-1', 'us-west-2', 'us-east-2'], help = 'the region in which this script runs', required = True)
@@ -85,6 +111,7 @@ if __name__ == "__main__":
 
     if not args.enabled and not args.dryrun:
         # do not execute this script, it's neither enabled nor a dryrun was requested
+        logger.debug('Script is neither enabled nor set to perform a dry run, exiting.')
         sys.exit(0)
 
     policy_bucket = 'private-cloud-{}-{}-cloudemail-xgemail-policy'.format(args.env, args.region)
