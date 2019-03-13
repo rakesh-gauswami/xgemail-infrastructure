@@ -29,20 +29,11 @@ POSTFIX_INSTANCE_NAME = 'postfix-is'
 
 RECIPIENT_ACCESS_FILENAME_ENABLED = 'recipient_access'
 RECIPIENT_ACCESS_FILENAME_DRYRUN = 'recipient_access.dryrun'
-
-RELAY_DOMAINS_FILENAME = 'relay_domains'
-
-POSTFIX_CONFIG_DIR = subprocess.check_output([
-    'postmulti', '-i', POSTFIX_INSTANCE_NAME, '-x',
-    'postconf','-h','config_directory'
-]).rstrip()
-
-RELAY_DOMAINS_FILE = POSTFIX_CONFIG_DIR + '/' + RELAY_DOMAINS_FILENAME
 S3_CRAWL_THREADS = 5
 
 # logging to syslog setup
 logging.getLogger("botocore").setLevel(logging.WARNING)
-logger = logging.getLogger('is-recipient-updater')
+logger = logging.getLogger('s3recipientreader')
 logger.setLevel(logging.INFO)
 handler = logging.handlers.SysLogHandler('/dev/log')
 formatter = logging.Formatter(
@@ -51,9 +42,9 @@ formatter = logging.Formatter(
 handler.formatter = formatter
 logger.addHandler(handler)
 
-def read_domains_from_file(file_path):
+def read_domains_from_file(relay_domains_file):
     domains = []
-    with open(RELAY_DOMAINS_FILE, 'r') as f:
+    with open(relay_domains_file, 'r') as f:
         for domain in f.readlines():
             # file is formatted like so:
             #   example1.com OK
@@ -69,13 +60,16 @@ def retrieve_recipients_from_s3(s3_bucket, domain):
     recipients = set()
     for obj in s3_bucket.objects.filter(Prefix = prefix_with_domain):
         try:
-            recipients.add(decode_email_address(obj.key, domain))
+            recipients.add(decode_email_address(obj.key))
         except:
             logger.error('Error when attempting to decode key {}'.format(obj.key))
     return recipients
 
-def decode_email_address(local_part_with_prefix, domain):
-    base_64_encoded_localpart = local_part_with_prefix.split('/')[4]
+def decode_email_address(path):
+    tokens = path.split('/')
+    domain = tokens[3]
+    base_64_encoded_localpart = tokens[4]
+
     localpart = base64.b64decode(base_64_encoded_localpart)
     email_address = '{}@{}'.format(localpart, domain)
     return email_address
@@ -96,7 +90,14 @@ if __name__ == "__main__":
     policy_bucket = 'private-cloud-{}-{}-cloudemail-xgemail-policy'.format(args.env, args.region)
     s3_bucket = boto3.resource('s3').Bucket(name = policy_bucket)
 
-    domains = read_domains_from_file(RELAY_DOMAINS_FILE)
+    postfix_config_dir = subprocess.check_output([
+        'postmulti', '-i', POSTFIX_INSTANCE_NAME, '-x',
+        'postconf','-h','config_directory'
+    ]).rstrip()
+
+    relay_domains_file = postfix_config_dir + '/relay_domains'
+
+    domains = read_domains_from_file(relay_domains_file)
 
     # make the Pool of workers
     pool = ThreadPool(S3_CRAWL_THREADS)
@@ -116,9 +117,9 @@ if __name__ == "__main__":
         recipients.update(thread_result)
 
     if args.enabled:
-        recipient_access_file = POSTFIX_CONFIG_DIR + '/' + RECIPIENT_ACCESS_FILENAME_ENABLED
+        recipient_access_file = postfix_config_dir + '/' + RECIPIENT_ACCESS_FILENAME_ENABLED
     elif args.dryrun:
-        recipient_access_file = POSTFIX_CONFIG_DIR + '/' + RECIPIENT_ACCESS_FILENAME_DRYRUN
+        recipient_access_file = postfix_config_dir + '/' + RECIPIENT_ACCESS_FILENAME_DRYRUN
     else:
         logger.warn('Script did not run in enabled or dryrun mode, exiting.')
         sys.exit(1)
