@@ -3,7 +3,7 @@
 #
 # Retrieves valid Sophos Email recipients from S3
 #
-# Copyright 2018, Sophos Limited. All rights reserved.
+# Copyright 2019, Sophos Limited. All rights reserved.
 #
 # 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
 # Sophos Limited and Sophos Group.  All other product and company
@@ -11,36 +11,34 @@
 # respective owners.
 #
 
+import argparse
 import base64
 import boto3
 import logging
 import os
 import subprocess
+import sys
 
+from functools import partial
 from logging.handlers import SysLogHandler
 from multiprocessing.dummy import Pool as ThreadPool
 
 # Constants
-POLICY_BUCKET = 'private-cloud-dev-eu-west-1-cloudemail-xgemail-policy'
+BASE_DOMAINS_PREFIX = 'config/policies/domains'
 POSTFIX_INSTANCE_NAME = 'postfix-is'
-# RECIPIENT_ACCESS_FILENAME = 'recipient_access'
-# FIXME: switch to above filename once testing is done
-RECIPIENT_ACCESS_FILENAME = 'recipient_access.s3'
+
+RECIPIENT_ACCESS_FILENAME_ENABLED = 'recipient_access'
+RECIPIENT_ACCESS_FILENAME_DRYRUN = 'recipient_access.dryrun'
+
 RELAY_DOMAINS_FILENAME = 'relay_domains'
 
-POSTFIX_CONFIG_DIR = subprocess.check_output(
-    [
-      'postmulti', '-i', POSTFIX_INSTANCE_NAME, '-x',
-      'postconf','-h','config_directory'
-    ]
-).rstrip()
+POSTFIX_CONFIG_DIR = subprocess.check_output([
+    'postmulti', '-i', POSTFIX_INSTANCE_NAME, '-x',
+    'postconf','-h','config_directory'
+]).rstrip()
 
-RECIPIENT_ACCESS_FILE = POSTFIX_CONFIG_DIR + '/' + RECIPIENT_ACCESS_FILENAME
-RECIPIENT_ACCESS_FILE_TMP = RECIPIENT_ACCESS_FILE + '.tmp'
 RELAY_DOMAINS_FILE = POSTFIX_CONFIG_DIR + '/' + RELAY_DOMAINS_FILENAME
-S3_CRAWL_THREADS = 10
-
-s3_bucket = boto3.resource('s3').Bucket(name = POLICY_BUCKET)
+S3_CRAWL_THREADS = 5
 
 # logging to syslog setup
 logging.getLogger("botocore").setLevel(logging.WARNING)
@@ -53,50 +51,90 @@ formatter = logging.Formatter(
 handler.formatter = formatter
 logger.addHandler(handler)
 
-def retrieve_recipients_from_s3(domain):
-  base_prefix = 'config/policies/domains'
-  prefix_with_domain = '{}/{}/'.format(base_prefix, domain)
+def read_domains_from_file(file_path):
+    domains = []
+    with open(RELAY_DOMAINS_FILE, 'r') as f:
+        for domain in f.readlines():
+            # file is formatted like so:
+            #   example1.com OK
+            #   example2.com OK
+            #   ...
+            # but we only need the domain name
+            domains.append(domain.split(' ')[0])
+    return domains
 
-  recipients = set()
-  for obj in s3_bucket.objects.filter(Prefix = prefix_with_domain):
-    base_64_encoded_localpart = obj.key.split('/')[4]
+def retrieve_recipients_from_s3(s3_bucket, domain):
+    prefix_with_domain = '{}/{}/'.format(BASE_DOMAINS_PREFIX, domain)
+
+    recipients = set()
+    for obj in s3_bucket.objects.filter(Prefix = prefix_with_domain):
+        try:
+            recipients.add(decode_email_address(obj.key, domain))
+        except:
+            logger.error('Error when attempting to decode key {}'.format(obj.key))
+    return recipients
+
+def decode_email_address(local_part_with_prefix, domain):
+    base_64_encoded_localpart = local_part_with_prefix.split('/')[4]
     localpart = base64.b64decode(base_64_encoded_localpart)
     email_address = '{}@{}'.format(localpart, domain)
-    recipients.add(email_address)
-  return recipients
+    return email_address
 
-domains = []
-with open(RELAY_DOMAINS_FILE, 'r') as f:
-  for domain in f.readlines():
-    # file is formatted like so:
-    #   example1.com OK
-    #   example2.com OK
-    #   ...
-    # but we only need the domain name
-    domains.append(domain.split(' ')[0])
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description = 'Retrieve Sophos Email recipients from S3')
+    parser.add_argument('--env', choices=['dev', 'dev3', 'qa', 'prod','inf'], help = 'the environment in which this script runs', required = True)
+    parser.add_argument('--region', choices=['eu-central-1', 'eu-west-1', 'us-west-2', 'us-east-2'], help = 'the region in which this script runs', required = True)
+    parser.add_argument('--enabled', action = 'store_true', help = 'if set then this script will update the actual live recipient file and reload Postfix')
+    parser.add_argument('--dryrun', action = 'store_true', help = 'if set then this script will retrieve recipients from S3 but store it in a temporary file')
 
-recipients = set()
+    args = parser.parse_args()
 
-# make the Pool of workers
-pool = ThreadPool(S3_CRAWL_THREADS)
+    if not args.enabled and not args.dryrun:
+        # do not execute this script, it's neither enabled nor a dryrun was requested
+        sys.exit(0)
 
-# retrieve recipients by domain from S3 using threads
-results = pool.map(retrieve_recipients_from_s3, domains)
+    policy_bucket = 'private-cloud-{}-{}-cloudemail-xgemail-policy'.format(args.env, args.region)
+    s3_bucket = boto3.resource('s3').Bucket(name = policy_bucket)
 
-# close the pool and wait for the work to finish
-pool.close()
-pool.join()
+    domains = read_domains_from_file(RELAY_DOMAINS_FILE)
 
-for thread_result in results:
-    recipients.update(thread_result)
+    # make the Pool of workers
+    pool = ThreadPool(S3_CRAWL_THREADS)
 
-with open(RECIPIENT_ACCESS_FILE_TMP, 'w') as f:
-  for recipient in recipients:
-    f.write('{0} OK\n'.format(recipient.encode("utf-8")))
+    # retrieve recipients by domain from S3 using multi-threading
+    results = pool.map(
+        partial(retrieve_recipients_from_s3, s3_bucket),
+        domains
+    )
 
-# FIXME: change once testing is done
-# subprocess.call(['postmap', 'hash:{0}'.format(RECIPIENT_ACCESS_FILE_TMP)])
-# os.rename(RECIPIENT_ACCESS_FILE_TMP, RECIPIENT_ACCESS_FILE)
-# os.rename(RECIPIENT_ACCESS_FILE_TMP + '.db', RECIPIENT_ACCESS_FILE + '.db')
+    # close the pool and wait for the work to finish
+    pool.close()
+    pool.join()
 
-logger.info('recipient access file [%s.db] successfully updated', RECIPIENT_ACCESS_FILE)
+    recipients = set()
+    for thread_result in results:
+        recipients.update(thread_result)
+
+    if args.enabled:
+        recipient_access_file = POSTFIX_CONFIG_DIR + '/' + RECIPIENT_ACCESS_FILENAME_ENABLED
+    elif args.dryrun:
+        recipient_access_file = POSTFIX_CONFIG_DIR + '/' + RECIPIENT_ACCESS_FILENAME_DRYRUN
+    else:
+        logger.warn('Script did not run in enabled or dryrun mode, exiting.')
+        sys.exit(1)
+
+    recipient_access_file_tmp = recipient_access_file + '.tmp'
+
+    with open(recipient_access_file_tmp, 'w') as f:
+        for recipient in recipients:
+            try:
+                f.write('{0} OK\n'.format(recipient.encode("utf-8")))
+            except UnicodeDecodeError:
+                logger.error('Exception when attempting to write recipient {}'.format(recipient))
+
+    if args.enabled:
+        subprocess.call(['postmap', 'hash:{0}'.format(recipient_access_file_tmp)])
+        os.rename(recipient_access_file_tmp, recipient_access_file)
+        os.rename(recipient_access_file_tmp + '.db', recipient_access_file  + '.db')
+
+        logger.info('Recipient access file [%s.db] successfully updated', recipient_access_file)
