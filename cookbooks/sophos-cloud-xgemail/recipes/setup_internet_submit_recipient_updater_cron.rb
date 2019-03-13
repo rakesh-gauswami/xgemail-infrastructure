@@ -37,6 +37,8 @@ MAIL_PIC_API_AUTH = node['xgemail']['mail_pic_api_auth']
 PACKAGE_DIR = "#{XGEMAIL_FILES_DIR}/internet-submit-recipient-cron"
 CRON_SCRIPT = 'internet.submit.recipient.updater.py'
 CRON_SCRIPT_PATH = "#{PACKAGE_DIR}/#{CRON_SCRIPT}"
+CRON_SCRIPT_S3_RECIPIENT_READER = 's3recipientreader.py'
+CRON_SCRIPT_S3_RECIPIENT_READER_PATH = "#{PACKAGE_DIR}/#{CRON_SCRIPT_S3_RECIPIENT_READER}"
 
 XGEMAIL_PIC_CA_PATH = "#{LOCAL_CERT_PATH}/hmr-infrastructure-ca.crt"
 
@@ -85,10 +87,23 @@ template CRON_SCRIPT_PATH do
   notifies :run, "execute[#{CRON_SCRIPT_PATH}]", :immediately
 end
 
+cookbook_file "#{CRON_SCRIPT_S3_RECIPIENT_READER_PATH}" do
+  source "#{CRON_SCRIPT_S3_RECIPIENT_READER}"
+  mode '0644'
+  owner 'root'
+  group 'root'
+end
+
 if ACCOUNT != 'sandbox'
   cron "#{INSTANCE_NAME}-recipient-cron" do
     minute "3-59/#{CRON_MINUTE_FREQUENCY}"
     user 'root'
     command "source /etc/profile && timeout #{CRON_JOB_TIMEOUT} flock --nb /var/lock/#{CRON_SCRIPT}.lock -c '#{CRON_SCRIPT_PATH}' >/dev/null 2>&1"
+  end
+
+  cron "#{INSTANCE_NAME}-recipient-cron-s3" do
+    minute "3-59/#{CRON_MINUTE_FREQUENCY}"
+    user 'root'
+    command "source /etc/profile && timeout #{CRON_JOB_TIMEOUT} flock --nb /var/lock/#{CRON_SCRIPT_S3_RECIPIENT_READER}.lock -c '#{CRON_SCRIPT_S3_RECIPIENT_READER_PATH} --env #{ACCOUNT} --region #{REGION}' >/dev/null 2>&1"
   end
 end
