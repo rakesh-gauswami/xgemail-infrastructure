@@ -70,7 +70,7 @@ def retrieve_recipients_from_s3(s3_bucket, domain):
         try:
             recipients.add(decode_email_address(obj.key))
         except:
-            logger.error('Error when attempting to decode key {}'.format(obj.key))
+            logger.error('Error when attempting to decode key <%s>', obj.key)
     return recipients
 
 def decode_email_address(s3_path_with_domain_and_recipient):
@@ -87,13 +87,24 @@ def decode_email_address(s3_path_with_domain_and_recipient):
 
         config/policies/domains/lion.com/aGFrdW5hLm1hdGF0YQ==
     """
+
+    if not s3_path_with_domain_and_recipient.startswith('config/policies/domains/'):
+        raise ValueError(
+            'Invalid s3_path: {}'.format(s3_path_with_domain_and_recipient)
+        )
+
     tokens = s3_path_with_domain_and_recipient.split('/')
+
+    if len(tokens) < 5:
+        raise ValueError(
+            'Invalid s3_path: {}'.format(s3_path_with_domain_and_recipient)
+        )
+
     domain = tokens[3]
     base_64_encoded_localpart = tokens[4]
 
     localpart = base64.b64decode(base_64_encoded_localpart)
-    email_address = '{}@{}'.format(localpart, domain)
-    return email_address
+    return '{}@{}'.format(localpart, domain)
 
 if __name__ == "__main__":
     """
@@ -101,6 +112,7 @@ if __name__ == "__main__":
         both the --env and the --region parameters otherwise the script will
         exit without retrieving any data from S3.
     """
+
     parser = argparse.ArgumentParser(description = 'Retrieve Sophos Email recipients from S3')
     parser.add_argument('--env', choices=['dev', 'dev3', 'qa', 'prod','inf'], help = 'the environment in which this script runs', required = True)
     parser.add_argument('--region', choices=['eu-central-1', 'eu-west-1', 'us-west-2', 'us-east-2'], help = 'the region in which this script runs', required = True)
@@ -158,7 +170,7 @@ if __name__ == "__main__":
             try:
                 f.write('{0} OK\n'.format(recipient.encode("utf-8")))
             except UnicodeDecodeError:
-                logger.error('Exception when attempting to write recipient {}'.format(recipient))
+                logger.error('Exception when attempting to write recipient <%s>', recipient)
 
     if args.enabled:
         subprocess.call(['postmap', 'hash:{0}'.format(recipient_access_file_tmp)])

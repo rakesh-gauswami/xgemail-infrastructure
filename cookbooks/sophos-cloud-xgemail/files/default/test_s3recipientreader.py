@@ -48,5 +48,13 @@ class S3RecipientReaderTest(unittest.TestCase):
             'hakuna.matata@lion.com'
         )
 
+    def test_decode_email_address_invalid_path(self):
+        with self.assertRaises(ValueError):
+            s3recipientreader.decode_email_address('invalid_path')
+
+    def test_decode_email_address_invalid_path_domain_missing(self):
+        with self.assertRaises(ValueError):
+            s3recipientreader.decode_email_address('config/policies/domains/aGFrdW5hLm1hdGF0YQ==')
+
 if __name__ == "__main__":
     unittest.main()
