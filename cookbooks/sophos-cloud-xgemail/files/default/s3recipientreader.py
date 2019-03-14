@@ -122,7 +122,7 @@ if __name__ == "__main__":
 
     if not args.enabled and not args.dryrun:
         # do not execute this script, it's neither enabled nor a dryrun was requested
-        logger.debug('Script is neither enabled nor set to perform a dry run, exiting.')
+        logger.info('Script is neither enabled nor set to perform a dry run, exiting.')
         sys.exit(0)
 
     policy_bucket = 'private-cloud-{}-{}-cloudemail-xgemail-policy'.format(args.env, args.region)

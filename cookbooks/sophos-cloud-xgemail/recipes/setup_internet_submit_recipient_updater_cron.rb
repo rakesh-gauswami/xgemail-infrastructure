@@ -108,7 +108,7 @@ if ACCOUNT != 'sandbox'
   end
 
   execute 'execute s3-recipient-reader' do
-    command '#{CRON_SCRIPT_S3_RECIPIENT_READER_PATH}'
+    command "#{CRON_SCRIPT_S3_RECIPIENT_READER_PATH} --env #{ACCOUNT} --region #{REGION}"
     user 'root'
     action :run
   end
