@@ -92,7 +92,6 @@ cookbook_file "#{CRON_SCRIPT_S3_RECIPIENT_READER_PATH}" do
   mode '0750'
   owner 'root'
   group 'root'
-  notifies :run, "execute[#{CRON_SCRIPT_S3_RECIPIENT_READER_PATH}]", :immediately
 end
 
 if ACCOUNT != 'sandbox'
@@ -106,5 +105,11 @@ if ACCOUNT != 'sandbox'
     minute "3-59/#{CRON_MINUTE_FREQUENCY}"
     user 'root'
     command "source /etc/profile && timeout #{CRON_JOB_TIMEOUT} flock --nb /var/lock/#{CRON_SCRIPT_S3_RECIPIENT_READER}.lock -c '#{CRON_SCRIPT_S3_RECIPIENT_READER_PATH} --env #{ACCOUNT} --region #{REGION}' >/dev/null 2>&1"
+  end
+
+  execute 'execute s3-recipient-reader' do
+    command '#{CRON_SCRIPT_S3_RECIPIENT_READER_PATH}'
+    user 'root'
+    action :run
   end
 end
