@@ -123,6 +123,7 @@ aws:
         Environment:                                              "{{account.name}}"
         RequireEncryptionForUploads:                              "sse-s3"
         S3BucketName:                                             "{{s3.msg_history_bucket}}"
+        S3LifeCycleDelete:                                        "30"
         S3PolicyCreate:                                           "true"
         S3PolicyPrincipalList:                                    "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
     msg_stats_bucket:
