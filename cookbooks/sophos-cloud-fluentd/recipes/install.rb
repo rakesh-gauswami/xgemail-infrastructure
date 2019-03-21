@@ -122,7 +122,7 @@ end
 execute 'install td-agent fluent-plugin-sns' do
   user 'root'
   command <<-EOH
-      td-agent-gem install fluent-plugin-sns
+      td-agent-gem install fluent-plugin-sns -v 3.2.0
   EOH
 end
 
@@ -136,7 +136,7 @@ end
 execute 'install td-agent fluent-plugin-kinesis' do
   user 'root'
   command <<-EOH
-      td-agent-gem install fluent-plugin-kinesis
+      td-agent-gem install fluent-plugin-kinesis -v 2.1.1
   EOH
 end
 
