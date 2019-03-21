@@ -83,6 +83,14 @@
       "Description": "Endpoint URL for Internet delivery SQS queue",
       "Type": "String"
     },
+    "InternetSubmitServiceQueueArn": {
+      "Description": "Endpoint for Internet submit service SQS queue",
+      "Type": "String"
+    },
+    "InternetSubmitServiceQueueUrl": {
+      "Description": "Endpoint URL for Internet submit service SQS queue",
+      "Type": "String"
+    },
     "MessageHistoryQueueArn": {
       "Description": "Endpoint for message history SQS queue",
       "Type": "String"
@@ -169,6 +177,10 @@
     },
     "QuarantineQueueUrl": {
       "Description": "Endpoint URL for quarantine SQS queue",
+      "Type": "String"
+    },
+    "ScanEventsTopicArn": {
+      "Description": "Endpoint for scan events arn",
       "Type": "String"
     }
   },
@@ -447,6 +459,30 @@
           ]
         },
         "Queues": [{ "Ref": "InternetDeliveryQueueUrl" }]
+      }
+    },
+    "InternetSubmitServiceQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "InternetSubmitServiceQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-ScanEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "ScanEventsTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{ "Ref": "InternetSubmitServiceQueueUrl" }]
       }
     },
     "MessageHistoryQueuePolicy": {
