@@ -22,6 +22,8 @@
       InternetDeliveryTopicArn:                         "{{sns.arn_prefix}}{{sns.internet_delivery_sns_topic}}"
       InternetDeliveryQueueArn:                         "{{sqs.arn_prefix}}{{sqs.internet_delivery_sqs_queue_sns_listener}}"
       InternetDeliveryQueueUrl:                         "{{sqs.url_prefix}}{{sqs.internet_delivery_sqs_queue_sns_listener}}"
+      InternetSubmitServiceQueueArn:                    "{{sqs.url_prefix}}{{sqs.internet_submit_service_sqs_queue}}"
+      InternetSubmitServiceQueueUrl:                    "{{sqs.url_prefix}}{{sqs.internet_submit_service_sqs_queue}}"
       MessageHistoryStatusQueueArn:                     "{{sqs.arn_prefix}}{{sqs.msg_history_status_sqs_queue_sns_listener}}"
       MessageHistoryStatusQueueUrl:                     "{{sqs.url_prefix}}{{sqs.msg_history_status_sqs_queue_sns_listener}}"
       MessageHistoryStatusQueueTopicArn:                "{{sns.arn_prefix}}{{sns.msg_history_status_sns_topic}}"
@@ -44,6 +46,7 @@
       OutboundMalwareProtectionQueueUrl:                "{{sqs.url_prefix}}{{sqs.outbound_malware_protection_queue_sns_listener}}"
       OutboundMalwareProtectionUnblockSenderQueueArn:   "{{sqs.arn_prefix}}{{sqs.outbound_malware_protection_unblock_sender_queue}}"
       OutboundMalwareProtectionUnblockSenderQueueUrl:   "{{sqs.url_prefix}}{{sqs.outbound_malware_protection_unblock_sender_queue}}"
+      ScanEventsTopicArn:                               "{{sns.url_prefix}}{{sqs.scan_events_sns_topic}}"
 
   register: messaging_stack
 
