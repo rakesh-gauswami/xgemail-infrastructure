@@ -7,7 +7,9 @@
 # names mentioned are trademarks or registered trademarks of their
 # respective owners.
 #
-# Deserializes a gzipped file downloaded from S3.
+# Deserializes a gzipped file downloaded from S3. This script is able to
+# deserialize a number of different file types, see MAGIC_NUMBERS dictionary.
+# Feel free to add any missing file types to that dictionary, if necessary.
 #
 # Example (run this from ~/g/xgemail-infrastructure/utils):
 # python deserialize-file.py \
@@ -44,12 +46,19 @@ MAGIC_NUMBERS = {
 }
 
 def is_valid_format(magic_bytes, magic_number):
+    """
+        Confirms that the provided file is of the correct file format
+    """
     return formatterutils.is_correct_file_format(
         magic_bytes,
         magic_number
     )
 
 def get_binary(formatted_file, magic_number):
+    """
+        Verifies that the magic number matches, decompresses the file and
+        returns the content as a string
+    """
     magic_number_length = len(magic_number)
     nonce_length_start_idx = 8 + magic_number_length
     nonce_length_end_idx = 12 + magic_number_length
@@ -65,10 +74,16 @@ def get_binary(formatted_file, magic_number):
     )
 
 def print_decoded_json(deserialized_content):
+    """
+        Prety-prints the deserialized content
+    """
     json_content = json.loads(deserialized_content)
     print json.dumps(json_content, indent=4, sort_keys=True)
 
 def deserialize(file_path, output_file_path, magic_number, formatter):
+    """
+        Responsible for deserializing the provided file
+    """
     if not output_file_path:
         output_file_path = '{0}.deserialized'.format(file_path)
 
@@ -86,6 +101,9 @@ def deserialize(file_path, output_file_path, magic_number, formatter):
         print 'Deserialized file <{0}> using magic number <{1}> to <{2}>'.format(file_path, magic_number, output_file_path)
 
 if __name__ == '__main__':
+    """
+        Main entry point to the script.
+    """
     parser = argparse.ArgumentParser(description = 'Deserialize local policy file')
     parser.add_argument('-d', dest='path_to_file', help = 'deserialize the provided policy file')
     parser.add_argument('-o', dest='output_file', help = 'the deserialized output file')
