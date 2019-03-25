@@ -42,6 +42,11 @@ elsif NODE_TYPE == 'internet-delivery'
   SERVER_TYPE           = 'INTERNET_DELIVERY'
   DIRECTION             = 'OUTBOUND'
   NON_DELIVERY_DSN      = '5.4.7'
+elsif NODE_TYPE == 'encryption-delivery'
+  SERVER_TYPE           = 'ENCRYPTION_DELIVERY'
+  SERVER_TYPE_XDELIVERY = 'UNKNOWN'
+  DIRECTION             = 'OUTBOUND'
+  NON_DELIVERY_DSN      = '5.4.7'
 else
   SERVER_TYPE           = 'UNKNOWN'
   SERVER_TYPE_XDELIVERY = 'UNKNOWN'
@@ -68,7 +73,7 @@ template 'fluentd-source-jilter' do
   variables(
       :application_name => NODE_TYPE
   )
-  only_if { NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit' }
+  only_if { NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit' || NODE_TYPE == 'encryption-submit' }
 end
 
 # All instances except extended delivery - Start Order: 10
@@ -120,7 +125,7 @@ template 'fluentd-source-policy' do
   variables(
     :application_name => NODE_TYPE
   )
-  only_if { NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit' }
+  only_if { NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit'|| NODE_TYPE == 'encryption-submit' }
 end
 
 # All delivery instances - Start Order: 10
@@ -133,7 +138,7 @@ template 'fluentd-source-sqsmsgconsumer' do
   variables(
     :application_name => NODE_TYPE
   )
-  only_if { NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' }
+  only_if { NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery'|| NODE_TYPE == 'encryption-delivery' }
 end
 
 # internet-submit and customer-submit - Start Order: 10
@@ -145,7 +150,7 @@ template '/etc/td-agent.d/10-source-sqsmsgproducer.conf' do
   variables(
     :application_name => NODE_TYPE
   )
-  only_if { NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit' }
+  only_if { NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit'|| NODE_TYPE == 'encryption-submit' }
 end
 
 # All instances - Start Order: 10
@@ -219,7 +224,8 @@ template 'fluentd-match-msg-delivery' do
             NODE_TYPE == 'customer-delivery' ||
             NODE_TYPE == 'xdelivery' ||
             NODE_TYPE == 'internet-delivery' ||
-            NODE_TYPE == 'internet-xdelivery'
+            NODE_TYPE == 'internet-xdelivery' ||
+            NODE_TYPE == 'encryption-delivery'
          }
 
 end
@@ -235,8 +241,9 @@ template 'fluentd-filter-msg-delivery' do
             NODE_TYPE == 'customer-delivery' ||
             NODE_TYPE == 'xdelivery' ||
             NODE_TYPE == 'internet-delivery' ||
-            NODE_TYPE == 'internet-xdelivery'
-         }
+            NODE_TYPE == 'internet-xdelivery' ||
+            NODE_TYPE == 'encryption-delivery'
+          }
   end
 
 # Only internet-submit  - Start Order: 70
@@ -282,8 +289,9 @@ template 'fluentd-filter-transform-msg-delivery' do
             NODE_TYPE == 'customer-delivery' ||
             NODE_TYPE == 'xdelivery' ||
             NODE_TYPE == 'internet-delivery' ||
-            NODE_TYPE == 'internet-xdelivery'
-         }
+            NODE_TYPE == 'internet-xdelivery' ||
+            NODE_TYPE == 'encryption-delivery'
+      }
 end
 
 # Message delivery status on all delivery and x delivery servers
@@ -302,7 +310,8 @@ template 'fluentd-match-sns-msg-delivery' do
             NODE_TYPE == 'customer-delivery' ||
             NODE_TYPE == 'xdelivery' ||
             NODE_TYPE == 'internet-delivery' ||
-            NODE_TYPE == 'internet-xdelivery'
+            NODE_TYPE == 'internet-xdelivery' ||
+            NODE_TYPE == 'encryption-delivery'
          }
 end
 
