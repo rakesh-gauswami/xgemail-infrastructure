@@ -177,7 +177,16 @@ aws:
         SnsPolicyTopic:                                           "{{sns.arn_prefix}}{{sns.policy_sns_topic}}"
         SnsRelayControlTopic:                                     "{{sns.arn_prefix}}{{sns.relay_control_sns_topic}}"
         SnsMultiPolicyTopic:                                      "{{sns.arn_prefix}}{{sns.multi_policy_sns_topic}}"
-
+    delivery_director_bucket:
+      stack_name:                                                 "{{stack.s3.delivery_director_bucket}}"
+      template:                                                   "{{template.s3.s3_bucket_template}}"
+      template_parameters:
+        Environment:                                              "{{account.name}}"
+        RequireEncryptionForUploads:                              "sse-s3"
+        S3BucketName:                                             "{{s3.delivery_director_bucket}}"
+        S3LifeCycleDelete:                                        "30"
+        S3PolicyCreate:                                           "true"
+        S3PolicyPrincipalList:                                    "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
   sns:
     alarm_sns_topic:
       stack_name:                                                 "{{stack.sns.alarm_sns_topic}}"
