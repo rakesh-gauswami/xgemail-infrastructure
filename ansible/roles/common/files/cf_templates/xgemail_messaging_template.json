@@ -184,11 +184,11 @@
       "Type": "String"
     },
     "BounceEventTopicArn": {
-      "Description": "Endpoint for scan events arn",
+      "Description": "Endpoint for scan Bounce events arn",
       "Type": "String"
     },
     "RedirectEventTopicArn": {
-      "Description": "Endpoint for scan events arn",
+      "Description": "Endpoint for scan Redirect events arn",
       "Type": "String"
     }
   },
@@ -372,7 +372,7 @@
         "RawMessageDelivery": "true"
       }
     },
-    "MessageStatisticsSNSListenerQueueToBounceEventSnsSubsciption": {
+    "MessageHistorySNSListenerQueueToBounceEventSnsSubsciption": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
         "Endpoint": { "Ref": "MessageHistoryQueueArn" },
@@ -381,10 +381,28 @@
         "RawMessageDelivery": "true"
       }
     },
-    "MessageStatisticsSNSListenerQueueToRedirectEventSnsSubsciption": {
+    "MessageHistorySNSListenerQueueToRedirectEventSnsSubsciption": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
         "Endpoint": { "Ref": "MessageHistoryQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "RedirectEventTopicArn"},
+        "RawMessageDelivery": "true"
+      }
+    },
+    "MessageStatisticsSNSListenerQueueToBounceEventSnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "MessageStatisticsQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "BounceEventTopicArn"},
+        "RawMessageDelivery": "true"
+      }
+    },
+    "MessageStatisticsSNSListenerQueueToRedirectEventSnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "MessageStatisticsQueueArn" },
         "Protocol": "sqs",
         "TopicArn": { "Ref": "RedirectEventTopicArn"},
         "RawMessageDelivery": "true"
