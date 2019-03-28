@@ -257,6 +257,20 @@ aws:
       template:                                                   "{{template.sns.sns_simple_template}}"
       template_parameters:
         TopicName:                                                "{{sns.notification_sns_topic}}"
+    bounce_events_sns_topic:
+      stack_name:                                                 "{{stack.sns.bounce_events_sns_topic}}"
+      template:                                                   "{{template.sns.sns_template}}"
+      template_parameters:
+        SNSTopicEndpointProtocol:                                 "sqs"
+        SNSTopicEndpointValue:                                    "{{sqs.arn_prefix}}{sqs.msg_statistics_sqs_queue_sns_listener}}"
+        SNSTopicName:                                             "{{sns.bounce_events_sns_topic}}"
+    redirect_events_sns_topic:
+      stack_name:                                                 "{{stack.sns.redirect_events_sns_topic}}"
+      template:                                                   "{{template.sns.sns_template}}"
+      template_parameters:
+        SNSTopicEndpointProtocol:                                 "sqs"
+        SNSTopicEndpointValue:                                    "{sqs.msg_history_sqs_queue_sns_listener}"
+        SNSTopicName:                                             "{{sns.redirect_events_sns_topic}}"
 
   sqs:
     lifecycle_sqs_sns:
