@@ -13,6 +13,9 @@ aws:
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-internet-submit-Terminating-LifeCycleHook"
     cd:
+      alarm_scaling_enabled:                                      "false"
+      alarm_scale_in_threshold:                                   "100"
+      alarm_scale_out_threshold:                                  "500"
       as_min_size:                                                "1"
       as_max_size:                                                "6"
       as_min_service:                                             "1"
@@ -29,6 +32,9 @@ aws:
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-customer-submit-Terminating-LifeCycleHook"
     id:
+      alarm_scaling_enabled:                                      "false"
+      alarm_scale_in_threshold:                                   "100"
+      alarm_scale_out_threshold:                                  "500"
       as_min_size:                                                "1"
       as_max_size:                                                "6"
       as_min_service:                                             "1"
