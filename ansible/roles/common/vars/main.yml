@@ -257,6 +257,11 @@ aws:
       template:                                                   "{{template.sns.sns_simple_template}}"
       template_parameters:
         TopicName:                                                "{{sns.notification_sns_topic}}"
+    internet_risky_delivery_sns_topic:
+      stack_name:                                                 "{{stack.sns.internet_risky_delivery_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                                                "{{sns.internet_risky_delivery_sns_topic}}"
 
   sqs:
     lifecycle_sqs_sns:
@@ -421,6 +426,12 @@ aws:
       template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                                                "{{sqs.quarantine_sqs_queue_sns_listener}}"
+    internet_risky_delivery_sqs_queue_sns_listener:
+      stack_name:                                                 "{{stack.sqs.internet_risky_delivery_sqs_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.internet_risky_delivery_sqs_queue_sns_listener}}"
 
 aes_decryption_key:                                               "{{lookup('env','AES_KEY') | default('EFB0D00E7B34527A6CFE3CD804A53312C5A7AF129650A9793D2CEF3A3C6B3741')}}"
 ami_parent_id:                                                    "{{ami_id}}"
