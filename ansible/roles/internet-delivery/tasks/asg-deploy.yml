@@ -9,6 +9,9 @@
     template: "{{template.ec2.asg.as_internet_delivery_template}}"
     template_parameters:
       AesDecryptionKey:                     "{{aes_decryption_key}}"
+      AlarmScalingEnabled:                  "{{aws.asg.id.alarm_scaling_enabled}}"
+      AlarmScaleInThreshold:                "{{aws.asg.id.alarm_scale_in_threshold}}"
+      AlarmScaleOutThreshold:               "{{aws.asg.id.alarm_scale_out_threshold}}"
       AlarmTopicArn:                        "{{sns.arn_prefix}}{{sns.alarm_sns_topic}}"
       AmiId:                                "{{ami_parent_id}}"
       AutoScalingInstanceRoleArn:           "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.AutoScalingInstanceRoleArn}}"
@@ -44,6 +47,7 @@
       XgemailMinSizeDataGB:                 "{{xgemail_size_data_gb}}"
       XgemailMsgHistoryStatusSnsArn:        "{{sns.arn_prefix}}{{sns.msg_history_status_sns_topic}}"
       XgemailNotifierQueueUrl:              "{{sqs.url_prefix}}{{sqs.notifier_request_sqs_queue}}"
+      XgemailSnsSqsQueue:                   "{{sqs.internet_delivery_sqs_queue_sns_listener}}"
       XgemailSnsSqsQueueUrl:                "{{sqs.url_prefix}}{{sqs.internet_delivery_sqs_queue_sns_listener}}"
       XgemailServiceType:                   "internet-delivery"
       XgemailSxlDbl:                        "{{xgemail_sxl_dbl}}"
