@@ -17,8 +17,8 @@ aws:
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-internet-submit-Terminating-LifeCycleHook"
     cd:
       alarm_scaling_enabled:                                      "false"
-      alarm_scale_in_threshold:                                   "100"
-      alarm_scale_out_threshold:                                  "500"
+      alarm_scale_in_threshold:                                   "10"
+      alarm_scale_out_threshold:                                  "50"
       as_min_size:                                                "1"
       as_max_size:                                                "6"
       as_min_service:                                             "1"
@@ -26,6 +26,12 @@ aws:
       health_check_grace_period:                                  "900"
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-customer-delivery-Terminating-LifeCycleHook"
+    cx:
+      asg_min_size:                                               [0,0,1]
+      health_check_grace_period:                                  "900"
+      instance_size:                                              "t2.small"
+      stack_number:                                               [1,2,3]
+      zone_index:                                                 [0,1,2]
     cs:
       alarm_scaling_enabled:                                      "false"
       alarm_scale_in_threshold:                                   "100"
@@ -39,8 +45,8 @@ aws:
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-customer-submit-Terminating-LifeCycleHook"
     id:
       alarm_scaling_enabled:                                      "false"
-      alarm_scale_in_threshold:                                   "100"
-      alarm_scale_out_threshold:                                  "500"
+      alarm_scale_in_threshold:                                   "10"
+      alarm_scale_out_threshold:                                  "50"
       as_min_size:                                                "1"
       as_max_size:                                                "6"
       as_min_service:                                             "1"
@@ -49,6 +55,13 @@ aws:
       instance_size:                                              "t2.small"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-internet-delivery-Launching-LifeCycleHook"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-internet-delivery-Terminating-LifeCycleHook"
+    ix:
+      asg_min_size:                                               [0,0,1]
+      health_check_grace_period:                                  "600"
+      instance_size:                                              "t2.small"
+      lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-internet-xdelivery-Launching-LifeCycleHook"
+      stack_number:                                               [1,2,3]
+      zone_index:                                                 [0,1,2]
     es:
       as_min_size:                                                "1"
       as_max_size:                                                "3"
@@ -65,19 +78,6 @@ aws:
       health_check_grace_period:                                  "600"
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-encryption-delivery-Terminating-LifeCycleHook"
-    cx:
-      asg_min_size:                                               [0,0,1]
-      health_check_grace_period:                                  "900"
-      instance_size:                                              "t2.small"
-      stack_number:                                               [1,2,3]
-      zone_index:                                                 [0,1,2]
-    ix:
-      asg_min_size:                                               [0,0,1]
-      health_check_grace_period:                                  "600"
-      instance_size:                                              "t2.small"
-      lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-internet-xdelivery-Launching-LifeCycleHook"
-      stack_number:                                               [1,2,3]
-      zone_index:                                                 [0,1,2]
   efs:
     policy_efs_volume:
       encrypted:                                                  "true"
