@@ -15,6 +15,10 @@
   },
 
   "Parameters": {
+    "Environment": {
+      "Description" : "The name of the AWS account to use (inf, dev, dev3, qa, prod)",
+      "Type" : "String"
+    },
     "FirehoseStreamArn": {
       "Description" : "Arn of the Firehose stream",
       "Type" : "String"
@@ -50,6 +54,21 @@
               ],
               "Effect": "Allow",
               "Resource": { "Ref": "FirehoseStreamArn" }
+            },
+            {
+              "Action" : [
+                "s3:GetBucketLocation",
+                "s3:ListBucket"
+              ],
+              "Effect" : "Allow",
+              "Resource" : [ { "Fn::Join": [ "-", [ "arn:aws:s3:::logs-sophos-msg", { "Ref": "Environment" }, "*" ] ] } ]
+            },
+            {
+              "Action" : [
+                "s3:PutObject"
+              ],
+              "Effect" : "Allow",
+              "Resource" : [ { "Fn::Join": [ "/", [ { "Fn::Join": [ "-", [ "arn:aws:s3:::logs-sophos-msg", { "Ref": "Environment" }, "*" ] ] }, "*" ] ] } ]
             }
           ]
         },

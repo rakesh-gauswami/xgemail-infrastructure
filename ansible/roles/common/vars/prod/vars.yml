@@ -20,6 +20,9 @@ aws:
       as_max_batch_size:                        "3"
       instance_size:                            "m4.2xlarge"
     cd:
+      alarm_scaling_enabled:                    "true"
+      alarm_scale_in_threshold:                 "5000"
+      alarm_scale_out_threshold:                "30000"
       as_min_size:                              "6"
       as_max_size:                              "12"
       as_min_service:                           "3"
@@ -34,11 +37,8 @@ aws:
       as_min_service:                           "3"
       as_max_batch_size:                        "3"
       instance_size:                            "m4.2xlarge"
-    id:
-      as_min_size:                              "6"
-      as_max_size:                              "12"
-      as_min_service:                           "3"
-      as_max_batch_size:                        "3"
+    cx:
+      asg_min_size:                             [1,1,1]
       instance_size:                            "c4.large"
     ed:
       as_min_size:                              "3"
@@ -52,9 +52,21 @@ aws:
       as_min_service:                           "1"
       as_max_batch_size:                        "2"
       instance_size:                            "c4.large"
-    cx:
-      asg_min_size:                             [1,1,1]
+    id:
+      alarm_scaling_enabled:                    "true"
+      alarm_scale_in_threshold:                 "5000"
+      alarm_scale_out_threshold:                "30000"
+      as_min_size:                              "6"
+      as_max_size:                              "12"
+      as_min_service:                           "3"
+      as_max_batch_size:                        "3"
       instance_size:                            "c4.large"
+    is:
+      as_min_size:                              "6"
+      as_max_size:                              "12"
+      as_min_service:                           "3"
+      as_max_batch_size:                        "3"
+      instance_size:                            "m4.2xlarge"
     ix:
       asg_min_size:                             [1,1,1]
       instance_size:                            "c4.large"

@@ -53,6 +53,7 @@
     disable_rollback:        true
     template:                "{{template.iam.policy.policy_publish_to_firehose_template}}"
     template_parameters:
+      Environment:           "{{account.name}}"
       FirehoseStreamArn:     "{{kinesis.firehose.arn_prefix}}{{kinesis.firehose.firehose_log_shipper_stream}}"
       RoleNames:             >
                              {{cloud_station_iam_region_output.ansible_facts.cloudformation[stack.iam.role.cloud_station_region_roles].stack_outputs.XgemailInstRole}},
