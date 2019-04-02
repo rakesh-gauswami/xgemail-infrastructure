@@ -187,8 +187,24 @@
       "Description": "Endpoint for scan Bounce events arn",
       "Type": "String"
     },
+    "BounceEventQueueArn": {
+      "Description": "Endpoint ARN for Bounce Event Action SQS Queue",
+      "Type": "String"
+    },
     "RedirectEventTopicArn": {
       "Description": "Endpoint for scan Redirect events arn",
+      "Type": "String"
+    },
+    "RedirectEventQueueArn": {
+      "Description": "Endpoint ARN for Redirect Event Action SQS Queue",
+      "Type": "String"
+    },
+    "AdditionalActionTopicArn": {
+      "Description": "Endpoint for scan Additional Action arn",
+      "Type": "String"
+    },
+    "AdditionalActionQueueArn": {
+      "Description": "Endpoint ARN for Additional Action SQS Queue",
       "Type": "String"
     }
   },
@@ -399,6 +415,24 @@
         "RawMessageDelivery": "true"
       }
     },
+    "AdditionalActionSNSListenerQueueToBounceEventSnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "AdditionalActionQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "BounceEventTopicArn"},
+        "RawMessageDelivery": "true"
+      }
+    },
+    "BounceEventSNSListenerQueueToBounceEventSnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "BounceEventQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "BounceEventTopicArn"},
+        "RawMessageDelivery": "true"
+      }
+    },
     "MessageStatisticsSNSListenerQueueToRedirectEventSnsSubsciption": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
@@ -406,6 +440,57 @@
         "Protocol": "sqs",
         "TopicArn": { "Ref": "RedirectEventTopicArn"},
         "RawMessageDelivery": "true"
+      }
+    },
+    "RedirectEventSNSListenerQueueToRedirectEventSnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "RedirectEventQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "RedirectEventTopicArn"},
+        "RawMessageDelivery": "true"
+      }
+    },
+    "AdditionalActionSNSListenerQueueToRedirectEventSnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "AdditionalActionQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "RedirectEventTopicArn"},
+        "RawMessageDelivery": "true"
+      }
+    },
+    "AdditionalActionSNSListenerQueueToAdditionalActionSnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "AdditionalActionQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "AdditionalActionTopicArn"},
+        "RawMessageDelivery": "true"
+      }
+    },
+    "AdditionalActionQueueToSuccessSnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "AdditionalActionQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "SuccessEventsTopicArn"}
+      }
+    },
+    "AdditionalActionQueueToDeletedSnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "AdditionalActionQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "DeletedEventsTopicArn"}
+      }
+    },
+    "AdditionalActionQueueToQuarantinedSnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "AdditionalActionQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "QuarantinedEventsTopicArn"}
       }
     },
 

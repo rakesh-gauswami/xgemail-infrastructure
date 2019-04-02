@@ -257,16 +257,21 @@ aws:
       template:                                                   "{{template.sns.sns_simple_template}}"
       template_parameters:
         TopicName:                                                "{{sns.notification_sns_topic}}"
+    additional_actions_sns_topic:
+      stack_name:                                                 "{{stack.sns.additional_actions_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                                                "{{sns.additional_actions_sns_topic}}"
     bounce_events_sns_topic:
       stack_name:                                                 "{{stack.sns.bounce_events_sns_topic}}"
       template:                                                   "{{template.sns.sns_simple_template}}"
       template_parameters:
-        TopicName:                                             "{{sns.bounce_events_sns_topic}}"
+        TopicName:                                                "{{sns.bounce_events_sns_topic}}"
     redirect_events_sns_topic:
       stack_name:                                                 "{{stack.sns.redirect_events_sns_topic}}"
       template:                                                   "{{template.sns.sns_simple_template}}"
       template_parameters:
-        TopicName:                                             "{{sns.redirect_events_sns_topic}}"
+        TopicName:                                                "{{sns.redirect_events_sns_topic}}"
 
   sqs:
     lifecycle_sqs_sns:
@@ -431,6 +436,24 @@ aws:
       template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                                                "{{sqs.quarantine_sqs_queue_sns_listener}}"
+    additional_action_sqs_queue_sns_listener:
+      stack_name:                                                 "{{stack.sqs.additional_action_sqs_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.additional_action_sqs_queue_sns_listener}}"
+    message_redirect_sqs_queue_sns_listener:
+      stack_name:                                                 "{{stack.sqs.Message_redirect_sqs_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.Message_redirect_sqs_queue_sns_listener}}"
+    message_bounce_sqs_queue_sns_listener:
+      stack_name:                                                 "{{stack.sqs.Message_bounce_sqs_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.Message_bounce_sqs_queue_sns_listener}}"
 
 aes_decryption_key:                                               "{{lookup('env','AES_KEY') | default('EFB0D00E7B34527A6CFE3CD804A53312C5A7AF129650A9793D2CEF3A3C6B3741')}}"
 ami_parent_id:                                                    "{{ami_id}}"
