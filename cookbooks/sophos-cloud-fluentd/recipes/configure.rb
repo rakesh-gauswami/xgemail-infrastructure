@@ -241,7 +241,7 @@ template 'fluentd-filter-msg-delivery' do
             NODE_TYPE == 'xdelivery' ||
             NODE_TYPE == 'internet-delivery' ||
             NODE_TYPE == 'internet-xdelivery'
-          }
+         }
   end
 
 # Only internet-submit  - Start Order: 70
@@ -288,7 +288,7 @@ template 'fluentd-filter-transform-msg-delivery' do
             NODE_TYPE == 'xdelivery' ||
             NODE_TYPE == 'internet-delivery' ||
             NODE_TYPE == 'internet-xdelivery'
-      }
+         }
 end
 
 # Message delivery status on all delivery and x delivery servers
