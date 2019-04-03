@@ -54,6 +54,7 @@ s3:
   policy_bucket:                                        "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-policy"
   quarantine_bucket:                                    "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-quarantine"
   internet_submit_bucket:                               "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-submit"
+  delivery_director_bucket:                             "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-deliverydir"
   lambda_bucket:                                        "cloud-{{account.name}}-{{account.region}}-lambda"
   logs_bucket:                                          "logs-sophos-msg-{{account.name}}-{{account.region}}"
 # CloudEmail SQS Queue Names.
@@ -184,6 +185,7 @@ stack:
     policy_bucket:                                      "{{vpc.cloud_email.name}}-XGEMAIL-policy-bucket-S3"
     quarantine_bucket:                                  "{{vpc.cloud_email.name}}-XGEMAIL-quarantine-bucket-S3"
     internet_submit_bucket:                             "{{vpc.cloud_email.name}}-XGEMAIL-submit-bucket-S3"
+    delivery_director_bucket:                           "{{vpc.cloud_email.name}}-XGEMAIL-delivery-director-bucket-S3"
     lambda_bucket:                                      "{{vpc.cloud_email.name}}-{{account.name}}-{{account.region}}-lambda-bucket-S3"
   sqs:
     lifecycle_sqs_sns:                                  "{{account.name}}-Xgemail-LifeCycleEvents-Processing"
