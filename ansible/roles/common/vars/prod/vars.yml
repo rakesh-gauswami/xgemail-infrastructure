@@ -70,6 +70,8 @@ aws:
       throughput_mode:                          "provisioned"
   es:
     toc_elasticsearch_domain:
+      state:                                    present
+      dedicated_master_enabled:                 "true"
       ebs_volume_size:                          "300"
       master_node_type:                         "m4.large.elasticsearch"
       node_type:                                "m4.xlarge.elasticsearch"
@@ -77,7 +79,3 @@ aws:
       master_instance_number:                   "3"
       snapshot_start_hour:                      "4"
       zone_awareness:                           "true"
-    xgemail_elasticsearch_domain:
-      encryption_at_rest:                       "true"
-      master_node_type:                         "m4.large.elasticsearch"
-      node_type:                                "m4.large.elasticsearch"

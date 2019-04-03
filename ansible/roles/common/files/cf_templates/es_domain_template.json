@@ -15,6 +15,12 @@
     ]
   },
   "Parameters": {
+    "DedicatedMasterEnabled":{
+      "Description": "Indicates whether to use a dedicated master node for the Amazon ES domain.",
+      "Type": "String",
+      "AllowedValues": [ "true", "false"],
+      "Default": "false"
+    },
     "EbsVolumeSize": {
       "Description": "The size of the EBS volume for each data node.",
       "Type": "Number",
@@ -129,7 +135,7 @@
       "Properties": {
         "ElasticsearchVersion": { "Ref": "ElasticsearchVersion" },
         "ElasticsearchClusterConfig": {
-          "DedicatedMasterEnabled": "true",
+          "DedicatedMasterEnabled": { "Ref": "DedicatedMasterEnabled" },
           "InstanceCount": { "Ref": "NumberOfInstances" },
           "ZoneAwarenessEnabled": {"Ref": "ZoneAwareness"},
           "InstanceType": { "Ref": "NodeType" },
