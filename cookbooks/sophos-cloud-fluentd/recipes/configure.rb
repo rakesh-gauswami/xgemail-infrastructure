@@ -164,6 +164,7 @@ template 'fluentd-source-monit' do
     :application_name => NODE_TYPE
   )
 end
+
 # customer-submit, encryption-submit, and encryption-delivery - Start Order: 20
 template 'fluentd-match-maillog' do
   path "#{CONF_DIR}/20-match-maillog.conf"
