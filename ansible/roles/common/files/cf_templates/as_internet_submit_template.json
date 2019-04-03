@@ -23,6 +23,22 @@
       "Description": "Decryption key for encrypted buckets",
       "Type": "String"
     },
+    "AlarmScalingEnabled": {
+      "Description": "Enable AutoScaling Alarms to trigger scaling policies.",
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [ "true", "false" ]
+    },
+    "AlarmScaleInThreshold": {
+      "Description": "The value against which the specified statistic is compared.",
+      "Type": "Number",
+      "Default": "1000"
+    },
+    "AlarmScaleOutThreshold": {
+      "Description": "The value against which the specified statistic is compared.",
+      "Type": "Number",
+      "Default": "5000"
+    },
     "AlarmTopicArn": {
       "Description": "ARN for SNS Topic that should receive alarm notifications",
       "Type": "String"
@@ -117,7 +133,7 @@
     },
     "LoadBalancerName": {
       "Description": "Name for the ELB to attach to the Auto Scaling Group",
-      "Type": "List<String>"
+      "Type": "String"
     },
     "S3CookbookRepositoryURL": {
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
@@ -406,7 +422,7 @@
             "RoleARN" : { "Ref": "AutoScalingInstanceRoleArn" }
           }
         ],
-        "LoadBalancerNames": { "Ref": "LoadBalancerName" },
+        "LoadBalancerNames": [ { "Ref": "LoadBalancerName" } ],
         "MinSize": { "Ref": "AutoScalingMinSize" },
         "MaxSize": { "Ref": "AutoScalingMaxSize" },
         "TerminationPolicies": [ "Default" ],
@@ -518,6 +534,77 @@
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
         "Cooldown": "60",
         "ScalingAdjustment": "-1"
+      }
+    },
+
+    "AlarmScaleIn": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "ActionsEnabled": { "Ref": "AlarmScalingEnabled" },
+        "AlarmDescription": {
+          "Fn::Join": [
+            " ", [
+              "Alarm when",
+              { "Ref": "XgemailServiceType" },
+              "ELB RequestCount is below threshold of",
+              { "Ref": "AlarmScaleInThreshold" },
+              "for a duration of time"
+            ]
+          ]
+        },
+        "DatapointsToAlarm": "3",
+        "EvaluationPeriods": "10",
+        "Period": "60",
+        "Statistic": "Sum",
+        "Threshold": { "Ref": "AlarmScaleInThreshold" },
+        "InsufficientDataActions": [ { "Ref": "XgemailScaleInPolicy" } ],
+        "AlarmActions": [
+          { "Ref": "XgemailScaleInPolicy" }
+        ],
+        "Namespace": "AWS/ELB",
+        "Dimensions": [
+          {
+            "Name": "LoadBalancerName",
+            "Value": { "Ref": "LoadBalancerName" }
+          }
+        ],
+        "ComparisonOperator": "LessThanThreshold",
+        "MetricName": "RequestCount"
+      }
+    },
+
+    "AlarmScaleOut": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "ActionsEnabled": { "Ref": "AlarmScalingEnabled" },
+        "AlarmDescription": {
+          "Fn::Join": [
+            " ", [
+              "Alarm when",
+              { "Ref": "XgemailServiceType" },
+              "ELB RequestCount exceeds a threshold of",
+              { "Ref": "AlarmScaleOutThreshold" },
+              "for a duration of time"
+            ]
+          ]
+        },
+        "DatapointsToAlarm": "5",
+        "EvaluationPeriods": "8",
+        "Period": "60",
+        "Statistic": "Sum",
+        "Threshold": { "Ref": "AlarmScaleOutThreshold" },
+        "AlarmActions": [
+          { "Ref": "XgemailScaleOutPolicy" }
+        ],
+        "Namespace": "AWS/ELB",
+        "Dimensions": [
+          {
+            "Name": "LoadBalancerName",
+            "Value": { "Ref": "LoadBalancerName" }
+          }
+        ],
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+        "MetricName": "RequestCount"
       }
     },
 
@@ -888,6 +975,22 @@
   },
 
   "Outputs": {
+    "AlarmScaleIn": {
+      "Description": "The name of the Scale In Alarm",
+      "Value": { "Ref": "AlarmScaleIn" }
+    },
+    "AlarmScaleInArn": {
+      "Description": "The Arn of the Scale In Alarm",
+      "Value": { "Fn::GetAtt": [ "AlarmScaleIn", "Arn" ] }
+    },
+    "AlarmScaleOut": {
+      "Description": "The name of the Scale Out Alarm",
+      "Value": { "Ref": "AlarmScaleOut" }
+    },
+    "AlarmScaleOutArn": {
+      "Description": "The Arn of the Scale Out Alarm",
+      "Value": { "Fn::GetAtt": [ "AlarmScaleOut", "Arn" ] }
+    },
     "AmiId": {
       "Description": "ID of the Ami we are using",
       "Value": { "Ref" : "AmiId" }

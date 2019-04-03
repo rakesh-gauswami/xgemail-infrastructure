@@ -5,6 +5,9 @@
 aws:
   asg:
     is:
+      alarm_scaling_enabled:                                      "false"
+      alarm_scale_in_threshold:                                   "100"
+      alarm_scale_out_threshold:                                  "500"
       as_min_size:                                                "1"
       as_max_size:                                                "3"
       as_min_service:                                             "1"
@@ -14,8 +17,8 @@ aws:
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-internet-submit-Terminating-LifeCycleHook"
     cd:
       alarm_scaling_enabled:                                      "false"
-      alarm_scale_in_threshold:                                   "100"
-      alarm_scale_out_threshold:                                  "500"
+      alarm_scale_in_threshold:                                   "10"
+      alarm_scale_out_threshold:                                  "50"
       as_min_size:                                                "1"
       as_max_size:                                                "6"
       as_min_service:                                             "1"
@@ -23,7 +26,16 @@ aws:
       health_check_grace_period:                                  "900"
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-customer-delivery-Terminating-LifeCycleHook"
+    cx:
+      asg_min_size:                                               [0,0,1]
+      health_check_grace_period:                                  "900"
+      instance_size:                                              "t2.small"
+      stack_number:                                               [1,2,3]
+      zone_index:                                                 [0,1,2]
     cs:
+      alarm_scaling_enabled:                                      "false"
+      alarm_scale_in_threshold:                                   "100"
+      alarm_scale_out_threshold:                                  "500"
       as_min_size:                                                "1"
       as_max_size:                                                "3"
       as_min_service:                                             "1"
@@ -33,8 +45,8 @@ aws:
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-customer-submit-Terminating-LifeCycleHook"
     id:
       alarm_scaling_enabled:                                      "false"
-      alarm_scale_in_threshold:                                   "100"
-      alarm_scale_out_threshold:                                  "500"
+      alarm_scale_in_threshold:                                   "10"
+      alarm_scale_out_threshold:                                  "50"
       as_min_size:                                                "1"
       as_max_size:                                                "6"
       as_min_service:                                             "1"
@@ -43,6 +55,13 @@ aws:
       instance_size:                                              "t2.small"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-internet-delivery-Launching-LifeCycleHook"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-internet-delivery-Terminating-LifeCycleHook"
+    ix:
+      asg_min_size:                                               [0,0,1]
+      health_check_grace_period:                                  "600"
+      instance_size:                                              "t2.small"
+      lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-internet-xdelivery-Launching-LifeCycleHook"
+      stack_number:                                               [1,2,3]
+      zone_index:                                                 [0,1,2]
     es:
       as_min_size:                                                "1"
       as_max_size:                                                "3"
@@ -59,19 +78,6 @@ aws:
       health_check_grace_period:                                  "600"
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-encryption-delivery-Terminating-LifeCycleHook"
-    cx:
-      asg_min_size:                                               [0,0,1]
-      health_check_grace_period:                                  "900"
-      instance_size:                                              "t2.small"
-      stack_number:                                               [1,2,3]
-      zone_index:                                                 [0,1,2]
-    ix:
-      asg_min_size:                                               [0,0,1]
-      health_check_grace_period:                                  "600"
-      instance_size:                                              "t2.small"
-      lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-internet-xdelivery-Launching-LifeCycleHook"
-      stack_number:                                               [1,2,3]
-      zone_index:                                                 [0,1,2]
   efs:
     policy_efs_volume:
       encrypted:                                                  "true"
@@ -439,7 +445,7 @@ nat_eip_a:                                                        "{{cloud_email
 hopper_public_ip:                                                 "198.144.101.106/32"
 instance_size_elasticsearch:                                      "t2.medium"
 instance_size_xgemail_spot_price:                                 "-1"
-weekend_scale_down:                                               "false"
+weekend_scale_down:                                               "true"
 xgemail_sxl_dbl:                                                  "uri.cal1.sophosxl.com"
 xgemail_sxl_rbl:                                                  "fur.cal1.sophosxl.com"
 xgemail_iops_data_gb:                                             "0"
