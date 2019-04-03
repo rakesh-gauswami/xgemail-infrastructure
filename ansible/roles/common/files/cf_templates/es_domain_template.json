@@ -126,7 +126,17 @@
         },
         "true"
       ]
-    }
+    },
+    "EnableMaster" : {
+      "Fn::Not" : [
+        {
+          "Fn::Equals" : [
+            {"Ref" : "NumberOfMasterInstances"},
+            "0"
+          ]
+        }
+      ]
+}
   },
 
   "Resources": {
@@ -135,12 +145,27 @@
       "Properties": {
         "ElasticsearchVersion": { "Ref": "ElasticsearchVersion" },
         "ElasticsearchClusterConfig": {
-          "DedicatedMasterEnabled": { "Ref": "DedicatedMasterEnabled" },
+          "DedicatedMasterEnabled": { "Fn::If": [
+            "EnableMaster",
+            "true",
+            "false"
+            ]
+          },
           "InstanceCount": { "Ref": "NumberOfInstances" },
           "ZoneAwarenessEnabled": {"Ref": "ZoneAwareness"},
           "InstanceType": { "Ref": "NodeType" },
-          "DedicatedMasterType": { "Ref": "MasterNodeType" },
-          "DedicatedMasterCount": { "Ref": "NumberOfMasterInstances" }
+          "DedicatedMasterType": { "Fn::If": [
+            "EnableMaster",
+            { "Ref": "MasterNodeType" },
+            {"Ref" : "AWS::NoValue"}
+            ]
+          },
+          "DedicatedMasterCount": { "Fn::If": [
+            "EnableMaster",
+            { "Ref": "NumberOfMasterInstances" },
+            {"Ref" : "AWS::NoValue"}
+            ]
+          }
         },
         "EBSOptions": {
           "EBSEnabled": "true",
