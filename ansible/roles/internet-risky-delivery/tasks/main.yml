@@ -1,0 +1,16 @@
+---
+
+- name: "Include ELB Creation Task."
+  include_tasks: elb-deploy.yml
+  tags:
+    - asg
+
+- name: "Include Route53 Creation Task."
+  include_tasks: route53-deploy.yml
+  tags:
+    - asg
+
+- name: "Include ASG Creation Task."
+  include_tasks: asg-deploy.yml
+  tags:
+    - asg

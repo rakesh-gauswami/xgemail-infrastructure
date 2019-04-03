@@ -20,6 +20,7 @@ ec2:
     id:                                                 "XGEMAIL-INTERNET-DELIVERY"
     is:                                                 "XGEMAIL-SUBMIT"
     ix:                                                 "XGEMAIL-INTERNET-XDELIVERY"
+    ird:                                                "XGEMAIL-INTERNET-RISKY-DELIVERY"
 efs:
   policy_efs_volume:                                    "Xgemail-Policy-EFS"
 iam:
@@ -147,6 +148,7 @@ stack:
       ix:                                               "{{vpc.cloud_email.name}}-XGEMAIL-internet-xdelivery-ELB"
       ed:                                               "{{vpc.cloud_email.name}}-XGEMAIL-encryption-delivery-ELB"
       es:                                               "{{vpc.cloud_email.name}}-XGEMAIL-encryption-submit-ELB"
+      ird:                                              "{{vpc.cloud_email.name}}-XGEMAIL-internet-risky-delivery-ELB"
   efs:
     policy_efs_volume:                                  "{{vpc.cloud_email.name}}-xgemail-policy-EFS-volume"
     policy_efs_mount_target:                            "{{vpc.cloud_email.name}}-xgemail-policy-EFS-volume-mount-target"
@@ -176,6 +178,7 @@ stack:
     encryption_submit_route53:                          "{{vpc.cloud_email.name}}-XGEMAIL-encryption-submit-ROUTE53"
     mx_01_route53:                                      "{{vpc.cloud_email.name}}-XGEmailMX01-Cname"
     mx_02_route53:                                      "{{vpc.cloud_email.name}}-XGEmailMX02-Cname"
+    internet_risky_delivery_route53:                    "{{vpc.cloud_email.name}}-XGEMAIL-internet-risky-delivery-ROUTE53"
   s3:
     customer_submit_bucket:                             "{{vpc.cloud_email.name}}-XGEMAIL-customer-submit-bucket-S3"
     emergency_inbox_bucket:                             "{{vpc.cloud_email.name}}-XGEMAIL-emergency-inbox-bucket-S3"
