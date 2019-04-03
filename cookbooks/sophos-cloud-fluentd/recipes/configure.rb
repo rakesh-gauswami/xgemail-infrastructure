@@ -165,7 +165,7 @@ template 'fluentd-source-monit' do
   )
 end
 
-# All instances except internet-submit  - Start Order: 20
+# All instances except internet-submit,encryption-submit and encryption-delivery - Start Order: 20
 template 'fluentd-match-maillog' do
   path "#{CONF_DIR}/20-match-maillog.conf"
   source 'fluentd-match-maillog.conf.erb'
