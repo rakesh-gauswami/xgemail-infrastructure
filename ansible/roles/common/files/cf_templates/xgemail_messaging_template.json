@@ -206,6 +206,10 @@
     "AdditionalActionQueueArn": {
       "Description": "Endpoint ARN for Additional Action SQS Queue",
       "Type": "String"
+    },
+    "DlpReportQueueArn": {
+      "Description": "Endpoint ARN for Additional Action SQS Queue",
+      "Type": "String"
     }
   },
 
@@ -491,6 +495,54 @@
         "Endpoint": { "Ref": "AdditionalActionQueueArn" },
         "Protocol": "sqs",
         "TopicArn": { "Ref": "QuarantinedEventsTopicArn"}
+      }
+    },
+    "DlpReportQueueToQuarantinedSnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "DlpReportQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "QuarantinedEventsTopicArn"}
+      }
+    },
+    "DlpReportQueueToDeletedSnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "DlpReportQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "DeletedEventsTopicArn"}
+      }
+    },
+    "DlpReportQueueToRedirectSnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "DlpReportQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "SuccessEventsTopicArn"}
+      }
+    },
+    "DlpReportQueueToBounceSnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "DlpReportQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "BounceEventTopicArn"}
+      }
+    },
+    "DlpReportQueueToSuccessSnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "DlpReportQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "RedirectEventTopicArn"}
+      }
+    },
+    "DlpReportQueueToInternetDeliverySnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "DlpReportQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "InternetDeliveryTopicArn"}
       }
     },
 
