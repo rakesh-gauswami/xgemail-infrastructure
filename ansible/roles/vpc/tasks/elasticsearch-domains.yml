@@ -1,40 +1,9 @@
 ---
-# CloudEmail Elasticsearch Cluster
-- name: "Deploy CloudEmail Elasticsearch Domains {{stack.es.xgemail_elasticsearch_domain}} to {{account.name}}-{{account.region}}"
-  cloudformation:
-    stack_name:                   "{{stack.es.xgemail_elasticsearch_domain}}"
-    state:                        absent
-    region:                       "{{account.region}}"
-    disable_rollback:             true
-    template:                     "{{template.es.es_domain_template}}"
-    template_parameters:
-      EbsVolumeSize:              "{{aws.es.xgemail_elasticsearch_domain.ebs_volume_size}}"
-      ElasticsearchVersion:       "{{aws.es.xgemail_elasticsearch_domain.es_version}}"
-      EncryptionAtRest:           "{{aws.es.xgemail_elasticsearch_domain.encryption_at_rest}}"
-      Environment:                "{{account.name}}"
-      EsName:                     "{{aws.es.xgemail_elasticsearch_domain.es_name}}"
-      HopperIpAccess:             "{{hopper_public_ip}}"
-      HostedZoneName:             "{{hostedzone}}."
-      KmsKeyId:                   "{{storage_kms_key_id}}"
-      LoggingEnabled:             "{{aws.es.xgemail_elasticsearch_domain.logging_enabled}}"
-      MasterNodeType:             "{{aws.es.xgemail_elasticsearch_domain.master_node_type}}"
-      NodeType:                   "{{aws.es.xgemail_elasticsearch_domain.node_type}}"
-      NumberOfInstances:          "{{aws.es.xgemail_elasticsearch_domain.instance_number}}"
-      NumberOfMasterInstances:    "{{aws.es.xgemail_elasticsearch_domain.master_instance_number}}"
-      SnapshotStartHour:          "{{aws.es.xgemail_elasticsearch_domain.snapshot_start_hour}}"
-      VpcNameLowerCase:           "{{vpc.cloud_email.name|lower}}"
-      ZoneAwareness:              "{{aws.es.xgemail_elasticsearch_domain.zone_awareness}}"
-  register: xgemail_es_stack
-
-- debug:
-    var: xgemail_es_stack
-    verbosity: 3
-
 # ToC Elasticsearch Cluster
 - name: "Deploy ToC Elasticsearch Domains {{stack.es.toc_elasticsearch_domain}} to {{account.name}}-{{account.region}}"
   cloudformation:
     stack_name:                   "{{stack.es.toc_elasticsearch_domain}}"
-    state:                        present
+    state:                        "{{aws.es.toc_elasticsearch_domain.state}}"
     region:                       "{{account.region}}"
     disable_rollback:             true
     template:                     "{{template.es.es_domain_template}}"
@@ -57,8 +26,10 @@
 - debug:
     var: toc_es_stack
     verbosity: 3
+  when: aws.es.toc_elasticsearch_domain.state == 'present'
 
 - name: "Display ToC Elasticsearch Domain Stack Output"
   debug:
     msg: "{{toc_es_stack.stack_outputs}}"
     verbosity: 2
+  when: aws.es.toc_elasticsearch_domain.state == 'present'

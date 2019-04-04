@@ -86,25 +86,14 @@ aws:
       throughput_mode:                                            "bursting"
   es:
     toc_elasticsearch_domain:
+      state:                                                      absent
       ebs_volume_size:                                            "10"
       es_version:                                                 "5.5"
       es_name:                                                    "toc-es"
       master_node_type:                                           "t2.small.elasticsearch"
-      node_type:                                                  "t2.medium.elasticsearch"
-      instance_number:                                            "1"
-      master_instance_number:                                     "2"
-      snapshot_start_hour:                                        "4"
-      zone_awareness:                                             "false"
-    xgemail_elasticsearch_domain:
-      ebs_volume_size:                                            "10"
-      encryption_at_rest:                                         "false"
-      es_version:                                                 "5.6"
-      es_name:                                                    "es"
-      logging_enabled:                                            "true"
-      master_node_type:                                           "t2.small.elasticsearch"
       node_type:                                                  "t2.small.elasticsearch"
       instance_number:                                            "1"
-      master_instance_number:                                     "2"
+      master_instance_number:                                     "0"
       snapshot_start_hour:                                        "4"
       zone_awareness:                                             "false"
   s3:
