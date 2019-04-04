@@ -2,7 +2,7 @@
 
 - name: "Create ASG Stack in AWS"
   cloudformation:
-    stack_name: "{{stack.ec2.asg.id}}"
+    stack_name: "{{stack.ec2.asg.ird}}"
     state: present
     region:  "{{account.region}}"
     disable_rollback: no
@@ -12,17 +12,17 @@
       AlarmTopicArn:                        "{{sns.arn_prefix}}{{sns.alarm_sns_topic}}"
       AmiId:                                "{{ami_parent_id}}"
       AutoScalingInstanceRoleArn:           "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.AutoScalingInstanceRoleArn}}"
-      AutoScalingMinSize:                   "{{aws.asg.id.as_min_size}}"
-      AutoScalingMaxSize:                   "{{aws.asg.id.as_max_size}}"
+      AutoScalingMinSize:                   "{{aws.asg.ird.as_min_size}}"
+      AutoScalingMaxSize:                   "{{aws.asg.ird.as_max_size}}"
       AutoScalingNotificationTopicARN:      "{{sns.arn_prefix}}{{sns.lifecycle_sqs_sns}}"
       AvailabilityZones:                    "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.AvailabilityZones}}"
       Branch:                               "{{build.branch}}"
       BuildVersion:                         "{{build.result_key}}"
       BundleVersion:                        "{{ami_build}}"
-      DeployMaxBatchSize:                   "{{aws.asg.id.as_max_batch_size}}"
-      DeployMinInstancesInService:          "{{aws.asg.id.as_min_service}}"
+      DeployMaxBatchSize:                   "{{aws.asg.ird.as_max_batch_size}}"
+      DeployMinInstancesInService:          "{{aws.asg.ird.as_min_service}}"
       Environment:                          "{{account.name}}"
-      HealthCheckGracePeriod:               "{{aws.asg.id.health_check_grace_period}}"
+      HealthCheckGracePeriod:               "{{aws.asg.ird.health_check_grace_period}}"
       InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.XgemailInternetDeliveryInstanceProfile}}"
       InstanceType:                         "{{aws.asg.id.instance_size}}"
       KeyName:                              "public-{{account.region}}"
@@ -44,8 +44,8 @@
       XgemailMinSizeDataGB:                 "{{xgemail_size_data_gb}}"
       XgemailMsgHistoryStatusSnsArn:        "{{sns.arn_prefix}}{{sns.msg_history_status_sns_topic}}"
       XgemailNotifierQueueUrl:              "{{sqs.url_prefix}}{{sqs.notifier_request_sqs_queue}}"
-      XgemailSnsSqsQueueUrl:                "{{sqs.url_prefix}}{{sqs.internet_delivery_sqs_queue_sns_listener}}"
-      XgemailServiceType:                   "internet-delivery"
+      XgemailSnsSqsQueueUrl:                "{{sqs.url_prefix}}{{sqs.internet_risky_delivery_sqs_queue_sns_listener}}"
+      XgemailServiceType:                   "internet-risky-delivery"
       XgemailSxlDbl:                        "{{xgemail_sxl_dbl}}"
       XgemailSxlRbl:                        "{{xgemail_sxl_rbl}}"
   register: asg_stack_output
