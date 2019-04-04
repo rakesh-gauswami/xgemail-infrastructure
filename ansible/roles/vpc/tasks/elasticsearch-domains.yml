@@ -26,10 +26,10 @@
 - debug:
     var: toc_es_stack
     verbosity: 3
-  when: not(toc_es_stack.results | length==0)
+  when: not(toc_es_stack.stack_outputs | length==0)
 
 - name: "Display ToC Elasticsearch Domain Stack Output"
   debug:
     msg: "{{toc_es_stack.stack_outputs}}"
     verbosity: 2
-  when: not(toc_es_stack.results | length==0)
+  when: not(toc_es_stack.stack_outputs | length==0)
