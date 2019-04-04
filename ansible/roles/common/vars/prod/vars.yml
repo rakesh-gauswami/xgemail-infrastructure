@@ -10,26 +10,47 @@ xgemail_iops_data_gb:                           "900"
 xgemail_size_data_gb:                           "100"
 aws:
   asg:
-    cd:
-      as_min_size:                              "6"
-      as_max_size:                              "12"
-      as_min_service:                           "3"
-      as_max_batch_size:                        "3"
-      instance_size:                            "c4.large"
-    cs:
+    is:
+      alarm_scaling_enabled:                    "true"
+      alarm_scale_in_threshold:                 "5000"
+      alarm_scale_out_threshold:                "30000"
       as_min_size:                              "6"
       as_max_size:                              "12"
       as_min_service:                           "3"
       as_max_batch_size:                        "3"
       instance_size:                            "m4.2xlarge"
+    cd:
+      alarm_scaling_enabled:                    "true"
+      alarm_scale_in_threshold:                 "100"
+      alarm_scale_out_threshold:                "500"
+      as_min_size:                              "6"
+      as_max_size:                              "12"
+      as_min_service:                           "3"
+      as_max_batch_size:                        "3"
+      instance_size:                            "c4.large"
     cx:
       asg_min_size:                             [1,1,1]
       instance_size:                            "c4.large"
-    ed:
-      as_min_size:                              "3"
+    cs:
+      alarm_scaling_enabled:                    "true"
+      alarm_scale_in_threshold:                 "5000"
+      alarm_scale_out_threshold:                "30000"
+      as_min_size:                              "6"
       as_max_size:                              "12"
-      as_min_service:                           "1"
-      as_max_batch_size:                        "2"
+      as_min_service:                           "3"
+      as_max_batch_size:                        "3"
+      instance_size:                            "m4.2xlarge"
+    id:
+      alarm_scaling_enabled:                    "true"
+      alarm_scale_in_threshold:                 "100"
+      alarm_scale_out_threshold:                "500"
+      as_min_size:                              "6"
+      as_max_size:                              "12"
+      as_min_service:                           "3"
+      as_max_batch_size:                        "3"
+      instance_size:                            "c4.large"
+    ix:
+      asg_min_size:                             [1,1,1]
       instance_size:                            "c4.large"
     es:
       as_min_size:                              "3"
@@ -37,20 +58,11 @@ aws:
       as_min_service:                           "1"
       as_max_batch_size:                        "2"
       instance_size:                            "c4.large"
-    id:
-      as_min_size:                              "6"
+    ed:
+      as_min_size:                              "3"
       as_max_size:                              "12"
-      as_min_service:                           "3"
-      as_max_batch_size:                        "3"
-      instance_size:                            "c4.large"
-    is:
-      as_min_size:                              "6"
-      as_max_size:                              "12"
-      as_min_service:                           "3"
-      as_max_batch_size:                        "3"
-      instance_size:                            "m4.2xlarge"
-    ix:
-      asg_min_size:                             [1,1,1]
+      as_min_service:                           "1"
+      as_max_batch_size:                        "2"
       instance_size:                            "c4.large"
   efs:
     policy_efs_volume:
