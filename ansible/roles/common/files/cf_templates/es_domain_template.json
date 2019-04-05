@@ -3,7 +3,7 @@
   "Description": "ElasticSearch for Sophos Email.",
   "Metadata": {
     "Copyright": [
-      "Copyright 2018, Sophos Limited. All rights reserved.",
+      "Copyright 2019, Sophos Limited. All rights reserved.",
       "",
       "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
       "Sophos Limited and Sophos Group.  All other product and company",
@@ -80,9 +80,9 @@
     "NumberOfMasterInstances": {
       "Description": "The count of master instances of the ElasticSearch Domain",
       "Type": "Number",
-      "MinValue": "2",
+      "MinValue": "0",
       "MaxValue": "5",
-      "ConstraintDescription": "Must be between 2 and 5."
+      "ConstraintDescription": "Must be between 0 and 5."
     },
     "SnapshotStartHour": {
       "Description": "The snapshot start hour of the ElasticSearch Domain",
@@ -120,7 +120,17 @@
         },
         "true"
       ]
-    }
+    },
+    "EnableMaster" : {
+      "Fn::Not" : [
+        {
+          "Fn::Equals" : [
+            {"Ref" : "NumberOfMasterInstances"},
+            "0"
+          ]
+        }
+      ]
+}
   },
 
   "Resources": {
@@ -129,12 +139,27 @@
       "Properties": {
         "ElasticsearchVersion": { "Ref": "ElasticsearchVersion" },
         "ElasticsearchClusterConfig": {
-          "DedicatedMasterEnabled": "true",
+          "DedicatedMasterEnabled": { "Fn::If": [
+            "EnableMaster",
+            "true",
+            "false"
+            ]
+          },
           "InstanceCount": { "Ref": "NumberOfInstances" },
           "ZoneAwarenessEnabled": {"Ref": "ZoneAwareness"},
           "InstanceType": { "Ref": "NodeType" },
-          "DedicatedMasterType": { "Ref": "MasterNodeType" },
-          "DedicatedMasterCount": { "Ref": "NumberOfMasterInstances" }
+          "DedicatedMasterType": { "Fn::If": [
+            "EnableMaster",
+            { "Ref": "MasterNodeType" },
+            {"Ref" : "AWS::NoValue"}
+            ]
+          },
+          "DedicatedMasterCount": { "Fn::If": [
+            "EnableMaster",
+            { "Ref": "NumberOfMasterInstances" },
+            {"Ref" : "AWS::NoValue"}
+            ]
+          }
         },
         "EBSOptions": {
           "EBSEnabled": "true",
