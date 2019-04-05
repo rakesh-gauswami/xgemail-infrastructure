@@ -91,7 +91,6 @@ sqs:
   message_redirect_sqs_queue_sns_listener:              "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_MessageRedirect_SNS_Listener"
   message_bounce_sqs_queue_sns_listener:                "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_MessageBounce_SNS_Listener"
   dlp_report_sqs_queue:                                 "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_dlp_report-sqs"
-
 # CloudEmail SNS Topic Names.
 sns:
   arn_prefix:                                           "arn:aws:sns:{{account.region}}:{{aws_account_id}}:"
@@ -224,7 +223,7 @@ stack:
     additional_action_sqs_queue_sns_listener:           "{{vpc.cloud_email.name}}-XGEMAIL-AdditionalActions-SQS-SNS-Listener"
     message_redirect_sqs_queue_sns_listener:            "{{vpc.cloud_email.name}}-XGEMAIL-MessageRedirect-SQS-SNS-Listener"
     message_bounce_sqs_queue_sns_listener:              "{{vpc.cloud_email.name}}-XGEMAIL-MessageBounce-SQS-SNS-Listener"
-    dlp_report_sqs_queue:                               "{{vpc.cloud_email.name}}-XGEMAIL-dlp_report-sqs"
+    dlp_report_sqs_queue:                               "{{vpc.cloud_email.name}}-XGEMAIL-dlp_report-SQS"
   sns:
     alarm_sns_topic:                                    "{{account.name}}-{{vpc.cloud_email.name}}-Alarm-Topic"
     policy_sns_topic:                                   "{{vpc.cloud_email.name}}-xgemail-policy-SNS"
