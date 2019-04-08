@@ -9,6 +9,8 @@
 # Description
 #
 
+ACCOUNT = node['sophos_cloud']['account']
+
 # TD-Agent
 CONF_DIR              = node['fluentd']['conf_dir']
 MAIN_DIR              = node['fluentd']['main_dir']
@@ -27,28 +29,49 @@ directory '/opt/sophos/packages' do
   action :create
 end
 
-execute 'download_packages' do
-  user 'root'
-  cwd '/opt/sophos/packages'
-  command <<-EOH
+if ACCOUNT != 'sandbox'
+
+  execute 'download_packages' do
+    user 'root'
+    cwd '/opt/sophos/packages'
+    command <<-EOH
       aws --region us-west-2 s3 cp s3:#{node['sophos_cloud']['thirdparty']}/xgemail/#{TDAGENT_PACKAGE_NAME}.tar.gz .
-  EOH
+    EOH
+  end
+
+  # Extract td-agent files
+  execute 'extract td-agent files' do
+    user 'root'
+    cwd '/opt/sophos/packages'
+    command <<-EOH
+      tar xf #{TDAGENT_PACKAGE_NAME}.tar.gz
+    EOH
+  end
+
+  rpm_package 'install td-agent' do
+    action :install
+    package_name "#{TDAGENT_PACKAGE_NAME}.el6.x86_64.rpm"
+    source "/opt/sophos/packages/#{TDAGENT_PACKAGE_NAME}.el6.x86_64.rpm"
+  end
+
+else
+
+  execute 'download_packages' do
+    user 'root'
+    cwd '/opt/sophos/packages'
+    command <<-EOH
+      wget http://packages.treasuredata.com.s3.amazonaws.com/3/redhat/7/x86_64/td-agent-3.0.0-0.el7.x86_64.rpm
+    EOH
+  end
+
+  rpm_package 'install td-agent' do
+    action :install
+    package_name "td-agent-3.0.0-0.el7.x86_64.rpm"
+    source "/opt/sophos/packages/td-agent-3.0.0-0.el7.x86_64.rpm"
+  end
+
 end
 
-# Extract td-agent files
-execute 'extract td-agent files' do
-  user 'root'
-  cwd '/opt/sophos/packages'
-  command <<-EOH
-    tar xf #{TDAGENT_PACKAGE_NAME}.tar.gz
-  EOH
-end
-
-rpm_package 'install td-agent' do
-  action :install
-  package_name "#{TDAGENT_PACKAGE_NAME}.el6.x86_64.rpm"
-  source "/opt/sophos/packages/#{TDAGENT_PACKAGE_NAME}.el6.x86_64.rpm"
-end
 
 directory CONF_DIR do
   owner 'root'
