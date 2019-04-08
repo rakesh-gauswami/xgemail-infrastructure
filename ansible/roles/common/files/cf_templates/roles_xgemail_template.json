@@ -3268,6 +3268,7 @@
               "Action": [
                 "autoscaling:CompleteLifecycleAction",
                 "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:DescribeLifecycleHooks",
                 "autoscaling:RecordLifecycleActionHeartbeat",
                 "autoscaling:UpdateAutoScalingGroup"
               ],
@@ -3278,11 +3279,13 @@
             },
             {
               "Action": [
+                "ec2:AssociateAddress",
                 "ec2:AttachVolume",
                 "ec2:CreateSnapshot",
                 "ec2:CreateTags",
                 "ec2:CreateVolume",
                 "ec2:DeleteVolume",
+                "ec2:DescribeAddresses",
                 "ec2:DescribeImages",
                 "ec2:DescribeSnapshots",
                 "ec2:DescribeTags",
@@ -3382,42 +3385,6 @@
                 "s3:DeleteObject",
                 "s3:GetBucketLocation",
                 "s3:GetObject",
-                "s3:ListBucket",
-                "s3:PutObject",
-                "s3:RestoreObject"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailQuarantineBucketName"
-                      },
-                      "/*"
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailQuarantineBucketName"
-                      }
-                    ]
-                  ]
-                }
-              ]
-            },
-            {
-              "Action": [
-                "s3:DeleteObject",
-                "s3:GetBucketLocation",
-                "s3:GetObject",
                 "s3:ListBucket"
               ],
               "Effect": "Allow",
@@ -3428,7 +3395,7 @@
                     [
                       "arn:aws:s3:::",
                       {
-                        "Ref": "XgemailInternetSubmitBucketName"
+                        "Ref": "XgemailCustomerSubmitBucketName"
                       },
                       "/*"
                     ]
@@ -3440,7 +3407,7 @@
                     [
                       "arn:aws:s3:::",
                       {
-                        "Ref": "XgemailInternetSubmitBucketName"
+                        "Ref": "XgemailCustomerSubmitBucketName"
                       }
                     ]
                   ]
