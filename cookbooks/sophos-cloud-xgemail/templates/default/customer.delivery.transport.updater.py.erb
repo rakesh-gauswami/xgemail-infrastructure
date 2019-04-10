@@ -19,7 +19,6 @@ import sys
 from logging.handlers import SysLogHandler
 
 # Constants
-PIC_CA_PATH = '<%= @xgemail_pic_ca_path %>'
 PIC_FQDN = '<%= @xgemail_pic_fqdn %>'
 POSTFIX_INSTANCE_NAME = '<%= @postfix_instance_name %>'
 TRANSPORT_FILENAME = '<%= @transport_filename %>'
@@ -62,7 +61,6 @@ PIC_DESTINATION_URL = PIC_XGEMAIL_API_URL + '/destination'
 response = requests.get(
     PIC_DOMAINS_URL,
     headers=HEADERS,
-    verify=PIC_CA_PATH,
     timeout=MAIL_PIC_RESPONSE_TIMEOUT
 )
 response.raise_for_status()
@@ -127,7 +125,6 @@ with open(TRANSPORT_FILE_TMP, 'w') as f:
         PIC_DESTINATION_URL,
         headers=HEADERS,
         data=json.dumps({'domain':domain}),
-        verify=PIC_CA_PATH,
         timeout=MAIL_PIC_RESPONSE_TIMEOUT
       )
     domain_response.raise_for_status()
