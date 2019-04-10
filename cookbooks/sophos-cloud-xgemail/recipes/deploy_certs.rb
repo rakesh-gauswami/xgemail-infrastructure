@@ -153,13 +153,13 @@ bash "add_dep_services_certificates_to_keystore" do
   EOH
 end
 
-bash "add_infrastructure_rootca_to_bundle" do
+bash "add_infrastructure_root_ca_to_ca_bundle" do
   user "root"
   cwd "#{tmp_certificate_download_path}"
   code <<-EOH
-    cat ./hmr-infrastructure.crt >> #{node['sophos_cloud']['local_cert_path']}/ca-bundle.crt
+    cp ./hmr-infrastructure*.crt /etc/pki/ca-trust/source/anchors/
+    update-ca-trust extract
   EOH
-  only_if { ::File.exists?("#{tmp_certificate_download_path}/hmr-infrastructure.crt") }
 end
 
 bash "add_default_cert_to_keystore" do

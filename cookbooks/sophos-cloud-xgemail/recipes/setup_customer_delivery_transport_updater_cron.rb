@@ -67,7 +67,6 @@ end
 PACKAGE_DIR           = "#{XGEMAIL_FILES_DIR}/customer-delivery-transport-cron"
 CRON_SCRIPT           = 'customer.delivery.transport.updater.py'
 CRON_SCRIPT_PATH      = "#{PACKAGE_DIR}/#{CRON_SCRIPT}"
-XGEMAIL_PIC_CA_PATH   = "#{LOCAL_CERT_PATH}/hmr-infrastructure-ca.crt"
 XGEMAIL_PIC_FQDN      = "mail-#{STATION_VPC_NAME.downcase}-#{REGION}.#{ACCOUNT}.hydra.sophos.com"
 
 directory XGEMAIL_FILES_DIR do
@@ -96,7 +95,6 @@ template CRON_SCRIPT_PATH do
   owner 'root'
   group 'root'
   variables(
-    :xgemail_pic_ca_path => XGEMAIL_PIC_CA_PATH,
     :xgemail_pic_fqdn => XGEMAIL_PIC_FQDN,
     :postfix_instance_name => instance_name( INSTANCE_NAME ),
     :transport_filename => TRANSPORT_FILENAME,
