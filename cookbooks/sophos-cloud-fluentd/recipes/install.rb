@@ -15,8 +15,10 @@ ACCOUNT = node['sophos_cloud']['account']
 CONF_DIR              = node['fluentd']['conf_dir']
 MAIN_DIR              = node['fluentd']['main_dir']
 PATTERNS_DIR          = node['fluentd']['patterns_dir']
+# SANDBOX_TDAGENT_PACKAGE_VERSION = "#{node['fluentd']['sandbox_tdagent_version']}"
 TDAGENT_PACKAGE_VERSION = "#{node['fluentd']['tdagent_version']}"
 TDAGENT_PACKAGE_NAME = "td-agent-#{TDAGENT_PACKAGE_VERSION}"
+# SANDBOX_TDAGENT_PACKAGE_NAME = "td-agent-#{SANDBOX_TDAGENT_PACKAGE_VERSION}"
 
 yum_package 'redhat-lsb-core' do
   action :install
@@ -60,14 +62,14 @@ else
     user 'root'
     cwd '/opt/sophos/packages'
     command <<-EOH
-      wget http://packages.treasuredata.com.s3.amazonaws.com/3/redhat/7/x86_64/td-agent-3.0.0-0.el7.x86_64.rpm
+      wget http://packages.treasuredata.com.s3.amazonaws.com/3/redhat/7/x86_64/#{TDAGENT_PACKAGE_NAME}.el7.x86_64.rpm
     EOH
   end
 
   rpm_package 'install td-agent' do
     action :install
-    package_name "td-agent-3.0.0-0.el7.x86_64.rpm"
-    source "/opt/sophos/packages/td-agent-3.0.0-0.el7.x86_64.rpm"
+    package_name "#{TDAGENT_PACKAGE_NAME}.el7.x86_64.rpm"
+    source "/opt/sophos/packages/#{TDAGENT_PACKAGE_NAME}.el7.x86_64.rpm"
   end
 
 end
@@ -123,10 +125,15 @@ cookbook_file '/etc/yum.repos.d/td.repo' do
   group 'root'
 end
 
-yum_package 'td-agent' do
-  action :upgrade
-  flush_cache [ :before ]
+if ACCOUNT != 'sandbox'
+
+  yum_package 'td-agent' do
+    action :upgrade
+    flush_cache [ :before ]
+  end
+
 end
+
 
 execute 'uninstall td-agent fluent-plugin-s3' do
   user 'root'
