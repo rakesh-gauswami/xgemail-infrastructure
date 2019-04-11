@@ -15,10 +15,8 @@ ACCOUNT = node['sophos_cloud']['account']
 CONF_DIR              = node['fluentd']['conf_dir']
 MAIN_DIR              = node['fluentd']['main_dir']
 PATTERNS_DIR          = node['fluentd']['patterns_dir']
-# SANDBOX_TDAGENT_PACKAGE_VERSION = "#{node['fluentd']['sandbox_tdagent_version']}"
 TDAGENT_PACKAGE_VERSION = "#{node['fluentd']['tdagent_version']}"
 TDAGENT_PACKAGE_NAME = "td-agent-#{TDAGENT_PACKAGE_VERSION}"
-# SANDBOX_TDAGENT_PACKAGE_NAME = "td-agent-#{SANDBOX_TDAGENT_PACKAGE_VERSION}"
 
 yum_package 'redhat-lsb-core' do
   action :install
