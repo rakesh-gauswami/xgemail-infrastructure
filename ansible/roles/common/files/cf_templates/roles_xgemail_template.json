@@ -45,24 +45,18 @@
   },
 
   "Resources" : {
-    "AutoScalingInstanceRole": {
+    "AutoScalingInstanceRole" : {
       "Type": "AWS::IAM::Role",
       "Properties": {
         "AssumeRolePolicyDocument": {
           "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Effect": "Allow",
-              "Principal": {
-                "Service": [
-                  "autoscaling.amazonaws.com"
-                ]
-              },
-              "Action": [
-                "sts:AssumeRole"
-              ]
-            }
-          ]
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [ "autoscaling.amazonaws.com" ]
+            },
+            "Action": [ "sts:AssumeRole" ]
+          }]
         },
         "Path": "/"
       }
@@ -82,12 +76,8 @@
                     ":",
                     [
                       "arn:aws:sns",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      {
-                        "Ref": "AWS::AccountId"
-                      },
+                      { "Ref": "AWS::Region" },
+                      { "Ref": "AWS::AccountId" },
                       "*"
                     ]
                   ]
@@ -106,12 +96,8 @@
                     ":",
                     [
                       "arn:aws:sqs",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      {
-                        "Ref": "AWS::AccountId"
-                      },
+                      {"Ref": "AWS::Region"},
+                      {"Ref": "AWS::AccountId"},
                       "*"
                     ]
                   ]
@@ -129,36 +115,33 @@
       },
       "Type": "AWS::IAM::Policy"
     },
-    "BastionInstanceProfile": {
-      "Type": "AWS::IAM::InstanceProfile",
-      "Properties": {
-        "Path": "/",
-        "Roles": [
+
+    "BastionInstanceProfile" : {
+      "Type" : "AWS::IAM::InstanceProfile",
+      "Properties" : {
+        "Path" : "/",
+        "Roles" : [
           {
-            "Ref": "BastionInstanceRole"
+            "Ref" : "BastionInstanceRole"
           }
         ]
       }
     },
-    "BastionInstanceRole": {
-      "Type": "AWS::IAM::Role",
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
+    "BastionInstanceRole" : {
+      "Type" : "AWS::IAM::Role",
+      "Properties" : {
+        "AssumeRolePolicyDocument" : {
+          "Statement" : [
             {
-              "Action": [
-                "sts:AssumeRole"
-              ],
-              "Effect": "Allow",
-              "Principal": {
-                "Service": [
-                  "ec2.amazonaws.com"
-                ]
+              "Action" : ["sts:AssumeRole"],
+              "Effect" : "Allow",
+              "Principal" : {
+                "Service" : ["ec2.amazonaws.com"]
               }
             }
           ]
         },
-        "Path": "/"
+        "Path" : "/"
       }
     },
     "BastionInstanceRolePolicies": {
@@ -179,6 +162,7 @@
                 "s3:GetObject",
                 "s3:PutObject",
                 "s3:GetBucketLocation"
+
               ],
               "Effect": "Allow",
               "Resource": [
@@ -232,24 +216,19 @@
       },
       "Type": "AWS::IAM::Policy"
     },
-    "EipMonitorLambdaExecutionRole": {
+
+    "EipMonitorLambdaExecutionRole" : {
       "Type": "AWS::IAM::Role",
       "Properties": {
         "AssumeRolePolicyDocument": {
           "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Effect": "Allow",
-              "Principal": {
-                "Service": [
-                  "lambda.amazonaws.com"
-                ]
-              },
-              "Action": [
-                "sts:AssumeRole"
-              ]
-            }
-          ]
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [ "lambda.amazonaws.com" ]
+            },
+            "Action": [ "sts:AssumeRole" ]
+          }]
         },
         "Path": "/"
       }
@@ -289,16 +268,14 @@
               ]
             },
             {
-              "Action": [
+              "Action" : [
                 "kms:Decrypt",
                 "kms:DescribeKey",
                 "kms:ListAliases",
                 "kms:ListKeys"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Effect" : "Allow",
+              "Resource" : ["*"]
             },
             {
               "Action": [
@@ -309,12 +286,9 @@
               "Resource": [
                 {
                   "Fn::Join": [
-                    "-",
-                    [
+                    "-", [
                       "arn:aws:s3:::cloud",
-                      {
-                        "Ref": "Environment"
-                      },
+                      { "Ref": "Environment" },
                       "connections"
                     ]
                   ]
@@ -329,12 +303,9 @@
               "Resource": [
                 {
                   "Fn::Join": [
-                    "-",
-                    [
+                    "-", [
                       "arn:aws:s3:::cloud",
-                      {
-                        "Ref": "Environment"
-                      },
+                      { "Ref": "Environment" },
                       "connections/*"
                     ]
                   ]
@@ -352,24 +323,19 @@
       },
       "Type": "AWS::IAM::Policy"
     },
-    "EipRotationLambdaExecutionRole": {
+
+    "EipRotationLambdaExecutionRole" : {
       "Type": "AWS::IAM::Role",
       "Properties": {
         "AssumeRolePolicyDocument": {
           "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Effect": "Allow",
-              "Principal": {
-                "Service": [
-                  "lambda.amazonaws.com"
-                ]
-              },
-              "Action": [
-                "sts:AssumeRole"
-              ]
-            }
-          ]
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [ "lambda.amazonaws.com" ]
+            },
+            "Action": [ "sts:AssumeRole" ]
+          }]
         },
         "Path": "/"
       }
@@ -448,6 +414,7 @@
       },
       "Type": "AWS::IAM::Policy"
     },
+
     "LogicMonitorInstanceProfile": {
       "Properties": {
         "Path": "/",
@@ -510,12 +477,14 @@
             {
               "Action": [
                 "s3:*"
+
               ],
               "Effect": "Allow",
               "Resource": [
                 "*"
               ]
             },
+
             {
               "Effect": "Allow",
               "Action": [
@@ -564,34 +533,29 @@
       },
       "Type": "AWS::IAM::Policy"
     },
-    "XgemailCustomerDeliveryInstanceProfile": {
-      "Type": "AWS::IAM::InstanceProfile",
-      "Properties": {
-        "Path": "/",
-        "Roles": [
+
+    "XgemailCustomerDeliveryInstanceProfile" : {
+      "Type" : "AWS::IAM::InstanceProfile",
+      "Properties" : {
+        "Path" : "/",
+        "Roles" : [
           {
-            "Ref": "XgemailCustomerDeliveryInstanceRole"
+            "Ref" : "XgemailCustomerDeliveryInstanceRole"
           }
         ]
       }
     },
-    "XgemailCustomerDeliveryInstanceRole": {
+    "XgemailCustomerDeliveryInstanceRole" : {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "ManagedPolicyArns": [
-          "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
-        ],
+        "ManagedPolicyArns": [ "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM" ],
         "AssumeRolePolicyDocument": {
           "Statement": [
             {
-              "Action": [
-                "sts:AssumeRole"
-              ],
+              "Action": ["sts:AssumeRole"],
               "Effect": "Allow",
               "Principal": {
-                "Service": [
-                  "ec2.amazonaws.com"
-                ]
+                "Service": ["ec2.amazonaws.com"]
               }
             }
           ]
@@ -599,11 +563,11 @@
         "Path": "/"
       }
     },
-    "XgemailCustomerDeliveryInstanceRolePolicies": {
-      "Type": "AWS::IAM::Policy",
-      "Properties": {
-        "PolicyDocument": {
-          "Statement": [
+    "XgemailCustomerDeliveryInstanceRolePolicies" : {
+      "Type" : "AWS::IAM::Policy",
+      "Properties" : {
+        "PolicyDocument" : {
+          "Statement" : [
             {
               "Action": [
                 "autoscaling:CompleteLifecycleAction",
@@ -618,7 +582,7 @@
               ]
             },
             {
-              "Action": [
+              "Action" : [
                 "ec2:AttachVolume",
                 "ec2:CreateSnapshot",
                 "ec2:CreateTags",
@@ -638,10 +602,8 @@
                 "ec2:ModifyInstanceAttribute",
                 "ec2:ModifySnapshotAttribute"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Effect" : "Allow",
+              "Resource" : ["*"]
             },
             {
               "Action": [
@@ -653,7 +615,7 @@
               ]
             },
             {
-              "Action": [
+              "Action" : [
                 "kms:CreateGrant",
                 "kms:Decrypt",
                 "kms:DescribeKey",
@@ -664,10 +626,8 @@
                 "kms:ReEncrypt*",
                 "kms:RevokeGrant"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Effect" : "Allow",
+              "Resource" : ["*"]
             },
             {
               "Action": [
@@ -679,47 +639,22 @@
                 "logs:PutLogEvents"
               ],
               "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Resource": [ "*" ]
             },
             {
-              "Action": [
+              "Action" : [
                 "s3:GetBucketLocation",
                 "s3:GetObject",
                 "s3:ListBucket",
                 "s3:PutObject",
                 "s3:RestoreObject"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailMsgHistoryBucketName"
-                      },
-                      "/*"
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailMsgHistoryBucketName"
-                      }
-                    ]
-                  ]
-                }
-              ]
+              "Effect" : "Allow",
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailMsgHistoryBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailMsgHistoryBucketName" }]]}]
             },
             {
-              "Action": [
+              "Action" : [
                 "s3:DeleteObject",
                 "s3:GetBucketLocation",
                 "s3:GetObject",
@@ -727,115 +662,35 @@
                 "s3:PutObject",
                 "s3:RestoreObject"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailQuarantineBucketName"
-                      },
-                      "/*"
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailQuarantineBucketName"
-                      }
-                    ]
-                  ]
-                }
-              ]
+              "Effect" : "Allow",
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailQuarantineBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailQuarantineBucketName" }]]}]
             },
             {
-              "Action": [
+              "Action" : [
                 "s3:DeleteObject",
                 "s3:GetBucketLocation",
                 "s3:GetObject",
                 "s3:ListBucket"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailInternetSubmitBucketName"
-                      },
-                      "/*"
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailInternetSubmitBucketName"
-                      }
-                    ]
-                  ]
-                }
-              ]
+              "Effect" : "Allow",
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailInternetSubmitBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailInternetSubmitBucketName" }]]}]
             },
             {
-              "Action": [
+              "Action" : [
                 "s3:GetBucketLocation",
                 "s3:ListBucket"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "-",
-                    [
-                      "arn:aws:s3:::logs-sophos-msg",
-                      {
-                        "Ref": "Environment"
-                      },
-                      "*"
-                    ]
-                  ]
-                }
-              ]
+              "Effect" : "Allow",
+              "Resource" : [ { "Fn::Join": [ "-", [ "arn:aws:s3:::logs-sophos-msg", { "Ref": "Environment" }, "*" ] ] } ]
             },
             {
-              "Action": [
+              "Action" : [
                 "s3:PutObject"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "/",
-                    [
-                      {
-                        "Fn::Join": [
-                          "-",
-                          [
-                            "arn:aws:s3:::logs-sophos-msg",
-                            {
-                              "Ref": "Environment"
-                            },
-                            "*"
-                          ]
-                        ]
-                      },
-                      "*"
-                    ]
-                  ]
-                }
-              ]
+              "Effect" : "Allow",
+              "Resource" : [ { "Fn::Join": [ "/", [ { "Fn::Join": [ "-", [ "arn:aws:s3:::logs-sophos-msg", { "Ref": "Environment" }, "*" ] ] }, "*" ] ] } ]
             },
             {
               "Action": [
@@ -882,12 +737,8 @@
                     ":",
                     [
                       "arn:aws:sns",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      {
-                        "Ref": "AWS::AccountId"
-                      },
+                      { "Ref": "AWS::Region" },
+                      { "Ref": "AWS::AccountId" },
                       "*"
                     ]
                   ]
@@ -895,7 +746,7 @@
               ]
             },
             {
-              "Action": [
+              "Action" : [
                 "sqs:ChangeMessageVisibility",
                 "sqs:CreateQueue",
                 "sqs:DeleteMessage",
@@ -907,49 +758,42 @@
                 "sqs:SetQueueAttributes",
                 "sqs:ReceiveMessage"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Effect" : "Allow",
+              "Resource" : ["*"]
             }
           ]
         },
-        "PolicyName": "root",
-        "Roles": [
+        "PolicyName" : "root",
+        "Roles" : [
           {
-            "Ref": "XgemailCustomerDeliveryInstanceRole"
+            "Ref" : "XgemailCustomerDeliveryInstanceRole"
           }
         ]
       }
     },
-    "XgemailInternetDeliveryInstanceProfile": {
-      "Type": "AWS::IAM::InstanceProfile",
-      "Properties": {
-        "Path": "/",
-        "Roles": [
+
+    "XgemailInternetDeliveryInstanceProfile" : {
+      "Type" : "AWS::IAM::InstanceProfile",
+      "Properties" : {
+        "Path" : "/",
+        "Roles" : [
           {
-            "Ref": "XgemailInternetDeliveryInstanceRole"
+            "Ref" : "XgemailInternetDeliveryInstanceRole"
           }
         ]
       }
     },
-    "XgemailInternetDeliveryInstanceRole": {
+    "XgemailInternetDeliveryInstanceRole" : {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "ManagedPolicyArns": [
-          "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
-        ],
+        "ManagedPolicyArns": [ "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM" ],
         "AssumeRolePolicyDocument": {
           "Statement": [
             {
-              "Action": [
-                "sts:AssumeRole"
-              ],
+              "Action": ["sts:AssumeRole"],
               "Effect": "Allow",
               "Principal": {
-                "Service": [
-                  "ec2.amazonaws.com"
-                ]
+                "Service": ["ec2.amazonaws.com"]
               }
             }
           ]
@@ -957,11 +801,11 @@
         "Path": "/"
       }
     },
-    "XgemailInternetDeliveryInstanceRolePolicies": {
-      "Type": "AWS::IAM::Policy",
-      "Properties": {
-        "PolicyDocument": {
-          "Statement": [
+    "XgemailInternetDeliveryInstanceRolePolicies" : {
+      "Type" : "AWS::IAM::Policy",
+      "Properties" : {
+        "PolicyDocument" : {
+          "Statement" : [
             {
               "Action": [
                 "autoscaling:CompleteLifecycleAction",
@@ -976,7 +820,7 @@
               ]
             },
             {
-              "Action": [
+              "Action" : [
                 "ec2:AssociateAddress",
                 "ec2:AttachVolume",
                 "ec2:CreateSnapshot",
@@ -998,10 +842,8 @@
                 "ec2:ModifyInstanceAttribute",
                 "ec2:ModifySnapshotAttribute"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Effect" : "Allow",
+              "Resource" : ["*"]
             },
             {
               "Action": [
@@ -1013,7 +855,7 @@
               ]
             },
             {
-              "Action": [
+              "Action" : [
                 "kms:CreateGrant",
                 "kms:Decrypt",
                 "kms:DescribeKey",
@@ -1024,10 +866,8 @@
                 "kms:ReEncrypt*",
                 "kms:RevokeGrant"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Effect" : "Allow",
+              "Resource" : ["*"]
             },
             {
               "Action": [
@@ -1039,127 +879,45 @@
                 "logs:PutLogEvents"
               ],
               "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Resource": [ "*" ]
             },
             {
-              "Action": [
+              "Action" : [
                 "s3:GetBucketLocation",
                 "s3:GetObject",
                 "s3:ListBucket",
                 "s3:PutObject",
                 "s3:RestoreObject"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailMsgHistoryBucketName"
-                      },
-                      "/*"
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailMsgHistoryBucketName"
-                      }
-                    ]
-                  ]
-                }
-              ]
+              "Effect" : "Allow",
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailMsgHistoryBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailMsgHistoryBucketName" }]]}]
             },
             {
-              "Action": [
+              "Action" : [
                 "s3:DeleteObject",
                 "s3:GetBucketLocation",
                 "s3:GetObject",
                 "s3:ListBucket"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailCustomerSubmitBucketName"
-                      },
-                      "/*"
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailCustomerSubmitBucketName"
-                      }
-                    ]
-                  ]
-                }
-              ]
+              "Effect" : "Allow",
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailCustomerSubmitBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailCustomerSubmitBucketName" }]]}]
             },
             {
-              "Action": [
+              "Action" : [
                 "s3:GetBucketLocation",
                 "s3:ListBucket"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "-",
-                    [
-                      "arn:aws:s3:::logs-sophos-msg",
-                      {
-                        "Ref": "Environment"
-                      },
-                      "*"
-                    ]
-                  ]
-                }
-              ]
+              "Effect" : "Allow",
+              "Resource" : [ { "Fn::Join": [ "-", [ "arn:aws:s3:::logs-sophos-msg", { "Ref": "Environment" }, "*" ] ] } ]
             },
             {
-              "Action": [
+              "Action" : [
                 "s3:PutObject"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "/",
-                    [
-                      {
-                        "Fn::Join": [
-                          "-",
-                          [
-                            "arn:aws:s3:::logs-sophos-msg",
-                            {
-                              "Ref": "Environment"
-                            },
-                            "*"
-                          ]
-                        ]
-                      },
-                      "*"
-                    ]
-                  ]
-                }
-              ]
+              "Effect" : "Allow",
+              "Resource" : [ { "Fn::Join": [ "/", [ { "Fn::Join": [ "-", [ "arn:aws:s3:::logs-sophos-msg", { "Ref": "Environment" }, "*" ] ] }, "*" ] ] } ]
             },
             {
               "Action": [
@@ -1206,12 +964,8 @@
                     ":",
                     [
                       "arn:aws:sns",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      {
-                        "Ref": "AWS::AccountId"
-                      },
+                      { "Ref": "AWS::Region" },
+                      { "Ref": "AWS::AccountId" },
                       "*"
                     ]
                   ]
@@ -1219,7 +973,7 @@
               ]
             },
             {
-              "Action": [
+              "Action" : [
                 "sqs:ChangeMessageVisibility",
                 "sqs:CreateQueue",
                 "sqs:DeleteMessage",
@@ -1231,28 +985,27 @@
                 "sqs:SetQueueAttributes",
                 "sqs:ReceiveMessage"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Effect" : "Allow",
+              "Resource" : ["*"]
             }
           ]
         },
-        "PolicyName": "root",
-        "Roles": [
+        "PolicyName" : "root",
+        "Roles" : [
           {
-            "Ref": "XgemailInternetDeliveryInstanceRole"
+            "Ref" : "XgemailInternetDeliveryInstanceRole"
           }
         ]
       }
     },
-    "XgemailInternetSubmitInstanceProfile": {
-      "Type": "AWS::IAM::InstanceProfile",
-      "Properties": {
-        "Path": "/",
-        "Roles": [
+
+    "XgemailInternetSubmitInstanceProfile" : {
+      "Type" : "AWS::IAM::InstanceProfile",
+      "Properties" : {
+        "Path" : "/",
+        "Roles" : [
           {
-            "Ref": "XgemailInternetSubmitInstanceRole"
+            "Ref" : "XgemailInternetSubmitInstanceRole"
           }
         ]
       }
@@ -1260,20 +1013,14 @@
     "XgemailInternetSubmitInstanceRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "ManagedPolicyArns": [
-          "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
-        ],
+        "ManagedPolicyArns": [ "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM" ],
         "AssumeRolePolicyDocument": {
           "Statement": [
             {
-              "Action": [
-                "sts:AssumeRole"
-              ],
+              "Action": [ "sts:AssumeRole" ],
               "Effect": "Allow",
               "Principal": {
-                "Service": [
-                  "ec2.amazonaws.com"
-                ]
+                "Service": [ "ec2.amazonaws.com" ]
               }
             }
           ]
@@ -1321,9 +1068,7 @@
                 "ec2:ModifySnapshotAttribute"
               ],
               "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Resource": [ "*" ]
             },
             {
               "Action": [
@@ -1347,9 +1092,7 @@
                 "kms:RevokeGrant"
               ],
               "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Resource": [ "*" ]
             },
             {
               "Action": [
@@ -1361,9 +1104,7 @@
                 "logs:PutLogEvents"
               ],
               "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Resource": [ "*" ]
             },
             {
               "Action": [
@@ -1375,29 +1116,8 @@
               ],
               "Effect": "Allow",
               "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailMsgHistoryBucketName"
-                      },
-                      "/*"
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailMsgHistoryBucketName"
-                      }
-                    ]
-                  ]
-                }
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailMsgHistoryBucketName" }, "/*" ] ] },
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailMsgHistoryBucketName" } ] ] }
               ]
             },
             {
@@ -1408,29 +1128,8 @@
               ],
               "Effect": "Allow",
               "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailPolicyBucketName"
-                      },
-                      "/*"
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailPolicyBucketName"
-                      }
-                    ]
-                  ]
-                }
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailPolicyBucketName" }, "/*" ] ] },
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailPolicyBucketName" } ] ] }
               ]
             },
             {
@@ -1444,29 +1143,8 @@
               ],
               "Effect": "Allow",
               "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailQuarantineBucketName"
-                      },
-                      "/*"
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailQuarantineBucketName"
-                      }
-                    ]
-                  ]
-                }
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailQuarantineBucketName" }, "/*" ] ] },
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailQuarantineBucketName" } ] ] }
               ]
             },
             {
@@ -1477,79 +1155,24 @@
               ],
               "Effect": "Allow",
               "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailInternetSubmitBucketName"
-                      },
-                      "/*"
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailInternetSubmitBucketName"
-                      }
-                    ]
-                  ]
-                }
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailInternetSubmitBucketName" }, "/*" ] ] },
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailInternetSubmitBucketName" } ] ] }
               ]
             },
             {
-              "Action": [
+              "Action" : [
                 "s3:GetBucketLocation",
                 "s3:ListBucket"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "-",
-                    [
-                      "arn:aws:s3:::logs-sophos-msg",
-                      {
-                        "Ref": "Environment"
-                      },
-                      "*"
-                    ]
-                  ]
-                }
-              ]
+              "Effect" : "Allow",
+              "Resource" : [ { "Fn::Join": [ "-", [ "arn:aws:s3:::logs-sophos-msg", { "Ref": "Environment" }, "*" ] ] } ]
             },
             {
-              "Action": [
+              "Action" : [
                 "s3:PutObject"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "/",
-                    [
-                      {
-                        "Fn::Join": [
-                          "-",
-                          [
-                            "arn:aws:s3:::logs-sophos-msg",
-                            {
-                              "Ref": "Environment"
-                            },
-                            "*"
-                          ]
-                        ]
-                      },
-                      "*"
-                    ]
-                  ]
-                }
-              ]
+              "Effect" : "Allow",
+              "Resource" : [ { "Fn::Join": [ "/", [ { "Fn::Join": [ "-", [ "arn:aws:s3:::logs-sophos-msg", { "Ref": "Environment" }, "*" ] ] }, "*" ] ] } ]
             },
             {
               "Action": [
@@ -1597,12 +1220,8 @@
                     ":",
                     [
                       "arn:aws:sns",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      {
-                        "Ref": "AWS::AccountId"
-                      },
+                      { "Ref": "AWS::Region" },
+                      { "Ref": "AWS::AccountId" },
                       "*"
                     ]
                   ]
@@ -1623,18 +1242,14 @@
                 "sqs:ReceiveMessage"
               ],
               "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Resource": [ "*" ]
             },
             {
               "Action": [
                 "cloudwatch:putMetricData"
               ],
               "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Resource": [ "*" ]
             }
           ]
         },
@@ -1646,13 +1261,14 @@
         ]
       }
     },
-    "XgemailCustomerSubmitInstanceProfile": {
-      "Type": "AWS::IAM::InstanceProfile",
-      "Properties": {
-        "Path": "/",
-        "Roles": [
+
+    "XgemailCustomerSubmitInstanceProfile" : {
+      "Type" : "AWS::IAM::InstanceProfile",
+      "Properties" : {
+        "Path" : "/",
+        "Roles" : [
           {
-            "Ref": "XgemailCustomerSubmitInstanceRole"
+            "Ref" : "XgemailCustomerSubmitInstanceRole"
           }
         ]
       }
@@ -1660,20 +1276,14 @@
     "XgemailCustomerSubmitInstanceRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "ManagedPolicyArns": [
-          "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
-        ],
+        "ManagedPolicyArns": [ "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM" ],
         "AssumeRolePolicyDocument": {
           "Statement": [
             {
-              "Action": [
-                "sts:AssumeRole"
-              ],
+              "Action": [ "sts:AssumeRole" ],
               "Effect": "Allow",
               "Principal": {
-                "Service": [
-                  "ec2.amazonaws.com"
-                ]
+                "Service": [ "ec2.amazonaws.com" ]
               }
             }
           ]
@@ -1721,9 +1331,7 @@
                 "ec2:ModifySnapshotAttribute"
               ],
               "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Resource": [ "*" ]
             },
             {
               "Action": [
@@ -1747,9 +1355,7 @@
                 "kms:RevokeGrant"
               ],
               "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Resource": [ "*" ]
             },
             {
               "Action": [
@@ -1761,9 +1367,7 @@
                 "logs:PutLogEvents"
               ],
               "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Resource": [ "*" ]
             },
             {
               "Action": [
@@ -1775,29 +1379,8 @@
               ],
               "Effect": "Allow",
               "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailMsgHistoryBucketName"
-                      },
-                      "/*"
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailMsgHistoryBucketName"
-                      }
-                    ]
-                  ]
-                }
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailMsgHistoryBucketName" }, "/*" ] ] },
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailMsgHistoryBucketName" } ] ] }
               ]
             },
             {
@@ -1808,29 +1391,8 @@
               ],
               "Effect": "Allow",
               "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailPolicyBucketName"
-                      },
-                      "/*"
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailPolicyBucketName"
-                      }
-                    ]
-                  ]
-                }
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailPolicyBucketName" }, "/*" ] ] },
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailPolicyBucketName" } ] ] }
               ]
             },
             {
@@ -1841,79 +1403,24 @@
               ],
               "Effect": "Allow",
               "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailCustomerSubmitBucketName"
-                      },
-                      "/*"
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailCustomerSubmitBucketName"
-                      }
-                    ]
-                  ]
-                }
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailCustomerSubmitBucketName" }, "/*" ] ] },
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailCustomerSubmitBucketName" } ] ] }
               ]
             },
             {
-              "Action": [
+              "Action" : [
                 "s3:GetBucketLocation",
                 "s3:ListBucket"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "-",
-                    [
-                      "arn:aws:s3:::logs-sophos-msg",
-                      {
-                        "Ref": "Environment"
-                      },
-                      "*"
-                    ]
-                  ]
-                }
-              ]
+              "Effect" : "Allow",
+              "Resource" : [ { "Fn::Join": [ "-", [ "arn:aws:s3:::logs-sophos-msg", { "Ref": "Environment" }, "*" ] ] } ]
             },
             {
-              "Action": [
+              "Action" : [
                 "s3:PutObject"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "/",
-                    [
-                      {
-                        "Fn::Join": [
-                          "-",
-                          [
-                            "arn:aws:s3:::logs-sophos-msg",
-                            {
-                              "Ref": "Environment"
-                            },
-                            "*"
-                          ]
-                        ]
-                      },
-                      "*"
-                    ]
-                  ]
-                }
-              ]
+              "Effect" : "Allow",
+              "Resource" : [ { "Fn::Join": [ "/", [ { "Fn::Join": [ "-", [ "arn:aws:s3:::logs-sophos-msg", { "Ref": "Environment" }, "*" ] ] }, "*" ] ] } ]
             },
             {
               "Action": [
@@ -1961,12 +1468,8 @@
                     ":",
                     [
                       "arn:aws:sns",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      {
-                        "Ref": "AWS::AccountId"
-                      },
+                      { "Ref": "AWS::Region" },
+                      { "Ref": "AWS::AccountId" },
                       "*"
                     ]
                   ]
@@ -1987,18 +1490,14 @@
                 "sqs:ReceiveMessage"
               ],
               "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Resource": [ "*" ]
             },
             {
               "Action": [
                 "cloudwatch:putMetricData"
               ],
               "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Resource": [ "*" ]
             }
           ]
         },
@@ -2010,6 +1509,7 @@
         ]
       }
     },
+
     "XgemailEncryptionDeliveryInstanceProfile": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
@@ -2024,20 +1524,14 @@
     "XgemailEncryptionDeliveryInstanceRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "ManagedPolicyArns": [
-          "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
-        ],
+        "ManagedPolicyArns": [ "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM" ],
         "AssumeRolePolicyDocument": {
           "Statement": [
             {
-              "Action": [
-                "sts:AssumeRole"
-              ],
+              "Action": [ "sts:AssumeRole" ],
               "Effect": "Allow",
               "Principal": {
-                "Service": [
-                  "ec2.amazonaws.com"
-                ]
+                "Service": [ "ec2.amazonaws.com" ]
               }
             }
           ]
@@ -2045,11 +1539,11 @@
         "Path": "/"
       }
     },
-    "XgemailEncryptionDeliveryInstanceRolePolicies": {
-      "Type": "AWS::IAM::Policy",
-      "Properties": {
-        "PolicyDocument": {
-          "Statement": [
+    "XgemailEncryptionDeliveryInstanceRolePolicies" : {
+      "Type" : "AWS::IAM::Policy",
+      "Properties" : {
+        "PolicyDocument" : {
+          "Statement" : [
             {
               "Action": [
                 "autoscaling:CompleteLifecycleAction",
@@ -2063,7 +1557,7 @@
               ]
             },
             {
-              "Action": [
+              "Action" : [
                 "ec2:AttachVolume",
                 "ec2:CreateSnapshot",
                 "ec2:CreateTags",
@@ -2083,10 +1577,8 @@
                 "ec2:ModifyInstanceAttribute",
                 "ec2:ModifySnapshotAttribute"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Effect" : "Allow",
+              "Resource" : ["*"]
             },
             {
               "Action": [
@@ -2098,7 +1590,7 @@
               ]
             },
             {
-              "Action": [
+              "Action" : [
                 "kms:CreateGrant",
                 "kms:Decrypt",
                 "kms:DescribeKey",
@@ -2109,10 +1601,8 @@
                 "kms:ReEncrypt*",
                 "kms:RevokeGrant"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Effect" : "Allow",
+              "Resource" : ["*"]
             },
             {
               "Action": [
@@ -2124,47 +1614,22 @@
                 "logs:PutLogEvents"
               ],
               "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Resource": [ "*" ]
             },
             {
-              "Action": [
+              "Action" : [
                 "s3:GetBucketLocation",
                 "s3:GetObject",
                 "s3:ListBucket",
                 "s3:PutObject",
                 "s3:RestoreObject"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailMsgHistoryBucketName"
-                      },
-                      "/*"
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailMsgHistoryBucketName"
-                      }
-                    ]
-                  ]
-                }
-              ]
+              "Effect" : "Allow",
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailMsgHistoryBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailMsgHistoryBucketName" }]]}]
             },
             {
-              "Action": [
+              "Action" : [
                 "s3:DeleteObject",
                 "s3:GetBucketLocation",
                 "s3:GetObject",
@@ -2172,115 +1637,35 @@
                 "s3:PutObject",
                 "s3:RestoreObject"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailQuarantineBucketName"
-                      },
-                      "/*"
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailQuarantineBucketName"
-                      }
-                    ]
-                  ]
-                }
-              ]
+              "Effect" : "Allow",
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailQuarantineBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailQuarantineBucketName" }]]}]
             },
             {
-              "Action": [
+              "Action" : [
                 "s3:DeleteObject",
                 "s3:GetBucketLocation",
                 "s3:GetObject",
                 "s3:ListBucket"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailInternetSubmitBucketName"
-                      },
-                      "/*"
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailInternetSubmitBucketName"
-                      }
-                    ]
-                  ]
-                }
-              ]
+              "Effect" : "Allow",
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailInternetSubmitBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailInternetSubmitBucketName" }]]}]
             },
             {
-              "Action": [
+              "Action" : [
                 "s3:GetBucketLocation",
                 "s3:ListBucket"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "-",
-                    [
-                      "arn:aws:s3:::logs-sophos-msg",
-                      {
-                        "Ref": "Environment"
-                      },
-                      "*"
-                    ]
-                  ]
-                }
-              ]
+              "Effect" : "Allow",
+              "Resource" : [ { "Fn::Join": [ "-", [ "arn:aws:s3:::logs-sophos-msg", { "Ref": "Environment" }, "*" ] ] } ]
             },
             {
-              "Action": [
+              "Action" : [
                 "s3:PutObject"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "/",
-                    [
-                      {
-                        "Fn::Join": [
-                          "-",
-                          [
-                            "arn:aws:s3:::logs-sophos-msg",
-                            {
-                              "Ref": "Environment"
-                            },
-                            "*"
-                          ]
-                        ]
-                      },
-                      "*"
-                    ]
-                  ]
-                }
-              ]
+              "Effect" : "Allow",
+              "Resource" : [ { "Fn::Join": [ "/", [ { "Fn::Join": [ "-", [ "arn:aws:s3:::logs-sophos-msg", { "Ref": "Environment" }, "*" ] ] }, "*" ] ] } ]
             },
             {
               "Action": [
@@ -2327,12 +1712,8 @@
                     ":",
                     [
                       "arn:aws:sns",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      {
-                        "Ref": "AWS::AccountId"
-                      },
+                      { "Ref": "AWS::Region" },
+                      { "Ref": "AWS::AccountId" },
                       "*"
                     ]
                   ]
@@ -2340,7 +1721,7 @@
               ]
             },
             {
-              "Action": [
+              "Action" : [
                 "sqs:ChangeMessageVisibility",
                 "sqs:CreateQueue",
                 "sqs:DeleteMessage",
@@ -2352,21 +1733,20 @@
                 "sqs:SetQueueAttributes",
                 "sqs:ReceiveMessage"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Effect" : "Allow",
+              "Resource" : ["*"]
             }
           ]
         },
-        "PolicyName": "root",
-        "Roles": [
+        "PolicyName" : "root",
+        "Roles" : [
           {
-            "Ref": "XgemailEncryptionDeliveryInstanceRole"
+            "Ref" : "XgemailEncryptionDeliveryInstanceRole"
           }
         ]
       }
     },
+
     "XgemailEncryptionSubmitInstanceProfile": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
@@ -2381,20 +1761,14 @@
     "XgemailEncryptionSubmitInstanceRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "ManagedPolicyArns": [
-          "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
-        ],
+        "ManagedPolicyArns": [ "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM" ],
         "AssumeRolePolicyDocument": {
           "Statement": [
             {
-              "Action": [
-                "sts:AssumeRole"
-              ],
+              "Action": [ "sts:AssumeRole" ],
               "Effect": "Allow",
               "Principal": {
-                "Service": [
-                  "ec2.amazonaws.com"
-                ]
+                "Service": [ "ec2.amazonaws.com" ]
               }
             }
           ]
@@ -2402,11 +1776,11 @@
         "Path": "/"
       }
     },
-    "XgemailEncryptionSubmitInstanceRolePolicies": {
-      "Type": "AWS::IAM::Policy",
-      "Properties": {
-        "PolicyDocument": {
-          "Statement": [
+    "XgemailEncryptionSubmitInstanceRolePolicies" : {
+      "Type" : "AWS::IAM::Policy",
+      "Properties" : {
+        "PolicyDocument" : {
+          "Statement" : [
             {
               "Action": [
                 "autoscaling:CompleteLifecycleAction",
@@ -2420,7 +1794,7 @@
               ]
             },
             {
-              "Action": [
+              "Action" : [
                 "ec2:AttachVolume",
                 "ec2:CreateSnapshot",
                 "ec2:CreateTags",
@@ -2440,10 +1814,8 @@
                 "ec2:ModifyInstanceAttribute",
                 "ec2:ModifySnapshotAttribute"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Effect" : "Allow",
+              "Resource" : ["*"]
             },
             {
               "Action": [
@@ -2455,7 +1827,7 @@
               ]
             },
             {
-              "Action": [
+              "Action" : [
                 "kms:CreateGrant",
                 "kms:Decrypt",
                 "kms:DescribeKey",
@@ -2466,10 +1838,8 @@
                 "kms:ReEncrypt*",
                 "kms:RevokeGrant"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Effect" : "Allow",
+              "Resource" : ["*"]
             },
             {
               "Action": [
@@ -2481,47 +1851,22 @@
                 "logs:PutLogEvents"
               ],
               "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Resource": [ "*" ]
             },
             {
-              "Action": [
+              "Action" : [
                 "s3:GetBucketLocation",
                 "s3:GetObject",
                 "s3:ListBucket",
                 "s3:PutObject",
                 "s3:RestoreObject"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailMsgHistoryBucketName"
-                      },
-                      "/*"
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailMsgHistoryBucketName"
-                      }
-                    ]
-                  ]
-                }
-              ]
+              "Effect" : "Allow",
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailMsgHistoryBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailMsgHistoryBucketName" }]]}]
             },
             {
-              "Action": [
+              "Action" : [
                 "s3:DeleteObject",
                 "s3:GetBucketLocation",
                 "s3:GetObject",
@@ -2529,115 +1874,35 @@
                 "s3:PutObject",
                 "s3:RestoreObject"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailQuarantineBucketName"
-                      },
-                      "/*"
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailQuarantineBucketName"
-                      }
-                    ]
-                  ]
-                }
-              ]
+              "Effect" : "Allow",
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailQuarantineBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailQuarantineBucketName" }]]}]
             },
             {
-              "Action": [
+              "Action" : [
                 "s3:DeleteObject",
                 "s3:GetBucketLocation",
                 "s3:GetObject",
                 "s3:ListBucket"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailInternetSubmitBucketName"
-                      },
-                      "/*"
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailInternetSubmitBucketName"
-                      }
-                    ]
-                  ]
-                }
-              ]
+              "Effect" : "Allow",
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailInternetSubmitBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailInternetSubmitBucketName" }]]}]
             },
             {
-              "Action": [
+              "Action" : [
                 "s3:GetBucketLocation",
                 "s3:ListBucket"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "-",
-                    [
-                      "arn:aws:s3:::logs-sophos-msg",
-                      {
-                        "Ref": "Environment"
-                      },
-                      "*"
-                    ]
-                  ]
-                }
-              ]
+              "Effect" : "Allow",
+              "Resource" : [ { "Fn::Join": [ "-", [ "arn:aws:s3:::logs-sophos-msg", { "Ref": "Environment" }, "*" ] ] } ]
             },
             {
-              "Action": [
+              "Action" : [
                 "s3:PutObject"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "/",
-                    [
-                      {
-                        "Fn::Join": [
-                          "-",
-                          [
-                            "arn:aws:s3:::logs-sophos-msg",
-                            {
-                              "Ref": "Environment"
-                            },
-                            "*"
-                          ]
-                        ]
-                      },
-                      "*"
-                    ]
-                  ]
-                }
-              ]
+              "Effect" : "Allow",
+              "Resource" : [ { "Fn::Join": [ "/", [ { "Fn::Join": [ "-", [ "arn:aws:s3:::logs-sophos-msg", { "Ref": "Environment" }, "*" ] ] }, "*" ] ] } ]
             },
             {
               "Action": [
@@ -2684,12 +1949,8 @@
                     ":",
                     [
                       "arn:aws:sns",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      {
-                        "Ref": "AWS::AccountId"
-                      },
+                      { "Ref": "AWS::Region" },
+                      { "Ref": "AWS::AccountId" },
                       "*"
                     ]
                   ]
@@ -2697,7 +1958,7 @@
               ]
             },
             {
-              "Action": [
+              "Action" : [
                 "sqs:ChangeMessageVisibility",
                 "sqs:CreateQueue",
                 "sqs:DeleteMessage",
@@ -2709,21 +1970,20 @@
                 "sqs:SetQueueAttributes",
                 "sqs:ReceiveMessage"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Effect" : "Allow",
+              "Resource" : ["*"]
             }
           ]
         },
-        "PolicyName": "root",
-        "Roles": [
+        "PolicyName" : "root",
+        "Roles" : [
           {
-            "Ref": "XgemailEncryptionSubmitInstanceRole"
+            "Ref" : "XgemailEncryptionSubmitInstanceRole"
           }
         ]
       }
     },
+
     "XgemailXdeliveryInstanceProfile": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
@@ -2738,20 +1998,14 @@
     "XgemailXdeliveryInstanceRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "ManagedPolicyArns": [
-          "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
-        ],
+        "ManagedPolicyArns": [ "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM" ],
         "AssumeRolePolicyDocument": {
           "Statement": [
             {
-              "Action": [
-                "sts:AssumeRole"
-              ],
+              "Action": [ "sts:AssumeRole" ],
               "Effect": "Allow",
               "Principal": {
-                "Service": [
-                  "ec2.amazonaws.com"
-                ]
+                "Service": [ "ec2.amazonaws.com" ]
               }
             }
           ]
@@ -2795,9 +2049,7 @@
                 "ec2:ModifySnapshotAttribute"
               ],
               "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Resource": [ "*" ]
             },
             {
               "Action": [
@@ -2821,9 +2073,7 @@
                 "kms:RevokeGrant"
               ],
               "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Resource": [ "*" ]
             },
             {
               "Action": [
@@ -2835,58 +2085,22 @@
                 "logs:PutLogEvents"
               ],
               "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Resource": [ "*" ]
             },
             {
-              "Action": [
+              "Action" : [
                 "s3:GetBucketLocation",
                 "s3:ListBucket"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "-",
-                    [
-                      "arn:aws:s3:::logs-sophos-msg",
-                      {
-                        "Ref": "Environment"
-                      },
-                      "*"
-                    ]
-                  ]
-                }
-              ]
+              "Effect" : "Allow",
+              "Resource" : [ { "Fn::Join": [ "-", [ "arn:aws:s3:::logs-sophos-msg", { "Ref": "Environment" }, "*" ] ] } ]
             },
             {
-              "Action": [
+              "Action" : [
                 "s3:PutObject"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "/",
-                    [
-                      {
-                        "Fn::Join": [
-                          "-",
-                          [
-                            "arn:aws:s3:::logs-sophos-msg",
-                            {
-                              "Ref": "Environment"
-                            },
-                            "*"
-                          ]
-                        ]
-                      },
-                      "*"
-                    ]
-                  ]
-                }
-              ]
+              "Effect" : "Allow",
+              "Resource" : [ { "Fn::Join": [ "/", [ { "Fn::Join": [ "-", [ "arn:aws:s3:::logs-sophos-msg", { "Ref": "Environment" }, "*" ] ] }, "*" ] ] } ]
             },
             {
               "Action": [
@@ -2933,12 +2147,8 @@
                     ":",
                     [
                       "arn:aws:sns",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      {
-                        "Ref": "AWS::AccountId"
-                      },
+                      { "Ref": "AWS::Region" },
+                      { "Ref": "AWS::AccountId" },
                       "*"
                     ]
                   ]
@@ -2959,10 +2169,9 @@
                 "sqs:ReceiveMessage"
               ],
               "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Resource": [ "*" ]
             }
+
           ]
         },
         "PolicyName": "root",
@@ -2973,6 +2182,7 @@
         ]
       }
     },
+
     "XgemailInternetXdeliveryInstanceProfile": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
@@ -2987,20 +2197,14 @@
     "XgemailInternetXdeliveryInstanceRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "ManagedPolicyArns": [
-          "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
-        ],
+        "ManagedPolicyArns": [ "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM" ],
         "AssumeRolePolicyDocument": {
           "Statement": [
             {
-              "Action": [
-                "sts:AssumeRole"
-              ],
+              "Action": [ "sts:AssumeRole" ],
               "Effect": "Allow",
               "Principal": {
-                "Service": [
-                  "ec2.amazonaws.com"
-                ]
+                "Service": [ "ec2.amazonaws.com" ]
               }
             }
           ]
@@ -3046,9 +2250,7 @@
                 "ec2:ModifySnapshotAttribute"
               ],
               "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Resource": [ "*" ]
             },
             {
               "Action": [
@@ -3072,9 +2274,7 @@
                 "kms:RevokeGrant"
               ],
               "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Resource": [ "*" ]
             },
             {
               "Action": [
@@ -3086,58 +2286,22 @@
                 "logs:PutLogEvents"
               ],
               "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Resource": [ "*" ]
             },
             {
-              "Action": [
+              "Action" : [
                 "s3:GetBucketLocation",
                 "s3:ListBucket"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "-",
-                    [
-                      "arn:aws:s3:::logs-sophos-msg",
-                      {
-                        "Ref": "Environment"
-                      },
-                      "*"
-                    ]
-                  ]
-                }
-              ]
+              "Effect" : "Allow",
+              "Resource" : [ { "Fn::Join": [ "-", [ "arn:aws:s3:::logs-sophos-msg", { "Ref": "Environment" }, "*" ] ] } ]
             },
             {
-              "Action": [
+              "Action" : [
                 "s3:PutObject"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "/",
-                    [
-                      {
-                        "Fn::Join": [
-                          "-",
-                          [
-                            "arn:aws:s3:::logs-sophos-msg",
-                            {
-                              "Ref": "Environment"
-                            },
-                            "*"
-                          ]
-                        ]
-                      },
-                      "*"
-                    ]
-                  ]
-                }
-              ]
+              "Effect" : "Allow",
+              "Resource" : [ { "Fn::Join": [ "/", [ { "Fn::Join": [ "-", [ "arn:aws:s3:::logs-sophos-msg", { "Ref": "Environment" }, "*" ] ] }, "*" ] ] } ]
             },
             {
               "Action": [
@@ -3184,12 +2348,8 @@
                     ":",
                     [
                       "arn:aws:sns",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      {
-                        "Ref": "AWS::AccountId"
-                      },
+                      { "Ref": "AWS::Region" },
+                      { "Ref": "AWS::AccountId" },
                       "*"
                     ]
                   ]
@@ -3197,7 +2357,7 @@
               ]
             },
             {
-              "Action": [
+              "Action" : [
                 "sqs:ChangeMessageVisibility",
                 "sqs:CreateQueue",
                 "sqs:DeleteMessage",
@@ -3209,10 +2369,8 @@
                 "sqs:SetQueueAttributes",
                 "sqs:ReceiveMessage"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Effect" : "Allow",
+              "Resource" : ["*"]
             }
           ]
         },
@@ -3224,6 +2382,7 @@
         ]
       }
     },
+
     "XgemailInternetRiskyDeliveryInstanceProfile": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
@@ -3671,6 +2830,10 @@
       "Description": "XGEMAIL Customer Encryption Submit instance role ARN",
       "Value": { "Fn::GetAtt" : [ "XgemailEncryptionSubmitInstanceRole", "Arn" ] }
     },
+    "XgemailXdeliveryInstanceProfile": {
+      "Description": "XGEMAIL Xdelivery instance profile",
+      "Value": { "Ref": "XgemailXdeliveryInstanceProfile" }
+    },
     "XgemailInternetRiskyDeliveryInstanceProfile": {
       "Description": "XGEMAIL Internet Risky Delivery instance profile",
       "Value": { "Ref": "XgemailInternetRiskyDeliveryInstanceProfile" }
@@ -3682,10 +2845,6 @@
     "XgemailInternetRiskyDeliveryInstanceRoleArn": {
       "Description": "XGEMAIL Internet Risky Delivery instance role ARN",
       "Value": { "Fn::GetAtt" : [ "XgemailInternetRiskyDeliveryInstanceRole", "Arn" ] }
-    },
-    "XgemailXdeliveryInstanceProfile": {
-      "Description": "XGEMAIL Xdelivery instance profile",
-      "Value": { "Ref": "XgemailXdeliveryInstanceProfile" }
     },
     "XgemailXdeliveryInstanceRole": {
       "Description": "XGEMAIL Xdelivery instance role",
