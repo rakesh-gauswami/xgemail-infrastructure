@@ -36,8 +36,6 @@ MAIL_PIC_API_AUTH                       = node['xgemail']['mail_pic_api_auth']
 MESSAGE_HISTORY_DELIVERY_STATUS_SNS_TOPIC_ARN = node['xgemail']['msg_history_status_sns_arn']
 NODE_IP                                 = node['ipaddress']
 
-XGEMAIL_PIC_CA_PATH = "#{LOCAL_CERT_PATH}/hmr-infrastructure-ca.crt"
-
 if ACCOUNT == 'sandbox'
   XGEMAIL_PIC_FQDN = 'mail-service:8080'
 else
@@ -76,7 +74,6 @@ template CONSUMER_SCRIPT_PATH do
     :sqs_max_number_of_messages => SQS_MESSAGE_CONSUMER_MAX_NUMBER_OF_MESSAGES,
     :sqs_visibility_timeout => SQS_MESSAGE_CONSUMER_VISIBILITY_TIMEOUT,
     :sqs_wait_time_seconds => SQS_MESSAGE_CONSUMER_WAIT_TIME_SECONDS,
-    :xgemail_pic_ca_path => XGEMAIL_PIC_CA_PATH,
     :xgemail_pic_fqdn => XGEMAIL_PIC_FQDN,
     :mail_pic_api_response_timeout => MAIL_PIC_API_RESPONSE_TIMEOUT,
     :xgemail_utils_path => XGEMAIL_UTILS_DIR,

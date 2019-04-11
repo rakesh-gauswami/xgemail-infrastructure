@@ -38,7 +38,6 @@ import urllib3
 
 from email.utils import parseaddr
 
-PIC_CA_PATH = '/etc/ssl/certs/hmr-infrastructure-ca.crt'
 MAIL_PIC_RESPONSE_TIMEOUT = 30
 
 def get_passphrase(connections_bucket, mail_pic_api_auth):
@@ -68,7 +67,6 @@ def block_entry(url, entry, headers):
     response = requests.post(
         url,
         headers=headers,
-        verify=PIC_CA_PATH,
         timeout=MAIL_PIC_RESPONSE_TIMEOUT,
         data = json.dumps(entry_data)
     )
@@ -81,7 +79,6 @@ def unblock_address_by_id(url, block_id, headers):
     response = requests.delete(
         '{0}/{1}'.format(url, block_id),
         headers=headers,
-        verify=PIC_CA_PATH,
         timeout=MAIL_PIC_RESPONSE_TIMEOUT
     )
     return response
@@ -93,7 +90,6 @@ def get_all_blocked_entries(url, headers):
     response = requests.get(
         url,
         headers=headers,
-        verify=PIC_CA_PATH,
         timeout=MAIL_PIC_RESPONSE_TIMEOUT
     )
     return response

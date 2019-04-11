@@ -30,10 +30,11 @@ aws:
       throughput_mode:                          "provisioned"
   es:
     toc_elasticsearch_domain:
-      ebs_volume_size:                          "100"
-      master_node_type:                         "t2.medium.elasticsearch"
-      node_type:                                "m4.xlarge.elasticsearch"
+      state:                                    present
+      ebs_volume_size:                          "35"
+      master_node_type:                         "t2.small.elasticsearch"
+      node_type:                                "t2.medium.elasticsearch"
       instance_number:                          "2"
-      master_instance_number:                   "3"
+      master_instance_number:                   "0"
       snapshot_start_hour:                      "4"
       zone_awareness:                           "true"
