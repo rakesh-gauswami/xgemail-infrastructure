@@ -186,6 +186,11 @@
       "Type" : "String",
       "Default": ""
     },
+    "XgemailNotifierQueueUrl" : {
+      "Description" : "URL for the SQS Queue where XGEMAIL notification messages are sent",
+      "Type" : "String",
+      "Default": ""
+    },
     "XgemailServiceType": {
       "Description": "Service type for the xgemail instance (Defaults to unknown so not to break builds)",
       "Type": "String",
@@ -446,6 +451,7 @@
                       "  \"xgemail\" : {\n",
                       "    \"cluster_type\"                   : \"{{cluster_type}}\",\n",
                       "    \"msg_history_status_sns_arn\"     : \"{{msg_history_delivery_status_sns_arn}}\",\n",
+                      "    \"msg_notifier_queue_url\"         : \"{{msg_notifier_queue_url}}\",\n",
                       "    \"station_vpc_id\"                 : \"{{station_vpc_id}}\",\n",
                       "    \"station_vpc_name\"               : \"{{station_vpc_name}}\"\n",
                       "  }\n",
@@ -463,6 +469,7 @@
                   "cluster_type":                             { "Ref": "XgemailServiceType" },
                   "environment":                              { "Ref": "Environment" },
                   "msg_history_delivery_status_sns_arn":      { "Ref": "XgemailMsgHistoryStatusSnsArn"},
+                  "msg_notifier_queue_url":                   { "Ref": "XgemailNotifierQueueUrl" },
                   "region":                                   { "Ref": "AWS::Region" },
                   "station_vpc_id":                           { "Ref": "StationVpcId" },
                   "stack":                                    { "Ref": "AWS::StackName" },
