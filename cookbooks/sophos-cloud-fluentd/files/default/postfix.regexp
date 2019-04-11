@@ -42,8 +42,8 @@ POSTFIXSMTPLOSTCONNECTION %{QUEUEID:queue_id}: lost connection with %{RELAY} whi
 POSTFIXSMTPTIMEOUT %{QUEUEID:queue_id}: conversation with %{RELAY} timed out while %{GREEDYDATA:reason}
 
 # postfix/smtpd
-POSTFIXSMTPD %{POSTFIXSMTPDCONNECTS}|%{POSTFIXSMTPDMILTER}|%{POSTFIXSMTPDACTIONSUUID}|%{POSTFIXSMTPDACTIONS}|%{POSTFIXSMTPDTIMEOUTS}|%{POSTFIXSMTPDLOGIN}|%{POSTFIXSMTPDCLIENT}|%{POSTFIXSMTPDNOQUEUEUUID}|%{POSTFIXSMTPDNOQUEUE}|%{POSTFIXSMTPDLOSTCONNECTION}
-POSTFIXSMTPDCONNECTS connect from %{RELAY}
+POSTFIXSMTPD %{POSTFIXSMTPDCONNECTS}|%{POSTFIXSMTPDMILTER}|%{POSTFIXSMTPDACTIONSUUID}|%{POSTFIXSMTPDACTIONS}|%{POSTFIXSMTPDTIMEOUTS}|%{POSTFIXSMTPDLOGIN}|%{POSTFIXSMTPDCLIENT}|%{POSTFIXSMTPDNOQUEUEUUID}|%{POSTFIXSMTPDNOQUEUE}|%{POSTFIXSMTPDWARNING}|%{POSTFIXSMTPDLOSTCONNECTION}
+POSTFIXSMTPDCONNECTS (?:dis)?connect from %{RELAY}
 POSTFIXSMTPDMILTER %{MILTERCONNECT}|%{MILTERUNKNOWN}|%{MILTEREHLO}|%{MILTERMAIL}|%{MILTERHELO}|%{MILTERRCPT}
 POSTFIXSMTPDACTIONSUUID %{QUEUEID:queue_id}: %{POSTFIXACTION:postfix_action}: %{SOPHOS_UUID:sophos_uuid}: %{DATA:command} from %{RELAY}: %{PERMERROR:response_code} %{DSN:dsn} %{DATA}: %{DATA:reason}; from=<%{EMAILADDRESS:from}> to=<%{EMAILADDRESS:to}> proto=%{DATA:proto} helo=<%{HELO}>
 POSTFIXSMTPDACTIONS %{QUEUEID:queue_id}: %{POSTFIXACTION:postfix_action}: %{DATA:command} from %{RELAY}: %{PERMERROR:response_code} %{DSN:dsn} %{DATA}: %{DATA:reason}; from=<%{EMAILADDRESS:from}> to=<%{EMAILADDRESS:to}> proto=%{DATA:proto} helo=<%{HELO}>
@@ -52,6 +52,7 @@ POSTFIXSMTPDLOGIN %{QUEUEID:queue_id}: client=%{DATA:client}, sasl_method=%{DATA
 POSTFIXSMTPDCLIENT %{QUEUEID:queue_id}: client=%{GREEDYDATA:client}
 POSTFIXSMTPDNOQUEUEUUID NOQUEUE: %{POSTFIXACTION:postfix_action}: %{SOPHOS_UUID:sophos_uuid}: %{DATA:command} from %{RELAY}: %{GREEDYDATA:reason}
 POSTFIXSMTPDNOQUEUE NOQUEUE: %{POSTFIXACTION:postfix_action}: %{DATA:command} from %{RELAY}: %{GREEDYDATA:reason}
+POSTFIXSMTPDWARNING warning:( %{IP}: | hostname %{HOSTNAME} )?%{GREEDYDATA:reason}
 POSTFIXSMTPDLOSTCONNECTION (?:lost connection after %{DATA:smtp_response} from %{RELAY}|improper command pipelining after HELO from %{GREEDYDATA:reason})
 
 # postfix/cleanup
@@ -63,7 +64,7 @@ POSTFIXCLEANUPMILTER %{MILTERENDOFMESSAGE}
 POSTFIXBOUNCE %{QUEUEID:queue_id}: sender (non-)?delivery( status)? notification: %{QUEUEID:bounce_queue_id}
 
 # postfix/qmgr and postfix/pickup
-POSTFIXQMGR %{QUEUEID:queue_id}: from=<(?:%{DATA:from})?>(?:, size=%{NUMBER:size}, nrcpt=%{NUMBER:nrcpt} \(%{GREEDYDATA:queue_status}\))
+POSTFIXQMGR %{QUEUEID:queue_id}: (?:removed|from=<(?:%{DATA:from})?>(?:, size=%{NUMBER:size}, nrcpt=%{NUMBER:nrcpt} \(%{GREEDYDATA:queue_status}\))?)
 
 # postfix/anvil
 POSTFIXANVIL statistics: %{GREEDYDATA:reason}
