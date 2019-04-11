@@ -166,7 +166,6 @@ stack:
       lifecycle_lambda:                                 "{{vpc.cloud_email.name}}-xgemail-lifecycle-launch-events-rule"
   es:
     toc_elasticsearch_domain:                           "{{vpc.cloud_email.name}}-XGEMAIL-ToC-ES-Domain"
-    xgemail_elasticsearch_domain:                       "{{vpc.cloud_email.name}}-XGEMAIL-ES-Domain"
   kinesis:
     firehose:
       firehose_log_shipper_stream:                      "firehose-log-shipper-stream-{{vpc.cloud_email.name}}"
@@ -226,6 +225,7 @@ stack:
     additional_action_sqs_queue_sns_listener:           "{{vpc.cloud_email.name}}-XGEMAIL-AdditionalActions-SQS-SNS-Listener"
     message_redirect_sqs_queue_sns_listener:            "{{vpc.cloud_email.name}}-XGEMAIL-MessageRedirect-SQS-SNS-Listener"
     message_bounce_sqs_queue_sns_listener:              "{{vpc.cloud_email.name}}-XGEMAIL-MessageBounce-SQS-SNS-Listener"
+    dlp_report_sqs_queue:                               "{{vpc.cloud_email.name}}-XGEMAIL-DLP-Report-SQS"
     internet_risky_delivery_sqs_queue_sns_listener:     "{{vpc.cloud_email.name}}-XGEMAIL-internet-risky-delivery-SQS-SNS-listener"
   sns:
     alarm_sns_topic:                                    "{{account.name}}-{{vpc.cloud_email.name}}-Alarm-Topic"
