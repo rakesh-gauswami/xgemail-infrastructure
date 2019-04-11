@@ -9,6 +9,9 @@
     template: "{{template.ec2.asg.as_customer_delivery_template}}"
     template_parameters:
       AesDecryptionKey:                     "{{aes_decryption_key}}"
+      AlarmScalingEnabled:                  "{{aws.asg.cd.alarm_scaling_enabled}}"
+      AlarmScaleInThreshold:                "{{aws.asg.cd.alarm_scale_in_threshold}}"
+      AlarmScaleOutThreshold:               "{{aws.asg.cd.alarm_scale_out_threshold}}"
       AlarmTopicArn:                        "{{sns.arn_prefix}}{{sns.alarm_sns_topic}}"
       AmiId:                                "{{ami_parent_id}}"
       AutoScalingInstanceRoleArn:           "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.AutoScalingInstanceRoleArn}}"
@@ -46,6 +49,7 @@
       XgemailMsgHistoryStatusQueueUrl:      "{{sqs.url_prefix}}{{sqs.msg_history_status_sqs_queue_sns_listener}}"
       XgemailMsgHistoryStatusSnsArn:        "{{sns.arn_prefix}}{{sns.msg_history_status_sns_topic}}"
       XgemailPolicyBucketName:              "{{s3.policy_bucket}}"
+      XgemailSnsSqsQueue:                   "{{sqs.customer_delivery_sqs_queue_sns_listener}}"
       XgemailSnsSqsQueueUrl:                "{{sqs.url_prefix}}{{sqs.customer_delivery_sqs_queue_sns_listener}}"
       XgemailServiceType:                   "customer-delivery"
       XgemailSxlDbl:                        "{{xgemail_sxl_dbl}}"

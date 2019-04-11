@@ -40,8 +40,6 @@ CRON_SCRIPT_PATH = "#{PACKAGE_DIR}/#{CRON_SCRIPT}"
 CRON_SCRIPT_S3_RECIPIENT_READER = 's3recipientreader.py'
 CRON_SCRIPT_S3_RECIPIENT_READER_PATH = "#{PACKAGE_DIR}/#{CRON_SCRIPT_S3_RECIPIENT_READER}"
 
-XGEMAIL_PIC_CA_PATH = "#{LOCAL_CERT_PATH}/hmr-infrastructure-ca.crt"
-
 if ACCOUNT == 'sandbox'
   XGEMAIL_PIC_FQDN = 'mail-service:8080'
 else
@@ -74,7 +72,6 @@ template CRON_SCRIPT_PATH do
   owner 'root'
   group 'root'
   variables(
-    :xgemail_pic_ca_path => XGEMAIL_PIC_CA_PATH,
     :xgemail_pic_fqdn => XGEMAIL_PIC_FQDN,
     :postfix_instance_name => instance_name( INSTANCE_NAME ),
     :recipient_access_filename => RECIPIENT_ACCESS_FILENAME,

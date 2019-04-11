@@ -52,15 +52,15 @@ end
 # Add MongoDB connection cert to Certificate truststore
 
 bash "add_mongodb_to_keystore" do
-user "root"
-cwd "/tmp"
-code <<-EOH
+  user "root"
+  cwd "/tmp"
+  code <<-EOH
   mv /tmp/sophos/certificates/mongodb*.crt /etc/ssl/certs/mongodb.crt
-
+  
   chmod 0444 /etc/ssl/certs/mongodb.crt
   chown root:root /etc/ssl/certs/mongodb.crt
 
-EOH
+  EOH
 end
 
 # Add IAPI connection cert to Certificate truststore
@@ -112,6 +112,9 @@ bash "add_hmr-infrastructure_to_keystore" do
   chmod 0444 /etc/ssl/certs/hmr-infrastructure-ca.crt
   chown root:root /etc/ssl/certs/hmr-infrastructure-ca.crt
 
+  cp /etc/ssl/certs/hmr-infrastructure-ca.crt /etc/pki/ca-trust/source/anchors/
+  /usr/bin/update-ca-trust extract
+
   EOH
 end
 
@@ -151,15 +154,6 @@ bash "add_dep_services_certificates_to_keystore" do
 
   rm -rf /etc/ssl/certs/dep-services/
   EOH
-end
-
-bash "add_infrastructure_rootca_to_bundle" do
-  user "root"
-  cwd "#{tmp_certificate_download_path}"
-  code <<-EOH
-    cat ./hmr-infrastructure.crt >> #{node['sophos_cloud']['local_cert_path']}/ca-bundle.crt
-  EOH
-  only_if { ::File.exists?("#{tmp_certificate_download_path}/hmr-infrastructure.crt") }
 end
 
 bash "add_default_cert_to_keystore" do

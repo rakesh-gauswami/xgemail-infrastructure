@@ -55,6 +55,7 @@ s3:
   policy_bucket:                                        "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-policy"
   quarantine_bucket:                                    "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-quarantine"
   internet_submit_bucket:                               "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-submit"
+  delivery_director_bucket:                             "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-deliverydir"
   lambda_bucket:                                        "cloud-{{account.name}}-{{account.region}}-lambda"
   logs_bucket:                                          "logs-sophos-msg-{{account.name}}-{{account.region}}"
 # CloudEmail SQS Queue Names.
@@ -87,6 +88,10 @@ sqs:
   outbound_malware_protection_unblock_sender_queue:     "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Outbound_Malware_Protection_Unblock_Sender"
   quarantine_sqs_queue:                                 "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Quarantine_Delivery"
   quarantine_sqs_queue_sns_listener:                    "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Quarantine_Delivery_SNS_Listener"
+  additional_action_sqs_queue_sns_listener:             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_AdditionalActions_SNS_Listener"
+  message_redirect_sqs_queue_sns_listener:              "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_MessageRedirect_SNS_Listener"
+  message_bounce_sqs_queue_sns_listener:                "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_MessageBounce_SNS_Listener"
+  internet_risky_delivery_sqs_queue_sns_listener:       "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Internet_Risky_Delivery_SNS_Listener"
 
 # CloudEmail SNS Topic Names.
 sns:
@@ -106,6 +111,10 @@ sns:
   scan_events_sns_topic:                                "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-scan-events-SNS"
   success_events_sns_topic:                             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-success-events-SNS"
   notification_sns_topic:                               "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-notification-SNS"
+  additional_actions_sns_topic:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-additional-actions-SNS"
+  bounce_events_sns_topic:                              "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-bounce-events-SNS"
+  redirect_events_sns_topic:                            "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-redirect-events-SNS"
+  internet_risky_delivery_sns_topic:                    "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-internet-risky-delivery-SNS"
 sdb:
   volume_tracker_sdb:                                   "{{volume_tracker_sdb_output.ansible_facts.cloudformation[stack.sdb.volume_tracker_sdb].stack_outputs.SimpleDbDomain}}"
 
@@ -159,7 +168,6 @@ stack:
       lifecycle_lambda:                                 "{{vpc.cloud_email.name}}-xgemail-lifecycle-launch-events-rule"
   es:
     toc_elasticsearch_domain:                           "{{vpc.cloud_email.name}}-XGEMAIL-ToC-ES-Domain"
-    xgemail_elasticsearch_domain:                       "{{vpc.cloud_email.name}}-XGEMAIL-ES-Domain"
   kinesis:
     firehose:
       firehose_log_shipper_stream:                      "firehose-log-shipper-stream-{{vpc.cloud_email.name}}"
@@ -188,6 +196,7 @@ stack:
     policy_bucket:                                      "{{vpc.cloud_email.name}}-XGEMAIL-policy-bucket-S3"
     quarantine_bucket:                                  "{{vpc.cloud_email.name}}-XGEMAIL-quarantine-bucket-S3"
     internet_submit_bucket:                             "{{vpc.cloud_email.name}}-XGEMAIL-submit-bucket-S3"
+    delivery_director_bucket:                           "{{vpc.cloud_email.name}}-XGEMAIL-delivery-director-bucket-S3"
     lambda_bucket:                                      "{{vpc.cloud_email.name}}-{{account.name}}-{{account.region}}-lambda-bucket-S3"
   sqs:
     lifecycle_sqs_sns:                                  "{{account.name}}-Xgemail-LifeCycleEvents-Processing"
@@ -216,6 +225,10 @@ stack:
     outbound_malware_protection_unblock_sender_queue:   "{{vpc.cloud_email.name}}-XGEMAIL-outbound-malware-protection-unblock-sender"
     quarantine_sqs_queue:                               "{{vpc.cloud_email.name}}-XGEMAIL-quarantine-SQS"
     quarantine_sqs_queue_sns_listener:                  "{{vpc.cloud_email.name}}-XGEMAIL-quarantine-SQS-SNS-listener"
+    additional_action_sqs_queue_sns_listener:           "{{vpc.cloud_email.name}}-XGEMAIL-AdditionalActions-SQS-SNS-Listener"
+    message_redirect_sqs_queue_sns_listener:            "{{vpc.cloud_email.name}}-XGEMAIL-MessageRedirect-SQS-SNS-Listener"
+    message_bounce_sqs_queue_sns_listener:              "{{vpc.cloud_email.name}}-XGEMAIL-MessageBounce-SQS-SNS-Listener"
+    internet_risky_delivery_sqs_queue_sns_listener:     "{{vpc.cloud_email.name}}-XGEMAIL-internet-risky-delivery-SQS-SNS-listener"
   sns:
     alarm_sns_topic:                                    "{{account.name}}-{{vpc.cloud_email.name}}-Alarm-Topic"
     policy_sns_topic:                                   "{{vpc.cloud_email.name}}-xgemail-policy-SNS"
@@ -231,6 +244,10 @@ stack:
     encryption_delivery_events_sns_topic:               "{{vpc.cloud_email.name}}-xgemail-encryption-delivery-events-SNS"
     notification_sns_topic:                             "{{vpc.cloud_email.name}}-xgemail-notification-SNS"
     scan_events_sns_topic:                              "{{vpc.cloud_email.name}}-xgemail-scan-events-SNS"
+    additional_actions_sns_topic:                       "{{vpc.cloud_email.name}}-xgemail-additional-actions-SNS"
+    bounce_events_sns_topic:                            "{{vpc.cloud_email.name}}-xgemail-bounce-events-SNS"
+    redirect_events_sns_topic:                          "{{vpc.cloud_email.name}}-xgemail-redirect-events-SNS"
+    internet_risky_delivery_sns_topic:                  "{{vpc.cloud_email.name}}-xgemail-internet-risky-delivery-SNS"
   ssm:
     ssm_documents:                                      "{{vpc.cloud_email.name}}-SSM-Documents"
   msg:

@@ -5,6 +5,9 @@
 aws:
   asg:
     is:
+      alarm_scaling_enabled:                                      "false"
+      alarm_scale_in_threshold:                                   "100"
+      alarm_scale_out_threshold:                                  "500"
       as_min_size:                                                "1"
       as_max_size:                                                "3"
       as_min_service:                                             "1"
@@ -13,6 +16,9 @@ aws:
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-internet-submit-Terminating-LifeCycleHook"
     cd:
+      alarm_scaling_enabled:                                      "false"
+      alarm_scale_in_threshold:                                   "10"
+      alarm_scale_out_threshold:                                  "50"
       as_min_size:                                                "1"
       as_max_size:                                                "6"
       as_min_service:                                             "1"
@@ -20,7 +26,16 @@ aws:
       health_check_grace_period:                                  "900"
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-customer-delivery-Terminating-LifeCycleHook"
+    cx:
+      asg_min_size:                                               [0,0,1]
+      health_check_grace_period:                                  "900"
+      instance_size:                                              "t2.small"
+      stack_number:                                               [1,2,3]
+      zone_index:                                                 [0,1,2]
     cs:
+      alarm_scaling_enabled:                                      "false"
+      alarm_scale_in_threshold:                                   "100"
+      alarm_scale_out_threshold:                                  "500"
       as_min_size:                                                "1"
       as_max_size:                                                "3"
       as_min_service:                                             "1"
@@ -29,6 +44,9 @@ aws:
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-customer-submit-Terminating-LifeCycleHook"
     id:
+      alarm_scaling_enabled:                                      "false"
+      alarm_scale_in_threshold:                                   "10"
+      alarm_scale_out_threshold:                                  "50"
       as_min_size:                                                "1"
       as_max_size:                                                "6"
       as_min_service:                                             "1"
@@ -37,6 +55,13 @@ aws:
       instance_size:                                              "t2.small"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-internet-delivery-Launching-LifeCycleHook"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-internet-delivery-Terminating-LifeCycleHook"
+    ix:
+      asg_min_size:                                               [0,0,1]
+      health_check_grace_period:                                  "600"
+      instance_size:                                              "t2.small"
+      lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-internet-xdelivery-Launching-LifeCycleHook"
+      stack_number:                                               [1,2,3]
+      zone_index:                                                 [0,1,2]
     es:
       as_min_size:                                                "1"
       as_max_size:                                                "3"
@@ -53,19 +78,6 @@ aws:
       health_check_grace_period:                                  "600"
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-encryption-delivery-Terminating-LifeCycleHook"
-    cx:
-      asg_min_size:                                               [0,0,1]
-      health_check_grace_period:                                  "900"
-      instance_size:                                              "t2.small"
-      stack_number:                                               [1,2,3]
-      zone_index:                                                 [0,1,2]
-    ix:
-      asg_min_size:                                               [0,0,1]
-      health_check_grace_period:                                  "600"
-      instance_size:                                              "t2.small"
-      lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-internet-xdelivery-Launching-LifeCycleHook"
-      stack_number:                                               [1,2,3]
-      zone_index:                                                 [0,1,2]
     ird:
       as_min_size:                                                "1"
       as_max_size:                                                "6"
@@ -75,6 +87,7 @@ aws:
       instance_size:                                              "t2.small"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-internet-risky-delivery-Launching-LifeCycleHook"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-internet-risky-delivery-Terminating-LifeCycleHook"
+
   efs:
     policy_efs_volume:
       encrypted:                                                  "true"
@@ -83,25 +96,14 @@ aws:
       throughput_mode:                                            "bursting"
   es:
     toc_elasticsearch_domain:
+      state:                                                      absent
       ebs_volume_size:                                            "10"
       es_version:                                                 "5.5"
       es_name:                                                    "toc-es"
       master_node_type:                                           "t2.small.elasticsearch"
-      node_type:                                                  "t2.medium.elasticsearch"
-      instance_number:                                            "1"
-      master_instance_number:                                     "2"
-      snapshot_start_hour:                                        "4"
-      zone_awareness:                                             "false"
-    xgemail_elasticsearch_domain:
-      ebs_volume_size:                                            "10"
-      encryption_at_rest:                                         "false"
-      es_version:                                                 "5.6"
-      es_name:                                                    "es"
-      logging_enabled:                                            "true"
-      master_node_type:                                           "t2.small.elasticsearch"
       node_type:                                                  "t2.small.elasticsearch"
       instance_number:                                            "1"
-      master_instance_number:                                     "2"
+      master_instance_number:                                     "0"
       snapshot_start_hour:                                        "4"
       zone_awareness:                                             "false"
   s3:
@@ -186,7 +188,16 @@ aws:
         SnsPolicyTopic:                                           "{{sns.arn_prefix}}{{sns.policy_sns_topic}}"
         SnsRelayControlTopic:                                     "{{sns.arn_prefix}}{{sns.relay_control_sns_topic}}"
         SnsMultiPolicyTopic:                                      "{{sns.arn_prefix}}{{sns.multi_policy_sns_topic}}"
-
+    delivery_director_bucket:
+      stack_name:                                                 "{{stack.s3.delivery_director_bucket}}"
+      template:                                                   "{{template.s3.s3_bucket_template}}"
+      template_parameters:
+        Environment:                                              "{{account.name}}"
+        RequireEncryptionForUploads:                              "sse-s3"
+        S3BucketName:                                             "{{s3.delivery_director_bucket}}"
+        S3LifeCycleDelete:                                        "30"
+        S3PolicyCreate:                                           "true"
+        S3PolicyPrincipalList:                                    "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
   sns:
     alarm_sns_topic:
       stack_name:                                                 "{{stack.sns.alarm_sns_topic}}"
@@ -266,6 +277,26 @@ aws:
       template:                                                   "{{template.sns.sns_simple_template}}"
       template_parameters:
         TopicName:                                                "{{sns.notification_sns_topic}}"
+    additional_actions_sns_topic:
+      stack_name:                                                 "{{stack.sns.additional_actions_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                                                "{{sns.additional_actions_sns_topic}}"
+    bounce_events_sns_topic:
+      stack_name:                                                 "{{stack.sns.bounce_events_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                                                "{{sns.bounce_events_sns_topic}}"
+    redirect_events_sns_topic:
+      stack_name:                                                 "{{stack.sns.redirect_events_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                                                "{{sns.redirect_events_sns_topic}}"
+    internet_risky_delivery_sns_topic:
+      stack_name:                                                 "{{stack.sns.internet_risky_delivery_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                                                "{{sns.internet_risky_delivery_sns_topic}}"
 
   sqs:
     lifecycle_sqs_sns:
@@ -430,6 +461,30 @@ aws:
       template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                                                "{{sqs.quarantine_sqs_queue_sns_listener}}"
+    additional_action_sqs_queue_sns_listener:
+      stack_name:                                                 "{{stack.sqs.additional_action_sqs_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.additional_action_sqs_queue_sns_listener}}"
+    message_redirect_sqs_queue_sns_listener:
+      stack_name:                                                 "{{stack.sqs.message_redirect_sqs_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.message_redirect_sqs_queue_sns_listener}}"
+    message_bounce_sqs_queue_sns_listener:
+      stack_name:                                                 "{{stack.sqs.message_bounce_sqs_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.message_bounce_sqs_queue_sns_listener}}"
+    internet_risky_delivery_sqs_queue_sns_listener:
+      stack_name:                                                 "{{stack.sqs.internet_risky_delivery_sqs_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.internet_risky_delivery_sqs_queue_sns_listener}}"
 
 aes_decryption_key:                                               "{{lookup('env','AES_KEY') | default('EFB0D00E7B34527A6CFE3CD804A53312C5A7AF129650A9793D2CEF3A3C6B3741')}}"
 ami_parent_id:                                                    "{{ami_id}}"
@@ -442,7 +497,7 @@ nat_eip_a:                                                        "{{cloud_email
 hopper_public_ip:                                                 "198.144.101.106/32"
 instance_size_elasticsearch:                                      "t2.medium"
 instance_size_xgemail_spot_price:                                 "-1"
-weekend_scale_down:                                               "false"
+weekend_scale_down:                                               "true"
 xgemail_sxl_dbl:                                                  "uri.cal1.sophosxl.com"
 xgemail_sxl_rbl:                                                  "fur.cal1.sophosxl.com"
 xgemail_iops_data_gb:                                             "0"
