@@ -199,11 +199,11 @@
       "Description": "Endpoint ARN for Redirect Event Action SQS Queue",
       "Type": "String"
     },
-    "AdditionalActionsTopicArn": {
+    "AdditionalActionTopicArn": {
       "Description": "Endpoint for scan Additional Action arn",
       "Type": "String"
     },
-    "AdditionalActionsQueueArn": {
+    "AdditionalActionQueueArn": {
       "Description": "Endpoint ARN for Additional Action SQS Queue",
       "Type": "String"
     },
@@ -422,7 +422,7 @@
     "AdditionalActionSNSListenerQueueToBounceEventSnsSubsciption": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
-        "Endpoint": { "Ref": "AdditionalActionsQueueArn" },
+        "Endpoint": { "Ref": "AdditionalActionQueueArn" },
         "Protocol": "sqs",
         "TopicArn": { "Ref": "BounceEventTopicArn"},
         "RawMessageDelivery": "true"
@@ -458,7 +458,7 @@
     "AdditionalActionSNSListenerQueueToRedirectEventSnsSubsciption": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
-        "Endpoint": { "Ref": "AdditionalActionsQueueArn" },
+        "Endpoint": { "Ref": "AdditionalActionQueueArn" },
         "Protocol": "sqs",
         "TopicArn": { "Ref": "RedirectEventTopicArn"},
         "RawMessageDelivery": "true"
@@ -467,16 +467,16 @@
     "AdditionalActionSNSListenerQueueToAdditionalActionSnsSubsciption": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
-        "Endpoint": { "Ref": "AdditionalActionsQueueArn" },
+        "Endpoint": { "Ref": "AdditionalActionQueueArn" },
         "Protocol": "sqs",
-        "TopicArn": { "Ref": "AdditionalActionsTopicArn"},
+        "TopicArn": { "Ref": "AdditionalActionTopicArn"},
         "RawMessageDelivery": "true"
       }
     },
     "AdditionalActionQueueToSuccessSnsSubsciption": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
-        "Endpoint": { "Ref": "AdditionalActionsQueueArn" },
+        "Endpoint": { "Ref": "AdditionalActionQueueArn" },
         "Protocol": "sqs",
         "TopicArn": { "Ref": "SuccessEventsTopicArn"}
       }
@@ -484,7 +484,7 @@
     "AdditionalActionQueueToDeletedSnsSubsciption": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
-        "Endpoint": { "Ref": "AdditionalActionsQueueArn" },
+        "Endpoint": { "Ref": "AdditionalActionQueueArn" },
         "Protocol": "sqs",
         "TopicArn": { "Ref": "DeletedEventsTopicArn"}
       }
@@ -492,7 +492,7 @@
     "AdditionalActionQueueToQuarantinedSnsSubsciption": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
-        "Endpoint": { "Ref": "AdditionalActionsQueueArn" },
+        "Endpoint": { "Ref": "AdditionalActionQueueArn" },
         "Protocol": "sqs",
         "TopicArn": { "Ref": "QuarantinedEventsTopicArn"}
       }
