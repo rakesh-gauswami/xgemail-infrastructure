@@ -56,7 +56,7 @@
   },
 
   "Conditions": {
-    "IsProdOrQaEnvironment" : {
+    "OpenToWorld" : {
       "Fn::Or": [
         {
           "Fn::Equals": [
@@ -68,6 +68,12 @@
           "Fn::Equals": [
             {"Ref": "Environment"},
             "qa"
+          ]
+        },
+        {
+          "Fn::Equals": [
+            {"Ref": "Environment"},
+            "dev"
           ]
         }
       ]
@@ -463,7 +469,7 @@
             "FromPort": "25",
             "ToPort": "25",
             "CidrIp": { "Fn::If": [
-              "IsProdOrQaEnvironment",
+              "OpenToWorld",
               "0.0.0.0/0",
               { "Ref": "ExternalIpAccess" }
             ]}
@@ -473,7 +479,7 @@
             "FromPort": "587",
             "ToPort": "587",
             "CidrIp": { "Fn::If": [
-              "IsProdOrQaEnvironment",
+              "OpenToWorld",
               "0.0.0.0/0",
               { "Ref": "ExternalIpAccess" }
             ]}
@@ -675,7 +681,7 @@
             "FromPort": "25",
             "ToPort": "25",
             "CidrIp": { "Fn::If": [
-              "IsProdOrQaEnvironment",
+              "OpenToWorld",
               "0.0.0.0/0",
               { "Ref": "ExternalIpAccess" }
             ]}
@@ -685,7 +691,7 @@
             "FromPort": "587",
             "ToPort": "587",
             "CidrIp": { "Fn::If": [
-              "IsProdOrQaEnvironment",
+              "OpenToWorld",
               "0.0.0.0/0",
               { "Ref": "ExternalIpAccess" }
             ]}
