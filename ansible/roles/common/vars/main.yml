@@ -451,12 +451,12 @@ aws:
       template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                                                "{{sqs.quarantine_sqs_queue_sns_listener}}"
-    additional_action_sqs_queue_sns_listener:
-      stack_name:                                                 "{{stack.sqs.additional_action_sqs_queue_sns_listener}}"
+    additional_actions_sqs_queue_sns_listener:
+      stack_name:                                                 "{{stack.sqs.additional_actions_sqs_queue_sns_listener}}"
       state:                                                      present
       template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
-        QueueName:                                                "{{sqs.additional_action_sqs_queue_sns_listener}}"
+        QueueName:                                                "{{sqs.additional_actions_sqs_queue_sns_listener}}"
     message_redirect_sqs_queue_sns_listener:
       stack_name:                                                 "{{stack.sqs.message_redirect_sqs_queue_sns_listener}}"
       state:                                                      present
