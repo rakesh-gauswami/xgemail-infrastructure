@@ -93,7 +93,10 @@ SQS_MESSAGE_SUBMIT_TYPE_INBOUND = "INTERNET"
 SQS_MESSAGE_SUBMIT_TYPE_OUTBOUND = "CUSTOMER"
 
 # Definition of the header "X-Sophos-Deliver-Inbound: true" for the email package
-DELIVER_INBOUND_HEADER = ("X-Sophos-Deliver-Inbound", "true")
+DELIVER_INBOUND_HEADER = "X-Sophos-Deliver-Inbound"
+DELIVER_INBOUND_VALUE = "true"
+SOPHOS_PARENT_ID_HEADER = "X-Sophos-MH-Parent-Id"
+ECHOWORX_REPLY_HEADER = "x-echoworx-portal"
 
 awshandler = AwsHandler(AWS_REGION)
 
@@ -436,7 +439,7 @@ def get_submit_message_type_for_encryption(direction):
         return SQS_MESSAGE_SUBMIT_TYPE_INBOUND
 
 
-def base_policy_flow(metadata, direction, domain, sender, message):
+def base_policy_flow(metadata, direction, is_reply, domain, sender, message):
     queue_id = metadata.get_queue_id()
 
     tmp_file_path = formatterutils.get_s3_path(
@@ -447,7 +450,11 @@ def base_policy_flow(metadata, direction, domain, sender, message):
         domain
     )
 
-    s3_file_path = formatterutils.get_s3_file_path(tmp_file_path, '-ENCR')
+    if direction == OUTBOUND_MESSAGE_DIRECTION and is_reply == True:
+        s3_file_path = tmp_file_path
+    else:
+        s3_file_path = formatterutils.get_s3_file_path(tmp_file_path, '-ENCR')
+
     sqs_message_submit_type = get_submit_message_type_for_encryption(direction)
 
     # create a sqs object
@@ -491,13 +498,24 @@ def base_policy_flow(metadata, direction, domain, sender, message):
 
 def get_direction(message):
     direction = OUTBOUND_MESSAGE_DIRECTION
+    is_reply = False
+    is_mh_parent = False
+
     parser = email.parser.HeaderParser()
     headers = parser.parsestr(message)
-    for header in headers.items():
-        if header == DELIVER_INBOUND_HEADER:
+
+    for header, value in headers.items():
+        if header == DELIVER_INBOUND_HEADER and value == DELIVER_INBOUND_VALUE:
             direction = INBOUND_MESSAGE_DIRECTION
-            break
-    return direction
+        elif header == ECHOWORX_REPLY_HEADER:
+            is_reply = True
+        elif header == SOPHOS_PARENT_ID_HEADER:
+            is_mh_parent = True
+
+    if is_reply == True and is_mh_parent == True:
+        is_reply = False
+
+    return (direction, is_reply)
 
 
 # accepts data from postfix and send message and metadata to S3 and
@@ -510,7 +528,7 @@ def main():
         domain = None
         metadata = get_metadata()
         plaintext_message = get_plaintext_message()
-        direction = get_direction(plaintext_message)
+        direction, is_reply = get_direction(plaintext_message)
         sender = metadata.get_sender_address()
         if direction == OUTBOUND_MESSAGE_DIRECTION:
           metadata = get_metadata_for_outbound(metadata, plaintext_message)
@@ -521,7 +539,7 @@ def main():
         # required logging for XgemailTestBase automation test
         logger.info("Metadata json info [{0}]".format(metadata))
 
-        base_policy_flow(metadata, direction, domain, sender, plaintext_message)
+        base_policy_flow(metadata, direction, is_reply, domain, sender, plaintext_message)
 
     except BaseException as e:
         logger.exception("Failed in processing email [{0}]".format(e))

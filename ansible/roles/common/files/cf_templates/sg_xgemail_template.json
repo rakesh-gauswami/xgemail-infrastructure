@@ -56,7 +56,7 @@
   },
 
   "Conditions": {
-    "IsProdOrQaEnvironment" : {
+    "OpenToWorld" : {
       "Fn::Or": [
         {
           "Fn::Equals": [
@@ -68,6 +68,12 @@
           "Fn::Equals": [
             {"Ref": "Environment"},
             "qa"
+          ]
+        },
+        {
+          "Fn::Equals": [
+            {"Ref": "Environment"},
+            "dev"
           ]
         }
       ]
@@ -463,7 +469,7 @@
             "FromPort": "25",
             "ToPort": "25",
             "CidrIp": { "Fn::If": [
-              "IsProdOrQaEnvironment",
+              "OpenToWorld",
               "0.0.0.0/0",
               { "Ref": "ExternalIpAccess" }
             ]}
@@ -473,7 +479,7 @@
             "FromPort": "587",
             "ToPort": "587",
             "CidrIp": { "Fn::If": [
-              "IsProdOrQaEnvironment",
+              "OpenToWorld",
               "0.0.0.0/0",
               { "Ref": "ExternalIpAccess" }
             ]}
@@ -675,7 +681,7 @@
             "FromPort": "25",
             "ToPort": "25",
             "CidrIp": { "Fn::If": [
-              "IsProdOrQaEnvironment",
+              "OpenToWorld",
               "0.0.0.0/0",
               { "Ref": "ExternalIpAccess" }
             ]}
@@ -685,7 +691,7 @@
             "FromPort": "587",
             "ToPort": "587",
             "CidrIp": { "Fn::If": [
-              "IsProdOrQaEnvironment",
+              "OpenToWorld",
               "0.0.0.0/0",
               { "Ref": "ExternalIpAccess" }
             ]}
@@ -1594,13 +1600,13 @@
       "Description": "Xgemail Internet Delivery Load Balancer security group",
       "Value": { "Ref": "XgemailInternetDeliverySecurityGroupLb" }
     },
-    "XgemailInternetRiskyDeliverySecurityGroupLb": {
-      "Description": "Xgemail Internet Risky Delivery Load Balancer security group",
-      "Value": { "Ref": "XgemailInternetRiskyDeliverySecurityGroupLb" }
-    },
     "XgemailInternetDeliverySecurityGroup": {
       "Description": "Xgemail Internet Delivery security group",
       "Value": { "Ref": "XgemailInternetDeliverySecurityGroup" }
+    },
+    "XgemailInternetRiskyDeliverySecurityGroupLb": {
+      "Description": "Xgemail Internet Risky Delivery Load Balancer security group",
+      "Value": { "Ref": "XgemailInternetRiskyDeliverySecurityGroupLb" }
     },
     "XgemailInternetRiskyDeliverySecurityGroup": {
       "Description": "Xgemail Internet Risky Delivery security group",
@@ -1610,13 +1616,13 @@
       "Description": "Xgemail Xdelivery Load Balancer security group",
       "Value": { "Ref": "XgemailXdeliverySecurityGroupLb" }
     },
-    "XgemailInternetXdeliverySecurityGroupLb": {
-      "Description": "Xgemail Internet Xdelivery Load Balancer security group",
-      "Value": { "Ref": "XgemailInternetXdeliverySecurityGroupLb" }
-    },
     "XgemailXdeliverySecurityGroup": {
       "Description": "Xgemail Xdelivery security group",
       "Value": { "Ref": "XgemailXdeliverySecurityGroup" }
+    },
+    "XgemailInternetXdeliverySecurityGroupLb": {
+      "Description": "Xgemail Internet Xdelivery Load Balancer security group",
+      "Value": { "Ref": "XgemailInternetXdeliverySecurityGroupLb" }
     },
     "XgemailInternetXdeliverySecurityGroup": {
       "Description": "Xgemail Internet Xdelivery security group",

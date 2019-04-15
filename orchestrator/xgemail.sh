@@ -35,7 +35,7 @@ base_compose="docker-compose-base.yml"
 inbound_compose="docker-compose-inbound.yml"
 outbound_compose="docker-compose-outbound.yml"
 
-nova_bootstrap_file="${HOME}/g/nova/appserver/config/bootstrap.properties"
+nova_bootstrap_file="${HOME}/g/nova/appserver/config/bootstrap.properties.d/00_bootstrap.properties"
 mail_bootstrap_file="${orchestrator_location}sophos_cloud_tomcat_bootstrap.properties"
 nova_bootstrap_file_original_copy="${HOME}/g/nova/appserver/config/bootstrap_copy.properties"
 

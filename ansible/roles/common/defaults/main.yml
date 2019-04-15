@@ -20,7 +20,7 @@ ec2:
     id:                                                 "XGEMAIL-INTERNET-DELIVERY"
     is:                                                 "XGEMAIL-SUBMIT"
     ix:                                                 "XGEMAIL-INTERNET-XDELIVERY"
-    ird:                                                "XGEMAIL-INTERNET-RISKY-DELIVERY"
+    rd:                                                 "XGEMAIL-INTERNET-RISKY-DELIVERY"
 efs:
   policy_efs_volume:                                    "Xgemail-Policy-EFS"
 iam:
@@ -148,7 +148,7 @@ stack:
       ix:                                               "{{vpc.cloud_email.name}}-xgemail-internet-xdelivery-0000-"
       ed:                                               "{{vpc.cloud_email.name}}-xgemail-encryption-delivery"
       es:                                               "{{vpc.cloud_email.name}}-xgemail-encryption-submit"
-      ird:                                              "{{vpc.cloud_email.name}}-xgemail-internet-risky-delivery"
+      rd:                                               "{{vpc.cloud_email.name}}-xgemail-internet-risky-delivery"
     elb:
       cs:                                               "{{vpc.cloud_email.name}}-XGEMAIL-customer-submit-ELB"
       is:                                               "{{vpc.cloud_email.name}}-XGEMAIL-submit-ELB"
@@ -158,7 +158,7 @@ stack:
       ix:                                               "{{vpc.cloud_email.name}}-XGEMAIL-internet-xdelivery-ELB"
       ed:                                               "{{vpc.cloud_email.name}}-XGEMAIL-encryption-delivery-ELB"
       es:                                               "{{vpc.cloud_email.name}}-XGEMAIL-encryption-submit-ELB"
-      ird:                                              "{{vpc.cloud_email.name}}-XGEMAIL-internet-risky-delivery-ELB"
+      rd:                                               "{{vpc.cloud_email.name}}-XGEMAIL-internet-risky-delivery-ELB"
   efs:
     policy_efs_volume:                                  "{{vpc.cloud_email.name}}-xgemail-policy-EFS-volume"
     policy_efs_mount_target:                            "{{vpc.cloud_email.name}}-xgemail-policy-EFS-volume-mount-target"
