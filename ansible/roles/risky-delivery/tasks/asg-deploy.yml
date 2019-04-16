@@ -6,9 +6,12 @@
     state: present
     region:  "{{account.region}}"
     disable_rollback: no
-    template: "{{template.ec2.asg.as_internet_risky_delivery_template}}"
+    template: "{{template.ec2.asg.as_risky_delivery_template}}"
     template_parameters:
       AesDecryptionKey:                     "{{aes_decryption_key}}"
+      AlarmScalingEnabled:                  "{{aws.asg.rd.alarm_scaling_enabled}}"
+      AlarmScaleInThreshold:                "{{aws.asg.rd.alarm_scale_in_threshold}}"
+      AlarmScaleOutThreshold:               "{{aws.asg.rd.alarm_scale_out_threshold}}"
       AlarmTopicArn:                        "{{sns.arn_prefix}}{{sns.alarm_sns_topic}}"
       AmiId:                                "{{ami_parent_id}}"
       AutoScalingInstanceRoleArn:           "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.AutoScalingInstanceRoleArn}}"
@@ -23,7 +26,7 @@
       DeployMinInstancesInService:          "{{aws.asg.rd.as_min_service}}"
       Environment:                          "{{account.name}}"
       HealthCheckGracePeriod:               "{{aws.asg.rd.health_check_grace_period}}"
-      InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.XgemailInternetRiskyDeliveryInstanceProfile}}"
+      InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.XgemailRiskyDeliveryInstanceProfile}}"
       InstanceType:                         "{{aws.asg.rd.instance_size}}"
       KeyName:                              "public-{{account.region}}"
       LifecycleHookLaunching:               "{{aws.asg.rd.lifecycle_hook_launching}}"
@@ -33,7 +36,7 @@
       ScaleInOnWeekends:                    "{{weekend_scale_down}}"
       ScaleInCron:                          "{{cron_scale_down}}"
       ScaleOutCron:                         "{{cron_scale_up}}"
-      SecurityGroups:                       "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.XgemailInternetRiskyDeliverySecurityGroup}},{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.SecurityGroupBase}}"
+      SecurityGroups:                       "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.XgemailRiskyDeliverySecurityGroup}},{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.SecurityGroupBase}}"
       SpotPrice:                            "{{instance_size_xgemail_spot_price}}"
       StationVpcId:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}"
       StationVpcName:                       "{{vpc.cloud_station.name}}"
@@ -44,8 +47,9 @@
       XgemailMinSizeDataGB:                 "{{xgemail_size_data_gb}}"
       XgemailMsgHistoryStatusSnsArn:        "{{sns.arn_prefix}}{{sns.msg_history_status_sns_topic}}"
       XgemailNotifierQueueUrl:              "{{sqs.url_prefix}}{{sqs.notifier_request_sqs_queue}}"
-      XgemailSnsSqsQueueUrl:                "{{sqs.url_prefix}}{{sqs.internet_risky_delivery_sqs_queue_sns_listener}}"
-      XgemailServiceType:                   "internet-risky-delivery"
+      XgemailSnsSqsQueue:                   "{{sqs.risky_delivery_sqs_queue_sns_listener}}"
+      XgemailSnsSqsQueueUrl:                "{{sqs.url_prefix}}{{sqs.risky_delivery_sqs_queue_sns_listener}}"
+      XgemailServiceType:                   "risky-delivery"
       XgemailSxlDbl:                        "{{xgemail_sxl_dbl}}"
       XgemailSxlRbl:                        "{{xgemail_sxl_rbl}}"
   register: asg_stack_output
