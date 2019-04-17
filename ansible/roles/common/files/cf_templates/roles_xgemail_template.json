@@ -2383,18 +2383,18 @@
       }
     },
 
-    "XgemailInternetRiskyDeliveryInstanceProfile": {
+    "XgemailRiskyDeliveryInstanceProfile": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
         "Path": "/",
         "Roles": [
           {
-            "Ref": "XgemailInternetRiskyDeliveryInstanceRole"
+            "Ref": "XgemailRiskyDeliveryInstanceRole"
           }
         ]
       }
     },
-    "XgemailInternetRiskyDeliveryInstanceRole": {
+    "XgemailRiskyDeliveryInstanceRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
         "ManagedPolicyArns": [
@@ -2418,7 +2418,7 @@
         "Path": "/"
       }
     },
-    "XgemailInternetRiskyDeliveryInstanceRolePolicies": {
+    "XgemailRiskyDeliveryInstanceRolePolicies": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
         "PolicyDocument": {
@@ -2702,7 +2702,7 @@
         "PolicyName": "root",
         "Roles": [
           {
-            "Ref": "XgemailInternetRiskyDeliveryInstanceRole"
+            "Ref": "XgemailRiskyDeliveryInstanceRole"
           }
         ]
       }
@@ -2834,17 +2834,17 @@
       "Description": "XGEMAIL Xdelivery instance profile",
       "Value": { "Ref": "XgemailXdeliveryInstanceProfile" }
     },
-    "XgemailInternetRiskyDeliveryInstanceProfile": {
-      "Description": "XGEMAIL Internet Risky Delivery instance profile",
-      "Value": { "Ref": "XgemailInternetRiskyDeliveryInstanceProfile" }
+    "XgemailRiskyDeliveryInstanceProfile": {
+      "Description": "XGEMAIL Risky Delivery instance profile",
+      "Value": { "Ref": "XgemailRiskyDeliveryInstanceProfile" }
     },
-    "XgemailInternetRiskyDeliveryInstanceRole": {
-      "Description": "XGEMAIL Internet Risky Delivery instance role",
-      "Value": { "Ref": "XgemailInternetRiskyDeliveryInstanceRole" }
+    "XgemailRiskyDeliveryInstanceRole": {
+      "Description": "XGEMAIL Risky Delivery instance role",
+      "Value": { "Ref": "XgemailRiskyDeliveryInstanceRole" }
     },
-    "XgemailInternetRiskyDeliveryInstanceRoleArn": {
-      "Description": "XGEMAIL Internet Risky Delivery instance role ARN",
-      "Value": { "Fn::GetAtt" : [ "XgemailInternetRiskyDeliveryInstanceRole", "Arn" ] }
+    "XgemailRiskyDeliveryInstanceRoleArn": {
+      "Description": "XGEMAIL Risky Delivery instance role ARN",
+      "Value": { "Fn::GetAtt" : [ "XgemailRiskyDeliveryInstanceRole", "Arn" ] }
     },
     "XgemailXdeliveryInstanceRole": {
       "Description": "XGEMAIL Xdelivery instance role",
