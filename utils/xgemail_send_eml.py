@@ -186,7 +186,7 @@ if __name__ == "__main__":
 
     if len(files_to_send) != emails_to_send:
         raise ValueError(
-            'Mismatch between number of files ({}) and emails that should be sent ({1})',
+            'Mismatch between number of files ({0}) and emails that should be sent ({1})',
             len(files_to_send),
             emails_to_send
         )
