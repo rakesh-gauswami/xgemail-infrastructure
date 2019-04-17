@@ -54,7 +54,7 @@ SERVICE_USER = node['xgemail']['sqs_message_processor_user']
 # Configs use by sqsmsgconsumer
 if NODE_TYPE == 'customer-delivery' or NODE_TYPE == 'xdelivery' or NODE_TYPE == 'encryption-submit'
   MESSAGE_DIRECTION = 'INBOUND'
-elsif NODE_TYPE == 'internet-delivery' or NODE_TYPE == 'internet-xdelivery' or NODE_TYPE == 'encryption-delivery' or NODE_TYPE == 'internet-risky-delivery'
+elsif NODE_TYPE == 'internet-delivery' or NODE_TYPE == 'internet-xdelivery' or NODE_TYPE == 'encryption-delivery' or NODE_TYPE == 'risky-delivery'
   MESSAGE_DIRECTION = 'OUTBOUND'
 else
   raise "Unsupported node type to setup sqsmsgproducer [#{NODE_TYPE}]"

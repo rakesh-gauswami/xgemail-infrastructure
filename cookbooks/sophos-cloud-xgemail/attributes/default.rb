@@ -199,10 +199,10 @@ default['xgemail']['internet_delivery_message_bouncer_processor_dir'] = XGEMAIL_
 default['xgemail']['internet_delivery_message_bouncer_common_dir'] = "#{XGEMAIL_SQS_MESSAGE_BOUNCER_DIR}/common"
 default['xgemail']['internet_delivery_bounce_message_processor_user'] = 'bouncer'
 
-## Internet risky delivery DSN/NDR settings
-default['xgemail']['internet_risky_delivery_message_bouncer_processor_dir'] = XGEMAIL_SQS_MESSAGE_BOUNCER_DIR
-default['xgemail']['internet_risky_delivery_message_bouncer_common_dir'] = "#{XGEMAIL_SQS_MESSAGE_BOUNCER_DIR}/common"
-default['xgemail']['internet_risky_delivery_bounce_message_processor_user'] = 'bouncer'
+## Risky delivery DSN/NDR settings
+default['xgemail']['risky_delivery_message_bouncer_processor_dir'] = XGEMAIL_SQS_MESSAGE_BOUNCER_DIR
+default['xgemail']['risky_delivery_message_bouncer_common_dir'] = "#{XGEMAIL_SQS_MESSAGE_BOUNCER_DIR}/common"
+default['xgemail']['risky_delivery_bounce_message_processor_user'] = 'bouncer'
 
 ## Cronjob settings
 default['xgemail']['cron_job_timeout'] = '10m'
@@ -314,8 +314,8 @@ default['xgemail']['postfix_instance_data'] = {
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800),
     :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
   },
-  # internet-risky-delivery
-  'internet-risky-delivery' => {
+  # risky-delivery
+  'risky-delivery' => {
     :instance_name => 'rd',
     :port => 25,
     # Give delivery queues extra padding because extra content may be created during processing

@@ -128,7 +128,7 @@ def get_instances_by_name():
                 'Values': [
                     'CloudEmail:internet-delivery:*',
                     'CloudEmail:internet-xdelivery:*',
-                    'CloudEmail:internet-risky-delivery:*'
+                    'CloudEmail:risky-delivery:*'
                 ]
             }
         ]

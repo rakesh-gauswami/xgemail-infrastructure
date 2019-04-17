@@ -7,7 +7,7 @@
 # All rights reserved - Do Not Redistribute
 #
 # This recipe configures bounce delivery settings in  main.cf at
-# internet risky delivery and extended internet risky delivery postfix instance
+# risky delivery and extended risky delivery postfix instance
 #
 
 # Include Helper library
@@ -26,12 +26,12 @@ TRANSPORT_MAPS_FILENAME = 'transport_maps'
 
 SERVICE_NAME='bounce-handler'
 
-INTERNET_RISKY_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_DIR = node['xgemail']['internet_risky_delivery_message_bouncer_processor_dir']
-INTERNET_RISKY_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_COMMON_DIR  = node['xgemail']['internet_risky_delivery_message_bouncer_common_dir']
+RISKY_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_DIR = node['xgemail']['risky_delivery_message_bouncer_processor_dir']
+RISKY_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_COMMON_DIR  = node['xgemail']['risky_delivery_message_bouncer_common_dir']
 
 BOUNCE_HANDLER_SCRIPT = 'xgemail.message.bouncer.py'
 NOTIFICATION_EVENT_FILE_NAME = 'notificationsubmitinfo.py'
-BOUNCE_HANDLER_SCRIPT_PATH = "#{INTERNET_RISKY_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_DIR}/#{BOUNCE_HANDLER_SCRIPT}"
+BOUNCE_HANDLER_SCRIPT_PATH = "#{RISKY_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_DIR}/#{BOUNCE_HANDLER_SCRIPT}"
 AWS_REGION = node['sophos_cloud']['region']
 ACCOUNT    = node['sophos_cloud']['context']
 
@@ -41,7 +41,7 @@ EX_TEMPFAIL = node['xgemail']['temp_failure_code']
 XGEMAIL_UTILS_DIR = node['xgemail']['xgemail_utils_files_dir']
 XGEMAIL_NOTIFIER_QUEUE_URL = node['xgemail']['msg_notifier_queue_url']
 
-if NODE_TYPE == 'internet-risky-delivery' || NODE_TYPE == 'internet-risky-xdelivery'
+if NODE_TYPE == 'risky-delivery' || NODE_TYPE == 'risky-xdelivery'
 
  CONFIGURATION_COMMANDS_DELIVER_BOUNCE =
    [
@@ -66,7 +66,7 @@ if NODE_TYPE == 'internet-risky-delivery' || NODE_TYPE == 'internet-risky-xdeliv
  # Configure Postfix
  # This master.cf configuration pipes information to bounce-handler script
  SERVICE_TYPE='unix'
- BOUNCE_USER=node['xgemail']['internet_risky_delivery_bounce_message_processor_user']
+ BOUNCE_USER=node['xgemail']['risky_delivery_bounce_message_processor_user']
  SCRIPT_PATH="#{BOUNCE_HANDLER_SCRIPT_PATH}"
  CONCURRENCY_LIMIT=10
 
@@ -110,7 +110,7 @@ if NODE_TYPE == 'internet-risky-delivery' || NODE_TYPE == 'internet-risky-xdeliv
  end
 
  # Create directory for bounce-handler script
- directory INTERNET_RISKY_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_DIR do
+ directory RISKY_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_DIR do
    owner BOUNCE_USER
    group BOUNCE_USER
    mode '0755'
@@ -119,7 +119,7 @@ if NODE_TYPE == 'internet-risky-delivery' || NODE_TYPE == 'internet-risky-xdeliv
  end
 
  # Create directory for bounce-handler script
- directory INTERNET_RISKY_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_COMMON_DIR do
+ directory RISKY_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_COMMON_DIR do
    owner 'root'
    group 'root'
    mode '0755'
@@ -128,14 +128,14 @@ if NODE_TYPE == 'internet-risky-delivery' || NODE_TYPE == 'internet-risky-xdeliv
  end
 
  # Ensure __init__py file is created in python module
- file "#{INTERNET_RISKY_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_COMMON_DIR}/__init__.py" do
+ file "#{RISKY_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_COMMON_DIR}/__init__.py" do
    mode '0644'
    owner 'root'
    group 'root'
  end
 
  # Create notification event file.
- cookbook_file "#{INTERNET_RISKY_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_COMMON_DIR}/#{NOTIFICATION_EVENT_FILE_NAME}" do
+ cookbook_file "#{RISKY_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_COMMON_DIR}/#{NOTIFICATION_EVENT_FILE_NAME}" do
    source NOTIFICATION_EVENT_FILE_NAME
    mode  '0644'
    owner 'root'

@@ -1,17 +1,17 @@
 #
 # Cookbook Name:: sophos-cloud-xgemail
-# Recipe:: configure-internet-risky-delivery-queue
+# Recipe:: configure-risky-delivery-queue
 #
 # Copyright 2017, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
-# This recipe configures internet risky delivery postfix instance
+# This recipe configures risky delivery postfix instance
 #
 
 NODE_TYPE = node['xgemail']['cluster_type']
 
-if NODE_TYPE != 'internet-risky-delivery'
+if NODE_TYPE != 'risky-delivery'
   return
 end
 
@@ -78,10 +78,10 @@ CONFIGURATION_COMMANDS =
 CONFIGURATION_COMMANDS.each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
 end
-include_recipe 'sophos-cloud-xgemail::configure-bounce-message-internet-risky-delivery-queue'
+include_recipe 'sophos-cloud-xgemail::configure-bounce-message-risky-delivery-queue'
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_consumer'
 else
-  include_recipe 'sophos-cloud-xgemail::configure-bounce-message-internet-risky-delivery-queue'
+  include_recipe 'sophos-cloud-xgemail::configure-bounce-message-risky-delivery-queue'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_consumer'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_utils_structure'
 end
