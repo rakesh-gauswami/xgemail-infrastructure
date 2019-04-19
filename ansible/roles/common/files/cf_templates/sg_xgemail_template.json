@@ -1069,6 +1069,7 @@
       },
       "Type": "AWS::EC2::SecurityGroup"
     },
+
     "XgemailInternetDeliverySecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
@@ -1095,6 +1096,102 @@
             "FromPort": "587",
             "ToPort": "587",
             "SourceSecurityGroupId": { "Ref": "XgemailInternetDeliverySecurityGroupLb" }
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "0",
+            "ToPort": "65535",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "VpcId": { "Ref": "Vpc" }
+      }
+    },
+
+    "XgemailRiskyDeliverySecurityGroupLb": {
+      "Properties": {
+        "GroupDescription": "Controls access to public facing ELBs.",
+        "Tags": [
+          {
+            "Key": "Branch",
+            "Value": { "Ref" : "Branch" }
+
+          },
+          {
+            "Key": "Environment",
+            "Value": { "Ref" : "Environment" }
+          },
+          {
+            "Key": "Role",
+            "Value": "svc-xgemail-risky-delivery-elb"
+
+          },
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "Environment"
+                  },
+                  "-",
+                  {
+                    "Ref": "Branch"
+                  },
+                  "-",
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "/sg/xgemail/risky/delivery/elb"
+                ]
+              ]
+            }
+          }
+        ],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "587",
+            "ToPort": "587",
+            "CidrIp": { "Ref": "ExternalIpAccess" }
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      },
+      "Type": "AWS::EC2::SecurityGroup"
+    },
+
+    "XgemailRiskyDeliverySecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Xgemail Risky Delivery security group.",
+        "Tags": [{
+          "Key": "Name",
+          "Value": {
+            "Fn::Join": [ "", [
+              { "Ref": "Environment" }, "-",
+              { "Ref": "Branch" }, "-",
+              { "Ref": "AWS::StackName" }, "/sg/xgemail/risky/delivery"
+            ]]
+          }
+        }],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "25",
+            "ToPort": "25",
+            "SourceSecurityGroupId": { "Ref": "XgemailRiskyDeliverySecurityGroupLb" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "587",
+            "ToPort": "587",
+            "SourceSecurityGroupId": { "Ref": "XgemailRiskyDeliverySecurityGroupLb" }
           }
         ],
         "SecurityGroupEgress": [
@@ -1347,6 +1444,17 @@
       }
     },
 
+    "XgemailRiskyDeliverySecurityGroupIngressBastionSsh": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailRiskyDeliverySecurityGroup" },
+        "SourceSecurityGroupId": { "Ref": "SecurityGroupBastion" },
+        "IpProtocol": "tcp",
+        "FromPort": "22",
+        "ToPort": "22"
+      }
+    },
+
     "XgemailXdeliverySecurityGroupIngressBastionSsh": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
@@ -1497,17 +1605,25 @@
       "Description": "Xgemail Internet Delivery security group",
       "Value": { "Ref": "XgemailInternetDeliverySecurityGroup" }
     },
+    "XgemailRiskyDeliverySecurityGroupLb": {
+      "Description": "Xgemail Risky Delivery Load Balancer security group",
+      "Value": { "Ref": "XgemailRiskyDeliverySecurityGroupLb" }
+    },
+    "XgemailRiskyDeliverySecurityGroup": {
+      "Description": "Xgemail Risky Delivery security group",
+      "Value": { "Ref": "XgemailRiskyDeliverySecurityGroup" }
+    },
     "XgemailXdeliverySecurityGroupLb": {
       "Description": "Xgemail Xdelivery Load Balancer security group",
       "Value": { "Ref": "XgemailXdeliverySecurityGroupLb" }
     },
-    "XgemailInternetXdeliverySecurityGroupLb": {
-      "Description": "Xgemail Internet Xdelivery Load Balancer security group",
-      "Value": { "Ref": "XgemailInternetXdeliverySecurityGroupLb" }
-    },
     "XgemailXdeliverySecurityGroup": {
       "Description": "Xgemail Xdelivery security group",
       "Value": { "Ref": "XgemailXdeliverySecurityGroup" }
+    },
+    "XgemailInternetXdeliverySecurityGroupLb": {
+      "Description": "Xgemail Internet Xdelivery Load Balancer security group",
+      "Value": { "Ref": "XgemailInternetXdeliverySecurityGroupLb" }
     },
     "XgemailInternetXdeliverySecurityGroup": {
       "Description": "Xgemail Internet Xdelivery security group",
