@@ -50,6 +50,6 @@ def firehose_transformation_handler(event, context):
     """
     records = list(process_records(event['records']))
 
-    logger.info('Successfully processed {} records.'.format(len(event['records'])))
+    logger.info('Successfully processed {} of {} records.'.format(len(records), len(event['records'])))
 
     return {'records': records}
