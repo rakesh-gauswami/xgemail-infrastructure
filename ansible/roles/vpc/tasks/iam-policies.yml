@@ -31,7 +31,8 @@
     disable_rollback:        true
     template:                "{{template.iam.policy.policy_firehose_publish_to_s3_template}}"
     template_parameters:
-      BucketName:            "{{s3.logs_bucket}}"
+      BucketArn:             "{{s3.arn_prefix}}{{s3.logs_bucket}}"
+      LambdaFunctionArn:     "{{lambda.arn_prefix}}{{lambda.firehose_transformation_lambda_function}}"
       RoleNames:             "{{iam.role.firehose_log_shipper_stream}}"
   register: log_shipper_policy_stack
 
