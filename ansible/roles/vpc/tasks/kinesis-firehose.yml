@@ -1,4 +1,46 @@
 ---
+# Firehose Transformation Lambda Function
+- name: "Create a zip archive of Firehose Transformation lambda function"
+  archive:
+    path: /work/lambda/xgemail_firehose_transformation.py
+    dest: "{{tmp_artifacts_dir}}/xgemail_firehose_transformation.zip"
+    format: zip
+
+- name: "Upload the Firehose Transformation lambda function for {{stack.lambda.firehose_transformation_lambda_function}} to the config bucket {{s3.lambda_bucket}}"
+  s3:
+    mode:               put
+    region:             "{{account.region}}"
+    bucket:             "{{s3.lambda_bucket}}"
+    object:             "lambda/{{build.number}}/xgemail_firehose_transformation.zip"
+    src:                "{{tmp_artifacts_dir}}/xgemail_firehose_transformation.zip"
+    overwrite:          always
+
+- name: "Deploy Firehose Transformation Lambda Function {{stack.lambda.firehose_transformation_lambda_function}} to {{account.name}}-{{account.region}}"
+  cloudformation:
+    stack_name:                             "{{stack.lambda.firehose_transformation_lambda_function}}"
+    state:                                  present
+    region:                                 "{{account.region}}"
+    disable_rollback:                       true
+    template:                               "{{template.lambda.lambda_xgemail_firehose_transformation_template}}"
+    template_parameters:
+      Environment:                          "{{account.name}}"
+      FunctionName:                         "{{lambda.firehose_transformation_lambda_function}}"
+      HandlerName:                          xgemail_firehose_transformation.firehose_transformation_handler
+      IAMRoleArn:                           "{{iam_stack.stack_outputs.FirehoseTransformationLambdaExecutionRoleArn}}"
+      S3Bucket:                             "{{s3.lambda_bucket}}"
+      S3Key:                                "lambda/{{build.number}}/xgemail_firehose_transformation.zip"
+  register: firehose_transformation_stack
+
+- debug:
+    var: firehose_transformation_stack
+    verbosity: 3
+
+- name: "Display Firehose Transformation Lambda Function Stack Output"
+  debug:
+    msg: "{{firehose_transformation_stack.stack_outputs}}"
+    verbosity: 2
+
+# Kinesis Firehose Log Shipper
 - name: "Deploy Kinesis Firehose Log Shipper {{stack.kinesis.firehose.firehose_log_shipper_stream}} to {{account.name}}-{{account.region}}"
   cloudformation:
     stack_name:              "{{stack.kinesis.firehose.firehose_log_shipper_stream}}"
@@ -14,6 +56,7 @@
       DeliveryStreamName:                     "{{kinesis.firehose.firehose_log_shipper_stream}}"
       S3BucketName:                           "{{s3.logs_bucket}}"
       S3BucketPrefix:                         "msg-logs/"
+      TransformLambdaArn:                     "{{lambda.arn_prefix}}{{lambda.firehose_transformation_lambda_function}}"
   register: log_shipper_firehose_stack
 
 - debug:
