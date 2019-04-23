@@ -15,41 +15,14 @@ from __future__ import print_function
 import json
 import base64
 import logging
-import re
 
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-patterns = {
-    'drop': '(Unknown feature flag)'
-}
-
-# Alternative Method
-# drop_patterns = [
-#     'Unknown feature flag'
-# ]
-
-
-def transform_records():
-    """
-    Transform each log
-    """
-    pass
-
-
-def transform_microservice_log():
-    """
-    Transform each Microservice log
-    """
-    pass
-
-
-def transform_lambda_log():
-    """
-    Transform each Lambda Function log
-    """
-    pass
+drop_patterns = [
+    'Unknown feature flag'
+]
 
 
 def process_records(records):
@@ -62,27 +35,18 @@ def process_records(records):
         record_id = record['recordId']
         message = data['message']
 
-        # Alternative method
-        # for dp in drop_patterns:
-        #     if dp in message:
-        #         yield {
-        #             'result': 'Dropped',
-        #             'recordId': record_id
-        #         }
-
-        drop_pattern = re.compile(patterns['drop'])
-        drop_match = drop_pattern.search(message)
-        if drop_match:
-            yield {
-                'result': 'Dropped',
-                'recordId': record_id
-            }
-        else:
-            yield {
-                'data': base64.b64encode(json.dumps(data)),
-                'result': 'Ok',
-                'recordId': record_id
-            }
+        for dp in drop_patterns:
+            if dp in message:
+                yield {
+                    'result': 'Dropped',
+                    'recordId': record_id
+                }
+            else:
+                yield {
+                    'data': base64.b64encode(json.dumps(data)),
+                    'result': 'Ok',
+                    'recordId': record_id
+                }
 
 
 def firehose_transformation_handler(event, context):
