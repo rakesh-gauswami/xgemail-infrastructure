@@ -8,53 +8,52 @@ Copyright 2019, Sophos Limited. All rights reserved.
 Sophos Limited and Sophos Group.  All other product and company
 names mentioned are trademarks or registered trademarks of their
 respective owners.
-"""
 
-from __future__ import print_function
+Description:
+This lambda function parses logs before they are sent to logzio and
+drops any logs that match the defined drop patterns.
+
+"""
 
 import json
 import base64
 import logging
 
-
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-drop_patterns = [
-    'Unknown feature flag'
+DROP_PATTERNS = [
+    'Unknown feature flag',
+    'Missing value for <Authentication-Results> header'
 ]
-
-
-def process_records(records):
-    """
-    Process each log from a batch of logs
-    """
-    for record in records:
-        raw_data = base64.b64decode(record['data'])
-        data = json.loads(raw_data)
-        record_id = record['recordId']
-        message = data['message']
-
-        for dp in drop_patterns:
-            if dp in message:
-                yield {
-                    'result': 'Dropped',
-                    'recordId': record_id
-                }
-            else:
-                yield {
-                    'data': base64.b64encode(json.dumps(data)),
-                    'result': 'Ok',
-                    'recordId': record_id
-                }
-
 
 def firehose_transformation_handler(event, context):
     """
-    Main Lambda Handler
+    Iterates over the provided log events and drops any logs
+    that match any of the patterns defined in DROP_PATTERNS
     """
-    records = list(process_records(event['records']))
+    output = []
 
-    logger.info('Successfully processed {} of {} records.'.format(len(records), len(event['records'])))
+    for record in event['records']:
+        record_id = record['recordId']
+        payload = base64.b64decode(record['data'])
+        data = json.loads(payload)
+        message = data['message']
+        logger.debug('Record ID {} for {} message.'.format(record_id, message))
 
-    return {'records': records}
+        output_record = {
+            'recordId': record_id,
+            'result': 'Ok',
+            'data': base64.b64encode(payload)
+        }
+        for drop_pattern in DROP_PATTERNS:
+            if drop_pattern in message:
+                output_record = {
+                    'result': 'Dropped',
+                    'recordId': record_id
+                }
+                break
+        output.append(output_record)
+
+    logger.debug('Successfully processed {} records.'.format(len(event['records'])))
+    return {'records': output}
