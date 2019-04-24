@@ -415,6 +415,49 @@
       "Type": "AWS::IAM::Policy"
     },
 
+    "FirehoseTransformationLambdaExecutionRole" : {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [ "lambda.amazonaws.com" ]
+            },
+            "Action": [ "sts:AssumeRole" ]
+          }]
+        },
+        "Path": "/"
+      }
+    },
+    "FirehoseTransformationLambdaExecutionRolePolicies": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:logs:*:*:*"
+              ]
+            }
+          ]
+        },
+        "PolicyName": "root",
+        "Roles": [
+          {
+            "Ref": "FirehoseTransformationLambdaExecutionRole"
+          }
+        ]
+      },
+      "Type": "AWS::IAM::Policy"
+    },
+
     "LogicMonitorInstanceProfile": {
       "Properties": {
         "Path": "/",
@@ -2997,6 +3040,14 @@
     "EipRotationLambdaExecutionRoleArn": {
       "Description": "Eip Rotation Lambda Execution role ARN",
       "Value": { "Fn::GetAtt" : [ "EipRotationLambdaExecutionRole", "Arn" ] }
+    },
+    "FirehoseTransformationLambdaExecutionRole": {
+      "Description": "Firehose Transformation Lambda Execution role",
+      "Value": { "Ref": "FirehoseTransformationLambdaExecutionRole" }
+    },
+    "FirehoseTransformationLambdaExecutionRoleArn": {
+      "Description": "Firehose Transformation Lambda Execution role ARN",
+      "Value": { "Fn::GetAtt" : [ "FirehoseTransformationLambdaExecutionRole", "Arn" ] }
     },
     "LogicMonitorInstanceProfile": {
       "Description": "Profile for logic monitor collectors to do their job",

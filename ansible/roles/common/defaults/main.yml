@@ -43,12 +43,14 @@ kms:
 # CloudEmail Lambda Function Names:
 lambda:
   arn_prefix:                                           "arn:aws:lambda:{{account.region}}:{{aws_account_id}}:function:"
+  antispam_data_collection_for_labs_lambda_function:    "tf-xgemail-antispam-data-collection-{{account.name}}-{{account.region}}-lambda"
   eip_monitor_lambda_function:                          "Xgemail-Eip-Monitor"
   eip_rotation_lambda_function:                         "Xgemail-Eip-Rotation"
+  firehose_transformation_lambda_function:              "Xgemail-Firehose-Transformation"
   instance_terminator_lambda_function:                  "Xgemail-Instance-Terminator"
-  antispam_data_collection_for_labs_lambda_function:    "tf-xgemail-antispam-data-collection-{{account.name}}-{{account.region}}-lambda"
 # CloudEmail S3 Bucket Names.
 s3:
+  arn_prefix:                                           "arn:aws:s3:::"
   customer_submit_bucket:                               "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-cust-submit"
   emergency_inbox_bucket:                               "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-emgcy-inbox"
   msg_history_bucket:                                   "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-msg-history"
@@ -178,6 +180,7 @@ stack:
   lambda:
     eip_monitor_lambda_function:                        "{{vpc.cloud_email.name}}-Lambda-XgemailEipMonitor"
     eip_rotation_lambda_function:                       "{{vpc.cloud_email.name}}-Lambda-XgemailEipRotation"
+    firehose_transformation_lambda_function:            "{{vpc.cloud_email.name}}-Lambda-XgemailFirehoseTransformation"
     instance_terminator_lambda_function:                "{{vpc.cloud_email.name}}-Lambda-XgemailInstanceTerminator"
   route53:
     customer_delivery_route53:                          "{{vpc.cloud_email.name}}-XGEMAIL-delivery-ROUTE53"
@@ -306,6 +309,7 @@ template:
   lambda:
     lambda_xgemail_eip_monitor_template:                "{{tmp_artifacts_dir}}/lambda_xgemail_eip_monitor_template.json"
     lambda_xgemail_eip_rotation_template:               "{{tmp_artifacts_dir}}/lambda_xgemail_eip_rotation_template.json"
+    lambda_xgemail_firehose_transformation_template:    "{{tmp_artifacts_dir}}/lambda_xgemail_firehose_transformation_template.json"
     lambda_xgemail_instance_terminator_template:        "{{tmp_artifacts_dir}}/lambda_xgemail_instance_terminator_template.json"
   route53:
     route53_record_basic_template:                      "{{tmp_artifacts_dir}}/route53_record_basic_template.json"
