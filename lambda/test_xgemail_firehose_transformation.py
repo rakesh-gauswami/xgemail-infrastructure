@@ -16,7 +16,7 @@ import json
 import unittest
 import xgemail_firehose_transformation
 
-class LogzioFilterTest(unittest.TestCase):
+class FirehoseTransformationHandlerTest(unittest.TestCase):
     def test_firehose_transformation(self):
         input_event = {
           "invocationId": "invocationIdExample",
