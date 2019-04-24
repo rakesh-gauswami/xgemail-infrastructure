@@ -47,6 +47,7 @@ def firehose_transformation_handler(event, context):
             'data': base64.b64encode(payload)
         }
         for drop_pattern in DROP_PATTERNS:
+            logger.debug('Dropping Record Id {}'.format(record_id))
             if drop_pattern in message:
                 output_record = {
                     'result': 'Dropped',

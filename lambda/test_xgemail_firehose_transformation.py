@@ -18,7 +18,7 @@ import xgemail_firehose_transformation
 
 class FirehoseTransformationHandlerTest(unittest.TestCase):
     def test_firehose_transformation(self):
-        input_event = {
+        input_events = {
           "invocationId": "invocationIdExample",
           "deliveryStreamArn": "arn:aws:kinesis:EXAMPLE",
           "region": "eu-west-1",
@@ -29,7 +29,7 @@ class FirehoseTransformationHandlerTest(unittest.TestCase):
 			   "data": "eyJAdGltZXN0YW1wIjoiMjAxOS0wNC0yMlQxNzo0NjowMi43ODUrMDA6MDAiLCJAdmVyc2lvbiI6MSwibWVzc2FnZSI6IlVuYXV0aG9yaXplZCBhY2Nlc3MgcmVxdWVzdCBieTogbWFpbCIsImxvZ2dlcl9uYW1lIjoiY29tLnNvcGhvcy5jbG91ZC5pbnRlcmNlcHRvcnMueGdlbWFpbC5YZ2VtYWlsQXV0aEludGVyY2VwdG9yIiwidGhyZWFkX25hbWUiOiJodHRwLW5pby04MDgwLWV4ZWMtMiIsImxldmVsIjoiV0FSTiIsImxldmVsX3ZhbHVlIjozMDAwMCwiaXAiOiI1Mi4zMS41OC4xMCIsInRrIjoiNTIuMzEuNTguMTAiLCJycSI6IjFiOTUxZmQxLTc0NWMtNDhhMS05ZGIwLTg2MTdiZDZkYjUwMiIsImxvZ19zaGlwcGVyIjoiZmlyZWhvc2UiLCJhY2NvdW50IjoiaW5mIiwiYXBwbGljYXRpb25fbmFtZSI6InhnZW1haWwiLCJob3N0bmFtZSI6ImlwLTE3Mi0xOS0xMDItMTM3LmV1LXdlc3QtMS5jb21wdXRlLmludGVybmFsIiwiaW5zdGFuY2VfaWQiOiJpLTBiYzZiMzVlYzc2MmUyYWNlIiwiaW5zdGFuY2VfdHlwZSI6InQzLmxhcmdlIiwiaW5zdGFuY2VfaXAiOiIxNzIuMTkuMTAyLjEzNyIsInJlZ2lvbiI6ImV1LXdlc3QtMSIsInNlcnZpY2VfdHlwZSI6InN2Y19tYWlsIiwidGFnIjoic29waG9zLnhnZW1haWwifQo="
 			 },
 			 {
-			   "recordId":"49546986683135544286507457936321625675700192471156785154",
+			   "recordId":"55555555553135544286507457936321625675700192471156785154",
 			   "approximateArrivalTimestamp":1495072949453,
 			   "kinesisRecordMetadata":{
 				 "sequenceNumber":"49545115243490985018280067714973144582180062593244200961",
@@ -43,7 +43,7 @@ class FirehoseTransformationHandlerTest(unittest.TestCase):
           ]
         }
 
-        result = xgemail_firehose_transformation.firehose_transformation_handler(input_event, None)
+        result = xgemail_firehose_transformation.firehose_transformation_handler(input_events, None)
         records = result['records']
         self.assertTrue(len(records) == 2)
         ok_record = records[0]
@@ -55,7 +55,7 @@ class FirehoseTransformationHandlerTest(unittest.TestCase):
 
         # second record is expected to be dropped
         self.assertEquals('Dropped', drop_record['result'])
-        self.assertEquals('49546986683135544286507457936321625675700192471156785154', drop_record['recordId'])
+        self.assertEquals('55555555553135544286507457936321625675700192471156785154', drop_record['recordId'])
 
 if __name__ == "__main__":
     unittest.main()
