@@ -39,7 +39,7 @@ nova_bootstrap_file="${HOME}/g/nova/appserver/config/bootstrap.properties.d/00_b
 mail_bootstrap_file="${orchestrator_location}sophos_cloud_tomcat_bootstrap.properties"
 nova_bootstrap_file_original_copy="${HOME}/g/nova/appserver/config/bootstrap_copy.properties"
 
-nova_docker_compose_single="${HOME}/g/nova/docker-compose-single.yml"
+nova_docker_compose_single="${HOME}/g/nova/docker-compose.yml"
 xgemail_replacement_nova_compose="${orchestrator_location}docker-compose-nova-single.yml"
 nova_docker_compose_original_copy="${HOME}/g/nova/docker-compose-single_copy.yml"
 
@@ -97,7 +97,7 @@ inbound mail flow. These containers can be found in docker-compose-inbound.yml
 and docker-compose-base.yml
 '
 function deploy_inbound {
-    initialize
+#    initialize
     check_nova_up
     check_login_to_aws
 
@@ -225,7 +225,7 @@ function provision_jilter {
 
     echo "Provisioning $1"
 
-    docker exec $1 sh -c '/opt/scripts/run.sh'
+    docker exec $1 sh -c '/opt/run.sh'
 
     #At the time of writing this script, docker exec had a bug that results in the exit
     #code of a command being run in a container not being properly returned
@@ -357,6 +357,7 @@ function deploy_jilter()
         outbound)
             check_service_up jilter-outbound
             deploy_jilter_helper ${sandbox_outbound_jilter_tar_location} ${jilter_outbound_build_location} ${jilter_outbound_build_name}
+            deploy_jilter_helper ${sandbox_inbound_jilter_tar_location} ${jilter_inbound_build_location} ${jilter_inbound_build_name}
 
             provision_jilter jilter-outbound
         ;;
@@ -512,7 +513,7 @@ function check_service_up {
 
     echo "Waiting for $1 to be fully up."
     count=0
-    max_count=12 # Multiply this number by 5 for total wait time, in seconds.
+    max_count=2 # Multiply this number by 5 for total wait time, in seconds.
     while [[ $count -le $max_count ]]; do
         startup_check="$(docker ps --filter=name=$1 --format {{.Status}} | grep -c Up)"
         if [[ $startup_check -ne 1 ]]; then

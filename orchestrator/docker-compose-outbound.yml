@@ -73,7 +73,8 @@ services:
       - ~/.aws:/root/.aws:ro
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
       - ~/.xgemail_sandbox/jilter/outbound/:/jilter/
-      - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
+      - ~/.xgemail_sandbox/jilter/inbound/:/jilter/inbound
+      - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks
       - ~/.xgemail_sandbox/policy_storage://policy-storage:rw
     networks:
       - novanet

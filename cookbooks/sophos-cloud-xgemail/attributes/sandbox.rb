@@ -51,7 +51,7 @@ if ENVIRONMENT == "sandbox"
         default['xgemail']['xgemail_sns_sqs_url'] = 'http://localstack:4576/queue/sandbox-Xgemail_Internet_Delivery_SNS_Listener'
     end
 
-    if INSTANCE_TYPE == "jilter-inbound" || INSTANCE_TYPE == "jilter_outbound"
+    if INSTANCE_TYPE == "jilter-inbound" && INSTANCE_TYPE == "jilter-outbound"
         default['xgemail']['jilter_version'] = ENV['JILTER_VERSION']
         default['sophos_cloud']['thirdparty']  = '//cloud-sandbox-3rdparty'
         default['xgemail']['postfix_instance_data']['jilter-outbound'] =
