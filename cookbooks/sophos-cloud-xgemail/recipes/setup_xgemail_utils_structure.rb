@@ -85,7 +85,8 @@ end
 
 if NODE_TYPE == 'customer-delivery' or NODE_TYPE == 'internet-delivery' or
     NODE_TYPE == 'xdelivery' or NODE_TYPE == 'internet-xdelivery' or
-    NODE_TYPE == 'encryption-delivery' or NODE_TYPE == 'risky-xdelivery'
+    NODE_TYPE == 'encryption-delivery' or NODE_TYPE == 'risky-delivery' or
+    NODE_TYPE == 'risky-xdelivery'
   [
       'postfix_injection_response.py',
       'queue_log.py',

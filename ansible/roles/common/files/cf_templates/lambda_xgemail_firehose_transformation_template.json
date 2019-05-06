@@ -1,7 +1,7 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
 
-  "Description": "Creates/Updates/Deletes a lambda function stored in S3.",
+  "Description": "Creates/Updates/Deletes the Xgemail Firehose Transformation Lambda function stored in S3.",
 
   "Metadata": {
     "Copyright": [
@@ -20,86 +20,51 @@
   },
 
   "Parameters": {
-    "FunctionDescription": {
-      "Description": "Description for this function.",
+    "DeadLetterTargetArn": {
+      "Description": "Configures how Lambda handles events that it can't process.",
       "Type": "String",
       "Default": ""
     },
-
+    "Environment": {
+      "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
+      "Type": "String"
+    },
+    "FunctionDescription": {
+      "Description": "Description for this function.",
+      "Type": "String",
+      "Default": "Triggered from a Kinesis Firehose Stream this Lambda function will perform any additional actions on log messages."
+    },
     "FunctionName": {
       "Description": "The name for this function.  Defaults to a unique physical ID.",
       "Type": "String",
       "Default": ""
     },
-
-    "EuCentral1MailBoxName": {
-      "Description": "EU central 1 mailbox account",
-      "Type": "String"
-    },
-
-    "EuWest1MailBoxName": {
-      "Description": "EU west 1 mailbox account",
-      "Type": "String"
-    },
-
-    "UsEast2MailBoxName": {
-      "Description": "US east 2 mailbox account",
-      "Type": "String"
-    },
-
-    "UsWest2MailBoxName": {
-      "Description": "US west 2 mailbox account",
-      "Type": "String"
-    },
-
-    "UsWest2SenderMailBoxName": {
-      "Description": "US west 2 sender mailbox account",
-      "Type": "String"
-    },
-
-    "SesRegion": {
-      "Description": "SES region",
-      "Type": "String"
-    },
-
     "HandlerName": {
       "Description": "The name of the handler declared in source code.",
       "Type": "String"
     },
-
     "IAMRoleArn": {
       "Description": "The IAM role that Lambda assumes when it runs your code to access AWS services.",
       "Type": "String"
     },
-
     "MemorySize": {
       "Description": "The amount of memory to allocate for this lambda function (128-1536)",
       "Type": "Number",
       "Default": "256"
     },
-
     "Runtime": {
       "Description": "The scripting runtime the code runs on.",
       "Type": "String",
-      "Default": "nodejs8.10"
+      "Default": "python2.7"
     },
-
     "S3Bucket": {
       "Description": "The S3 bucket where the code has been placed.",
       "Type": "String"
     },
-
     "S3Key": {
       "Description": "The object key name in S3 (no slash in the beginning).",
       "Type": "String"
     },
-
-    "ScheduleExpression": {
-      "Description": "The schedule or rate (frequency) that determines when to execute. E.g. 'cron(0 6 * * ? *)' or 'rate(10 minutes)'",
-      "Type": "String",
-      "Default": ""
-    },
-
     "ScheduleState": {
       "Description": "The state of the scheduled event. ENABLED or DISABLED",
       "Type": "String",
@@ -109,22 +74,18 @@
         "DISABLED"
       ]
     },
-
     "Timeout": {
       "Description": "Timeout in seconds.",
       "Type": "Number",
       "Default": "300",
       "MinValue": "30",
-      "MaxValue": "300"
+      "MaxValue": "900"
     }
   },
 
   "Conditions": {
     "HasFunctionName": {
       "Fn::Not": [{ "Fn::Equals": [ { "Ref": "FunctionName" }, "" ] }]
-    },
-    "HasSchedule": {
-      "Fn::Not": [{ "Fn::Equals": [ { "Ref": "ScheduleExpression" }, "" ] }]
     }
   },
 
@@ -137,16 +98,6 @@
           "S3Key": { "Ref": "S3Key" }
         },
         "Description": { "Ref": "FunctionDescription" },
-        "Environment":  {
-          "Variables": {
-            "XGEMAIL_SES_REGION": { "Ref": "SesRegion" },
-            "XGEMAIL_EU_CENTRAL_1_MAILBOX_NAME": { "Ref": "EuCentral1MailBoxName"},
-            "XGEMAIL_EU_WEST_1_MAILBOX_NAME": { "Ref": "EuWest1MailBoxName"},
-            "XGEMAIL_US_EAST_2_MAILBOX_NAME": { "Ref": "UsEast2MailBoxName"},
-            "XGEMAIL_US_WEST_2_MAILBOX_NAME": { "Ref": "UsWest2MailBoxName"},
-            "XGEMAIL_US_WEST_2_SENDER_MAILBOX_NAME": { "Ref": "UsWest2SenderMailBoxName"}
-          }
-        },
         "FunctionName": {
           "Fn::If": [
             "HasFunctionName",
@@ -174,49 +125,14 @@
         },
         "FunctionName": { "Fn::GetAtt": [ "LambdaFunction", "Arn" ] }
       }
-    },
-
-    "ScheduledRule": {
-      "Type": "AWS::Events::Rule",
-      "Condition" : "HasSchedule",
-      "Properties": {
-        "Description": "ScheduledRule",
-        "ScheduleExpression": { "Ref": "ScheduleExpression" },
-        "State": { "Ref": "ScheduleState" },
-        "Targets": [
-          {
-            "Arn": {
-              "Fn::GetAtt": [
-                "LambdaFunction",
-                "Arn"
-              ]
-            },
-            "Id": { "Ref": "LambdaFunction" }
-          }
-        ]
-      }
-    },
-
-    "PermissionForEventsToInvokeLambda": {
-      "Type": "AWS::Lambda::Permission",
-      "Condition" : "HasSchedule",
-      "Properties": {
-        "FunctionName": {
-          "Ref": "LambdaFunction"
-        },
-        "Action": "lambda:InvokeFunction",
-        "Principal": "events.amazonaws.com",
-        "SourceArn": {
-          "Fn::GetAtt": [
-            "ScheduledRule",
-            "Arn"
-          ]
-        }
-      }
     }
   },
 
   "Outputs": {
+    "LambdaFunction": {
+      "Description": "The Lambda Function's Name.",
+      "Value": { "Ref": "LambdaFunction" }
+    },
     "LambdaFunctionArn": {
       "Description": "ARN of the function created.",
       "Value": { "Fn::GetAtt": [ "LambdaFunction", "Arn" ] }

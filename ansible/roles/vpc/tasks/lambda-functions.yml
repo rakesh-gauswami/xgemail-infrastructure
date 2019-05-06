@@ -90,17 +90,3 @@
   debug:
     msg: "{{eip_rotation_stack.stack_outputs}}"
     verbosity: 2
-
-# Instance Terminator Lambda Function
-- name: "Deploy Instance Terminator Lambda Function {{stack.lambda.instance_terminator_lambda_function}} to {{account.name}}-{{account.region}}"
-  cloudformation:
-    stack_name:                             "{{stack.lambda.instance_terminator_lambda_function}}"
-    state:                                  absent
-    region:                                 "{{account.region}}"
-    disable_rollback:                       true
-    template:                               "{{template.lambda.lambda_xgemail_instance_terminator_template}}"
-  register: instance_terminator_stack
-
-- debug:
-    var: instance_terminator_stack
-    verbosity: 3

@@ -5,7 +5,7 @@
 #  with_dict: "{{aws.ec2.asg.rx}}"
 
 - name: "Create ASG Stacks in AWS"
-  async: 100
+  async: 1000
   poll: 0
   cloudformation:
     stack_name: "{{vpc.cloud_email.name}}-xgemail-risky-xdelivery-0000-{{item.0}}"
@@ -60,4 +60,4 @@
   with_items: "{{rx_stack_async_results.results}}"
   register: rx_stack_async_poll_results
   until: "{{rx_stack_async_poll_results.finished}}"
-  retries: 50
+  retries: 200

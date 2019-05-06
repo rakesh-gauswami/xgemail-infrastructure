@@ -186,9 +186,9 @@ else
   if NODE_TYPE == 'internet-xdelivery'
     include_recipe 'sophos-cloud-xgemail::configure-bounce-message-internet-delivery-queue'
   end
-#  if NODE_TYPE == 'risky-xdelivery'
-#    include_recipe 'sophos-cloud-xgemail::configure-bounce-message-risky-delivery-queue'
-#  end
+  if NODE_TYPE == 'risky-xdelivery'
+    include_recipe 'sophos-cloud-xgemail::configure-bounce-message-risky-delivery-queue'
+  end
 end
 
 if ACCOUNT == 'sandbox'

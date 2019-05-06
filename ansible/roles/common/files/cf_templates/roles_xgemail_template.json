@@ -415,6 +415,49 @@
       "Type": "AWS::IAM::Policy"
     },
 
+    "FirehoseTransformationLambdaExecutionRole" : {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [ "lambda.amazonaws.com" ]
+            },
+            "Action": [ "sts:AssumeRole" ]
+          }]
+        },
+        "Path": "/"
+      }
+    },
+    "FirehoseTransformationLambdaExecutionRolePolicies": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:logs:*:*:*"
+              ]
+            }
+          ]
+        },
+        "PolicyName": "root",
+        "Roles": [
+          {
+            "Ref": "FirehoseTransformationLambdaExecutionRole"
+          }
+        ]
+      },
+      "Type": "AWS::IAM::Policy"
+    },
+
     "LogicMonitorInstanceProfile": {
       "Properties": {
         "Path": "/",
@@ -2998,6 +3041,14 @@
       "Description": "Eip Rotation Lambda Execution role ARN",
       "Value": { "Fn::GetAtt" : [ "EipRotationLambdaExecutionRole", "Arn" ] }
     },
+    "FirehoseTransformationLambdaExecutionRole": {
+      "Description": "Firehose Transformation Lambda Execution role",
+      "Value": { "Ref": "FirehoseTransformationLambdaExecutionRole" }
+    },
+    "FirehoseTransformationLambdaExecutionRoleArn": {
+      "Description": "Firehose Transformation Lambda Execution role ARN",
+      "Value": { "Fn::GetAtt" : [ "FirehoseTransformationLambdaExecutionRole", "Arn" ] }
+    },
     "LogicMonitorInstanceProfile": {
       "Description": "Profile for logic monitor collectors to do their job",
       "Value": { "Ref": "LogicMonitorInstanceProfile" }
@@ -3022,78 +3073,6 @@
       "Description": "XGEMAIL Customer Delivery instance role ARN",
       "Value": { "Fn::GetAtt" : [ "XgemailCustomerDeliveryInstanceRole", "Arn" ] }
     },
-    "XgemailInternetDeliveryInstanceProfile": {
-      "Description": "XGEMAIL Internet Delivery instance profile",
-      "Value": { "Ref": "XgemailInternetDeliveryInstanceProfile" }
-    },
-    "XgemailInternetDeliveryInstanceRole": {
-      "Description": "XGEMAIL Internet Delivery instance role",
-      "Value": { "Ref": "XgemailInternetDeliveryInstanceRole" }
-    },
-    "XgemailInternetDeliveryInstanceRoleArn": {
-      "Description": "XGEMAIL Internet Delivery instance role ARN",
-      "Value": { "Fn::GetAtt" : [ "XgemailInternetDeliveryInstanceRole", "Arn" ] }
-    },
-    "XgemailInternetSubmitInstanceProfile": {
-      "Description": "XGEMAIL Internet Submit instance profile",
-      "Value": { "Ref": "XgemailInternetSubmitInstanceProfile" }
-    },
-    "XgemailInternetSubmitInstanceRole": {
-      "Description": "XGEMAIL Internet Submit instance role",
-      "Value": { "Ref": "XgemailInternetSubmitInstanceRole" }
-    },
-    "XgemailInternetSubmitInstanceRoleArn": {
-      "Description": "XGEMAIL Internet Submit instance role ARN",
-      "Value": { "Fn::GetAtt" : [ "XgemailInternetSubmitInstanceRole", "Arn" ] }
-    },
-    "XgemailCustomerSubmitInstanceProfile": {
-      "Description": "XGEMAIL Customer Submit instance profile",
-      "Value": { "Ref": "XgemailCustomerSubmitInstanceProfile" }
-    },
-    "XgemailCustomerSubmitInstanceRole": {
-      "Description": "XGEMAIL Customer Submit instance role",
-      "Value": { "Ref": "XgemailCustomerSubmitInstanceRole" }
-    },
-    "XgemailCustomerSubmitInstanceRoleArn": {
-      "Description": "XGEMAIL Customer Submit instance role ARN",
-      "Value": { "Fn::GetAtt" : [ "XgemailCustomerSubmitInstanceRole", "Arn" ] }
-    },
-    "XgemailEncryptionDeliveryInstanceProfile": {
-      "Description": "XGEMAIL Encryption Delivery instance profile",
-      "Value": { "Ref": "XgemailEncryptionDeliveryInstanceProfile" }
-    },
-    "XgemailEncryptionDeliveryInstanceRole": {
-      "Description": "XGEMAIL Encryption Delivery instance role",
-      "Value": { "Ref": "XgemailEncryptionDeliveryInstanceRole" }
-    },
-    "XgemailEncryptionDeliveryInstanceRoleArn": {
-      "Description": "XGEMAIL Encryption Delivery instance role ARN",
-      "Value": { "Fn::GetAtt" : [ "XgemailEncryptionDeliveryInstanceRole", "Arn" ] }
-    },
-    "XgemailEncryptionSubmitInstanceProfile": {
-      "Description": "XGEMAIL Encryption Submit instance profile",
-      "Value": { "Ref": "XgemailEncryptionSubmitInstanceProfile" }
-    },
-    "XgemailEncryptionSubmitInstanceRole": {
-      "Description": "XGEMAIL Encryption Submit instance role",
-      "Value": { "Ref": "XgemailEncryptionSubmitInstanceRole" }
-    },
-    "XgemailEncryptionSubmitInstanceRoleArn": {
-      "Description": "XGEMAIL Customer Encryption Submit instance role ARN",
-      "Value": { "Fn::GetAtt" : [ "XgemailEncryptionSubmitInstanceRole", "Arn" ] }
-    },
-    "XgemailRiskyDeliveryInstanceProfile": {
-      "Description": "XGEMAIL Risky Delivery instance profile",
-      "Value": { "Ref": "XgemailRiskyDeliveryInstanceProfile" }
-    },
-    "XgemailRiskyDeliveryInstanceRole": {
-      "Description": "XGEMAIL Risky Delivery instance role",
-      "Value": { "Ref": "XgemailRiskyDeliveryInstanceRole" }
-    },
-    "XgemailRiskyDeliveryInstanceRoleArn": {
-      "Description": "XGEMAIL Risky Delivery instance role ARN",
-      "Value": { "Fn::GetAtt" : [ "XgemailRiskyDeliveryInstanceRole", "Arn" ] }
-    },
     "XgemailXdeliveryInstanceProfile": {
       "Description": "XGEMAIL Xdelivery instance profile",
       "Value": { "Ref": "XgemailXdeliveryInstanceProfile" }
@@ -3105,6 +3084,18 @@
     "XgemailXdeliveryInstanceRoleArn": {
       "Description": "XGEMAIL Xdelivery instance role ARN",
       "Value": { "Fn::GetAtt" : [ "XgemailXdeliveryInstanceRole", "Arn" ] }
+    },
+    "XgemailInternetDeliveryInstanceProfile": {
+      "Description": "XGEMAIL Internet Delivery instance profile",
+      "Value": { "Ref": "XgemailInternetDeliveryInstanceProfile" }
+    },
+    "XgemailInternetDeliveryInstanceRole": {
+      "Description": "XGEMAIL Internet Delivery instance role",
+      "Value": { "Ref": "XgemailInternetDeliveryInstanceRole" }
+    },
+    "XgemailInternetDeliveryInstanceRoleArn": {
+      "Description": "XGEMAIL Internet Delivery instance role ARN",
+      "Value": { "Fn::GetAtt" : [ "XgemailInternetDeliveryInstanceRole", "Arn" ] }
     },
     "XgemailInternetXdeliveryInstanceProfile": {
       "Description": "XGEMAIL Internet Xdelivery instance profile",
@@ -3118,6 +3109,30 @@
       "Description": "XGEMAIL Internet Xdelivery instance role ARN",
       "Value": { "Fn::GetAtt" : [ "XgemailInternetXdeliveryInstanceRole", "Arn" ] }
     },
+    "XgemailEncryptionDeliveryInstanceProfile": {
+      "Description": "XGEMAIL Encryption Delivery instance profile",
+      "Value": { "Ref": "XgemailEncryptionDeliveryInstanceProfile" }
+    },
+    "XgemailEncryptionDeliveryInstanceRole": {
+      "Description": "XGEMAIL Encryption Delivery instance role",
+      "Value": { "Ref": "XgemailEncryptionDeliveryInstanceRole" }
+    },
+    "XgemailEncryptionDeliveryInstanceRoleArn": {
+      "Description": "XGEMAIL Encryption Delivery instance role ARN",
+      "Value": { "Fn::GetAtt" : [ "XgemailEncryptionDeliveryInstanceRole", "Arn" ] }
+    },
+    "XgemailRiskyDeliveryInstanceProfile": {
+      "Description": "XGEMAIL Risky Delivery instance profile",
+      "Value": { "Ref": "XgemailRiskyDeliveryInstanceProfile" }
+    },
+    "XgemailRiskyDeliveryInstanceRole": {
+      "Description": "XGEMAIL Risky Delivery instance role",
+      "Value": { "Ref": "XgemailRiskyDeliveryInstanceRole" }
+    },
+    "XgemailRiskyDeliveryInstanceRoleArn": {
+      "Description": "XGEMAIL Risky Delivery instance role ARN",
+      "Value": { "Fn::GetAtt" : [ "XgemailRiskyDeliveryInstanceRole", "Arn" ] }
+    },
     "XgemailRiskyXdeliveryInstanceProfile": {
       "Description": "XGEMAIL Risky Xdelivery instance profile",
       "Value": { "Ref": "XgemailRiskyXdeliveryInstanceProfile" }
@@ -3129,6 +3144,42 @@
     "XgemailRiskyXdeliveryInstanceRoleArn": {
       "Description": "XGEMAIL Risky Xdelivery instance role ARN",
       "Value": { "Fn::GetAtt" : [ "XgemailRiskyXdeliveryInstanceRole", "Arn" ] }
+    },
+    "XgemailCustomerSubmitInstanceProfile": {
+      "Description": "XGEMAIL Customer Submit instance profile",
+      "Value": { "Ref": "XgemailCustomerSubmitInstanceProfile" }
+    },
+    "XgemailCustomerSubmitInstanceRole": {
+      "Description": "XGEMAIL Customer Submit instance role",
+      "Value": { "Ref": "XgemailCustomerSubmitInstanceRole" }
+    },
+    "XgemailCustomerSubmitInstanceRoleArn": {
+      "Description": "XGEMAIL Customer Submit instance role ARN",
+      "Value": { "Fn::GetAtt" : [ "XgemailCustomerSubmitInstanceRole", "Arn" ] }
+    },
+    "XgemailInternetSubmitInstanceProfile": {
+      "Description": "XGEMAIL Internet Submit instance profile",
+      "Value": { "Ref": "XgemailInternetSubmitInstanceProfile" }
+    },
+    "XgemailInternetSubmitInstanceRole": {
+      "Description": "XGEMAIL Internet Submit instance role",
+      "Value": { "Ref": "XgemailInternetSubmitInstanceRole" }
+    },
+    "XgemailInternetSubmitInstanceRoleArn": {
+      "Description": "XGEMAIL Internet Submit instance role ARN",
+      "Value": { "Fn::GetAtt" : [ "XgemailInternetSubmitInstanceRole", "Arn" ] }
+    },
+    "XgemailEncryptionSubmitInstanceProfile": {
+      "Description": "XGEMAIL Encryption Submit instance profile",
+      "Value": { "Ref": "XgemailEncryptionSubmitInstanceProfile" }
+    },
+    "XgemailEncryptionSubmitInstanceRole": {
+      "Description": "XGEMAIL Encryption Submit instance role",
+      "Value": { "Ref": "XgemailEncryptionSubmitInstanceRole" }
+    },
+    "XgemailEncryptionSubmitInstanceRoleArn": {
+      "Description": "XGEMAIL Customer Encryption Submit instance role ARN",
+      "Value": { "Fn::GetAtt" : [ "XgemailEncryptionSubmitInstanceRole", "Arn" ] }
     }
   }
 }
