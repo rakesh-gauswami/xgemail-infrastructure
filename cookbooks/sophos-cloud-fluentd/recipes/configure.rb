@@ -329,8 +329,6 @@ template 'fluentd-match-sns-msg-delivery' do
          }
 end
 
-
-
 # All instances - Start Order: 99
 template 'fluentd-match-firehose' do
   path "#{CONF_DIR}/99-match-firehose.conf"
