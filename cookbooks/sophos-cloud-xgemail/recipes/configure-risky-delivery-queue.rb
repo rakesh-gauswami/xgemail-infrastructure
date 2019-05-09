@@ -33,12 +33,12 @@ ACCOUNT = node['sophos_cloud']['environment']
 
 HOP_COUNT_DELIVERY_INSTANCE = node['xgemail']['hop_count_delivery_instance']
 
-#INTERNET_XDELIVERY_INSTANCE_DATA = node['xgemail']['postfix_instance_data']['internet-xdelivery']
-#raise "Unsupported node type [#{NODE_TYPE}]" if INTERNET_XDELIVERY_INSTANCE_DATA.nil?
+RISKY_XDELIVERY_INSTANCE_DATA = node['xgemail']['postfix_instance_data']['risky-xdelivery']
+raise "Unsupported node type [#{NODE_TYPE}]" if RISKY_XDELIVERY_INSTANCE_DATA.nil?
 
 SMTP_PORT = INSTANCE_DATA[:port]
 
-#SMTP_FALLBACK_RELAY = "internet-xdelivery-cloudemail-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com:#{SMTP_PORT}"
+SMTP_FALLBACK_RELAY = "risky-xdelivery-cloudemail-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com:#{SMTP_PORT}"
 
 HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
 
@@ -66,7 +66,7 @@ CONFIGURATION_COMMANDS =
   [
     'bounce_queue_lifetime=0',
     "hopcount_limit = #{HOP_COUNT_DELIVERY_INSTANCE}",
-#    "smtp_fallback_relay = #{SMTP_FALLBACK_RELAY}",
+    "smtp_fallback_relay = #{SMTP_FALLBACK_RELAY}",
     'smtp_tls_security_level=may',
     'smtp_tls_ciphers=high',
     'smtp_tls_mandatory_ciphers=high',

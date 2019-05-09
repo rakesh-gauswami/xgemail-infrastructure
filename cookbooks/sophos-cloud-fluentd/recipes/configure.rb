@@ -43,12 +43,17 @@ elsif NODE_TYPE == 'internet-delivery'
   DIRECTION             = 'OUTBOUND'
   NON_DELIVERY_DSN      = '5.4.7'
 elsif NODE_TYPE == 'risky-delivery'
-  SERVER_TYPE_XDELIVERY = 'UNKNOWN'
+  SERVER_TYPE_XDELIVERY = 'RISKY_XDELIVERY'
   SERVER_TYPE           = 'RISKY_DELIVERY'
   DIRECTION             = 'OUTBOUND'
   NON_DELIVERY_DSN      = '5.4.7'
 elsif NODE_TYPE == 'encryption-delivery'
   SERVER_TYPE           = 'ENCRYPTION_DELIVERY'
+  SERVER_TYPE_XDELIVERY = 'UNKNOWN'
+  DIRECTION             = 'OUTBOUND'
+  NON_DELIVERY_DSN      = '5.4.7'
+elsif NODE_TYPE == 'risky-xdelivery'
+  SERVER_TYPE           = 'RISKY_XDELIVERY'
   SERVER_TYPE_XDELIVERY = 'UNKNOWN'
   DIRECTION             = 'OUTBOUND'
   NON_DELIVERY_DSN      = '5.4.7'
@@ -91,7 +96,7 @@ template 'fluentd-source-lifecycle' do
   variables(
     :application_name => NODE_TYPE
   )
-  not_if { NODE_TYPE == 'xdelivery' || NODE_TYPE == 'internet-xdelivery' }
+  not_if { NODE_TYPE == 'xdelivery' || NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery' }
 end
 
 # internet-delivery - Start Order: 10
@@ -230,7 +235,8 @@ template 'fluentd-match-msg-delivery' do
             NODE_TYPE == 'xdelivery' ||
             NODE_TYPE == 'internet-delivery' ||
             NODE_TYPE == 'internet-xdelivery' ||
-            NODE_TYPE == 'risky-delivery'
+            NODE_TYPE == 'risky-delivery' ||
+            NODE_TYPE == 'risky-xdelivery'
          }
 
 end
@@ -247,7 +253,8 @@ template 'fluentd-filter-msg-delivery' do
             NODE_TYPE == 'xdelivery' ||
             NODE_TYPE == 'internet-delivery' ||
             NODE_TYPE == 'internet-xdelivery' ||
-            NODE_TYPE == 'risky-delivery'
+            NODE_TYPE == 'risky-delivery' ||
+            NODE_TYPE == 'risky-xdelivery'
          }
   end
 
@@ -295,7 +302,8 @@ template 'fluentd-filter-transform-msg-delivery' do
             NODE_TYPE == 'xdelivery' ||
             NODE_TYPE == 'internet-delivery' ||
             NODE_TYPE == 'internet-xdelivery' ||
-            NODE_TYPE == 'risky-delivery'
+            NODE_TYPE == 'risky-delivery' ||
+            NODE_TYPE == 'risky-xdelivery'
          }
 end
 
@@ -316,11 +324,10 @@ template 'fluentd-match-sns-msg-delivery' do
             NODE_TYPE == 'xdelivery' ||
             NODE_TYPE == 'internet-delivery' ||
             NODE_TYPE == 'internet-xdelivery' ||
-            NODE_TYPE == 'risky-delivery'
+            NODE_TYPE == 'risky-delivery' ||
+            NODE_TYPE == 'risky-xdelivery'
          }
 end
-
-
 
 # All instances - Start Order: 99
 template 'fluentd-match-firehose' do

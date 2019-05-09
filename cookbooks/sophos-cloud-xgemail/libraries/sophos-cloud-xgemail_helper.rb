@@ -111,7 +111,7 @@ module SophosCloudXgemail
           return "encryption-#{region}.#{account}.hydra.sophos.com"
         when 'encryption-submit'
           return "encryption-#{region}.#{account}.hydra.sophos.com"
-        when 'internet-delivery', 'internet-xdelivery', 'risky-delivery'
+        when 'internet-delivery', 'internet-xdelivery', 'risky-delivery', 'risky-xdelivery'
           if account == 'sandbox'
             # Return docker instance fully qualified domain name
             return node['fqdn']
