@@ -70,7 +70,7 @@ response.raise_for_status()
 
 # Returns either the smtp transport tag to be used for the customer
 # with the given id
-def get_smtp_transport_tag(s3, domain_name, customer_id = None):
+def get_smtp_transport_tag(s3, domain_name, customer_id):
 
   if encryption_config_exists(s3, domain_name):
     return TLS_SMTP_TRANSPORT_TAG
@@ -83,9 +83,6 @@ def get_smtp_transport_tag(s3, domain_name, customer_id = None):
 # Checks for the existence of at least one TLS configuration file
 # belonging to the customer with the given id
 def tls_config_exists(s3_client, customer_id):
-
-  if customer_id is None:
-    return False
 
   customer_path = INBOUND_TLS_CONFIG_KEY + customer_id
 
@@ -131,7 +128,10 @@ def parse_domain_response(domain_name, destinations_json, s3_client) :
   route = destination_json['destination']
   port = destination_json['port']
   type = destination_json['type']
-  customer_id = destination_json['customer_id']
+  customer_id = None
+
+  if 'customer_id' in destination_json:
+    customer_id = destination_json['customer_id']
 
   smtp_transport_tag = get_smtp_transport_tag(
     s3_client,
