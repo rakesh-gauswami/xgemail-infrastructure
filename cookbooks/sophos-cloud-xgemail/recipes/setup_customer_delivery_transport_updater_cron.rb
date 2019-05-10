@@ -35,6 +35,7 @@ MAIL_PIC_API_RESPONSE_TIMEOUT = node['xgemail']['mail_pic_apis_response_timeout_
 MAIL_PIC_API_AUTH     = node['xgemail']['mail_pic_api_auth']
 POLICY_BUCKET         = node['xgemail']['xgemail_policy_bucket_name']
 ENC_CONFIG_KEY        = node['xgemail']['enc_config_key']
+INBOUND_TLS_CONFIG_KEY = node['xgemail']['inbound_tls_config_key']
 
 CONFIGURATION_COMMANDS =
   [
@@ -102,7 +103,8 @@ template CRON_SCRIPT_PATH do
     :mail_pic_api_auth => MAIL_PIC_API_AUTH,
     :connections_bucket => CONNECTIONS_BUCKET,
     :policy_bucket => POLICY_BUCKET,
-    :enc_config_key => ENC_CONFIG_KEY
+    :enc_config_key => ENC_CONFIG_KEY,
+    :inbound_tls_config_key => INBOUND_TLS_CONFIG_KEY
   )
   notifies :run, "execute[#{CRON_SCRIPT_PATH}]", :immediately
 end
