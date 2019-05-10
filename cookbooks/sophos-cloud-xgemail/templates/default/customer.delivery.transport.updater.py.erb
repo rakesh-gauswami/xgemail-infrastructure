@@ -25,8 +25,12 @@ TRANSPORT_FILENAME = '<%= @transport_filename %>'
 MAIL_PIC_RESPONSE_TIMEOUT = <%= @mail_pic_api_response_timeout %>
 MAIL_PIC_API_AUTH = '<%= @mail_pic_api_auth %>'
 CONNECTIONS_BUCKET = '<%= @connections_bucket %>'
-ENC_CONFIG_BUCKET = '<%= @policy_bucket %>'
+POLICY_BUCKET = '<%= @policy_bucket %>'
 ENC_CONFIG_KEY = '<%= @enc_config_key %>'
+INBOUND_TLS_CONFIG_KEY = '<%= @inbound_tls_config_key %>'
+
+TLS_SMTP_TRANSPORT_TAG = ' smtp_encrypt:'
+DEFAULT_SMTP_TRANSPORT_TAG = ' smtp:'
 
 # logging to syslog setup
 logging.getLogger("botocore").setLevel(logging.WARNING)
@@ -65,12 +69,52 @@ response = requests.get(
 )
 response.raise_for_status()
 
-# Check if bucket in 'bucket_path' exists or not
-def check_bucket(s3, key_path):
-  if not ENC_CONFIG_BUCKET:
+# Returns either the smtp transport tag to be used for the customer
+# with the given id
+def get_smtp_transport_tag(s3, domain_name, customer_id = None):
+
+  if encryption_config_exists(s3, domain_name):
+    return TLS_SMTP_TRANSPORT_TAG
+
+  if tls_config_exists(s3, customer_id):
+    return TLS_SMTP_TRANSPORT_TAG
+
+  return DEFAULT_SMTP_TRANSPORT_TAG
+
+# Checks for the existence of at least one TLS configuration file
+# belonging to the customer with the given id
+def tls_config_exists(s3_client, customer_id):
+
+  if customer_id is None:
     return False
+
+  customer_path = INBOUND_TLS_CONFIG_KEY + customer_id
+
   try:
-    s3.head_object(Bucket = ENC_CONFIG_BUCKET, Key = key_path)
+    list_response = s3_client.list_objects(
+      Bucket = POLICY_BUCKET,
+      MaxKeys = 1,
+      Prefix = customer_path
+    )
+
+    if not 'Contents' in list_response:
+      return False
+
+    return len(list_response['Contents']) > 0
+
+  except botocore.exceptions.ClientError as e:
+    return False
+
+# Checks if encryption config exists for the given domain
+def encryption_config_exists(s3_client, domain_name):
+
+  if not POLICY_BUCKET:
+    return False
+
+  key_path = ENC_CONFIG_KEY + domain_name + '.ENC_CONFIG'
+
+  try:
+    s3_client.head_object(Bucket = POLICY_BUCKET, Key = key_path)
     logger.debug("key (%s) exists!", key_path)
     return True
   except botocore.exceptions.ClientError as e:
@@ -80,31 +124,33 @@ def check_bucket(s3, key_path):
 #   {
 #     "destination": "10.11.12.13",
 #     "type": "IP",
-#     "port": 8080
+#     "port": 8080,
+#     "customer_id": "<customer-uuid>"
 #   }
-def parse_domain_response(domain_name, destinations_json) :
+def parse_domain_response(domain_name, destinations_json, s3_client) :
   destination_json = destinations_json['delivery_destination']
   route = destination_json['destination']
   port = destination_json['port']
   type = destination_json['type']
+  customer_id = destination_json['customer_id']
 
-  s3 = boto3.client('s3')
-  enc_bucket = ENC_CONFIG_KEY + domain_name + '.ENC_CONFIG'
+  smtp_transport_tag = get_smtp_transport_tag(
+    s3_client,
+    domain_name,
+    customer_id
+  )
 
-  if (check_bucket(s3, enc_bucket)):
-    ret_val = domain_name + ' smtp_encrypt:'
-  else:
-    ret_val = domain_name + ' smtp:'
+  ret_val = domain_name + smtp_transport_tag
 
-  if (type != 'MX'):
+  if type != 'MX':
     ret_val += '['
 
   ret_val += route
 
-  if (type != 'MX'):
+  if type != 'MX':
     ret_val += ']'
 
-  if (port != 25):
+  if port != 25:
     ret_val += ":" + str(port)
 
   return ret_val
@@ -120,6 +166,9 @@ TRANSPORT_FILE = POSTFIX_CONFIG_DIR + '/' + TRANSPORT_FILENAME
 TRANSPORT_FILE_TMP = TRANSPORT_FILE + '.tmp'
 
 with open(TRANSPORT_FILE_TMP, 'w') as f:
+
+  s3 = boto3.client('s3')
+
   for domain in response.json()['domains'] :
     domain_response = requests.post(
         PIC_DESTINATION_URL,
@@ -128,7 +177,7 @@ with open(TRANSPORT_FILE_TMP, 'w') as f:
         timeout=MAIL_PIC_RESPONSE_TIMEOUT
       )
     domain_response.raise_for_status()
-    transport_line = parse_domain_response(domain, domain_response.json())
+    transport_line = parse_domain_response(domain, domain_response.json(), s3)
     f.write('{0}\n'.format(transport_line))
 
   # Add catch-all to retry any unknown domain
