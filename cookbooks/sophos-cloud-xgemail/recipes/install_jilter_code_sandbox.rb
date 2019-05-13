@@ -55,6 +55,7 @@ else
       mv xgemail-jilter-inbound* xgemail-jilter-inbound
   EOH
   end
+ end
 end
 
 # Create a sym link to xgemail-jilter

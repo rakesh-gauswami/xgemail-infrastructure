@@ -36,7 +36,7 @@ inbound_compose="docker-compose-inbound.yml"
 outbound_compose="docker-compose-outbound.yml"
 
 nova_bootstrap_file="${HOME}/g/nova/appserver/config/bootstrap.properties.d/00_bootstrap.properties"
-mail_bootstrap_file="${orchestrator_location}"
+mail_bootstrap_file="${orchestrator_location}sophos_cloud_tomcat_bootstrap.properties"
 nova_bootstrap_file_original_copy="${HOME}/g/nova/appserver/config/bootstrap_copy.properties"
 
 nova_docker_compose_single="${HOME}/g/nova/docker-compose.yml"
@@ -77,17 +77,17 @@ function initialize {
 
     override_files ${nova_bootstrap_file} ${mail_bootstrap_file}
 
-#    #override nova docker-compose-single.yml file
-#    if [ ! -f ${nova_docker_compose_single} ]; then
-#        echo -e "${RED} ${nova_docker_compose_single} could not be found. Ensure it exists at the right location ${NC}"
-#        exit 1
-#    fi
-#
-#    if [ ! -f ${nova_docker_compose_original_copy} ]; then
-#        cp ${nova_docker_compose_single} ${nova_docker_compose_original_copy}
-#    fi
-#
-#    override_files ${nova_docker_compose_single} ${xgemail_replacement_nova_compose}
+    #override nova docker-compose-single.yml file
+    if [ ! -f ${nova_docker_compose_single} ]; then
+        echo -e "${RED} ${nova_docker_compose_single} could not be found. Ensure it exists at the right location ${NC}"
+        exit 1
+    fi
+
+    if [ ! -f ${nova_docker_compose_original_copy} ]; then
+        cp ${nova_docker_compose_single} ${nova_docker_compose_original_copy}
+    fi
+
+    override_files ${nova_docker_compose_single} ${xgemail_replacement_nova_compose}
 
     echo -e "${GREEN} Initialization Completed Successfully ${NC}"
 }
