@@ -210,6 +210,18 @@
     "DlpReportQueueArn": {
       "Description": "Endpoint ARN for DLP Report SQS Queue",
       "Type": "String"
+    },
+    "RiskyDeliveryTopicArn": {
+      "Description": "TopicArn of Risky delivery Events SNS",
+      "Type": "String"
+    },
+    "RiskyDeliveryQueueArn": {
+      "Description": "Endpoint for Risky delivery SQS queue",
+      "Type": "String"
+    },
+    "RiskyDeliveryQueueUrl": {
+      "Description": "Endpoint URL for Risky delivery SQS queue",
+      "Type": "String"
     }
   },
 
@@ -318,6 +330,14 @@
         "TopicArn": { "Ref": "InternetDeliveryTopicArn"}
       }
     },
+    "RiskyDeliveryQueueToRiskyDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "RiskyDeliveryQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "RiskyDeliveryTopicArn"}
+      }
+    },
     "MessageHistoryDeliveryStatusQueueToMessageHistoryDeliveryStatusSnsSubscription": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
@@ -334,6 +354,14 @@
         "TopicArn": { "Ref": "InternetDeliveryTopicArn"}
       }
     },
+    "MessageHistoryQueueToRiskyDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "MessageHistoryQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "RiskyDeliveryTopicArn"}
+      }
+    },
     "MessageHistoryQueueToSuccessSnsSubsciption": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
@@ -348,6 +376,14 @@
         "Endpoint": { "Ref": "MessageStatisticsQueueArn" },
         "Protocol": "sqs",
         "TopicArn": { "Ref": "InternetDeliveryTopicArn"}
+      }
+    },
+    "MessageStatisticsQueueToRiskyDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "MessageStatisticsQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "RiskyDeliveryTopicArn"}
       }
     },
     "MessageStatisticsQueueToSuccessSnsSubsciption": {
@@ -545,6 +581,14 @@
         "TopicArn": { "Ref": "InternetDeliveryTopicArn"}
       }
     },
+    "DlpReportQueueToRiskyDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "DlpReportQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "RiskyDeliveryTopicArn"}
+      }
+    },
 
     "DeliveryQueuePolicy": {
       "Type": "AWS::SQS::QueuePolicy",
@@ -642,6 +686,30 @@
         "Queues": [{ "Ref": "InternetDeliveryQueueUrl" }]
       }
     },
+    "RiskyDeliveryQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "RiskyDeliveryQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-RiskyDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "RiskyDeliveryTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{ "Ref": "RiskyDeliveryQueueUrl" }]
+      }
+    },
     "InternetSubmitServiceQueuePolicy": {
       "Type": "AWS::SQS::QueuePolicy",
       "Properties": {
@@ -718,6 +786,18 @@
               "Condition": {
                 "ArnEquals": {
                   "aws:SourceArn": {"Ref": "SuccessEventsTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-RiskyDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "RiskyDeliveryTopicArn"}
                 }
               }
             }
@@ -802,6 +882,18 @@
               "Condition": {
                 "ArnEquals": {
                   "aws:SourceArn": {"Ref": "SuccessEventsTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-RiskyDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "RiskyDeliveryTopicArn"}
                 }
               }
             }
