@@ -80,7 +80,6 @@ def initial_eip(instance):
         new_eip = get_clean_eip_risky()
     else:
         new_eip = get_clean_eip()
-
     if associate_address(allocation_id=new_eip['AllocationId'], instance_id=instance.id):
         logger.info("===FINISHED=== Attaching initial EIP on Instance: {}.".format(instance.id))
         return True
