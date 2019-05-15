@@ -281,7 +281,7 @@ def get_risky(instance):
     for tags in instance.tags:
         for values in tags:
             if tags.values()[1]== 'Application':
-                if tags.values()[0] == 'risky-delivery':
+                if tags.values()[0] == 'risky-delivery' or tags.values()[0] == 'risky-xdelivery':
                     return True
                 else:
                     return False
