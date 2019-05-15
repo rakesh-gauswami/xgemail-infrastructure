@@ -102,7 +102,7 @@ def get_associated_eips():
         addresses = ec2_client.describe_addresses(
             Filters=[
                 {
-                    'Name': 'tag:Name', 'Values': ['xgemail-outbound']
+                    'Name': 'tag:Name', 'Values': ['xgemail-outbound', 'xgemail-risky']
                 }
             ]
         )['Addresses']
@@ -126,7 +126,7 @@ def get_all_eips():
         addresses = ec2_client.describe_addresses(
             Filters=[
                 {
-                    'Name': 'tag:Name', 'Values': ['xgemail-outbound']
+                    'Name': 'tag:Name', 'Values': ['xgemail-outbound', 'xgemail-risky']
                 }
             ]
         )['Addresses']
