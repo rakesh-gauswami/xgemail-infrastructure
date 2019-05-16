@@ -161,13 +161,11 @@ execute 'install td-agent fluent-plugin-grok-parser' do
   EOH
 end
 
-if ACCOUNT != 'SANDBOX'
-  execute 'install td-agent fluent-plugin-kinesis' do
-    user 'root'
-    command <<-EOH
+execute 'install td-agent fluent-plugin-kinesis' do
+  user 'root'
+  command <<-EOH
       td-agent-gem install fluent-plugin-kinesis -v 2.1.1
-    EOH
-  end
+  EOH
 end
 
 # End Temporary block
