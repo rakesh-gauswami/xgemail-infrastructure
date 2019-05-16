@@ -275,7 +275,7 @@ def get_clean_eip_risky():
 
 def get_risky(instance):
     """
-    Get EC2 Instances matching filter.
+    Check if the instance is part of risky delivery or risky-xdelivery cluster.
     """
     for tags in instance.tags:
         for values in tags:
