@@ -20,9 +20,9 @@ CUSTOMER_SUBMIT_BUCKET="xgemail-cust-submit"
 EMERGENCY_INBOX_BUCKET="xgemail-emgcy-inbox"
 MSG_HISTORY_BUCKET="xgemail-msg-history"
 MSG_STATS_BUCKET="xgemail-msg-stats"
-POLICY_BUCKET="xgemail-policy"
+POLICY_BUCKET="sandbox-cloudemail-xgemail-policy"
 QUARANTINE_BUCKET="xgemail-quarantine"
-SUBMIT_BUCKET="xgemail-submit"
+SUBMIT_BUCKET="sandbox-cloudemail-xgemail-submit"
 #special S3 buckets
 LAMDA_BUCKET="lamda"
 
@@ -399,7 +399,10 @@ if [[ $startup_check -ne 0 ]]; then
           --topic-arn arn:aws:sns:us-east-1:123456789012:${SUCCESS_EVENTS_SNS_TOPIC} \
           --protocol sqs \
           --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${CUSTOMER_DELIVERY_SQS_QUEUE_SNS_LISTENER} | jq .
-
+       awslocal sns set-subscription-attributes \
+          --subscription-arn arn:aws:sns:us-east-1:123456789012:xgemail-scan-events-SNS:ca965ece-6eef-4151-9733-1f3ed2646526 \
+          --attribute-name RawMessageDelivery \
+          --attribute-value true
 
       gprintf "localstack environment is set!"
 
