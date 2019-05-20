@@ -76,7 +76,10 @@ def initial_eip(instance):
     """
     If triggered via Lifecycle Hook then just assign an EIP.
     """
-    new_eip = get_clean_eip()
+    if get_risky(instance):
+        new_eip = get_clean_eip_risky()
+    else:
+        new_eip = get_clean_eip()
     if associate_address(allocation_id=new_eip['AllocationId'], instance_id=instance.id):
         logger.info("===FINISHED=== Attaching initial EIP on Instance: {}.".format(instance.id))
         return True
@@ -96,7 +99,10 @@ def rotate_eip():
         current_eip = get_current_eip(current_eip=instance.public_ip_address)
         if current_eip is None:
             continue
-        new_eip = get_clean_eip()
+        if get_risky(instance):
+            new_eip = get_clean_eip_risky()
+        else:
+            new_eip = get_clean_eip()
         hostname = socket.gethostbyaddr(new_eip['PublicIp'])[0]
         if postfix_service(instance_id=instance.id, cmd='stop'):
             if disassociate_address(eip=current_eip):
@@ -242,6 +248,42 @@ def get_clean_eip():
     for address in addresses:
         if 'AssociationId' not in address:
             return address
+
+
+def get_clean_eip_risky():
+    """
+    Find an xgemail-risky EIP that is NOT listed on any blacklists and is NOT attached to an instance.
+    """
+    logger.info("Locating a clean EIP to use.")
+    try:
+        addresses = ec2_client.describe_addresses(
+            Filters=[
+                {
+                    'Name': 'tag:Name', 'Values': ['xgemail-risky']
+                }
+            ]
+        )['Addresses']
+    except ClientError as e:
+        logger.exception("Unable to describe addresses. {}".format(e))
+
+    add_tags_dict(addresses)
+    addresses.sort(key=lambda address: (int(address['TagsDict']['blacklist']), address['TagsDict']['detached']))
+    for address in addresses:
+        if 'AssociationId' not in address:
+            return address
+
+
+def get_risky(instance):
+    """
+    Check if the instance is part of risky delivery or risky-xdelivery cluster.
+    """
+    for tags in instance.tags:
+        for values in tags:
+            if tags.values()[1]== 'Application':
+                if tags.values()[0] == 'risky-delivery' or tags.values()[0] == 'risky-xdelivery':
+                    return True
+                else:
+                    return False
 
 
 def associate_address(allocation_id, instance_id):

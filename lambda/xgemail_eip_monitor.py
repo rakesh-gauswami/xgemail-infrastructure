@@ -94,15 +94,15 @@ class HetrixToolsApi(object):
 
 def get_associated_eips():
     """
-    Find all xgemail-outbound EIPs that are associated (attached) to instances.
+    Find all xgemail-outbound and xgemail-risky EIPs that are associated (attached) to instances.
     """
-    logger.info("Locating all xgemail-outbound EIPs that are associated with EC2 instances.")
+    logger.info("Locating all xgemail-outbound and xgemail-risky EIPs that are associated with EC2 instances.")
     eips = []
     try:
         addresses = ec2_client.describe_addresses(
             Filters=[
                 {
-                    'Name': 'tag:Name', 'Values': ['xgemail-outbound']
+                    'Name': 'tag:Name', 'Values': ['xgemail-outbound', 'xgemail-risky']
                 }
             ]
         )['Addresses']
@@ -118,15 +118,15 @@ def get_associated_eips():
 
 def get_all_eips():
     """
-    Find all xgemail-outbound EIPs.
+    Find all xgemail-outbound and xgemail-risky EIPs.
     """
-    logger.info("Locating all xgemail-outbound EIPs.")
+    logger.info("Locating all xgemail-outbound and xgemail-risky EIPs.")
     eips = []
     try:
         addresses = ec2_client.describe_addresses(
             Filters=[
                 {
-                    'Name': 'tag:Name', 'Values': ['xgemail-outbound']
+                    'Name': 'tag:Name', 'Values': ['xgemail-outbound', 'xgemail-risky']
                 }
             ]
         )['Addresses']
