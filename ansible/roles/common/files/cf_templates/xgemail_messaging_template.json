@@ -191,12 +191,20 @@
       "Description": "Endpoint ARN for Bounce Event Action SQS Queue",
       "Type": "String"
     },
+    "BounceEventQueueUrl": {
+      "Description": "Endpoint URL for Bounce event SQS queue",
+      "Type": "String"
+    },
     "RedirectEventTopicArn": {
       "Description": "Endpoint for scan Redirect events arn",
       "Type": "String"
     },
     "RedirectEventQueueArn": {
       "Description": "Endpoint ARN for Redirect Event Action SQS Queue",
+      "Type": "String"
+    },
+    "RedirectEventQueueUrl": {
+      "Description": "Endpoint URL for Redirect event SQS queue",
       "Type": "String"
     },
     "AdditionalActionTopicArn": {
@@ -207,8 +215,16 @@
       "Description": "Endpoint ARN for Additional Action SQS Queue",
       "Type": "String"
     },
+    "AdditionalActionQueueUrl": {
+      "Description": "Endpoint URL for Additional Action SQS Queue",
+      "Type": "String"
+    },
     "DlpReportQueueArn": {
       "Description": "Endpoint ARN for DLP Report SQS Queue",
+      "Type": "String"
+    },
+    "DlpReportQueueUrl": {
+      "Description": "Endpoint URL for DLP Report SQS Queue",
       "Type": "String"
     },
     "RiskyDeliveryTopicArn": {
@@ -798,6 +814,30 @@
               }
             },
             {
+              "Sid": "Allow-RedirectEventTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "RedirectEventTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-BounceEventTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "BounceEventTopicArn"}
+                }
+              }
+            },
+            {
               "Sid": "Allow-RiskyDeliveryTopicArn",
               "Effect": "Allow",
               "Principal": "*",
@@ -894,6 +934,30 @@
               }
             },
             {
+              "Sid": "Allow-RedirectEventTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "RedirectEventTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-BounceEventTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "BounceEventTopicArn"}
+                }
+              }
+            },
+            {
               "Sid": "Allow-RiskyDeliveryTopicArn",
               "Effect": "Allow",
               "Principal": "*",
@@ -980,6 +1044,234 @@
           ]
         },
         "Queues": [{ "Ref": "MultiPolicyQueueUrl" }]
+      }
+    },
+    "AdditionalActionQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "AdditionalActionQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-AdditionalActionTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "AdditionalActionTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-RedirectEventTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "RedirectEventTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-BounceEventTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "BounceEventTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-SuccessEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "SuccessEventsTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-DeletedEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "DeletedEventsTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-QuarantinedEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "QuarantinedEventsTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{ "Ref": "AdditionalActionQueueUrl" }]
+      }
+    },
+    "DlpReportQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "DlpReportQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-SuccessEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "SuccessEventsTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-InternetDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "InternetDeliveryTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-QuarantinedEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "QuarantinedEventsTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-BounceEventTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "BounceEventTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-RiskyDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "RiskyDeliveryTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-RedirectEventTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "RedirectEventTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-DeletedEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "DeletedEventsTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{ "Ref": "DlpReportQueueUrl" }]
+      }
+    },
+    "RedirectEventQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "RedirectEventQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-RedirectEventTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "RedirectEventTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{ "Ref": "RedirectEventQueueUrl" }]
+      }
+    },
+    "BounceEventQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "BounceEventQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-BounceEventTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "BounceEventTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{ "Ref": "BounceEventQueueUrl" }]
       }
     },
     "NotifierQueuePolicy": {
