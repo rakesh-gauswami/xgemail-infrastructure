@@ -533,6 +533,14 @@
         "TopicArn": { "Ref": "QuarantinedEventsTopicArn"}
       }
     },
+    "AdditionalActionQueueToInternetDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "AdditionalActionQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "InternetDeliveryTopicArn"}
+      }
+    },
     "DlpReportQueueToQuarantinedSnsSubsciption": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
