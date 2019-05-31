@@ -1,13 +1,13 @@
 
 multi.policy.global.config.location=file:///policy-storage/config/inbound-relay-control/multi-policy/global.CONFIG
 
-local.storage.root=file:///policy-storage/
-local.storage.legacy.root=file:///opt/sophos/xgemail/
-bucket.storage.root=s3://<%= @policy_bucket %>
+# local.storage.root=file:///policy-storage/
+# local.storage.legacy.root=file:///opt/sophos/xgemail/
+# bucket.storage.root=s3://<%= @policy_bucket %>
 
-recipient.info.path.prefix=config/policies/domains/
-recipient.policy.path.prefix=config/policies/endpoints/
-domain.info.path.prefix=spf/domains/
+# recipient.info.path.prefix=config/policies/domains/
+# recipient.policy.path.prefix=config/policies/endpoints/
+# domain.info.path.prefix=spf/domains/
 
 use.s3.policy.storage=true
 
@@ -16,3 +16,5 @@ POLICY_STORAGE_ROOT=s3://<%= @policy_bucket %>
 MAILBOX_POLICY_FILE_PATH=config/policies/endpoints/
 MAILBOX_LOCAL_PART_FILE_PATH=config/policies/domains/
 MAILBOX_DLP_POLICY_FILE_PATH=config/policies/dlp/
+
+LAUNCHDARKLY_SOPHOS_CENTRAL_CLIENT_SDK_KEY=<%= @launch_darkly_key %>
