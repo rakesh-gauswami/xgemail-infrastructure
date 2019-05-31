@@ -48,6 +48,7 @@ ACTIVE_PROFILE = node['xgemail']['xgemail_active_profile']
 LAUNCH_DARKLY_ACCOUNT_KEY = "launch_darkly_#{ACCOUNT}"
 LAUNCH_DARKLY_SDK_KEY = node['xgemail'][LAUNCH_DARKLY_ACCOUNT_KEY]
 
+INTERNET_SUBMIT_BUCKET_NAME = node['xgemail']['xgemail_bucket_name']
 
 if ACCOUNT == 'sandbox'
   include_recipe 'sophos-cloud-xgemail::install_jilter_code_sandbox'
@@ -146,7 +147,8 @@ template 'xgemail.jilter.properties' do
   group SERVICE_USER
   variables(
       :policy_bucket => POLICY_BUCKET_NAME,
-      :launch_darkly_key => LAUNCH_DARKLY_SDK_KEY
+      :launch_darkly_key => LAUNCH_DARKLY_SDK_KEY,
+      :internet_submit_bucket => INTERNET_SUBMIT_BUCKET_NAME
   )
 end
 
