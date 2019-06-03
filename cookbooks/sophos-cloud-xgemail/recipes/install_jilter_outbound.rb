@@ -47,7 +47,6 @@ ACTIVE_PROFILE = node['xgemail']['xgemail_active_profile']
 
 CUSTOMER_SUBMIT_BUCKET_NAME = node['xgemail']['xgemail_bucket_name']
 
-
 if ACCOUNT == 'sandbox'
   include_recipe 'sophos-cloud-xgemail::install_jilter_code_sandbox'
 else

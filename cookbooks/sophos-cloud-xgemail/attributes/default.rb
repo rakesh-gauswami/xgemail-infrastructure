@@ -251,6 +251,7 @@ default['xgemail']['postfix3_version'] = '3.2.4.2-1'
 POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST = 500
 POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST = 500
 
+
 default['xgemail']['postfix_instance_data'] = {
   # internet-submit
   'internet-submit' => {
