@@ -217,15 +217,7 @@ execute 'extract_jilter_encryption_package' do
 end
 
 # Write launch darkly application properties
-[
-    'inf',
-    'dev',
-    'dev3',
-    'qa',
-    'prod'
-].each do | cur |
-
-  LAUNCH_DARKLY_SDK_KEY = node['xgemail']["launch_darkly_#{cur}"]
+%w(inf dev dev3 qa prod).each do | cur |
 
   template "launch_darkly_#{cur}.properties" do
     path "#{DEPLOYMENT_DIR}/#{JILTER_OUTBOUND_PACKAGE_NAME}/conf"
@@ -234,7 +226,7 @@ end
     owner SERVICE_USER
     group SERVICE_USER
     variables(
-        :launch_darkly_key => LAUNCH_DARKLY_SDK_KEY
+        :launch_darkly_key => node['xgemail']["launch_darkly_#{cur}"]
     )
   end
 
@@ -245,7 +237,7 @@ end
     owner SERVICE_USER
     group SERVICE_USER
     variables(
-        :launch_darkly_key => LAUNCH_DARKLY_SDK_KEY
+        :launch_darkly_key => node['xgemail']["launch_darkly_#{cur}"]
     )
   end
 
