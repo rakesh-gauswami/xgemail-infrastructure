@@ -223,8 +223,6 @@ end
     path "#{DEPLOYMENT_DIR}/#{JILTER_OUTBOUND_PACKAGE_NAME}/conf"
     source 'jilter-launch-darkly.properties.erb'
     mode '0700'
-    owner SERVICE_USER
-    group SERVICE_USER
     variables(
         :launch_darkly_key => node['xgemail']["launch_darkly_#{cur}"]
     )
@@ -234,8 +232,6 @@ end
     path "#{DEPLOYMENT_DIR}/#{JILTER_INBOUND_PACKAGE_NAME}/conf"
     source 'jilter-launch-darkly.properties.erb'
     mode '0700'
-    owner SERVICE_USER
-    group SERVICE_USER
     variables(
         :launch_darkly_key => node['xgemail']["launch_darkly_#{cur}"]
     )
