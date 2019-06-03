@@ -251,13 +251,6 @@ default['xgemail']['postfix3_version'] = '3.2.4.2-1'
 POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST = 500
 POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST = 500
 
-# Launch Darkly Client Keys
-default['xgemail']['launch_darkly_inf'] = 'sdk-00000000-0000-0000-0000-000000000000'
-default['xgemail']['launch_darkly_dev'] = 'sdk-491074dc-cc2a-443b-a325-16b6ef1c389f'
-default['xgemail']['launch_darkly_dev3'] = 'sdk-7b7a9d79-cafd-4eeb-831d-de96dd073d3a'
-default['xgemail']['launch_darkly_qa'] = 'sdk-2aa6bcec-f0c9-4eac-8e3b-275d1b907b9d'
-default['xgemail']['launch_darkly_prod'] = 'sdk-4e34a182-d861-4b6d-ae42-abc66de66b15'
-
 default['xgemail']['postfix_instance_data'] = {
   # internet-submit
   'internet-submit' => {
