@@ -12,7 +12,7 @@
 NODE_TYPE = node['xgemail']['cluster_type']
 ACCOUNT =  node['sophos_cloud']['environment']
 
-if NODE_TYPE != 'xdelivery' && NODE_TYPE != 'internet-xdelivery'
+if NODE_TYPE != 'xdelivery' && NODE_TYPE != 'internet-xdelivery' && NODE_TYPE != 'risky-xdelivery'
   return
 end
 
@@ -43,7 +43,7 @@ MANAGED_SERVICES_IN_START_ORDER = [
 ]
 
 if ACCOUNT != 'sandbox'
-  if NODE_TYPE == 'internet-xdelivery'
+  if NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery'
     GLOBAL_SIGN_DIR = "#{LOCAL_CERT_PATH}/3rdparty/global-sign"
     GLOBAL_SIGN_INTERMEDIARY = "#{GLOBAL_SIGN_DIR}/global-sign-sha256-intermediary.crt"
     GLOBAL_SIGN_ROOT = "#{GLOBAL_SIGN_DIR}/global-sign-root.crt"
@@ -121,7 +121,7 @@ HOP_COUNT_DELIVERY_INSTANCE = node['xgemail']['hop_count_delivery_instance']
 
 include_recipe 'sophos-cloud-xgemail::common-postfix-multi-instance-config'
 
-if NODE_TYPE == 'internet-xdelivery'
+if NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery'
   HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
 
   file "#{HEADER_CHECKS_PATH}" do
@@ -185,6 +185,9 @@ if NODE_TYPE == 'xdelivery'
 else
   if NODE_TYPE == 'internet-xdelivery'
     include_recipe 'sophos-cloud-xgemail::configure-bounce-message-internet-delivery-queue'
+  end
+  if NODE_TYPE == 'risky-xdelivery'
+    include_recipe 'sophos-cloud-xgemail::configure-bounce-message-risky-delivery-queue'
   end
 end
 
