@@ -135,6 +135,14 @@ user SERVICE_USER do
   shell '/sbin/nologin'
 end
 
+
+file "#{JILTER_CONF_DIR}/launch_darkly_#{ACCOUNT}.properties" do
+  owner SERVICE_USER
+  group SERVICE_USER
+  action :touch
+end
+
+
 # Create the jilter application properties
 template 'xgemail.jilter.properties' do
   path JILTER_APPLICATION_PROPERTIES_PATH
