@@ -138,6 +138,15 @@ user SERVICE_USER do
   shell '/sbin/nologin'
 end
 
+
+# Give ownership to the jilter service user
+file "#{JILTER_CONF_DIR}/launch_darkly_#{ACCOUNT}.properties" do
+  owner SERVICE_USER
+  group SERVICE_USER
+  action :touch
+end
+
+
 # Create the Jilter service
 template 'xgemail.jilter.service.sh' do
   path JILTER_SCRIPT_PATH

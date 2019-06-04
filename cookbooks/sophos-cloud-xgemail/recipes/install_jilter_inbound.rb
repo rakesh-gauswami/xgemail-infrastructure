@@ -135,7 +135,7 @@ user SERVICE_USER do
   shell '/sbin/nologin'
 end
 
-
+# Give ownership to the jilter service user
 file "#{JILTER_CONF_DIR}/launch_darkly_#{ACCOUNT}.properties" do
   owner SERVICE_USER
   group SERVICE_USER
