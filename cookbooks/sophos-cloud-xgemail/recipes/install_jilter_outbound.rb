@@ -10,12 +10,12 @@
 #
 
 package 'tar'
-
+instance_type=`echo $INSTANCE_TYPE`
 NODE_TYPE = node['xgemail']['cluster_type']
 ACCOUNT = node['sophos_cloud']['account']
 
 # Make sure we're on an customer submit node
-if NODE_TYPE != 'customer-submit'
+if NODE_TYPE != 'customer-submit' && NODE_TYPE != 'jilter-outbound'
   return
 end
 
@@ -136,6 +136,8 @@ user SERVICE_USER do
   shell '/sbin/nologin'
 end
 
+if ACCOUNT != 'sandbox'
+
 # Create the Jilter service
 template 'xgemail.jilter.service.sh' do
   path JILTER_SCRIPT_PATH
@@ -190,4 +192,27 @@ end
     'milter_end_of_data_macros = {i}'
 ].each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+end
+
+else
+
+  APPLICATION = node['xgemail']['application']
+  DIRECTION   = node['xgemail']['direction']
+
+  # Create the Jilter service
+  template 'xgemail.jilter.service.sh' do
+    path JILTER_SCRIPT_PATH
+    source 'xgemail.jilter.sandbox.sh.erb'
+    mode '0700'
+    owner SERVICE_USER
+    group SERVICE_USER
+    variables(
+        :deployment_dir => DEPLOYMENT_DIR,
+        :property_path  => JILTER_APPLICATION_PROPERTIES_PATH,
+        :active_profile => ACTIVE_PROFILE,
+        :direction      => DIRECTION,
+        :application    => APPLICATION
+    )
+  end
+
 end

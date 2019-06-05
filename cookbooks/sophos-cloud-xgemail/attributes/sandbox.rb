@@ -39,8 +39,9 @@ if ENVIRONMENT == "sandbox"
     default['xgemail']['station_vpc_name']           = 'pic'
 
     if INSTANCE_TYPE == "internet-submit" || INSTANCE_TYPE == "customer-delivery"
-        default['xgemail']['xgemail_bucket_name'] = 'xgemail-submit'
-        default['xgemail']['xgemail_queue_url']   = 'http://localstack:4576/queue/sandbox-Xgemail_Internet_Submit'
+        default['xgemail']['xgemail_bucket_name'] = 'sandbox-cloudemail-xgemail-submit'
+        default['xgemail']['xgemail_scan_events_topic_arn'] = 'arn:aws:sns:us-east-1:123456789012:xgemail-scan-events-SNS'
+        default['xgemail']['xgemail_queue_url']   = 'http://localstack:4576/queue/vpc-000000-sandbox-Internet_Submit_Service_Queue'
         default['xgemail']['xgemail_sns_sqs_url'] = 'http://localstack:4576/queue/sandbox-Xgemail_Customer_Delivery_SNS_Listener'
     end
 
@@ -51,7 +52,7 @@ if ENVIRONMENT == "sandbox"
         default['xgemail']['xgemail_sns_sqs_url'] = 'http://localstack:4576/queue/sandbox-Xgemail_Internet_Delivery_SNS_Listener'
     end
 
-    if INSTANCE_TYPE == "jilter-inbound" || INSTANCE_TYPE == "jilter_outbound"
+    if INSTANCE_TYPE == "jilter-inbound" || INSTANCE_TYPE == "jilter-outbound"
         default['xgemail']['jilter_version'] = ENV['JILTER_VERSION']
         default['sophos_cloud']['thirdparty']  = '//cloud-sandbox-3rdparty'
         default['xgemail']['postfix_instance_data']['jilter-outbound'] =
@@ -59,9 +60,9 @@ if ENVIRONMENT == "sandbox"
             :instance_name => 'jilter-outbound'
           }
         default['xgemail']['postfix_instance_data']['jilter-inbound'] =
-            {
+              {
                 :instance_name => 'jilter-inbound'
-            }
+              }
     end
     default['sandbox']['mail_transport_entry']     = '* smtp:mailcatcher:1025'
     default['sandbox']['mail_relay_domain']        = 'sophos.com OK'
