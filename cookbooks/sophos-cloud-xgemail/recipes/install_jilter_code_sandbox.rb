@@ -33,14 +33,29 @@ directory DEPLOYMENT_DIR do
   recursive true
 end
 
-execute 'extract_jilter_package' do
+if NODE_TYPE == 'jilter-inbound'
+  execute 'extract_jilter_package' do
   user 'root'
   cwd "#{PACKAGES_DIR}"
   command <<-EOH
       tar xf #{JILTER_PACKAGE_NAME}.tar -C #{DEPLOYMENT_DIR}
-      mv #{DEPLOYMENT_DIR}/xgemail-jilter-inbound*SNAPSHOT #{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}
-
+      mv #{DEPLOYMENT_DIR}/xgemail-jilter-#{DIRECTION}*SNAPSHOT #{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}
   EOH
+  end
+
+else
+  if NODE_TYPE == 'jilter-outbound'
+  execute 'extract_jilter_package' do
+  user 'root'
+  cwd "#{PACKAGES_DIR}"
+  command <<-EOH
+      tar xf #{JILTER_PACKAGE_NAME}.tar -C #{DEPLOYMENT_DIR}
+      mv #{DEPLOYMENT_DIR}/xgemail-jilter-#{DIRECTION}*SNAPSHOT #{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}
+      tar xf xgemail-jilter-inbound-#{JILTER_VERSION}.tar -C #{DEPLOYMENT_DIR}
+      mv xgemail-jilter-inbound* xgemail-jilter-inbound
+  EOH
+  end
+ end
 end
 
 # Create a sym link to xgemail-jilter

@@ -1,7 +1,7 @@
 version: '3'
 services:
   localstack:
-    image: localstack/localstack
+    image: registry.sophos-tools.com/localstack/localstack
     container_name: localstack
     ports:
       - '4567:4567' #API Gateway
@@ -29,33 +29,36 @@ services:
       - novanet
 
   proxy:
-    image: haproxy:1.7
+    image: traefik:latest # The official Traefik docker image
+    container_name: proxy
+    command: --api --docker
+    hostname: proxy
     ports:
-      - '80:80'
-      - '443:443'
-      - '1936:1936'
-      - '8080:8080'
-      - '9090:9090'
-    links:
-      - 'hub:hub-service'
-      - 'ui:ui-service'
-      - 'kinesalite:kinesalite-service'
-      - 'mongo:mongo-service'
-      - 'redis:redis-service'
-      - 'memcache:memcache-service'
-#      - 'billing:billing-service'
-    depends_on:
-      - hub
+      - "80:80"     # The HTTP port
+      - "443:443"   # The HTTPS port
+      - "8080:9090" # jmx port
+      - "9090:9090" # jmx port
     volumes:
-      - './haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro'
+      - '/var/run/docker.sock:/var/run/docker.sock' #So that Traefik can listen to the Docker events
+      - './traefik/traefik.toml:/etc/traefik/traefik.toml'
       - '~/.nova/ssl:/etc/sophos/ssl:ro'
+    labels:
+      - "traefik.backend=proxy"
+      - "traefik.port=8080"
+      - "traefik.enable=true"
+      - "traefik.frontend.passHostHeader=true"
+      - "traefik.frontend.redirect=https"
+      - "traefik.SSLRedirect=true"
+      - "traefik.frontend.entryPoints=https"
+      - "traefik.frontend.rule=Host:admin.sandbox.sophos; PathPrefixStrip:/traefik"
     networks:
       novanet:
         ipv4_address: 172.16.199.100
     dns:
       - 172.16.199.101
   dns:
-    image: jpillora/dnsmasq
+    image: jpillora/dnsmasq:latest
+    container_name: dns
     volumes:
       - './dnsmasq/dnsmasq.conf:/etc/dnsmasq.conf'
     environment:
@@ -68,24 +71,49 @@ services:
         ipv4_address: 172.16.199.101
     dns:
       - 172.16.199.101
-  ui:
-    build: ./ui
+    labels:
+      - "traefik.backend=dnsmasq"
+      - "traefik.port=8080"
+      - "traefik.enable=true"
+      - "traefik.frontend.passHostHeader=true"
+      - "traefik.frontend.redirect=https"
+      - "traefik.SSLRedirect=true"
+      - "traefik.frontend.entryPoints=https"
+      - "traefik.frontend.rule=Host:admin.sandbox.sophos; PathPrefixStrip:/dnsmasq"
+  rca-uploader:
+    image: ${REPO}/rca-uploader:${VERSION}
+    #build: ./rca-uploader
+    container_name: rca-uploader
     ports:
-      - '9000:80'
+      - '9072:9072'
     volumes:
-      - '~/g/cloud/ui/build/webroot:/var/www/localhost/htdocs'
+      - '~/.nova/rca:/tmp/rcaUpload'
     networks:
       - novanet
     dns:
       - 172.16.199.101
-  hub:
-    build: ./appserver
+  ui:
+    image: ${REPO}/ui:${VERSION}
+    container_name: ui
+    ports:
+      - '9000:80'
+    networks:
+      - novanet
+    dns:
+      - 172.16.199.101
+    labels:
+      - "traefik.enable=true"
+      - "traefik.port=80"
+      - "traefik.ui.frontend.passHostHeader=true"
+      - "traefik.ui.frontend.entryPoints=https"
+      - "traefik.ui.frontend.rule=HostRegexp:{subdomain:[a-z]+}.sandbox.sophos;PathPrefix:/assets,/manage/(customer|ssp|common|partner|home),/assets/(angular-i18n|fonts|images|legal|scripts|styles|i18n);PathPrefixStrip:/assets,/manage"
+  api:
+    image: ${REPO}/nova-api:${VERSION}
+    container_name: api
+    hostname: 1api
+    environment:
+      - "CATALINA_OPTS=-server -Xms1024m -Xmx2048m -Djava.net.preferIPv4Stack=true -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Dsophos.allowed.origins=https://www.fe.sandbox.sophos,https://fe.sandbox.sophos -Dspring.profiles.active=sandbox -agentlib:jdwp=transport=dt_socket,address=1043,server=y,suspend=n"
     volumes:
-      # - '~/.nova/wars/api-services-NOVA-LOCAL.war:/usr/local/tomcat/webapps/api-services.war'
-      # - '~/.nova/wars/hub-services-NOVA-LOCAL.war:/usr/local/tomcat/webapps/hub-services.war'
-      # - '~/.nova/wars/core-services-NOVA-LOCAL.war:/usr/local/tomcat/webapps/core-services.war'
-      # - '~/.nova/wars/mcs-services-NOVA-LOCAL.war:/usr/local/tomcat/webapps/mcs-services.war'
-      # - '~/.nova/wars/lpas-services-NOVA-LOCAL.war:/usr/local/tomcat/webapps/lpas-services.war'
 # LOCATIONS FOR RCA DATA
       - '~/.nova/rca:/tmp/stacUploadFiles'
       - '~/.nova/stacValidatedUploadFiles:/tmp/stacValidatedUploadFiles'
@@ -93,6 +121,10 @@ services:
       - '~/.nova/policy-fragments:/tmp/policy-fragments'
 # LOCATION FOR SSL CERTS
       - '~/.nova/ssl:/etc/sophos/ssl'
+# LOCATION FOR application.properties.d
+      - './appserver/config/application.properties.d:/usr/local/etc/sophos/application.properties.d'
+# LOCATION FOR bootstrap.properties.d
+      - './appserver/config/bootstrap.properties.d/:/usr/local/etc/sophos/bootstrap.properties.d'
     links:
       - 'postgres:postgres-service'
       - 'mongo:mongo-service'
@@ -100,6 +132,7 @@ services:
       - 'redis:redis-service'
       - 'kinesalite:kinesalite'
       - 'dynamodb:dynamo-service'
+      - 'elasticmq:elasticmq-service'
 #      - 'billing:billing-service'
       - 'mailcatcher:mailcatcher-service'
     depends_on:
@@ -109,15 +142,168 @@ services:
       - kinesalite
       - memcache
       - mailcatcher
-      - localstack
     ports:
       - '1043:1043'
     networks:
       - novanet
     dns:
       - 172.16.199.101
+    labels:
+      - "traefik.backend=api"
+      - "traefik.port=8080"
+      - "traefik.enable=true"
+      - "traefik.frontend.passHostHeader=true"
+      - "traefik.frontend.headers.SSLRedirect=true"
+      - "traefik.api.frontend.entryPoints=http,https"
+      - "traefik.api.frontend.passHostHeader=true"
+      - "traefik.api.frontend.rule=Host:api.sandbox.sophos;AddPrefix:/api-services;ReplacePathRegex:(^.*)/sophos/(management/.*) $${1}/$${2}"
+      - "traefik.tomcat.frontend.entryPoints=http,https"
+      - "traefik.tomcat.frontend.passHostHeader=true"
+      - "traefik.tomcat.frontend.rule=Host:api-manager.sandbox.sophos; PathPrefixStrip:/manager; AddPrefix:/manager"
+    healthcheck:
+      test: ["CMD-SHELL", "./healthcheck.sh || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 60
+  hub_core:
+    image: ${REPO}/nova-hub_core:${VERSION}
+    container_name: hub_core
+    hostname: 0hubcore
+    environment:
+      - "CATALINA_OPTS=-server -Xms1024m -Xmx2048m -Djava.net.preferIPv4Stack=true -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Dsophos.allowed.origins=https://www.fe.sandbox.sophos,https://fe.sandbox.sophos -Dspring.profiles.active=sandbox -agentlib:jdwp=transport=dt_socket,address=1043,server=y,suspend=n"
+    volumes:
+    # LOCATIONS FOR RCA DATA
+    - '~/.nova/rca:/tmp/stacUploadFiles'
+    - '~/.nova/stacValidatedUploadFiles:/tmp/stacValidatedUploadFiles'
+    # LOCATION FOR POLICY FRAGMENTS
+    - '~/.nova/policy-fragments:/tmp/policy-fragments'
+    # LOCATION FOR SSL CERTS
+    - '~/.nova/ssl:/etc/sophos/ssl'
+    # LOCATION FOR application.properties.d
+    - './appserver/config/application.properties.d:/usr/local/etc/sophos/application.properties.d'
+    # LOCATION FOR bootstrap.properties.d
+    - './appserver/config/bootstrap.properties.d/:/usr/local/etc/sophos/bootstrap.properties.d'
+    links:
+    - 'postgres:postgres-service'
+    - 'mongo:mongo-service'
+    - 'memcache:memcache-service'
+    - 'redis:redis-service'
+    - 'lpas_mcs:2lpasmcs'
+    - 'api:1api'
+    - 'kinesalite:kinesalite'
+    - 'dynamodb:dynamo-service'
+    - 'elasticmq:elasticmq-service'
+    - 'mailcatcher:mailcatcher-service'
+    depends_on:
+    - postgres
+    - mongo
+    - redis
+    - kinesalite
+    - memcache
+    - mailcatcher
+    ports:
+    - '1044:1043'
+    networks:
+    - novanet
+    dns:
+    - 172.16.199.101
+    labels:
+    - "traefik.backend=hub_core"
+    - "traefik.port=8080"
+    - "traefik.enable=true"
+    - "traefik.frontend.passHostHeader=true"
+    - "traefik.frontend.headers.SSLRedirect=true"
+    - "traefik.fe.frontend.entryPoints=http,https"
+    - "traefik.fe.frontend.passHostHeader=true"
+    - "traefik.fe.frontend.rule=Host:fe.sandbox.sophos;AddPrefix:/hub-services"
+    - "traefik.hub.frontend.entryPoints=http,https"
+    - "traefik.hub.frontend.passHostHeader=true"
+    - "traefik.hub.frontend.rule=Host:hub.sandbox.sophos;AddPrefix:/hub-services;ReplacePathRegex:(^.*)/sophos/(management/.*) $${1}/$${2}"
+    - "traefik.core.frontend.entryPoints=http,https"
+    - "traefik.core.frontend.passHostHeader=true"
+    - "traefik.core.frontend.rule=Host:core.sandbox.sophos;AddPrefix:/core-services;ReplacePathRegex:(^.*)/sophos/(management/.*) $${1}/$${2}"
+    - "traefik.jmx.frontend.passHostHeader=true"
+    - "traefik.jmx.frontend.headers.SSLRedirect=false"
+    - "traefik.jmx.frontend.entryPoints=http-jmx"
+    - "traefik.jmx.frontend.rule=Host:jmx.sandbox.sophos;AddPrefix:/core-services"
+    - "traefik.jmx2.frontend.passHostHeader=true"
+    - "traefik.jmx2.frontend.headers.SSLRedirect=false"
+    - "traefik.jmx2.frontend.entryPoints=http-jmx"
+    - "traefik.jmx2.frontend.rule=Host:jmx.sandbox.sophos;PathPrefix:/core-services"
+    - "traefik.tomcat.frontend.entryPoints=http,https"
+    - "traefik.tomcat.frontend.passHostHeader=true"
+    - "traefik.tomcat.frontend.rule=Host:hc-manager.sandbox.sophos; PathPrefixStrip:/manager; AddPrefix:/manager"
+    healthcheck:
+      test: ["CMD-SHELL", "./healthcheck.sh || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 60
+  lpas_mcs:
+    image: ${REPO}/nova-lpas_mcs:${VERSION}
+    container_name: lpas_mcs
+    hostname: 2lpasmcs
+    environment:
+      - "CATALINA_OPTS=-server -Xms1024m -Xmx2048m -Djava.net.preferIPv4Stack=true -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Dsophos.allowed.origins=https://www.fe.sandbox.sophos,https://fe.sandbox.sophos -Dspring.profiles.active=sandbox -agentlib:jdwp=transport=dt_socket,address=1043,server=y,suspend=n"
+    volumes:
+    # LOCATIONS FOR RCA DATA
+    - '~/.nova/rca:/tmp/stacUploadFiles'
+    - '~/.nova/stacValidatedUploadFiles:/tmp/stacValidatedUploadFiles'
+    # LOCATION FOR POLICY FRAGMENTS
+    - '~/.nova/policy-fragments:/tmp/policy-fragments'
+    # LOCATION FOR SSL CERTS
+    - '~/.nova/ssl:/etc/sophos/ssl'
+    # LOCATION FOR application.properties.d
+    - './appserver/config/application.properties.d:/usr/local/etc/sophos/application.properties.d'
+    # LOCATION FOR bootstrap.properties.d
+    - './appserver/config/bootstrap.properties.d/:/usr/local/etc/sophos/bootstrap.properties.d'
+    links:
+    - 'postgres:postgres-service'
+    - 'mongo:mongo-service'
+    - 'memcache:memcache-service'
+    - 'redis:redis-service'
+    - 'kinesalite:kinesalite'
+    - 'dynamodb:dynamo-service'
+    - 'elasticmq:elasticmq-service'
+    #      - 'billing:billing-service'
+    - 'mailcatcher:mailcatcher-service'
+    depends_on:
+    - postgres
+    - mongo
+    - redis
+    - kinesalite
+    - memcache
+    - mailcatcher
+    ports:
+    - '1045:1043'
+    networks:
+    - novanet
+    dns:
+    - 172.16.199.101
+    labels:
+    - "traefik.backend=lpas_mcs"
+    - "traefik.port=8080"
+    - "traefik.enable=true"
+    - "traefik.frontend.passHostHeader=true"
+    - "traefik.frontend.headers.SSLRedirect=true"
+    - "traefik.mcs.frontend.entryPoints=http,https"
+    - "traefik.mcs.frontend.passHostHeader=true"
+    - "traefik.mcs.frontend.rule=Host:mcs.sandbox.sophos;AddPrefix:/mcs-services;ReplacePathRegex:(^.*)/sophos/(management/.*) $${1}/$${2}"
+    - "traefik.tomcat.frontend.entryPoints=http,https"
+    - "traefik.tomcat.frontend.passHostHeader=true"
+    - "traefik.tomcat.frontend.rule=Host:lm-manager.sandbox.sophos; PathPrefixStrip:/manager; AddPrefix:/manager"
+    healthcheck:
+      test: ["CMD-SHELL", "./healthcheck.sh || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 60
+  #health:
+  #  image: ${REPO}/monitoring:${VERSION}
+  #  depends_on:
+  #    - "hub"
+  #  command: ["/scripts/healthcheck.sh"]
   postgres:
     image: postgres:9.6-alpine
+    container_name: postgres
     ports:
       - '5432:5432'
     networks:
@@ -131,10 +317,9 @@ services:
     dns:
       - 172.16.199.101
   redis:
-    build:
-      context: ./redis
-      args:
-        redis_version: '3.2.6'
+    image: ${REPO}/redis:${VERSION}
+    #build: ./redis
+    container_name: redis
     ports:
       - '6379:6379'
       - '7378-7380:7378-7380'
@@ -143,7 +328,8 @@ services:
     dns:
       - 172.16.199.101
   memcache:
-    image: memcached
+    image: memcached:latest
+    container_name: memcache
     ports:
       - '11211:11211'
     networks:
@@ -151,10 +337,18 @@ services:
     dns:
       - 172.16.199.101
   mongo:
-    build: ./mongodb
+    image: ${REPO}/mongodb:${VERSION}
+    #build: ./mongodb
+    container_name: mongo
     ports:
       - '27017:27017'
       - '8090:27017'
+        #    command: ["--timeStampFormat","iso8601-utc","--storageEngine","wiredTiger"]
+    command:
+      - --timeStampFormat
+      - iso8601-utc
+      - --storageEngine
+      - wiredTiger
 # To make data not persistent, uncomment the following 2 lines:
     volumes:
       - '~/.nova/db:/data/db'
@@ -163,7 +357,9 @@ services:
     dns:
       - 172.16.199.101
   kinesalite:
-    build: ./kinesalite
+    image: ${REPO}/kinesalite:${VERSION}
+    #build: ./kinesalite
+    container_name: kinesalite
 #    ports:
 #      - '4567:4567'
     volumes:
@@ -173,15 +369,36 @@ services:
     dns:
       - 172.16.199.101
   dynamodb:
-    build: ./dynamodb
+    image: ${REPO}/dynamodb:${VERSION}
+    ##build: ./dynamodb
+    container_name: dynamodb
     ports:
       - '8000:8000'
     networks:
       - novanet
     dns:
       - 172.16.199.101
+  elasticmq:
+    image: ${REPO}/elasticmq:${VERSION}
+    ##build: ./elasticmq
+    container_name: elasticmq
+    ports:
+      - '9324:9324'
+    networks:
+      - novanet
+    dns:
+      - 172.16.199.101
+#  salesforce:
+#    ##build: ./salesforce
+#    ports:
+#      - '8094:8094'
+#    networks:
+#      - novanet
+#    dns:
+#      - 172.16.199.101
   mailcatcher:
-    image: 'schickling/mailcatcher'
+    image: 'schickling/mailcatcher:latest'
+    container_name: mailcatcher
     ports:
       - '9080:1080'
       - '1025:1025'
@@ -189,6 +406,33 @@ services:
       - novanet
     dns:
       - 172.16.199.101
+  cassandra:
+    image: docker-registry.cloud.sophos/pulsar/cassandra:latest
+    container_name: cassandra
+    ports:
+    - "10030:9042"
+    volumes:
+      - '~/.nova/cassandra:/var/lib/cassandra'
+    networks:
+      - novanet
+    dns:
+      - 172.16.199.101
+  eventservice:
+    image: docker-registry.cloud.sophos/pulsar/event-service:latest
+    container_name: eventservice
+    command: bash -c "sleep 60; java -jar service.jar"
+    environment:
+      CASSANDRA_HOST: cassandra
+    ports:
+    - "10020:8080"
+    networks:
+      - novanet
+    dns:
+      - 172.16.199.101
+    links:
+    - cassandra
+    depends_on:
+    - cassandra
 networks:
   novanet:
     driver: bridge

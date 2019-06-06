@@ -21,45 +21,67 @@ services:
       - novanet
 
   mail-inbound:
-      image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/mail-inbound:latest
-      container_name: mail-inbound
-      hostname: mail-inbound
-      domainname: sandbox.sophos
-      ports:
-        - '8080:8080'
-      environment:
-        - SPRING_PROFILES_ACTIVE=local
-        - APPLICATION_NAME=mail-inbound
-        - AWS_REGION=us-east-1
-        - ENVIRONMENT=local
-        - AUTH_ENABLED=false
-        - LPAS_ENABLED=true
-        - LPAS_ENDPOINT=http://lpas-fake:8080
-        - API_CONNECT_TIMEOUT_MS=30000
-        - API_READ_TIMEOUT_MS=30000
-        - TOC_MAX_MESSAGE_MB_SIZE_FOR_REWRITE=10
-        - TOC_HOST_NAME=protection.sophos.com
-        - TOC_SECRET_URI=file:///some-bucket/toc.secret-uri.com
-        - MAIL_PIC_API_CREDENTIALS_BUCKET_NAME=mock_s3_bucket
-        - MAIL_PIC_API_CREDENTIALS_FILE=mock_file
-        - MAIL_PIC_API_ROOT_URL=https://mock_url/mail/api/xgemail
-        - INTERNET_SUBMIT_BUCKET=sandbox-cloudemail-xgemail-submit
-        - INTERNET_SUBMIT_STORAGE_ROOT=s3://sandbox-cloudemail-xgemail-submit
-        - CUSTOMER_SUBMIT_STORAGE_ROOT=http://localstack:4576/s3/some-policy/path
-        - SAVI_HOST_NAME=localhost
-        - SAVI_PORT=4010
-        - MALWARE_SERVICE_ENABLED=false
-        - CONTENT_FILTERING_ENABLED=false
-        - INTERNET_SUBMIT_SERVICE_QUEUE=vpc-000000-sandbox-Internet_Submit_Service_Queue
-        - POLICY_BUCKET=sandbox-cloudemail-xgemail-policy
-        - POLICY_STORAGE_ROOT=s3://sandbox-cloudemail-xgemail-policy
-        - MAILBOX_LOCAL_PART_FILE_PATH=config/policies/domains/
-        - MAILBOX_POLICY_FILE_PATH=config/policies/endpoints/
-        - SQS_ENDPOINT=http://localstack:4576
-        - S3_ENDPOINT=http://localstack:4572
-        - SNS_ENDPOINT=http://localstack:4575
-      networks:
-        - novanet
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/mail-inbound-service:latest
+    container_name: mail-inbound
+    hostname: mail-inbound
+    domainname: sandbox.sophos
+    ports:
+      - '8099:8080'
+    environment:
+      - API_CONNECT_TIMEOUT_MS=30000
+      - API_READ_TIMEOUT_MS=30000
+      - APPLICATION_NAME=mail-inbound
+      - AUTH_ENABLED=false
+      - AWS_REGION=us-east-1
+      - CONTENT_FILTERING_ENABLED=false
+      - CUSTOMER_SUBMIT_STORAGE_ROOT=http://localstack:4576/s3/some-policy/path
+      - CYREN_FAIL_OPEN_ON_FAILURE=false
+      - CYREN_HOSTNAME=localhost
+      - CYREN_NEW_MAPPINGS_ENABLED=true
+      - DELAY_QUEUE_FEATURE_ENABLED=false
+      - ENVIRONMENT=local
+      - HIGH_RISK_URL_FEATURE_ENABLED=true
+      - HIGH_RISK_URL_MAX_MESSAGE_SIZE_MB=10
+      - HIGH_RISK_URL_MAX_URLS_PER_MESSAGE=100
+      - HIGH_RISK_URL_MAX_URLS_PER_SXL_LOOKUP=15
+      - INTERNET_SUBMIT_BUCKET=sandbox-cloudemail-xgemail-submit
+      - INTERNET_SUBMIT_SERVICE_QUEUE=vpc-000000-sandbox-Internet_Submit_Service_Queue
+      - INTERNET_SUBMIT_STORAGE_ROOT=s3://sandbox-cloudemail-xgemail-submit
+      - LAST_SEEN_AT_CACHE_EXPIRY_MINUTES=60
+      - LAUNCHDARKLY_SOPHOS_CENTRAL_CLIENT_SDK_KEY=1234
+      - LICENSE_CODE_CACHE_EXPIRY_MINUTES=30
+      - LPAS_ENABLED=true
+      - LPAS_ENDPOINT=http://lpas-fake:8080
+      - LPAS_PASSWORD=lpasfakepwd
+      - LPAS_USER=lpasfakeuser
+      - MAILBOX_DLP_POLICY_FILE_PATH=config/policies/dlp/
+      - MAILBOX_LOCAL_PART_FILE_PATH=config/policies/domains/
+      - MAILBOX_POLICY_FILE_PATH=config/policies/endpoints/
+      - MAIL_PIC_API_CREDENTIALS_BUCKET_NAME=mock_s3_bucket
+      - MAIL_PIC_API_CREDENTIALS_FILE=mock_file
+      - MAIL_PIC_API_ROOT_URL=https://mock_url/mail/api/xgemail
+      - MALWARE_SERVICE_ENABLED=true
+      - MALWARE_SERVICE_REQUEST_QUEUE=vpc-000000-Malware_Request
+      - MALWARE_SERVICE_RESPONSE_QUEUE=vpc-000000-Malware_Response
+      - POLICY_BUCKET=sandbox-cloudemail-xgemail-policy
+      - POLICY_STORAGE_ROOT=s3://sandbox-cloudemail-xgemail-policy
+      - S3_ENDPOINT=http://localstack:4572
+      - SASI_SERVICE_REQUEST_QUEUE=vpc-000000-SASI_Request
+      - SASI_SERVICE_RESPONSE_QUEUE=vpc-000000-SASI_Response
+      - SASI_VERDICT_INBOUND_ENABLED=false
+      - SAVI_HOST_NAME=localhost
+      - SAVI_PORT=4010
+      - SMART_BANNER_API_URL=https://mock-cloudstation.sophos.com
+      - SNS_ENDPOINT=http://localstack:4575
+      - SPRING_PROFILES_ACTIVE=local
+      - SQS_ENDPOINT=http://localstack:4576
+      - SXL_URL=https://4.sophosxl.net/lookup
+      - TINY_URL_DOMAINS=alturl.com,bit.ly,cli.re,easyurl.net,is.gd,rebrand.ly,tinyurl.com
+      - TOC_HOST_NAME=protection.sophos.com
+      - TOC_MAX_MESSAGE_MB_SIZE_FOR_REWRITE=10
+      - TOC_SECRET_URI=file:///some-bucket/toc.secret-uri.com
+    networks:
+      - novanet
 
   postfix-is:
     image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:latest

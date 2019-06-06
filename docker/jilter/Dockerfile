@@ -1,3 +1,20 @@
-FROM 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/jilter-common:latest
-ADD run.sh /opt/scripts/run.sh
-RUN chmod 777 /opt/scripts/run.sh
+FROM 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/xgemail-java:latest
+
+LABEL maintainer="Sophos Inc. <www.sophos.com>" \
+      description="jilter-base service image"
+
+ENV SPF_VERSION 1.2.10
+
+RUN yum update -y && \
+	yum install -y \
+            epel-release \
+            gcc-c++ \
+            curl \
+            initscripts \
+            libspf2-${SPF_VERSION} libspf2-devel-${SPF_VERSION} \
+            awscli && \
+ 	        yum clean all
+
+ADD run.sh /opt/run.sh
+
+RUN chmod 777 /opt/run.sh

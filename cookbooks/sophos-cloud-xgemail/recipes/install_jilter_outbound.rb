@@ -10,12 +10,12 @@
 #
 
 package 'tar'
-
+instance_type=`echo $INSTANCE_TYPE`
 NODE_TYPE = node['xgemail']['cluster_type']
 ACCOUNT = node['sophos_cloud']['environment']
 
 # Make sure we're on an customer submit node
-if NODE_TYPE != 'customer-submit'
+if NODE_TYPE != 'customer-submit' && NODE_TYPE != 'jilter-outbound'
   return
 end
 
@@ -139,68 +139,92 @@ user SERVICE_USER do
 end
 
 
-# Give ownership to the jilter service user
-file "#{JILTER_CONF_DIR}/launch_darkly_#{ACCOUNT}.properties" do
-  owner SERVICE_USER
-  group SERVICE_USER
-  action :touch
-end
+if ACCOUNT != 'sandbox'
+
+  # Give ownership to the jilter service user
+  file "#{JILTER_CONF_DIR}/launch_darkly_#{ACCOUNT}.properties" do
+    owner SERVICE_USER
+    group SERVICE_USER
+    action :touch
+  end
+
+  # Create the Jilter service
+  template 'xgemail.jilter.service.sh' do
+    path JILTER_SCRIPT_PATH
+    source 'xgemail.jilter.outbound.service.sh.erb'
+    mode '0700'
+    owner SERVICE_USER
+    group SERVICE_USER
+    variables(
+        :deployment_dir => DEPLOYMENT_DIR,
+        :active_profile => ACTIVE_PROFILE
+    )
+  end
 
 
-# Create the Jilter service
-template 'xgemail.jilter.service.sh' do
-  path JILTER_SCRIPT_PATH
-  source 'xgemail.jilter.outbound.service.sh.erb'
-  mode '0700'
-  owner SERVICE_USER
-  group SERVICE_USER
-  variables(
-      :deployment_dir => DEPLOYMENT_DIR,
-      :active_profile => ACTIVE_PROFILE
-  )
-end
+  # Create the jilter application properties
+  template 'xgemail.jilter.properties' do
+    path JILTER_APPLICATION_PROPERTIES_PATH
+    source 'jilter-outbound-application.properties.erb'
+    mode '0700'
+    owner SERVICE_USER
+    group SERVICE_USER
+    variables(
+        :policy_bucket => POLICY_BUCKET_NAME,
+        :account => ACCOUNT,
+        :customer_submit_bucket => CUSTOMER_SUBMIT_BUCKET_NAME
+    )
+  end
 
+  template 'xgemail-jilter-service' do
+    path "/etc/init.d/#{JILTER_SERVICE_NAME}"
+    source 'xgemail.jilter.service.init.erb'
+    mode '0755'
+    owner 'root'
+    group 'root'
+    variables(
+        :service => JILTER_SERVICE_NAME,
+        :script_path => JILTER_SCRIPT_PATH,
+        :user => SERVICE_USER
+    )
+  end
 
-# Create the jilter application properties
-template 'xgemail.jilter.properties' do
-  path JILTER_APPLICATION_PROPERTIES_PATH
-  source 'jilter-outbound-application.properties.erb'
-  mode '0700'
-  owner SERVICE_USER
-  group SERVICE_USER
-  variables(
-      :policy_bucket => POLICY_BUCKET_NAME,
-      :account => ACCOUNT,
-      :customer_submit_bucket => CUSTOMER_SUBMIT_BUCKET_NAME
-  )
-end
+  service 'xgemail-jilter-service' do
+    service_name JILTER_SERVICE_NAME
+    init_command "/etc/init.d/#{JILTER_SERVICE_NAME}"
+    supports :restart => true, :start => true, :stop => true, :reload => true
+    subscribes :enable, 'template[xgemail-jilter-service]', :immediately
+  end
 
-template 'xgemail-jilter-service' do
-  path "/etc/init.d/#{JILTER_SERVICE_NAME}"
-  source 'xgemail.jilter.service.init.erb'
-  mode '0755'
-  owner 'root'
-  group 'root'
-  variables(
-      :service => JILTER_SERVICE_NAME,
-      :script_path => JILTER_SCRIPT_PATH,
-      :user => SERVICE_USER
-  )
-end
+  # Update postfix to call jilter
+  [
+      'smtpd_milters = inet:localhost:9876',
+      'milter_connect_macros = {client_addr}, {j}',
+      'milter_mail_macros = {mail_addr}, {mail_host), {tls_version}',
+      'milter_end_of_data_macros = {i}'
+  ].each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+  end
 
-service 'xgemail-jilter-service' do
-  service_name JILTER_SERVICE_NAME
-  init_command "/etc/init.d/#{JILTER_SERVICE_NAME}"
-  supports :restart => true, :start => true, :stop => true, :reload => true
-  subscribes :enable, 'template[xgemail-jilter-service]', :immediately
-end
+else
 
-# Update postfix to call jilter
-[
-    'smtpd_milters = inet:localhost:9876',
-    'milter_connect_macros = {client_addr}, {j}',
-    'milter_mail_macros = {mail_addr}, {mail_host), {tls_version}',
-    'milter_end_of_data_macros = {i}'
-].each do | cur |
-  execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+  APPLICATION = node['xgemail']['application']
+  DIRECTION   = node['xgemail']['direction']
+
+  # Create the Jilter service
+  template 'xgemail.jilter.service.sh' do
+    path JILTER_SCRIPT_PATH
+    source 'xgemail.jilter.sandbox.sh.erb'
+    mode '0700'
+    owner SERVICE_USER
+    group SERVICE_USER
+    variables(
+        :deployment_dir => DEPLOYMENT_DIR,
+        :property_path  => JILTER_APPLICATION_PROPERTIES_PATH,
+        :active_profile => ACTIVE_PROFILE,
+        :direction      => DIRECTION,
+        :application    => APPLICATION
+    )
+  end
+
 end
