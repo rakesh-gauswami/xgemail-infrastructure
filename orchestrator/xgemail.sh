@@ -43,6 +43,10 @@ nova_docker_compose_single="${HOME}/g/nova/docker-compose.yml"
 xgemail_replacement_nova_compose="${orchestrator_location}docker-compose-nova-single.yml"
 nova_docker_compose_original_copy="${HOME}/g/nova/docker-compose-single_copy.yml"
 
+nova_env_file="${HOME}/g/nova/.env"
+nova_env_file_original_copy="${HOME}/g/nova/.env_original_copy"
+mail_env_file="${orchestrator_location}environment"
+
 sasi_service_image="email/sasi-service"
 sasi_docker_image="email/sasi-daemon"
 
@@ -88,6 +92,18 @@ function initialize {
     fi
 
     override_files ${nova_docker_compose_single} ${xgemail_replacement_nova_compose}
+
+    #Override nova env file
+    if [ ! -f ${nova_env_file} ]; then
+        echo -e "${RED} ${nova_env_file} could not be found. Ensure it exists at the right location ${NC}"
+        exit 1
+    fi
+
+    if [ ! -f ${nova_env_file_original_copy} ]; then
+        cp ${nova_env_file} ${nova_env_file_original_copy}
+    fi
+
+    override_files ${nova_env_file} ${mail_env_file}
 
     echo -e "${GREEN} Initialization Completed Successfully ${NC}"
 }
