@@ -8,8 +8,6 @@ lambda:
   outbound_monitor_send_lambda_function:                "Xgemail-Outbound-Monitor-Send"
 s3:
   lambda_bucket:                                        "cloud-{{account.name}}-{{account.region}}-lambda"
-ses:
-  ses_deploy:                                           "{{lookup('env','SES_DEPLOY')}}"
 
 template:
   iam:
@@ -23,7 +21,6 @@ template:
     route53_record_template:                            "{{role_path}}/../common/files/cf_templates/route53_record_template.json"
   ses:
     ses_template:                                       "{{role_path}}/files/cf_templates/ses_template.json"
-    ses_custom_resources_template:                      "{{role_path}}/files/cf_templates/ses_custom_resources_template.json"
 stack:
   iam:
     role:

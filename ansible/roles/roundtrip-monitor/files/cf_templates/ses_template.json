@@ -294,6 +294,7 @@
       "Type": "AWS::SES::ReceiptRule",
       "Properties": {
         "RuleSetName": { "Ref": "RuleSetName" },
+        "After": { "Ref": "InboundReceiptRule" },
         "Rule": {
           "Name": { "Ref": "OutboundRuleName" },
           "Recipients": { "Ref": "OutboundMailRecipients" },

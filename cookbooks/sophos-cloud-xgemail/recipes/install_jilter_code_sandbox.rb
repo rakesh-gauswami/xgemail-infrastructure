@@ -33,7 +33,7 @@ directory DEPLOYMENT_DIR do
   recursive true
 end
 
-if NODE_TYPE = 'jilter-inbound'
+if NODE_TYPE == 'jilter-inbound'
   execute 'extract_jilter_package' do
   user 'root'
   cwd "#{PACKAGES_DIR}"
@@ -44,7 +44,7 @@ if NODE_TYPE = 'jilter-inbound'
   end
 
 else
-  if NODE_TYPE = 'jilter-outbound'
+  if NODE_TYPE == 'jilter-outbound'
   execute 'extract_jilter_package' do
   user 'root'
   cwd "#{PACKAGES_DIR}"

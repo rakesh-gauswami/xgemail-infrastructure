@@ -85,14 +85,14 @@ default['xgemail']['savdid_version'] = '2.4'
 default['xgemail']['savdid_cxmail_version'] = 'Cloud:Email:1.0.0'
 
 # Jilter settings
-default['xgemail']['libspfjni'] = '1.0.131-SNAPSHOT'
+default['xgemail']['libspfjni'] = '1.0.14-SNAPSHOT'
 default['xgemail']['libspf2_version'] = '1.2.10-9'
 default['xgemail']['jilter_user'] = 'jilter'
 default['xgemail']['jilter_service_name'] = 'xgemail-jilter-service'
 default['xgemail']['xgemail_active_profile'] = 'aws'
 
 # DKIM specific
-default['xgemail']['libdkimjni'] = '1.0.131-SNAPSHOT'
+default['xgemail']['libdkimjni'] = '1.0.14-SNAPSHOT'
 default['xgemail']['libopendkim_version'] = '2.11.0'
 
 default['xgemail']['policy_efs_mount_dir'] = '/policy-storage'
@@ -164,6 +164,7 @@ default['xgemail']['sqs_lifecycle_poller_message_retention_period'] = '3600'
 default['xgemail']['xgemail_utils_files_dir'] = "#{XGEMAIL_FILES_DIR}/utils"
 
 default['xgemail']['enc_config_key'] = 'config/outbound-relay-control/encryption/'
+default['xgemail']['inbound_tls_config_key'] = 'config/inbound-relay-control/tls/'
 
 default['xgemail']['temp_failure_code'] = 75
 
@@ -198,6 +199,11 @@ XGEMAIL_SQS_MESSAGE_BOUNCER_DIR ="#{XGEMAIL_FILES_DIR}/message-bouncer"
 default['xgemail']['internet_delivery_message_bouncer_processor_dir'] = XGEMAIL_SQS_MESSAGE_BOUNCER_DIR
 default['xgemail']['internet_delivery_message_bouncer_common_dir'] = "#{XGEMAIL_SQS_MESSAGE_BOUNCER_DIR}/common"
 default['xgemail']['internet_delivery_bounce_message_processor_user'] = 'bouncer'
+
+## Risky delivery DSN/NDR settings
+default['xgemail']['risky_delivery_message_bouncer_processor_dir'] = XGEMAIL_SQS_MESSAGE_BOUNCER_DIR
+default['xgemail']['risky_delivery_message_bouncer_common_dir'] = "#{XGEMAIL_SQS_MESSAGE_BOUNCER_DIR}/common"
+default['xgemail']['risky_delivery_bounce_message_processor_user'] = 'bouncer'
 
 ## Cronjob settings
 default['xgemail']['cron_job_timeout'] = '10m'
@@ -308,6 +314,22 @@ default['xgemail']['postfix_instance_data'] = {
     # Give delivery queues extra padding because extra content may be created during processing
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800),
     :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+  },
+  # risky-delivery
+  'risky-delivery' => {
+    :instance_name => 'rd',
+    :port => 25,
+    # Give delivery queues extra padding because extra content may be created during processing
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800),
+    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+  },
+  # risky-extended-delivery
+  'risky-xdelivery' => {
+    :instance_name => 'rx',
+    :port => 8025,
+    # Give delivery queues extra padding because extra content may be created during processing
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600),
+    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
   }
 }
 
