@@ -216,6 +216,46 @@ execute 'extract_jilter_encryption_package' do
   EOH
 end
 
+
+# Create conf directories
+directory "#{DEPLOYMENT_DIR}/#{JILTER_INBOUND_PACKAGE_NAME}/conf" do
+  mode '0755'
+  owner 'root'
+  group 'root'
+  recursive true
+end
+
+directory "#{DEPLOYMENT_DIR}/#{JILTER_OUTBOUND_PACKAGE_NAME}/conf" do
+  mode '0755'
+  owner 'root'
+  group 'root'
+  recursive true
+end
+
+# Write launch darkly application properties
+%w(inf dev dev3 qa prod).each do | cur |
+
+  template "launch_darkly_#{cur}.properties" do
+    path "#{DEPLOYMENT_DIR}/#{JILTER_OUTBOUND_PACKAGE_NAME}/conf/launch_darkly_#{cur}.properties"
+    source 'jilter-launch-darkly.properties.erb'
+    mode '0700'
+    variables(
+        :launch_darkly_key => node['xgemail']["launch_darkly_#{cur}"]
+    )
+  end
+
+  template "launch_darkly_#{cur}.properties" do
+    path "#{DEPLOYMENT_DIR}/#{JILTER_INBOUND_PACKAGE_NAME}/conf/launch_darkly_#{cur}.properties"
+    source 'jilter-launch-darkly.properties.erb'
+    mode '0700'
+    variables(
+        :launch_darkly_key => node['xgemail']["launch_darkly_#{cur}"]
+    )
+  end
+
+end
+
+
 # Create a sym link to xgemail-jilter-encryption
 link "#{DEPLOYMENT_DIR}/xgemail-jilter-encryption" do
   to "#{DEPLOYMENT_DIR}/#{JILTER_ENCRYPTION_PACKAGE_NAME}"

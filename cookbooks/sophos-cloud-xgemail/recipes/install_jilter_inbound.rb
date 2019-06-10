@@ -12,7 +12,7 @@
 package 'tar'
 
 NODE_TYPE = node['xgemail']['cluster_type']
-ACCOUNT = node['sophos_cloud']['account']
+ACCOUNT = node['sophos_cloud']['environment']
 
 # Make sure we're on an internet submit node
 if NODE_TYPE != 'internet-submit' && NODE_TYPE != 'jilter-inbound'
@@ -44,6 +44,8 @@ LIBOPENDKIM_PACKAGE_NAME = "libopendkim-#{LIBOPENDKIM_VERSION}"
 SERVICE_USER = node['xgemail']['jilter_user']
 POLICY_BUCKET_NAME   = node['xgemail']['xgemail_policy_bucket_name']
 ACTIVE_PROFILE = node['xgemail']['xgemail_active_profile']
+
+INTERNET_SUBMIT_BUCKET_NAME = node['xgemail']['xgemail_bucket_name']
 
 if ACCOUNT == 'sandbox'
   include_recipe 'sophos-cloud-xgemail::install_jilter_code_sandbox'
@@ -133,6 +135,14 @@ user SERVICE_USER do
   shell '/sbin/nologin'
 end
 
+# Give ownership to the jilter service user
+file "#{JILTER_CONF_DIR}/launch_darkly_#{ACCOUNT}.properties" do
+  owner SERVICE_USER
+  group SERVICE_USER
+  action :touch
+end
+
+
 # Create the jilter application properties
 template 'xgemail.jilter.properties' do
   path JILTER_APPLICATION_PROPERTIES_PATH
@@ -141,7 +151,9 @@ template 'xgemail.jilter.properties' do
   owner SERVICE_USER
   group SERVICE_USER
   variables(
-      :policy_bucket => POLICY_BUCKET_NAME
+      :policy_bucket => POLICY_BUCKET_NAME,
+      :account => ACCOUNT,
+      :internet_submit_bucket => INTERNET_SUBMIT_BUCKET_NAME
   )
 end
 

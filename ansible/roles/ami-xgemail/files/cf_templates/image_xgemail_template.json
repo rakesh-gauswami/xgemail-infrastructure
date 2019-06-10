@@ -148,6 +148,31 @@
       "Default": "ami-builder-key"
     },
 
+    "LaunchDarklyInf": {
+      "Description": "The LaunckDarkly Client key for the INF account",
+      "Type": "String"
+    },
+
+    "LaunchDarklyDev": {
+      "Description": "The LaunckDarkly Client key for the DEV account",
+      "Type": "String"
+    },
+
+    "LaunchDarklyDev3": {
+      "Description": "The LaunckDarkly Client key for the DEV3 account",
+      "Type": "String"
+    },
+
+    "LaunchDarklyQa": {
+      "Description": "The LaunckDarkly Client key for the QA account",
+      "Type": "String"
+    },
+
+    "LaunchDarklyProd": {
+      "Description": "The LaunckDarkly Client key for the PROD account",
+      "Type": "String"
+    },
+
     "S3CookbookRepositoryUrl": {
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
       "Type": "String"
@@ -369,7 +394,12 @@
                       "    \"xgemail\": {",
                       "        \"jilter_inbound_version\":      \"{{jilter_inbound_version}}\",",
                       "        \"jilter_outbound_version\":     \"{{jilter_outbound_version}}\",",
-                      "        \"jilter_encryption_version\":   \"{{jilter_encryption_version}}\"",
+                      "        \"jilter_encryption_version\":   \"{{jilter_encryption_version}}\",",
+                      "        \"launch_darkly_inf\":           \"{{launch_darkly_inf}}\",",
+                      "        \"launch_darkly_dev\":           \"{{launch_darkly_dev}}\",",
+                      "        \"launch_darkly_dev3\":          \"{{launch_darkly_dev3}}\",",
+                      "        \"launch_darkly_qa\":            \"{{launch_darkly_qa}}\",",
+                      "        \"launch_darkly_prod\":          \"{{launch_darkly_prod}}\"",
                       "    }",
                       "}",
                       ""
@@ -388,6 +418,11 @@
                   "jilter_inbound_version":                     { "Ref": "JilterInboundVersion"},
                   "jilter_outbound_version":                    { "Ref": "JilterOutboundVersion"},
                   "jilter_encryption_version":                  { "Ref": "JilterEncryptionVersion"},
+                  "launch_darkly_inf":                          { "Ref": "LaunchDarklyInf"},
+                  "launch_darkly_dev":                          { "Ref": "LaunchDarklyDev"},
+                  "launch_darkly_dev3":                         { "Ref": "LaunchDarklyDev3"},
+                  "launch_darkly_qa":                           { "Ref": "LaunchDarklyQa"},
+                  "launch_darkly_prod":                         { "Ref": "LaunchDarklyProd"},
                   "region":                                     { "Ref": "AWS::Region" },
                   "s3_3rdparty_repo_url":                       { "Ref": "S3Sophos3rdPartyRepositoryUrl" },
                   "s3_app_repo_url":                            { "Ref": "S3SophosAppRepositoryUrl" },

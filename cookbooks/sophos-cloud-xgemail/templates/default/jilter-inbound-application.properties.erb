@@ -1,12 +1,21 @@
+# Xgemail Inbound Jilter Application Properties
+
+application.name=xgemail-jilter-inbound
 
 multi.policy.global.config.location=file:///policy-storage/config/inbound-relay-control/multi-policy/global.CONFIG
-
-local.storage.root=file:///policy-storage/
-local.storage.legacy.root=file:///opt/sophos/xgemail/
-bucket.storage.root=s3://<%= @policy_bucket %>
-
-recipient.info.path.prefix=config/policies/domains/
-recipient.policy.path.prefix=config/policies/endpoints/
-domain.info.path.prefix=spf/domains/
-
 use.s3.policy.storage=true
+
+POLICY_STORAGE_ROOT=s3://<%= @policy_bucket %>
+MAILBOX_POLICY_FILE_PATH=config/policies/endpoints/
+MAILBOX_LOCAL_PART_FILE_PATH=config/policies/domains/
+MAILBOX_DLP_POLICY_FILE_PATH=config/policies/dlp/
+
+CUSTOMER_SUBMIT_STORAGE_ROOT=s3://no-access
+INTERNET_SUBMIT_STORAGE_ROOT=s3://<%= @internet_submit_bucket %>
+
+ACCOUNT=<%= @account %>
+
+# Need to explicitly ignore redis auto configuration
+spring.data.redis.repositories.enabled=false
+spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+
