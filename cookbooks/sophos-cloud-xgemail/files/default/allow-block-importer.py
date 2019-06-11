@@ -14,6 +14,8 @@ import requests
 import subprocess
 import sys
 import logging
+
+from requests_toolbelt import MultipartEncoder
 from logging.handlers import SysLogHandler
 
 # Constants
@@ -44,12 +46,12 @@ if ACCOUNT != 'sandbox':
 
   auth = get_passphrase()
 
-  HEADERS = {
+  headers = {
     'Authorization': 'Basic ' + auth
   }
   PIC_XGEMAIL_API_URL = 'https://%s/mail/api/xgemail' % (PIC_FQDN)
 else:
-  HEADERS = {
+  headers = {
     'Authorization': 'Basic'
   }
   PIC_XGEMAIL_API_URL = 'http://%s/mail-services/api/xgemail' % (PIC_FQDN)
@@ -64,11 +66,23 @@ params = {
   'replace': True
 }
 
+m = MultipartEncoder(
+  fields={'file': ('file', open('/tmp/example.csv', 'rb'), 'text/csv'), 'customerId': '84e61a73-5e3b-4616-8719-6098a0cb0ede'}
+)
+
+headers['Content-Type'] = m.content_type
+
 response = requests.post(
     IMPORTER_URL,
-    files = files,
+    data = m,
     params = params,
-    headers=HEADERS,
+    headers = headers,
     timeout=MAIL_PIC_RESPONSE_TIMEOUT
 )
 response.raise_for_status()
+
+responseAsJson = response.json()
+successful_count = responseAsJson['successful_count']
+error_entries = responseAsJson['error_entries']
+
+logger.info("successful count: {0}, error entries: {1}".format(successful_count, error_entries))
