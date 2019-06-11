@@ -6,6 +6,7 @@
 # Copyright: Copyright (c) 1997-2016. All rights reserved.
 # Company: Sophos Limited or one of its affiliates.
 
+import argparse
 import boto3
 import base64
 import json
@@ -25,7 +26,7 @@ MAIL_PIC_RESPONSE_TIMEOUT = 60
 MAIL_PIC_API_AUTH = 'xgemail-eu-west-1-mail'
 CONNECTIONS_BUCKET = 'cloud-dev-connections'
 
-# logging to syslog setup
+# Logging to syslog setup
 logging.getLogger("botocore").setLevel(logging.WARNING)
 logger = logging.getLogger('allow-block-importer')
 logger.setLevel(logging.INFO)
@@ -39,56 +40,70 @@ logger.addHandler(handler)
 
 ACCOUNT = 'dev'
 
-def callback(monitor):
-    logger.info("Bytes read: {0}".format(monitor.bytes_read))
+def get_api_url():
+    if ACCOUNT == 'sandbox':
+        return 'http://{0}/mail-services/api/xgemail'.format(PIC_FQDN)
+    return 'https://{0}/mail/api/xgemail'.format(PIC_FQDN)
 
-if ACCOUNT != 'sandbox':
-  def get_passphrase():
+IMPORTER_URL = get_api_url() + '/allow-block/import'
+
+def get_passphrase():
     s3 = boto3.client('s3')
     passphrase = s3.get_object(Bucket=CONNECTIONS_BUCKET, Key=MAIL_PIC_API_AUTH)
     return base64.b64encode('mail:' + passphrase['Body'].read())
 
-  auth = get_passphrase()
+def get_headers():
+    if ACCOUNT == 'sandbox':
+        return { 'Authorization': 'Basic' }
+    return { 'Authorization': 'Basic ' + get_passphrase() }
 
-  headers = {
-    'Authorization': 'Basic ' + auth
-  }
-  PIC_XGEMAIL_API_URL = 'https://%s/mail/api/xgemail' % (PIC_FQDN)
-else:
-  headers = {
-    'Authorization': 'Basic'
-  }
-  PIC_XGEMAIL_API_URL = 'http://%s/mail-services/api/xgemail' % (PIC_FQDN)
+def callback(monitor):
+    logger.info("Bytes read: {0}".format(monitor.bytes_read))
 
-IMPORTER_URL = PIC_XGEMAIL_API_URL + '/allow-block/import'
+def split_files(file_path):
+    
 
-logger.info('Allow/Block Importer URL: <%s>', IMPORTER_URL)
+def upload_allow_block_lists(file_path, customer_id):
+    logger.info('Allow/Block Importer URL: <%s>', IMPORTER_URL)
 
-files = {'file': open('/tmp/example.csv', 'rb')}
-params = {
-  'customerId': '84e61a73-5e3b-4616-8719-6098a0cb0ede',
-  'replace': True
-}
+    params = {
+      'customerId': customer_id,
+      'replace': True
+    }
 
-multipartEncoder = MultipartEncoder(
-  fields={'file': ('file', open('/tmp/example.csv', 'rb'), 'text/csv'), 'customerId': '84e61a73-5e3b-4616-8719-6098a0cb0ede'}
-)
+    multipartEncoder = MultipartEncoder(
+      fields={'file': ('file', open(file_path, 'rb'), 'text/csv')}
+    )
 
-multipartEncoderMonitor = MultipartEncoderMonitor(multipartEncoder, callback)
+    multipartEncoderMonitor = MultipartEncoderMonitor(multipartEncoder, callback)
 
-headers['Content-Type'] = m.content_type
+    headers = get_headers()
+    headers['Content-Type'] = multipartEncoder.content_type
 
-response = requests.post(
-    IMPORTER_URL,
-    data = multipartEncoderMonitor,
-    params = params,
-    headers = headers,
-    timeout=MAIL_PIC_RESPONSE_TIMEOUT
-)
-response.raise_for_status()
+    response = requests.post(
+        IMPORTER_URL,
+        data = multipartEncoderMonitor,
+        params = params,
+        headers = headers,
+        timeout=MAIL_PIC_RESPONSE_TIMEOUT
+    )
+    response.raise_for_status()
 
-responseAsJson = response.json()
-successful_count = responseAsJson['successful_count']
-error_entries = responseAsJson['error_entries']
+    responseAsJson = response.json()
+    successful_count = responseAsJson['successful_count']
+    error_entries = responseAsJson['error_entries']
 
-logger.info("successful count: {0}, error entries: {1}".format(successful_count, error_entries))
+    logger.info("successful count: {0}, error entries: {1}".format(successful_count, error_entries))
+
+if __name__ == "__main__":
+    """
+    Entry point to the script
+    """
+    parser = argparse.ArgumentParser(description = 'Upload Allow/Block list for customer')
+    parser.add_argument('--customer_id', required = True, type = str, help = 'The customer ID for which to import Allow/Block lists')
+    parser.add_argument('--file', required = True, type = str, help = 'The CSV file to upload')
+    parser.add_argument('--replace', action = 'store_true', help = 'Replaces existing allow/block entries')
+
+    args = parser.parse_args()
+
+    upload_allow_block_lists(args.file, args.customer_id)
