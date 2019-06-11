@@ -454,7 +454,7 @@
     "MessageHistoryEventQueueToBounceEventSnsSubscription": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
-        "Endpoint": { "Ref": "MessageHistoryEventQueueArn" },
+        "Endpoint": { "Ref": "MessageHistoryQueueArn" },
         "Protocol": "sqs",
         "TopicArn": { "Ref": "BounceEventTopicArn"}
       }
@@ -462,7 +462,7 @@
     "MessageHistoryEventQueueToRedirectEventSnsSubscription": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
-        "Endpoint": { "Ref": "MessageHistoryEventQueueArn" },
+        "Endpoint": { "Ref": "MessageHistoryQueueArn" },
         "Protocol": "sqs",
         "TopicArn": { "Ref": "RedirectEventTopicArn"}
       }
@@ -1281,7 +1281,7 @@
             }
           ]
         },
-        "Queues": [{ "Ref": "MessageHistoryEventQueueUrl" }]
+        "Queues": [{ "Ref": "MessageHistoryQueueUrl" }]
       }
     },
     "NotifierQueuePolicy": {
