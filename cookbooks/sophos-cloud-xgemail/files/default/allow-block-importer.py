@@ -15,7 +15,8 @@ import subprocess
 import sys
 import logging
 
-from requests_toolbelt import MultipartEncoder
+from requests_toolbelt import (MultipartEncoder,
+                               MultipartEncoderMonitor)
 from logging.handlers import SysLogHandler
 
 # Constants
@@ -37,6 +38,9 @@ handler.formatter = formatter
 logger.addHandler(handler)
 
 ACCOUNT = 'dev'
+
+def callback(monitor):
+    logger.info("Bytes read: {0}".format(monitor.bytes_read))
 
 if ACCOUNT != 'sandbox':
   def get_passphrase():
@@ -66,15 +70,17 @@ params = {
   'replace': True
 }
 
-m = MultipartEncoder(
+multipartEncoder = MultipartEncoder(
   fields={'file': ('file', open('/tmp/example.csv', 'rb'), 'text/csv'), 'customerId': '84e61a73-5e3b-4616-8719-6098a0cb0ede'}
 )
+
+multipartEncoderMonitor = MultipartEncoderMonitor(multipartEncoder, callback)
 
 headers['Content-Type'] = m.content_type
 
 response = requests.post(
     IMPORTER_URL,
-    data = m,
+    data = multipartEncoderMonitor,
     params = params,
     headers = headers,
     timeout=MAIL_PIC_RESPONSE_TIMEOUT
