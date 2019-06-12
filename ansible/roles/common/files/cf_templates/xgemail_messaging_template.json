@@ -238,14 +238,6 @@
     "RiskyDeliveryQueueUrl": {
       "Description": "Endpoint URL for Risky delivery SQS queue",
       "Type": "String"
-    },
-    "MessageHistoryEventQueueArn": {
-      "Description": "Endpoint URL for Message history event SQS queue",
-      "Type": "String"
-    },
-    "MessageHistoryEventQueueUrl": {
-      "Description": "Endpoint URL for Message history event SQS queue",
-      "Type": "String"
     }
   },
 
@@ -452,7 +444,7 @@
         "RawMessageDelivery": "true"
       }
     },
-    "MessageHistoryEventQueueToBounceEventSnsSubscription": {
+    "MessageHistoryQueueToBounceEventSnsSubscription": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
         "Endpoint": { "Ref": "MessageHistoryQueueArn" },
@@ -460,7 +452,7 @@
         "TopicArn": { "Ref": "BounceEventTopicArn"}
       }
     },
-    "MessageHistoryEventQueueToRedirectEventSnsSubscription": {
+    "MessageHistoryQueueToRedirectEventSnsSubscription": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
         "Endpoint": { "Ref": "MessageHistoryQueueArn" },
@@ -821,6 +813,30 @@
               "Condition": {
                 "ArnEquals": {
                   "aws:SourceArn": {"Ref": "RiskyDeliveryTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-RedirectEventTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "RedirectEventTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-BounceEventTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "BounceEventTopicArn"}
                 }
               }
             }
@@ -1247,42 +1263,6 @@
           ]
         },
         "Queues": [{ "Ref": "BounceEventQueueUrl" }]
-      }
-    },
-    "MessageHistoryEventQueuePolicy": {
-      "Type": "AWS::SQS::QueuePolicy",
-      "Properties": {
-        "PolicyDocument": {
-          "Version": "2012-10-17",
-          "Id": "MessageHistoryEventQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
-          "Statement": [
-            {
-              "Sid": "Allow-RedirectEventTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "RedirectEventTopicArn"}
-                }
-              }
-            },
-            {
-              "Sid": "Allow-BounceEventTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "BounceEventTopicArn"}
-                }
-              }
-            }
-          ]
-        },
-        "Queues": [{ "Ref": "MessageHistoryQueueUrl" }]
       }
     },
     "NotifierQueuePolicy": {
