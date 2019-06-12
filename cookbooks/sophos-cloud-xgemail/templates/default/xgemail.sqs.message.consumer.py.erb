@@ -106,6 +106,14 @@ def parse_sqs_message(msg, receipt):
                       msg_as_json["submit_message_type"],
                       receipt)
 
+
+def get_transport_route_header(recipients):
+
+    header_template = 'X-Sophos-Email-Transport-Route: %s:[%]'
+
+
+
+
 # Attempts to retrieve headers using api exposed on mail pic
 def attempt_to_retrieve_headers(message_path):
     # encode the message_path query parameter with urllib to
