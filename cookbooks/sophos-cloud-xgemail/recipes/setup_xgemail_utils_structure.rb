@@ -37,6 +37,7 @@ end
 
 [
     'awshandler.py',
+    'configformatter.py',
     'diskutils.py',
     'formatterutils.py',
     'gziputils.py',
