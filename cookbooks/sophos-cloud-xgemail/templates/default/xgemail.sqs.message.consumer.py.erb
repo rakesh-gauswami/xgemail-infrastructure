@@ -462,11 +462,12 @@ while True:
                 )
             )
 
-            # Add the transport route header to the existing headers
-            add_transport_route_header(
-                recipients,
-                headers
-            )
+            # Add the transport route header to the existing headers if it's an INBOUND message
+            if MESSAGE_DIRECTION == 'INBOUND':
+                add_transport_route_header(
+                    recipients,
+                    headers
+                )
 
             # attempt to add any existing headers to the message
             message_binary_with_headers = add_headers(
