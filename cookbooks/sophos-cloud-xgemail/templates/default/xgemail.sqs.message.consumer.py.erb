@@ -111,11 +111,12 @@ def parse_sqs_message(msg, receipt):
 
 # Attempts to create a new header of the format:
 #
-#   X-Sophos-Email-Transport-Route: <transport-type>:[<host>]:<port>
+#   X-Sophos-Email-Transport-Route: <transport type>:[<host>]:<port>
 #
-# Where transport-type may be either "smtp" or "smtp_encrypt",
+# Where transport type may be either "smtp" or "smtp_encrypt",
 # host is the ip address or fully qualified domain name of the
-# customers mail server, and port is the port on which the mail server is listening.
+# customers mail server, and port is the port on which the mail
+# server is listening.
 #
 # We retrieve the customers transport route from S3, and expect JSON in the format:
 # {
@@ -125,18 +126,18 @@ def parse_sqs_message(msg, receipt):
 # }
 #
 # If no transport route can be found or parsed, the value "Unknown" will
-# be used.
-def get_transport_route_header(recipients):
+# be used. The header name and value will be added to the existing_headers
+# as a new key/value
+def add_transport_route_header(recipients_addresses, existing_headers):
 
-    header_template = 'X-Sophos-Email-Transport-Route: {0}'
-
-    # All recipients should have the same domain at this point
-    # due to upstream message splitting
-    customer_domain = recipients[0].split('@')[1]
-
-    s3_key = 'config/inbound-relay-control/delivery-routes/{0}.ROUTE'.format(customer_domain)
+    header_name = 'X-Sophos-Email-Transport-Route'
 
     try:
+        # All recipients should have the same domain at this point
+        # due to upstream message splitting
+        customer_domain = recipients_addresses[0].split('@')[1]
+
+        s3_key = 'config/inbound-relay-control/delivery-routes/{0}.ROUTE'.format(customer_domain)
 
         raw_config_data = awshandler.download_data_from_s3(POLICY_BUCKET_NAME, s3_key)
         config_data = configformatter.get_config_binary(raw_config_data)
@@ -151,7 +152,7 @@ def get_transport_route_header(recipients):
             port = config_json['port']
             header_value = '{0}:[{1}]:{2}'.format(transport, host, port)
 
-        return header_template.format(header_value)
+        existing_headers[header_name] = header_value
 
     except Exception as e:
 
@@ -161,9 +162,8 @@ def get_transport_route_header(recipients):
         #logger.exception(
         #    'Unable to create transport route header for recipients [{0}], Exception: {1}'.format(recipients, e)
         #)
-        return header_template.format('Unknown')
 
-
+        existing_headers[header_name] = 'Unknown'
 
 
 # Attempts to retrieve headers using api exposed on mail pic
@@ -460,6 +460,12 @@ while True:
                     None if sender is None else sender.encode('utf-8'),
                     '>, <'.join(r.encode('utf-8') for r in recipients)
                 )
+            )
+
+            # Add the transport route header to the existing headers
+            add_transport_route_header(
+                recipients,
+                headers
             )
 
             # attempt to add any existing headers to the message
