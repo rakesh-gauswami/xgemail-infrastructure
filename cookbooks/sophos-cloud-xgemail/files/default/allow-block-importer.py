@@ -22,16 +22,16 @@ from logging.handlers import SysLogHandler
 
 # Constants
 PIC_FQDN = 'mail-cloudstation-eu-west-1.dev.hydra.sophos.com'
-MAIL_PIC_RESPONSE_TIMEOUT = 60
+MAIL_PIC_RESPONSE_TIMEOUT = 120
 MAIL_PIC_API_AUTH = 'xgemail-eu-west-1-mail'
 CONNECTIONS_BUCKET = 'cloud-dev-connections'
+MAX_FILE_SIZE = 10000
 
 # Logging to syslog setup
 logging.getLogger("botocore").setLevel(logging.WARNING)
 logger = logging.getLogger('allow-block-importer')
 logger.setLevel(logging.INFO)
 handler = logging.StreamHandler()
-# handler = logging.handlers.SysLogHandler('/dev/log')
 formatter = logging.Formatter(
     '[%(name)s] %(process)d %(levelname)s %(message)s'
 )
@@ -39,6 +39,14 @@ handler.formatter = formatter
 logger.addHandler(handler)
 
 ACCOUNT = 'dev'
+
+class ApiResult:
+    def __init__(self, file_name, response):
+        self.file_name = file_name
+        self.response = response
+
+    def __str__(self):
+        return str(self.__class__) + ": " + str(self.__dict__)
 
 def get_api_url():
     if ACCOUNT == 'sandbox':
@@ -61,14 +69,41 @@ def callback(monitor):
     logger.info("Bytes read: {0}".format(monitor.bytes_read))
 
 def split_files(file_path):
-    
+    """
+    Splits the file provided as parameter into smaller files based on
+    the MAX_FILE_SIZE constant.
+    """
+    all_files = set()
+    with open(file_path, 'r') as f:
+        file_nr = 0
+        for line in f.readlines():
+            new_file_path = '{0}.{1}'.format(file_path, file_nr)
+            all_files.add(new_file_path)
 
-def upload_allow_block_lists(file_path, customer_id):
-    logger.info('Allow/Block Importer URL: <%s>', IMPORTER_URL)
+            if (os.path.exists(new_file_path)):
+                cur_size = os.stat(new_file_path).st_size
+                if cur_size + len(line) >= MAX_FILE_SIZE:
+                    file_nr += 1
+                    new_file_path = '{0}.{1}'.format(file_path, file_nr)
+
+            with open(new_file_path, 'a+') as dest_file:
+                dest_file.write(line)
+    return all_files
+
+def upload(file_path, customer_id, replace):
+    """
+    Uploads the file under the provided file path for the given customer
+    """
+    logger.info(
+        'Uploading %s for customer %s. Replace existing entries: %s',
+        file_path,
+        customer_id,
+        replace
+    )
 
     params = {
       'customerId': customer_id,
-      'replace': True
+      'replace': replace
     }
 
     multipartEncoder = MultipartEncoder(
@@ -87,13 +122,38 @@ def upload_allow_block_lists(file_path, customer_id):
         headers = headers,
         timeout=MAIL_PIC_RESPONSE_TIMEOUT
     )
-    response.raise_for_status()
+    return ApiResult(file_path, response)
 
-    responseAsJson = response.json()
-    successful_count = responseAsJson['successful_count']
-    error_entries = responseAsJson['error_entries']
+def import_csv(main_file, customer_id, replace):
+    """
+    Imports the provided allow/block file for the given customer
+    """
+    all_results = []
+    for cur_file in split_files(main_file):
+        all_results.append(
+            upload(cur_file, customer_id, replace)
+        )
 
-    logger.info("successful count: {0}, error entries: {1}".format(successful_count, error_entries))
+    failure_file = '{0}_failed'.format(main_file)
+    failures = 0
+    for result in all_results:
+        if result.response == 200:
+            continue
+        with open(result.file_name, 'r') as read_file:
+            with open(failure_file, 'a+') as write_file:
+                for line in read_file:
+                    failures += 1
+                    write_file.write(line)
+    if failures > 0:
+        logger.warn('Total failures: {0}'.format(failures))
+        logger.warn('Failure entries written to {0}'.format(failure_file))
+
+def cleanup(main_file):
+    """
+    Cleans up any temporary files that were created during import process
+    """
+    logger.info('Cleaning up temporary files for {0}'.format(main_file))
+    os.system('rm -f {0}.*'.format(main_file))
 
 if __name__ == "__main__":
     """
@@ -105,5 +165,5 @@ if __name__ == "__main__":
     parser.add_argument('--replace', action = 'store_true', help = 'Replaces existing allow/block entries')
 
     args = parser.parse_args()
-
-    upload_allow_block_lists(args.file, args.customer_id)
+    import_csv(args.file, args.customer_id, args.replace)
+    cleanup(args.file)
