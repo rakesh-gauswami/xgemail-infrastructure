@@ -27,6 +27,8 @@ MAIL_PIC_API_AUTH = 'xgemail-eu-west-1-mail'
 CONNECTIONS_BUCKET = 'cloud-dev-connections'
 MAX_FILE_SIZE = 10000
 
+EMTPY_CSV_FILE_PATH = '/tmp/allow_block_empty.csv'
+
 # Logging to syslog setup
 logging.getLogger("botocore").setLevel(logging.WARNING)
 logger = logging.getLogger('allow-block-importer')
@@ -95,7 +97,7 @@ def upload(file_path, customer_id, replace):
     Uploads the file under the provided file path for the given customer
     """
     logger.info(
-        'Uploading %s for customer %s. Replace existing entries: %s',
+        'Importing %s for customer %s. Replace existing entries: %s',
         file_path,
         customer_id,
         replace
@@ -148,12 +150,20 @@ def import_csv(main_file, customer_id, replace):
         logger.warn('Total failures: {0}'.format(failures))
         logger.warn('Failure entries written to {0}'.format(failure_file))
 
+def delete_all(customer_id):
+    """
+    Removes all allow/block entries for the provided customer
+    """
+    with open(EMTPY_CSV_FILE_PATH, 'a+'):
+        upload(EMTPY_CSV_FILE_PATH, customer_id, True)
+
 def cleanup(main_file):
     """
     Cleans up any temporary files that were created during import process
     """
     logger.info('Cleaning up temporary files for {0}'.format(main_file))
     os.system('rm -f {0}.*'.format(main_file))
+    os.system('rm -f {0}'.format(EMTPY_CSV_FILE_PATH))
 
 if __name__ == "__main__":
     """
@@ -161,9 +171,17 @@ if __name__ == "__main__":
     """
     parser = argparse.ArgumentParser(description = 'Upload Allow/Block list for customer')
     parser.add_argument('--customer_id', required = True, type = str, help = 'The customer ID for which to import Allow/Block lists')
-    parser.add_argument('--file', required = True, type = str, help = 'The CSV file to upload')
     parser.add_argument('--replace', action = 'store_true', help = 'Replaces existing allow/block entries')
 
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('--file', type = str, help = 'The CSV file containing Allow/Block entries to be imported')
+    group.add_argument('--delete-all', dest = 'delete_all', action = 'store_true', help = 'Removes all currently stored Allow/Block entries for the given customer')
+
     args = parser.parse_args()
-    import_csv(args.file, args.customer_id, args.replace)
+
+    if args.delete_all:
+        logger.info("Deleting all allow/block entries for customer")
+        delete_all(args.customer_id)
+    else:
+        import_csv(args.file, args.customer_id, args.replace)
     cleanup(args.file)
