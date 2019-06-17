@@ -3,7 +3,7 @@
 #
 # Polls XGEMAIL PIC for a list of customer domains
 #
-# Copyright: Copyright (c) 1997-2016. All rights reserved.
+# Copyright: Copyright (c) 1997-2019. All rights reserved.
 # Company: Sophos Limited or one of its affiliates.
 
 import argparse
@@ -47,6 +47,13 @@ class ApiResult:
         self.file_name = file_name
         self.response = response
 
+    def is_successful(self):
+        return self.response.status_code in (200, 201)
+
+    def has_errors(self):
+        response_as_json = self.response.json()
+        return 'error_entries' in response_as_json and len(response_as_json['error_entries']) > 0
+
     def __str__(self):
         return str(self.__class__) + ": " + str(self.__dict__)
 
@@ -68,7 +75,8 @@ def get_headers():
     return { 'Authorization': 'Basic ' + get_passphrase() }
 
 def callback(monitor):
-    logger.info("Bytes read: {0}".format(monitor.bytes_read))
+    pass
+    # logger.info("Bytes read: {0}".format(monitor.bytes_read))
 
 def split_files(file_path):
     """
@@ -138,14 +146,16 @@ def import_csv(main_file, customer_id, replace):
 
     failure_file = '{0}_failed'.format(main_file)
     failures = 0
-    for result in all_results:
-        if result.response == 200:
-            continue
-        with open(result.file_name, 'r') as read_file:
-            with open(failure_file, 'a+') as write_file:
-                for line in read_file:
-                    failures += 1
-                    write_file.write(line)
+    with open(failure_file, 'w+') as write_file:
+        for result in all_results:
+            logger.info(result.response.json())
+            if not result.is_successful():
+                with open(result.file_name, 'r') as read_file:
+                    for line in read_file:
+                        failures += 1
+                        write_file.write(line)
+            elif result.has_errors():
+                logger.info('FIXME: Has errors')
     if failures > 0:
         logger.warn('Total failures: {0}'.format(failures))
         logger.warn('Failure entries written to {0}'.format(failure_file))
