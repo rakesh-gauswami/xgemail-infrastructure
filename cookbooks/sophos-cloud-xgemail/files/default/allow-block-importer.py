@@ -12,9 +12,9 @@ import base64
 import json
 import os
 import requests
-import subprocess
 import sys
 import logging
+import csv
 
 from requests_toolbelt import (MultipartEncoder,
                                MultipartEncoderMonitor)
@@ -25,7 +25,8 @@ PIC_FQDN = 'mail-cloudstation-eu-west-1.dev.hydra.sophos.com'
 MAIL_PIC_RESPONSE_TIMEOUT = 120
 MAIL_PIC_API_AUTH = 'xgemail-eu-west-1-mail'
 CONNECTIONS_BUCKET = 'cloud-dev-connections'
-MAX_FILE_SIZE = 10000
+HEADER_LINE = 'entry, action, aliases\n'
+MAX_FILE_SIZE = 9500
 
 EMTPY_CSV_FILE_PATH = '/tmp/allow_block_empty.csv'
 
@@ -35,7 +36,7 @@ logger = logging.getLogger('allow-block-importer')
 logger.setLevel(logging.INFO)
 handler = logging.StreamHandler()
 formatter = logging.Formatter(
-    '[%(name)s] %(process)d %(levelname)s %(message)s'
+    '[%(name)s] %(levelname)s %(message)s'
 )
 handler.formatter = formatter
 logger.addHandler(handler)
@@ -47,20 +48,33 @@ class ApiResult:
         self.file_name = file_name
         self.response = response
 
+    def get_status_code(self):
+        return self.response.status_code
+
     def is_successful(self):
-        return self.response.status_code in (200, 201)
+        return self.get_status_code() in (200, 201)
+
+    def get_successful(self):
+        if not self.is_successful():
+            return 0
+        return self.response.json()['successful_count']
 
     def has_errors(self):
         response_as_json = self.response.json()
         return 'error_entries' in response_as_json and len(response_as_json['error_entries']) > 0
+
+    def get_errors(self):
+        if 'error_entries' in self.response.json():
+            return response_as_json['error_entries']
+        return []
 
     def __str__(self):
         return str(self.__class__) + ": " + str(self.__dict__)
 
 def get_api_url():
     if ACCOUNT == 'sandbox':
-        return 'http://{0}/mail-services/api/xgemail'.format(PIC_FQDN)
-    return 'https://{0}/mail/api/xgemail'.format(PIC_FQDN)
+        return 'http://{}/mail-services/api/xgemail'.format(PIC_FQDN)
+    return 'https://{}/mail/api/xgemail'.format(PIC_FQDN)
 
 IMPORTER_URL = get_api_url() + '/allow-block/import'
 
@@ -74,43 +88,43 @@ def get_headers():
         return { 'Authorization': 'Basic' }
     return { 'Authorization': 'Basic ' + get_passphrase() }
 
-def callback(monitor):
-    pass
-    # logger.info("Bytes read: {0}".format(monitor.bytes_read))
+def write_new_file(file_name, content):
+    logger.debug('Writing new file {}: \n{}'.format(file_name, content))
+    with open(file_name, 'w') as f:
+        f.write(content + '\n')
+    return file_name
 
-def split_files(file_path):
+def create_csv_files_with_max_size(file_path):
     """
-    Splits the file provided as parameter into smaller files based on
-    the MAX_FILE_SIZE constant.
+    Creates smaller CSV files with a max size of MAX_FILE_SIZE
     """
     all_files = set()
-    with open(file_path, 'r') as f:
-        file_nr = 0
-        for line in f.readlines():
-            new_file_path = '{0}.{1}'.format(file_path, file_nr)
-            all_files.add(new_file_path)
+    with open(file_path, 'r') as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        # skip header line
+        next(csv_reader)
 
-            if (os.path.exists(new_file_path)):
-                cur_size = os.stat(new_file_path).st_size
-                if cur_size + len(line) >= MAX_FILE_SIZE:
-                    file_nr += 1
-                    new_file_path = '{0}.{1}'.format(file_path, file_nr)
+        new_file_content = HEADER_LINE
+        cur_file = 0
+        for row in csv_reader:
+            new_file_content += '{},{}'.format(row[0], row[1])
+            for cur_alias in row[2:]:
+                cur_len = len(new_file_content)
+                added_alias = ',{}'.format(cur_alias)
 
-            with open(new_file_path, 'a+') as dest_file:
-                dest_file.write(line)
-    return all_files
+                if cur_len + len(added_alias) >= MAX_FILE_SIZE:
+                    all_files.add(write_new_file('{}.{}'.format(file_path, cur_file), new_file_content))
+                    cur_file += 1
+                    new_file_content = '{}{},{}'.format(HEADER_LINE, row[0], row[1])
+                new_file_content += added_alias
+            new_file_content += '\n'
+        all_files.add(write_new_file('{}.{}'.format(file_path, cur_file), new_file_content))
+        return all_files
 
 def upload(file_path, customer_id, replace):
     """
     Uploads the file under the provided file path for the given customer
     """
-    logger.info(
-        'Importing %s for customer %s. Replace existing entries: %s',
-        file_path,
-        customer_id,
-        replace
-    )
-
     params = {
       'customerId': customer_id,
       'replace': replace
@@ -120,14 +134,12 @@ def upload(file_path, customer_id, replace):
       fields={'file': ('file', open(file_path, 'rb'), 'text/csv')}
     )
 
-    multipartEncoderMonitor = MultipartEncoderMonitor(multipartEncoder, callback)
-
     headers = get_headers()
     headers['Content-Type'] = multipartEncoder.content_type
 
     response = requests.post(
         IMPORTER_URL,
-        data = multipartEncoderMonitor,
+        data = multipartEncoder,
         params = params,
         headers = headers,
         timeout=MAIL_PIC_RESPONSE_TIMEOUT
@@ -139,25 +151,47 @@ def import_csv(main_file, customer_id, replace):
     Imports the provided allow/block file for the given customer
     """
     all_results = []
-    for cur_file in split_files(main_file):
-        all_results.append(
-            upload(cur_file, customer_id, replace)
-        )
+    all_files = create_csv_files_with_max_size(main_file)
+    files_already_uploaded = 0
+    logger.info('Uploading {}'.format(main_file))
+    for cur_file in all_files:
+        all_results.append(upload(cur_file, customer_id, replace))
+        files_already_uploaded += 1
+        logger.info('{:.2f}% uploaded'.format(float(files_already_uploaded)/float(len(all_files)) * 100))
 
-    failure_file = '{0}_failed'.format(main_file)
     failures = 0
-    with open(failure_file, 'w+') as write_file:
-        for result in all_results:
-            if not result.is_successful():
-                with open(result.file_name, 'r') as read_file:
-                    for line in read_file:
-                        failures += 1
-                        write_file.write(line)
-            elif result.has_errors():
-                logger.info('Has errors: {0}'.format(result.response.json()))
-    if failures > 0:
-        logger.warn('Total failures: {0}'.format(failures))
-        logger.warn('Failure entries written to {0}'.format(failure_file))
+    successful = 0
+    all_errors = []
+    failed_files = []
+    for result in all_results:
+        if not result.is_successful():
+            logger.warn('Failed to upload file {}. Response code: {}'.format(result.file_name, result.get_status_code()))
+            failed_files.append(result.file_name)
+            continue
+        logger.info("response: {}".format(result.response.json()))
+        successful += result.get_successful()
+        if result.has_errors():
+            errors = result.get_errors()
+            all_errors.append(errors)
+            failures += len(errors)
+
+    if len(all_errors) > 0:
+        failure_file = '{}_failed'.format(main_file)
+        with open(failure_file, 'w') as write_file:
+            for line in all_errors:
+                write_file.write(line + '\n')
+
+    if len(failed_files) > 0:
+        logger.warn('Files failed to upload:')
+        for failed_file in failed_files:
+            logger.warn('{}'.format(failed_file))
+
+    logger.info('Upload result:')
+    logger.info('Total entries successfully imported: {}'.format(successful))
+    logger.info('Total entries failed to be imported: {}'.format(failures))
+
+    if (len(all_errors) > 0):
+        logger.info('Failure entries written to {}'.format(failure_file))
 
 def delete_all(customer_id):
     """
@@ -170,9 +204,9 @@ def cleanup(main_file):
     """
     Cleans up any temporary files that were created during import process
     """
-    logger.info('Cleaning up temporary files for {0}'.format(main_file))
-    os.system('rm -f {0}.*'.format(main_file))
-    os.system('rm -f {0}'.format(EMTPY_CSV_FILE_PATH))
+    logger.debug('Cleaning up temporary files for {}'.format(main_file))
+    os.system('rm -f {}.*'.format(main_file))
+    os.system('rm -f {}'.format(EMTPY_CSV_FILE_PATH))
 
 if __name__ == "__main__":
     """
@@ -191,6 +225,7 @@ if __name__ == "__main__":
     if args.delete_all:
         logger.info("Deleting all allow/block entries for customer")
         delete_all(args.customer_id)
-    else:
-        import_csv(args.file, args.customer_id, args.replace)
+        sys.exit(0)
+
+    import_csv(args.file, args.customer_id, args.replace)
     cleanup(args.file)
