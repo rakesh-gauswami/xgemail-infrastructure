@@ -148,14 +148,13 @@ def import_csv(main_file, customer_id, replace):
     failures = 0
     with open(failure_file, 'w+') as write_file:
         for result in all_results:
-            logger.info(result.response.json())
             if not result.is_successful():
                 with open(result.file_name, 'r') as read_file:
                     for line in read_file:
                         failures += 1
                         write_file.write(line)
             elif result.has_errors():
-                logger.info('FIXME: Has errors')
+                logger.info('Has errors: {0}'.format(result.response.json()))
     if failures > 0:
         logger.warn('Total failures: {0}'.format(failures))
         logger.warn('Failure entries written to {0}'.format(failure_file))
