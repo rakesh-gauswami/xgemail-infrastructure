@@ -274,6 +274,14 @@
         "TopicArn": { "Ref": "DeletedEventsTopicArn"}
       }
     },
+    "MessageHistoryQueueToEventSnsSubsciption": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "MessageHistoryQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "MessageHistoryEventsTopicArn" }
+      }
+    },
     "MessageStatisticsQueueToDeletedSnsSubsciption": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
