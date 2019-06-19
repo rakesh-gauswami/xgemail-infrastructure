@@ -1,33 +1,35 @@
 #!/usr/bin/env python
 # vim: autoindent expandtab filetype=python shiftwidth=4 softtabstop=4 tabstop=4
 #
-# Polls XGEMAIL PIC for a list of customer domains
+# Allows importing of arbitrarily large CSV files containing allow/block list
+# entries for both customers and end-users.
+#
+# Both the regular as well as Reflexion-specific CSV format is supported.
 #
 # Copyright: Copyright (c) 1997-2019. All rights reserved.
 # Company: Sophos Limited or one of its affiliates.
 
 import argparse
-import boto3
 import base64
+import boto3
+import csv
 import json
+import logging
 import os
+import pip
 import requests
 import sys
-import logging
-import csv
 
-from requests_toolbelt import (MultipartEncoder,
-                               MultipartEncoderMonitor)
-from logging.handlers import SysLogHandler
+try:
+    from requests_toolbelt import MultipartEncoder
+except ImportError:
+    pip.main(['install', 'requests-toolbelt'])
+    from requests_toolbelt import MultipartEncoder
 
 # Constants
-PIC_FQDN = 'mail-cloudstation-eu-west-1.dev.hydra.sophos.com'
-MAIL_PIC_RESPONSE_TIMEOUT = 120
-MAIL_PIC_API_AUTH = 'xgemail-eu-west-1-mail'
-CONNECTIONS_BUCKET = 'cloud-dev-connections'
-HEADER_LINE = 'entry, action, aliases\n'
 MAX_FILE_SIZE = 9500
-
+MAIL_PIC_RESPONSE_TIMEOUT = 120
+HEADER_LINE = 'entry, action, aliases\n'
 EMTPY_CSV_FILE_PATH = '/tmp/allow_block_empty.csv'
 
 # Logging to syslog setup
@@ -41,9 +43,10 @@ formatter = logging.Formatter(
 handler.formatter = formatter
 logger.addHandler(handler)
 
-ACCOUNT = 'dev'
-
 class ApiResult:
+    """
+    Contains all necessary data provided by the API response
+    """
     def __init__(self, file_name, response):
         self.file_name = file_name
         self.response = response
@@ -71,24 +74,21 @@ class ApiResult:
     def __str__(self):
         return str(self.__class__) + ": " + str(self.__dict__)
 
-def get_api_url():
-    if ACCOUNT == 'sandbox':
-        return 'http://{}/mail-services/api/xgemail'.format(PIC_FQDN)
-    return 'https://{}/mail/api/xgemail'.format(PIC_FQDN)
-
-IMPORTER_URL = get_api_url() + '/allow-block/import'
-
-def get_passphrase():
+def get_passphrase(region, env):
+    """
+    Retrieves the basic authentication from S3
+    """
     s3 = boto3.client('s3')
-    passphrase = s3.get_object(Bucket=CONNECTIONS_BUCKET, Key=MAIL_PIC_API_AUTH)
+    passphrase = s3.get_object(
+        Bucket = 'cloud-{}-connections'.format(env.lower()),
+        Key = 'xgemail-{}-mail'.format(region)
+    )
     return base64.b64encode('mail:' + passphrase['Body'].read())
 
-def get_headers():
-    if ACCOUNT == 'sandbox':
-        return { 'Authorization': 'Basic' }
-    return { 'Authorization': 'Basic ' + get_passphrase() }
-
 def write_new_file(file_name, content):
+    """
+    Writes the provided content to a new file under the provided path
+    """
     logger.debug('Writing new file {}: \n{}'.format(file_name, content))
     with open(file_name, 'w') as f:
         f.write(content + '\n')
@@ -121,7 +121,7 @@ def create_csv_files_with_max_size(file_path):
         all_files.add(write_new_file('{}.{}'.format(file_path, cur_file), new_file_content))
         return all_files
 
-def upload(file_path, customer_id, replace):
+def upload(import_url, file_path, customer_id, replace, region, env):
     """
     Uploads the file under the provided file path for the given customer
     """
@@ -134,11 +134,11 @@ def upload(file_path, customer_id, replace):
       fields={'file': ('file', open(file_path, 'rb'), 'text/csv')}
     )
 
-    headers = get_headers()
+    headers = { 'Authorization': 'Basic ' + get_passphrase(region, env) }
     headers['Content-Type'] = multipartEncoder.content_type
 
     response = requests.post(
-        IMPORTER_URL,
+        import_url,
         data = multipartEncoder,
         params = params,
         headers = headers,
@@ -146,7 +146,7 @@ def upload(file_path, customer_id, replace):
     )
     return ApiResult(file_path, response)
 
-def import_csv(main_file, customer_id, replace):
+def import_csv(main_file, customer_id, replace, import_url, region, env):
     """
     Imports the provided allow/block file for the given customer
     """
@@ -155,7 +155,7 @@ def import_csv(main_file, customer_id, replace):
     files_already_uploaded = 0
     logger.info('Uploading {}'.format(main_file))
     for cur_file in all_files:
-        all_results.append(upload(cur_file, customer_id, replace))
+        all_results.append(upload(import_url, cur_file, customer_id, replace, region, env))
         files_already_uploaded += 1
         logger.info('{:.2f}% uploaded'.format(float(files_already_uploaded)/float(len(all_files)) * 100))
 
@@ -186,7 +186,6 @@ def import_csv(main_file, customer_id, replace):
         for failed_file in failed_files:
             logger.warn('{}'.format(failed_file))
 
-    logger.info('Upload result:')
     logger.info('Total entries successfully imported: {}'.format(successful))
     logger.info('Total entries failed to be imported: {}'.format(failures))
 
@@ -215,10 +214,20 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description = 'Upload Allow/Block list for customer')
     parser.add_argument('--customer_id', required = True, type = str, help = 'The customer ID for which to import Allow/Block lists')
     parser.add_argument('--replace', action = 'store_true', help = 'Replaces existing allow/block entries')
+    parser.add_argument('-r', '--region', dest = 'region', default = 'eu-west-1',
+        choices=['eu-central-1', 'eu-west-1', 'us-west-2', 'us-east-2'],
+        help = 'The region in which the customer resides (default: eu-west-1)'
+    )
+    parser.add_argument('-e', '--env', dest = 'env', default = 'PROD',
+        choices=['DEV', 'DEV3', 'QA', 'PROD'],
+        help = 'The environment in which the customer resides (default: PROD)'
+    )
 
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('--file', type = str, help = 'The CSV file containing Allow/Block entries to be imported')
-    group.add_argument('--delete-all', dest = 'delete_all', action = 'store_true', help = 'Removes all currently stored Allow/Block entries for the given customer')
+    group.add_argument('--delete-all', dest = 'delete_all', action = 'store_true',
+        help = 'Removes all currently stored Allow/Block entries for the given customer'
+    )
 
     args = parser.parse_args()
 
@@ -227,5 +236,7 @@ if __name__ == "__main__":
         delete_all(args.customer_id)
         sys.exit(0)
 
-    import_csv(args.file, args.customer_id, args.replace)
+    import_url = 'https://mail-cloudstation-{}.{}.hydra.sophos.com/mail/api/xgemail/allow-block/import'.format(args.region, args.env)
+
+    import_csv(args.file, args.customer_id, args.replace, import_url, args.region, args.env)
     cleanup(args.file)
