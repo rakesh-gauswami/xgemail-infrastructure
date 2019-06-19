@@ -36,6 +36,7 @@ file "#{XGEMAIL_UTILS_DIR}/__init__.py" do
 end
 
 [
+    'allowblockimporter.py',
     'awshandler.py',
     'diskutils.py',
     'formatterutils.py',
