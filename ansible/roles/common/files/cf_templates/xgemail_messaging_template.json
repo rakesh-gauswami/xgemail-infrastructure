@@ -99,6 +99,10 @@
       "Description": "Endpoint URL for message history SQS queue",
       "Type": "String"
     },
+    "MessageHistoryEventsTopicArn": {
+      "Description": "Endpoint for message history Events SNS",
+      "Type": "String"
+    },
     "MessageHistoryStatusQueueArn": {
       "Description": "Endpoint for message history Delivery Status SQS queue",
       "Type": "String"
@@ -845,6 +849,18 @@
               "Condition": {
                 "ArnEquals": {
                   "aws:SourceArn": {"Ref": "BounceEventTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-MessageHistoryEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "MessageHistoryEventsTopicArn"}
                 }
               }
             }
