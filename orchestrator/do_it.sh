@@ -92,6 +92,7 @@ DELAY_SNS_TOPIC="xgemail-delay-SNS"
 DELETED_EVENTS_SNS_TOPIC="xgemail-deleted-events-SNS"
 INTERNET_DELIVERY_SNS_TOPIC="xgemail-internet-delivery-SNS"
 MSG_HISTORY_STATUS_SNS_TOPIC="xgemail-msg-history-delivery-status-SNS"
+MSG_HISTORY_EVENTS_SNS_TOPIC="xgemail-msg-history-events-SNS"
 MSG_STATISTICS_REJECTION_SNS_TOPIC="xgemail-msg-statistics-rejection-SNS"
 MULTI_POLICY_SNS_TOPIC="XGEMAIL-multi-policy-SNS"
 POLICY_SNS_TOPIC="xgemail-policy-SNS"
@@ -315,6 +316,9 @@ if [[ $startup_check -ne 0 ]]; then
       gprintf "CREATING SCAN_EVENTS_SNS_TOPIC"
       awslocal sns create-topic --name ${SCAN_EVENTS_SNS_TOPIC} | jq .
 
+      gprintf "CREATING MSG_HISTORY_EVENTS_SNS_TOPIC"
+      awslocal sns create-topic --name ${MSG_HISTORY_EVENTS_SNS_TOPIC} | jq .
+
       gprintf "CREATING SUCCESS_EVENTS_SNS_TOPIC"
       awslocal sns create-topic --name ${SUCCESS_EVENTS_SNS_TOPIC} | jq .
 
@@ -383,6 +387,10 @@ if [[ $startup_check -ne 0 ]]; then
           --topic-arn arn:aws:sns:us-east-1:123456789012:${SCAN_EVENTS_SNS_TOPIC} \
           --protocol sqs \
           --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${INTERNET_SUBMIT_SERVICE_SQS_QUEUE} | jq .
+      awslocal sns subscribe \
+          --topic-arn arn:aws:sns:us-east-1:123456789012:${MSG_HISTORY_EVENTS_SNS_TOPIC} \
+          --protocol sqs \
+          --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${MSG_HISTORY_SQS_QUEUE} | jq .
       awslocal sns subscribe \
           --topic-arn arn:aws:sns:us-east-1:123456789012:${SUCCESS_EVENTS_SNS_TOPIC} \
           --protocol sqs \
