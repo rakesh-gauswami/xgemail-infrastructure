@@ -192,12 +192,12 @@ def import_csv(main_file, customer_id, replace, import_url, region, env):
     if (len(all_errors) > 0):
         logger.info('Failure entries written to {}'.format(failure_file))
 
-def delete_all(customer_id):
+def delete_all(import_url, customer_id, region, env):
     """
     Removes all allow/block entries for the provided customer
     """
     with open(EMTPY_CSV_FILE_PATH, 'a+'):
-        upload(EMTPY_CSV_FILE_PATH, customer_id, True)
+        upload(import_url, EMTPY_CSV_FILE_PATH, customer_id, True, region, env)
 
 def cleanup(main_file):
     """
@@ -231,12 +231,12 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    import_url = 'https://mail-cloudstation-{}.{}.hydra.sophos.com/mail/api/xgemail/allow-block/import'.format(args.region, args.env)
+
     if args.delete_all:
         logger.info("Deleting all allow/block entries for customer")
-        delete_all(args.customer_id)
+        delete_all(import_url, args.customer_id, args.region, args.env)
         sys.exit(0)
-
-    import_url = 'https://mail-cloudstation-{}.{}.hydra.sophos.com/mail/api/xgemail/allow-block/import'.format(args.region, args.env)
 
     import_csv(args.file, args.customer_id, args.replace, import_url, args.region, args.env)
     cleanup(args.file)
