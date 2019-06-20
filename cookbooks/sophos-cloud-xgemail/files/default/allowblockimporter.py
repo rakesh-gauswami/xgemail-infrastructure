@@ -107,6 +107,9 @@ def create_csv_files_with_max_size(file_path):
         new_file_content = HEADER_LINE
         cur_file = 0
         for row in csv_reader:
+            if len(row) <= 2:
+                # empty/invalid line
+                continue
             new_file_content += '{},{}'.format(row[0], row[1])
             for cur_alias in row[2:]:
                 cur_len = len(new_file_content)
