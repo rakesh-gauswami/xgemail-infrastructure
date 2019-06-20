@@ -48,6 +48,7 @@ XGEMAIL_MESSAGE_HISTORY_QUEUE_URL            = node['xgemail']['msg_history_queu
 XGEMAIL_POLICY_S3_BUCKET_NAME                = node['xgemail']['xgemail_policy_bucket_name']
 POLICY_STORAGE_PATH                          = node['xgemail']['policy_efs_mount_dir']
 XGEMAIL_SCAN_EVENTS_TOPIC_ARN                = node['xgemail']['xgemail_scan_events_topic_arn']
+XGEMAIL_MESSAGE_HISTORY_EVENTS_TOPIC_ARN     = node['xgemail']['xgemail_msg_history_events_topic_arn']
 
 # TODO Once we retire the old submit instances this logic needs to be removed
 #constants to use
@@ -74,6 +75,7 @@ template PRODUCER_SCRIPT_PATH do
       :xgemail_utils_path => XGEMAIL_UTILS_DIR,
       :s3_encryption_algorithm => S3_ENCRYPTION_ALGORITHM,
       :sns_scan_events_sns_topic_arn => XGEMAIL_SCAN_EVENTS_TOPIC_ARN,
+      :sns_msg_history_events_sns_topic_arn => XGEMAIL_MESSAGE_HISTORY_EVENTS_TOPIC_ARN,
       :sqs_msg_producer_aws_region => AWS_REGION,
       :sqs_msg_producer_buffer_size => SQS_MESSAGE_PRODUCER_BUFFER_SIZE,
       :sqs_msg_producer_email_root_dir => SQS_MESSAGE_PRODUCER_EMAIL_ROOT_DIR,
