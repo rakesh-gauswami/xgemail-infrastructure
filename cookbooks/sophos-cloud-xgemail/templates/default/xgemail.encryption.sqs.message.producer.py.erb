@@ -41,7 +41,7 @@ from logging.handlers import SysLogHandler
 # Constants
 AWS_REGION = "<%= @sqs_msg_producer_aws_region %>"
 MSG_HISTORY_BUCKET_NAME = "<%= @sqs_msg_producer_msg_history_s3_bucket_name %>"
-MSG_HISTORY_SQS_URL = "<%= @sqs_msg_producer_msg_history_sqs_url %>"
+MSG_HISTORY_EVENTS_TOPIC_ARN = "<%= @sns_msg_history_events_sns_topic_arn %>"
 PROCESS_TIMEOUT_SECONDS = <%= @sqs_msg_producer_process_timeout_seconds %>
 
 SUBMIT_TYPE = "<%= @xgemail_submit_type %>"
@@ -286,12 +286,15 @@ def prepare_msg_history_event(s3_file_path, metadata, sqs_message, direction, se
         logger.exception("Failed in uploading message history event to SQS [{0}]".format(e))
         exit(EX_TEMPFAIL)
 
-def send_msg_history_sqs_event(sqs_history_json):
+def publish_msg_history_event(history_json):
     try:
-        logger.debug("Processing message history event SQS job [{0}]".format(sqs_history_json))
-        add_to_sqs(MSG_HISTORY_SQS_URL, sqs_history_json)
+        logger.debug("Processing message history event SNS job [{0}]".format(history_json))
+        awshandler.publish_to_sns_topic(
+            MSG_HISTORY_EVENTS_TOPIC_ARN,
+            json.dumps(history_json)
+        )
     except Exception as e:
-        logger.exception("Failed in uploading message processing SQS job [{0}]".format(e))
+        logger.exception("Failed in submit message history event to SNS [{0}]".format(e))
         exit(EX_TEMPFAIL)
 
 # sends msg processing sqs messages to sqs
@@ -483,7 +486,7 @@ def base_policy_flow(metadata, direction, is_reply, domain, sender, message):
 
     if should_upload_msg_history(direction):
 
-        sqs_history = prepare_msg_history_event(
+        history_event = prepare_msg_history_event(
           s3_file_path,
           metadata,
           sqs_message,
@@ -491,8 +494,8 @@ def base_policy_flow(metadata, direction, is_reply, domain, sender, message):
           sender
          )
 
-        send_msg_history_sqs_event(
-          sqs_history.get_sqs_json()
+        publish_msg_history_event(
+          history_event.get_sqs_json()
          )
 
 
