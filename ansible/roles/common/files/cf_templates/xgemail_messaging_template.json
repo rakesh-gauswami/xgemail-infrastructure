@@ -1139,6 +1139,18 @@
                   "aws:SourceArn": {"Ref": "QuarantinedEventsTopicArn"}
                 }
               }
+            },
+            {
+              "Sid": "Allow-InternetDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "InternetDeliveryTopicArn"}
+                }
+              }
             }
           ]
         },
