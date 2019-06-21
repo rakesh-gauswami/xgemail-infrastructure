@@ -411,10 +411,6 @@ if [[ $startup_check -ne 0 ]]; then
           --subscription-arn arn:aws:sns:us-east-1:123456789012:xgemail-scan-events-SNS:ca965ece-6eef-4151-9733-1f3ed2646526 \
           --attribute-name RawMessageDelivery \
           --attribute-value true
-       awslocal sns set-subscription-attributes \
-          --subscription-arn arn:aws:sns:us-east-1:123456789012:xgemail-msg-history-events-SNS:ca965ece-6eef-4151-9733-1f3ed2646526 \
-          --attribute-name RawMessageDelivery \
-          --attribute-value true
 
       gprintf "localstack environment is set!"
 
