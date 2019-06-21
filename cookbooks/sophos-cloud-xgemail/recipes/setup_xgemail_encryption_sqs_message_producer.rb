@@ -52,9 +52,9 @@ XGEMAIL_BUCKET_NAME                          = node['xgemail']['xgemail_bucket_n
 XGEMAIL_QUEUE_URL                            = node['xgemail']['xgemail_queue_url']
 XGEMAIL_SERVICE_QUEUE_URL                    = node['xgemail']['xgemail_service_queue_url']
 XGEMAIL_MESSAGE_HISTORY_BUCKET_NAME          = node['xgemail']['msg_history_bucket_name']
-XGEMAIL_MESSAGE_HISTORY_QUEUE_URL            = node['xgemail']['msg_history_queue_url']
 XGEMAIL_CUSTOMER_SUBMIT_BUCKET_NAME          = node['xgemail']['xgemail_customer_submit_bucket_name']
 XGEMAIL_CUSTOMER_SUBMIT_QUEUE_URL            = node['xgemail']['xgemail_customer_submit_queue_url']
+XGEMAIL_MESSAGE_HISTORY_EVENTS_TOPIC_ARN     = node['xgemail']['xgemail_msg_history_events_topic_arn']
 
 # Configs use by sqsmsgproducer
 XGEMAIL_SUBMIT_TYPE                          = 'ENCRYPTION'
@@ -68,6 +68,7 @@ template PRODUCER_SCRIPT_PATH do
       :xgemail_submit_type => XGEMAIL_SUBMIT_TYPE,
       :xgemail_utils_path => XGEMAIL_UTILS_DIR,
       :s3_encryption_algorithm => S3_ENCRYPTION_ALGORITHM,
+      :sns_msg_history_events_sns_topic_arn => XGEMAIL_MESSAGE_HISTORY_EVENTS_TOPIC_ARN,
       :sqs_msg_producer_aws_region => AWS_REGION,
       :sqs_msg_producer_buffer_size => SQS_MESSAGE_PRODUCER_BUFFER_SIZE,
       :sqs_msg_producer_email_root_dir => SQS_MESSAGE_PRODUCER_EMAIL_ROOT_DIR,
@@ -76,7 +77,6 @@ template PRODUCER_SCRIPT_PATH do
       :sqs_msg_producer_s3_bucket_name => XGEMAIL_BUCKET_NAME,
       :sqs_msg_producer_s3_customer_submit_bucket_name => XGEMAIL_CUSTOMER_SUBMIT_BUCKET_NAME,
       :sqs_msg_producer_msg_history_s3_bucket_name => XGEMAIL_MESSAGE_HISTORY_BUCKET_NAME,
-      :sqs_msg_producer_msg_history_sqs_url => XGEMAIL_MESSAGE_HISTORY_QUEUE_URL,
       :sqs_msg_producer_sqs_url => XGEMAIL_QUEUE_URL,
       :sqs_msg_producer_customer_submit_sqs_url => XGEMAIL_CUSTOMER_SUBMIT_QUEUE_URL,
       :sqs_msg_producer_submit_ip => NODE_IP,

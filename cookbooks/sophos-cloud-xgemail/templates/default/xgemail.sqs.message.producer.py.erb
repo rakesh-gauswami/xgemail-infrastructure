@@ -41,7 +41,7 @@ from scaneventattributes import ScanEventAttributes
 # Constants
 AWS_REGION = "<%= @sqs_msg_producer_aws_region %>"
 MSG_HISTORY_BUCKET_NAME = "<%= @sqs_msg_producer_msg_history_s3_bucket_name %>"
-MSG_HISTORY_SQS_URL = "<%= @sqs_msg_producer_msg_history_sqs_url %>"
+MSG_HISTORY_EVENTS_TOPIC_ARN = "<%= @sns_msg_history_events_sns_topic_arn %>"
 POLICY_S3_BUCKET_NAME = "<%= @sqs_msg_producer_policy_s3_bucket_name %>"
 PROCESS_TIMEOUT_SECONDS = <%= @sqs_msg_producer_process_timeout_seconds %>
 POLICY_STORAGE_PATH = "<%= @policy_storage_path %>"
@@ -283,14 +283,16 @@ def prepare_msg_history_event(s3_file_path, metadata, sqs_message, direction, se
         logger.exception("Failed in uploading message history event to SQS [{0}]".format(e))
         exit(EX_TEMPFAIL)
 
-def send_msg_history_sqs_event(sqs_history_json):
+def publish_msg_history_event(history_json):
     try:
-        logger.debug("Processing message history event SQS job [{0}]".format(sqs_history_json))
-        add_to_sqs(MSG_HISTORY_SQS_URL, sqs_history_json)
+        logger.debug("Processing message history event SNS job [{0}]".format(history_json))
+        awshandler.publish_to_sns_topic(
+            MSG_HISTORY_EVENTS_TOPIC_ARN,
+            json.dumps(history_json)
+        )
     except Exception as e:
-        logger.exception("Failed in uploading message processing SQS job [{0}]".format(e))
+        logger.exception("Failed in submit message history event to SNS [{0}]".format(e))
         exit(EX_TEMPFAIL)
-
 
 # publishes msg processing messages to topic
 def publish_msg_processing_message(message_json, direction, message_attributes = None, customer_id = None):
@@ -460,7 +462,7 @@ def base_policy_flow(metadata, direction, domain, sender, message, message_attri
         customer_id
     )
 
-    sqs_history = prepare_msg_history_event(
+    history_event = prepare_msg_history_event(
         s3_file_path,
         metadata,
         sqs_message,
@@ -468,8 +470,8 @@ def base_policy_flow(metadata, direction, domain, sender, message, message_attri
         sender
     )
 
-    send_msg_history_sqs_event(
-        sqs_history.get_sqs_json()
+    publish_msg_history_event(
+        history_event.get_sqs_json()
     )
 
 # Mail flow goes through multi_policy_flow if multi-policy flag is enabled
@@ -498,7 +500,7 @@ def multi_policy_flow(metadata, direction, domain, sender, message, message_attr
     )
 
     sqs_message_json_queue = []
-    sqs_history_json_queue = []
+    history_json_queue = []
 
     for policy_id, value in policy_list.items():
         this_policy_metadata = copy.deepcopy(metadata)
@@ -539,22 +541,22 @@ def multi_policy_flow(metadata, direction, domain, sender, message, message_attr
                 )
             sqs_message_json_queue = []
 
-        # batch history sqs
+        # batch history events
         # noinspection CookbookSourceRoot
-        sqs_history = prepare_msg_history_event(
+        history_event = prepare_msg_history_event(
             new_s3_file_path,
             this_policy_metadata,
             sqs_message,
             direction,
             sender
         )
-        sqs_history_json_queue.append(sqs_history.get_sqs_json())
-        if len(sqs_history_json_queue) == SQS_BATCH_SIZE:
-            for history_job in sqs_history_json_queue:
-                send_msg_history_sqs_event(
+        history_json_queue.append(history_event.get_sqs_json())
+        if len(history_json_queue) == SQS_BATCH_SIZE:
+            for history_job in history_json_queue:
+                publish_msg_history_event(
                     history_job
                 )
-            sqs_history_json_queue = []
+            history_json_queue = []
 
     #send the remaining if any
     if len(sqs_message_json_queue) > 0:
@@ -566,9 +568,9 @@ def multi_policy_flow(metadata, direction, domain, sender, message, message_attr
                 customer_id
             )
 
-    if len(sqs_history_json_queue) > 0:
-        for history_job in sqs_history_json_queue:
-            send_msg_history_sqs_event(
+    if len(history_json_queue) > 0:
+        for history_job in history_json_queue:
+            publish_msg_history_event(
                 history_job
             )
 

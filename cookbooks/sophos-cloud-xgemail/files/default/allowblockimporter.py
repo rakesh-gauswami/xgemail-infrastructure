@@ -67,7 +67,8 @@ class ApiResult:
         return 'error_entries' in response_as_json and len(response_as_json['error_entries']) > 0
 
     def get_errors(self):
-        if 'error_entries' in self.response.json():
+        response_as_json = self.response.json()
+        if 'error_entries' in response_as_json:
             return response_as_json['error_entries']
         return []
 
@@ -107,6 +108,8 @@ def create_csv_files_with_max_size(file_path):
         new_file_content = HEADER_LINE
         cur_file = 0
         for row in csv_reader:
+            if len(row) <= 2:
+                continue
             new_file_content += '{},{}'.format(row[0], row[1])
             for cur_alias in row[2:]:
                 cur_len = len(new_file_content)
@@ -146,7 +149,7 @@ def upload(import_url, file_path, customer_id, replace, region, env):
     )
     return ApiResult(file_path, response)
 
-def import_csv(main_file, customer_id, replace, import_url, region, env):
+def import_csv(main_file, customer_id, import_url, region, env):
     """
     Imports the provided allow/block file for the given customer
     """
@@ -155,7 +158,7 @@ def import_csv(main_file, customer_id, replace, import_url, region, env):
     files_already_uploaded = 0
     logger.info('Uploading {}'.format(main_file))
     for cur_file in all_files:
-        all_results.append(upload(import_url, cur_file, customer_id, replace, region, env))
+        all_results.append(upload(import_url, cur_file, customer_id, False, region, env))
         files_already_uploaded += 1
         logger.info('{:.2f}% uploaded'.format(float(files_already_uploaded)/float(len(all_files)) * 100))
 
@@ -179,7 +182,7 @@ def import_csv(main_file, customer_id, replace, import_url, region, env):
         failure_file = '{}_failed'.format(main_file)
         with open(failure_file, 'w') as write_file:
             for line in all_errors:
-                write_file.write(line + '\n')
+                write_file.write(str(line) + '\n')
 
     if len(failed_files) > 0:
         logger.warn('Files failed to upload:')
@@ -192,12 +195,12 @@ def import_csv(main_file, customer_id, replace, import_url, region, env):
     if (len(all_errors) > 0):
         logger.info('Failure entries written to {}'.format(failure_file))
 
-def delete_all(customer_id):
+def delete_all(import_url, customer_id, region, env):
     """
     Removes all allow/block entries for the provided customer
     """
     with open(EMTPY_CSV_FILE_PATH, 'a+'):
-        upload(EMTPY_CSV_FILE_PATH, customer_id, True)
+        upload(import_url, EMTPY_CSV_FILE_PATH, customer_id, True, region, env)
 
 def cleanup(main_file):
     """
@@ -213,7 +216,6 @@ if __name__ == "__main__":
     """
     parser = argparse.ArgumentParser(description = 'Upload Allow/Block list for customer')
     parser.add_argument('--customer_id', required = True, type = str, help = 'The customer ID for which to import Allow/Block lists')
-    parser.add_argument('--replace', action = 'store_true', help = 'Replaces existing allow/block entries')
     parser.add_argument('-r', '--region', dest = 'region', default = 'eu-west-1',
         choices=['eu-central-1', 'eu-west-1', 'us-west-2', 'us-east-2'],
         help = 'The region in which the customer resides (default: eu-west-1)'
@@ -231,12 +233,12 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if args.delete_all:
-        logger.info("Deleting all allow/block entries for customer")
-        delete_all(args.customer_id)
-        sys.exit(0)
-
     import_url = 'https://mail-cloudstation-{}.{}.hydra.sophos.com/mail/api/xgemail/allow-block/import'.format(args.region, args.env)
 
-    import_csv(args.file, args.customer_id, args.replace, import_url, args.region, args.env)
+    if args.delete_all:
+        logger.info("Deleting all allow/block entries for customer")
+        delete_all(import_url, args.customer_id, args.region, args.env)
+        sys.exit(0)
+
+    import_csv(args.file, args.customer_id, import_url, args.region, args.env)
     cleanup(args.file)

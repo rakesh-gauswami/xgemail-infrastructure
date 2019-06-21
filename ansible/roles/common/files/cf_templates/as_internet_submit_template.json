@@ -233,6 +233,10 @@
       "Description": "Arn of scan events",
       "Type": "String"
     },
+    "MessageHistoryEventsTopicArn": {
+      "Description": "Arn of message history events",
+      "Type": "String"
+    },
     "XgemailSnsSqsQueueUrl": {
       "Description": "URL for the SNS-SQS Queue where XGEMAIL messages are sent",
       "Type": "String",
@@ -686,7 +690,8 @@
                     "    \"xgemail_service_queue_url\"              : \"{{xgemail_service_queue_url}}\",\n",
                     "    \"xgemail_sns_sqs_url\"                    : \"{{xgemail_sns_sqs_url}}\",\n",
                     "    \"xgemail_queue_url\"                      : \"{{xgemail_queue_url}}\",\n",
-                    "    \"xgemail_scan_events_topic_arn\"          : \"{{xgemail_scan_events_topic_arn}}\"\n",
+                    "    \"xgemail_scan_events_topic_arn\"          : \"{{xgemail_scan_events_topic_arn}}\",\n",
+                    "    \"xgemail_msg_history_events_topic_arn\"   : \"{{xgemail_msg_history_events_topic_arn}}\"\n",
                     "  }\n",
                     "}\n"
                   ]]
@@ -716,7 +721,8 @@
                   "xgemail_queue_url":                              { "Ref": "XgemailQueueUrl" },
                   "xgemail_service_queue_url":                      { "Ref": "XgemailSubmitServiceQueueUrl" },
                   "xgemail_sns_sqs_url":                            { "Ref": "XgemailSnsSqsQueueUrl" },
-                  "xgemail_scan_events_topic_arn":                  { "Ref": "XgemailScanEventsTopicArn" }
+                  "xgemail_scan_events_topic_arn":                  { "Ref": "XgemailScanEventsTopicArn" },
+                  "xgemail_msg_history_events_topic_arn":           { "Ref": "MessageHistoryEventsTopicArn" }
                 },
                 "mode": "000444",
                 "owner": "root"
