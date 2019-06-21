@@ -21,6 +21,16 @@ services:
     networks:
       - novanet
 
+  savi:
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/savi:latest
+    container_name: savi
+    hostname: savi
+    domainname: sandbox.sophos
+    ports:
+      - '4010:4010'
+    networks:
+      - novanet
+
   postfix-id:
     image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:latest
     container_name: postfix-id

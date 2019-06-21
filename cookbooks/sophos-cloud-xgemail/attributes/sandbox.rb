@@ -28,9 +28,9 @@ if ENVIRONMENT == "sandbox"
 
     default['xgemail']['msg_history_bucket_name']    = 'xgemail-msg-history'
     default['xgemail']['msg_history_queue_url']      = 'http://localstack:4576/queue/sandbox-Xgemail_MessageHistoryEvent_Delivery'
-    default['xgemail']['xgemail_policy_bucket_name'] = 'xgemail-policy'
+    default['xgemail']['xgemail_policy_bucket_name'] = 'sandbox-cloudemail-xgemail-policy'
     default['xgemail']['mail_pic_api_auth']          = 'xgemail-local-mail'
-    default['xgemail']['msg_history_status_sns_arn'] = 'arn:aws:sns:local:xgemail-msg-history-delivery-status-SNS'
+    default['xgemail']['msg_history_status_sns_arn'] = 'arn:aws:sns:us-east-1:123456789012:xgemail-msg-history-delivery-status-SNS'
     default['sophos_cloud']['connections']           = 'cloud-sandbox-connections'
 
     default['xgemail']['sxl_dbl']                    = 'fake-domain.com'
@@ -47,9 +47,10 @@ if ENVIRONMENT == "sandbox"
 
     if INSTANCE_TYPE == "customer-submit" || INSTANCE_TYPE == "internet-delivery"
         default['ec2']['instance_id'] = ENV['INSTANCE_ID']
-        default['xgemail']['xgemail_bucket_name'] = 'xgemail-cust-submit'
-        default['xgemail']['xgemail_queue_url']   = 'http://localstack:4576/queue/sandbox-Xgemail_Customer_Submit'
-        default['xgemail']['xgemail_sns_sqs_url'] = 'http://localstack:4576/queue/sandbox-Xgemail_Internet_Delivery_SNS_Listener'
+        default['xgemail']['xgemail_bucket_name']    = 'xgemail-cust-submit'
+        default['xgemail']['xgemail_queue_url']      = 'http://localstack:4576/queue/sandbox-Xgemail_Customer_Submit'
+        default['xgemail']['xgemail_sns_sqs_url']    = 'http://localstack:4576/queue/sandbox-Xgemail_Internet_Delivery_SNS_Listener'
+        default['xgemail']['msg_notifier_queue_url'] = 'http://localstack:4576/queue/sandbox-Xgemail_Notifier_Request'
     end
 
     if INSTANCE_TYPE == "jilter-inbound" || INSTANCE_TYPE == "jilter-outbound"

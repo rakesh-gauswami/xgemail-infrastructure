@@ -23,6 +23,7 @@ MSG_STATS_BUCKET="xgemail-msg-stats"
 POLICY_BUCKET="sandbox-cloudemail-xgemail-policy"
 QUARANTINE_BUCKET="xgemail-quarantine"
 SUBMIT_BUCKET="sandbox-cloudemail-xgemail-submit"
+CONNECTIONS_BUCKET="cloud-sandbox-connections"
 #special S3 buckets
 LAMDA_BUCKET="lamda"
 
@@ -55,16 +56,16 @@ QUARANTINE_SQS_QUEUE_SNS_LISTENER="sandbox-Xgemail_Quarantine_Delivery_SNS_Liste
 POLICYASSIGNMENT_SQS_QUEUE="sandbox-PolicyAssignment.Xgemail"
 
 #SASI Queues
-#SASI_OUTBOUND_REQUEST_SQS_QUEUE="sandbox-SASI_Outbound_Request"
-#SASI_OUTBOUND_RESPONSE_SQS_QUEUE="sandbox-SASI_Outbound_Response"
-#SASI_REQUEST_SQS_QUEUE="sandbox-SASI_Request"
-#SASI_RESPONSE_SQS_QUEUE="sandbox-SASI_Response"
+SASI_OUTBOUND_REQUEST_SQS_QUEUE="sandbox-SASI_Outbound_Request"
+SASI_OUTBOUND_RESPONSE_SQS_QUEUE="sandbox-SASI_Outbound_Response"
+SASI_REQUEST_SQS_QUEUE="sandbox-SASI_Request"
+SASI_RESPONSE_SQS_QUEUE="sandbox-SASI_Response"
 
 #DLQ queues
-#SASI_OUTBOUND_REQUEST_SQS_QUEUE_DLQ="sandbox-SASI_Outbound_Request-DLQ"
-#SASI_OUTBOUND_RESPONSE_SQS_QUEUE_DLQ="sandbox-SASI_Outbound_Response-DLQ"
-#SASI_REQUEST_SQS_QUEUE_DLQ="sandbox-SASI_Request-DLQ"
-#SASI_RESPONSE_SQS_QUEUE_DLQ="sandbox-SASI_Response-DLQ"
+SASI_OUTBOUND_REQUEST_SQS_QUEUE_DLQ="sandbox-SASI_Outbound_Request-DLQ"
+SASI_OUTBOUND_RESPONSE_SQS_QUEUE_DLQ="sandbox-SASI_Outbound_Response-DLQ"
+SASI_REQUEST_SQS_QUEUE_DLQ="sandbox-SASI_Request-DLQ"
+SASI_RESPONSE_SQS_QUEUE_DLQ="sandbox-SASI_Response-DLQ"
 CUSTOMER_DELIVERY_SQS_QUEUE_SNS_LISTENER_DLQ="sandbox-Xgemail_Customer_Delivery_SNS_Listener-DLQ"
 CUSTOMER_SUBMIT_SQS_QUEUE_DLQ="sandbox-Xgemail_Customer_Submit-DLQ"
 DQS_SQS_QUEUE_DLQ="sandbox-Xgemail_DQS-DLQ"
@@ -148,6 +149,9 @@ if [[ $startup_check -ne 0 ]]; then
       gprintf "CREATING S3 BUCKET SUBMIT_BUCKET"
       awslocal s3 mb s3://${SUBMIT_BUCKET}
 
+      gprintf "CREATING S3 BUCKET CONNECTIONS_BUCKET"
+      awslocal s3 mb s3://${CONNECTIONS_BUCKET}
+
 
       gprintf "Creating SQS"
       gprintf "CREATING CUSTOMER_DELIVERY_SQS_QUEUE"
@@ -216,30 +220,30 @@ if [[ $startup_check -ne 0 ]]; then
       gprintf "CREATING QUARANTINE_SQS_QUEUE_SNS_LISTENER"
       awslocal sqs create-queue --queue-name ${QUARANTINE_SQS_QUEUE_SNS_LISTENER} | jq .
 
-      #gprintf "CREATING SASI_OUTBOUND_REQUEST_SQS_QUEUE"
-      #awslocal sqs create-queue --queue-name ${SASI_OUTBOUND_REQUEST_SQS_QUEUE} | jq .
+      gprintf "CREATING SASI_OUTBOUND_REQUEST_SQS_QUEUE"
+      awslocal sqs create-queue --queue-name ${SASI_OUTBOUND_REQUEST_SQS_QUEUE} | jq .
 
-      #gprintf "CREATING SASI_OUTBOUND_RESPONSE_SQS_QUEUE"
-      #awslocal sqs create-queue --queue-name ${SASI_OUTBOUND_RESPONSE_SQS_QUEUE} | jq .
+      gprintf "CREATING SASI_OUTBOUND_RESPONSE_SQS_QUEUE"
+      awslocal sqs create-queue --queue-name ${SASI_OUTBOUND_RESPONSE_SQS_QUEUE} | jq .
 
-      #gprintf "CREATING SASI_REQUEST_SQS_QUEUE"
-      #awslocal sqs create-queue --queue-name ${SASI_REQUEST_SQS_QUEUE} | jq .
+      gprintf "CREATING SASI_REQUEST_SQS_QUEUE"
+      awslocal sqs create-queue --queue-name ${SASI_REQUEST_SQS_QUEUE} | jq .
 
-      #gprintf "CREATING SASI_RESPONSE_SQS_QUEUE"
-      #awslocal sqs create-queue --queue-name ${SASI_RESPONSE_SQS_QUEUE} | jq .
+      gprintf "CREATING SASI_RESPONSE_SQS_QUEUE"
+      awslocal sqs create-queue --queue-name ${SASI_RESPONSE_SQS_QUEUE} | jq .
 
       gprintf "CREATING POLICY_ASSIGNMENT_SQS_QUEUE"
       awslocal sqs create-queue --queue-name ${POLICYASSIGNMENT_SQS_QUEUE} | jq .
 
 
       gprintf "CREATING DLQ "
-      #awslocal sqs create-queue --queue-name ${SASI_OUTBOUND_REQUEST_SQS_QUEUE_DLQ} | jq .
+      awslocal sqs create-queue --queue-name ${SASI_OUTBOUND_REQUEST_SQS_QUEUE_DLQ} | jq .
 
-      #awslocal sqs create-queue --queue-name ${SASI_OUTBOUND_RESPONSE_SQS_QUEUE_DLQ} | jq .
+      awslocal sqs create-queue --queue-name ${SASI_OUTBOUND_RESPONSE_SQS_QUEUE_DLQ} | jq .
 
-      #awslocal sqs create-queue --queue-name ${SASI_REQUEST_SQS_QUEUE_DLQ} | jq .
+      awslocal sqs create-queue --queue-name ${SASI_REQUEST_SQS_QUEUE_DLQ} | jq .
 
-      #awslocal sqs create-queue --queue-name ${SASI_RESPONSE_SQS_QUEUE_DLQ} | jq .
+      awslocal sqs create-queue --queue-name ${SASI_RESPONSE_SQS_QUEUE_DLQ} | jq .
 
       awslocal sqs create-queue --queue-name ${CUSTOMER_DELIVERY_SQS_QUEUE_SNS_LISTENER_DLQ} | jq .
 
@@ -352,10 +356,12 @@ if [[ $startup_check -ne 0 ]]; then
           --topic-arn arn:aws:sns:us-east-1:123456789012:${INTERNET_DELIVERY_SNS_TOPIC} \
           --protocol sqs \
           --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${INTERNET_DELIVERY_SQS_QUEUE_SNS_LISTENER} | jq .
+
       awslocal sns subscribe \
           --topic-arn arn:aws:sns:us-east-1:123456789012:${INTERNET_DELIVERY_SNS_TOPIC} \
           --protocol sqs \
           --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${MSG_STATISTICS_SQS_QUEUE_SNS_LISTENER} | jq .
+
       awslocal sns subscribe \
           --topic-arn arn:aws:sns:us-east-1:123456789012:${INTERNET_DELIVERY_SNS_TOPIC} \
           --protocol sqs \
@@ -375,18 +381,22 @@ if [[ $startup_check -ne 0 ]]; then
           --topic-arn arn:aws:sns:us-east-1:123456789012:${QUARANTINED_EVENTS_SNS_TOPIC} \
           --protocol sqs \
           --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${MSG_HISTORY_SQS_QUEUE_SNS_LISTENER} | jq .
+
       awslocal sns subscribe \
           --topic-arn arn:aws:sns:us-east-1:123456789012:${QUARANTINED_EVENTS_SNS_TOPIC} \
           --protocol sqs \
           --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${MSG_STATISTICS_SQS_QUEUE_SNS_LISTENER} | jq .
+
       awslocal sns subscribe \
           --topic-arn arn:aws:sns:us-east-1:123456789012:${QUARANTINED_EVENTS_SNS_TOPIC} \
           --protocol sqs \
           --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${QUARANTINE_SQS_QUEUE_SNS_LISTENER} | jq .
+
       awslocal sns subscribe \
           --topic-arn arn:aws:sns:us-east-1:123456789012:${SCAN_EVENTS_SNS_TOPIC} \
           --protocol sqs \
           --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${INTERNET_SUBMIT_SERVICE_SQS_QUEUE} | jq .
+
       awslocal sns subscribe \
           --topic-arn arn:aws:sns:us-east-1:123456789012:${MSG_HISTORY_EVENTS_SNS_TOPIC} \
           --protocol sqs \
@@ -395,19 +405,23 @@ if [[ $startup_check -ne 0 ]]; then
           --topic-arn arn:aws:sns:us-east-1:123456789012:${SUCCESS_EVENTS_SNS_TOPIC} \
           --protocol sqs \
           --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${MSG_HISTORY_SQS_QUEUE_SNS_LISTENER} | jq .
+
       awslocal sns subscribe \
           --topic-arn arn:aws:sns:us-east-1:123456789012:${SUCCESS_EVENTS_SNS_TOPIC} \
           --protocol sqs \
           --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${MSG_STATISTICS_SQS_QUEUE_SNS_LISTENER} | jq .
+
       awslocal sns subscribe \
           --topic-arn arn:aws:sns:us-east-1:123456789012:${SUCCESS_EVENTS_SNS_TOPIC} \
           --protocol sqs \
           --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${EMERGENCY_INBOX_SQS_QUEUE_SNS_LISTENER} | jq .
+
       awslocal sns subscribe \
           --topic-arn arn:aws:sns:us-east-1:123456789012:${SUCCESS_EVENTS_SNS_TOPIC} \
           --protocol sqs \
           --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${CUSTOMER_DELIVERY_SQS_QUEUE_SNS_LISTENER} | jq .
-       awslocal sns set-subscription-attributes \
+
+      awslocal sns set-subscription-attributes \
           --subscription-arn arn:aws:sns:us-east-1:123456789012:xgemail-scan-events-SNS:ca965ece-6eef-4151-9733-1f3ed2646526 \
           --attribute-name RawMessageDelivery \
           --attribute-value true
