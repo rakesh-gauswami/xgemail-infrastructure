@@ -34,7 +34,7 @@ def is_policy_file(formatted_s3_policy_bytes):
 # verifies if it is a right type file by magic number and if yes then
 # returns unzipped policy json
 def get_policy_binary(formatted_s3_policy):
-    # verify if it is a metadata file first
+    # verify if it is a policy file first
     if not is_policy_file(formatted_s3_policy[0:10]):
         raise ValueError("Policy file format error: invalid policy magic bytes!")
 

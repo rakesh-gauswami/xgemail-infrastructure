@@ -19,6 +19,7 @@ import json
 import logging
 import messageformatter
 import metadataformatter
+import configformatter
 import requests
 import smtplib
 import urllib
@@ -54,6 +55,7 @@ MESSAGE_HISTORY_DELIVERY_STATUS_SNS_TOPIC = '<%= @message_history_status_sns_top
 NODE_TYPE = '<%= @node_type %>'
 NODE_IP = '<%= @node_ip %>'
 ACCOUNT = '<%= @account %>'
+POLICY_BUCKET_NAME = "<%= @policy_bucket %>"
 
 # headers API constants
 PIC_HEADERS_URL = 'https://%s/mail/api/xgemail/headers' % (PIC_FQDN)
@@ -105,6 +107,64 @@ def parse_sqs_message(msg, receipt):
                       msg_as_json["message_key"],
                       msg_as_json["submit_message_type"],
                       receipt)
+
+
+# Attempts to create a new header of the format:
+#
+#   X-Sophos-Email-Transport-Route: <transport type>:[<host>]:<port>
+#
+# Where transport type may be either "smtp" or "smtp_encrypt",
+# host is the ip address or fully qualified domain name of the
+# customers mail server, and port is the port on which the mail
+# server is listening.
+#
+# We retrieve the customers transport route from S3, and expect JSON in the format:
+# {
+#    "host": "host-name-or-ip-address",
+#    "port": 25,
+#    "transport": "<smtp or smtp_encrypt>"
+# }
+#
+# If no transport route can be found or parsed, the value "Unknown" will
+# be used. The header name and value will be added to the existing_headers
+# as a new key/value
+def add_transport_route_header(recipients_addresses, existing_headers):
+
+    header_name = 'X-Sophos-Email-Transport-Route'
+
+    try:
+        # All recipients should have the same domain at this point
+        # due to upstream message splitting
+        customer_domain = recipients_addresses[0].split('@')[1]
+
+        s3_key = 'config/inbound-relay-control/delivery-routes/{0}.ROUTE'.format(customer_domain)
+
+        raw_config_data = awshandler.download_data_from_s3(POLICY_BUCKET_NAME, s3_key)
+        config_data = configformatter.get_config_binary(raw_config_data)
+        config_json = json.loads(config_data)
+
+        transport = config_json['transport']
+        host = config_json['host']
+
+        if 'port' in config_json:
+            header_value = '{0}:[{1}]'.format(transport, host)
+        else:
+            port = config_json['port']
+            header_value = '{0}:[{1}]:{2}'.format(transport, host, port)
+
+        existing_headers[header_name] = header_value
+
+    except Exception as e:
+
+        # TODO: For now we're not going to log the exception because we expect S3 to not have all this data yet.
+        # Once XGE-4967 is complete we should uncomment this exception log.
+
+        #logger.exception(
+        #    'Unable to create transport route header for recipients [{0}], Exception: {1}'.format(recipients, e)
+        #)
+
+        existing_headers[header_name] = 'Unknown'
+
 
 # Attempts to retrieve headers using api exposed on mail pic
 def attempt_to_retrieve_headers(message_path):
@@ -401,6 +461,13 @@ while True:
                     '>, <'.join(r.encode('utf-8') for r in recipients)
                 )
             )
+
+            # Add the transport route header to the existing headers if it's an INBOUND message
+            if MESSAGE_DIRECTION == 'INBOUND':
+                add_transport_route_header(
+                    recipients,
+                    headers
+                )
 
             # attempt to add any existing headers to the message
             message_binary_with_headers = add_headers(

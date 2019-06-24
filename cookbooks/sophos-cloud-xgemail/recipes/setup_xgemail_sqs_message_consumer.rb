@@ -35,6 +35,7 @@ MAIL_PIC_API_RESPONSE_TIMEOUT           = node['xgemail']['mail_pic_apis_respons
 MAIL_PIC_API_AUTH                       = node['xgemail']['mail_pic_api_auth']
 MESSAGE_HISTORY_DELIVERY_STATUS_SNS_TOPIC_ARN = node['xgemail']['msg_history_status_sns_arn']
 NODE_IP                                 = node['ipaddress']
+POLICY_BUCKET_NAME                      = node['xgemail']['xgemail_policy_bucket_name']
 
 if ACCOUNT == 'sandbox'
   XGEMAIL_PIC_FQDN = 'mail-service:8080'
@@ -83,7 +84,8 @@ template CONSUMER_SCRIPT_PATH do
     :message_history_status_sns_topic_arn => MESSAGE_HISTORY_DELIVERY_STATUS_SNS_TOPIC_ARN,
     :node_type => NODE_TYPE,
     :node_ip => NODE_IP,
-    :account => ACCOUNT
+    :account => ACCOUNT,
+    :policy_bucket => POLICY_BUCKET_NAME
   )
 end
 
