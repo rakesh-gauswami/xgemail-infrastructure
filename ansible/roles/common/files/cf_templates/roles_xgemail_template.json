@@ -1306,28 +1306,6 @@
               ],
               "Effect": "Allow",
               "Resource": [ "*" ]
-            },
-            {
-              "Action": [
-                "dynamodb:BatchWriteItem",
-                "dynamodb:DeleteItem",
-                "dynamodb:BatchGetItem",
-                "dynamodb:Scan",
-                "dynamodb:ListTables",
-                "dynamodb:GetItem",
-                "dynamodb:GetRecords",
-                "dynamodb:DescribeTable",
-                "dynamodb:PutItem",
-                "dynamodb:Query",
-                "dynamodb:UpdateItem",
-                "dynamodb:UpdateTable"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::Sub": "arn:aws:dynamodb:${AWS:Region}:${AWS::AccountId}:table/${DeliveryDirectorDynamoDBTableName}"
-                }
-              ]
             }
           ]
         },
@@ -1576,6 +1554,28 @@
               ],
               "Effect": "Allow",
               "Resource": [ "*" ]
+            },
+            {
+              "Action": [
+                "dynamodb:BatchWriteItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:BatchGetItem",
+                "dynamodb:Scan",
+                "dynamodb:ListTables",
+                "dynamodb:GetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:DescribeTable",
+                "dynamodb:PutItem",
+                "dynamodb:Query",
+                "dynamodb:UpdateItem",
+                "dynamodb:UpdateTable"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS:Region}:${AWS::AccountId}:table/${DeliveryDirectorDynamoDBTableName}"
+                }
+              ]
             }
           ]
         },
