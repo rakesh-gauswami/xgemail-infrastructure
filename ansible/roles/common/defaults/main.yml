@@ -123,6 +123,8 @@ sns:
   success_events_sns_topic:                             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-success-events-SNS"
 sdb:
   volume_tracker_sdb:                                   "{{volume_tracker_sdb_output.ansible_facts.cloudformation[stack.sdb.volume_tracker_sdb].stack_outputs.SimpleDbDomain}}"
+dynamodb:
+  delivery_director_dynamodb:                           "tf-delivery-director"
 
 # CloudEmail Stack Names
 stack:

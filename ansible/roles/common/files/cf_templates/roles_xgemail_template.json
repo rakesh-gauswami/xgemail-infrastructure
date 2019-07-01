@@ -41,6 +41,10 @@
     "XgemailCustomerSubmitBucketName": {
       "Description": "Name of the customer submit bucket",
       "Type": "String"
+    },
+    "DeliveryDirectorDynamoDBTableName": {
+      "Description": "Name of the delivery director dynamoDB table",
+      "Type": "String"
     }
   },
 
@@ -1302,6 +1306,28 @@
               ],
               "Effect": "Allow",
               "Resource": [ "*" ]
+            },
+            {
+              "Action": [
+                "dynamodb:BatchWriteItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:BatchGetItem",
+                "dynamodb:Scan",
+                "dynamodb:ListTables",
+                "dynamodb:GetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:DescribeTable",
+                "dynamodb:PutItem",
+                "dynamodb:Query",
+                "dynamodb:UpdateItem",
+                "dynamodb:UpdateTable"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS:Region}:${AWS::AccountId}:table/${DeliveryDirectorDynamoDBTableName}"
+                }
+              ]
             }
           ]
         },
