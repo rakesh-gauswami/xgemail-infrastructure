@@ -83,6 +83,39 @@
       }
     },
 
+    "PostconfCommand": {
+      "Type": "AWS::SSM::Document",
+      "Properties":{
+        "DocumentType": "Command",
+        "Content": {
+          "schemaVersion": "2.2",
+          "description": "Run any Postmulti/Postconf command on any instance",
+          "parameters": {
+            "Parameter":{
+              "type":"String",
+              "description":"The Postfix configuration Parameter."
+            },
+            "Value":{
+              "type":"String",
+              "description":"The Postfix configuration Parameter Value."
+            }
+          },
+          "mainSteps":[
+            {
+              "action":"aws:runShellScript",
+              "name":"runShellScript",
+              "inputs":{
+                "runCommand":[
+                  "postmulti -i $(postmulti -l | grep -v '^-' | awk '{print $1}') -x postconf {{ Parameter }}={{ Value }}",
+                  "postmulti -i $(postmulti -l | grep -v '^-' | awk '{print $1}') -p reload"
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+
     "TerminateAutoScalingInstance": {
       "Type": "AWS::SSM::Document",
       "Properties": {
@@ -526,6 +559,10 @@
     "UpdateHostname" : {
       "Description" : "SSM Update Hostname document name",
       "Value" : { "Ref" : "UpdateHostname" }
+    },
+    "PostconfCommand" : {
+      "Description" : "SSM Postfix Command document name",
+      "Value" : { "Ref" : "PostconfCommand" }
     },
     "InstanceTerminator" : {
       "Description" : "SSM Instance Terminator document name",
