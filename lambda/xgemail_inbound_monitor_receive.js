@@ -53,7 +53,7 @@ exports.handler = (event, context, callback) => {
     // calculate time interval between sent and received
     timeIntervalMillis = timeReceivedSes - timeSent;
     console.log(sesNotification.mail.commonHeaders);
-    console.log(`Email with Namespace:${namespace} took roundTripTime:${timeIntervalMillis} milliseconds`);
+    console.log(`Namespace: ${namespace}\troundTripTime:${timeIntervalMillis}`);
 
     //Write this value to CloudWatch if the timeSent was obtained
     if (timeIntervalMillis > 0) {
