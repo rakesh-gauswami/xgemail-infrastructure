@@ -56,8 +56,7 @@ exports.handler = (event, context, callback) => {
     // calculate time interval between sent and received
     timeIntervalMillis = timeReceivedSes - timeSent;
     console.log(`Email with subject <${emailSubject}> arrived at <${timeReceivedSes}> and was sent at <${timeSent}>`);
-    console.log(`Email with subject <${emailSubject}> took ${timeIntervalMillis} milliseconds`);
-
+    console.log(`Namespace: ${namespace}\troundTripTime:${timeIntervalMillis}`);
 
     //Write this value to CloudWatch if the timeSent was obtained
     if (timeIntervalMillis > 0) {
