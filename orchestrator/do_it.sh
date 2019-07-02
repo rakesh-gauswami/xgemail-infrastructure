@@ -19,6 +19,7 @@ gprintf() {
 CUSTOMER_SUBMIT_BUCKET="xgemail-cust-submit"
 EMERGENCY_INBOX_BUCKET="xgemail-emgcy-inbox"
 MSG_HISTORY_BUCKET="xgemail-msg-history"
+MSG_HISTORY_MS_BUCKET="xgemail-msg-history-ms"
 MSG_STATS_BUCKET="xgemail-msg-stats"
 POLICY_BUCKET="sandbox-cloudemail-xgemail-policy"
 QUARANTINE_BUCKET="xgemail-quarantine"
