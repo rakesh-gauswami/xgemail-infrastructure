@@ -138,6 +138,9 @@ if [[ $startup_check -ne 0 ]]; then
       gprintf "CREATING S3 BUCKET MSG_HISTORY_BUCKET"
       awslocal s3 mb s3://${MSG_HISTORY_BUCKET}
 
+      gprintf "CREATING S3 BUCKET MSG_HISTORY_MS_BUCKET"
+      awslocal s3 mb s3://${MSG_HISTORY_MS_BUCKET}
+
       gprintf "CREATING S3 BUCKET MSG_STATS_BUCKET"
       awslocal s3 mb s3://${MSG_STATS_BUCKET}
 
