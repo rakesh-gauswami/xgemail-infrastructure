@@ -561,6 +561,14 @@
         "TopicArn": { "Ref": "InternetDeliveryTopicArn"}
       }
     },
+    "AdditionalActionQueueToRiskyDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "AdditionalActionQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "RiskyDeliveryTopicArn"}
+      }
+    },
     "DlpReportQueueToQuarantinedSnsSubsciption": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
@@ -617,6 +625,7 @@
         "TopicArn": { "Ref": "RiskyDeliveryTopicArn"}
       }
     },
+
 
     "DeliveryQueuePolicy": {
       "Type": "AWS::SQS::QueuePolicy",
@@ -1150,6 +1159,18 @@
               "Condition": {
                 "ArnEquals": {
                   "aws:SourceArn": {"Ref": "InternetDeliveryTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-RiskyDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "RiskyDeliveryTopicArn"}
                 }
               }
             }
