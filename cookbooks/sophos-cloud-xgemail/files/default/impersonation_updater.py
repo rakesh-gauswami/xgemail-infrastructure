@@ -9,17 +9,17 @@
 #
 # A) Run script without paramters to see available flags and arguments:
 #
-# python /opt/sophos/xgemail/utils/impersonation-updater.py
+# python /opt/sophos/xgemail/utils/impersonation_updater.py
 #
 # A) Download current brands and free-mail-domains:
 #
-# python /opt/sophos/xgemail/utils/impersonation-updater.py -r eu-west-1 -e dev -w -g brands
-# python /opt/sophos/xgemail/utils/impersonation-updater.py -r eu-west-1 -e dev -w -g domains
+# python /opt/sophos/xgemail/utils/impersonation_updater.py -r eu-west-1 -e dev -w -g brands
+# python /opt/sophos/xgemail/utils/impersonation_updater.py -r eu-west-1 -e dev -w -g domains
 #
 # B) Update brand and free-mail-domains:
 #
-# python /opt/sophos/xgemail/utils/impersonation-updater.py -r eu-west-1 -e dev -u /tmp/brands.json
-# python /opt/sophos/xgemail/utils/impersonation-updater.py -r eu-west-1 -e dev -u /tmp/domains.json
+# python /opt/sophos/xgemail/utils/impersonation_updater.py -r eu-west-1 -e dev -u /tmp/brands.json
+# python /opt/sophos/xgemail/utils/impersonation_updater.py -r eu-west-1 -e dev -u /tmp/domains.json
 #
 # Copyright: Copyright (c) 1997-2019. All rights reserved.
 # Company: Sophos Limited or one of its affiliates.
