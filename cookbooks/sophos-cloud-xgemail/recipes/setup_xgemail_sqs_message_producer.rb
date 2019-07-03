@@ -44,6 +44,7 @@ XGEMAIL_BUCKET_NAME                          = node['xgemail']['xgemail_bucket_n
 XGEMAIL_QUEUE_URL                            = node['xgemail']['xgemail_queue_url']
 XGEMAIL_SERVICE_QUEUE_URL                    = node['xgemail']['xgemail_service_queue_url']
 XGEMAIL_MESSAGE_HISTORY_BUCKET_NAME          = node['xgemail']['msg_history_bucket_name']
+XGEMAIL_MESSAGE_HISTORY_MS_BUCKET_NAME       = node['xgemail']['msg_history_ms_bucket_name']
 XGEMAIL_POLICY_S3_BUCKET_NAME                = node['xgemail']['xgemail_policy_bucket_name']
 POLICY_STORAGE_PATH                          = node['xgemail']['policy_efs_mount_dir']
 XGEMAIL_SCAN_EVENTS_TOPIC_ARN                = node['xgemail']['xgemail_scan_events_topic_arn']
@@ -80,6 +81,7 @@ template PRODUCER_SCRIPT_PATH do
       :sqs_msg_producer_email_root_dir => SQS_MESSAGE_PRODUCER_EMAIL_ROOT_DIR,
       :sqs_msg_producer_ex_temp_failure_code => SQS_MESSAGE_PRODUCER_TEMP_FAILURE_CODE,
       :sqs_msg_producer_msg_history_s3_bucket_name => XGEMAIL_MESSAGE_HISTORY_BUCKET_NAME,
+      :sqs_msg_producer_msg_history_ms_s3_bucket_name => XGEMAIL_MESSAGE_HISTORY_MS_BUCKET_NAME,
       :sqs_msg_producer_policy_s3_bucket_name => XGEMAIL_POLICY_S3_BUCKET_NAME,
       :sqs_msg_producer_process_timeout_seconds => SQS_MESSAGE_PRODUCER_PROCESS_TIMEOUT_SECONDS,
       :sqs_msg_producer_s3_bucket_name => XGEMAIL_BUCKET_NAME,

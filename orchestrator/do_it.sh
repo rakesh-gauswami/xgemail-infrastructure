@@ -19,6 +19,7 @@ gprintf() {
 CUSTOMER_SUBMIT_BUCKET="xgemail-cust-submit"
 EMERGENCY_INBOX_BUCKET="xgemail-emgcy-inbox"
 MSG_HISTORY_BUCKET="xgemail-msg-history"
+MSG_HISTORY_MS_BUCKET="xgemail-msg-hist-ms"
 MSG_STATS_BUCKET="xgemail-msg-stats"
 POLICY_BUCKET="sandbox-cloudemail-xgemail-policy"
 QUARANTINE_BUCKET="xgemail-quarantine"
@@ -136,6 +137,9 @@ if [[ $startup_check -ne 0 ]]; then
 
       gprintf "CREATING S3 BUCKET MSG_HISTORY_BUCKET"
       awslocal s3 mb s3://${MSG_HISTORY_BUCKET}
+
+      gprintf "CREATING S3 BUCKET MSG_HISTORY_MS_BUCKET"
+      awslocal s3 mb s3://${MSG_HISTORY_MS_BUCKET}
 
       gprintf "CREATING S3 BUCKET MSG_STATS_BUCKET"
       awslocal s3 mb s3://${MSG_STATS_BUCKET}

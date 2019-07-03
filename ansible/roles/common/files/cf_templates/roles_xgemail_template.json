@@ -26,6 +26,10 @@
       "Description": "Name of the Xgemail Message History bucket",
       "Type": "String"
     },
+    "XgemailMsgHistoryMsBucketName": {
+      "Description": "Name of the Xgemail Message History Micro-Service bucket",
+      "Type": "String"
+    },
     "XgemailPolicyBucketName": {
       "Description": "Name of the Xgemail Policy bucket",
       "Type": "String"
@@ -707,6 +711,18 @@
             },
             {
               "Action" : [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObject",
+                "s3:RestoreObject"
+              ],
+              "Effect" : "Allow",
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailMsgHistoryMsBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailMsgHistoryMsBucketName" }]]}]
+            },
+            {
+              "Action" : [
                 "s3:DeleteObject",
                 "s3:GetBucketLocation",
                 "s3:GetObject",
@@ -947,6 +963,18 @@
             },
             {
               "Action" : [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObject",
+                "s3:RestoreObject"
+              ],
+              "Effect" : "Allow",
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailMsgHistoryMsBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailMsgHistoryMsBucketName" }]]}]
+            },
+            {
+              "Action" : [
                 "s3:DeleteObject",
                 "s3:GetBucketLocation",
                 "s3:GetObject",
@@ -1170,6 +1198,20 @@
               "Resource": [
                 { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailMsgHistoryBucketName" }, "/*" ] ] },
                 { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailMsgHistoryBucketName" } ] ] }
+              ]
+            },
+            {
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObject",
+                "s3:RestoreObject"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailMsgHistoryMsBucketName" }, "/*" ] ] },
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailMsgHistoryMsBucketName" } ] ] }
               ]
             },
             {
@@ -1439,6 +1481,20 @@
               "Action": [
                 "s3:GetBucketLocation",
                 "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObject",
+                "s3:RestoreObject"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailMsgHistoryMsBucketName" }, "/*" ] ] },
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailMsgHistoryMsBucketName" } ] ] }
+              ]
+            },
+            {
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
                 "s3:ListBucket"
               ],
               "Effect": "Allow",
@@ -1682,6 +1738,18 @@
             },
             {
               "Action" : [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObject",
+                "s3:RestoreObject"
+              ],
+              "Effect" : "Allow",
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailMsgHistoryMsBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailMsgHistoryMsBucketName" }]]}]
+            },
+            {
+              "Action" : [
                 "s3:DeleteObject",
                 "s3:GetBucketLocation",
                 "s3:GetObject",
@@ -1916,6 +1984,18 @@
               "Effect" : "Allow",
               "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailMsgHistoryBucketName" }, "/*"]]},
                 { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailMsgHistoryBucketName" }]]}]
+            },
+            {
+              "Action" : [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObject",
+                "s3:RestoreObject"
+              ],
+              "Effect" : "Allow",
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailMsgHistoryMsBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailMsgHistoryMsBucketName" }]]}]
             },
             {
               "Action" : [
@@ -2585,6 +2665,41 @@
                       "arn:aws:s3:::",
                       {
                         "Ref": "XgemailMsgHistoryBucketName"
+                      }
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObject",
+                "s3:RestoreObject"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "XgemailMsgHistoryMsBucketName"
+                      },
+                      "/*"
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "XgemailMsgHistoryMsBucketName"
                       }
                     ]
                   ]

@@ -41,6 +41,7 @@ from scaneventattributes import ScanEventAttributes
 # Constants
 AWS_REGION = "<%= @sqs_msg_producer_aws_region %>"
 MSG_HISTORY_BUCKET_NAME = "<%= @sqs_msg_producer_msg_history_s3_bucket_name %>"
+MSG_HISTORY_MS_BUCKET_NAME = "<%= @sqs_msg_producer_msg_history_ms_s3_bucket_name %>"
 MSG_HISTORY_EVENTS_TOPIC_ARN = "<%= @sns_msg_history_events_sns_topic_arn %>"
 POLICY_S3_BUCKET_NAME = "<%= @sqs_msg_producer_policy_s3_bucket_name %>"
 PROCESS_TIMEOUT_SECONDS = <%= @sqs_msg_producer_process_timeout_seconds %>
@@ -244,6 +245,13 @@ def upload_msg_history_to_s3(s3_file_path, expires, metadata):
         # upload msg history to message history bucket
         upload_to_s3(
             MSG_HISTORY_BUCKET_NAME,
+            msg_history_file_path,
+            formatted_msg_history,
+            expires
+        )
+         # upload msg history to message history ms bucket
+         upload_to_s3(
+            MSG_HISTORY_MS_BUCKET_NAME,
             msg_history_file_path,
             formatted_msg_history,
             expires

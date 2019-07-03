@@ -204,6 +204,11 @@
       "Type": "String",
       "Default": ""
     },
+    "XgemailMsgHistoryMsBucketName": {
+      "Description": "Name of the S3 Bucket where XGEMAIL messages are sent for micro-service",
+      "Type": "String",
+      "Default": ""
+    },
     "XgemailMsgHistoryQueueUrl": {
       "Description": "URL for the SQS Queue where XGEMAIL messages are sent",
       "Type": "String",
@@ -678,6 +683,7 @@
                     "    \"cluster_type\"                           : \"{{cluster_type}}\",\n",
                     "    \"lifecycle_topic_arn\"                    : \"{{lifecycle_topic_arn}}\",\n",
                     "    \"msg_history_bucket_name\"                : \"{{msg_history_bucket_name}}\",\n",
+                    "    \"msg_history_ms_bucket_name\"             : \"{{msg_history_ms_bucket_name}}\",\n",
                     "    \"msg_history_queue_url\"                  : \"{{msg_history_queue_url}}\",\n",
                     "    \"policy_efs_file_system_id\"              : \"{{policy_efs_file_system_id}}\",\n",
                     "    \"station_vpc_id\"                         : \"{{station_vpc_id}}\",\n",
@@ -705,6 +711,7 @@
                   "environment":                                    { "Ref": "Environment" },
                   "lifecycle_topic_arn":                            { "Ref": "AutoScalingNotificationTopicARN" },
                   "msg_history_bucket_name":                        { "Ref": "XgemailMsgHistoryBucketName" },
+                  "msg_history_ms_bucket_name":                     { "Ref": "XgemailMsgHistoryMsBucketName" },
                   "msg_history_queue_url":                          { "Ref": "XgemailMsgHistoryQueueUrl" },
                   "policy_efs_file_system_id":                      { "Ref": "XgemailPolicyEfsFileSystemId" },
                   "region":                                         { "Ref": "AWS::Region" },
