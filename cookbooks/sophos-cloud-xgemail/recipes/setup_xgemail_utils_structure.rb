@@ -42,6 +42,7 @@ end
     'diskutils.py',
     'formatterutils.py',
     'gziputils.py',
+    'impersonation_updater.py',
     'messageformatter.py',
     'messagehistoryformatter.py',
     'metadataformatter.py',
