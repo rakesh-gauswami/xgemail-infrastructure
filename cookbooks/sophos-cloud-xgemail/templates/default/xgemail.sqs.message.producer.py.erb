@@ -249,8 +249,9 @@ def upload_msg_history_to_s3(s3_file_path, expires, metadata):
             formatted_msg_history,
             expires
         )
-         # upload msg history to message history ms bucket
-         upload_to_s3(
+
+        # upload msg history to message history ms bucket
+        upload_to_s3(
             MSG_HISTORY_MS_BUCKET_NAME,
             msg_history_file_path,
             formatted_msg_history,
