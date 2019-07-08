@@ -83,6 +83,27 @@ services:
     networks:
       - novanet
 
+  malware-service:
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/malware-service:latest
+    container_name: malware-service
+    hostname: malware-service
+    domainname: sandbox.sophos
+  ports:
+    - 8050
+    environment:
+      - SPRING_PROFILES_ACTIVE=local
+      - APPLICATION_NAME=malware-service
+      - AWS_REGION=us-east-1
+      - ENVIRONMENT=local
+      - AUTH_ENABLED=false
+      - LPAS_ENABLED=true
+      - LPAS_ENDPOINT=http://lpas-fake:8080
+      - SQS_ENDPOINT=http://localstack:4576
+      - S3_ENDPOINT=http://localstack:4572
+      - SNS_ENDPOINT=http://localstack:4575
+    networks:
+      - novanet
+
   postfix-is:
     image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:latest
     container_name: postfix-is

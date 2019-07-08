@@ -840,6 +840,11 @@ case "$1" in
               deploy_wars "mail-service" "true" "mail"
               check_tomcat_startup ${email_tomcat_url} "mail"
               ;;
+
+             malware-service)
+              docker-compose -f ${orchestrator_location}${inbound_compose} restart malware-service
+              ;;
+
             mail-inbound)
               docker-compose -f ${orchestrator_location}${inbound_compose} restart mail-inbound
               ;;
