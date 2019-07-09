@@ -256,7 +256,6 @@ PYTHON_FILES += $(shell find ./bamboo -name '*.py')
 PYTHON_FILES += $(shell find ./bamboo/xgemail -name '*.py')
 PYTHON_FILES += ./utils/xgemail_send_eml.py
 PYTHON_FILES += ./utils/xgemail_terminate_instance.py
-PYTHON_FILES += ./utils/xgemail_deliverydirector_config_updater.py
 PYTHON_FILES += ./lambda/xgemail_eip_monitor.py
 PYTHON_FILES += ./lambda/xgemail_eip_rotation.py
 
