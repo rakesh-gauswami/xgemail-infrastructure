@@ -923,6 +923,18 @@
       "Description" : "SSM Postfix Command document name",
       "Value" : { "Ref" : "PostconfCommand" }
     },
+    "PostfixSxlUpdate" : {
+      "Description" : "SSM Postfix Sxl Update document name",
+      "Value" : { "Ref" : "PostfixSxlUpdate" }
+    },
+    "UpdateInstance" : {
+      "Description" : "SSM Update Instance document name",
+      "Value" : { "Ref" : "UpdateInstance" }
+    },
+    "TagInstance" : {
+      "Description" : "SSM Tag Instance document name",
+      "Value" : { "Ref" : "TagInstance" }
+    },
     "InstanceTerminator" : {
       "Description" : "SSM Instance Terminator document name",
       "Value" : { "Ref" : "InstanceTerminator" }
@@ -938,6 +950,14 @@
     "TerminationAutomationRoleArn": {
       "Description": "Instance Terminator Automation role ARN",
       "Value": { "Fn::GetAtt" : [ "TerminationAutomationRole", "Arn" ] }
+    },
+    "PostfixAutomationRole": {
+      "Description": "Postfix Automation role",
+      "Value": { "Ref": "PostfixAutomationRole" }
+    },
+    "PostfixAutomationRoleArn": {
+      "Description": "Postfix Automation role ARN",
+      "Value": { "Fn::GetAtt" : [ "PostfixAutomationRole", "Arn" ] }
     }
   }
 }
