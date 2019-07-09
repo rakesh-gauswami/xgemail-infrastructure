@@ -150,11 +150,16 @@
                 "Choices": [
                   {
                     "Variable": "{{SxlRevision}}",
-                    "Equals": "a",
+                    "StringEquals": "b",
+                    "NextStep": "updateSxlRevision"
+                  },
+                  {
+                    "Variable": "{{SxlRevision}}",
+                    "StringEquals": "a",
                     "NextStep": "rollbackSxlRevision"
                   }
                 ],
-                "Default": "updateSxlRevision"
+                "isEnd": "true"
               }
             },
             {
