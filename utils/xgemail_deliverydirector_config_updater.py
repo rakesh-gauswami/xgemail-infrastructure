@@ -12,20 +12,43 @@ def print_record(record):
     print "Risk Count  : %s" % record['Item']["risk_count"]
 
 
+def update_record(updated_risk_value, type_of_record, domain_or_email):
+    table.update_item(
+        Key={
+            'key': domainOrEmail,
+        },
+        UpdateExpression='SET risk_count = :val1, addressType = :val2',
+        ExpressionAttributeValues={
+            ':val1': updated_risk_value,
+            ':val2': type_of_record
+        }
+    )
+    update_response = table.get_item(
+        Key={
+            'key': domain_or_email,
+        }
+    )
+    return update_response
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Delivery director config updater')
     parser.add_argument('command', metavar='command', choices=["GET", "DELETE", "ADD", "REDUCE"],
                         help='Type of action/operation')
-    parser.add_argument('domainOrEmail', metavar='domainOrEmail', help='Domain name or email address ')
-    parser.add_argument('--risk_value', metavar='risk_value',
+    parser.add_argument('domainOrEmail', type=str, metavar='domainOrEmail', help='Domain name or email address ')
+    parser.add_argument('--risk_value', type=int, metavar='risk_value', choices=xrange(1, 101),
                         help="Risk value to add or reduce. Any value between 1 to 100")
-    parser.add_argument("--record_type", metavar='record_type', choices=["domain", "email"],
+    parser.add_argument("--record_type", type=str, metavar='record_type', choices=["domain", "email"],
                         help='Type of record email/domain')
     args = parser.parse_args()
 
+    if (args.command == "ADD" or args.command == "REDUCE") and (args.risk_value is None or args.record_type is None):
+        parser.error("--risk_value and --record_type are required attribute for ADD/REDUCE operation")
+
     command = args.command
     domainOrEmail = str(args.domainOrEmail).strip()
-    rangeForRiskValue = range(1, 100)
+    riskValue = args.risk_value
+    typeOfRecord = args.record_type
 
     if command == "GET":
         try:
@@ -35,8 +58,6 @@ if __name__ == "__main__":
                 }
             )
             print_record(response)
-            sys.exit(0)
-
         except KeyError:
             print("No record found for given domain/email.")
 
@@ -49,86 +70,37 @@ if __name__ == "__main__":
                 }
             )
             print("Record deleted.")
-            sys.exit(0)
-    try:
-        riskValue = int(args.risk_value)
-        if riskValue not in rangeForRiskValue:
-            print("Please enter value between 1 to 100 for risk_value.")
-            sys.exit(0)
-    except ValueError:
-        # This block will be executed when non numeric value passed
-        print("Please enter value between 1 to 100 for risk_value.")
-        sys.exit(0)
-
-    typeOfRecord = args.record_type
 
     if command == "ADD":
-        if riskValue is None or typeOfRecord is None:
-            print("--risk_value and --record_type are required attribute for ADD operation")
-        else:
-            try:
-                response = table.get_item(
-                    Key={
-                        'key': domainOrEmail,
-                    }
-                )
-                currentRiskValue = int(response['Item']["risk_count"])
-                updatedRiskValue = currentRiskValue + int(riskValue)
-            except KeyError:
-                updatedRiskValue = int(riskValue)
-                print("Existing record of given domain/email not found. Adding new record")
-
-            table.update_item(
-                Key={
-                    'key': domainOrEmail,
-                },
-                UpdateExpression='SET risk_count = :val1, addressType = :val2',
-                ExpressionAttributeValues={
-                    ':val1': updatedRiskValue,
-                    ':val2': typeOfRecord
-                }
-            )
+        try:
             response = table.get_item(
                 Key={
                     'key': domainOrEmail,
                 }
             )
-            print("Added Record:")
-            print_record(response)
+            currentRiskValue = int(response['Item']["risk_count"])
+            updatedRiskValue = currentRiskValue + int(riskValue)
+        except KeyError:
+            updatedRiskValue = riskValue
+            print("Existing record of given domain/email not found. Adding new record")
+
+        print("Added/Updated Record:")
+        print_record(update_record(updatedRiskValue, typeOfRecord, domainOrEmail))
 
     if command == "REDUCE":
-        if riskValue is None:
-            print("--risk_value is required attribute for REDUCE operation")
-        else:
-            try:
-                response = table.get_item(
-                    Key={
-                        'key': domainOrEmail,
-                    }
-                )
-                currentRiskValue = int(response['Item']["risk_count"])
-                updatedRiskValue = currentRiskValue - int(riskValue)
-            except KeyError:
-                print("Existing record of given domain/email not found. Ignoring this request")
-                sys.exit(0)
-
-            if updatedRiskValue < 0:
-                updatedRiskValue = 0
-
-            table.update_item(
-                Key={
-                    'key': domainOrEmail,
-                },
-                UpdateExpression='SET risk_count = :val1, addressType = :val2',
-                ExpressionAttributeValues={
-                    ':val1': updatedRiskValue,
-                    ':val2': typeOfRecord
-                }
-            )
+        try:
             response = table.get_item(
                 Key={
                     'key': domainOrEmail,
                 }
             )
-            print("Updated Record:")
-            print_record(response)
+            currentRiskValue = int(response['Item']["risk_count"])
+            updatedRiskValue = currentRiskValue - riskValue
+        except KeyError:
+            print("Existing record of given domain/email not found. Ignoring this request")
+            sys.exit(1)
+
+        if updatedRiskValue < 0:
+            updatedRiskValue = 0
+        print("Updated Record:")
+        print_record(update_record(updatedRiskValue, typeOfRecord, domainOrEmail))
