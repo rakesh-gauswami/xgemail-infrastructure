@@ -106,10 +106,281 @@
               "name":"runShellScript",
               "inputs":{
                 "runCommand":[
-                  "postmulti -i $(postmulti -l | grep -v '^-' | awk '{print $1}') -x postconf {{ Parameter }}={{ Value }}",
-                  "postmulti -i $(postmulti -l | grep -v '^-' | awk '{print $1}') -p reload"
+                  "postmulti -i $(postmulti -l | grep -v '^-' | awk '{print $1}') -x postconf -e {{ Parameter }}='{{ Value }}'"
                 ]
               }
+            }
+          ]
+        }
+      }
+    },
+
+    "PostfixSxlUpdate": {
+      "Type": "AWS::SSM::Document",
+      "Properties": {
+        "DocumentType": "Automation",
+        "Content": {
+          "schemaVersion": "0.3",
+          "assumeRole": { "Fn::GetAtt" : [ "PostfixAutomationRole", "Arn" ] },
+          "description": "Update Postfix configuration on an EC2 instance in an AutoScaling Group",
+          "parameters": {
+            "InstanceType": {
+              "type": "String",
+              "description": "The EC2 Instance Type.",
+              "allowedValues": [
+                "internet-submit",
+                "customer-submit"
+              ]
+            },
+            "SxlRevision": {
+              "type": "String",
+              "description": "SXL Revision to apply",
+              "default": "b",
+              "allowedValues": [
+                "a",
+                "b"
+              ]
+            }
+          },
+          "mainSteps":[
+            {
+              "name": "chooseAutomation",
+              "action": "aws:branch",
+              "inputs": {
+                "Choices": [
+                  {
+                    "Variable": "{{SxlRevision}}",
+                    "Equals": "a",
+                    "NextStep": "rollbackSxlRevision"
+                  }
+                ],
+                "Default": "updateSxlRevision"
+              }
+            },
+            {
+              "name": "updateSxlRevision",
+              "action": "aws:executeAutomation",
+              "maxAttempts": 3,
+              "timeoutSeconds": 3600,
+              "isEnd": "true",
+              "onFailure": "Abort",
+              "inputs": {
+                "DocumentName": { "Ref" : "UpdateInstance" },
+                "RuntimeParameters": {
+                  "InstanceType": "{{InstanceType}}",
+                  "SxlCurrent": "a",
+                  "SxlUpdate": "b"
+                }
+              }
+            },
+            {
+              "name": "rollbackSxlRevision",
+              "action": "aws:executeAutomation",
+              "maxAttempts": 3,
+              "timeoutSeconds": 3600,
+              "isEnd": "true",
+              "onFailure": "Abort",
+              "inputs": {
+                "DocumentName": { "Ref" : "UpdateInstance" },
+                "RuntimeParameters": {
+                  "InstanceType": "{{InstanceType}}",
+                  "SxlCurrent": "b",
+                  "SxlUpdate": "a"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+
+    "UpdateInstance": {
+      "Type": "AWS::SSM::Document",
+      "Properties": {
+        "DocumentType": "Automation",
+        "Content": {
+          "schemaVersion": "0.3",
+          "assumeRole": "{{assumeRole}}",
+          "description": "Update Postfix configuration on an EC2 instance in an AutoScaling Group",
+          "parameters": {
+            "assumeRole": {
+              "type": "String",
+              "description": "Role under which to run the automation",
+              "default": ""
+            },
+            "InstanceType": {
+              "type": "String",
+              "description": "The EC2 Instance Type.",
+              "allowedValues": [
+                "internet-submit",
+                "customer-submit"
+              ]
+            },
+            "SxlCurrent": {
+              "type": "String",
+              "description": "The Postfix parameter to update."
+            },
+            "SxlUpdate": {
+              "type": "String",
+              "description": "The Postfix parameter value."
+            }
+          },
+          "mainSteps":[
+            {
+              "name": "getInstance",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": 2,
+              "onFailure": "Abort",
+              "inputs": {
+                "Service": "ec2",
+                "Api": "DescribeInstances",
+                "Filters": [
+                  {
+                    "Name": "tag:Application",
+                    "Values": [
+                      "{{InstanceType}}"
+                    ]
+                  },
+                  {
+                    "Name": "instance-state-name",
+                    "Values": [
+                      "running"
+                    ]
+                  },
+                  {
+                    "Name": "tag:sxl-revision",
+                    "Values": [
+                      "{{SxlCurrent}}"
+                    ]
+                  }
+                ]
+              },
+              "outputs": [
+                {
+                  "Name": "InstanceId",
+                  "Selector": "$.Reservations[0].Instances[0].InstanceId",
+                  "Type": "String"
+                }
+              ],
+              "isCritical": "true",
+              "nextStep": "PostfixConfig"
+            },
+            {
+              "name": "PostfixConfig",
+              "action": "aws:runCommand",
+              "maxAttempts": 1,
+              "timeoutSeconds": 3600,
+              "inputs": {
+                "DocumentName": "AWS-RunShellScript",
+                "InstanceIds": [ "{{getInstance.InstanceId}}" ],
+                "Parameters": {
+                  "commands": [
+                    "postmulti -i $(postmulti -l | grep -v '^-' | awk '{print $1}') -x postconf reject_rbl_client='$reject_rbl_client_{{SxlUpdate}}'",
+                    "postmulti -i $(postmulti -l | grep -v '^-' | awk '{print $1}') -x postconf rbl_reply_maps=hash:/etc/$(postmulti -l | grep -v '^-' | awk '{print $1}')/rbl_reply_maps_{{SxlUpdate}}",
+                    "postmulti -i $(postmulti -l | grep -v '^-' | awk '{print $1}') -p reload"
+                  ]
+                }
+              },
+              "nextStep": "tagInstance"
+            },
+            {
+              "name": "tagInstance",
+              "action": "aws:executeAutomation",
+              "maxAttempts": 3,
+              "timeoutSeconds": 3600,
+              "isEnd": "true",
+              "onFailure": "Abort",
+              "inputs": {
+                "DocumentName": { "Ref" : "TagInstance" },
+                "RuntimeParameters": {
+                  "InstanceId": "{{getInstance.InstanceId}}",
+                  "Tag": "sxl-revision",
+                  "Value": "{{SxlUpdate}}"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+
+    "TagInstance": {
+      "Type": "AWS::SSM::Document",
+      "Properties": {
+        "DocumentType": "Automation",
+        "Content": {
+          "schemaVersion": "0.3",
+          "assumeRole": "{{assumeRole}}",
+          "description": "Update Postfix configuration on an EC2 instance in an AutoScaling Group",
+          "parameters": {
+            "assumeRole": {
+              "type": "String",
+              "description": "Role under which to run the automation",
+              "default": ""
+            },
+            "InstanceId": {
+              "type": "String",
+              "description": "(Required) The instance-id for the instance.",
+              "allowedPattern": "^i-[a-z0-9]{8,17}$"
+            },
+            "Tag": {
+              "type": "String",
+              "description": "The Tag."
+            },
+            "Value": {
+              "type": "String",
+              "description": "The Tag value."
+            }
+          },
+          "mainSteps":[
+            {
+              "name": "tagInstance",
+              "action": "aws:createTags",
+              "maxAttempts": 3,
+              "onFailure": "Abort",
+              "inputs": {
+                "ResourceType":"EC2",
+                "ResourceIds":[
+                  "{{InstanceId}}"
+                ],
+                "Tags": [
+                  {
+                    "Key": "{{Tag}}",
+                    "Value": "{{Value}}"
+                  }
+                ]
+              },
+              "isCritical": "true",
+              "nextStep": "assertInstanceIdTag"
+            },
+            {
+              "name": "assertInstanceIdTag",
+              "action": "aws:assertAwsResourceProperty",
+              "onFailure": "Abort",
+              "inputs": {
+                "Service": "ec2",
+                "Api": "DescribeTags",
+                "Filters": [
+                  {
+                    "Name": "resource-id",
+                    "Values": "{{InstanceId}}"
+                  },
+                  {
+                    "Name": "resource-type",
+                    "Values": "instance"
+                  },
+                  {
+                    "Name": "tag:{{Tag}}",
+                    "Values": "{{Value}}"
+                  }
+                ],
+                "PropertySelector": "$.Tags[0].ResourceId",
+                "DesiredValues": [
+                  "{{InstanceId}}"
+                ]
+              },
+              "isCritical": "true",
+              "isEnd": "true"
             }
           ]
         }
@@ -544,6 +815,94 @@
         "Roles": [
           {
             "Ref": "TerminationAutomationRole"
+          }
+        ]
+      },
+      "Type": "AWS::IAM::Policy"
+    },
+
+    "PostfixAutomationRole" : {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [
+                "ec2.amazonaws.com",
+                "ssm.amazonaws.com"
+              ]
+            },
+            "Action": [ "sts:AssumeRole" ]
+          }]
+        },
+        "Path": "/"
+      }
+    },
+    "PostfixAutomationRolePolicies": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "iam:PassRole"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "ec2:CreateTags",
+                "ec2:DescribeInstances"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:logs:*:*:*"
+              ]
+            },
+            {
+              "Action": [
+                "ssm:DescribeAutomationExecutions",
+                "ssm:DescribeAutomationStepExecutions",
+                "ssm:DescribeDocument",
+                "ssm:DescribeInstanceInformation",
+                "ssm:GetAutomationExecution",
+                "ssm:GetCommandInvocation",
+                "ssm:GetConnectionStatus",
+                "ssm:GetDocument",
+                "ssm:ListCommandInvocations",
+                "ssm:ListCommands",
+                "ssm:ListInstanceAssociations",
+                "ssm:ListDocuments",
+                "ssm:ListDocumentVersions",
+                "ssm:SendCommand",
+                "ssm:StartAutomationExecution"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ]
+        },
+        "PolicyName": "root",
+        "Roles": [
+          {
+            "Ref": "PostfixAutomationRole"
           }
         ]
       },
