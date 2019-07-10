@@ -356,36 +356,6 @@
                 ]
               },
               "isCritical": "true",
-              "nextStep": "assertInstanceIdTag"
-            },
-            {
-              "name": "assertInstanceIdTag",
-              "action": "aws:assertAwsResourceProperty",
-              "maxAttempts": 3,
-              "onFailure": "Abort",
-              "inputs": {
-                "Service": "ec2",
-                "Api": "DescribeTags",
-                "Filters": [
-                  {
-                    "Name": "resource-id",
-                    "Values": "{{InstanceId}}"
-                  },
-                  {
-                    "Name": "resource-type",
-                    "Values": "instance"
-                  },
-                  {
-                    "Name": "tag:{{Tag}}",
-                    "Values": "{{Value}}"
-                  }
-                ],
-                "PropertySelector": "$.Tags[0].ResourceId",
-                "DesiredValues": [
-                  "{{InstanceId}}"
-                ]
-              },
-              "isCritical": "true",
               "isEnd": "true"
             }
           ]
