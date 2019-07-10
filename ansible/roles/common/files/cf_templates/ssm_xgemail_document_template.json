@@ -234,7 +234,7 @@
             {
               "name": "getInstance",
               "action": "aws:executeAwsApi",
-              "maxAttempts": 2,
+              "maxAttempts": 3,
               "onFailure": "Abort",
               "inputs": {
                 "Service": "ec2",
@@ -273,7 +273,7 @@
             {
               "name": "PostfixConfig",
               "action": "aws:runCommand",
-              "maxAttempts": 1,
+              "maxAttempts": 3,
               "timeoutSeconds": 3600,
               "inputs": {
                 "DocumentName": "AWS-RunShellScript",
@@ -361,6 +361,7 @@
             {
               "name": "assertInstanceIdTag",
               "action": "aws:assertAwsResourceProperty",
+              "maxAttempts": 3,
               "onFailure": "Abort",
               "inputs": {
                 "Service": "ec2",
@@ -861,7 +862,8 @@
             {
               "Action": [
                 "ec2:CreateTags",
-                "ec2:DescribeInstances"
+                "ec2:DescribeInstances",
+                "ec2:DescribeTags"
               ],
               "Effect": "Allow",
               "Resource": [
