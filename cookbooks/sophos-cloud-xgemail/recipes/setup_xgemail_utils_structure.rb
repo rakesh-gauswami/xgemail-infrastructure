@@ -39,6 +39,7 @@ end
     'allowblockimporter.py',
     'awshandler.py',
     'configformatter.py',
+    'deliverydirector_config_updater.py',
     'diskutils.py',
     'formatterutils.py',
     'gziputils.py',
