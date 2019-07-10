@@ -4,8 +4,6 @@ import argparse
 import boto3
 
 sys.path.append("/opt/sophos/xgemail/utils")
-dynamoDb = boto3.resource('dynamodb')
-table = dynamoDb.Table('delivery_director')
 
 
 def print_record(record):
@@ -37,6 +35,8 @@ if __name__ == "__main__":
     parser.add_argument('command', metavar='command', choices=["GET", "DELETE", "ADD", "REDUCE"],
                         help='Type of action/operation')
     parser.add_argument('domainOrEmail', type=str, metavar='domainOrEmail', help='Domain name or email address ')
+    parser.add_argument('--region', choices=['eu-central-1', 'eu-west-1', 'us-west-2', 'us-east-2'],
+                        help = 'the region in which this script runs', required = True)
     parser.add_argument('--risk_value', type=int, metavar='risk_value', choices=xrange(1, 101),
                         help="Risk value to add or reduce. Any value between 1 to 100")
     parser.add_argument("--record_type", type=str, metavar='record_type', choices=["domain", "email"],
@@ -50,6 +50,9 @@ if __name__ == "__main__":
     domainOrEmail = str(args.domainOrEmail).strip()
     riskValue = args.risk_value
     typeOfRecord = args.record_type
+
+    dynamoDb = boto3.resource('dynamodb', args.region)
+    table = dynamoDb.Table('tf-delivery-director')
 
     if command == "GET":
         try:
