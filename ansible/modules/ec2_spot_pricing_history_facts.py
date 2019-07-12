@@ -152,16 +152,8 @@ def main():
         dict(
             availability_zone=dict(type="str", default=""),
             product_descriptions=dict(
-                type="str",
-                default="",
-                choices=[
-                    "Linux/UNIX",
-                    "SUSE Linux",
-                    "Windows",
-                    "Linux/UNIX (Amazon VPC)",
-                    "SUSE Linux (Amazon VPC)",
-                    "Windows (Amazon VPC)",
-                ],
+                type="list",
+                default=[]
             ),
             instance_types=dict(type="list", default=[]),
             filters=dict(type="list", default=[]),
@@ -191,8 +183,10 @@ def main():
             EndTime=end_time,
             MaxResults=module.params.get("max_results"),
         )
-    except (BotoCoreError, ClientError) as exception:
-        module.fail_json_aws(exception)
+    except ClientError as ce:
+        module.fail_json(msg=ce.message)
+    except BotoCoreError as be:
+        module.fail_json(msg=be.message)
 
     snaked_history = []
     for spot_price_history in spot_price_history_response["SpotPriceHistory"]:
