@@ -121,7 +121,8 @@ ec2_spot_pricing_history:
 
 import datetime
 
-from ansible.module_utils.aws.core import AnsibleAWSModule
+from ansible.module_utils.basic import AnsibleModule
+#from ansible.module_utils.aws.core import AnsibleAWSModule
 from ansible.module_utils.ec2 import (
     boto3_conn,
     ec2_argument_spec,
@@ -151,8 +152,8 @@ def main():
         dict(
             availability_zone=dict(type="str", default=""),
             product_descriptions=dict(
-                type="str",
-                default='',
+                type="list",
+                default=[],
                 choices=[
                     "Linux/UNIX",
                     "SUSE Linux",
@@ -170,7 +171,7 @@ def main():
         )
     )
 
-    module = AnsibleAWSModule(argument_spec=argument_spec)
+    module = AnsibleModule(argument_spec=argument_spec)
 
     ec2_client = module.client('ec2')
 
