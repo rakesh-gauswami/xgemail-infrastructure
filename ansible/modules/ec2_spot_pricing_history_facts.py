@@ -18,9 +18,9 @@ module: ec2_spot_pricing_history_facts
 short_description: Gather facts about ec2 spot pricing history in AWS
 description:
   - Gather historical facts on the spot prices of different instance types
-version_added: "2.8"
-requirements: [ boto3>=1.9.0 ]
-author: "Dani Hodovic (@danihodovic)"
+version_added: "2.4"
+requirements:
+    - boto3
 options:
   availability_zone:
     description:
@@ -171,9 +171,6 @@ def main():
     )
 
     module = AnsibleAWSModule(argument_spec=argument_spec)
-
-    if not module.boto3_at_least("1.9.0"):
-        module.fail_json(msg="ec2_spot_price_history_facts requires boto3 > 1.9.0")
 
     ec2_client = module.client('ec2')
 
