@@ -3,7 +3,7 @@
   ec2_spot_pricing_history_facts:
     instance_types: ["{{aws.asg.cs.instance_size}}"]
     availability_zone: "{{account.region}}"
-    product_descriptions: "Linux/UNIX (Amazon VPC)"
+    product_descriptions: Linux/UNIX (Amazon VPC)
     max_results: 1
   register: ec2_spot_pricing_output
   when: account.name != 'prod'
