@@ -166,8 +166,8 @@ def main():
     module = AnsibleModule(argument_spec=argument_spec)
 
     #ec2_client = module.client('ec2')
-    region, ec2_url, aws_connect_params = get_aws_connection_info(module, boto3=True)
-    ec2_client = boto3_conn(module, conn_type='client', resource='ec2', region=region, endpoint=ec2_url,
+    ec2_url, aws_connect_params = get_aws_connection_info(module, boto3=True)
+    ec2_client = boto3_conn(module, conn_type='client', resource='ec2', endpoint=ec2_url,
                      **aws_connect_params)
 
     start_time = parse_date(module, "start_time")
