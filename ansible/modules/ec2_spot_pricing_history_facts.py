@@ -152,8 +152,8 @@ def main():
         dict(
             availability_zone=dict(type="str", default=""),
             product_descriptions=dict(
-                type="list",
-                default=[],
+                type="str",
+                default="",
                 choices=[
                     "Linux/UNIX",
                     "SUSE Linux",
