@@ -14,7 +14,6 @@ import base64
 import boto3
 import csv
 import json
-import logging
 import os
 import pip
 import requests
@@ -27,21 +26,23 @@ except ImportError:
     from requests_toolbelt import MultipartEncoder
 
 # Constants
+MAX_LINE_LENGTH = 61
+MAX_CUSTOMER_ENTRIES = 30000
+MAX_USER_ENTRIES = 10000
 MAX_FILE_SIZE = 9500
 MAIL_PIC_RESPONSE_TIMEOUT = 120
 HEADER_LINE = 'entry, action, aliases\n'
 EMTPY_CSV_FILE_PATH = '/tmp/allow_block_empty.csv'
 
-# Logging to syslog setup
-logging.getLogger("botocore").setLevel(logging.WARNING)
-logger = logging.getLogger('allow-block-importer')
-logger.setLevel(logging.INFO)
-handler = logging.StreamHandler()
-formatter = logging.Formatter(
-    '[%(name)s] %(levelname)s %(message)s'
-)
-handler.formatter = formatter
-logger.addHandler(handler)
+class Colors:
+    """
+    Colors used when printing messages
+    """
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    RED = '\033[91m'
+    HEADER = '\033[95m'
+    ENDC = '\033[0m'
 
 class ApiResult:
     """
@@ -90,7 +91,7 @@ def write_new_file(file_name, content):
     """
     Writes the provided content to a new file under the provided path
     """
-    logger.debug('Writing new file {}: \n{}'.format(file_name, content))
+    print 'Writing new file {}: \n{}'.format(file_name, content)
     with open(file_name, 'w') as f:
         f.write(content + '\n')
     return file_name
@@ -156,11 +157,11 @@ def import_csv(main_file, customer_id, import_url, region, env):
     all_results = []
     all_files = create_csv_files_with_max_size(main_file)
     files_already_uploaded = 0
-    logger.info('Uploading {}'.format(main_file))
+    print 'Uploading {}'.format(main_file)
     for cur_file in all_files:
         all_results.append(upload(import_url, cur_file, customer_id, False, region, env))
         files_already_uploaded += 1
-        logger.info('{:.2f}% uploaded'.format(float(files_already_uploaded)/float(len(all_files)) * 100))
+        print '{:.2f}% uploaded'.format(float(files_already_uploaded)/float(len(all_files)) * 100)
 
     failures = 0
     successful = 0
@@ -168,10 +169,10 @@ def import_csv(main_file, customer_id, import_url, region, env):
     failed_files = []
     for result in all_results:
         if not result.is_successful():
-            logger.warn('Failed to upload file {}. Response code: {}'.format(result.file_name, result.get_status_code()))
+            print 'Failed to upload file {}. Response code: {}'.format(result.file_name, result.get_status_code())
             failed_files.append(result.file_name)
             continue
-        logger.info("response: {}".format(result.response.json()))
+        print "response: {}".format(result.response.json())
         successful += result.get_successful()
         if result.has_errors():
             errors = result.get_errors()
@@ -185,15 +186,69 @@ def import_csv(main_file, customer_id, import_url, region, env):
                 write_file.write(str(line) + '\n')
 
     if len(failed_files) > 0:
-        logger.warn('Files failed to upload:')
+        print 'Files failed to upload:'
         for failed_file in failed_files:
-            logger.warn('{}'.format(failed_file))
+            print '{}'.format(failed_file)
 
-    logger.info('Total entries successfully imported: {}'.format(successful))
-    logger.info('Total entries failed to be imported: {}'.format(failures))
+    print 'Total entries successfully imported: {}'.format(successful)
+    print 'Total entries failed to be imported: {}'.format(failures)
 
     if (len(all_errors) > 0):
-        logger.info('Failure entries written to {}'.format(failure_file))
+        print 'Failure entries written to {}'.format(failure_file)
+
+def determine_invalid_rows(main_file):
+    """
+    Determines any invalid rows from the main CSV file
+    """
+    print_colorized('{0} WARNING {0}'.format('#'*26), Colors.HEADER)
+    print_colorized('Maximum entries for customer allow/block entries:\t{}'.format(MAX_CUSTOMER_ENTRIES), Colors.HEADER)
+    print_colorized('Maximum entries for user allow/block entries:\t\t{}'.format(MAX_USER_ENTRIES), Colors.HEADER)
+    print_colorized('{}'.format('#'*MAX_LINE_LENGTH), Colors.HEADER)
+    print
+
+    with open(main_file, 'r') as f:
+        line_number = 0
+        nr_of_invalid_entries = 0
+
+        for line in f.readlines():
+            line_number += 1
+            tokens = line.split(',')
+            entries = len(tokens) - 2
+            if tokens[0].lower() == 'enterprise' and entries > MAX_CUSTOMER_ENTRIES:
+                print_colorized(
+                    'Customer allow/block entry {} exeeds maximum number of entries ({}): {}'.format(
+                        line_number,
+                        MAX_CUSTOMER_ENTRIES,
+                        entries
+                    ),
+                    Colors.YELLOW
+                )
+                nr_of_invalid_entries += 1
+            elif entries > MAX_USER_ENTRIES:
+                print_colorized(
+                    'User allow/block entry {} ({}) exeeds maximum number of entries ({}): {}'.format(
+                        line_number,
+                        tokens[0],
+                        MAX_USER_ENTRIES,
+                        entries
+                    ),
+                    Colors.YELLOW
+                )
+                nr_of_invalid_entries += 1
+        if nr_of_invalid_entries == 0:
+            print_colorized(
+                'All {} entries are within the above defined limits'.format(line_number - 1),
+                Colors.GREEN
+            )
+        else:
+            print
+            print_colorized(
+                'Found a total of {}/{} entries that exeed the above defined limits'.format(
+                    nr_of_invalid_entries,
+                    line_number - 1
+                ),
+                Colors.RED
+            )
 
 def delete_all(import_url, customer_id, region, env):
     """
@@ -202,11 +257,24 @@ def delete_all(import_url, customer_id, region, env):
     with open(EMTPY_CSV_FILE_PATH, 'a+'):
         upload(import_url, EMTPY_CSV_FILE_PATH, customer_id, True, region, env)
 
+def print_colorized(text, color):
+    """
+    Prints colorized text to console
+    """
+    if color == Colors.YELLOW:
+        print color + 'WARNING: ' + text + Colors.ENDC
+    elif color == Colors.GREEN:
+        print color + 'SUCCESS: ' + text + Colors.ENDC
+    elif color == Colors.RED:
+        print color + 'ERROR:   ' + text + Colors.ENDC
+    else:
+        print color + text + Colors.ENDC
+
 def cleanup(main_file):
     """
     Cleans up any temporary files that were created during import process
     """
-    logger.debug('Cleaning up temporary files for {}'.format(main_file))
+    print 'Cleaning up temporary files for {}'.format(main_file)
     os.system('rm -f {}.*'.format(main_file))
     os.system('rm -f {}'.format(EMTPY_CSV_FILE_PATH))
 
@@ -235,8 +303,12 @@ if __name__ == "__main__":
 
     import_url = 'https://mail-cloudstation-{}.{}.hydra.sophos.com/mail/api/xgemail/allow-block/import'.format(args.region, args.env)
 
+    determine_invalid_rows(args.file)
+
+    sys.exit(0)
+
     if args.delete_all:
-        logger.info("Deleting all allow/block entries for customer")
+        print "Deleting all allow/block entries for customer"
         delete_all(import_url, args.customer_id, args.region, args.env)
         sys.exit(0)
 
