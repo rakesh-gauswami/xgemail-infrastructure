@@ -39,6 +39,7 @@ MAX_FILE_SIZE = 9500
 MAIL_PIC_RESPONSE_TIMEOUT = 120
 HEADER_LINE = 'entry, action, aliases\n'
 FAILED_FILES_PATH = '/tmp/allow-block-import-failed.csv'
+ERROR_ENTRIES_PATH = '/tmp/allow-block-errors.txt'
 EMTPY_CSV_FILE_PATH = '/tmp/allow_block_empty.csv'
 
 class Colors:
@@ -102,29 +103,26 @@ def write_new_file(file_name, content):
         f.write(content + '\n')
     return file_name
 
-def write_error_file(main_file, all_errors):
+def write_error_file(all_errors):
     """
     Writes a tabular file listing all the entries that could not be imported.
-    Returns the path to the error report.
     """
-    failure_file = '{}_errors'.format(main_file)
-
     t = PrettyTable(['Entry', 'Error'])
     t.align = 'l'
 
     for entry in all_errors:
-        print entry['line_number']
-        # t.add_row([b['brand_name'], dns, words, domains])
-
-    # with open(failure_file, 'w') as write_file:
-    return failure_file
+        t.add_row([
+             'ENTERPRISE' if not entry['address'] else entry['address'],
+             entry['input_parser_error_code']
+        ])
+    with open(ERROR_ENTRIES_PATH, 'w') as write_file:
+        write_file.write(t.get_string())
 
 def write_failed_files(failed_files):
     """
     Writes a file containing a combination of all files that failed to be uploaded.
     Returns the path to the file.
     """
-
     entries = {}
     for cur_file in failed_files:
         with open (cur_file, 'r') as failed_file:
@@ -222,7 +220,7 @@ def import_csv(main_file, customer_id, import_url, region, env):
         successful += result.get_successful()
         if result.has_errors():
             errors = result.get_errors()
-            all_errors.append(errors)
+            all_errors.extend(errors)
             failures += len(errors)
 
     indentation = max(len(str(successful)), len(str(failures)))
@@ -231,22 +229,21 @@ def import_csv(main_file, customer_id, import_url, region, env):
         '[{}] entries imported successfully'.format(str(successful).rjust(indentation)),
         Colors.GREEN if successful > 0 else Colors.YELLOW
     )
-    if (failures > 0):
-        error_file_path = write_error_file(main_file, all_errors)
-        print_colorized(
-            '[{}] entries failed to import. Report written to: {}'.format(
-                str(failures).rjust(indentation),
-                error_file_path
-            ),
-            Colors.YELLOW
-        )
-
     if len(failed_files) > 0:
         write_failed_files(failed_files)
         print_colorized(
             '[{}] files failed to be uploaded. Failure file written to: {}'.format(
                 len(failed_files),
                 FAILED_FILES_PATH
+            ),
+            Colors.YELLOW
+        )
+    if (failures > 0):
+        error_file_path = write_error_file(all_errors)
+        print_colorized(
+            '[{}] entries failed to import. Report written to: {}'.format(
+                str(failures).rjust(indentation),
+                ERROR_ENTRIES_PATH
             ),
             Colors.YELLOW
         )
@@ -331,6 +328,7 @@ def cleanup(main_file):
     Cleans up any temporary files that were created during import process
     """
     os.system('rm -f {}.*'.format(FAILED_FILES_PATH))
+    os.system('rm -f {}.*'.format(ERROR_ENTRIES_PATH))
     os.system('rm -f {}.*'.format(main_file))
     os.system('rm -f {}'.format(EMTPY_CSV_FILE_PATH))
 
@@ -355,6 +353,7 @@ if __name__ == "__main__":
         help = 'Removes all currently stored Allow/Block entries for the given customer'
     )
     group.add_argument('--retry', dest = 'retry', action = 'store_true', help = 'Retry previously failed upload attempt')
+    group.add_argument('--errors', dest = 'errors', action = 'store_true', help = 'Show the errors from the previous run')
 
     args = parser.parse_args()
 
@@ -375,12 +374,28 @@ if __name__ == "__main__":
             import_csv(FAILED_FILES_PATH, args.customer_id, import_url, args.region, args.env)
             sys.exit(0)
 
-        determine_invalid_rows(args.file)
+        if args.errors:
+            if not os.path.exists(ERROR_ENTRIES_PATH):
+                print
+                print_colorized(
+                    'Unable to show errors from previous run because file {} does not exist'.format(
+                        ERROR_ENTRIES_PATH
+                    ),
+                    Colors.YELLOW
+                )
+                print
+                sys.exit(1)
+
+            with open(ERROR_ENTRIES_PATH, 'r') as f:
+                print f.read()
+            sys.exit(0)
 
         if args.delete_all:
             print "Deleting all allow/block entries for customer"
             delete_all(import_url, args.customer_id, args.region, args.env)
             sys.exit(0)
+
+        determine_invalid_rows(args.file)
 
         import_csv(args.file, args.customer_id, import_url, args.region, args.env)
     finally:
