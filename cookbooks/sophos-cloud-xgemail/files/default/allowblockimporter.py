@@ -250,7 +250,8 @@ def import_csv(main_file, customer_id, import_url, region, env):
 
 def determine_invalid_rows(main_file):
     """
-    Determines any invalid rows from the main CSV file
+    Determines any invalid rows from the main CSV file.
+    Returns True if any invalid rows found, False otherwise
     """
     print_colorized('{0} WARNING {0}'.format('#'*26), Colors.HEADER)
     print_colorized('Maximum entries for customer allow/block entries:\t{}'.format(MAX_CUSTOMER_ENTRIES), Colors.HEADER)
@@ -266,16 +267,17 @@ def determine_invalid_rows(main_file):
             line_number += 1
             tokens = line.split(',')
             entries = len(tokens) - 2
-            if tokens[0].lower() == 'enterprise' and entries > MAX_CUSTOMER_ENTRIES:
-                print_colorized(
-                    'Customer allow/block entry {} exeeds maximum number of entries ({}): {}'.format(
-                        line_number,
-                        MAX_CUSTOMER_ENTRIES,
-                        entries
-                    ),
-                    Colors.YELLOW
-                )
-                nr_of_invalid_entries += 1
+            if tokens[0].lower() == 'enterprise':
+                if entries > MAX_CUSTOMER_ENTRIES:
+                    print_colorized(
+                        'Customer allow/block entry {} exeeds maximum number of entries ({}): {}'.format(
+                            line_number,
+                            MAX_CUSTOMER_ENTRIES,
+                            entries
+                        ),
+                        Colors.YELLOW
+                    )
+                    nr_of_invalid_entries += 1
             elif entries > MAX_USER_ENTRIES:
                 print_colorized(
                     'User allow/block entry {} ({}) exeeds maximum number of entries ({}): {}'.format(
@@ -292,16 +294,15 @@ def determine_invalid_rows(main_file):
                 'All {} entries are within the above defined limits'.format(line_number - 1),
                 Colors.GREEN
             )
-        else:
-            print
-            print_colorized(
-                'Found a total of {}/{} entries that exeed the above defined limits'.format(
-                    nr_of_invalid_entries,
-                    line_number - 1
-                ),
-                Colors.RED
-            )
-        print
+            return False
+        print_colorized(
+            'Found a total of {}/{} entries that exceed the above defined limits'.format(
+                nr_of_invalid_entries,
+                line_number - 1
+            ),
+            Colors.YELLOW
+        )
+        return True
 
 def delete_all(import_url, customer_id, region, env):
     """
@@ -350,6 +351,7 @@ if __name__ == "__main__":
     """
     parser = argparse.ArgumentParser(description = 'Upload Allow/Block list for customer')
     parser.add_argument('--customer_id', required = True, type = str, help = 'The customer ID for which to import Allow/Block lists')
+    parser.add_argument('--force', action = 'store_true', help = 'Imports allow/block list entries even if they exeed the maximum number of allowed entries')
     parser.add_argument('-r', '--region', dest = 'region', default = 'eu-west-1',
         choices=['eu-central-1', 'eu-west-1', 'us-west-2', 'us-east-2'],
         help = 'The region in which the customer resides (default: eu-west-1)'
@@ -412,7 +414,14 @@ if __name__ == "__main__":
             delete_all(import_url, args.customer_id, args.region, args.env)
             sys.exit(0)
 
-        determine_invalid_rows(args.file)
+        has_invalid_entries = determine_invalid_rows(args.file)
+
+        if has_invalid_entries and not args.force:
+            print_colorized(
+                'Aborted import of allow/block due to invalid entries. Use --force to import anyways',
+                Colors.RED
+            )
+            sys.exit(1)
 
         import_csv(args.file, args.customer_id, import_url, args.region, args.env)
     finally:
