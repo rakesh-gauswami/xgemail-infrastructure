@@ -39,7 +39,6 @@ EMERGENCY_INBOX_SQS_QUEUE_SNS_LISTENER="sandbox-Xgemail_Emergency_Inbox_Delivery
 INTERNET_DELIVERY_SQS_QUEUE="sandbox-Xgemail_Internet_Delivery"
 INTERNET_DELIVERY_SQS_QUEUE_SNS_LISTENER="sandbox-Xgemail_Internet_Delivery_SNS_Listener"
 INTERNET_SUBMIT_SERVICE_SQS_QUEUE="sandbox-Xgemail_Internet_Submit_Service"
-INTERNET_SUBMIT_SQS_QUEUE="sandbox-Xgemail_Internet_Submit"
 
 #MSG Queues
 MSG_HISTORY_SQS_QUEUE="sandbox-Xgemail_MessageHistoryEvent_Delivery"
@@ -53,13 +52,13 @@ MULTI_POLICY_SQS_QUEUE="sandbox-Xgemail_multi_policy"
 NOTIFIER_REQUEST_SQS_QUEUE="sandbox-Xgemail_Notifier_Request"
 QUARANTINE_SQS_QUEUE="sandbox-Xgemail_Quarantine_Delivery"
 QUARANTINE_SQS_QUEUE_SNS_LISTENER="sandbox-Xgemail_Quarantine_Delivery_SNS_Listener"
-POLICYASSIGNMENT_SQS_QUEUE="sandbox-PolicyAssignment.Xgemail"
+POLICYASSIGNMENT_SQS_QUEUE="vpc-000000-PolicyAssignment_Xgemail"
 
 #SASI Queues
 SASI_OUTBOUND_REQUEST_SQS_QUEUE="sandbox-SASI_Outbound_Request"
 SASI_OUTBOUND_RESPONSE_SQS_QUEUE="sandbox-SASI_Outbound_Response"
-SASI_REQUEST_SQS_QUEUE="sandbox-SASI_Request"
-SASI_RESPONSE_SQS_QUEUE="sandbox-SASI_Response"
+SASI_SERVICE_REQUEST_QUEUE="sandbox-SASI_Request"
+SASI_SERVICE_RESPONSE_QUEUE="sandbox-SASI_Response"
 
 #DLQ queues
 SASI_OUTBOUND_REQUEST_SQS_QUEUE_DLQ="sandbox-SASI_Outbound_Request-DLQ"
@@ -75,7 +74,6 @@ EMERGENCY_INBOX_SQS_QUEUE_SNS_LISTENER_DLQ="sandbox-Xgemail_Emergency_Inbox_Deli
 INTERNET_DELIVERY_SQS_QUEUE_DLQ="sandbox-Xgemail_Internet_Delivery-DLQ"
 INTERNET_DELIVERY_SQS_QUEUE_SNS_LISTENER_DLQ="sandbox-Xgemail_Internet_Delivery_SNS_Listener-DLQ"
 INTERNET_SUBMIT_SERVICE_SQS_QUEUE_DLQ="sandbox-Xgemail_Internet_Submit_Service-DLQ"
-INTERNET_SUBMIT_SQS_QUEUE_DLQ="sandbox-Xgemail_Internet_Submit-DLQ"
 MSG_HISTORY_SQS_QUEUE_DLQ="sandbox-Xgemail_MessageHistoryEvent_Delivery-DLQ"
 MSG_HISTORY_SQS_QUEUE_SNS_LISTENER_DLQ="sandbox-Xgemail_MessageHistoryEvent_Delivery_SNS_Listener-DLQ"
 MSG_HISTORY_STATUS_SQS_QUEUE_DLQ="sandbox-Xgemail_MessageHistory_Delivery_Status-DLQ"
@@ -184,9 +182,6 @@ if [[ $startup_check -ne 0 ]]; then
       gprintf "CREATING INTERNET_SUBMIT_SERVICE_SQS_QUEUE"
       awslocal sqs create-queue --queue-name ${INTERNET_SUBMIT_SERVICE_SQS_QUEUE} | jq .
 
-      gprintf "CREATING INTERNET_SUBMIT_SQS_QUEUE"
-      awslocal sqs create-queue --queue-name ${INTERNET_SUBMIT_SQS_QUEUE} | jq .
-
       gprintf "CREATING MSG_HISTORY_SQS_QUEUE"
       awslocal sqs create-queue --queue-name ${MSG_HISTORY_SQS_QUEUE} | jq .
 
@@ -262,8 +257,6 @@ if [[ $startup_check -ne 0 ]]; then
       awslocal sqs create-queue --queue-name ${INTERNET_DELIVERY_SQS_QUEUE_SNS_LISTENER_DLQ} | jq .
 
       awslocal sqs create-queue --queue-name ${INTERNET_SUBMIT_SERVICE_SQS_QUEUE_DLQ} | jq
-
-      awslocal sqs create-queue --queue-name ${INTERNET_SUBMIT_SQS_QUEUE_DLQ} | jq .
 
       awslocal sqs create-queue --queue-name ${MSG_HISTORY_SQS_QUEUE_DLQ} | jq .
 

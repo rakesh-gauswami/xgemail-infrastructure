@@ -39,10 +39,11 @@ if ENVIRONMENT == "sandbox"
     default['xgemail']['station_vpc_name']           = 'pic'
 
     if INSTANCE_TYPE == "internet-submit" || INSTANCE_TYPE == "customer-delivery"
-        default['xgemail']['xgemail_bucket_name'] = 'sandbox-cloudemail-xgemail-submit'
+        default['xgemail']['xgemail_bucket_name']           = 'sandbox-cloudemail-xgemail-submit'
         default['xgemail']['xgemail_scan_events_topic_arn'] = 'arn:aws:sns:us-east-1:123456789012:xgemail-scan-events-SNS'
-        default['xgemail']['xgemail_queue_url']   = 'http://localstack:4576/queue/vpc-000000-sandbox-Internet_Submit_Service_Queue'
-        default['xgemail']['xgemail_sns_sqs_url'] = 'http://localstack:4576/queue/sandbox-Xgemail_Customer_Delivery_SNS_Listener'
+        default['xgemail']['xgemail_queue_url']             = 'http://localstack:4576/queue/sandbox-Xgemail_Internet_Submit'
+        default['xgemail']['xgemail_service_queue_url']     = 'http://localstack:4576/queue/vpc-000000-sandbox-Internet_Submit_Service_Queue'
+        default['xgemail']['xgemail_sns_sqs_url']           = 'http://localstack:4576/queue/sandbox-Xgemail_Customer_Delivery_SNS_Listener'
     end
 
     if INSTANCE_TYPE == "customer-submit" || INSTANCE_TYPE == "internet-delivery"

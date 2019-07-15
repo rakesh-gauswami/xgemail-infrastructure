@@ -51,8 +51,8 @@ else
   command <<-EOH
       tar xf #{JILTER_PACKAGE_NAME}.tar -C #{DEPLOYMENT_DIR}
       mv #{DEPLOYMENT_DIR}/xgemail-jilter-#{DIRECTION}*SNAPSHOT #{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}
-      tar xf xgemail-jilter-inbound-#{JILTER_VERSION}.tar -C #{DEPLOYMENT_DIR}
-      mv xgemail-jilter-inbound* xgemail-jilter-inbound
+      tar xf inbound/xgemail-jilter-inbound-#{JILTER_VERSION}.tar -C #{DEPLOYMENT_DIR}
+      mv #{DEPLOYMENT_DIR}/xgemail-jilter-inbound* #{DEPLOYMENT_DIR}/xgemail-jilter-inbound
   EOH
   end
  end
