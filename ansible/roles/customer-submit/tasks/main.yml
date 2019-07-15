@@ -10,6 +10,12 @@
   tags:
     - asg
 
+- name: "Include Spot Instance Price History Task."
+  include_tasks: spot-price-history.yml
+  when: account.name != 'inf'
+  tags:
+    - asg
+
 - name: "Include ASG Creation Task."
   include_tasks: asg-deploy.yml
   tags:
