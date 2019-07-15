@@ -308,7 +308,19 @@ def delete_all(import_url, customer_id, region, env):
     Removes all allow/block entries for the provided customer
     """
     with open(EMTPY_CSV_FILE_PATH, 'a+'):
-        upload(import_url, EMTPY_CSV_FILE_PATH, customer_id, True, region, env)
+        result = upload(import_url, EMTPY_CSV_FILE_PATH, customer_id, True, region, env)
+        if result.is_successful():
+            print_colorized(
+                'Successfully removed all customer-level allow/block entries',
+                Colors.GREEN
+            )
+            return
+        print_colorized(
+            'Error while attempting to remove all customer-level allow/block entries. Status code: {}'.format(
+                result.get_status_code()
+            ),
+            Colors.RED
+        )
 
 def print_colorized(text, color):
     """
@@ -391,7 +403,12 @@ if __name__ == "__main__":
             sys.exit(0)
 
         if args.delete_all:
-            print "Deleting all allow/block entries for customer"
+            print_colorized(
+                'Deleting all customer-level allow/block entries'.format(
+                    FAILED_FILES_PATH
+                ),
+                Colors.HEADER
+            )
             delete_all(import_url, args.customer_id, args.region, args.env)
             sys.exit(0)
 
