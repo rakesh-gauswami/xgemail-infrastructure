@@ -25,6 +25,12 @@ except ImportError:
     pip.main(['install', 'requests-toolbelt'])
     from requests_toolbelt import MultipartEncoder
 
+try:
+    from prettytable import PrettyTable
+except ImportError:
+    pip.main(['install', 'PrettyTable'])
+    from prettytable import PrettyTable
+
 # Constants
 MAX_LINE_LENGTH = 61
 MAX_CUSTOMER_ENTRIES = 30000
@@ -102,9 +108,15 @@ def write_error_file(main_file, all_errors):
     Returns the path to the error report.
     """
     failure_file = '{}_errors'.format(main_file)
-    with open(failure_file, 'w') as write_file:
-        for line in all_errors:
-            write_file.write(str(line) + '\n')
+
+    t = PrettyTable(['Entry', 'Error'])
+    t.align = 'l'
+
+    for entry in all_errors:
+        print entry['line_number']
+        # t.add_row([b['brand_name'], dns, words, domains])
+
+    # with open(failure_file, 'w') as write_file:
     return failure_file
 
 def write_failed_files(failed_files):
@@ -191,7 +203,7 @@ def import_csv(main_file, customer_id, import_url, region, env):
     all_results = []
     all_files = create_csv_files_with_max_size(main_file)
     files_already_uploaded = 0
-    
+
     print_colorized('Uploading file {}'.format(main_file), Colors.HEADER)
     for cur_file in all_files:
         all_results.append(upload(import_url, cur_file, customer_id, False, region, env))
