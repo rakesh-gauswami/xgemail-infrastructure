@@ -22,6 +22,10 @@ version_added: "2.4"
 requirements:
     - boto3
 options:
+  region:
+    description:
+      - The region to use.
+    required: true
   availability_zone:
     description:
       - >
@@ -150,6 +154,7 @@ def main():
     argument_spec = ec2_argument_spec()
     argument_spec.update(
         dict(
+            region=dict(type="str", default="us-west-2"),
             availability_zone=dict(type="str", default=""),
             product_descriptions=dict(
                 type="list",
@@ -166,8 +171,8 @@ def main():
     module = AnsibleModule(argument_spec=argument_spec)
 
     #ec2_client = module.client('ec2')
-    ec2_url, aws_connect_params = get_aws_connection_info(module, boto3=True)
-    ec2_client = boto3_conn(module, conn_type='client', resource='ec2', endpoint=ec2_url,
+    region, ec2_url, aws_connect_params = get_aws_connection_info(module, boto3=True)
+    ec2_client = boto3_conn(module, conn_type='client', resource='ec2', region=region, endpoint=ec2_url,
                      **aws_connect_params)
 
     start_time = parse_date(module, "start_time")

@@ -2,6 +2,7 @@
 - name: "Get Spot Instance price for {{aws.asg.cs.instance_size}} in {{account.region}}"
   ec2_spot_pricing_history_facts:
     instance_types: ["{{aws.asg.cs.instance_size}}"]
+    region: "{{account.region}}"
     availability_zone: "{{account.region}}a"
     product_descriptions: ["Linux/UNIX (Amazon VPC)"]
     max_results: 1
