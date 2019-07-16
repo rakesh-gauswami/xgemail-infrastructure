@@ -223,14 +223,6 @@
       "Description": "Endpoint URL for Additional Action SQS Queue",
       "Type": "String"
     },
-    "DlpReportQueueArn": {
-      "Description": "Endpoint ARN for DLP Report SQS Queue",
-      "Type": "String"
-    },
-    "DlpReportQueueUrl": {
-      "Description": "Endpoint URL for DLP Report SQS Queue",
-      "Type": "String"
-    },
     "RiskyDeliveryTopicArn": {
       "Description": "TopicArn of Risky delivery Events SNS",
       "Type": "String"
@@ -565,62 +557,6 @@
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
         "Endpoint": { "Ref": "AdditionalActionQueueArn" },
-        "Protocol": "sqs",
-        "TopicArn": { "Ref": "RiskyDeliveryTopicArn"}
-      }
-    },
-    "DlpReportQueueToQuarantinedSnsSubsciption": {
-      "Type" : "AWS::SNS::Subscription",
-      "Properties": {
-        "Endpoint": { "Ref": "DlpReportQueueArn" },
-        "Protocol": "sqs",
-        "TopicArn": { "Ref": "QuarantinedEventsTopicArn"}
-      }
-    },
-    "DlpReportQueueToDeletedSnsSubsciption": {
-      "Type" : "AWS::SNS::Subscription",
-      "Properties": {
-        "Endpoint": { "Ref": "DlpReportQueueArn" },
-        "Protocol": "sqs",
-        "TopicArn": { "Ref": "DeletedEventsTopicArn"}
-      }
-    },
-    "DlpReportQueueToRedirectSnsSubsciption": {
-      "Type" : "AWS::SNS::Subscription",
-      "Properties": {
-        "Endpoint": { "Ref": "DlpReportQueueArn" },
-        "Protocol": "sqs",
-        "TopicArn": { "Ref": "SuccessEventsTopicArn"}
-      }
-    },
-    "DlpReportQueueToBounceSnsSubsciption": {
-      "Type" : "AWS::SNS::Subscription",
-      "Properties": {
-        "Endpoint": { "Ref": "DlpReportQueueArn" },
-        "Protocol": "sqs",
-        "TopicArn": { "Ref": "BounceEventTopicArn"}
-      }
-    },
-    "DlpReportQueueToSuccessSnsSubsciption": {
-      "Type" : "AWS::SNS::Subscription",
-      "Properties": {
-        "Endpoint": { "Ref": "DlpReportQueueArn" },
-        "Protocol": "sqs",
-        "TopicArn": { "Ref": "RedirectEventTopicArn"}
-      }
-    },
-    "DlpReportQueueToInternetDeliverySnsSubsciption": {
-      "Type" : "AWS::SNS::Subscription",
-      "Properties": {
-        "Endpoint": { "Ref": "DlpReportQueueArn" },
-        "Protocol": "sqs",
-        "TopicArn": { "Ref": "InternetDeliveryTopicArn"}
-      }
-    },
-    "DlpReportQueueToRiskyDeliverySnsSubscription": {
-      "Type" : "AWS::SNS::Subscription",
-      "Properties": {
-        "Endpoint": { "Ref": "DlpReportQueueArn" },
         "Protocol": "sqs",
         "TopicArn": { "Ref": "RiskyDeliveryTopicArn"}
       }
@@ -1176,102 +1112,6 @@
           ]
         },
         "Queues": [{ "Ref": "AdditionalActionQueueUrl" }]
-      }
-    },
-    "DlpReportQueuePolicy": {
-      "Type": "AWS::SQS::QueuePolicy",
-      "Properties": {
-        "PolicyDocument": {
-          "Version": "2012-10-17",
-          "Id": "DlpReportQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
-          "Statement": [
-            {
-              "Sid": "Allow-SuccessEventsTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "SuccessEventsTopicArn"}
-                }
-              }
-            },
-            {
-              "Sid": "Allow-InternetDeliveryTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "InternetDeliveryTopicArn"}
-                }
-              }
-            },
-            {
-              "Sid": "Allow-QuarantinedEventsTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "QuarantinedEventsTopicArn"}
-                }
-              }
-            },
-            {
-              "Sid": "Allow-BounceEventTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "BounceEventTopicArn"}
-                }
-              }
-            },
-            {
-              "Sid": "Allow-RiskyDeliveryTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "RiskyDeliveryTopicArn"}
-                }
-              }
-            },
-            {
-              "Sid": "Allow-RedirectEventTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "RedirectEventTopicArn"}
-                }
-              }
-            },
-            {
-              "Sid": "Allow-DeletedEventsTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "DeletedEventsTopicArn"}
-                }
-              }
-            }
-          ]
-        },
-        "Queues": [{ "Ref": "DlpReportQueueUrl" }]
       }
     },
     "RedirectEventQueuePolicy": {

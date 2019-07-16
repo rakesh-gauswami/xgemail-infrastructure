@@ -510,7 +510,7 @@ aws:
         QueueName:                                                "{{sqs.message_bounce_sqs_queue_sns_listener}}"
     dlp_report_sqs_queue:
       stack_name:                                                 "{{stack.sqs.dlp_report_sqs_queue}}"
-      state:                                                      present
+      state:                                                      absent
       template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                                                "{{sqs.dlp_report_sqs_queue}}"
@@ -537,5 +537,3 @@ xgemail_sxl_dbl:                                                  "uri.cal1.soph
 xgemail_sxl_rbl:                                                  "fur.cal1.sophosxl.com"
 xgemail_iops_data_gb:                                             "0"
 xgemail_size_data_gb:                                             "40"
-
-
