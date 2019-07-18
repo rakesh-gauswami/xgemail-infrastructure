@@ -510,7 +510,7 @@ aws:
         QueueName:                                                "{{sqs.message_bounce_sqs_queue_sns_listener}}"
     dlp_report_sqs_queue:
       stack_name:                                                 "{{stack.sqs.dlp_report_sqs_queue}}"
-      state:                                                      present
+      state:                                                      absent
       template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                                                "{{sqs.dlp_report_sqs_queue}}"
@@ -531,7 +531,7 @@ cron_scale_up:                                                    "0 4 * * 1"
 nat_eip_a:                                                        "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.NatEipA}}"
 hopper_public_ip:                                                 "198.144.101.106/32"
 instance_size_elasticsearch:                                      "t2.medium"
-instance_size_xgemail_spot_price:                                 "-1"
+spot_price:                                                       "-1"
 weekend_scale_down:                                               "true"
 xgemail_sxl_dbl:                                                  "uri.cal1.sophosxl.com"
 xgemail_sxl_rbl:                                                  "fur.cal1.sophosxl.com"
@@ -553,6 +553,4 @@ external_ip_access:
       c:                                                          "66.110.40.242"
       d:                                                          "216.6.116.194"
       e:                                                          "198.144.101.2"
-
-
 
