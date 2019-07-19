@@ -19,13 +19,23 @@ import email
 import glob
 import json
 import os
+import pip
 import random
 import smtplib
 import string
 import subprocess
 import sys
 
+try:
+    from M2Crypto import BIO, Rand, SMIME
+except ImportError:
+    pip.main(['install', 'M2Crypto'])
+    from M2Crypto import BIO, Rand, SMIME
+
 REPORT_FILE_NAME = 'report.json'
+
+DEFAULT_CLEAN_EMAIL_DIRECTORY = '/opt/xgemail-performance/clean-emails'
+DEFAULT_SPAM_EMAIL_DIRECTORY = '/opt/xgemail-performance/spam-emails'
 
 HEADER_SUBJECT = 'subject'
 HEADER_DATE = 'date'
@@ -141,16 +151,17 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description = 'Send an email through Xgemail environment')
     parser.add_argument('sender', metavar='sender', type = str, help = 'The envelope sender address')
     parser.add_argument('recipients', metavar='recipients', nargs='+', type = str, help = 'The envelope recipient address(es)')
-    parser.add_argument('--emailstosend', type=check_positive, default = 1, help = 'the number of emails to send using sender and recipient')
-    parser.add_argument('--env', default = 'DEV', choices=['DEV', 'DEV3', 'QA', 'PROD','INF'], help = 'the region to send the email to (default: DEV)')
-    parser.add_argument('--direction', default = DIRECTION_INBOUND, choices=[DIRECTION_INBOUND, DIRECTION_OUTBOUND], help = 'the email direction (default: inbound)')
+    parser.add_argument('-n', '--emailstosend', type=check_positive, default = 1, help = 'the number of emails to send using sender and recipient')
+    parser.add_argument('-e', '--env', default = 'DEV', choices=['DEV', 'DEV3', 'QA', 'PROD','INF'], help = 'the region to send the email to (default: DEV)')
+    parser.add_argument('-d', '--direction', default = DIRECTION_INBOUND, choices=[DIRECTION_INBOUND, DIRECTION_OUTBOUND], help = 'the email direction (default: inbound)')
+    parser.add_argument('-r', '--region', default = 'eu-central-1', choices=['eu-central-1', 'eu-west-1', 'us-west-2', 'us-east-2'], help = 'the region to send the email to (default: eu-central-1)')
+    parser.add_argument('-s', '--subject', help = 'Subject of the email')
+    parser.add_argument('--spoofip', default = None, type = str, help = 'Allows you to spoof the sender address (if XCLIENT configured correctly)')
+    parser.add_argument('--report', action = 'store_true', help = 'Provides a JSON report after the email(s) have been sent')
     parser.add_argument('--keepmessageid', dest='keepmessageid', action = 'store_true', help = 'Do not generate a new Message-ID before sending the email')
     parser.add_argument('--keepdate', dest='keepdate', action = 'store_true', help = 'Keep the original date in the eml file (if exists)')
     parser.add_argument('--readreceipt', dest='readreceipt', action = 'store_true', help = 'Request a read receipt')
-    parser.add_argument('--region', default = 'eu-central-1', choices=['eu-central-1', 'eu-west-1', 'us-west-2', 'us-east-2'], help = 'the region to send the email to (default: eu-central-1)')
-    parser.add_argument('--subject', help = 'Subject of the email')
-    parser.add_argument('--spoofip', default = None, type = str, help = 'Allows you to spoof the sender address (if XCLIENT configured correctly)')
-    parser.add_argument('--report', action = 'store_true', help = 'Provides a JSON report after the email(s) have been sent')
+    parser.add_argument('--sign', dest='sign', action = 'store_true', help = 'Sign the given message')
 
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('--eml', type = str, help = 'The local email file to be sent (in EML format)')
@@ -172,6 +183,7 @@ if __name__ == "__main__":
     requested_read_receipt = args.readreceipt
     direction = args.direction
     create_report = args.report
+    sign_message = args.sign
 
     files_to_send = []
     if eml_file:
@@ -184,11 +196,12 @@ if __name__ == "__main__":
     else:
         raise ValueError('Neither eml_file nor directory provided')
 
-    if len(files_to_send) != emails_to_send:
+    if len(files_to_send) > 1 and len(files_to_send) > emails_to_send:
         raise ValueError(
-            'Mismatch between number of files ({0}) and emails that should be sent ({1})',
-            len(files_to_send),
-            emails_to_send
+            'Mismatch between number of files ({0}) and emails that should be sent ({1})'.format(
+                len(files_to_send),
+                emails_to_send
+            )
         )
 
     server = get_server(region, env.lower(), direction)
@@ -207,6 +220,7 @@ if __name__ == "__main__":
     print 'Generate Message-ID:\t{0}'.format(generate_message_id)
     print 'Remove Date header:\t{0}'.format(remove_date)
     print 'Requested read receipt:\t{0}'.format(requested_read_receipt)
+    print 'Sign message(s):\t{0}'.format(sign_message)
     print 'Nr of emails to send:\t{0}'.format(emails_to_send)
     if subject:
         print 'Subject:\t\t{0}'.format(subject)
@@ -216,7 +230,10 @@ if __name__ == "__main__":
 
     send_report = {}
     for i in range(1, emails_to_send + 1):
-        file_to_send = files_to_send[i - 1]
+        if len(files_to_send) == 1:
+            file_to_send = files_to_send[0]
+        else:
+            file_to_send = files_to_send[i - 1]
         message_as_string = read_file(file_to_send)
         message = maybe_update_message(
             message_as_string,
@@ -230,6 +247,9 @@ if __name__ == "__main__":
 
         if emails_to_send > 1:
             print 'Sending email {0}:'.format(i),
+
+        if sign_message:
+            print 'Signing message now!'
 
         send_message(
             message,
