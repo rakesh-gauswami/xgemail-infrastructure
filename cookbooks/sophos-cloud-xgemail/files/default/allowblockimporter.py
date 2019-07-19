@@ -201,22 +201,6 @@ def upload(import_url, file_path, customer_id, replace, region, env):
     )
     return ApiResult(file_path, response)
 
-def determine_entries_in_file(file_path):
-    """
-    Returns the number of allow/block entries in the provided file.
-    """
-    with open(file_path, 'r') as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=',')
-        # skip header line
-        next(csv_reader)
-
-        nr_of_entries = 0
-        for row in csv_reader:
-            if len(row) <= 2:
-                continue
-            nr_of_entries += len(row[2:])
-        return nr_of_entries
-
 def import_csv(main_file, customer_id, import_url, region, env):
     """
     Imports the provided allow/block file for the given customer
