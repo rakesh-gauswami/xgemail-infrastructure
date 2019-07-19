@@ -110,11 +110,17 @@ def write_error_file(all_errors):
     t = PrettyTable(['Entry', 'Error'])
     t.align = 'l'
 
-    for entry in all_errors:
-        t.add_row([
-             'ENTERPRISE' if not entry['address'] else entry['address'],
-             entry['input_parser_error_code']
-        ])
+    all_entries = set()
+
+    for cur_entry in all_errors:
+        entry = 'ENTERPRISE' if not cur_entry['address'] else cur_entry['address']
+        error = cur_entry['input_parser_error_code']
+
+        if entry + error in all_entries:
+            continue
+        all_entries.add(entry + error)
+
+        t.add_row([entry, error])
     with open(ERROR_ENTRIES_PATH, 'w') as write_file:
         write_file.write(t.get_string())
 
@@ -206,7 +212,8 @@ def import_csv(main_file, customer_id, import_url, region, env):
     for cur_file in all_files:
         all_results.append(upload(import_url, cur_file, customer_id, False, region, env))
         files_already_uploaded += 1
-        print '{:.2f}% uploaded'.format(float(files_already_uploaded)/float(len(all_files)) * 100)
+        sys.stdout.write('{:6.2f}% uploaded\r'.format(float(files_already_uploaded)/float(len(all_files)) * 100))
+        sys.stdout.flush()
     print
 
     failures = 0
@@ -224,6 +231,8 @@ def import_csv(main_file, customer_id, import_url, region, env):
             failures += len(errors)
 
     indentation = max(len(str(successful)), len(str(failures)))
+
+    print_errors()
 
     print_colorized(
         '[{}] entries imported successfully'.format(str(successful).rjust(indentation)),
@@ -345,6 +354,20 @@ def cleanup(main_file):
     os.system('rm -f {}.*'.format(main_file))
     os.system('rm -f {}'.format(EMTPY_CSV_FILE_PATH))
 
+def print_errors():
+    if not os.path.exists(ERROR_ENTRIES_PATH):
+        print
+        print_colorized(
+            'Unable to show errors from previous run because file {} does not exist'.format(
+                ERROR_ENTRIES_PATH
+            ),
+            Colors.YELLOW
+        )
+        print
+        return
+    with open(ERROR_ENTRIES_PATH, 'r') as f:
+        print f.read()
+
 if __name__ == "__main__":
     """
     Entry point to the script
@@ -389,19 +412,7 @@ if __name__ == "__main__":
             sys.exit(0)
 
         if args.errors:
-            if not os.path.exists(ERROR_ENTRIES_PATH):
-                print
-                print_colorized(
-                    'Unable to show errors from previous run because file {} does not exist'.format(
-                        ERROR_ENTRIES_PATH
-                    ),
-                    Colors.YELLOW
-                )
-                print
-                sys.exit(1)
-
-            with open(ERROR_ENTRIES_PATH, 'r') as f:
-                print f.read()
+            print_errors()
             sys.exit(0)
 
         if args.delete_all:
