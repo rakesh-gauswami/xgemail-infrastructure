@@ -32,7 +32,7 @@ except ImportError:
     from prettytable import PrettyTable
 
 # Constants
-MAX_LINE_LENGTH = 61
+MAX_LINE_LENGTH = 63
 MAX_CUSTOMER_ENTRIES = 30000
 MAX_USER_ENTRIES = 10000
 MAX_FILE_SIZE = 9500
@@ -106,15 +106,22 @@ def write_new_file(file_name, content):
 def write_error_file(all_errors):
     """
     Writes a tabular file listing all the entries that could not be imported.
+    Returns number of errors
     """
     t = PrettyTable(['Entry', 'Error'])
     t.align = 'l'
 
-    for entry in all_errors:
-        t.add_row([
-             'ENTERPRISE' if not entry['address'] else entry['address'],
-             entry['input_parser_error_code']
-        ])
+    all_entries = set()
+
+    for cur_entry in all_errors:
+        entry = 'ENTERPRISE' if not cur_entry['address'] else cur_entry['address']
+        error = cur_entry['input_parser_error_code']
+
+        if entry + error in all_entries:
+            continue
+        all_entries.add(entry + error)
+
+        t.add_row([entry, error])
     with open(ERROR_ENTRIES_PATH, 'w') as write_file:
         write_file.write(t.get_string())
 
@@ -202,14 +209,17 @@ def import_csv(main_file, customer_id, import_url, region, env):
     all_files = create_csv_files_with_max_size(main_file)
     files_already_uploaded = 0
 
-    print_colorized('Uploading file {}'.format(main_file), Colors.HEADER)
     for cur_file in all_files:
         all_results.append(upload(import_url, cur_file, customer_id, False, region, env))
         files_already_uploaded += 1
-        print '{:.2f}% uploaded'.format(float(files_already_uploaded)/float(len(all_files)) * 100)
+        sys.stdout.write('Uploading file {0}: {1:6.2f}% uploaded\r'.format(
+            main_file,
+            float(files_already_uploaded)/float(len(all_files)) * 100)
+        )
+        sys.stdout.flush()
+    print
     print
 
-    failures = 0
     successful = 0
     all_errors = []
     failed_files = []
@@ -221,41 +231,35 @@ def import_csv(main_file, customer_id, import_url, region, env):
         if result.has_errors():
             errors = result.get_errors()
             all_errors.extend(errors)
-            failures += len(errors)
-
-    indentation = max(len(str(successful)), len(str(failures)))
 
     print_colorized(
-        '[{}] entries imported successfully'.format(str(successful).rjust(indentation)),
+        '[{}] entries imported successfully'.format(str(successful)),
         Colors.GREEN if successful > 0 else Colors.YELLOW
     )
     if len(failed_files) > 0:
         write_failed_files(failed_files)
         print_colorized(
-            '[{}] files failed to be uploaded. Failure file written to: {}'.format(
-                len(failed_files),
-                FAILED_FILES_PATH
-            ),
+            'Some sections could not be imported. You can attempt to retry these entries by using the --retry flag',
             Colors.YELLOW
         )
-    if (failures > 0):
-        error_file_path = write_error_file(all_errors)
+    if (len(all_errors) > 0):
+        write_error_file(all_errors)
         print_colorized(
-            '[{}] entries failed to import. Report written to: {}'.format(
-                str(failures).rjust(indentation),
+            'Some errors encountered (report also written to {}):'.format(
                 ERROR_ENTRIES_PATH
             ),
             Colors.YELLOW
         )
+        print_errors()
 
 def determine_invalid_rows(main_file):
     """
     Determines any invalid rows from the main CSV file.
     Returns True if any invalid rows found, False otherwise
     """
-    print_colorized('{0} WARNING {0}'.format('#'*26), Colors.HEADER)
-    print_colorized('Maximum entries for customer allow/block entries:\t{}'.format(MAX_CUSTOMER_ENTRIES), Colors.HEADER)
-    print_colorized('Maximum entries for user allow/block entries:\t\t{}'.format(MAX_USER_ENTRIES), Colors.HEADER)
+    print_colorized('{0} WARNING {0}'.format('#'*27), Colors.HEADER)
+    print_colorized('# Maximum entries for customer allow/block entries:\t{} #'.format(MAX_CUSTOMER_ENTRIES), Colors.HEADER)
+    print_colorized('# Maximum entries for user allow/block entries:\t\t{} #'.format(MAX_USER_ENTRIES), Colors.HEADER)
     print_colorized('{}'.format('#'*MAX_LINE_LENGTH), Colors.HEADER)
     print
 
@@ -270,21 +274,21 @@ def determine_invalid_rows(main_file):
             if tokens[0].lower() == 'enterprise':
                 if entries > MAX_CUSTOMER_ENTRIES:
                     print_colorized(
-                        'Customer allow/block entry {} exeeds maximum number of entries ({}): {}'.format(
+                        'Customer allow/block entry {} exeeds maximum number of entries: {}/{}'.format(
                             line_number,
-                            MAX_CUSTOMER_ENTRIES,
-                            entries
+                            entries,
+                            MAX_CUSTOMER_ENTRIES
                         ),
                         Colors.YELLOW
                     )
                     nr_of_invalid_entries += 1
             elif entries > MAX_USER_ENTRIES:
                 print_colorized(
-                    'User allow/block entry {} ({}) exeeds maximum number of entries ({}): {}'.format(
+                    'User allow/block entry {} ({}) exeeds maximum number of entries: {}/{}'.format(
                         line_number,
                         tokens[0],
-                        MAX_USER_ENTRIES,
-                        entries
+                        entries,
+                        MAX_USER_ENTRIES
                     ),
                     Colors.YELLOW
                 )
@@ -294,6 +298,7 @@ def determine_invalid_rows(main_file):
                 'All {} entries are within the above defined limits'.format(line_number - 1),
                 Colors.GREEN
             )
+            print
             return False
         print_colorized(
             'Found a total of {}/{} entries that exceed the above defined limits'.format(
@@ -302,6 +307,7 @@ def determine_invalid_rows(main_file):
             ),
             Colors.YELLOW
         )
+        print
         return True
 
 def delete_all(import_url, customer_id, region, env):
@@ -344,6 +350,20 @@ def cleanup(main_file):
     os.system('rm -f {}.*'.format(ERROR_ENTRIES_PATH))
     os.system('rm -f {}.*'.format(main_file))
     os.system('rm -f {}'.format(EMTPY_CSV_FILE_PATH))
+
+def print_errors():
+    if not os.path.exists(ERROR_ENTRIES_PATH):
+        print
+        print_colorized(
+            'Unable to show errors from previous run because file {} does not exist'.format(
+                ERROR_ENTRIES_PATH
+            ),
+            Colors.YELLOW
+        )
+        print
+        return
+    with open(ERROR_ENTRIES_PATH, 'r') as f:
+        print f.read()
 
 if __name__ == "__main__":
     """
@@ -389,19 +409,7 @@ if __name__ == "__main__":
             sys.exit(0)
 
         if args.errors:
-            if not os.path.exists(ERROR_ENTRIES_PATH):
-                print
-                print_colorized(
-                    'Unable to show errors from previous run because file {} does not exist'.format(
-                        ERROR_ENTRIES_PATH
-                    ),
-                    Colors.YELLOW
-                )
-                print
-                sys.exit(1)
-
-            with open(ERROR_ENTRIES_PATH, 'r') as f:
-                print f.read()
+            print_errors()
             sys.exit(0)
 
         if args.delete_all:
