@@ -146,6 +146,16 @@ aws:
         S3LifeCycleDelete:                                        "30"
         S3PolicyCreate:                                           "true"
         S3PolicyPrincipalList:                                    "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
+    msg_history_ms_bucket:
+      stack_name:                                                 "{{stack.s3.msg_history_ms_bucket}}"
+      template:                                                   "{{template.s3.s3_bucket_template}}"
+      template_parameters:
+        Environment:                                              "{{account.name}}"
+        RequireEncryptionForUploads:                              "sse-s3"
+        S3BucketName:                                             "{{s3.msg_history_ms_bucket}}"
+        S3LifeCycleDelete:                                        "30"
+        S3PolicyCreate:                                           "true"
+        S3PolicyPrincipalList:                                    "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
     msg_stats_bucket:
       stack_name:                                                 "{{stack.s3.msg_stats_bucket}}"
       template:                                                   "{{template.s3.s3_bucket_template}}"
@@ -500,7 +510,7 @@ aws:
         QueueName:                                                "{{sqs.message_bounce_sqs_queue_sns_listener}}"
     dlp_report_sqs_queue:
       stack_name:                                                 "{{stack.sqs.dlp_report_sqs_queue}}"
-      state:                                                      present
+      state:                                                      absent
       template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                                                "{{sqs.dlp_report_sqs_queue}}"
@@ -521,11 +531,9 @@ cron_scale_up:                                                    "0 4 * * 1"
 nat_eip_a:                                                        "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.NatEipA}}"
 hopper_public_ip:                                                 "198.144.101.106/32"
 instance_size_elasticsearch:                                      "t2.medium"
-instance_size_xgemail_spot_price:                                 "-1"
+spot_price:                                                       "-1"
 weekend_scale_down:                                               "true"
 xgemail_sxl_dbl:                                                  "uri.cal1.sophosxl.com"
 xgemail_sxl_rbl:                                                  "fur.cal1.sophosxl.com"
 xgemail_iops_data_gb:                                             "0"
 xgemail_size_data_gb:                                             "40"
-
-
