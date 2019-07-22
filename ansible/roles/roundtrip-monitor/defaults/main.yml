@@ -6,6 +6,8 @@ lambda:
   inbound_monitor_send_lambda_function:                 "Xgemail-Monitor-Send"
   outbound_monitor_receive_lambda_function:             "Xgemail-Outbound-Monitor-Receive"
   outbound_monitor_send_lambda_function:                "Xgemail-Outbound-Monitor-Send"
+  enc_outbound_monitor_receive_lambda_function:         "Xgemail-Encryption-Outbound-Monitor-Receive"
+  enc_outbound_monitor_send_lambda_function:            "Xgemail-Encryption-Outbound-Monitor-Send"
 s3:
   lambda_bucket:                                        "cloud-{{account.name}}-{{account.region}}-lambda"
 
@@ -30,6 +32,8 @@ stack:
     inbound_monitor_send_lambda_function:               "{{account.name}}-Lambda-XgemailMonitorSend"
     outbound_monitor_receive_lambda_function:           "{{account.name}}-Lambda-XgemailOutboundMonitorReceive"
     outbound_monitor_send_lambda_function:              "{{account.name}}-Lambda-XgemailOutboundMonitorSend"
+    enc_outbound_monitor_receive_lambda_function:       "{{account.name}}-Lambda-XgemailEncryptionOutboundMonitorReceive"
+    enc_outbound_monitor_send_lambda_function:          "{{account.name}}-Lambda-XgemailEncryptionOutboundMonitorSend"
   route53:
     email_monitor_com_route53:                          "{{vpc.cloud_email.name}}-mx-sophos-email-monitor-com"
     email_monitor_net_route53:                          "{{vpc.cloud_email.name}}-mx-sophos-email-monitor-net"

@@ -65,11 +65,20 @@
       "Description": "List of email addresses to add to SES",
       "ConstraintDescription": "must be a comma-separated list of valid email addresses."
     },
+    "EncryptionOutboundMailRecipients": {
+      "Type": "CommaDelimitedList",
+      "Description": "List of email addresses to add to SES",
+      "ConstraintDescription": "must be a comma-separated list of valid email addresses."
+    },
     "InboundRuleName": {
       "Description": "The name of the SES receiving rule.",
       "Type": "String"
     },
     "OutboundRuleName": {
+      "Description": "The name of the SES receiving rule.",
+      "Type": "String"
+    },
+    "EncryptionOutboundRuleName": {
       "Description": "The name of the SES receiving rule.",
       "Type": "String"
     },
@@ -83,6 +92,10 @@
       "Type": "String"
     },
     "SesInvokeOutboundLambdaFunctionArn": {
+      "Description": "The ARN of the Outbound Lambda Function SES will invoke.",
+      "Type": "String"
+    },
+    "SesInvokeEncryptionOutboundLambdaFunctionArn": {
       "Description": "The ARN of the Outbound Lambda Function SES will invoke.",
       "Type": "String"
     }
@@ -312,6 +325,27 @@
       }
     },
 
+    "EncryptionOutboundReceiptRule": {
+      "Type": "AWS::SES::ReceiptRule",
+      "Properties": {
+        "RuleSetName": { "Ref": "RuleSetName" },
+        "Rule": {
+          "Name": { "Ref": "EncryptionOutboundRuleName" },
+          "Recipients": { "Ref": "EncryptionOutboundMailRecipients" },
+          "Enabled": "True",
+          "ScanEnabled": "False",
+          "Actions": [
+            {
+              "LambdaAction": {
+                "FunctionArn": { "Ref": "SesInvokeEncryptionOutboundLambdaFunctionArn" },
+                "InvocationType": "Event"
+              }
+            }
+          ]
+        }
+      }
+    },
+
     "EuCentral1aFilter": {
       "Type": "AWS::SES::ReceiptFilter",
       "Properties": {
@@ -465,6 +499,10 @@
     "OutboundReceiptRule": {
       "Description": "Ses Receipt Rules.",
       "Value": { "Ref": "OutboundReceiptRule" }
+    },
+    "EncryptionOutboundReceiptRule": {
+      "Description": "Ses Receipt Rules.",
+      "Value": { "Ref": "EncryptionOutboundReceiptRule" }
     }
   }
 }
