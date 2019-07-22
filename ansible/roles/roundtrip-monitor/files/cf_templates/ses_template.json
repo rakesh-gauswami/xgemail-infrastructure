@@ -60,6 +60,11 @@
       "Description": "List of email addresses to add to SES",
       "ConstraintDescription": "must be a comma-separated list of valid email addresses."
     },
+    "InboundMSMailRecipients": {
+      "Type": "CommaDelimitedList",
+      "Description": "List of email addresses to add to SES",
+      "ConstraintDescription": "must be a comma-separated list of valid email addresses."
+    },
     "OutboundMailRecipients": {
       "Type": "CommaDelimitedList",
       "Description": "List of email addresses to add to SES",
@@ -82,12 +87,20 @@
       "Description": "The name of the SES receiving rule.",
       "Type": "String"
     },
+    "InboundMSRuleName": {
+      "Description": "The name of the SES receiving rule.",
+      "Type": "String"
+    },
     "RuleSetName": {
       "Description": "The name of the SES rule set.",
       "Type": "String",
       "Default": "us-west-2-rule-set"
     },
     "SesInvokeLambdaFunctionArn": {
+      "Description": "The ARN of the Lambda Function SES will invoke.",
+      "Type": "String"
+    },
+    "SesInvokeInboundMSLambdaFunctionArn": {
       "Description": "The ARN of the Lambda Function SES will invoke.",
       "Type": "String"
     },
@@ -295,6 +308,27 @@
             {
               "LambdaAction": {
                 "FunctionArn": { "Ref": "SesInvokeLambdaFunctionArn" },
+                "InvocationType": "Event"
+              }
+            }
+          ]
+        }
+      }
+    },
+
+    "InboundMSReceiptRule": {
+      "Type": "AWS::SES::ReceiptRule",
+      "Properties": {
+        "RuleSetName": { "Ref": "RuleSetName" },
+        "Rule": {
+          "Name": { "Ref": "InboundMSRuleName" },
+          "Recipients": { "Ref": "InboundMSMailRecipients" },
+          "Enabled": "True",
+          "ScanEnabled": "False",
+          "Actions": [
+            {
+              "LambdaAction": {
+                "FunctionArn": { "Ref": "SesInvokeInboundMSLambdaFunctionArn" },
                 "InvocationType": "Event"
               }
             }
