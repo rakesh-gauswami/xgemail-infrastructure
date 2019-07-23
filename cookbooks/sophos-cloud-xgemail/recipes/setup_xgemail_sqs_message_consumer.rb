@@ -23,6 +23,7 @@ LOCAL_CERT_PATH = node['sophos_cloud']['local_cert_path']
 STATION_VPC_NAME = node['xgemail']['station_vpc_name']
 CONNECTIONS_BUCKET = node['sophos_cloud']['connections']
 
+XGEMAIL_FILES_DIR                       = node['xgemail']['xgemail_files_dir']
 XGEMAIL_UTILS_DIR                       = node['xgemail']['xgemail_utils_files_dir']
 SQS_MESSAGE_CONSUMER_WAIT_TIME_SECONDS  = node['xgemail']['sqs_message_consumer_wait_time_seconds']
 SQS_MESSAGE_CONSUMER_MAX_NUMBER_OF_MESSAGES = node['xgemail']['sqs_message_consumer_max_number_of_messages']
@@ -36,6 +37,7 @@ MAIL_PIC_API_AUTH                       = node['xgemail']['mail_pic_api_auth']
 MESSAGE_HISTORY_DELIVERY_STATUS_SNS_TOPIC_ARN = node['xgemail']['msg_history_status_sns_arn']
 NODE_IP                                 = node['ipaddress']
 POLICY_BUCKET_NAME                      = node['xgemail']['xgemail_policy_bucket_name']
+TRANSPORT_CONFIG_PATH                   = XGEMAIL_FILES_DIR + '/config/transport-route-config.json'
 
 if ACCOUNT == 'sandbox'
   XGEMAIL_PIC_FQDN = 'mail-service:8080'
@@ -85,7 +87,8 @@ template CONSUMER_SCRIPT_PATH do
     :node_type => NODE_TYPE,
     :node_ip => NODE_IP,
     :account => ACCOUNT,
-    :policy_bucket => POLICY_BUCKET_NAME
+    :policy_bucket => POLICY_BUCKET_NAME,
+    :transport_config_path => TRANSPORT_CONFIG_PATH
   )
 end
 

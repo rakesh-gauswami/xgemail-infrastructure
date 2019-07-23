@@ -15,6 +15,7 @@ XGEMAIL_FILES_DIR = node['xgemail']['xgemail_files_dir']
 XGEMAIL_UTILS_DIR = node['xgemail']['xgemail_utils_files_dir']
 POLICY_FORMATTER = 'policyformatter.py'
 BLOCKED_SENDER_API = 'blocked_sender_api.py'
+TRANSPORT_ROUTE_CONFIG = 'transportrouteconfig.py'
 
 [
     XGEMAIL_FILES_DIR,
@@ -79,6 +80,13 @@ elsif NODE_TYPE == 'customer-submit'
   end
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{BLOCKED_SENDER_API}" do
     source 'blocked_sender_api.py'
+    mode '0644'
+    owner 'root'
+    group 'root'
+  end
+elsif NODE_TYPE == 'customer-delivery'
+  cookbook_file "#{XGEMAIL_UTILS_DIR}/#{TRANSPORT_ROUTE_CONFIG}" do
+    source 'transportrouteconfig.py'
     mode '0644'
     owner 'root'
     group 'root'
