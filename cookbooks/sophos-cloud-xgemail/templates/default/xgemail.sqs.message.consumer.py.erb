@@ -61,10 +61,6 @@ TRANSPORT_CONFIG_PATH = "<%= @transport_config_path %>"
 
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
-# Defines the action to be taken when transport data for the receiving domain cannot be found in S3.
-# This value will likely be modified below once the configuration for this action is read.
-ON_MISSING_TRANSPORT_DATA = 'IGNORE'
-
 
 # logging to syslog setup
 logging.getLogger("botocore").setLevel(logging.WARNING)
@@ -140,7 +136,7 @@ def parse_sqs_message(msg, receipt):
 #    "transport": "<smtp or smtp_encrypt>"
 # }
 #
-# If no transport route can be found or parsed, the ON_MISSING_TRANSPORT_DATA variable dictates what should happen.
+# If no transport route can be found or parsed, we refer to the transportrouteconfig to indicate what should happen.
 # This will be one of three actions:
 #
 # 1. ERROR - Throw the error and cease processing
@@ -467,7 +463,6 @@ def create_and_publish_message_history_delivery_status_sns_job(sqs_message, post
     except Exception as e:
         logger.exception("Failed to publish event <{0}> to message history delivery status sqs queue"
                      .format(sns_message_history_delivery_status_job))
-
 
 
 while True:
