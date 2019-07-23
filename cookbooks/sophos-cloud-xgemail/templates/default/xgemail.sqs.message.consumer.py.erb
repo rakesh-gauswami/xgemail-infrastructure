@@ -35,6 +35,7 @@ from smtplib import SMTPDataError
 from smtplib import SMTPException
 from smtplib import SMTPSenderRefused
 from smtplib import SMTPRecipientsRefused
+from transportrouteconfig import TransportRouteConfig
 
 # general constants
 AWS_REGION = "<%= @aws_region %>"
@@ -56,6 +57,7 @@ NODE_TYPE = '<%= @node_type %>'
 NODE_IP = '<%= @node_ip %>'
 ACCOUNT = '<%= @account %>'
 POLICY_BUCKET_NAME = "<%= @policy_bucket %>"
+TRANSPORT_CONFIG_PATH = "<%= @transport_config_path %>"
 
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
@@ -107,6 +109,7 @@ PIC_DESTINATION_URL = '%s/destination' % (PIC_API_URL)
 
 
 awshandler = AwsHandler(AWS_REGION)
+transportrouteconfig = TransportRouteConfig(TRANSPORT_CONFIG_PATH)
 
 def parse_sqs_message(msg, receipt):
     msg_as_json = json.loads(msg)
@@ -165,16 +168,16 @@ def add_transport_route_header(recipients_addresses, existing_headers):
         host = config_json['host']
 
         if 'port' in config_json:
-            header_value = '{0}:[{1}]'.format(transport, host)
-        else:
             port = config_json['port']
             header_value = '{0}:[{1}]:{2}'.format(transport, host, port)
+        else:
+            header_value = '{0}:[{1}]'.format(transport, host)
 
         existing_headers[header_name] = header_value
 
     except Exception as route_exception:
 
-        if ON_MISSING_TRANSPORT_DATA == 'ERROR':
+        if transportrouteconfig.is_error_on_missing_data():
 
             logger.exception(
                 'Unable to create transport route header for recipients [{0}], Exception: {1}'.format(
@@ -187,7 +190,7 @@ def add_transport_route_header(recipients_addresses, existing_headers):
 
         fallback_header_value = 'Unknown'
 
-        if ON_MISSING_TRANSPORT_DATA == 'RETRIEVE':
+        if transportrouteconfig.is_retrieve_on_missing_data():
 
             header_from_api = attempt_to_retrieve_transport_route(customer_domain, True)
 
@@ -465,9 +468,6 @@ def create_and_publish_message_history_delivery_status_sns_job(sqs_message, post
         logger.exception("Failed to publish event <{0}> to message history delivery status sqs queue"
                      .format(sns_message_history_delivery_status_job))
 
-
-
-## TODO Read the config here
 
 
 while True:
