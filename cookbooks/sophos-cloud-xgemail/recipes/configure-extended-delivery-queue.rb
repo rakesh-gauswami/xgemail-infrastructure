@@ -43,42 +43,40 @@ MANAGED_SERVICES_IN_START_ORDER = [
 ]
 
 if ACCOUNT != 'sandbox'
-  if NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery'
-    GLOBAL_SIGN_DIR = "#{LOCAL_CERT_PATH}/3rdparty/global-sign"
-    GLOBAL_SIGN_INTERMEDIARY = "#{GLOBAL_SIGN_DIR}/global-sign-sha256-intermediary.crt"
-    GLOBAL_SIGN_ROOT = "#{GLOBAL_SIGN_DIR}/global-sign-root.crt"
+  GLOBAL_SIGN_DIR = "#{LOCAL_CERT_PATH}/3rdparty/global-sign"
+  GLOBAL_SIGN_INTERMEDIARY = "#{GLOBAL_SIGN_DIR}/global-sign-sha256-intermediary.crt"
+  GLOBAL_SIGN_ROOT = "#{GLOBAL_SIGN_DIR}/global-sign-root.crt"
 
-    # Add xgemail certificate
-    remote_file "/etc/ssl/certs/#{CERT_NAME}.crt" do
-      source "file:///tmp/sophos/certificates/api-mcs-mob-prod.crt"
-      owner 'root'
-      group 'root'
-      mode 0444
-    end
-
-    # Add xgemail key
-    remote_file "/etc/ssl/private/#{CERT_NAME}.key" do
-      source "file:///tmp/sophos/certificates/appserver.key"
-      owner 'root'
-      group 'root'
-      mode 0440
-    end
-
-    CREATE_SERVER_PEM_COMMAND = 'cat ' +
-      "'#{CERT_FILE}' " +
-      "'#{GLOBAL_SIGN_INTERMEDIARY}' " +
-      "'#{GLOBAL_SIGN_ROOT}' " +
-      "> '#{SERVER_PEM_FILE}'"
-
-    file SERVER_PEM_FILE do
-      owner 'root'
-      group 'root'
-      mode '0444'
-      action :create
-    end
-
-    execute CREATE_SERVER_PEM_COMMAND
+  # Add xgemail certificate
+  remote_file "/etc/ssl/certs/#{CERT_NAME}.crt" do
+    source "file:///tmp/sophos/certificates/api-mcs-mob-prod.crt"
+    owner 'root'
+    group 'root'
+    mode 0444
   end
+
+  # Add xgemail key
+  remote_file "/etc/ssl/private/#{CERT_NAME}.key" do
+    source "file:///tmp/sophos/certificates/appserver.key"
+    owner 'root'
+    group 'root'
+    mode 0440
+  end
+
+  CREATE_SERVER_PEM_COMMAND = 'cat ' +
+    "'#{CERT_FILE}' " +
+    "'#{GLOBAL_SIGN_INTERMEDIARY}' " +
+    "'#{GLOBAL_SIGN_ROOT}' " +
+    "> '#{SERVER_PEM_FILE}'"
+
+  file SERVER_PEM_FILE do
+    owner 'root'
+    group 'root'
+    mode '0444'
+    action :create
+  end
+
+  execute CREATE_SERVER_PEM_COMMAND
 
   service 'postfix' do
     supports :restart => true, :start => true, :stop => true, :reload => true
@@ -130,17 +128,6 @@ if NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery'
     owner 'root'
     group 'root'
   end
-  # Run an instance of the smtp process that enforces TLS encryption
-  [
-    "smtp_encrypt/unix = smtp_encrypt unix - - n - - smtp"
-  ].each do | cur |
-    execute print_postmulti_cmd( INSTANCE_NAME, "postconf -M '#{cur}'" )
-  end
-  [
-    "smtp_encrypt/unix/smtp_tls_security_level=encrypt"
-  ].each do | cur |
-    execute print_postmulti_cmd( INSTANCE_NAME, "postconf -P '#{cur}'" )
-  end
   [
       # Server side TLS configuration
       'smtpd_tls_security_level = may',
@@ -164,7 +151,27 @@ if NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery'
   end
 else
   if NODE_TYPE == 'xdelivery'
+    # Run an instance of the smtp process that enforces TLS encryption
     [
+      "smtp_encrypt/unix = smtp_encrypt unix - - n - - smtp"
+    ].each do | cur |
+      execute print_postmulti_cmd( INSTANCE_NAME, "postconf -M '#{cur}'" )
+    end
+    [
+      "smtp_encrypt/unix/smtp_tls_security_level=encrypt"
+    ].each do | cur |
+      execute print_postmulti_cmd( INSTANCE_NAME, "postconf -P '#{cur}'" )
+    end
+
+    [
+      # Server side TLS configuration
+      'smtpd_tls_security_level = may',
+      'smtpd_tls_ciphers = high',
+      'smtpd_tls_mandatory_ciphers = high',
+      'smtpd_tls_loglevel = 1',
+      'smtpd_tls_received_header = yes',
+      "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
+      "smtpd_tls_key_file = #{KEY_FILE}",
       'bounce_queue_lifetime=0',
       "hopcount_limit = #{HOP_COUNT_DELIVERY_INSTANCE}",
       'mynetworks = 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16',
