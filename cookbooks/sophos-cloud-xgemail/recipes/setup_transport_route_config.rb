@@ -14,7 +14,7 @@ XGEMAIL_FILES_DIR   = node['xgemail']['xgemail_files_dir']
 XGEMAIL_UTILS_DIR   = node['xgemail']['xgemail_utils_files_dir']
 
 
-TRANSPORT_ROUTE_CLI_PACKAGE_DIR = "#{XGEMAIL_FILES_DIR}transport-route-config-cli"
+TRANSPORT_ROUTE_CLI_PACKAGE_DIR = "#{XGEMAIL_FILES_DIR}/transport-route-config-cli"
 TRANSPORT_ROUTE_CLI_SCRIPT_NAME = 'xgemail.transport.route.config.cli.py'
 TRANSPORT_ROUTE_CLI_SCRIPT_PATH = "#{TRANSPORT_ROUTE_CLI_PACKAGE_DIR}/#{TRANSPORT_ROUTE_CLI_SCRIPT_NAME}"
 
