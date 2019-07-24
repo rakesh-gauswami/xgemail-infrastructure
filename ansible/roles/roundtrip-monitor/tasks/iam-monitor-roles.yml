@@ -8,12 +8,18 @@
     disable_rollback:                           true
     template:                                   "{{template.iam.role.roles_xgemail_monitor_template}}"
   register: iam_monitor_stack
+  tags:
+    - always
 
 - debug:
   var: iam_monitor_stack
   verbosity: 3
+  tags:
+    - always
 
 - name: "Display IAM Monitor Stack Output"
   debug:
     msg: "{{iam_monitor_stack.stack_outputs}}"
     verbosity: 2
+  tags:
+    - always
