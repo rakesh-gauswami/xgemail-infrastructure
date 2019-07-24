@@ -78,18 +78,6 @@ exports.handler = (event, context, callback) => {
             ],
             Namespace: namespace
         };
-
-        var cw = new aws.CloudWatch({apiVersion: '2010-08-01'});
-
-        cw.putMetricData(params, function(err, data) {
-            if (err) {
-                console.log(err, err.stack);
-            }
-            else {
-                console.log(`data for email with subject <${emailSubject}> successfully published to CloudWatch`);
-            }
-        });
-
     }
     else {
         var sentTimeNotFoundError = new Error("Error in obtaining sent timestamp");
