@@ -302,7 +302,7 @@
       UsEast2PrivKeyPath:                   "{{us_east_2_private_key}}"
       UsEast2PubKeyPath:                    "{{us_east_2_public_key}}"
       UsEast2PubKeyThumbprintPath:          "{{us_east_2_public_thumb_print}}"
-      UsEast2MailBoxName:                    "{{us_east_2_mailbox_name}}"
+      UsEast2MailBoxName:                   "{{us_east_2_mailbox_name}}"
       UsWest2Id:                            "{{us_west_2_id}}"
       UsWest2HostedZoneName:                "{{us_west_2_hostedZoneName}}"
       UsWest2RecipientHostedZoneName:       "{{us_west_2_recipient_hostedZoneName}}"
@@ -350,7 +350,7 @@
       S3BucketforCerts:                     "cloud-{{account.name}}-connections"
       S3Key:                                "lambda/{{build.number}}/xgemail_encryption_outbound_monitor_send.zip"
       ScheduleExpression:                   rate(1 minute)
-      TenantId:                             "{{enc.tenant_id}}"
+      TenantId:                             "{{tenant_id}}"
       UsEast2Id:                            "{{enc.us_east_2_id}}"
       UsEast2HostedZoneName:                "{{enc.us_east_2_hostedZoneName}}"
       UsEast2PrivKeyPath:                   "{{enc.us_east_2_private_key}}"
@@ -394,7 +394,7 @@
     src:                "{{role_path}}/xgemail_encryption_outbound_monitor_receive.zip"
     overwrite:          always
 
-- name: "Deploy outbound Monitor Receive Lambda Function {{stack.lambda.outbound_monitor_receive_lambda_function}} to {{account.name}}-{{account.region}}"
+- name: "Deploy Encryption outbound Monitor Receive Lambda Function {{stack.lambda.outbound_monitor_receive_lambda_function}} to {{account.name}}-{{account.region}}"
   cloudformation:
     stack_name:                             "{{stack.lambda.enc_outbound_monitor_receive_lambda_function}}"
     state:                                  present
@@ -420,7 +420,7 @@
       S3Bucket:                             "{{s3.lambda_bucket}}"
       S3BucketforCerts:                     "cloud-{{account.name}}-connections"
       S3Key:                                "lambda/{{build.number}}/xgemail_encryption_outbound_monitor_receive.zip"
-      TenantId:                             "{{enc.tenant_id}}"
+      TenantId:                             "{{tenant_id}}"
       UsEast2Id:                            "{{enc.us_east_2_id}}"
       UsEast2HostedZoneName:                "{{enc.us_east_2_hostedZoneName}}"
       UsEast2PrivKeyPath:                   "{{enc.us_east_2_private_key}}"
@@ -434,7 +434,7 @@
       UsWest2PubKeyPath:                    "{{enc.us_west_2_public_key}}"
       UsWest2PubKeyThumbprintPath:          "{{enc.us_west_2_public_thumb_print}}"
       UsWest2MailBoxName:                   "{{enc.us_west_2_mailbox_name}}"
-      UsWest2SenderMailBoxName:             "{{enc.us_west_2_sender_mailbox_name}}"
+      UsWest2SenderMailBoxName:             "{{us_west_2_sender_mailbox_name}}"
   register: encryption_outbound_monitor_receive_lambda_output
 
 - debug:
