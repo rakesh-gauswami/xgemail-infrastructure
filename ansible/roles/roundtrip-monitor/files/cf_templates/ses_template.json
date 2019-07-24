@@ -60,7 +60,7 @@
       "Description": "List of email addresses to add to SES",
       "ConstraintDescription": "must be a comma-separated list of valid email addresses."
     },
-    "InboundMSMailRecipients": {
+    "InboundMsMailRecipients": {
       "Type": "CommaDelimitedList",
       "Description": "List of email addresses to add to SES",
       "ConstraintDescription": "must be a comma-separated list of valid email addresses."
@@ -87,7 +87,7 @@
       "Description": "The name of the SES receiving rule.",
       "Type": "String"
     },
-    "InboundMSRuleName": {
+    "InboundMsRuleName": {
       "Description": "The name of the SES receiving rule.",
       "Type": "String"
     },
@@ -100,7 +100,7 @@
       "Description": "The ARN of the Lambda Function SES will invoke.",
       "Type": "String"
     },
-    "SesInvokeInboundMSLambdaFunctionArn": {
+    "SesInvokeInboundMsLambdaFunctionArn": {
       "Description": "The ARN of the Lambda Function SES will invoke.",
       "Type": "String"
     },
@@ -316,19 +316,19 @@
       }
     },
 
-    "InboundMSReceiptRule": {
+    "InboundMsReceiptRule": {
       "Type": "AWS::SES::ReceiptRule",
       "Properties": {
         "RuleSetName": { "Ref": "RuleSetName" },
         "Rule": {
-          "Name": { "Ref": "InboundMSRuleName" },
-          "Recipients": { "Ref": "InboundMSMailRecipients" },
+          "Name": { "Ref": "InboundMsRuleName" },
+          "Recipients": { "Ref": "InboundMsMailRecipients" },
           "Enabled": "True",
           "ScanEnabled": "False",
           "Actions": [
             {
               "LambdaAction": {
-                "FunctionArn": { "Ref": "SesInvokeInboundMSLambdaFunctionArn" },
+                "FunctionArn": { "Ref": "SesInvokeInboundMsLambdaFunctionArn" },
                 "InvocationType": "Event"
               }
             }
@@ -514,6 +514,30 @@
         "Principal": "ses.amazonaws.com",
         "SourceAccount": { "Ref": "AWS::AccountId" }
       }
+    },
+
+    "PermissionForSesToInvokeMsLambda": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "SesInvokeInboundMsLambdaFunctionArn"
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "ses.amazonaws.com",
+        "SourceAccount": { "Ref": "AWS::AccountId" }
+      }
+    },
+
+    "PermissionForSesToInvokeEncryptionOutboundLambda": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "SesInvokeEncryptionOutboundLambdaFunctionArn"
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "ses.amazonaws.com",
+        "SourceAccount": { "Ref": "AWS::AccountId" }
+      }
     }
   },
 
@@ -529,6 +553,10 @@
     "InboundReceiptRule": {
       "Description": "Ses Receipt Rules.",
       "Value": { "Ref": "InboundReceiptRule" }
+    },
+    "InboundMsReceiptRule": {
+      "Description": "Ses Receipt Rules.",
+      "Value": { "Ref": "InboundMsReceiptRule" }
     },
     "OutboundReceiptRule": {
       "Description": "Ses Receipt Rules.",
