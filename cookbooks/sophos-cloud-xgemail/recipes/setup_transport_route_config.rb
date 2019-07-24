@@ -25,6 +25,15 @@ if NODE_TYPE != 'customer-delivery'
   return
 end
 
+
+directory TRANSPORT_ROUTE_CLI_PACKAGE_DIR do
+  mode '0755'
+  owner 'root'
+  group 'root'
+  recursive true
+end
+
+
 directory TRANSPORT_CONFIG_PATH do
   mode '0755'
   owner 'root'
