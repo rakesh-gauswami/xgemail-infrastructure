@@ -7,7 +7,6 @@
 # All rights reserved - Do Not Redistribute
 #
 # Configures the transport route config CLI tool
-#
 
 NODE_TYPE           = node['xgemail']['cluster_type']
 XGEMAIL_FILES_DIR   = node['xgemail']['xgemail_files_dir']

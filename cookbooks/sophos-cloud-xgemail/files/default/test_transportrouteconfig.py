@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # vim: autoindent tabstop=4 softtabstop=4 shiftwidth=4 expandtab filetype=python
 #
-# Copyright 2018, Sophos Limited. All rights reserved.
+# Copyright 2019, Sophos Limited. All rights reserved.
 #
 # 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
 # Sophos Limited and Sophos Group.  All other product and company
