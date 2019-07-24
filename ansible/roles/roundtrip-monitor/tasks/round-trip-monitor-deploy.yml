@@ -6,6 +6,8 @@
     - /work/lambda/xgemail_inbound_monitor_send.js
     dest: "{{role_path}}/xgemail_inbound_monitor_send.zip"
     format: zip
+  tags:
+    - regular
 
 - name: "Upload inbound monitor send lambda function for {{stack.lambda.inbound_monitor_send_lambda_function}} to the config bucket {{s3.lambda_bucket}}"
   s3:
@@ -15,6 +17,8 @@
     object:             "lambda/{{build.number}}/xgemail_inbound_monitor_send.zip"
     src:                "{{role_path}}/xgemail_inbound_monitor_send.zip"
     overwrite:          always
+  tags:
+    - regular
 
 # Inbound Microservice Monitor Send Lambda Function
 - name: "Create a zip archive of inbound microservice monitor send lambda function"
@@ -23,6 +27,8 @@
       - /work/lambda/xgemail_inbound_ms_monitor_send.js
     dest: "{{role_path}}/xgemail_inbound_ms_monitor_send.zip"
     format: zip
+  tags:
+    - microservice
 
 - name: "Upload inbound microservice monitor send lambda function for {{stack.lambda.inbound_ms_monitor_send_lambda_function}} to the config bucket {{s3.lambda_bucket}}"
   s3:
@@ -32,17 +38,23 @@
     object:             "lambda/{{build.number}}/xgemail_inbound_ms_monitor_send.zip"
     src:                "{{role_path}}/xgemail_inbound_ms_monitor_send.zip"
     overwrite:          always
+  tags:
+    - microservice
 
 - name: "Gather {{stack.iam.role.cloud_email_monitor_roles}} CloudFormation Stack Output"
   cloudformation_facts:
     stack_name: "{{stack.iam.role.cloud_email_monitor_roles}}"
     region: "{{account.region}}"
   register: cloud_email_monitor_iam_output
+  tags:
+    - always
 
 - name: "Print {{stack.iam.role.cloud_email_monitor_roles}} CloudFormation Stack Output"
   debug:
     var: cloud_email_monitor_iam_output
     verbosity: 3
+  tags:
+    - always
 
 - name: "Deploy inbound monitor send lambda function {{stack.lambda.inbound_monitor_send_lambda_function}} to {{account.name}}-{{account.region}}"
   cloudformation:
@@ -65,15 +77,21 @@
       UsWest2MailBoxName:                   "{{us_west_2_mailbox_name}}"
       UsWest2SenderMailBoxName:             "{{us_west_2_sender_mailbox_name}}"
   register: inbound_monitor_send_stack
+  tags:
+    - regular
 
 - debug:
     var: inbound_monitor_send_stack
     verbosity: 3
+  tags:
+    - regular
 
 - name: "Display inbound monitor send lambda function stack output"
   debug:
     msg: "{{inbound_monitor_send_stack.stack_outputs}}"
     verbosity: 2
+  tags:
+    - regular
 
 - name: "Deploy inbound microservice monitor send lambda function {{stack.lambda.inbound_ms_monitor_send_lambda_function}} to {{account.name}}-{{account.region}}"
   cloudformation:
@@ -96,15 +114,21 @@
       UsWest2MailBoxName:                   "{{ms.us_west_2_mailbox_name}}"
       UsWest2SenderMailBoxName:             "{{ms.us_west_2_sender_mailbox_name}}"
   register: inbound_ms_monitor_send_stack
+  tags:
+    - microservice
 
 - debug:
     var: inbound_ms_monitor_send_stack
     verbosity: 3
+  tags:
+    - microservice
 
 - name: "Display inbound microservice monitor send lambda function stack output"
   debug:
     msg: "{{inbound_ms_monitor_send_stack.stack_outputs}}"
     verbosity: 2
+  tags:
+    - microservice
 
 # Inbound Monitor Receive Lambda Function
 - name: "Create a zip archive of inbound monitor receive lambda function"
@@ -113,6 +137,8 @@
     - /work/lambda/xgemail_inbound_monitor_receive.js
     dest: "{{role_path}}/xgemail_inbound_monitor_receive.zip"
     format: zip
+  tags:
+    - regular
 
 - name: "Upload the Inbound monitor receive lambda function for {{stack.lambda.inbound_monitor_receive_lambda_function}} to the config bucket {{s3.lambda_bucket}}"
   s3:
@@ -122,6 +148,8 @@
     object:             "lambda/{{build.number}}/xgemail_inbound_monitor_receive.zip"
     src:                "{{role_path}}/xgemail_inbound_monitor_receive.zip"
     overwrite:          always
+  tags:
+    - regular
 
 - name: "Deploy Inbound Monitor Receive Lambda Function {{stack.lambda.inbound_monitor_receive_lambda_function}} to {{account.name}}-{{account.region}}"
   cloudformation:
@@ -143,15 +171,21 @@
       UsWest2MailBoxName:                   "{{us_west_2_mailbox_name}}"
       UsWest2SenderMailBoxName:             "{{us_west_2_sender_mailbox_name}}"
   register: inbound_monitor_receive_lambda_output
+  tags:
+    - regular
 
 - debug:
     var: inbound_monitor_receive_lambda_output
     verbosity: 3
+  tags:
+    - regular
 
 - name: "Display Inbound Monitor Receive Lambda Function Stack Output"
   debug:
     msg: "{{inbound_monitor_receive_lambda_output.stack_outputs}}"
     verbosity: 2
+  tags:
+    - regular
 
 # Inbound Microservice Monitor Receive Lambda Function
 - name: "Create a zip archive of inbound microservice monitor receive lambda function"
@@ -160,6 +194,8 @@
       - /work/lambda/xgemail_inbound_ms_monitor_receive.js
     dest: "{{role_path}}/xgemail_inbound_ms_monitor_receive.zip"
     format: zip
+  tags:
+    - microservice
 
 - name: "Upload the Inbound microservice monitor receive lambda function for {{stack.lambda.inbound_ms_monitor_receive_lambda_function}} to the config bucket {{s3.lambda_bucket}}"
   s3:
@@ -169,6 +205,8 @@
     object:             "lambda/{{build.number}}/xgemail_inbound_ms_monitor_receive.zip"
     src:                "{{role_path}}/xgemail_inbound_ms_monitor_receive.zip"
     overwrite:          always
+  tags:
+    - microservice
 
 - name: "Deploy Inbound Microservice Monitor Receive Lambda Function {{stack.lambda.inbound_ms_monitor_receive_lambda_function}} to {{account.name}}-{{account.region}}"
   cloudformation:
@@ -190,15 +228,21 @@
       UsWest2MailBoxName:                   "{{ms.us_west_2_mailbox_name}}"
       UsWest2SenderMailBoxName:             "{{ms.us_west_2_sender_mailbox_name}}"
   register: inbound_ms_monitor_receive_lambda_output
+  tags:
+    - microservice
 
 - debug:
     var: inbound_ms_monitor_receive_lambda_output
     verbosity: 3
+  tags:
+    - microservice
 
 - name: "Display Inbound Microservice Monitor Receive Lambda Function Stack Output"
   debug:
     msg: "{{inbound_ms_monitor_receive_lambda_output.stack_outputs}}"
     verbosity: 2
+  tags:
+    - microservice
 
 - name: "Deploy Outbound Monitor Send Lambda Function {{stack.lambda.outbound_monitor_send_lambda_function}} to {{account.name}}-{{account.region}}"
   cloudformation:
@@ -243,15 +287,21 @@
       UsWest2MailBoxName:                   "{{us_west_2_mailbox_name}}"
       UsWest2SenderMailBoxName:             "{{us_west_2_sender_mailbox_name}}"
   register: outbound_monitor_send_stack
+  tags:
+    - regular
 
 - debug:
     var: outbound_monitor_send_stack
     verbosity: 3
+  tags:
+    - regular
 
 - name: "Display Outbound Monitor Send Lambda Function Stack Output"
   debug:
     msg: "{{outbound_monitor_send_stack.stack_outputs}}"
     verbosity: 2
+  tags:
+    - regular
 
 # Outbound Monitor Receive Lambda Function
 - name: "Create a zip archive of outbound monitor receive lambda function"
@@ -260,6 +310,8 @@
     - /work/lambda/xgemail_outbound_monitor_receive.js
     dest: "{{role_path}}/xgemail_outbound_monitor_receive.zip"
     format: zip
+  tags:
+    - regular
 
 - name: "Upload the outbound monitor receive lambda function for {{stack.lambda.outbound_monitor_receive_lambda_function}} to the config bucket {{s3.lambda_bucket}}"
   s3:
@@ -269,6 +321,8 @@
     object:             "lambda/{{build.number}}/xgemail_outbound_monitor_receive.zip"
     src:                "{{role_path}}/xgemail_outbound_monitor_receive.zip"
     overwrite:          always
+  tags:
+    - regular
 
 - name: "Deploy outbound Monitor Receive Lambda Function {{stack.lambda.outbound_monitor_receive_lambda_function}} to {{account.name}}-{{account.region}}"
   cloudformation:
@@ -312,15 +366,21 @@
       UsWest2MailBoxName:                   "{{us_west_2_mailbox_name}}"
       UsWest2SenderMailBoxName:             "{{us_west_2_sender_mailbox_name}}"
   register: outbound_monitor_receive_lambda_output
+  tags:
+    - regular
 
 - debug:
     var: outbound_monitor_receive_lambda_output
     verbosity: 3
+  tags:
+    - regular
 
 - name: "Display outbound Monitor Receive Lambda Function Stack Output"
   debug:
     msg: "{{outbound_monitor_receive_lambda_output.stack_outputs}}"
     verbosity: 2
+  tags:
+    - regular
 
 # Encryption Outbound monitor send function
 - name: "Deploy Encryption Outbound Monitor Send Lambda Function {{stack.lambda.enc_outbound_monitor_send_lambda_function}} to {{account.name}}-{{account.region}}"
@@ -366,15 +426,21 @@
       UsWest2MailBoxName:                   "{{enc.us_west_2_mailbox_name}}"
       UsWest2SenderMailBoxName:             "{{us_west_2_sender_mailbox_name}}"
   register: encryption_outbound_monitor_send_stack
+  tags:
+    - encryption
 
 - debug:
     var: encryption_outbound_monitor_send_stack
     verbosity: 3
+  tags:
+    - encryption
 
 - name: "Display Outbound Monitor Send Lambda Function Stack Output"
   debug:
     msg: "{{encryption_outbound_monitor_send_stack.stack_outputs}}"
     verbosity: 2
+  tags:
+    - encryption
 
 # Encryption outbound monitor receive lambda function
 
@@ -384,6 +450,8 @@
       - /work/lambda/xgemail_encryption_outbound_monitor_receive.js
     dest: "{{role_path}}/xgemail_encryption_outbound_monitor_receive.zip"
     format: zip
+  tags:
+    - encryption
 
 - name: "Upload the encryption outbound monitor receive lambda function for {{stack.lambda.enc_outbound_monitor_receive_lambda_function}} to the config bucket {{s3.lambda_bucket}}"
   s3:
@@ -393,6 +461,8 @@
     object:             "lambda/{{build.number}}/xgemail_encryption_outbound_monitor_receive.zip"
     src:                "{{role_path}}/xgemail_encryption_outbound_monitor_receive.zip"
     overwrite:          always
+  tags:
+    - encryption
 
 - name: "Deploy Encryption outbound Monitor Receive Lambda Function {{stack.lambda.outbound_monitor_receive_lambda_function}} to {{account.name}}-{{account.region}}"
   cloudformation:
@@ -436,12 +506,18 @@
       UsWest2MailBoxName:                   "{{enc.us_west_2_mailbox_name}}"
       UsWest2SenderMailBoxName:             "{{us_west_2_sender_mailbox_name}}"
   register: encryption_outbound_monitor_receive_lambda_output
+  tags:
+    - encryption
 
 - debug:
     var: encryption_outbound_monitor_receive_lambda_output
     verbosity: 3
+  tags:
+    - encryption
 
 - name: "Display outbound Monitor Receive Lambda Function Stack Output"
   debug:
     msg: "{{encryption_outbound_monitor_receive_lambda_output.stack_outputs}}"
     verbosity: 2
+  tags:
+    - encryption

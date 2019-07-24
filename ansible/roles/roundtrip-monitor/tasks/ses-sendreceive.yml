@@ -5,11 +5,15 @@
     stack_name: "{{stack.lambda.inbound_monitor_receive_lambda_function}}"
     region: "{{account.region}}"
   register: inbound_monitor_receive_lambda_output
+  tags:
+    - regular
 
 - name: "Print {{stack.lambda.inbound_monitor_receive_lambda_function}} CloudFormation Stack Output"
   debug:
     var: inbound_monitor_receive_lambda_output
     verbosity: 3
+  tags:
+    - regular
 
 # Inbound Microservice Monitor receive lambda function output
 - name: "Gather {{stack.lambda.inbound_ms_monitor_receive_lambda_function}} CloudFormation Stack Output"
@@ -17,11 +21,15 @@
     stack_name: "{{stack.lambda.inbound_ms_monitor_receive_lambda_function}}"
     region: "{{account.region}}"
   register: inbound_ms_monitor_receive_lambda_output
+  tags:
+    - microservice
 
 - name: "Print {{stack.lambda.inbound_ms_monitor_receive_lambda_function}} CloudFormation Stack Output"
   debug:
     var: inbound_ms_monitor_receive_lambda_output
     verbosity: 3
+  tags:
+    - microservice
 
 # Outbound Monitor receive lambda function output
 - name: "Gather {{stack.lambda.outbound_monitor_receive_lambda_function}} CloudFormation Stack Output"
@@ -29,11 +37,15 @@
     stack_name: "{{stack.lambda.outbound_monitor_receive_lambda_function}}"
     region: "{{account.region}}"
   register: outbound_monitor_receive_lambda_output
+  tags:
+    - regular
 
 - name: "Print {{stack.lambda.outbound_monitor_receive_lambda_function}} CloudFormation Stack Output"
   debug:
     var: outbound_monitor_receive_lambda_output
     verbosity: 3
+  tags:
+    - regular
 
 # Encryption Outbound Monitor receive lambda function output
 - name: "Gather {{stack.lambda.enc_outbound_monitor_receive_lambda_function}} CloudFormation Stack Output"
@@ -41,11 +53,15 @@
     stack_name: "{{stack.lambda.enc_outbound_monitor_receive_lambda_function}}"
     region: "{{account.region}}"
   register: encryption_outbound_monitor_receive_lambda_output
+  tags:
+    - encryption
 
 - name: "Print {{stack.lambda.enc_outbound_monitor_receive_lambda_function}} CloudFormation Stack Output"
   debug:
     var: encryption_outbound_monitor_receive_lambda_output
     verbosity: 3
+  tags:
+    - encryption
 
 - name: "Deploy SES  {{stack.ses.email_monitor_ses}} to {{account.name}}-{{account.region}}"
   cloudformation:
@@ -78,12 +94,18 @@
       InboundMSMailRecipients:                        "{{ms.inbound_ms_mail_recipients}}"
       Domains:                                        "{{domains}}"
   register: ses_stack_output
+  tags:
+    - always
 
 - debug:
     var: ses_stack_output
     verbosity: 3
+  tags:
+    - always
 
 - name: "Display SES Stack Output"
   debug:
     msg: "{{ses_stack_output.stack_outputs}}"
     verbosity: 2
+  tags:
+    - always
