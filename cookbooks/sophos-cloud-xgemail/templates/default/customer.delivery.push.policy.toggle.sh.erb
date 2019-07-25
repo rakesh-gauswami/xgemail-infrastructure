@@ -1,0 +1,53 @@
+#!/bin/sh
+#
+# TODO: Explain that this script is idempotent
+
+enable() {
+
+    echo "Updating transport route config to RETRIEVE"
+
+    python /opt/sophos/xgemail/transport-route-config-cli/xgemail.transport.route.config.cli.py -s RETRIEVE
+    transport_update_return_code=$?
+
+    if (( transport_update_return_code != 0 )); then
+      echo "Transport route config update FAILED! Aborting"
+      exit 1
+    fi
+
+    echo "DONE"
+
+
+    echo "Updating Postfix config to use header checks..."
+
+
+    postmulti -i postfix-cd -x postconf -X transport_maps
+    remove_trasnport_maps_code=$?
+
+
+    echo "DONE"
+
+    echo "Reloading Postfix..."
+    echo "DONE"
+
+    echo "Toggle Complete! To revert, re-run script with the 'disable' parameter"
+}
+
+disable() {
+
+    echo "DISABLE"
+
+}
+
+
+case "$1" in
+    enable)
+        $1
+        ;;
+    disable)
+        $1
+        ;;
+    *)
+        echo $"Usage: $0 {enable|disable}"
+        exit 2
+esac
+exit $?
