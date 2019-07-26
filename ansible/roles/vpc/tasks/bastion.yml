@@ -13,6 +13,7 @@
       BastionSecurityGroup:                 "{{sg_stack.stack_outputs.SecurityGroupBastion}}"
       Branch:                               "{{build.branch}}"
       Environment:                          "{{account.name}}"
+      InstanceType:                         "{{instance_size_bastion}}"
       KeyName:                              "bastion-{{account.region}}"
       LogstashServer:                       "lgstshshipper.{{vpc.cloud_email.name|lower}}.{{account.region}}.{{account.name}}.{{hostedzone}}:5000"
       ScaleDownOnWeekends:                  "false"
