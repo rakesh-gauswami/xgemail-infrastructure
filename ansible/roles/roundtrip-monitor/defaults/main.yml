@@ -6,6 +6,10 @@ lambda:
   inbound_monitor_send_lambda_function:                 "Xgemail-Monitor-Send"
   outbound_monitor_receive_lambda_function:             "Xgemail-Outbound-Monitor-Receive"
   outbound_monitor_send_lambda_function:                "Xgemail-Outbound-Monitor-Send"
+  enc_outbound_monitor_receive_lambda_function:         "Xgemail-Encryption-Outbound-Monitor-Receive"
+  enc_outbound_monitor_send_lambda_function:            "Xgemail-Encryption-Outbound-Monitor-Send"
+  inbound_ms_monitor_receive_lambda_function:           "Xgemail-Inbound-MS-Monitor-Receive"
+  inbound_ms_monitor_send_lambda_function:              "Xgemail-Inbound-MS-Monitor-Send"
 s3:
   lambda_bucket:                                        "cloud-{{account.name}}-{{account.region}}-lambda"
 
@@ -30,11 +34,19 @@ stack:
     inbound_monitor_send_lambda_function:               "{{account.name}}-Lambda-XgemailMonitorSend"
     outbound_monitor_receive_lambda_function:           "{{account.name}}-Lambda-XgemailOutboundMonitorReceive"
     outbound_monitor_send_lambda_function:              "{{account.name}}-Lambda-XgemailOutboundMonitorSend"
+    enc_outbound_monitor_receive_lambda_function:       "{{account.name}}-Lambda-XgemailEncryptionOutboundMonitorReceive"
+    enc_outbound_monitor_send_lambda_function:          "{{account.name}}-Lambda-XgemailEncryptionOutboundMonitorSend"
+    inbound_ms_monitor_receive_lambda_function:         "{{account.name}}-Lambda-XgemailInboundMSMonitorReceive"
+    inbound_ms_monitor_send_lambda_function:            "{{account.name}}-Lambda-XgemailInboundMSMonitorSend"
   route53:
     email_monitor_com_route53:                          "{{vpc.cloud_email.name}}-mx-sophos-email-monitor-com"
     email_monitor_net_route53:                          "{{vpc.cloud_email.name}}-mx-sophos-email-monitor-net"
     email_monitor_org_route53:                          "{{vpc.cloud_email.name}}-mx-sophos-email-monitor-org"
     email_monitor_us_route53:                           "{{vpc.cloud_email.name}}-mx-sophos-email-monitor-us"
     email_recipient_com_route53:                        "{{vpc.cloud_email.name}}-mx-sophos-email-recipient-com"
+    inbound_ms_monitor_euw1_route53:                    "{{vpc.cloud_email.name}}-mx-inbound-ms-monitor-eu-west-1"
+    inbound_ms_monitor_euc1_route53:                    "{{vpc.cloud_email.name}}-mx-inbound-ms-monitor-eu-central-1"
+    inbound_ms_monitor_use2_route53:                    "{{vpc.cloud_email.name}}-mx-inbound-ms-monitor-us-east-2"
+    inbound_ms_monitor_usw2_route53:                    "{{vpc.cloud_email.name}}-mx-inbound-ms-monitor-us-west-2"
   ses:
     email_monitor_ses:                                  "{{account.name}}-SES"
