@@ -11,21 +11,15 @@
       HostedZoneName:                "{{us_west_2_hostedZoneName}}."
       ResourceRecords:               "{{us_west_2_resourceRecords}}"
   register: sophos_email_monitor_us_west_2_stack_output
-  tags:
-    - regular
 
 - debug:
      var: sophos_email_monitor_us_west_2_stack_output
      verbosity: 3
-  tags:
-    - regular
 
 - name: "Display Route53 Stack Output"
   debug:
     msg: "{{sophos_email_monitor_us_west_2_stack_output.stack_outputs}}"
     verbosity: 2
-  tags:
-    - regular
 
 - name: "Deploy {{stack.route53.email_monitor_net_route53}} to {{account.name}} {{account.region}}"
   cloudformation:
@@ -39,21 +33,15 @@
       HostedZoneName:                "{{eu_central_1_hostedZoneName}}."
       ResourceRecords:               "{{eu_central_1_resourceRecords}}"
   register: sophos_email_monitor_eu_central_1_stack_output
-  tags:
-    - regular
 
 - debug:
      var: sophos_email_monitor_eu_central_1_stack_output
      verbosity: 3
-  tags:
-    - regular
 
 - name: "Display Route53 Stack Output"
   debug:
     msg: "{{sophos_email_monitor_eu_central_1_stack_output.stack_outputs}}"
     verbosity: 2
-  tags:
-    - regular
 
 - name: "Deploy {{stack.route53.email_monitor_org_route53}} to {{account.name}} {{account.region}}"
   cloudformation:
@@ -67,21 +55,15 @@
       HostedZoneName:                "{{eu_west_1_hostedZoneName}}."
       ResourceRecords:               "{{eu_west_1_resourceRecords}}"
   register: sophos_email_monitor_eu_west_1_stack_output
-  tags:
-    - regular
 
 - debug:
      var: sophos_email_monitor_eu_west_1_stack_output
      verbosity: 3
-  tags:
-    - regular
 
 - name: "Display Route53 Stack Output"
   debug:
     msg: "{{sophos_email_monitor_eu_west_1_stack_output.stack_outputs}}"
     verbosity: 2
-  tags:
-    - regular
 
 - name: "Deploy {{stack.route53.email_monitor_us_route53}} to {{account.name}} {{account.region}}"
   cloudformation:
@@ -95,21 +77,15 @@
       HostedZoneName:                "{{us_east_2_hostedZoneName}}."
       ResourceRecords:               "{{us_east_2_resourceRecords}}"
   register: sophos_email_monitor_us_east_2_stack_output
-  tags:
-    - regular
 
 - debug:
      var: sophos_email_monitor_us_east_2_stack_output
      verbosity: 3
-  tags:
-    - regular
 
 - name: "Display Route53 Stack Output"
   debug:
     msg: "{{sophos_email_monitor_us_east_2_stack_output.stack_outputs}}"
     verbosity: 2
-  tags:
-    - regular
 
 - name: "Deploy {{stack.route53.email_recipient_com_route53}} to {{account.name}} {{account.region}}"
   cloudformation:
@@ -123,21 +99,15 @@
       HostedZoneName:                "{{us_west_2_recipient_hostedZoneName}}."
       ResourceRecords:               "{{us_west_2_recipient_resourceRecords}}"
   register: sophos_email_recipient_us_west_2_stack_output
-  tags:
-    - regular
 
 - debug:
      var: sophos_email_recipient_us_west_2_stack_output
      verbosity: 3
-  tags:
-    - regular
 
 - name: "Display Route53 Stack Output"
   debug:
     msg: "{{sophos_email_recipient_us_west_2_stack_output.stack_outputs}}"
     verbosity: 2
-  tags:
-    - regular
 
 - name: "Deploy {{stack.route53.inbound_ms_monitor_euw1_route53}} to {{account.name}} {{account.region}}"
   cloudformation:
@@ -151,21 +121,15 @@
       HostedZoneName:                "{{ms.eu_west_1_hostedZoneName}}."
       ResourceRecords:               "{{ms.eu_west_1_resourceRecords}}"
   register: sophos_email_ms_monitor_eu_west_1_stack_output
-  tags:
-    - microservice
 
 - debug:
     var: sophos_email_ms_monitor_eu_west_1_stack_output
     verbosity: 3
-  tags:
-    - microservice
 
 - name: "Display Route53 Stack Output"
   debug:
     msg: "{{sophos_email_ms_monitor_eu_west_1_stack_output.stack_outputs}}"
     verbosity: 2
-  tags:
-    - microservice
 
 - name: "Deploy {{stack.route53.inbound_ms_monitor_euc1_route53}} to {{account.name}} {{account.region}}"
   cloudformation:
@@ -179,21 +143,15 @@
       HostedZoneName:                "{{ms.eu_central_1_hostedZoneName}}."
       ResourceRecords:               "{{ms.eu_central_1_resourceRecords}}"
   register: sophos_email_ms_monitor_eu_central_1_stack_output
-  tags:
-    - microservice
 
 - debug:
     var: sophos_email_ms_monitor_eu_central_1_stack_output
     verbosity: 3
-  tags:
-    - microservice
 
 - name: "Display Route53 Stack Output"
   debug:
     msg: "{{sophos_email_ms_monitor_eu_central_1_stack_output.stack_outputs}}"
     verbosity: 2
-  tags:
-    - microservice
 
 - name: "Deploy {{stack.route53.inbound_ms_monitor_use2_route53}} to {{account.name}} {{account.region}}"
   cloudformation:
@@ -207,21 +165,15 @@
       HostedZoneName:                "{{ms.us_east_2_hostedZoneName}}."
       ResourceRecords:               "{{ms.us_east_2_resourceRecords}}"
   register: sophos_email_ms_monitor_us_east_2_stack_output
-  tags:
-    - microservice
 
 - debug:
     var: sophos_email_ms_monitor_us_east_2_stack_output
     verbosity: 3
-  tags:
-    - microservice
 
 - name: "Display Route53 Stack Output"
   debug:
     msg: "{{sophos_email_ms_monitor_us_east_2_stack_output.stack_outputs}}"
     verbosity: 2
-  tags:
-    - microservice
 
 - name: "Deploy {{stack.route53.inbound_ms_monitor_usw2_route53}} to {{account.name}} {{account.region}}"
   cloudformation:
@@ -235,18 +187,12 @@
       HostedZoneName:                "{{ms.us_west_2_hostedZoneName}}."
       ResourceRecords:               "{{ms.us_west_2_resourceRecords}}"
   register: sophos_email_ms_monitor_us_west_2_stack_output
-  tags:
-    - microservice
 
 - debug:
     var: sophos_email_ms_monitor_us_west_2_stack_output
     verbosity: 3
-  tags:
-    - microservice
 
 - name: "Display Route53 Stack Output"
   debug:
     msg: "{{sophos_email_ms_monitor_us_west_2_stack_output.stack_outputs}}"
     verbosity: 2
-  tags:
-    - microservice
