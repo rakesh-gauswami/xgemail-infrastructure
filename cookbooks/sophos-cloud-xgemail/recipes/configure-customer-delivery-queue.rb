@@ -59,7 +59,6 @@ CONFIGURATION_COMMANDS =
     'smtp_tls_security_level=may',
     'smtp_tls_ciphers=high',
     'smtp_tls_mandatory_ciphers=high',
-    'smtp_tls_mandatory_protocols = TLSv1.2',
     'smtp_tls_loglevel=1',
     'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache'
   ]
