@@ -58,7 +58,7 @@
       InboundRuleName:                                "xgemail-monitor-rule"
       OutboundRuleName:                               "xgemail-outbound-monitor-rule"
       EncryptionOutboundRuleName:                     "xgemail-encryption-outbound-monitor-rule"
-      InboundMSRuleName:                              "xgemail-inbound-ms-monitor-rule"
+      InboundMsRuleName:                              "xgemail-inbound-ms-monitor-rule"
       RuleSetName:                                    "{{ses_rule_set_name}}"
       UsWest2aCidrRange:                              "{{us_west_2a_cidr}}"
       UsWest2bCidrRange:                              "{{us_west_2b_cidr}}"
@@ -71,11 +71,11 @@
       SesInvokeLambdaFunctionArn:                     "{{inbound_monitor_receive_lambda_output.ansible_facts.cloudformation[stack.lambda.inbound_monitor_receive_lambda_function].stack_outputs.LambdaFunctionArn}}"
       SesInvokeOutboundLambdaFunctionArn:             "{{outbound_monitor_receive_lambda_output.ansible_facts.cloudformation[stack.lambda.outbound_monitor_receive_lambda_function].stack_outputs.LambdaFunctionArn}}"
       SesInvokeEncryptionOutboundLambdaFunctionArn:   "{{encryption_outbound_monitor_receive_lambda_output.ansible_facts.cloudformation[stack.lambda.enc_outbound_monitor_receive_lambda_function].stack_outputs.LambdaFunctionArn}}"
-      SesInvokeInboundMSLambdaFunctionArn:            "{{inbound_ms_monitor_receive_lambda_output.ansible_facts.cloudformation[stack.lambda.inbound_ms_monitor_receive_lambda_function].stack_outputs.LambdaFunctionArn}}"
+      SesInvokeInboundMsLambdaFunctionArn:            "{{inbound_ms_monitor_receive_lambda_output.ansible_facts.cloudformation[stack.lambda.inbound_ms_monitor_receive_lambda_function].stack_outputs.LambdaFunctionArn}}"
       InboundMailRecipients:                          "{{inbound_mail_recipients}}"
       OutboundMailRecipients:                         "{{outbound_mail_recipients}}"
       EncryptionOutboundMailRecipients:               "{{enc.encryption_outbound_mail_recipients}}"
-      InboundMSMailRecipients:                        "{{ms.inbound_ms_mail_recipients}}"
+      InboundMsMailRecipients:                        "{{ms.inbound_ms_mail_recipients}}"
       Domains:                                        "{{domains}}"
   register: ses_stack_output
 
