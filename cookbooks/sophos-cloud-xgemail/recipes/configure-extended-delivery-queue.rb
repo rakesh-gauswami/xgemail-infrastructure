@@ -130,7 +130,7 @@ if NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery'
   end
 
   [
-     "smtp_encrypt/unix/smtp_tls_security_level=encrypt"
+    "smtp_encrypt/unix/smtp_tls_security_level=encrypt"
   ].each do | cur |
     execute print_postmulti_cmd( INSTANCE_NAME, "postconf -P '#{cur}'" )
   end
