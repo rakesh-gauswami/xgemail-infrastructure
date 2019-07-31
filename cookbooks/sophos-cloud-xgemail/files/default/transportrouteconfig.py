@@ -13,7 +13,7 @@
 # There are three options:
 #
 # "IGNORE" - Missing data should be ignored and an "Unknown" header value should be used.
-# "RETRIEVE" - Attempt to retrieve the header value from the mail PIC. Fallback to IGNORE if this cannot be done.
+# "RETRIEVE" - Attempt to retrieve the header value from the mail PIC. Fail if this cannot be done.
 # "ERROR" - Throw an error and cease processing.
 
 
