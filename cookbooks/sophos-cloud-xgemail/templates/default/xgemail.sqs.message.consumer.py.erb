@@ -82,7 +82,7 @@ if ACCOUNT != 'sandbox':
       passphrase = s3.get_object(Bucket=CONNECTIONS_BUCKET, Key=MAIL_PIC_API_AUTH)
       return base64.b64encode('mail:' + passphrase['Body'].read())
 
-  auth = get_passphrase()transportrouteconfig
+  auth = get_passphrase()
 
   HEADERS = {
       'Content-type': 'application/json',
