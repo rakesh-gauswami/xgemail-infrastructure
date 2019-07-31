@@ -128,7 +128,6 @@ if NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery'
     owner 'root'
     group 'root'
   end
-
   [
       # Server side TLS configuration
       'smtpd_tls_security_level = may',
