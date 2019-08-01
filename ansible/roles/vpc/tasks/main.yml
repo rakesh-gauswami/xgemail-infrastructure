@@ -75,6 +75,12 @@
   tags:
     - vpc
 
+- name: "Include Spot Instance Price History Task."
+  include_tasks: spot-price-history.yml
+  when: account.name != 'prod'
+  tags:
+    - vpc
+
 - name: "Include CloudEmail VPC Bastion Host Creation Task."
   include_tasks: bastion.yml
   tags:

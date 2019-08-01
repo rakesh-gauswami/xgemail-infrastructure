@@ -6,10 +6,10 @@
  */
 var aws = require('aws-sdk');
 
-const US_EAST_2_NAMESPACE = "xgemail-outbound-monitor-us-east-2";
-const US_WEST_2_NAMESPACE = "xgemail-outbound-monitor-us-west-2";
-const EU_CENTRAL_1_NAMESPACE = "xgemail-outbound-monitor-eu-central-1";
-const EU_WEST_1_NAMESPACE = "xgemail-outbound-monitor-eu-west-1";
+const US_EAST_2_NAMESPACE = "xgemail-enc-outbound-monitor-us-east-2";
+const US_WEST_2_NAMESPACE = "xgemail-enc-outbound-monitor-us-west-2";
+const EU_CENTRAL_1_NAMESPACE = "xgemail-enc-outbound-monitor-eu-central-1";
+const EU_WEST_1_NAMESPACE = "xgemail-enc-outbound-monitor-eu-west-1";
 const US_EAST_2_DOMAINNAME =  process.env.XGEMAIL_US_EAST_2_HOSTED_ZONE_NAME;
 const US_WEST_2_DOMAINNAME =  process.env.XGEMAIL_US_WEST_2_HOSTED_ZONE_NAME;
 const EU_CENTRAL_1_DOMAINNAME =  process.env.XGEMAIL_EU_CENTRAL_1_HOSTED_ZONE_NAME;
@@ -58,5 +58,31 @@ exports.handler = (event, context, callback) => {
     console.log(`Email with subject <${emailSubject}> arrived at <${timeReceivedSes}> and was sent at <${timeSent}>`);
     console.log(`Namespace: ${namespace}\troundTripTime:${timeIntervalMillis}`);
 
-    callback(null, 'Xgemail Outbound Monitor Receive Lambda Triggered');
+    //Write this value to CloudWatch if the timeSent was obtained
+    if (timeIntervalMillis > 0) {
+        var params = {
+            MetricData: [
+                {
+                    MetricName: 'outbound-message-roundtrip-time',
+                    Dimensions: [
+                        {
+                            Name: 'roundTripTime',
+                            Value: 'seconds'
+                        },
+                    ],
+
+                    Timestamp: new Date(),
+                    Unit: 'Milliseconds',
+                    Value: timeIntervalMillis
+                }
+            ],
+            Namespace: namespace
+        };
+    }
+    else {
+        var sentTimeNotFoundError = new Error("Error in obtaining sent timestamp");
+        callback(sentTimeNotFoundError);
+    }
+
+    callback(null, 'Xgemail Encryption Outbound Monitor Receive Lambda Triggered');
 };

@@ -140,7 +140,7 @@ def parse_sqs_message(msg, receipt):
 # This will be one of three actions:
 #
 # 1. ERROR - Throw the error and cease processing
-# 2. RETRIEVE - Attempt the retrieve the transport route from the mail PIC
+# 2. RETRIEVE - Attempt the retrieve the transport route from the mail PIC. Fail is this cannot be done.
 # 3. IGNORE - Ignore the error and use "Unknown"
 #
 # The header name and value will be added to the existing_headers as a new key/value
@@ -192,7 +192,25 @@ def add_transport_route_header(recipients_addresses, existing_headers):
 
             if header_from_api is not None:
                 fallback_header_value = header_from_api
+            else:
+                # The route could not be retrieved from the API. Log the original exception so as to not swallow it,
+                # then throw it so we cease processing and kick the job back to the queue. This is important.
+                # If we can't create a real transport header, *and* postfix is configured to deliver using header checks
+                # (which we expect it to be), then we can't inject the message into postfix otherwise delivery will
+                # always fail. Therefore, if we're RETRIEVE mode, but the retrieve fails, we fail the message back to
+                # SQS.
+                logger.exception(
+                    'Route for recipients [{0}] cannot be retrieved from S3 or destinations API. S3 exception: {1}'.format(
+                        recipients,
+                        route_exception
+                    )
+                )
+                raise route_exception
 
+
+        # This should only happen when the route data is not in S3, which should be never, however, we may see it time
+        # to time. It should also be self-healing because calls to retrieve the data through the /destinations API will
+        # push the data to S3 to prevent subsequent issues.
         logger.warn(
             'Unable to create transport route header for recipients [{0}], using fallback: {1}'.format(
                 recipients,

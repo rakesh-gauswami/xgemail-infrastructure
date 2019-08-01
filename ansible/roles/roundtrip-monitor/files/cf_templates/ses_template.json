@@ -60,7 +60,17 @@
       "Description": "List of email addresses to add to SES",
       "ConstraintDescription": "must be a comma-separated list of valid email addresses."
     },
+    "InboundMsMailRecipients": {
+      "Type": "CommaDelimitedList",
+      "Description": "List of email addresses to add to SES",
+      "ConstraintDescription": "must be a comma-separated list of valid email addresses."
+    },
     "OutboundMailRecipients": {
+      "Type": "CommaDelimitedList",
+      "Description": "List of email addresses to add to SES",
+      "ConstraintDescription": "must be a comma-separated list of valid email addresses."
+    },
+    "EncryptionOutboundMailRecipients": {
       "Type": "CommaDelimitedList",
       "Description": "List of email addresses to add to SES",
       "ConstraintDescription": "must be a comma-separated list of valid email addresses."
@@ -73,6 +83,14 @@
       "Description": "The name of the SES receiving rule.",
       "Type": "String"
     },
+    "EncryptionOutboundRuleName": {
+      "Description": "The name of the SES receiving rule.",
+      "Type": "String"
+    },
+    "InboundMsRuleName": {
+      "Description": "The name of the SES receiving rule.",
+      "Type": "String"
+    },
     "RuleSetName": {
       "Description": "The name of the SES rule set.",
       "Type": "String",
@@ -82,8 +100,16 @@
       "Description": "The ARN of the Lambda Function SES will invoke.",
       "Type": "String"
     },
+    "SesInvokeInboundMsLambdaFunctionArn": {
+      "Description": "The ARN of the Lambda Function SES will invoke.",
+      "Type": "String"
+    },
     "SesInvokeOutboundLambdaFunctionArn": {
       "Description": "The ARN of the Outbound Lambda Function SES will invoke.",
+      "Type": "String"
+    },
+    "SesInvokeEncryptionOutboundLambdaFunctionArn": {
+      "Description": "The ARN of the Encryption Outbound Lambda Function SES will invoke.",
       "Type": "String"
     }
   },
@@ -290,6 +316,27 @@
       }
     },
 
+    "InboundMsReceiptRule": {
+      "Type": "AWS::SES::ReceiptRule",
+      "Properties": {
+        "RuleSetName": { "Ref": "RuleSetName" },
+        "Rule": {
+          "Name": { "Ref": "InboundMsRuleName" },
+          "Recipients": { "Ref": "InboundMsMailRecipients" },
+          "Enabled": "True",
+          "ScanEnabled": "False",
+          "Actions": [
+            {
+              "LambdaAction": {
+                "FunctionArn": { "Ref": "SesInvokeInboundMsLambdaFunctionArn" },
+                "InvocationType": "Event"
+              }
+            }
+          ]
+        }
+      }
+    },
+
     "OutboundReceiptRule": {
       "Type": "AWS::SES::ReceiptRule",
       "Properties": {
@@ -304,6 +351,27 @@
             {
               "LambdaAction": {
                 "FunctionArn": { "Ref": "SesInvokeOutboundLambdaFunctionArn" },
+                "InvocationType": "Event"
+              }
+            }
+          ]
+        }
+      }
+    },
+
+    "EncryptionOutboundReceiptRule": {
+      "Type": "AWS::SES::ReceiptRule",
+      "Properties": {
+        "RuleSetName": { "Ref": "RuleSetName" },
+        "Rule": {
+          "Name": { "Ref": "EncryptionOutboundRuleName" },
+          "Recipients": { "Ref": "EncryptionOutboundMailRecipients" },
+          "Enabled": "True",
+          "ScanEnabled": "False",
+          "Actions": [
+            {
+              "LambdaAction": {
+                "FunctionArn": { "Ref": "SesInvokeEncryptionOutboundLambdaFunctionArn" },
                 "InvocationType": "Event"
               }
             }
@@ -446,6 +514,30 @@
         "Principal": "ses.amazonaws.com",
         "SourceAccount": { "Ref": "AWS::AccountId" }
       }
+    },
+
+    "PermissionForSesToInvokeMsLambda": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "SesInvokeInboundMsLambdaFunctionArn"
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "ses.amazonaws.com",
+        "SourceAccount": { "Ref": "AWS::AccountId" }
+      }
+    },
+
+    "PermissionForSesToInvokeEncryptionOutboundLambda": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "SesInvokeEncryptionOutboundLambdaFunctionArn"
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "ses.amazonaws.com",
+        "SourceAccount": { "Ref": "AWS::AccountId" }
+      }
     }
   },
 
@@ -462,9 +554,17 @@
       "Description": "Ses Receipt Rules.",
       "Value": { "Ref": "InboundReceiptRule" }
     },
+    "InboundMsReceiptRule": {
+      "Description": "Ses Receipt Rules.",
+      "Value": { "Ref": "InboundMsReceiptRule" }
+    },
     "OutboundReceiptRule": {
       "Description": "Ses Receipt Rules.",
       "Value": { "Ref": "OutboundReceiptRule" }
+    },
+    "EncryptionOutboundReceiptRule": {
+      "Description": "Ses Receipt Rules.",
+      "Value": { "Ref": "EncryptionOutboundReceiptRule" }
     }
   }
 }
