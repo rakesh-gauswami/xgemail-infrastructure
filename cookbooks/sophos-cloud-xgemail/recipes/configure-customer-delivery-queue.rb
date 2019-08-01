@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: configure-customer-delivery-queue
 #
-# Copyright 2016, Sophos
+# Copyright 2019, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -51,6 +51,18 @@ end
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf -P '#{cur}'" )
 end
 
+
+HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
+
+# Add the header checks config file
+file "#{HEADER_CHECKS_PATH}" do
+  content "/^X-Sophos-Email-Transport-Route: (smtp|smtp_encrypt):(.*)$/i FILTER $1:$2"
+  mode '0644'
+  owner 'root'
+  group 'root'
+end
+
+
 CONFIGURATION_COMMANDS =
   [
     'bounce_queue_lifetime=0',
@@ -61,6 +73,10 @@ CONFIGURATION_COMMANDS =
     'smtp_tls_mandatory_ciphers=high',
     'smtp_tls_loglevel=1',
     'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache'
+
+    # TODO XGE-8891
+    # Once we're fully cut over to push policy, uncomment the header_checks line below
+    # "header_checks=regexp:#{HEADER_CHECKS_PATH}"
   ]
 
 CONFIGURATION_COMMANDS.each do | cur |
@@ -72,8 +88,17 @@ if ACCOUNT == 'sandbox'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_utils_structure'
 end
 
+
 include_recipe 'sophos-cloud-xgemail::configure-bounce-message-customer-delivery-queue'
+
+# TODO XGE-8891
+# Once we're fully cut over to push policy, remove the call
+# to the setup_customer_delivery_transport_updater_cron recipe below
+#
 include_recipe 'sophos-cloud-xgemail::setup_customer_delivery_transport_updater_cron'
+
 include_recipe 'sophos-cloud-xgemail::setup_transport_route_config'
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_consumer'
+
+include_recipe 'sophos-cloud-xgemail::setup_push_policy_toggle'
 
