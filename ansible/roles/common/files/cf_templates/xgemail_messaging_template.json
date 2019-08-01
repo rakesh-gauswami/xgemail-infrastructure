@@ -234,6 +234,10 @@
     "RiskyDeliveryQueueUrl": {
       "Description": "Endpoint URL for Risky delivery SQS queue",
       "Type": "String"
+    },
+    "EncryptEventsTopicArn": {
+      "Description": "TopicArn of Encrypt Events SNS",
+      "Type": "String"
     }
   },
 
@@ -294,6 +298,14 @@
         "TopicArn": { "Ref": "QuarantinedEventsTopicArn"}
       }
     },
+    "MessageHistoryQueueToEncryptEventsSnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "MessageHistoryQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "EncryptEventsTopicArn"}
+      }
+    },
     "MessageStatisticsQueueToQuarantinedSnsSubsciption": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
@@ -332,6 +344,14 @@
         "Endpoint": { "Ref": "EncryptionDeliveryQueueArn" },
         "Protocol": "sqs",
         "TopicArn": { "Ref": "EncryptionDeliveryEventsTopicArn"}
+      }
+    },
+    "EncryptionDeliveryQueueToEncryptEventsSnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "EncryptionDeliveryQueueArn" },
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "EncryptEventsTopicArn"}
       }
     },
     "EmergencyInboxQueueToSuccessSnsSubsciption": {
@@ -798,6 +818,18 @@
               }
             },
             {
+              "Sid": "Allow-EncryptEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "EncryptEventsTopicArn"}
+                }
+              }
+            },
+            {
               "Sid": "Allow-MessageHistoryEventsTopicArn",
               "Effect": "Allow",
               "Principal": "*",
@@ -1160,6 +1192,30 @@
           ]
         },
         "Queues": [{ "Ref": "BounceEventQueueUrl" }]
+      }
+    },
+    "EncryptionDeliveryQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "EncryptionDeliveryQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-EncryptEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "EncryptEventsTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{ "Ref": "EncryptionDeliveryQueueUrl" }]
       }
     },
     "NotifierQueuePolicy": {

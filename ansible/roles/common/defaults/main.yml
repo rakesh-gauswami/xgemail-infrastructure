@@ -122,6 +122,7 @@ sns:
   risky_delivery_sns_topic:                             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-risky-delivery-SNS"
   scan_events_sns_topic:                                "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-scan-events-SNS"
   success_events_sns_topic:                             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-success-events-SNS"
+  encrypt_events_sns_topic:                             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-encrypt-events-SNS"
 sdb:
   volume_tracker_sdb:                                   "{{volume_tracker_sdb_output.ansible_facts.cloudformation[stack.sdb.volume_tracker_sdb].stack_outputs.SimpleDbDomain}}"
 dynamodb:
@@ -265,6 +266,8 @@ stack:
     risky_delivery_sns_topic:                           "{{vpc.cloud_email.name}}-xgemail-risky-delivery-SNS"
     scan_events_sns_topic:                              "{{vpc.cloud_email.name}}-xgemail-scan-events-SNS"
     success_events_sns_topic:                           "{{vpc.cloud_email.name}}-xgemail-success-events-SNS"
+    encrypt_events_sns_topic:                           "{{vpc.cloud_email.name}}-xgemail-encrypt-events-SNS"
+
   ssm:
     ssm_documents:                                      "{{vpc.cloud_email.name}}-SSM-Documents"
   msg:
