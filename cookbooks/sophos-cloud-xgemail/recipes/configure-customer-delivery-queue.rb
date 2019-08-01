@@ -100,5 +100,5 @@ include_recipe 'sophos-cloud-xgemail::setup_customer_delivery_transport_updater_
 include_recipe 'sophos-cloud-xgemail::setup_transport_route_config'
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_consumer'
 
-include_recipe 'sophos-cloud-xgemail::setup_push_policy_toggle'
+include_recipe 'sophos-cloud-xgemail::setup_push_policy_delivery_toggle'
 
