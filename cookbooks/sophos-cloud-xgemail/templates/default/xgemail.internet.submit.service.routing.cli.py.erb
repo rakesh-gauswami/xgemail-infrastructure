@@ -30,7 +30,7 @@ routing_manager = RoutingManager(
   'INTERNET-SUBMIT',
 )
 
-parser = argparse.ArgumentParser(description='Used to set or get the percentrage of traffic to route to the mailinbound microservice. Or to turn microservice routing on or off for a specific customer')
+parser = argparse.ArgumentParser(description='Used to set or get the percentage of traffic to route to the mailinbound microservice. Or to turn microservice routing on or off for a specific customer')
 parser.add_argument('-g', '--get', action='store_true', help='Get the mailinbound microservice traffic routing %%')
 parser.add_argument('-s', '--set', nargs=1, metavar='<value>',  type=routing_manager.valid_float, help='Set the mailinbound microservice traffic routing %%, between 0.00 - 1.00')
 parser.add_argument('-sc', '--setcustomer', metavar='<customer UUID>', nargs=1, help='Set customer with the supplied id to be routed to the mailinbound microservice')

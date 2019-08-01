@@ -35,6 +35,7 @@ from smtplib import SMTPDataError
 from smtplib import SMTPException
 from smtplib import SMTPSenderRefused
 from smtplib import SMTPRecipientsRefused
+from transportrouteconfig import TransportRouteConfig
 
 # general constants
 AWS_REGION = "<%= @aws_region %>"
@@ -56,9 +57,8 @@ NODE_TYPE = '<%= @node_type %>'
 NODE_IP = '<%= @node_ip %>'
 ACCOUNT = '<%= @account %>'
 POLICY_BUCKET_NAME = "<%= @policy_bucket %>"
+TRANSPORT_CONFIG_PATH = "<%= @transport_config_path %>"
 
-# headers API constants
-PIC_HEADERS_URL = 'https://%s/mail/api/xgemail/headers' % (PIC_FQDN)
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 
@@ -74,6 +74,9 @@ handler.formatter = formatter
 logger.addHandler(handler)
 
 if ACCOUNT != 'sandbox':
+
+  PIC_API_URL = 'https://%s/mail/api/xgemail' % (PIC_FQDN)
+
   def get_passphrase():
       s3 = boto3.client('s3')
       passphrase = s3.get_object(Bucket=CONNECTIONS_BUCKET, Key=MAIL_PIC_API_AUTH)
@@ -92,9 +95,17 @@ else:
       'Content-type': 'application/json',
       'Authorization': 'Basic'
   }
-  PIC_HEADERS_URL = 'http://%s/mail-services/api/xgemail/headers' % (PIC_FQDN)
+
+  PIC_API_URL = 'https://%s/mail-services/api/xgemail' % (PIC_FQDN)
+
+
+# API constants
+PIC_HEADERS_URL = '%s/headers' % (PIC_API_URL)
+PIC_DESTINATION_URL = '%s/destination' % (PIC_API_URL)
+
 
 awshandler = AwsHandler(AWS_REGION)
+transportrouteconfig = TransportRouteConfig(TRANSPORT_CONFIG_PATH)
 
 def parse_sqs_message(msg, receipt):
     msg_as_json = json.loads(msg)
@@ -125,17 +136,23 @@ def parse_sqs_message(msg, receipt):
 #    "transport": "<smtp or smtp_encrypt>"
 # }
 #
-# If no transport route can be found or parsed, the value "Unknown" will
-# be used. The header name and value will be added to the existing_headers
-# as a new key/value
+# If no transport route can be found or parsed, we refer to the transportrouteconfig to indicate what should happen.
+# This will be one of three actions:
+#
+# 1. ERROR - Throw the error and cease processing
+# 2. RETRIEVE - Attempt the retrieve the transport route from the mail PIC. Fail is this cannot be done.
+# 3. IGNORE - Ignore the error and use "Unknown"
+#
+# The header name and value will be added to the existing_headers as a new key/value
 def add_transport_route_header(recipients_addresses, existing_headers):
 
     header_name = 'X-Sophos-Email-Transport-Route'
 
+    # All recipients should have the same domain at this point
+    # due to upstream message splitting
+    customer_domain = recipients_addresses[0].split('@')[1]
+
     try:
-        # All recipients should have the same domain at this point
-        # due to upstream message splitting
-        customer_domain = recipients_addresses[0].split('@')[1]
 
         s3_key = 'config/inbound-relay-control/delivery-routes/{0}.ROUTE'.format(customer_domain)
 
@@ -147,23 +164,115 @@ def add_transport_route_header(recipients_addresses, existing_headers):
         host = config_json['host']
 
         if 'port' in config_json:
-            header_value = '{0}:[{1}]'.format(transport, host)
-        else:
             port = config_json['port']
             header_value = '{0}:[{1}]:{2}'.format(transport, host, port)
+        else:
+            header_value = '{0}:[{1}]'.format(transport, host)
 
         existing_headers[header_name] = header_value
 
+    except Exception as route_exception:
+
+        if transportrouteconfig.is_error_on_missing_data():
+
+            logger.exception(
+                'Unable to create transport route header for recipients [{0}], Exception: {1}'.format(
+                    recipients,
+                    route_exception
+                )
+            )
+
+            raise route_exception
+
+        fallback_header_value = 'Unknown'
+
+        if transportrouteconfig.is_retrieve_on_missing_data():
+
+            header_from_api = attempt_to_retrieve_transport_route(customer_domain, True)
+
+            if header_from_api is not None:
+                fallback_header_value = header_from_api
+            else:
+                # The route could not be retrieved from the API. Log the original exception so as to not swallow it,
+                # then throw it so we cease processing and kick the job back to the queue. This is important.
+                # If we can't create a real transport header, *and* postfix is configured to deliver using header checks
+                # (which we expect it to be), then we can't inject the message into postfix otherwise delivery will
+                # always fail. Therefore, if we're RETRIEVE mode, but the retrieve fails, we fail the message back to
+                # SQS.
+                logger.exception(
+                    'Route for recipients [{0}] cannot be retrieved from S3 or destinations API. S3 exception: {1}'.format(
+                        recipients,
+                        route_exception
+                    )
+                )
+                raise route_exception
+
+
+        # This should only happen when the route data is not in S3, which should be never, however, we may see it time
+        # to time. It should also be self-healing because calls to retrieve the data through the /destinations API will
+        # push the data to S3 to prevent subsequent issues.
+        logger.warn(
+            'Unable to create transport route header for recipients [{0}], using fallback: {1}'.format(
+                recipients,
+                fallback_header_value
+            )
+        )
+
+        existing_headers[header_name] = fallback_header_value
+
+
+# Attempts to retrieve the transport route for the given domain from the mail PIC.
+# If the API call is successful, this method should return a string in the format:
+#
+# <transport type>:[<host>]:<port>
+#
+# For example:
+#
+# smtp_encrypt:mail.customer-server.com:2255
+#
+# If the route cannot be retrieved for any reason, None is returned. This method also
+# accepts a persist_if_missing boolean attribute which is passed on to the API.
+# If true, the API should write the resulting transport data to S3 to prevent the need
+# for subsequent API calls.
+def attempt_to_retrieve_transport_route(domain, persist_if_missing):
+
+    try:
+        domain_response = requests.post(
+            PIC_DESTINATION_URL,
+            headers = HEADERS,
+            data = json.dumps(
+                {
+                    'domain' : domain,
+                    'persistIfMissing': persist_if_missing
+                }
+            ),
+            timeout = MAIL_PIC_RESPONSE_TIMEOUT
+        )
+
+        if domain_response != requests.codes.ok:
+            logger.warn("Unable to retrieve transport route for domain [%s]", domain)
+            return None
+
+        destination_json = domain_response.json()['delivery_destination']
+        destination = destination_json['destination']
+        port = destination_json['port']
+        route_type = destination_json['route_type']
+
+        if port != 25:
+            route_val = '%s:[%s]' % route_type, destination
+
+        else:
+            route_val = '%s:[%s]:%s' % route_type, destination, str(port)
+
+        return route_val
+
     except Exception as e:
 
-        # TODO: For now we're not going to log the exception because we expect S3 to not have all this data yet.
-        # Once XGE-4967 is complete we should uncomment this exception log.
+        logger.exception(
+            'Exception when retrieving transport route for domain [{0}], Exception: {1}'.format(domain, e)
+        )
 
-        #logger.exception(
-        #    'Unable to create transport route header for recipients [{0}], Exception: {1}'.format(recipients, e)
-        #)
-
-        existing_headers[header_name] = 'Unknown'
+        return None
 
 
 # Attempts to retrieve headers using api exposed on mail pic

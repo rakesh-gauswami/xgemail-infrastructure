@@ -1,0 +1,53 @@
+#!/usr/bin/env python
+# vim: autoindent expandtab filetype=python shiftwidth=4 softtabstop=4 tabstop=4
+#
+# Copyright 2019, Sophos Limited. All rights reserved.
+#
+# 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
+# Sophos Limited and Sophos Group.  All other product and company
+# names mentioned are trademarks or registered trademarks of their
+# respective owners.
+#
+# Provides a mechanism for creating/updating transport route config.
+
+
+import sys
+sys.path.append("<%= @xgemail_utils_path %>")
+
+import argparse
+import json
+import os
+from transportrouteconfig import TransportRouteConfig
+
+TRANSPORT_CONFIG_PATH = "<%= @transport_config_path %>"
+
+parser = argparse.ArgumentParser(description='Provides a mechanism for creating/updating transport route config')
+parser.add_argument('-g', '--get', action='store_true', help='Get the current transport route config setting')
+parser.add_argument('-s', '--set', nargs=1, choices=['IGNORE', 'RETRIEVE', 'ERROR'], metavar='IGNORE | RETRIEVE | ERROR', help='Set the current transport route config setting')
+
+args = parser.parse_args()
+
+transportrouteconfig = TransportRouteConfig(TRANSPORT_CONFIG_PATH)
+
+if args.get:
+    print 'Transport Route Config Setting: ' + transportrouteconfig.get_on_missing_data_setting()
+
+elif args.set:
+
+    new_setting = args.set[0]
+
+    new_json_config = {
+        'behavior_on_missing_transport_data': new_setting
+    }
+
+    temp_file = TRANSPORT_CONFIG_PATH + '.tmp'
+
+    with open(temp_file, 'w') as config_file:
+        json.dump(new_json_config, config_file)
+
+    os.rename(temp_file, TRANSPORT_CONFIG_PATH)
+
+    print 'Transport Route Config set to: ' + new_setting
+
+else:
+    parser.print_help()
