@@ -260,6 +260,11 @@ aws:
       template:                                                   "{{template.sns.sns_simple_template}}"
       template_parameters:
         TopicName:                                                "{{sns.encryption_delivery_events_sns_topic}}"
+    encrypt_events_sns_topic:
+      stack_name:                                                 "{{stack.sns.encrypt_events_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                                                "{{sns.encrypt_events_sns_topic}}"
     msg_history_events_sns_topic:
       stack_name:                                                 "{{stack.sns.msg_history_events_sns_topic}}"
       template:                                                   "{{template.sns.sns_simple_template}}"
@@ -326,11 +331,6 @@ aws:
       template:                                                   "{{template.sns.sns_simple_template}}"
       template_parameters:
         TopicName:                                                "{{sns.msg_statistics_reindex_sns_topic}}"
-    encrypt_events_sns_topic:
-      stack_name:                                                 "{{stack.sns.encrypt_events_sns_topic}}"
-      template:                                                   "{{template.sns.sns_simple_template}}"
-      template_parameters:
-        TopicName:                                                "{{sns.encrypt_events_sns_topic}}"
 
   sqs:
     lifecycle_sqs_sns:
