@@ -38,38 +38,26 @@ enable() {
 
     echo "DONE"
 
-
     echo "Updating Postfix config to remove transport maps..."
     disable_postfix_transport_maps $SERVER_NAME
 
-
     echo "Updating Postfix config to use header checks..."
     enable_postfix_header_checks $SERVER_NAME
-
 
     echo "Reloading Postfix..."
     reload_postfix
     postfix_reload_return_code=$?
 
     if (( postfix_reload_return_code != 0 )); then
-
         echo "Postfix reload failed! Reverting changes..."
-
         disable_postfix_header_checks $SERVER_NAME
-
         enable_postfix_transport_maps $SERVER_NAME
-
         update_transport_route_config "IGNORE"
-
         echo "Revert complete. Update aborted!"
-
         exit 1
     else
-
       echo "DONE"
-
       echo "Toggle Complete! To revert, re-run script with the 'disable' parameter"
-
     fi
 }
 
@@ -92,40 +80,27 @@ disable() {
 
     echo "DONE"
 
-
     echo "Updating Postfix config to remove header checks..."
     disable_postfix_header_checks $SERVER_NAME
 
-
     echo "Updating Postfix config to use transport maps..."
     enable_postfix_transport_maps $SERVER_NAME
-
 
     echo "Reloading Postfix..."
     reload_postfix
     postfix_reload_return_code=$?
 
     if (( postfix_reload_return_code != 0 )); then
-
         echo "Postfix reload failed! Reverting changes..."
-
         enable_postfix_header_checks $SERVER_NAME
-
         disable_postfix_transport_maps $SERVER_NAME
-
         update_transport_route_config "RETRIEVE"
-
         echo "Revert complete. Update aborted!"
-
         exit 1
     else
-
       echo "DONE"
-
       echo "Toggle Complete! To revert, re-run script with the 'enable' parameter"
-
     fi
-
 }
 
 
