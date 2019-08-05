@@ -439,9 +439,9 @@ def check_email_license_expiration(domain):
     config_data = configformatter.get_config_binary(raw_config_data)
     config_json = json.loads(config_data)
     license_expiration_date = config_json['license_expiration_date']
-    expires = datetime.strptime(license_expiration_date) + timedelta(days=TTL_IN_DAYS)
+    expires_on = datetime.strptime(license_expiration_date, "%Y-%m-%dT%H:%M:%S.%fZ") + timedelta(days=TTL_IN_DAYS)
 
-    if expires > datetime.now():
+    if expires_on > datetime.now():
         logger.warning(
             'Unable to process email for customer domain {0}, having license expired on : {1}'.format(
                 domain,
