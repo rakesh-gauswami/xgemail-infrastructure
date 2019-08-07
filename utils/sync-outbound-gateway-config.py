@@ -21,37 +21,27 @@ import os
 import requests
 import subprocess
 import sys
-import getopt
+import argparse
 
 MAIL_PIC_RESPONSE_TIMEOUT = 60
 
-env='dev'
-region='eu-west-1'
-customerId='null'
+# Argument Parser
+def parse_command_line():
+    parser = argparse.ArgumentParser(description="Sync outbound gateway config file in S3 for the specified cunstomer.")
+    parser.add_argument("--region", "-r", dest='region', default='eu-west-1', choices=['eu-west-1', 'eu-central-1', 'us-west-2','us-east-2'])
+    parser.add_argument("--environment", "-e", dest='env', default='dev', choices=['dev', 'qa', 'prod'])
+    parser.add_argument("--customer", "-c", dest='customerid', required=True, help="Enter customer id")
 
-myopts, args = getopt.getopt(sys.argv[1:],"e:r:c:")
-for o, val in myopts:
-  if o == '-e':
-      env=val
-  elif o == '-r':
-      region=val
-  elif o == '-c':
-      customerId=val
-  else:
-      print("Sync outbound gateway config file in S3 for the specified cunstomer")
-      print("usage: %s -e dev/qa/prod -r {region} -c {customer id}" % sys.argv[0])
-      print("Sample usage: %s -e dev -r eu-west-1 -c 3a34a8af-712f-4c82-9edf-7449f04cefd2" % sys.argv[0])
+    return parser.parse_args()
 
-if customerId == 'null':
-    print("customer id is required")
-    print("usage: %s -e dev/qa/prod -r {region} -c {customer id}" % sys.argv[0])
-    sys.exit()
+args = parse_command_line()
 
-print ("Env : %s, region: %s, customer id: %s" % (env, region, customerId))
+env=args.env
+region=args.region
+customerId=args.customerid
 
-#PIC_FQDN = 'mail-cloudstation-eu-west-1.dev.hydra.sophos.com'
-#MAIL_PIC_API_AUTH = 'xgemail-eu-west-1-mail'
-#CONNECTIONS_BUCKET = 'cloud-dev-connections'
+print ("env : %s, region: %s, customer id: %s" % (env, region, customerId))
+
 pic_fqdn = "mail-cloudstation-{}.{}.hydra.sophos.com".format(region, env)
 mail_pic_api_auth = "xgemail-{}-mail".format(region)
 connections_bucket =  "cloud-{}-connections".format(env)
