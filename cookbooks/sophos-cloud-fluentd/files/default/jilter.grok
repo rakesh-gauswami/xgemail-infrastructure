@@ -1,0 +1,40 @@
+COMPONENT ([\w._\/%-]+)
+TRUEFALSE (?:true|false)
+PASSFAIL (?:pass|fail)
+DMARCRESULT <%{PASSFAIL:dmarc_result}> \(%{TRUEFALSE:spf_valid}, %{TRUEFALSE:dkim_valid}\)
+DMARCACTION (?:NONE|REJECT|QUARANTINE)
+#RESULTFOR (\(%{IP:client_ip}, %{HOSTNAME:ehlo_domain}, %{SENDERADDRESS:sender}\)|\(%{IP:client_ip}, %{HOSTNAME:ehlo_domain}, \))
+RESULTFOR \(%{IP:client_ip}, %{HOSTNAME:ehlo_domain}, %{GREEDYDATA:sender}\)
+SPFRESULT invalid|neutral|pass|fail|softfail|none|temperror|permerror
+SPFDKIMDMARCACTIONS preempting|rejecting
+#
+QUEUEID ([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)
+SENDERADDRESS (?:%{EMAILLOCALPART:sender_name}@%{HOSTNAME:sender_domain}|%{DATA})
+RECIPIENTADDRESS (?:%{EMAILLOCALPART:recipient_name}@%{HOSTNAME:recipient_domain}|%{DATA})
+#
+DNSLOOKUPIMPL DNS lookup failed for domain _dmarc.%{HOSTNAME:sender_domain}
+SOPHOSJILTERHANDLER \[%{NUMBER:session_id}#%{UUID:uuid}#%{IP:relay_ip}\] queued as \[%{QUEUEID:queue_id}\]
+SPFEVALMODULE SPF result for session <%{NUMBER:session_id}#%{IP:relay_ip}> is <%{NUMBER:spf_result}>
+SPFCHECKERIMPL %{PATH}: %{NUMBER}: SPF result for %{RESULTFOR} is %{SPFRESULT:spf_result}, %{GREEDYDATA:spf_error} - session id <%{NUMBER:session_id}#%{IP:instance_ip}>
+DKIMEVALMODULE DKIM result for session <%{NUMBER:session_id}#%{IP:relay_ip}> is <%{NUMBER:dkim_result}>
+DKIMACTIONMODULE session <%{NUMBER:session_id}>: DKIM is %{SPFDKIMDMARCACTIONS}
+SPFDMARCACTIONMODULE session <%{NUMBER:session_id}#%{IP:instance_ip}>: (SPF|DMARC) is %{SPFDKIMDMARCACTIONS}
+
+BLOCKEDOUTBOUNDFILTERHANDLER %{BLOCKEDOUTBOUNDEMPTY}|%{BLOCKEDOUTBOUNDBLACKLIST}|%{BLOCKEDOUTBOUNDINVALID}
+BLOCKEDOUTBOUNDEMPTY Envelope sender was empty, returning <EMPTY_FROM> belonging to sessionId <%{NUMBER:session_id}>
+BLOCKEDOUTBOUNDBLACKLIST Domain <%{HOSTNAME:sender_domain}> or email <%{SENDERADDRESS:sender}> is black listed, rejecting
+BLOCKEDOUTBOUNDINVALID Envelope sender value <%{GREEDYDATA:sender}> was not a valid email address, rejecting
+
+DKIMCHECKERIMPL %{DKIMOUTCOME}|%{SIGRESULT}
+DKIMOUTCOME DKIM outcome for %{RESULTFOR} is %{GREEDYDATA:dkim_result} \(%{NUMBER:dkim_code}\) - session id <%{NUMBER:session_id}#%{IP:instance_ip}>
+SIGRESULT Sig result for domain <%{HOSTNAME:sender_domain}>: <%{GREEDYDATA:dkim_sig_error}> flags = <%{NUMBER:dkim_sig_flag}> err = <%{GREEDYDATA:dkim_err}> sigbh = <%{NUMBER:dkim_sigbh}> sigerror = <%{NUMBER:dkim_sigerror}> - session id <%{NUMBER:session_id}#%{IP:instance_ip}>
+
+DMARCCHECKERIMPL %{DMARCCHECKERIMPLRESULT}|%{DMARCCHECKERIMPLNOPARSE}
+DMARCCHECKERIMPLRESULT DMARC result for domain <%{HOSTNAME:sender_domain}> is %{DMARCRESULT} with policy <%{DMARCACTION:dmarc_action}>, from header: <%{GREEDYDATA:from_header}>, envelope sender: <Optional\[%{GREEDYDATA:envelope_sender}\]> - session id <%{NUMBER:session_id}#%{IP:relay_ip}>
+DMARCCHECKERIMPLNOPARSE Couldn't parse DMARC record %{GREEDYDATA:dmarc_nonparse}
+#ENVELOPEFROMHANDLER
+
+#
+LOGBASE %{SYSLOGHOST:host} \[%{COMPONENT:process}\] \[%{GREEDYDATA:thread}\] %{LOGLEVEL:level}\s+%{JAVACLASS:logger}
+
+JILTERLOG %{LOGBASE} (?:%{DNSLOOKUPIMPL}|%{SOPHOSJILTERHANDLER}|%{SPFEVALMODULE}|%{DKIMEVALMODULE}|%{DKIMACTIONMODULE}|%{SPFDMARCACTIONMODULE}|%{DMARCCHECKERIMPL}|%{SPFCHECKERIMPL}|%{BLOCKEDOUTBOUNDFILTERHANDLER}|%{DKIMCHECKERIMPL})
