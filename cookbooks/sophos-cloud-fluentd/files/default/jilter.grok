@@ -3,22 +3,24 @@ TRUEFALSE (?:true|false)
 PASSFAIL (?:pass|fail)
 DMARCRESULT <%{PASSFAIL:dmarc_result}> \(%{TRUEFALSE:spf_valid}, %{TRUEFALSE:dkim_valid}\)
 DMARCACTION (?:NONE|REJECT|QUARANTINE)
-#RESULTFOR (\(%{IP:client_ip}, %{HOSTNAME:ehlo_domain}, %{SENDERADDRESS:sender}\)|\(%{IP:client_ip}, %{HOSTNAME:ehlo_domain}, \))
-RESULTFOR \(%{IP:client_ip}, %{HOSTNAME:ehlo_domain}, %{GREEDYDATA:sender}\)
+#RESULTFOR (\(%{IPV4:client_ip}, %{HOSTNAME:ehlo_domain}, %{SENDERADDRESS:sender}\)|\(%{IPV4:client_ip}, %{HOSTNAME:ehlo_domain}, \))
+RESULTFOR \(%{IPV4:client_ip}, %{HOSTNAME:ehlo_domain}, %{GREEDYDATA:sender}\)
 SPFRESULT invalid|neutral|pass|fail|softfail|none|temperror|permerror
 SPFDKIMDMARCACTIONS preempting|rejecting
+PASSEDFAILED passed|failed
+BLOCKEDOUTBOUNDSTATUS REJECT|NOT_VALIDATED
 #
 QUEUEID ([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)
 SENDERADDRESS (?:%{EMAILLOCALPART:sender_name}@%{HOSTNAME:sender_domain}|%{DATA})
 RECIPIENTADDRESS (?:%{EMAILLOCALPART:recipient_name}@%{HOSTNAME:recipient_domain}|%{DATA})
 #
 DNSLOOKUPIMPL DNS lookup failed for domain _dmarc.%{HOSTNAME:sender_domain}
-SOPHOSJILTERHANDLER \[%{NUMBER:session_id}#%{UUID:uuid}#%{IP:relay_ip}\] queued as \[%{QUEUEID:queue_id}\]
-SPFEVALMODULE SPF result for session <%{NUMBER:session_id}#%{IP:relay_ip}> is <%{NUMBER:spf_result}>
-SPFCHECKERIMPL %{PATH}: %{NUMBER}: SPF result for %{RESULTFOR} is %{SPFRESULT:spf_result}, %{GREEDYDATA:spf_error} - session id <%{NUMBER:session_id}#%{IP:instance_ip}>
-DKIMEVALMODULE DKIM result for session <%{NUMBER:session_id}#%{IP:relay_ip}> is <%{NUMBER:dkim_result}>
+SOPHOSJILTERHANDLER \[%{NUMBER:session_id}#%{UUID:uuid}#%{IPV4:relay_ip}\] queued as \[%{QUEUEID:queue_id}\]
+SPFEVALMODULE SPF result for session <%{NUMBER:session_id}#%{IPV4:relay_ip}> is <%{NUMBER:spf_result}>
+SPFCHECKERIMPL %{PATH}: %{NUMBER}: SPF result for %{RESULTFOR} is %{SPFRESULT:spf_result}, %{GREEDYDATA:spf_error} - session id <%{NUMBER:session_id}#%{IPV4:instance_ip}>
+DKIMEVALMODULE DKIM result for session <%{NUMBER:session_id}#%{IPV4:relay_ip}> is <%{NUMBER:dkim_result}>
 DKIMACTIONMODULE session <%{NUMBER:session_id}>: DKIM is %{SPFDKIMDMARCACTIONS}
-SPFDMARCACTIONMODULE session <%{NUMBER:session_id}#%{IP:instance_ip}>: (SPF|DMARC) is %{SPFDKIMDMARCACTIONS}
+SPFDMARCACTIONMODULE session <%{NUMBER:session_id}#%{IPV4:instance_ip}>: (SPF|DMARC) is %{SPFDKIMDMARCACTIONS}
 
 BLOCKEDOUTBOUNDFILTERHANDLER %{BLOCKEDOUTBOUNDEMPTY}|%{BLOCKEDOUTBOUNDBLACKLIST}|%{BLOCKEDOUTBOUNDINVALID}
 BLOCKEDOUTBOUNDEMPTY Envelope sender was empty, returning <EMPTY_FROM> belonging to sessionId <%{NUMBER:session_id}>
@@ -26,15 +28,49 @@ BLOCKEDOUTBOUNDBLACKLIST Domain <%{HOSTNAME:sender_domain}> or email <%{SENDERAD
 BLOCKEDOUTBOUNDINVALID Envelope sender value <%{GREEDYDATA:sender}> was not a valid email address, rejecting
 
 DKIMCHECKERIMPL %{DKIMOUTCOME}|%{SIGRESULT}
-DKIMOUTCOME DKIM outcome for %{RESULTFOR} is %{GREEDYDATA:dkim_result} \(%{NUMBER:dkim_code}\) - session id <%{NUMBER:session_id}#%{IP:instance_ip}>
-SIGRESULT Sig result for domain <%{HOSTNAME:sender_domain}>: <%{GREEDYDATA:dkim_sig_error}> flags = <%{NUMBER:dkim_sig_flag}> err = <%{GREEDYDATA:dkim_err}> sigbh = <%{NUMBER:dkim_sigbh}> sigerror = <%{NUMBER:dkim_sigerror}> - session id <%{NUMBER:session_id}#%{IP:instance_ip}>
+DKIMOUTCOME %{JAVAFILE}: %{NUMBER}: DKIM outcome for %{RESULTFOR} is %{GREEDYDATA:dkim_result} \(%{NUMBER:dkim_code}\) - session id <%{NUMBER:session_id}#%{IPV4:instance_ip}>
+SIGRESULT %{JAVAFILE}: %{NUMBER}: Sig result for domain <%{HOSTNAME:sender_domain}>: <%{GREEDYDATA:dkim_sig_error}> flags = <%{NUMBER:dkim_sig_flag}> err = <%{GREEDYDATA:dkim_err}> sigbh = <%{NUMBER:dkim_sigbh}> sigerror = <%{NUMBER:dkim_sigerror}> - session id <%{NUMBER:session_id}#%{IPV4:instance_ip}>
 
 DMARCCHECKERIMPL %{DMARCCHECKERIMPLRESULT}|%{DMARCCHECKERIMPLNOPARSE}
-DMARCCHECKERIMPLRESULT DMARC result for domain <%{HOSTNAME:sender_domain}> is %{DMARCRESULT} with policy <%{DMARCACTION:dmarc_action}>, from header: <%{GREEDYDATA:from_header}>, envelope sender: <Optional\[%{GREEDYDATA:envelope_sender}\]> - session id <%{NUMBER:session_id}#%{IP:relay_ip}>
+DMARCCHECKERIMPLRESULT DMARC result for domain <%{HOSTNAME:sender_domain}> is %{DMARCRESULT} with policy <%{DMARCACTION:dmarc_action}>, from header: <%{GREEDYDATA:from_header}>, envelope sender: <Optional\[%{GREEDYDATA:envelope_sender}\]> - session id <%{NUMBER:session_id}#%{IPV4:relay_ip}>
 DMARCCHECKERIMPLNOPARSE Couldn't parse DMARC record %{GREEDYDATA:dmarc_nonparse}
-#ENVELOPEFROMHANDLER
-
+#
+ENVELOPEFROMHANDLER %{ENVELOPEFROMHANDLERVALIDATED}|%{ENVELOPEFROMHANDLERINVALIDDOMAIN}|%{ENVELOPEFROMHANDLERINVALIDSENDER}|%{ENVELOPEFROMHANDLERACCEPT}|%{ENVELOPEFROMHANDLERREJECT}|%{ENVELOPEFROMHANDLEREMPTY}|%{ENVELOPEFROMHANDLERINVALIDEMAIL}|%{ENVELOPEFROMHANDLERSPFPASS}|%{ENVELOPEFROMHANDLERSPFFAIL}
+ENVELOPEFROMHANDLERVALIDATED Validated sender local part <%{SENDERADDRESS:sender}> against domain <%{HOSTNAME:sender_domain}>
+ENVELOPEFROMHANDLERINVALIDDOMAIN Sender <%{HOSTNAME:sender_domain}> was not a hosted provider or a valid customer domain, rejecting.
+ENVELOPEFROMHANDLERINVALIDSENDER Sender local part <%{SENDERADDRESS:sender}> could not be validated for domain <%{HOSTNAME:sender_domain}>
+ENVELOPEFROMHANDLERACCEPT Accepting message for domain <%{HOSTNAME:sender_domain}> from ip <%{IPV4:sender_ip}> as ip address is a configured sending ip
+ENVELOPEFROMHANDLERREJECT Rejecting message for domain <%{HOSTNAME:sender_domain}> as client ip <%{IPV4:sender_ip}> is not a configured sending ip
+ENVELOPEFROMHANDLEREMPTY envelope sender was empty, returning <%{GREEDYDATA}>
+ENVELOPEFROMHANDLERINVALIDEMAIL envelope sender value <%{SENDERADDRESS:sender}> was not a valid email address, rejecting
+ENVELOPEFROMHANDLERSPFPASS SPF check %{PASSEDFAILED:spf_check} for hosted provider <%{GREEDYDATA:hosted_provider}>
+ENVELOPEFROMHANDLERSPFFAIL SPF check %{PASSEDFAILED:spf_check} for hosted provider <%{GREEDYDATA:hosted_provider}>, rejecting
+#
+FROMHEADERHANDLER %{FROMHEADERHANDLERDOMAIN}|%{FROMHEADERHANDLERBLANK}|%{FROMHEADERHANDLEREMAIL}|%{FROMHEADERHANDLERDISCARD}|%{FROMHEADERHANDLERSENDER}|%{FROMHEADERHANDLERACCEPT}|%{FROMHEADERHANDLERREJECT}
+FROMHEADERHANDLERDOMAIN From header value <%{GREEDYDATA:sender_domain}> was not a valid customer domain, rejecting
+#Header <%{HOSTNAME:sender_domain}> was not a valid customer domain, rejecting.
+FROMHEADERHANDLERBLANK Header <%{GREEDYDATA:header}> was blank, rejecting
+FROMHEADERHANDLEREMAIL Header name <%{GREEDYDATA:header}> with value <%{GREEDYDATA:sender}> is not a valid email address, rejecting
+FROMHEADERHANDLERDISCARD Local part of address <%{SENDERADDRESS:sender}> is configured to be silently dropped, discarding.
+FROMHEADERHANDLERSENDER Address <%{SENDERADDRESS:sender}> was not a valid customer sender address, rejecting.
+FROMHEADERHANDLERACCEPT Accepting message for domain <%{HOSTNAME:sender_domain}> from ip <%{IPV4:sender_ip}> as ip from address <%{SENDERADDRESS:sender}> is a configured sending ip
+FROMHEADERHANDLERREJECT Rejecting message for domain <%{HOSTNAME:sender_domain}> as client ip <%{IPV4:sender_ip}> is not a configured sending ip
+#
+BLOCKEDOUTBOUNDCONTROLMODULE (Status now set to: <%{BLOCKEDOUTBOUNDSTATUS:status}>)(?:, recipient set to <%{RECIPIENTADDRESS:recipient}> recipientDomain to <%{HOSTNAME:domain}>)?
+#
+OUTBOUNDRELAYCONTROLMODULE Rejecting email with status REJECT|Discarding email with status DISCARD|No from header found, rejecting|Rejecting this FROM header because we already have one|Envelope sender domain <%{HOSTNAME:envelope_domain}> doesn't match from header domain <%{HOSTNAME:header_domain}>, rejecting.|Rejecting this Reply-To header because we already have one
+#
+RECIPIENTPOLICYSERVICE %{RECIPIENTPOLICYSERVICEA}|%{RECIPIENTPOLICYSERVICEB}|%{RECIPIENTPOLICYSERVICEC}
+RECIPIENTPOLICYSERVICEA Recipient address <%{GREEDYDATA:recipient}> is not a valid email address
+RECIPIENTPOLICYSERVICEB Exception caught when loading allow/block data for recipient <%{UUID:recipient}>
+RECIPIENTPOLICYSERVICEC Interrupted exception caught when loading allow/block data for customer <%{UUID:customer}>
+#
+ADDRESSHEADERPARSER Exception encountered parsing from header %{GREEDYDATA:header}|Invalid from header format %{GREEDYDATA:header}
+#
+RATELIMITSERVICE (Domain|IP address) <%{IPORHOST}> is rate limited!|Building cache with config: <%{GREEDYDATA:config}>|Global rate limit config file doesn't exist, expected at <%{GREEDYDATA:config}>|provider not available yet|Loading global rate limit config from <%{GREEDYDATA:config}>|Global rate limit config loaded as: <%{GREEDYDATA:config}>|New global rate limit config loaded from: <%{GREEDYDATA:config}>|Failed to load global rate limit config from <%{GREEDYDATA:config}>
+#
+DMARCRECORDPARSER Illegal argument in DMARC record %{GREEDYDATA:header}|p missing from DMARC record %{GREEDYDATA:header}
 #
 LOGBASE %{SYSLOGHOST:host} \[%{COMPONENT:process}\] \[%{GREEDYDATA:thread}\] %{LOGLEVEL:level}\s+%{JAVACLASS:logger}
-
-JILTERLOG %{LOGBASE} (?:%{DNSLOOKUPIMPL}|%{SOPHOSJILTERHANDLER}|%{SPFEVALMODULE}|%{DKIMEVALMODULE}|%{DKIMACTIONMODULE}|%{SPFDMARCACTIONMODULE}|%{DMARCCHECKERIMPL}|%{SPFCHECKERIMPL}|%{BLOCKEDOUTBOUNDFILTERHANDLER}|%{DKIMCHECKERIMPL})
+#
+JILTERLOG %{LOGBASE} (?:%{DNSLOOKUPIMPL}|%{SOPHOSJILTERHANDLER}|%{SPFEVALMODULE}|%{DKIMEVALMODULE}|%{DKIMACTIONMODULE}|%{SPFDMARCACTIONMODULE}|%{DMARCCHECKERIMPL}|%{SPFCHECKERIMPL}|%{BLOCKEDOUTBOUNDFILTERHANDLER}|%{DKIMCHECKERIMPL}|%{ENVELOPEFROMHANDLER}|%{ENVELOPEFROMHANDLER}|%{BLOCKEDOUTBOUNDCONTROLMODULE}|%{OUTBOUNDRELAYCONTROLMODULE}|%{RECIPIENTPOLICYSERVICE}|%{ADDRESSHEADERPARSER}|%{RATELIMITSERVICE}|%{DMARCRECORDPARSER})

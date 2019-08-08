@@ -358,7 +358,16 @@ end
 
 cookbook_file 'postfix grok patterns' do
   path "#{PATTERNS_DIR}/postfix"
-  source 'postfix.regexp'
+  source 'postfix.grok'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  action :create
+end
+
+cookbook_file 'jilter grok patterns' do
+  path "#{PATTERNS_DIR}/jilter"
+  source 'jilter.grok'
   mode '0644'
   owner 'root'
   group 'root'
