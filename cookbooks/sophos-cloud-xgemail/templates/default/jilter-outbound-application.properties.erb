@@ -2,6 +2,11 @@
 
 application.name=xgemail-jilter-outbound
 
+global.rate.limit.refresh=PT05M
+outbound.relay.config.root=/opt/sophos/xgemail/config/outbound-relay-control/
+hosted.provider.config.refresh=PT05M
+outbound.relay.config.local_part_silent_discard=o365connectorvalidation
+
 bucket.storage.root=s3://<%= @policy_bucket %>/config/outbound-relay-control/
 use.s3.policy.storage=true
 
