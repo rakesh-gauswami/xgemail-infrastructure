@@ -102,7 +102,7 @@ ECHOWORX_REPLY_HEADER = "x-echoworx-portal"
 awshandler = AwsHandler(AWS_REGION)
 
 #postfix pipe sends metadata as sysargs.
-def get_metadata():
+def get_metadata(message):
     try:
         metadata_length = len(sys.argv)
         if (metadata_length < 7):
@@ -124,6 +124,13 @@ def get_metadata():
         if (sender_address == null_sender):
             sender_address = None
 
+        #Adding X-Sophos-Email-Id in metadata file.
+        headers = Parser().parsestr(message, headersonly=True)
+
+        x_sophos_header = headers['X-Sophos-Email-ID']
+        if x_sophos_header is None:
+            logger.warn("Invalid x-sophos-email-id header in message with queue_id: [{0}]".format(queue_id))
+
         metadata = Metadata(metadataformatter.SCHEMA_VERSION,
                             sender_ip,
                             sender_address,
@@ -131,7 +138,8 @@ def get_metadata():
                             queue_id,
                             date_recorded,
                             recipient_domain,
-                            recipient_list)
+                            recipient_list,
+                            x_sophos_header)
 
         # required logging for EncryptionServiceTest automation test
         logger.info("Input email metadata info [{0}]".format(metadata))
@@ -382,7 +390,8 @@ def get_metadata_for_outbound(metadata, message):
         metadata.get_queue_id(),
         metadata.get_date_recorded(),
         metadata.get_recipient_domain(),
-        metadata.get_recipients()
+        metadata.get_recipients(),
+        metadata.get_x_sophos_emai_id()
     )
 
 
@@ -538,8 +547,8 @@ def main():
           raise ("Wrong submit type [{0}]".format(SUBMIT_TYPE))
 
         domain = None
-        metadata = get_metadata()
         plaintext_message = get_plaintext_message()
+        metadata = get_metadata(plaintext_message)
         direction, is_reply = get_direction(plaintext_message)
         sender = metadata.get_sender_address()
         if direction == OUTBOUND_MESSAGE_DIRECTION:
