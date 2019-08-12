@@ -81,7 +81,8 @@ template 'fluentd-source-jilter' do
   owner 'root'
   group 'root'
   variables(
-      :application_name => NODE_TYPE
+      :application_name => NODE_TYPE,
+      :patterns_dir => PATTERNS_DIR
   )
   only_if { NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit' || NODE_TYPE == 'encryption-submit' }
 end
