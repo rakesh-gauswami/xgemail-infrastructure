@@ -25,7 +25,7 @@ class Metadata:
                  date_recorded,
                  recipient_domain,
                  recipients,
-                 x_sophos_email_id,
+                 x_sophos_email_id = None,
                  is_microservice_request=False):
         self.schema_version = schema_version
         self.sender_ip = sender_ip

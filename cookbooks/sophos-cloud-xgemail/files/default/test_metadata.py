@@ -66,5 +66,33 @@ class MetadataTest(unittest.TestCase):
             json.dumps(expected_json, sort_keys=True)
         )
 
+    def test_empty_x_sophos_email_id(self):
+        metadata = Metadata(
+            '20181019',
+            '1.2.3.4',
+            'sender@address.com',
+            '9.8.7.6',
+            '42c6b66mZYz1V',
+            '2018-10-19T13:37:00Z',
+            'r-domain.com',
+            ['a@r-domain.com', 'b@r-domain.com', 'c@r-domain.com']
+        )
+        expected_json = {
+            "accepting_server_ip": "9.8.7.6",
+            "recipients": ["a@r-domain.com", "b@r-domain.com", "c@r-domain.com"],
+            "date_recorded": "2018-10-19T13:37:00Z",
+            "schema_version": "20181019",
+            "sender_address": "sender@address.com",
+            "recipient_domain": "r-domain.com",
+            "queue_id": "42c6b66mZYz1V",
+            "sender_ip": "1.2.3.4",
+            "x_sophos_email_id": None,
+            "is_microservice_request": False
+        }
+        self.assertEquals(
+            json.dumps(metadata.get_metadata_json(), sort_keys=True),
+            json.dumps(expected_json, sort_keys=True)
+        )
+
 if __name__ == "__main__":
     unittest.main()
