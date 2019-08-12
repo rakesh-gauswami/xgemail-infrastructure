@@ -10,10 +10,10 @@ exports.handler = (event, context, callback) => {
     var sesNotification = event.Records[0].ses;
     var namespace = null;
 
-    const US_EAST_2_NAMESPACE = "xgemail-monitor-us-east-2";
-    const US_WEST_2_NAMESPACE = "xgemail-monitor-us-west-2";
-    const EU_CENTRAL_1_NAMESPACE = "xgemail-monitor-eu-central-1";
-    const EU_WEST_1_NAMESPACE = "xgemail-monitor-eu-west-1";
+    const US_EAST_2_NAMESPACE = "xgemail-monitor-ms-us-east-2";
+    const US_WEST_2_NAMESPACE = "xgemail-monitor-ms-us-west-2";
+    const EU_CENTRAL_1_NAMESPACE = "xgemail-monitor-ms-eu-central-1";
+    const EU_WEST_1_NAMESPACE = "xgemail-monitor-ms-eu-west-1";
 
     // obtain the time when it was received by SES
     var timeReceivedSes = new Date(sesNotification.mail.timestamp);
@@ -54,4 +54,30 @@ exports.handler = (event, context, callback) => {
     timeIntervalMillis = timeReceivedSes - timeSent;
     console.log(sesNotification.mail.commonHeaders);
     console.log(`Namespace: ${namespace}\troundTripTime:${timeIntervalMillis}`);
+
+    //Write this value to CloudWatch if the timeSent was obtained
+    if (timeIntervalMillis > 0) {
+        var params = {
+            MetricData: [
+                {
+                    MetricName: 'message-roundtrip-time',
+                    Dimensions: [
+                        {
+                            Name: 'roundTripTime',
+                            Value: 'seconds'
+                        },
+                    ],
+
+                    Timestamp: new Date(),
+                    Unit: 'Milliseconds',
+                    Value: timeIntervalMillis
+                }
+            ],
+            Namespace: namespace
+        };
+    }
+    else {
+        var sentTimeNotFoundError = new Error("Error in obtaining sent timestamp");
+        callback(sentTimeNotFoundError);
+    }
 };
