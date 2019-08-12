@@ -102,7 +102,7 @@ ECHOWORX_REPLY_HEADER = "x-echoworx-portal"
 awshandler = AwsHandler(AWS_REGION)
 
 #postfix pipe sends metadata as sysargs.
-def get_metadata(message):
+def get_metadata(message_headers):
     try:
         metadata_length = len(sys.argv)
         if (metadata_length < 7):
@@ -124,10 +124,7 @@ def get_metadata(message):
         if (sender_address == null_sender):
             sender_address = None
 
-        #Adding X-Sophos-Email-Id in metadata file.
-        headers = Parser().parsestr(message, headersonly=True)
-
-        x_sophos_header = headers['X-Sophos-Email-ID']
+        x_sophos_header = message_headers['X-Sophos-Email-ID']
         if x_sophos_header is None:
             logger.warn("Invalid x-sophos-email-id header in message with queue_id: [{0}]".format(queue_id))
 
@@ -360,10 +357,8 @@ def get_plaintext_message():
     finally:
         plaintext_email_bytes.close()
 
-def get_metadata_for_outbound(metadata, message):
-    headers = Parser().parsestr(message, headersonly=True)
-
-    from_header = headers['from']
+def get_metadata_for_outbound(metadata, message_headers):
+    from_header = message_headers['from']
     if from_header is None:
         raise Exception("Invalid from header in message with queue_id: [{0}]".format(
             metadata.get_queue_id())
@@ -538,6 +533,8 @@ def get_direction(message):
 
     return (direction, is_reply)
 
+def get_message_headers(message):
+    return Parser().parsestr(message, headersonly=True)
 
 # accepts data from postfix and send message and metadata to S3 and
 # a json object to SQS which provides pointer to the message in S3
@@ -548,11 +545,12 @@ def main():
 
         domain = None
         plaintext_message = get_plaintext_message()
-        metadata = get_metadata(plaintext_message)
+        message_headers = get_message_headers(plaintext_message)
+        metadata = get_metadata(message_headers)
         direction, is_reply = get_direction(plaintext_message)
         sender = metadata.get_sender_address()
         if direction == OUTBOUND_MESSAGE_DIRECTION:
-          metadata = get_metadata_for_outbound(metadata, plaintext_message)
+          metadata = get_metadata_for_outbound(metadata, message_headers)
           domain = get_from_sender_domain(metadata)
         else:
           domain = metadata.get_recipient_domain()
