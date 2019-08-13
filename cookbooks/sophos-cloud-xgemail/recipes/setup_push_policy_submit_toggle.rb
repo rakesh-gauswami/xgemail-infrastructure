@@ -6,7 +6,7 @@
 #
 # All rights reserved - Do Not Redistribute
 #
-# This recipe configures the push policy toggle script on customer delivery and customer x-delivery servers
+# This recipe configures the push policy toggle script on internet submit servers
 #
 
 NODE_TYPE           = node['xgemail']['cluster_type']
