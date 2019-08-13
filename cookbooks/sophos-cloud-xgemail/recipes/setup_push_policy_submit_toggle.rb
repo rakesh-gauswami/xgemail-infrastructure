@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: sophos-cloud-xgemail
-# Recipe:: setup_push_policy_delivery_toggle
+# Recipe:: setup_push_policy_submit_toggle
 #
 # Copyright 2019, Sophos
 #
