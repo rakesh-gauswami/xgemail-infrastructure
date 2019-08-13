@@ -22,6 +22,10 @@ yum_package 'redhat-lsb-core' do
   action :install
 end
 
+yum_package 'td-agent' do
+  action :remove
+end
+
 directory '/opt/sophos/packages' do
   owner 'root'
   group 'root'
