@@ -29,6 +29,21 @@ directory '/opt/sophos/packages' do
   action :create
 end
 
+cookbook_file '/etc/yum.conf' do
+  path '/etc/yum.conf'
+  source 'yum.conf'
+  mode '0644'
+  owner 'root'
+  group 'root'
+end
+
+execute 'clean yum cache' do
+  user 'root'
+  command <<-EOH
+      yum clean all
+  EOH
+end
+
 # Temporary to update td-agent to latest version until 3rdparty package script can be updated in cloud-infrastructure
 execute 'import td-agent repo key' do
   user 'root'
@@ -49,7 +64,8 @@ if ACCOUNT != 'sandbox'
 
   yum_package 'td-agent' do
     action :upgrade
-#    flush_cache [ :before ]
+    version "#{TDAGENT_PACKAGE_VERSION}"
+    flush_cache [ :before ]
   end
 
 end
