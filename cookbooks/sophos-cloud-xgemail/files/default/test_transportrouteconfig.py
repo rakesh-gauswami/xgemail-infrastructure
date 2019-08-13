@@ -47,6 +47,8 @@ class TransportRouteConfigTest(unittest.TestCase):
     def test_with_error_config_setting(self, mock_open):
 
         mock_open.side_effect = [
+            mock.mock_open(read_data = '{"behavior_on_missing_transport_data": "ERROR"}').return_value,
+            mock.mock_open(read_data = '{"behavior_on_missing_transport_data": "ERROR"}').return_value,
             mock.mock_open(read_data = '{"behavior_on_missing_transport_data": "ERROR"}').return_value
         ]
 
@@ -108,6 +110,8 @@ class TransportRouteConfigTest(unittest.TestCase):
     def test_with_retrieve_config_setting(self, mock_open):
 
         mock_open.side_effect = [
+            mock.mock_open(read_data = '{"behavior_on_missing_transport_data": "RETRIEVE"}').return_value,
+            mock.mock_open(read_data = '{"behavior_on_missing_transport_data": "RETRIEVE"}').return_value,
             mock.mock_open(read_data = '{"behavior_on_missing_transport_data": "RETRIEVE"}').return_value
         ]
 
@@ -122,6 +126,8 @@ class TransportRouteConfigTest(unittest.TestCase):
     def test_with_ignore_config_setting(self, mock_open):
 
         mock_open.side_effect = [
+            mock.mock_open(read_data = '{"behavior_on_missing_transport_data": "IGNORE"}').return_value,
+            mock.mock_open(read_data = '{"behavior_on_missing_transport_data": "IGNORE"}').return_value,
             mock.mock_open(read_data = '{"behavior_on_missing_transport_data": "IGNORE"}').return_value
         ]
 
@@ -136,6 +142,8 @@ class TransportRouteConfigTest(unittest.TestCase):
     def test_with_incorrect_attributes(self, mock_open):
 
         mock_open.side_effect = [
+            mock.mock_open(read_data = '{"something_else": "FOO"}').return_value,
+            mock.mock_open(read_data = '{"something_else": "FOO"}').return_value,
             mock.mock_open(read_data = '{"something_else": "FOO"}').return_value
         ]
 
