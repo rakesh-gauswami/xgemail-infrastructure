@@ -22,11 +22,6 @@ yum_package 'redhat-lsb-core' do
   action :install
 end
 
-# Remove this code after testing
-yum_package 'td-agent' do
-  action :remove
-end
-
 directory '/opt/sophos/packages' do
   owner 'root'
   group 'root'
@@ -49,7 +44,6 @@ execute 'clean yum cache' do
   EOH
 end
 
-# Temporary to update td-agent to latest version until 3rdparty package script can be updated in cloud-infrastructure
 execute 'import td-agent repo key' do
   user 'root'
   command <<-EOH
@@ -68,7 +62,7 @@ end
 if ACCOUNT != 'sandbox'
 
   yum_package 'td-agent' do
-    action :upgrade
+    action :install
     version "#{TDAGENT_PACKAGE_VERSION}"
     flush_cache [ :before ]
   end
@@ -112,7 +106,7 @@ end
 execute 'uninstall td-agent fluent-plugin-s3' do
   user 'root'
   command <<-EOH
-      td-agent-gem uninstall fluent-plugin-s3 --all
+      td-agent-gem uninstall fluent-plugin-s3
   EOH
 end
 
