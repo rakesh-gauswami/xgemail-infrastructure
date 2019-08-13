@@ -41,7 +41,6 @@ class TransportRouteConfig(object):
 
         self.config_file_name = config_file_name
         self.transport_config = None
-        self.transport_config_read = False
 
         # The default value is IGNORE
         self.on_missing_transport_data = IGNORE_VAL
@@ -70,9 +69,6 @@ class TransportRouteConfig(object):
                     if unvalidated_config_value in PERMITTED_VALUES:
                         self.on_missing_transport_data = unvalidated_config_value
 
-
-                self.transport_config_read = True
-
         except IOError as exception:
             self.logger.error(
                 'Error loading transport config file {0}. Exception {1} '.format(
@@ -82,30 +78,18 @@ class TransportRouteConfig(object):
             )
 
     def get_on_missing_data_setting(self):
-
-        if not self.transport_config_read:
-            self.read_config()
-
+        self.read_config()
         return self.on_missing_transport_data
 
 
     def is_error_on_missing_data(self):
-
-        if not self.transport_config_read:
-            self.read_config()
-
+        self.read_config()
         return self.on_missing_transport_data == ERROR_VAL
 
     def is_retrieve_on_missing_data(self):
-
-        if not self.transport_config_read:
-            self.read_config()
-
+        self.read_config()
         return self.on_missing_transport_data == RETRIEVE_VAL
 
     def is_ignore_on_missing_data(self):
-
-        if not self.transport_config_read:
-            self.read_config()
-
+        self.read_config()
         return self.on_missing_transport_data == IGNORE_VAL
