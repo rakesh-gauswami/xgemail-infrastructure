@@ -22,6 +22,7 @@ yum_package 'redhat-lsb-core' do
   action :install
 end
 
+# Remove this code after testing
 yum_package 'td-agent' do
   action :remove
 end
@@ -111,7 +112,7 @@ end
 execute 'uninstall td-agent fluent-plugin-s3' do
   user 'root'
   command <<-EOH
-      td-agent-gem uninstall fluent-plugin-s3
+      td-agent-gem uninstall fluent-plugin-s3 --all
   EOH
 end
 
