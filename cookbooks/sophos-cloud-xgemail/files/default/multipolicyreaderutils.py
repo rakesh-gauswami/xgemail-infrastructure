@@ -209,7 +209,10 @@ def policy_file_exists_in_S3(recipient, aws_region, policy_bucket_name):
         awshandler = AwsHandler(aws_region)
         policy_data = awshandler.download_data_from_s3(policy_bucket_name, file_name)
         return policy_data is not None
-    except (IOError, ClientError):
+    except (IOError, ClientError) as e:
+        print 'ERROR'
+
+        print e
         logger.warn("File [{0}] does not exist or failed to read".format(file_name))
         return False
 

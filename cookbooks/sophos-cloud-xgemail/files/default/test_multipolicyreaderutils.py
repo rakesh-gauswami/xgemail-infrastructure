@@ -27,6 +27,7 @@ from os import path
 import shutil
 import tempfile
 import unittest
+import awshandler
 
 from recipientsplitconfig import RecipientSplitConfig
 
@@ -220,6 +221,62 @@ class MultiPolicyReaderUtilsTest(unittest.TestCase):
             multipolicyreaderutils.retrieve_customer_id(self.mock_policy),
             "76656a08-c17b-47d6-aafd-ef8fc7c250a0"
         )
+
+    @mock.patch.object(awshandler.AwsHandler, 'download_data_from_s3')
+    def test_policy_file_exists_in_S3_file_missing(self, mock_download_data_from_s3):
+
+        mock_download_data_from_s3.return_value = None
+
+        self.assertFalse(
+            multipolicyreaderutils.policy_file_exists_in_S3(
+                'someone@somewhere.com',
+                'eu-west-1',
+                'policy-bucket'
+            )
+        )
+
+        mock_download_data_from_s3.assert_called_with(
+            'policy-bucket',
+            'config/policies/domains/somewhere.com/c29tZW9uZQ=='
+        )
+
+
+    @mock.patch.object(awshandler.AwsHandler, 'download_data_from_s3')
+    def test_policy_file_exists_in_S3_file_present(self, mock_download_data_from_s3):
+
+        mock_download_data_from_s3.return_value = "Some data"
+
+        self.assertTrue(
+            multipolicyreaderutils.policy_file_exists_in_S3(
+                'someone@somewhere.com',
+                'eu-west-1',
+                'policy-bucket'
+            )
+        )
+
+        mock_download_data_from_s3.assert_called_with(
+            'policy-bucket',
+            'config/policies/domains/somewhere.com/c29tZW9uZQ=='
+        )
+
+    @mock.patch.object(awshandler.AwsHandler, 'download_data_from_s3')
+    def test_policy_file_exists_in_S3_with_exception(self, mock_download_data_from_s3):
+
+        mock_download_data_from_s3.side_effect = IOError('load error')
+
+        self.assertFalse(
+            multipolicyreaderutils.policy_file_exists_in_S3(
+                'someone@somewhere.com',
+                'eu-west-1',
+                'policy-bucket'
+            )
+        )
+
+        mock_download_data_from_s3.assert_called_with(
+            'policy-bucket',
+            'config/policies/domains/somewhere.com/c29tZW9uZQ=='
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
