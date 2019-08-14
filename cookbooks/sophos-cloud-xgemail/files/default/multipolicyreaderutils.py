@@ -199,6 +199,21 @@ def read_policy_from_S3(recipient, aws_region, policy_bucket_name):
 
     return load_multi_policy_file_from_S3(aws_region, policy_bucket_name, file_name)
 
+
+def policy_file_exists_in_S3(recipient, aws_region, policy_bucket_name):
+    file_name = build_recipient_file_path(recipient, MULTI_POLICY_DOMAINS_PATH)
+    if not file_name:
+        return False
+
+    try:
+        awshandler = AwsHandler(aws_region)
+        policy_data = awshandler.download_data_from_s3(policy_bucket_name, file_name)
+        return policy_data is not None
+    except (IOError, ClientError):
+        logger.warn("File [{0}] does not exist or failed to read".format(file_name))
+        return False
+
+
 def read_endpoint_policy_from_S3(userid, aws_region, policy_bucket_name):
     file_name = MULTI_POLICY_ENDPOINTS_PATH + userid + ".POLICY"
     if not file_name:
