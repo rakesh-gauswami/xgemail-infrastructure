@@ -120,6 +120,18 @@ HOP_COUNT_DELIVERY_INSTANCE = node['xgemail']['hop_count_delivery_instance']
 include_recipe 'sophos-cloud-xgemail::common-postfix-multi-instance-config'
 
 if NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery'
+  # Run an instance of the smtp process that enforces TLS encryption
+  [
+    "smtp_encrypt/unix = smtp_encrypt unix - - n - - smtp"
+  ].each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf -M '#{cur}'" )
+  end
+  [
+    "smtp_encrypt/unix/smtp_tls_security_level=encrypt"
+  ].each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf -P '#{cur}'" )
+  end
+
   HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
 
   file "#{HEADER_CHECKS_PATH}" do
