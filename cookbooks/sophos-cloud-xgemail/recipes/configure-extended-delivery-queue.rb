@@ -119,7 +119,43 @@ HOP_COUNT_DELIVERY_INSTANCE = node['xgemail']['hop_count_delivery_instance']
 
 include_recipe 'sophos-cloud-xgemail::common-postfix-multi-instance-config'
 
+# Run an instance of the smtp process that enforces TLS encryption
+[
+  "smtp_encrypt/unix = smtp_encrypt unix - - n - - smtp"
+].each do | cur |
+  execute print_postmulti_cmd( INSTANCE_NAME, "postconf -M '#{cur}'" )
+end
+
+[
+  "smtp_encrypt/unix/smtp_tls_security_level=encrypt"
+].each do | cur |
+  execute print_postmulti_cmd( INSTANCE_NAME, "postconf -P '#{cur}'" )
+end
+
+[
+  # Server side TLS configuration
+  'smtpd_tls_security_level = may',
+  'smtpd_tls_ciphers = high',
+  'smtpd_tls_mandatory_ciphers = high',
+  'smtpd_tls_loglevel = 1',
+  'smtpd_tls_received_header = yes',
+  "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
+  "smtpd_tls_key_file = #{KEY_FILE}",
+  'bounce_queue_lifetime=0',
+  "hopcount_limit = #{HOP_COUNT_DELIVERY_INSTANCE}",
+  'mynetworks = 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16',
+  'smtp_tls_security_level=may',
+  'smtp_tls_ciphers=high',
+  'smtp_tls_mandatory_ciphers=high',
+  'smtp_tls_mandatory_protocols = TLSv1.2',
+  'smtp_tls_loglevel=1',
+  'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache'
+].each do | cur |
+  execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+end
+
 if NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery'
+
   HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
 
   file "#{HEADER_CHECKS_PATH}" do
@@ -128,63 +164,11 @@ if NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery'
     owner 'root'
     group 'root'
   end
+
   [
-      # Server side TLS configuration
-      'smtpd_tls_security_level = may',
-      'smtpd_tls_ciphers = high',
-      'smtpd_tls_mandatory_ciphers = high',
-      'smtpd_tls_loglevel = 1',
-      'smtpd_tls_received_header = yes',
-      "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
-      "smtpd_tls_key_file = #{KEY_FILE}",
-      'bounce_queue_lifetime=0',
-      "hopcount_limit = #{HOP_COUNT_DELIVERY_INSTANCE}",
-      'mynetworks = 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16',
-      'smtp_tls_security_level=may',
-      'smtp_tls_ciphers=high',
-      'smtp_tls_mandatory_ciphers=high',
-      'smtp_tls_mandatory_protocols = TLSv1.2',
-      'smtp_tls_loglevel=1',
-      'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache',
-      "header_checks = regexp:#{HEADER_CHECKS_PATH}"
+    "header_checks = regexp:#{HEADER_CHECKS_PATH}"
   ].each do | cur |
     execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
-  end
-else
-  if NODE_TYPE == 'xdelivery'
-    # Run an instance of the smtp process that enforces TLS encryption
-    [
-      "smtp_encrypt/unix = smtp_encrypt unix - - n - - smtp"
-    ].each do | cur |
-      execute print_postmulti_cmd( INSTANCE_NAME, "postconf -M '#{cur}'" )
-    end
-    [
-      "smtp_encrypt/unix/smtp_tls_security_level=encrypt"
-    ].each do | cur |
-      execute print_postmulti_cmd( INSTANCE_NAME, "postconf -P '#{cur}'" )
-    end
-
-    [
-      # Server side TLS configuration
-      'smtpd_tls_security_level = may',
-      'smtpd_tls_ciphers = high',
-      'smtpd_tls_mandatory_ciphers = high',
-      'smtpd_tls_loglevel = 1',
-      'smtpd_tls_received_header = yes',
-      "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
-      "smtpd_tls_key_file = #{KEY_FILE}",
-      'bounce_queue_lifetime=0',
-      "hopcount_limit = #{HOP_COUNT_DELIVERY_INSTANCE}",
-      'mynetworks = 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16',
-      'smtp_tls_security_level=may',
-      'smtp_tls_ciphers=high',
-      'smtp_tls_mandatory_ciphers=high',
-      'smtp_tls_mandatory_protocols = TLSv1.2',
-      'smtp_tls_loglevel=1',
-      'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache'
-    ].each do | cur |
-      execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
-    end
   end
 end
 
