@@ -37,13 +37,6 @@ cookbook_file '/etc/yum.conf' do
   group 'root'
 end
 
-execute 'clean yum cache' do
-  user 'root'
-  command <<-EOH
-      yum clean all
-  EOH
-end
-
 execute 'import td-agent repo key' do
   user 'root'
   command <<-EOH
@@ -58,12 +51,19 @@ cookbook_file '/etc/yum.repos.d/td.repo' do
   owner 'root'
   group 'root'
 end
-=begin
+
+execute 'clean yum cache' do
+  user 'root'
+  command <<-EOH
+      yum clean all
+  EOH
+end
+
 if ACCOUNT != 'sandbox'
 
   yum_package 'td-agent' do
     action :install
-    version "#{TDAGENT_PACKAGE_VERSION}"
+    version '#{TDAGENT_PACKAGE_VERSION}'
     flush_cache [ :before ]
   end
 
@@ -167,4 +167,3 @@ ruby_block 'edit rsyslog.conf' do
         end
     end
 end
-=end
