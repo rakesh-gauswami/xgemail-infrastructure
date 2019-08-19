@@ -69,6 +69,7 @@ if ACCOUNT != 'sandbox'
 
 end
 
+=begin
 directory CONF_DIR do
   owner 'root'
   group 'root'
@@ -106,7 +107,7 @@ end
 execute 'uninstall td-agent fluent-plugin-s3' do
   user 'root'
   command <<-EOH
-      td-agent-gem uninstall fluent-plugin-s3 --all
+      td-agent-gem uninstall fluent-plugin-s3
   EOH
 end
 
@@ -167,3 +168,4 @@ ruby_block 'edit rsyslog.conf' do
         end
     end
 end
+=end
