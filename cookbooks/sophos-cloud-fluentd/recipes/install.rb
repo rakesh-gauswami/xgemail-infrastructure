@@ -106,7 +106,7 @@ end
 execute 'uninstall td-agent fluent-plugin-s3' do
   user 'root'
   command <<-EOH
-      td-agent-gem uninstall fluent-plugin-s3
+      td-agent-gem uninstall fluent-plugin-s3 --all
   EOH
 end
 
