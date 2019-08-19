@@ -63,7 +63,7 @@ if ACCOUNT != 'sandbox'
 
   yum_package 'td-agent' do
     action :install
-    version '#{TDAGENT_PACKAGE_VERSION}'
+    version "#{TDAGENT_PACKAGE_VERSION}"
     flush_cache [ :before ]
   end
 
