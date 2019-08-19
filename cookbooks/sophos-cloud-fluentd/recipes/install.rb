@@ -58,7 +58,7 @@ cookbook_file '/etc/yum.repos.d/td.repo' do
   owner 'root'
   group 'root'
 end
-
+=begin
 if ACCOUNT != 'sandbox'
 
   yum_package 'td-agent' do
@@ -69,7 +69,6 @@ if ACCOUNT != 'sandbox'
 
 end
 
-=begin
 directory CONF_DIR do
   owner 'root'
   group 'root'
