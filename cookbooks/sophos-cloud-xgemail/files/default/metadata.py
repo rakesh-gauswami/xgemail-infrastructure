@@ -25,7 +25,8 @@ class Metadata:
                  date_recorded,
                  recipient_domain,
                  recipients,
-                 is_microservice_request = False):
+                 x_sophos_email_id = None,
+                 is_microservice_request=False):
         self.schema_version = schema_version
         self.sender_ip = sender_ip
         self.sender_address = sender_address
@@ -35,6 +36,7 @@ class Metadata:
         self.recipient_domain = recipient_domain
         self.recipients = recipients
         self.is_microservice_request = is_microservice_request
+        self.x_sophos_email_id = x_sophos_email_id
 
     def __str__(self):
         metadata_json = self.get_metadata_json()
@@ -69,6 +71,12 @@ class Metadata:
 
     def set_recipients(self, recipients):
         self.recipients = recipients
+
+    def get_x_sophos_emai_id(self):
+        return self.x_sophos_email_id
+
+    def set_x_sophos_emai_id(self, x_sophos_email_id):
+        self.x_sophos_email_id = x_sophos_email_id
 
     def is_microservice_request(self):
         return self.is_microservice_request
