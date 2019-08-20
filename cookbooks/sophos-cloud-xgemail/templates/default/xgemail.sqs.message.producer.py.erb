@@ -357,13 +357,6 @@ def get_plaintext_message():
     finally:
         plaintext_email_bytes.close()
 
-def get_metadata_for_outbound(metadata, message_headers):
-    from_header = message_headers['from']
-    if from_header is None:
-        raise Exception("Invalid from header in message with queue_id: [{0}]".format(
-            metadata.get_queue_id())
-        )
-
 # Inspects the headers of an outbound message and attempts to find the validated
 # sender address by looking for policy data in S3.
 #
