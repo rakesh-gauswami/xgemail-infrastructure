@@ -14,7 +14,6 @@ import base64
 import boto3
 import csv
 import json
-import logging
 import os
 import pip
 import requests
@@ -26,22 +25,32 @@ except ImportError:
     pip.main(['install', 'requests-toolbelt'])
     from requests_toolbelt import MultipartEncoder
 
+try:
+    from prettytable import PrettyTable
+except ImportError:
+    pip.main(['install', 'PrettyTable'])
+    from prettytable import PrettyTable
+
 # Constants
+MAX_LINE_LENGTH = 63
+MAX_CUSTOMER_ENTRIES = 30000
+MAX_USER_ENTRIES = 10000
 MAX_FILE_SIZE = 9500
 MAIL_PIC_RESPONSE_TIMEOUT = 120
 HEADER_LINE = 'entry, action, aliases\n'
+FAILED_FILES_PATH = '/tmp/allow-block-import-failed.csv'
+ERROR_ENTRIES_PATH = '/tmp/allow-block-errors.txt'
 EMTPY_CSV_FILE_PATH = '/tmp/allow_block_empty.csv'
 
-# Logging to syslog setup
-logging.getLogger("botocore").setLevel(logging.WARNING)
-logger = logging.getLogger('allow-block-importer')
-logger.setLevel(logging.INFO)
-handler = logging.StreamHandler()
-formatter = logging.Formatter(
-    '[%(name)s] %(levelname)s %(message)s'
-)
-handler.formatter = formatter
-logger.addHandler(handler)
+class Colors:
+    """
+    Colors used when printing messages
+    """
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    RED = '\033[91m'
+    HEADER = '\033[95m'
+    ENDC = '\033[0m'
 
 class ApiResult:
     """
@@ -90,10 +99,53 @@ def write_new_file(file_name, content):
     """
     Writes the provided content to a new file under the provided path
     """
-    logger.debug('Writing new file {}: \n{}'.format(file_name, content))
     with open(file_name, 'w') as f:
         f.write(content + '\n')
     return file_name
+
+def write_error_file(all_errors):
+    """
+    Writes a tabular file listing all the entries that could not be imported.
+    Returns number of errors
+    """
+    t = PrettyTable(['Entry', 'Error'])
+    t.align = 'l'
+
+    all_entries = set()
+
+    for cur_entry in all_errors:
+        entry = 'ENTERPRISE' if not cur_entry['address'] else cur_entry['address']
+        error = cur_entry['input_parser_error_code']
+
+        if entry + error in all_entries:
+            continue
+        all_entries.add(entry + error)
+
+        t.add_row([entry, error])
+    with open(ERROR_ENTRIES_PATH, 'w') as write_file:
+        write_file.write(t.get_string())
+
+def write_failed_files(failed_files):
+    """
+    Writes a file containing a combination of all files that failed to be uploaded.
+    Returns the path to the file.
+    """
+    entries = {}
+    for cur_file in failed_files:
+        with open (cur_file, 'r') as failed_file:
+            for line in failed_file.readlines()[1:]:
+                key = ','.join(line.split(',')[0:2]).strip()
+                if not key:
+                    continue
+                values = line.split(',')[2:]
+                if not key in entries:
+                    entries[key] = set()
+                for value in values:
+                    entries[key].add(value.strip())
+    with open(FAILED_FILES_PATH, 'w') as write_file:
+        write_file.write('entry, action, aliases\n')
+        for key, value in entries.iteritems():
+            write_file.write(key + ', ' + ', '.join(value) + '\n')
 
 def create_csv_files_with_max_size(file_path):
     """
@@ -156,59 +208,162 @@ def import_csv(main_file, customer_id, import_url, region, env):
     all_results = []
     all_files = create_csv_files_with_max_size(main_file)
     files_already_uploaded = 0
-    logger.info('Uploading {}'.format(main_file))
+
     for cur_file in all_files:
         all_results.append(upload(import_url, cur_file, customer_id, False, region, env))
         files_already_uploaded += 1
-        logger.info('{:.2f}% uploaded'.format(float(files_already_uploaded)/float(len(all_files)) * 100))
+        sys.stdout.write('Uploading file {0}: {1:6.2f}% uploaded\r'.format(
+            main_file,
+            float(files_already_uploaded)/float(len(all_files)) * 100)
+        )
+        sys.stdout.flush()
+    print
+    print
 
-    failures = 0
     successful = 0
     all_errors = []
     failed_files = []
     for result in all_results:
         if not result.is_successful():
-            logger.warn('Failed to upload file {}. Response code: {}'.format(result.file_name, result.get_status_code()))
             failed_files.append(result.file_name)
             continue
-        logger.info("response: {}".format(result.response.json()))
         successful += result.get_successful()
         if result.has_errors():
             errors = result.get_errors()
-            all_errors.append(errors)
-            failures += len(errors)
+            all_errors.extend(errors)
 
-    if len(all_errors) > 0:
-        failure_file = '{}_failed'.format(main_file)
-        with open(failure_file, 'w') as write_file:
-            for line in all_errors:
-                write_file.write(str(line) + '\n')
-
+    print_colorized(
+        '[{}] entries imported successfully'.format(str(successful)),
+        Colors.GREEN if successful > 0 else Colors.YELLOW
+    )
     if len(failed_files) > 0:
-        logger.warn('Files failed to upload:')
-        for failed_file in failed_files:
-            logger.warn('{}'.format(failed_file))
-
-    logger.info('Total entries successfully imported: {}'.format(successful))
-    logger.info('Total entries failed to be imported: {}'.format(failures))
-
+        write_failed_files(failed_files)
+        print_colorized(
+            'Some sections could not be imported. You can attempt to retry these entries by using the --retry flag',
+            Colors.YELLOW
+        )
     if (len(all_errors) > 0):
-        logger.info('Failure entries written to {}'.format(failure_file))
+        write_error_file(all_errors)
+        print_colorized(
+            'Some errors encountered (report also written to {}):'.format(
+                ERROR_ENTRIES_PATH
+            ),
+            Colors.YELLOW
+        )
+        print_errors()
+
+def determine_invalid_rows(main_file):
+    """
+    Determines any invalid rows from the main CSV file.
+    Returns True if any invalid rows found, False otherwise
+    """
+    print_colorized('{0} WARNING {0}'.format('#'*27), Colors.HEADER)
+    print_colorized('# Maximum entries for customer allow/block entries:\t{} #'.format(MAX_CUSTOMER_ENTRIES), Colors.HEADER)
+    print_colorized('# Maximum entries for user allow/block entries:\t\t{} #'.format(MAX_USER_ENTRIES), Colors.HEADER)
+    print_colorized('{}'.format('#'*MAX_LINE_LENGTH), Colors.HEADER)
+    print
+
+    with open(main_file, 'r') as f:
+        line_number = 0
+        nr_of_invalid_entries = 0
+
+        for line in f.readlines():
+            line_number += 1
+            tokens = line.split(',')
+            entries = len(tokens) - 2
+            if tokens[0].lower() == 'enterprise':
+                if entries > MAX_CUSTOMER_ENTRIES:
+                    print_colorized(
+                        'Customer allow/block entry {} exeeds maximum number of entries: {}/{}'.format(
+                            line_number,
+                            entries,
+                            MAX_CUSTOMER_ENTRIES
+                        ),
+                        Colors.YELLOW
+                    )
+                    nr_of_invalid_entries += 1
+            elif entries > MAX_USER_ENTRIES:
+                print_colorized(
+                    'User allow/block entry {} ({}) exeeds maximum number of entries: {}/{}'.format(
+                        line_number,
+                        tokens[0],
+                        entries,
+                        MAX_USER_ENTRIES
+                    ),
+                    Colors.YELLOW
+                )
+                nr_of_invalid_entries += 1
+        if nr_of_invalid_entries == 0:
+            print_colorized(
+                'All {} entries are within the above defined limits'.format(line_number - 1),
+                Colors.GREEN
+            )
+            print
+            return False
+        print_colorized(
+            'Found a total of {}/{} entries that exceed the above defined limits'.format(
+                nr_of_invalid_entries,
+                line_number - 1
+            ),
+            Colors.YELLOW
+        )
+        print
+        return True
 
 def delete_all(import_url, customer_id, region, env):
     """
     Removes all allow/block entries for the provided customer
     """
     with open(EMTPY_CSV_FILE_PATH, 'a+'):
-        upload(import_url, EMTPY_CSV_FILE_PATH, customer_id, True, region, env)
+        result = upload(import_url, EMTPY_CSV_FILE_PATH, customer_id, True, region, env)
+        if result.is_successful():
+            print_colorized(
+                'Successfully removed all customer-level allow/block entries',
+                Colors.GREEN
+            )
+            return
+        print_colorized(
+            'Error while attempting to remove all customer-level allow/block entries. Status code: {}'.format(
+                result.get_status_code()
+            ),
+            Colors.RED
+        )
+
+def print_colorized(text, color):
+    """
+    Prints colorized text to console
+    """
+    if color == Colors.YELLOW:
+        print color + 'WARNING: ' + text + Colors.ENDC
+    elif color == Colors.GREEN:
+        print color + 'SUCCESS: ' + text + Colors.ENDC
+    elif color == Colors.RED:
+        print color + 'ERROR:   ' + text + Colors.ENDC
+    else:
+        print color + text + Colors.ENDC
 
 def cleanup(main_file):
     """
     Cleans up any temporary files that were created during import process
     """
-    logger.debug('Cleaning up temporary files for {}'.format(main_file))
+    os.system('rm -f {}.*'.format(FAILED_FILES_PATH))
+    os.system('rm -f {}.*'.format(ERROR_ENTRIES_PATH))
     os.system('rm -f {}.*'.format(main_file))
     os.system('rm -f {}'.format(EMTPY_CSV_FILE_PATH))
+
+def print_errors():
+    if not os.path.exists(ERROR_ENTRIES_PATH):
+        print
+        print_colorized(
+            'Unable to show errors from previous run because file {} does not exist'.format(
+                ERROR_ENTRIES_PATH
+            ),
+            Colors.YELLOW
+        )
+        print
+        return
+    with open(ERROR_ENTRIES_PATH, 'r') as f:
+        print f.read()
 
 if __name__ == "__main__":
     """
@@ -216,6 +371,7 @@ if __name__ == "__main__":
     """
     parser = argparse.ArgumentParser(description = 'Upload Allow/Block list for customer')
     parser.add_argument('--customer_id', required = True, type = str, help = 'The customer ID for which to import Allow/Block lists')
+    parser.add_argument('--force', action = 'store_true', help = 'Imports allow/block list entries even if they exeed the maximum number of allowed entries')
     parser.add_argument('-r', '--region', dest = 'region', default = 'eu-west-1',
         choices=['eu-central-1', 'eu-west-1', 'us-west-2', 'us-east-2'],
         help = 'The region in which the customer resides (default: eu-west-1)'
@@ -230,15 +386,51 @@ if __name__ == "__main__":
     group.add_argument('--delete-all', dest = 'delete_all', action = 'store_true',
         help = 'Removes all currently stored Allow/Block entries for the given customer'
     )
+    group.add_argument('--retry', dest = 'retry', action = 'store_true', help = 'Retry previously failed upload attempt')
+    group.add_argument('--errors', dest = 'errors', action = 'store_true', help = 'Show the errors from the previous run')
 
     args = parser.parse_args()
 
     import_url = 'https://mail-cloudstation-{}.{}.hydra.sophos.com/mail/api/xgemail/allow-block/import'.format(args.region, args.env)
 
-    if args.delete_all:
-        logger.info("Deleting all allow/block entries for customer")
-        delete_all(import_url, args.customer_id, args.region, args.env)
-        sys.exit(0)
+    try:
+        if args.retry:
+            if not os.path.exists(FAILED_FILES_PATH):
+                print
+                print_colorized(
+                    'Unable to retry previously failed attempt because file {} does not exist'.format(
+                        FAILED_FILES_PATH
+                    ),
+                    Colors.YELLOW
+                )
+                print
+                sys.exit(1)
+            import_csv(FAILED_FILES_PATH, args.customer_id, import_url, args.region, args.env)
+            sys.exit(0)
 
-    import_csv(args.file, args.customer_id, import_url, args.region, args.env)
-    cleanup(args.file)
+        if args.errors:
+            print_errors()
+            sys.exit(0)
+
+        if args.delete_all:
+            print_colorized(
+                'Deleting all customer-level allow/block entries'.format(
+                    FAILED_FILES_PATH
+                ),
+                Colors.HEADER
+            )
+            delete_all(import_url, args.customer_id, args.region, args.env)
+            sys.exit(0)
+
+        has_invalid_entries = determine_invalid_rows(args.file)
+
+        if has_invalid_entries and not args.force:
+            print_colorized(
+                'Aborted import of allow/block due to invalid entries. Use --force to import anyways',
+                Colors.RED
+            )
+            sys.exit(1)
+
+        import_csv(args.file, args.customer_id, import_url, args.region, args.env)
+    finally:
+        cleanup(args.file)

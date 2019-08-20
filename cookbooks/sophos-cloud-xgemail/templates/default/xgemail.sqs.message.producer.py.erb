@@ -41,6 +41,7 @@ from scaneventattributes import ScanEventAttributes
 # Constants
 AWS_REGION = "<%= @sqs_msg_producer_aws_region %>"
 MSG_HISTORY_BUCKET_NAME = "<%= @sqs_msg_producer_msg_history_s3_bucket_name %>"
+MSG_HISTORY_MS_BUCKET_NAME = "<%= @sqs_msg_producer_msg_history_ms_s3_bucket_name %>"
 MSG_HISTORY_EVENTS_TOPIC_ARN = "<%= @sns_msg_history_events_sns_topic_arn %>"
 POLICY_S3_BUCKET_NAME = "<%= @sqs_msg_producer_policy_s3_bucket_name %>"
 PROCESS_TIMEOUT_SECONDS = <%= @sqs_msg_producer_process_timeout_seconds %>
@@ -100,7 +101,7 @@ routingmanager = RoutingManager(
 )
 
 #postfix pipe sends metadata as sysargs.
-def get_metadata():
+def get_metadata(message_headers):
     try:
         metadata_length = len(sys.argv)
         if (metadata_length < 7):
@@ -122,6 +123,10 @@ def get_metadata():
         if (sender_address == null_sender):
             sender_address = None
 
+        x_sophos_header = message_headers['X-Sophos-Email-ID']
+        if x_sophos_header is None:
+          logger.warn("Invalid x-sophos-email-id header in message with queue_id: [{0}]".format(queue_id))
+
         metadata = Metadata(metadataformatter.SCHEMA_VERSION,
                             sender_ip,
                             sender_address,
@@ -129,7 +134,8 @@ def get_metadata():
                             queue_id,
                             date_recorded,
                             recipient_domain,
-                            recipient_list)
+                            recipient_list,
+                            x_sophos_header)
 
         logger.debug("Created metadata info [{0}]".format(metadata))
 
@@ -249,6 +255,14 @@ def upload_msg_history_to_s3(s3_file_path, expires, metadata):
             expires
         )
 
+        # upload msg history to message history ms bucket
+        upload_to_s3(
+            MSG_HISTORY_MS_BUCKET_NAME,
+            msg_history_file_path,
+            formatted_msg_history,
+            expires
+        )
+
         logger.debug("Uploaded message history to S3 [{0}]".format(msg_history_file_path))
 
     except Exception as e:
@@ -342,10 +356,8 @@ def get_plaintext_message():
     finally:
         plaintext_email_bytes.close()
 
-def get_metadata_for_outbound(metadata, message):
-    headers = Parser().parsestr(message, headersonly=True)
-
-    from_header = headers['from']
+def get_metadata_for_outbound(metadata, message_headers):
+    from_header = message_headers['from']
     if from_header is None:
         raise Exception("Invalid from header in message with queue_id: [{0}]".format(
             metadata.get_queue_id())
@@ -372,7 +384,8 @@ def get_metadata_for_outbound(metadata, message):
         metadata.get_queue_id(),
         metadata.get_date_recorded(),
         metadata.get_recipient_domain(),
-        metadata.get_recipients()
+        metadata.get_recipients(),
+        metadata.get_x_sophos_emai_id()
     )
 
 
@@ -574,17 +587,20 @@ def multi_policy_flow(metadata, direction, domain, sender, message, message_attr
                 history_job
             )
 
+def get_message_headers(message):
+    return Parser().parsestr(message, headersonly=True)
+
 # accepts data from postfix and send message and metadata to S3 and
 # a json object to SQS which provides pointer to the message in S3
 def main():
     try:
-        metadata = get_metadata()
         domain = None
         direction = None
         sender = None
         message_attributes = None
-
         plaintext_message = get_plaintext_message()
+        message_headers = get_message_headers(plaintext_message)
+        metadata = get_metadata(message_headers)
 
         if 'INTERNET' == SUBMIT_TYPE:
             domain = metadata.get_recipient_domain()
@@ -600,7 +616,7 @@ def main():
 
         elif 'CUSTOMER' == SUBMIT_TYPE:
             direction = OUTBOUND_MESSAGE_DIRECTION
-            metadata = get_metadata_for_outbound(metadata, plaintext_message)
+            metadata = get_metadata_for_outbound(metadata, message_headers)
             sender = metadata.get_sender_address()
             domain = get_from_sender_domain(metadata)
         else:

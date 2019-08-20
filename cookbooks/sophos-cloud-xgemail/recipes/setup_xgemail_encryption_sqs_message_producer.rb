@@ -52,6 +52,7 @@ XGEMAIL_BUCKET_NAME                          = node['xgemail']['xgemail_bucket_n
 XGEMAIL_QUEUE_URL                            = node['xgemail']['xgemail_queue_url']
 XGEMAIL_SERVICE_QUEUE_URL                    = node['xgemail']['xgemail_service_queue_url']
 XGEMAIL_MESSAGE_HISTORY_BUCKET_NAME          = node['xgemail']['msg_history_bucket_name']
+XGEMAIL_MESSAGE_HISTORY_MS_BUCKET_NAME       = node['xgemail']['msg_history_ms_bucket_name']
 XGEMAIL_CUSTOMER_SUBMIT_BUCKET_NAME          = node['xgemail']['xgemail_customer_submit_bucket_name']
 XGEMAIL_CUSTOMER_SUBMIT_QUEUE_URL            = node['xgemail']['xgemail_customer_submit_queue_url']
 XGEMAIL_MESSAGE_HISTORY_EVENTS_TOPIC_ARN     = node['xgemail']['xgemail_msg_history_events_topic_arn']
@@ -77,6 +78,7 @@ template PRODUCER_SCRIPT_PATH do
       :sqs_msg_producer_s3_bucket_name => XGEMAIL_BUCKET_NAME,
       :sqs_msg_producer_s3_customer_submit_bucket_name => XGEMAIL_CUSTOMER_SUBMIT_BUCKET_NAME,
       :sqs_msg_producer_msg_history_s3_bucket_name => XGEMAIL_MESSAGE_HISTORY_BUCKET_NAME,
+      :sqs_msg_producer_msg_history_ms_s3_bucket_name => XGEMAIL_MESSAGE_HISTORY_MS_BUCKET_NAME,
       :sqs_msg_producer_sqs_url => XGEMAIL_QUEUE_URL,
       :sqs_msg_producer_customer_submit_sqs_url => XGEMAIL_CUSTOMER_SUBMIT_QUEUE_URL,
       :sqs_msg_producer_submit_ip => NODE_IP,

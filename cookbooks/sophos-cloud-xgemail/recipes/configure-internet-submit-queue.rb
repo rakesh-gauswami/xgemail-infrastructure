@@ -65,36 +65,75 @@ raise "SXL_RBL was nil" if SXL_RBL.nil?
 #  - 127.0.4.14: SXL_IP_TFX_SS (Received via a known spam source (SXL lookup))
 #  - 127.0.4.18: SXL_IP_TFX_MAL (Received via a known source of malware (SXL lookup))
 #  - 127.0.4.21: SXL_IP_TFX_PSH (Received via a known source of phishing (SXL lookup))
-SXL_RBL_RESPONSE_CODES = "127.0.4.[1;5;6;8;13;14;18;21]"
+SXL_RBL_RESPONSE_CODES_A = "127.0.4.[1;5;6;8;13;14;18;21]"
 
 # Hosts authorized to make use of the XCLIENT extension
 SMTPD_AUTHORIZED_XCLIENT_HOSTS = node["xgemail"]["smtpd_authorized_xclient_hosts"]
 
 HOP_COUNT_SUBMIT_INSTANCE = node['xgemail']['hop_count_submit_instance']
 
-RBL_REPLY_MAPS_FILENAME = 'rbl_reply_maps'
+RBL_REPLY_MAPS_A_FILENAME = 'rbl_reply_maps_a'
 
-execute RBL_REPLY_MAPS_FILENAME do
+execute RBL_REPLY_MAPS_A_FILENAME do
   command lazy {
     print_postmulti_cmd(
         INSTANCE_NAME,
-        "postmap 'hash:#{postmulti_config_dir(INSTANCE_NAME)}/#{RBL_REPLY_MAPS_FILENAME}'"
+        "postmap 'hash:#{postmulti_config_dir(INSTANCE_NAME)}/#{RBL_REPLY_MAPS_A_FILENAME}'"
     )
   }
   action :nothing
 end
 
-RBL_MAP_ENTRY = "#{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES} " +
+RBL_MAP_ENTRY_A = "#{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES_A} " +
     '$rbl_code Service unavailable; $rbl_class [$rbl_what] is blacklisted. ' +
     'Visit https://www.sophos.com/en-us/threat-center/ip-lookup.aspx?ip=$rbl_what ' +
     'to request delisting' +
     "\n"
 
-file RBL_REPLY_MAPS_FILENAME do
-  path lazy { "#{postmulti_config_dir(INSTANCE_NAME)}/#{RBL_REPLY_MAPS_FILENAME}" }
-  content RBL_MAP_ENTRY
-  notifies :run, "execute[#{RBL_REPLY_MAPS_FILENAME}]", :immediately
+file RBL_REPLY_MAPS_A_FILENAME do
+  path lazy { "#{postmulti_config_dir(INSTANCE_NAME)}/#{RBL_REPLY_MAPS_A_FILENAME}" }
+  content RBL_MAP_ENTRY_A
+  notifies :run, "execute[#{RBL_REPLY_MAPS_A_FILENAME}]", :immediately
 end
+
+# Begin SXL Update
+
+# SXL returns different codes for IP reputation lookup. The following response codes
+# are considered spam, causing the email to be rejected:
+#
+#  - 127.0.4.1:  SXL_IP_SPAM (Received via a known spam network (SXL lookup))
+#  - 127.0.4.2:  SXL_IP_PROXY Received via a known proxy IP (SXL lookup))
+#  - 127.0.4.3:  SXL_IP_DYNAMIC (Received via a known dynamic IP (SXL lookup))
+#  - 127.0.4.4:  SXL_IP_TFX_BOT (Received via a known proxy IP (SXL lookup))
+#  - 127.0.4.5:  SXL_IP_TFX_CS Received via a known spam network (SXL lookup))
+#  - 127.0.4.13: SXL_IP_TFX_SH (Received via a known spam support service (SXL lookup))
+#  - 127.0.4.14: SXL_IP_TFX_SS (Received via a known spam source (SXL lookup))
+SXL_RBL_RESPONSE_CODES_B = "127.0.4.[1;2;3;4;5;13;14]"
+RBL_REPLY_MAPS_B_FILENAME = 'rbl_reply_maps_b'
+
+execute RBL_REPLY_MAPS_B_FILENAME do
+  command lazy {
+    print_postmulti_cmd(
+        INSTANCE_NAME,
+        "postmap 'hash:#{postmulti_config_dir(INSTANCE_NAME)}/#{RBL_REPLY_MAPS_B_FILENAME}'"
+    )
+  }
+  action :nothing
+end
+
+RBL_MAP_ENTRY_B = "#{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES_B} " +
+    '$rbl_code Service unavailable; $rbl_class [$rbl_what] is blacklisted. ' +
+    'Visit https://www.sophos.com/en-us/threat-center/ip-lookup.aspx?ip=$rbl_what ' +
+    'to request delisting' +
+    "\n"
+
+file RBL_REPLY_MAPS_B_FILENAME do
+  path lazy { "#{postmulti_config_dir(INSTANCE_NAME)}/#{RBL_REPLY_MAPS_B_FILENAME}" }
+  content RBL_MAP_ENTRY_B
+  notifies :run, "execute[#{RBL_REPLY_MAPS_B_FILENAME}]", :immediately
+end
+
+# End SXL Update
 
 execute SOFT_RETRY_SENDERS_MAP_FILENAME do
   command lazy {
@@ -165,11 +204,14 @@ if ACCOUNT != 'sandbox'
     "smtpd_tls_key_file = #{KEY_FILE}",
 
     # Recipient restrictions
+    "reject_rbl_client_a = #{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES_A}",
+    "reject_rbl_client_b = #{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES_B}",
+    'reject_rbl_client = $reject_rbl_client_a',
     'smtpd_recipient_restrictions = ' +
       "reject_rhsbl_reverse_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
       "reject_rhsbl_sender #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
       "reject_rhsbl_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
-      "reject_rbl_client #{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES}, " +
+      'reject_rbl_client $reject_rbl_client, ' +
       "check_recipient_access hash:$config_directory/#{RECIPIENT_ACCESS_FILENAME}, " +
       "check_sender_access hash:$config_directory/#{SOFT_RETRY_SENDERS_MAP_FILENAME}, " +
       'reject',
@@ -179,7 +221,7 @@ if ACCOUNT != 'sandbox'
         "reject_non_fqdn_sender",
 
     # RBL response configuration
-    "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_FILENAME}",
+    "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_A_FILENAME}",
 
     'smtpd_relay_restrictions = ' +
         'permit_auth_destination, ' +
@@ -204,7 +246,7 @@ if ACCOUNT != 'sandbox'
 else
   [
     # RBL response configuration
-    "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_FILENAME}"
+    "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_A_FILENAME}"
   ].each do | cur |
     execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
   end

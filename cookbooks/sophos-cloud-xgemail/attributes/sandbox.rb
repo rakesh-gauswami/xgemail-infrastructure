@@ -27,6 +27,7 @@ if ENVIRONMENT == "sandbox"
     default['xgemail']['application']      = ENV['APPLICATION']
 
     default['xgemail']['msg_history_bucket_name']    = 'xgemail-msg-history'
+    default['xgemail']['msg_history_ms_bucket_name']    = 'xgemail-msg-hist-ms'
     default['xgemail']['msg_history_queue_url']      = 'http://localstack:4576/queue/sandbox-Xgemail_MessageHistoryEvent_Delivery'
     default['xgemail']['xgemail_policy_bucket_name'] = 'sandbox-cloudemail-xgemail-policy'
     default['xgemail']['mail_pic_api_auth']          = 'xgemail-local-mail'

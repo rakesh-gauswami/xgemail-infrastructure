@@ -1,0 +1,28 @@
+#!/bin/sh
+#
+# Copyright 2019, Sophos
+#
+# All rights reserved - Do Not Redistribute
+#
+# Contains common functions to be used on customer delivery and customer x-delivery servers
+
+
+reload_postfix() {
+    service postfix reload
+}
+
+enable_postfix_transport_maps() {
+    postmulti -i postfix-$1 -x postconf "transport_maps=hash:\$config_directory/transport"
+}
+
+disable_postfix_transport_maps() {
+  postmulti -i postfix-$1 -x postconf -X transport_maps
+}
+
+enable_postfix_header_checks() {
+  postmulti -i postfix-$1 -x postconf "header_checks=regexp:/etc/postfix-$1/header_checks"
+}
+
+disable_postfix_header_checks() {
+  postmulti -i postfix-$1 -x postconf -X header_checks
+}

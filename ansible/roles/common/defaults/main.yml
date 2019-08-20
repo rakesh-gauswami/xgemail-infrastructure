@@ -54,6 +54,7 @@ s3:
   customer_submit_bucket:                               "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-cust-submit"
   emergency_inbox_bucket:                               "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-emgcy-inbox"
   msg_history_bucket:                                   "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-msg-history"
+  msg_history_ms_bucket:                                "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-msg-hist-ms"
   msg_stats_bucket:                                     "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-msg-stats"
   policy_bucket:                                        "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-policy"
   quarantine_bucket:                                    "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-quarantine"
@@ -106,6 +107,7 @@ sns:
   delay_sns_topic:                                      "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-delay-SNS"
   deleted_events_sns_topic:                             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-deleted-events-SNS"
   encryption_delivery_events_sns_topic:                 "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-encryption-delivery-events-SNS"
+  encrypt_events_sns_topic:                             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-encrypt-events-SNS"
   internet_delivery_sns_topic:                          "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-internet-delivery-SNS"
   lifecycle_sqs_sns:                                    "{{account.name}}-xgemail-lifecycle-topic"
   msg_history_events_sns_topic:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-msg-history-events-SNS"
@@ -123,6 +125,8 @@ sns:
   success_events_sns_topic:                             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-success-events-SNS"
 sdb:
   volume_tracker_sdb:                                   "{{volume_tracker_sdb_output.ansible_facts.cloudformation[stack.sdb.volume_tracker_sdb].stack_outputs.SimpleDbDomain}}"
+dynamodb:
+  delivery_director_dynamodb:                           "tf-delivery-director"
 
 # CloudEmail Stack Names
 stack:
@@ -202,6 +206,7 @@ stack:
     customer_submit_bucket:                             "{{vpc.cloud_email.name}}-XGEMAIL-customer-submit-bucket-S3"
     emergency_inbox_bucket:                             "{{vpc.cloud_email.name}}-XGEMAIL-emergency-inbox-bucket-S3"
     msg_history_bucket:                                 "{{vpc.cloud_email.name}}-XGEMAIL-msg-history-bucket-S3"
+    msg_history_ms_bucket:                              "{{vpc.cloud_email.name}}-XGEMAIL-msg-hist-ms-bucket-S3"
     msg_stats_bucket:                                   "{{vpc.cloud_email.name}}-XGEMAIL-msg-stats-bucket-S3"
     policy_bucket:                                      "{{vpc.cloud_email.name}}-XGEMAIL-policy-bucket-S3"
     quarantine_bucket:                                  "{{vpc.cloud_email.name}}-XGEMAIL-quarantine-bucket-S3"
@@ -247,6 +252,7 @@ stack:
     delay_sns_topic:                                    "{{vpc.cloud_email.name}}-xgemail-delay-SNS"
     deleted_events_sns_topic:                           "{{vpc.cloud_email.name}}-xgemail-deleted-events-SNS"
     encryption_delivery_events_sns_topic:               "{{vpc.cloud_email.name}}-xgemail-encryption-delivery-events-SNS"
+    encrypt_events_sns_topic:                           "{{vpc.cloud_email.name}}-xgemail-encrypt-events-SNS"
     internet_delivery_sns_topic:                        "{{vpc.cloud_email.name}}-xgemail-internet-delivery-SNS"
     msg_history_events_sns_topic:                       "{{vpc.cloud_email.name}}-xgemail-msg-history-events-SNS"
     msg_history_status_sns_topic:                       "{{vpc.cloud_email.name}}-xgemail-msg-history-delivery-status-SNS"

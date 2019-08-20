@@ -21,10 +21,13 @@
     template_parameters:
       Environment:                              "{{account.name}}"
       XgemailMsgHistoryBucketName:              "{{s3.msg_history_bucket}}"
+      XgemailMsgHistoryMsBucketName:            "{{s3.msg_history_ms_bucket}}"
       XgemailPolicyBucketName:                  "{{s3.policy_bucket}}"
       XgemailQuarantineBucketName:              "{{s3.quarantine_bucket}}"
       XgemailInternetSubmitBucketName:          "{{s3.internet_submit_bucket}}"
       XgemailCustomerSubmitBucketName:          "{{s3.customer_submit_bucket}}"
+      DeliveryDirectorDynamodbTableName:        "{{dynamodb.delivery_director_dynamodb}}"
+      DeliveryDirectorBucketName:               "{{s3.delivery_director_bucket}}"
   register: iam_stack
 
 - debug:
