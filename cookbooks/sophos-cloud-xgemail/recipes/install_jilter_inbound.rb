@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: install_jilter_inbound
 #
-# Copyright 2017, Sophos
+# Copyright 2019, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -49,6 +49,7 @@ INTERNET_SUBMIT_BUCKET_NAME = node['xgemail']['xgemail_bucket_name']
 
 if ACCOUNT == 'sandbox'
   include_recipe 'sophos-cloud-xgemail::install_jilter_code_sandbox'
+  include_recipe 'sophos-cloud-xgemail::install_jilter_common'
 else
   include_recipe 'sophos-cloud-xgemail::install_jilter_common'
 end

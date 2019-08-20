@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: configure-internet-submit-queue
 #
-# Copyright 2016, Sophos
+# Copyright 2019, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -258,5 +258,7 @@ else
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_utils_structure'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_processors_structure'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_policy_service'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_multi_policy_service'
 
 end

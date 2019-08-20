@@ -111,7 +111,7 @@ services:
       - jilter-inbound
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
-      - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
+      - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks
     networks:
       - novanet
 
@@ -128,65 +128,63 @@ services:
       - DEBUG=1
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
-      - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
+      - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks
     networks:
       - novanet
 
-  message-history:
-    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/message-history:latest
-    container_name: message-history
-    hostname: message-history
-    domainname: sandbox.sophos
-    mem_limit: 1024m
-    ports:
-      - "9010"
-    environment:
-      - APPLICATION_NAME=message-history
-      - AUTH_ENABLED=false
-      - AWS_REGION=us-east-1
-      - BOUNCED_SQS_QUEUE_URL=sandbox-tf-message-history-bounced-events-sqs
-      - CUSTOMER_SUBMIT_STORAGE_ROOT=http://localstack:4576/s3/some-policy/path
-      - DELETED_SQS_QUEUE_URL=sandbox-tf-message-history-deleted-events-sqs
-      - DELIVERY_STATUS_SQS_QUEUE_URL=sandbox-tf-message-history-delivery-status-sqs
-      - ELASTICSEARCH_DOMAIN_ENDPOINT=elasticsearch
-      - ELASTICSEARCH_DOMAIN_ENDPOINT_SCHEME=http
-      - ELASTICSEARCH_PORT=9200
-      - ENVIRONMENT=local
-      - INTERNET_DELIVERY_SQS_QUEUE_URL=sandbox-tf-message-history-internet-delivery-sqs
-      - INTERNET_SUBMIT_BUCKET=sandbox-cloudemail-xgemail-submit
-      - INTERNET_SUBMIT_STORAGE_ROOT=s3://sandbox-cloudemail-xgemail-submit
-      - LAUNCHDARKLY_SOPHOS_CENTRAL_CLIENT_SDK_KEY=1234
-      - LPAS_ENABLED=true
-      - LPAS_ENDPOINT=http://lpas-fake:8080
-      - MAILBOX_DLP_POLICY_FILE_PATH=config/policies/dlp/
-      - MAILBOX_LOCAL_PART_FILE_PATH=config/policies/domains/
-      - MAILBOX_POLICY_FILE_PATH=config/policies/endpoints/
-      - MESSAGE_HISTORY_STORAGE_ROOT=s3://sandbox-cloudemail-xgemail-msg-history
-      - MSG_HISTORY_SQS_QUEUE_URL=sandbox-tf-message-history-msg-history-events-sqs
-      - POLICY_STORAGE_ROOT=s3://sandbox-cloudemail-xgemail-policy
-      - QUARANTINED_SQS_QUEUE_URL=sandbox-tf-message-history-quarantined-events-sqs
-      - REDIRECTED_SQS_QUEUE_URL=andbox-tf-message-history-redirected-events-sqs
-      - S3_ENDPOINT=http://localstack:4572
-      - SNS_ENDPOINT=http://localstack:4575
-      - SPRING_PROFILES_ACTIVE=local
-      - SQS_ENDPOINT=http://localstack:4576
-      - SUCCESS_SQS_QUEUE_URL=andbox-tf-message-history-success-events-sqs
-      - WRITE_DOCUMENTS_TO_STORAGE=false
-    restart: always
+#  message-history:
+#    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/message-history:latest
+#    container_name: message-history
+#    hostname: message-history
+#    domainname: sandbox.sophos
+#    ports:
+#      - "9010"
+#    environment:
+#      - APPLICATION_NAME=message-history
+#      - AUTH_ENABLED=false
+#      - AWS_REGION=us-east-1
+#      - BOUNCED_SQS_QUEUE_URL=sandbox-tf-message-history-bounced-events-sqs
+#      - CUSTOMER_SUBMIT_STORAGE_ROOT=http://localstack:4576/s3/some-policy/path
+#      - DELETED_SQS_QUEUE_URL=sandbox-tf-message-history-deleted-events-sqs
+#      - DELIVERY_STATUS_SQS_QUEUE_URL=sandbox-tf-message-history-delivery-status-sqs
+#      - ELASTICSEARCH_DOMAIN_ENDPOINT=elasticsearch
+#      - ELASTICSEARCH_DOMAIN_ENDPOINT_SCHEME=http
+#      - ELASTICSEARCH_PORT=9200
+#      - ENVIRONMENT=local
+#      - INTERNET_DELIVERY_SQS_QUEUE_URL=sandbox-tf-message-history-internet-delivery-sqs
+#      - INTERNET_SUBMIT_BUCKET=sandbox-cloudemail-xgemail-submit
+#      - INTERNET_SUBMIT_STORAGE_ROOT=s3://sandbox-cloudemail-xgemail-submit
+#      - LAUNCHDARKLY_SOPHOS_CENTRAL_CLIENT_SDK_KEY=1234
+#      - LPAS_ENABLED=true
+#      - LPAS_ENDPOINT=http://lpas-fake:8080
+#      - MAILBOX_DLP_POLICY_FILE_PATH=config/policies/dlp/
+#      - MAILBOX_LOCAL_PART_FILE_PATH=config/policies/domains/
+#      - MAILBOX_POLICY_FILE_PATH=config/policies/endpoints/
+#      - MESSAGE_HISTORY_STORAGE_ROOT=s3://sandbox-cloudemail-xgemail-msg-history
+#      - MSG_HISTORY_SQS_QUEUE_URL=sandbox-tf-message-history-msg-history-events-sqs
+#      - POLICY_STORAGE_ROOT=s3://sandbox-cloudemail-xgemail-policy
+#      - QUARANTINED_SQS_QUEUE_URL=sandbox-tf-message-history-quarantined-events-sqs
+#      - REDIRECTED_SQS_QUEUE_URL=andbox-tf-message-history-redirected-events-sqs
+#      - S3_ENDPOINT=http://localstack:4572
+#      - SNS_ENDPOINT=http://localstack:4575
+#      - SPRING_PROFILES_ACTIVE=local
+#      - SQS_ENDPOINT=http://localstack:4576
+#      - SUCCESS_SQS_QUEUE_URL=andbox-tf-message-history-success-events-sqs
+#      - WRITE_DOCUMENTS_TO_STORAGE=false
+#    restart: always
 
-  elasticsearch:
-       image: docker.elastic.co/elasticsearch/elasticsearch:5.6.14
-       ports:
-         - "9200"
-         - "9300"
-       environment:
-         - cluster.name=docker-cluster
-         - discovery.type=single-node
-         - http.host=0.0.0.0
-         - xpack.security.enabled=false
-         - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
-    networks:
-      - novanet
+#  elasticsearch:
+#    image: docker.elastic.co/elasticsearch/elasticsearch:5.6.14
+#    ports:
+#      - "9200"
+#      - "9300"
+#    environment:
+#      - cluster.name=docker-cluster
+#      - discovery.type=single-node
+#      - http.host=0.0.0.0
+#      - xpack.security.enabled=false
+#    networks:
+#      - novanet
 
   # postfix-xd:
   #   image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:latest
@@ -221,9 +219,10 @@ services:
       - '9876:9876'
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
-      - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks:ro
+      - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks
       - ~/.xgemail_sandbox/jilter/inbound/:/jilter/
-      - ~/.xgemail_sandbox/policy_storage://policy-storage:rw
+      - ~/.xgemail_sandbox/policy_storage:/policy-storage:rw
+      - /opt/sophos/packages:/opt/sophos/packages:rwx
     networks:
       - novanet
 

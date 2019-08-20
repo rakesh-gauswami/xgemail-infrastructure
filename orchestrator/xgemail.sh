@@ -47,8 +47,8 @@ nova_env_file="${HOME}/g/nova/.env"
 nova_env_file_original_copy="${HOME}/g/nova/.env_original_copy"
 mail_env_file="${orchestrator_location}environment"
 
-sasi_service_image="email/sasi-service"
-sasi_docker_image="email/sasi-daemon"
+sasi_service_image="283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/sasi-service:latest"
+sasi_docker_image="283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/sasi-daemon:latest"
 
 jilter_version="current"
 
@@ -116,7 +116,7 @@ function deploy_inbound {
     initialize
     check_nova_up
     check_login_to_aws
-
+    download_libspf_package
 
     echo -e "${YELLOW} user selected inbound ${NC}"
     echo -e "${YELLOW} Services needed for inbound mail-flow will be started ${NC}"
@@ -128,7 +128,7 @@ function deploy_inbound {
 
     docker-compose -f ${orchestrator_location}${base_compose} -f ${orchestrator_location}${inbound_compose} up -d
 
-    deploy_wars "mail-service" "false" "mail"
+    deploy_wars "mail-service" "false" "mail" "mailinbound"
 
     provision_localstack
 
@@ -136,7 +136,7 @@ function deploy_inbound {
 
     deploy_jilter inbound
 
-    check_tomcat_startup ${email_tomcat_url} "mail"
+    check_tomcat_startup ${email_tomcat_url} "mail" "mailinbound"
 }
 
 : 'This function creates, starts and provisions the base containers required for
@@ -147,6 +147,7 @@ function deploy_outbound {
     initialize
     check_nova_up
     check_login_to_aws
+    download_libspf_package
 
     check_sasi ${sasi_service_image} ${sasi_docker_image}
 
@@ -177,6 +178,7 @@ function deploy_all {
     initialize
     check_login_to_aws
     check_nova_up
+    check_login_to_aws
 
     echo -e "${YELLOW} user selected all ${NC}"
     echo -e "${YELLOW} Services needed for both inbound and outbound mail-flow will be started ${NC}"
@@ -186,7 +188,7 @@ function deploy_all {
 
     docker-compose -f ${orchestrator_location}${base_compose} -f ${orchestrator_location}${inbound_compose} -f ${orchestrator_location}${outbound_compose} up -d
 
-    deploy_wars "mail-service" "false" "mail" "mailoutbound"
+    deploy_wars "mail-service" "false" "mail" "mailinbound" "mailoutbound"
 
     provision_localstack
 
@@ -194,7 +196,7 @@ function deploy_all {
 
     deploy_jilter all
 
-    check_tomcat_startup ${email_tomcat_url} "mail" "mailoutbound"
+    check_tomcat_startup ${email_tomcat_url} "mail" "mailoutbound" "mailinbound"
 }
 
 : 'This function runs the script to provision postfix instances.
@@ -357,6 +359,8 @@ function deploy_jilter()
     sandbox_inbound_jilter_tar_location="${HOME}/.xgemail_sandbox/jilter/inbound/"
     sandbox_outbound_jilter_tar_location="${HOME}/.xgemail_sandbox/jilter/outbound/"
 
+    chown -R svc_msguser:svc_msguser ${HOME}/.xgemail_sandbox/jilter/
+
     jilter_inbound_build_location="${jilter_location}xgemail-jilter-inbound/build/distributions/"
     jilter_inbound_build_name="xgemail-jilter-inbound-${jilter_version}.tar"
 
@@ -508,7 +512,7 @@ function check_sasi {
 '
 function check_login_to_aws {
     #Setup login to amazon ECR
-    aws ecr get-login --no-include-email --region us-east-2 >/dev/null 2>&1
+    $(aws ecr get-login --no-include-email --region us-east-2) >/dev/null 2>&1
 
     if [ ! $? -eq 0 ]; then
         echo -e "${RED} Unable to log into AWS ECR. Check your AWS credentials configuration ${NC}"
@@ -516,6 +520,22 @@ function check_login_to_aws {
         exit 1
     else
         echo -e "${GREEN} Successfully logged into AWS ECR ${NC}"
+    fi
+}
+
+function download_libspf_package {
+    # Make sure user has updated permissions in /etc/sudoers file
+    #Create packages directory
+    sudo mkdir /opt/sophos/packages
+    sudo chmod -R 777 /opt/sophos/packages
+
+    #Download libspf package from S3 bucket
+    aws --region us-east-1 s3 cp s3://cloud-sandbox-3rdparty/xgemail/libspf2-1.2.10-9.tar.gz /opt/sophos/packages
+
+    if [ $? -eq 0 ]; then
+      echo -e "${GREEN} Successfully downloaded libspf package from S3 ${NC}"
+    else
+      echo -e "${RED} libspf download was failed. Please check the permissions"
     fi
 }
 
@@ -529,7 +549,7 @@ function check_service_up {
 
     echo "Waiting for $1 to be fully up."
     count=0
-    max_count=2 # Multiply this number by 5 for total wait time, in seconds.
+    max_count=12 # Multiply this number by 5 for total wait time, in seconds.
     while [[ $count -le $max_count ]]; do
         startup_check="$(docker ps --filter=name=$1 --format {{.Status}} | grep -c Up)"
         if [[ $startup_check -ne 1 ]]; then
@@ -846,6 +866,8 @@ case "$1" in
               ;;
 
             mail-inbound)
+              deploy_wars "mail-service" "true" "mailinbound"
+              check_tomcat_startup ${email_tomcat_url} "mailinbound"
               docker-compose -f ${orchestrator_location}${inbound_compose} restart mail-inbound
               ;;
 

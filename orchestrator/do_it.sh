@@ -14,6 +14,8 @@ NC='\033[0m' # No Color
 gprintf() {
 	printf "${GREEN}$@${NC}\n"
 }
+#ACCOUNT ID
+AWS_ACCOUNT_ID="000000000000"
 
 #S3 buckets
 CUSTOMER_SUBMIT_BUCKET="xgemail-cust-submit"
@@ -42,14 +44,15 @@ INTERNET_DELIVERY_SQS_QUEUE_SNS_LISTENER="sandbox-Xgemail_Internet_Delivery_SNS_
 INTERNET_SUBMIT_SERVICE_SQS_QUEUE="sandbox-Internet_Submit_Service_Queue"
 
 #MSG Queues
-#MSG_HISTORY_SQS_QUEUE="sandbox-Xgemail_MessageHistoryEvent_Delivery"
-#MSG_HISTORY_SQS_QUEUE_SNS_LISTENER="sandbox-Xgemail_MessageHistoryEvent_Delivery_SNS_Listener"
-#MSG_HISTORY_STATUS_SQS_QUEUE="sandbox-Xgemail_MessageHistory_Delivery_Status"
-#MSG_HISTORY_STATUS_SQS_QUEUE_SNS_LISTENER="sandbox-Xgemail_MessageHistory_Delivery_Status_SNS_Listener"
-#MSG_STATISTICS_REJECTION_SQS_QUEUE="sandbox-Xgemail_Message_Statistics_Rejection"
-#MSG_STATISTICS_SQS_QUEUE="sandbox-Xgemail_Message_Statistics"
-#MSG_STATISTICS_SQS_QUEUE_SNS_LISTENER="sandbox-Xgemail_Message_Statistics_SNS_Listener"
-#MULTI_POLICY_SQS_QUEUE="sandbox-Xgemail_multi_policy"
+MSG_HISTORY_SQS_QUEUE="sandbox-Xgemail_MessageHistoryEvent_Delivery"
+MSG_HISTORY_SQS_QUEUE_SNS_LISTENER="sandbox-Xgemail_MessageHistoryEvent_Delivery_SNS_Listener"
+MSG_HISTORY_STATUS_SQS_QUEUE="sandbox-Xgemail_MessageHistory_Delivery_Status"
+MSG_HISTORY_STATUS_SQS_QUEUE_SNS_LISTENER="sandbox-Xgemail_MessageHistory_Delivery_Status_SNS_Listener"
+MSG_STATISTICS_REJECTION_SQS_QUEUE="sandbox-Xgemail_Message_Statistics_Rejection"
+MSG_STATISTICS_SQS_QUEUE="sandbox-Xgemail_Message_Statistics"
+MSG_STATISTICS_SQS_QUEUE_SNS_LISTENER="sandbox-Xgemail_Message_Statistics_SNS_Listener"
+POLICY_SQS_QUEUE="sandbox-xgemail-policy"
+MULTI_POLICY_SQS_QUEUE="sandbox-Xgemail_multi_policy"
 NOTIFIER_REQUEST_SQS_QUEUE="sandbox-Xgemail_Notifier_Request"
 QUARANTINE_SQS_QUEUE="sandbox-Xgemail_Quarantine_Delivery"
 QUARANTINE_SQS_QUEUE_SNS_LISTENER="sandbox-Xgemail_Quarantine_Delivery_SNS_Listener"
@@ -89,17 +92,17 @@ QUARANTINE_SQS_QUEUE_SNS_LISTENER_DLQ="sandbox-Xgemail_Quarantine_Delivery_SNS_L
 
 #SNS
 DELAY_SNS_TOPIC="sandbox-xgemail-delay-SNS"
-DELETED_EVENTS_SNS_TOPIC="vpc-000000-xgemail-deleted-events-SNS"
+DELETED_EVENTS_SNS_TOPIC="sandbox-xgemail-deleted-events-SNS"
 INTERNET_DELIVERY_SNS_TOPIC="sandbox-xgemail-internet-delivery-SNS"
 MSG_HISTORY_STATUS_SNS_TOPIC="sandbox-xgemail-msg-history-delivery-status-SNS"
 MSG_HISTORY_EVENTS_SNS_TOPIC="sandbox-xgemail-msg-history-events-SNS"
 MSG_STATISTICS_REJECTION_SNS_TOPIC="sandbox-xgemail-msg-statistics-rejection-SNS"
 MULTI_POLICY_SNS_TOPIC="sandbox-XGEMAIL-multi-policy-SNS"
 POLICY_SNS_TOPIC="sandbox-xgemail-policy-SNS"
-QUARANTINED_EVENTS_SNS_TOPIC="vpc-000000-xgemail-quarantined-events-SNS"
+QUARANTINED_EVENTS_SNS_TOPIC="sandbox-xgemail-quarantined-events-SNS"
 RELAY_CONTROL_SNS_TOPIC="sandbox-xgemail-relay-control-SNS"
 SCAN_EVENTS_SNS_TOPIC="sandbox-xgemail-scan-events-SNS"
-SUCCESS_EVENTS_SNS_TOPIC="vpc-000000-xgemail-success-events-SNS"
+SUCCESS_EVENTS_SNS_TOPIC="sandbox-xgemail-success-events-SNS"
 
 
 # gprintf "Destroying Xgemail sandbox environment."
@@ -186,8 +189,8 @@ if [[ $startup_check -ne 0 ]]; then
 #      gprintf "CREATING INTERNET_SUBMIT_SERVICE_SQS_QUEUE"
 #      awslocal sqs create-queue --queue-name ${INTERNET_SUBMIT_SERVICE_SQS_QUEUE} | jq .
 
-#      gprintf "CREATING MSG_HISTORY_SQS_QUEUE"
-#      awslocal sqs create-queue --queue-name ${MSG_HISTORY_SQS_QUEUE} | jq .
+      gprintf "CREATING MSG_HISTORY_SQS_QUEUE"
+      awslocal sqs create-queue --queue-name ${MSG_HISTORY_SQS_QUEUE} | jq .
 
       gprintf "CREATING MSG_HISTORY_SQS_QUEUE_SNS_LISTENER"
       awslocal sqs create-queue --queue-name ${MSG_HISTORY_SQS_QUEUE_SNS_LISTENER} | jq .
@@ -206,6 +209,9 @@ if [[ $startup_check -ne 0 ]]; then
 
       gprintf "CREATING MSG_STATISTICS_SQS_QUEUE_SNS_LISTENER"
       awslocal sqs create-queue --queue-name ${MSG_STATISTICS_SQS_QUEUE_SNS_LISTENER} | jq .
+
+      gprintf "CREATING POLICY_SQS_QUEUE"
+      awslocal sqs create-queue --queue-name ${POLICY_SQS_QUEUE} | jq .
 
       gprintf "CREATING MULTI_POLICY_SQS_QUEUE"
       awslocal sqs create-queue --queue-name ${MULTI_POLICY_SQS_QUEUE} | jq .
@@ -308,8 +314,8 @@ if [[ $startup_check -ne 0 ]]; then
       gprintf "CREATING POLICY_SNS_TOPIC"
       awslocal sns create-topic --name ${POLICY_SNS_TOPIC} | jq .
 
-#      gprintf "CREATING QUARANTINED_EVENTS_SNS_TOPIC"
-#      awslocal sns create-topic --name ${QUARANTINED_EVENTS_SNS_TOPIC} | jq .
+      gprintf "CREATING QUARANTINED_EVENTS_SNS_TOPIC"
+      awslocal sns create-topic --name ${QUARANTINED_EVENTS_SNS_TOPIC} | jq .
 
       gprintf "CREATING RELAY_CONTROL_SNS_TOPIC"
       awslocal sns create-topic --name ${RELAY_CONTROL_SNS_TOPIC} | jq .
@@ -320,108 +326,109 @@ if [[ $startup_check -ne 0 ]]; then
       gprintf "CREATING MSG_HISTORY_EVENTS_SNS_TOPIC"
       awslocal sns create-topic --name ${MSG_HISTORY_EVENTS_SNS_TOPIC} | jq .
 
-#      gprintf "CREATING SUCCESS_EVENTS_SNS_TOPIC"
-#      awslocal sns create-topic --name ${SUCCESS_EVENTS_SNS_TOPIC} | jq .
+      gprintf "CREATING SUCCESS_EVENTS_SNS_TOPIC"
+      awslocal sns create-topic --name ${SUCCESS_EVENTS_SNS_TOPIC} | jq .
 
       #Subscribing
       gprintf "Creating SNS Subscribers"
 
+      gprintf "SUBSCRIBING policy SNS TOPIC"
+      awslocal sns subscribe \
+          --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${POLICY_SNS_TOPIC} \
+          --protocol sqs \
+          --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${POLICY_SQS_QUEUE} | jq .
+
       gprintf "SUBSCRIBING Multi-policy SNS TOPIC"
       awslocal sns subscribe \
-          --topic-arn arn:aws:sns:us-east-1:123456789012:${MULTI_POLICY_SNS_TOPIC} \
+          --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${MULTI_POLICY_SNS_TOPIC} \
           --protocol sqs \
-          --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${MULTI_POLICY_SQS_QUEUE} | jq .
+          --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${MULTI_POLICY_SQS_QUEUE} | jq .
 
       gprintf "SUBSCRIBING Multi-Delay SNS TOPIC"
       awslocal sns subscribe \
-          --topic-arn arn:aws:sns:us-east-1:123456789012:${DELAY_SNS_TOPIC} \
+          --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${DELAY_SNS_TOPIC} \
           --protocol sqs \
-          --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${DELAY_SQS_QUEUE} | jq .
+          --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${DELAY_SQS_QUEUE} | jq .
 
       gprintf "SUBSCRIBING Deleted Event SNS TOPIC"
       awslocal sns subscribe \
-          --topic-arn arn:aws:sns:us-east-1:123456789012:${DELETED_EVENTS_SNS_TOPIC} \
+          --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${DELETED_EVENTS_SNS_TOPIC} \
           --protocol sqs \
-          --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${MSG_HISTORY_SQS_QUEUE_SNS_LISTENER} | jq .
+          --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${MSG_HISTORY_SQS_QUEUE_SNS_LISTENER} | jq .
 
       awslocal sns subscribe \
-          --topic-arn arn:aws:sns:us-east-1:123456789012:${DELETED_EVENTS_SNS_TOPIC} \
+          --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${DELETED_EVENTS_SNS_TOPIC} \
           --protocol sqs \
-          --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${MSG_STATISTICS_SQS_QUEUE_SNS_LISTENER} | jq .
+          --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${MSG_STATISTICS_SQS_QUEUE_SNS_LISTENER} | jq .
 
       awslocal sns subscribe \
-          --topic-arn arn:aws:sns:us-east-1:123456789012:${INTERNET_DELIVERY_SNS_TOPIC} \
+          --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${INTERNET_DELIVERY_SNS_TOPIC} \
           --protocol sqs \
-          --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${INTERNET_DELIVERY_SQS_QUEUE_SNS_LISTENER} | jq .
+          --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${INTERNET_DELIVERY_SQS_QUEUE_SNS_LISTENER} | jq .
 
       awslocal sns subscribe \
-          --topic-arn arn:aws:sns:us-east-1:123456789012:${INTERNET_DELIVERY_SNS_TOPIC} \
+          --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${INTERNET_DELIVERY_SNS_TOPIC} \
           --protocol sqs \
-          --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${MSG_STATISTICS_SQS_QUEUE_SNS_LISTENER} | jq .
+          --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${MSG_STATISTICS_SQS_QUEUE_SNS_LISTENER} | jq .
 
       awslocal sns subscribe \
-          --topic-arn arn:aws:sns:us-east-1:123456789012:${INTERNET_DELIVERY_SNS_TOPIC} \
+          --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${INTERNET_DELIVERY_SNS_TOPIC} \
           --protocol sqs \
-          --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${MSG_HISTORY_SQS_QUEUE_SNS_LISTENER} | jq .
+          --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${MSG_HISTORY_SQS_QUEUE_SNS_LISTENER} | jq .
 
       awslocal sns subscribe \
-          --topic-arn arn:aws:sns:us-east-1:123456789012:${INTERNET_DELIVERY_SNS_TOPIC} \
+          --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${INTERNET_DELIVERY_SNS_TOPIC} \
           --protocol sqs \
-          --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${MSG_HISTORY_STATUS_SQS_QUEUE_SNS_LISTENER} | jq .
+          --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${MSG_HISTORY_STATUS_SQS_QUEUE_SNS_LISTENER} | jq .
 
       awslocal sns subscribe \
-          --topic-arn arn:aws:sns:us-east-1:123456789012:${MSG_STATISTICS_REJECTION_SNS_TOPIC} \
+          --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${MSG_STATISTICS_REJECTION_SNS_TOPIC} \
           --protocol sqs \
-          --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${MSG_STATISTICS_REJECTION_SQS_QUEUE} | jq .
+          --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${MSG_STATISTICS_REJECTION_SQS_QUEUE} | jq .
 
       awslocal sns subscribe \
-          --topic-arn arn:aws:sns:us-east-1:123456789012:${QUARANTINED_EVENTS_SNS_TOPIC} \
+          --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${QUARANTINED_EVENTS_SNS_TOPIC} \
           --protocol sqs \
-          --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${MSG_HISTORY_SQS_QUEUE_SNS_LISTENER} | jq .
+          --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${MSG_HISTORY_SQS_QUEUE_SNS_LISTENER} | jq .
 
       awslocal sns subscribe \
-          --topic-arn arn:aws:sns:us-east-1:123456789012:${QUARANTINED_EVENTS_SNS_TOPIC} \
+          --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${QUARANTINED_EVENTS_SNS_TOPIC} \
           --protocol sqs \
-          --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${MSG_STATISTICS_SQS_QUEUE_SNS_LISTENER} | jq .
+          --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${MSG_STATISTICS_SQS_QUEUE_SNS_LISTENER} | jq .
 
       awslocal sns subscribe \
-          --topic-arn arn:aws:sns:us-east-1:123456789012:${QUARANTINED_EVENTS_SNS_TOPIC} \
+          --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${QUARANTINED_EVENTS_SNS_TOPIC} \
           --protocol sqs \
-          --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${QUARANTINE_SQS_QUEUE_SNS_LISTENER} | jq .
+          --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${QUARANTINE_SQS_QUEUE_SNS_LISTENER} | jq .
 
 #      awslocal sns subscribe \
-#          --topic-arn arn:aws:sns:us-east-1:123456789012:${SCAN_EVENTS_SNS_TOPIC} \
+#          --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${SCAN_EVENTS_SNS_TOPIC} \
 #          --protocol sqs \
-#          --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${INTERNET_SUBMIT_SERVICE_SQS_QUEUE} | jq .
-
-#      awslocal sns subscribe \
-#          --topic-arn arn:aws:sns:us-east-1:123456789012:${MSG_HISTORY_EVENTS_SNS_TOPIC} \
-#          --protocol sqs \
-#          --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${MSG_HISTORY_SQS_QUEUE} | jq .
-      awslocal sns subscribe \
-          --topic-arn arn:aws:sns:us-east-1:123456789012:${SUCCESS_EVENTS_SNS_TOPIC} \
-          --protocol sqs \
-          --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${MSG_HISTORY_SQS_QUEUE_SNS_LISTENER} | jq .
+#          --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${INTERNET_SUBMIT_SERVICE_SQS_QUEUE} | jq .
 
       awslocal sns subscribe \
-          --topic-arn arn:aws:sns:us-east-1:123456789012:${SUCCESS_EVENTS_SNS_TOPIC} \
+          --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${MSG_HISTORY_EVENTS_SNS_TOPIC} \
           --protocol sqs \
-          --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${MSG_STATISTICS_SQS_QUEUE_SNS_LISTENER} | jq .
+          --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${MSG_HISTORY_SQS_QUEUE} | jq .
+      awslocal sns subscribe \
+          --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${SUCCESS_EVENTS_SNS_TOPIC} \
+          --protocol sqs \
+          --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${MSG_HISTORY_SQS_QUEUE_SNS_LISTENER} | jq .
 
       awslocal sns subscribe \
-          --topic-arn arn:aws:sns:us-east-1:123456789012:${SUCCESS_EVENTS_SNS_TOPIC} \
+          --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${SUCCESS_EVENTS_SNS_TOPIC} \
           --protocol sqs \
-          --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${EMERGENCY_INBOX_SQS_QUEUE_SNS_LISTENER} | jq .
+          --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${MSG_STATISTICS_SQS_QUEUE_SNS_LISTENER} | jq .
 
       awslocal sns subscribe \
-          --topic-arn arn:aws:sns:us-east-1:123456789012:${SUCCESS_EVENTS_SNS_TOPIC} \
+          --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${SUCCESS_EVENTS_SNS_TOPIC} \
           --protocol sqs \
-          --notification-endpoint arn:aws:sqs:us-east-1:123456789012:${CUSTOMER_DELIVERY_SQS_QUEUE_SNS_LISTENER} | jq .
+          --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${EMERGENCY_INBOX_SQS_QUEUE_SNS_LISTENER} | jq .
 
-#      awslocal sns set-subscription-attributes \
-#          --subscription-arn arn:aws:sns:us-east-1:123456789012:sandbox-xgemail-scan-events-SNS:ca965ece-6eef-4151-9733-1f3ed2646526 \
-#          --attribute-name RawMessageDelivery \
-#          --attribute-value true
+      awslocal sns subscribe \
+          --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${SUCCESS_EVENTS_SNS_TOPIC} \
+          --protocol sqs \
+          --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${CUSTOMER_DELIVERY_SQS_QUEUE_SNS_LISTENER} | jq .
 
       gprintf "localstack environment is set!"
 

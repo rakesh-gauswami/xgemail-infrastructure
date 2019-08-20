@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: install_jilter_inbound
 #
-# Copyright 2017, Sophos
+# Copyright 2019, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -10,6 +10,7 @@
 #
 
 PACKAGES_DIR = '/jilter'
+LIBSPF_PACKAGES_DIR = '/opt/sophos/packages'
 DEPLOYMENT_DIR = '/opt/sophos/xgemail'
 
 NODE_TYPE = node['xgemail']['cluster_type']

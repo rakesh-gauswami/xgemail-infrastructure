@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: setup_internet_submit_recipient_updater_cron
 #
-# Copyright 2016, Sophos
+# Copyright 2019, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -91,22 +91,20 @@ cookbook_file "#{CRON_SCRIPT_S3_RECIPIENT_READER_PATH}" do
   group 'root'
 end
 
-if ACCOUNT != 'sandbox'
-  cron "#{INSTANCE_NAME}-recipient-cron" do
-    minute "3-59/#{CRON_MINUTE_FREQUENCY}"
-    user 'root'
-    command "source /etc/profile && timeout #{CRON_JOB_TIMEOUT} flock --nb /var/lock/#{CRON_SCRIPT}.lock -c '#{CRON_SCRIPT_PATH}' >/dev/null 2>&1"
-  end
+cron "#{INSTANCE_NAME}-recipient-cron" do
+  minute "3-59/#{CRON_MINUTE_FREQUENCY}"
+  user 'root'
+  command "source /etc/profile && timeout #{CRON_JOB_TIMEOUT} flock --nb /var/lock/#{CRON_SCRIPT}.lock -c '#{CRON_SCRIPT_PATH}' >/dev/null 2>&1"
+end
 
-  cron "#{INSTANCE_NAME}-recipient-cron-s3" do
-    minute "3-59/#{CRON_MINUTE_FREQUENCY}"
-    user 'root'
-    command "source /etc/profile && timeout #{CRON_JOB_TIMEOUT} flock --nb /var/lock/#{CRON_SCRIPT_S3_RECIPIENT_READER}.lock -c '#{CRON_SCRIPT_S3_RECIPIENT_READER_PATH} --env #{ACCOUNT} --region #{REGION}' >/dev/null 2>&1"
-  end
+cron "#{INSTANCE_NAME}-recipient-cron-s3" do
+  minute "3-59/#{CRON_MINUTE_FREQUENCY}"
+  user 'root'
+  command "source /etc/profile && timeout #{CRON_JOB_TIMEOUT} flock --nb /var/lock/#{CRON_SCRIPT_S3_RECIPIENT_READER}.lock -c '#{CRON_SCRIPT_S3_RECIPIENT_READER_PATH} --env #{ACCOUNT} --region #{REGION}' >/dev/null 2>&1"
+end
 
-  execute 'execute s3-recipient-reader' do
-    command "#{CRON_SCRIPT_S3_RECIPIENT_READER_PATH} --env #{ACCOUNT} --region #{REGION}"
-    user 'root'
-    action :run
-  end
+execute 'execute s3-recipient-reader' do
+  command "#{CRON_SCRIPT_S3_RECIPIENT_READER_PATH} --env #{ACCOUNT} --region #{REGION}"
+  user 'root'
+  action :run
 end
