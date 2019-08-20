@@ -111,8 +111,8 @@ def get_x_sophos_email_id(x_sophos_email_id, queue_id):
         return str(sophos_email_uuid)
     except ValueError as e:
         logger.warn(
-            "Invalid X-Sophos-Email-ID [{0}], failed to parse with error [{1}] with queue_id: [{2}] ".format(
-            x_sophos_email_id, e, queue_id)
+            "Invalid X-Sophos-Email-ID : [{0}], with queue_id: [{1}], failed to parse with error [{2}]  "
+                .format(x_sophos_email_id, queue_id, e)
         )
         return None
 
