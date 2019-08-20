@@ -104,7 +104,6 @@ class MetadataTest(unittest.TestCase):
             '2018-10-19T13:37:00Z',
             'r-domain.com',
             ['a@r-domain.com', 'b@r-domain.com', 'c@r-domain.com'],
-            'true',
             "invalid_x_sophos_email_id"
         )
         expected_json = {
