@@ -206,7 +206,7 @@ if ACCOUNT != 'sandbox'
     # Recipient restrictions
     "reject_rbl_client_a = #{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES_A}",
     "reject_rbl_client_b = #{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES_B}",
-    'reject_rbl_client = $reject_rbl_client_a',
+    'reject_rbl_client = $reject_rbl_client_b',
     'smtpd_recipient_restrictions = ' +
       "reject_rhsbl_reverse_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
       "reject_rhsbl_sender #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
@@ -221,7 +221,7 @@ if ACCOUNT != 'sandbox'
         "reject_non_fqdn_sender",
 
     # RBL response configuration
-    "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_A_FILENAME}",
+    "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_B_FILENAME}",
 
     'smtpd_relay_restrictions = ' +
         'permit_auth_destination, ' +
@@ -246,7 +246,7 @@ if ACCOUNT != 'sandbox'
 else
   [
     # RBL response configuration
-    "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_A_FILENAME}"
+    "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_B_FILENAME}"
   ].each do | cur |
     execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
   end
