@@ -31,7 +31,7 @@ class MetadataTest(unittest.TestCase):
             '2018-10-19T13:37:00Z',
             'r-domain.com',
             ['a@r-domain.com', 'b@r-domain.com', 'c@r-domain.com'],
-            'e6592dabae0e466c86b1c891eda752d8'
+            'e6592dab-ae0e-466c-86b1-c891eda752d8'
         )
 
     def test_add_uuid_to_queue_id(self):
@@ -58,7 +58,7 @@ class MetadataTest(unittest.TestCase):
             "recipient_domain": "r-domain.com", 
             "queue_id": "42c6b66mZYz1V", 
             "sender_ip": "1.2.3.4",
-            "x_sophos_email_id":"e6592dabae0e466c86b1c891eda752d8",
+            "x_sophos_email_id":"e6592dab-ae0e-466c-86b1-c891eda752d8",
             "is_microservice_request": False
         }
         self.assertEquals(

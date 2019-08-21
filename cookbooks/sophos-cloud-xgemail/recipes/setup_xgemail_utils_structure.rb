@@ -54,7 +54,8 @@ end
     'recipientsplitconfig.py',
     'recoverableexception.py',
     'routingmanager.py',
-    'scaneventattributes.py'
+    'scaneventattributes.py',
+    'uuidutils.py'
 ].each do | cur |
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{cur}" do
     source cur
