@@ -27,7 +27,7 @@ import os
 import re
 import signal
 import email
-import xgemail_helper
+import uuidutils
 from email.parser import HeaderParser
 from awshandler import AwsHandler
 from common.metadata import Metadata
@@ -125,7 +125,7 @@ def get_metadata(message_headers):
         if (sender_address == null_sender):
             sender_address = None
 
-        x_sophos_header = xgemail_helper.get_x_sophos_email_id(message_headers['X-Sophos-Email-ID'], queue_id)
+        x_sophos_header = uuidutils.get_x_sophos_email_id(message_headers['X-Sophos-Email-ID'], queue_id)
 
         metadata = Metadata(metadataformatter.SCHEMA_VERSION,
                             sender_ip,
