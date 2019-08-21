@@ -12,7 +12,6 @@
 import sys
 sys.path.append("<%= @xgemail_utils_path %>")
 
-import configformatter
 import copy
 import formatterutils
 import gzip
@@ -433,23 +432,6 @@ def upload_documents(metadata, compressed_message, s3_file_path):
         metadata
     )
 
-def check_email_license_expiration(domain):
-    s3_key = 'config/inbound-relay-control/delivery-routes/{0}.ROUTE'.format(domain)
-    raw_config_data = awshandler.download_data_from_s3(POLICY_S3_BUCKET_NAME, s3_key)
-    config_data = configformatter.get_config_binary(raw_config_data)
-    config_json = json.loads(config_data)
-    license_expiration_date = config_json['license_expiration_date']
-    expires_on = datetime.strptime(license_expiration_date, "%Y-%m-%dT%H:%M:%S.%fZ") + timedelta(days=TTL_IN_DAYS)
-
-    if expires_on > datetime.now():
-        logger.warning(
-            'Unable to process email for customer domain {0}, having license expired on : {1}'.format(
-                domain,
-                license_expiration_date
-            )
-        )
-        exit(EX_TEMPFAIL)
-
 def base_policy_flow(metadata, direction, domain, sender, message, message_attributes = None, customer_id = None):
     queue_id = metadata.get_queue_id()
 
@@ -605,45 +587,38 @@ def multi_policy_flow(metadata, direction, domain, sender, message, message_attr
 # a json object to SQS which provides pointer to the message in S3
 def main():
     try:
-        metadata = None
+        metadata = get_metadata()
         domain = None
+        direction = None
+        sender = None
         message_attributes = None
 
         plaintext_message = get_plaintext_message()
 
         if 'INTERNET' == SUBMIT_TYPE:
-            metadata = get_metadata()
             domain = metadata.get_recipient_domain()
+            direction = INBOUND_MESSAGE_DIRECTION
+            sender = metadata.get_sender_address()
             message_attributes = ScanEventAttributes(
                 "internet-submit",
                 "ACCEPTED",
                 "v1"
             )
+            if multipolicyreaderutils.get_multi_policy_enabled():
+                return multi_policy_flow(metadata, direction, domain, sender, plaintext_message, message_attributes)
+
         elif 'CUSTOMER' == SUBMIT_TYPE:
+            direction = OUTBOUND_MESSAGE_DIRECTION
             metadata = get_metadata_for_outbound(metadata, plaintext_message)
+            sender = metadata.get_sender_address()
             domain = get_from_sender_domain(metadata)
-            message_attributes = ScanEventAttributes(
-                "customer-submit",
-                "ACCEPTED",
-                "v1"
-            )
         else:
             raise ("Wrong submit type [{0}]".format(SUBMIT_TYPE))
 
         # required logging for XgemailTestBase automation test
         logger.info("Metadata json info [{0}]".format(metadata))
 
-        # verify if customer's email license expired
-        check_email_license_expiration(domain)
-
-        if 'INTERNET' == SUBMIT_TYPE:
-            if multipolicyreaderutils.get_multi_policy_enabled():
-                return multi_policy_flow(metadata, INBOUND_MESSAGE_DIRECTION,
-                              domain, metadata.get_sender_address(), plaintext_message, message_attributes)
-
-        base_policy_flow(metadata, OUTBOUND_MESSAGE_DIRECTION,
-             domain, metadata.get_sender_address(), plaintext_message, message_attributes)
-
+        base_policy_flow(metadata, direction, domain, sender, plaintext_message, message_attributes)
     except BaseException as e:
         logger.exception("Failed in processing email [{0}]".format(e))
         exit(EX_TEMPFAIL)
@@ -655,12 +630,7 @@ def main():
 # we temporarily fail processing which in turn will make Postfix
 # queue the email for a later delivery attempt.
 def signal_handler(signum, frame):
-    logger.warning(
-        'Handling signal <{0}>. Processing took longer than {1}s to complete'.format(
-            signum,
-            PROCESS_TIMEOUT_SECONDS
-        )
-    )
+    logger.warning('Handling signal <{0}>. Processing took longer than {1}s to complete'.format(signum, PROCESS_TIMEOUT_SECONDS))
     exit(EX_TEMPFAIL)
 
 if __name__ == "__main__":
