@@ -27,7 +27,7 @@ import os
 import re
 import signal
 import email
-import uuid
+import xgemail_helper
 from email.parser import HeaderParser
 from awshandler import AwsHandler
 from common.metadata import Metadata
@@ -102,21 +102,6 @@ ECHOWORX_REPLY_HEADER = "x-echoworx-portal"
 
 awshandler = AwsHandler(AWS_REGION)
 
-#gets the x-sophos-email-id from the header value
-def get_x_sophos_email_id(x_sophos_email_id, queue_id):
-    if x_sophos_email_id is None:
-        logger.warn("Empty X-Sophos-Email-ID header in message with queue_id: [{0}]".format(queue_id))
-        return None
-    try:
-        sophos_email_uuid = uuid.UUID(x_sophos_email_id)
-        return str(sophos_email_uuid)
-    except ValueError as e:
-        logger.warn(
-            "Invalid X-Sophos-Email-ID : [{0}], with queue_id: [{1}], failed to parse with error [{2}]  "
-                .format(x_sophos_email_id, queue_id, e)
-        )
-        return None
-
 #postfix pipe sends metadata as sysargs.
 def get_metadata(message_headers):
     try:
@@ -140,7 +125,7 @@ def get_metadata(message_headers):
         if (sender_address == null_sender):
             sender_address = None
 
-        x_sophos_header = get_x_sophos_email_id(message_headers['X-Sophos-Email-ID'], queue_id)
+        x_sophos_header = xgemail_helper.get_x_sophos_email_id(message_headers['X-Sophos-Email-ID'], queue_id)
 
         metadata = Metadata(metadataformatter.SCHEMA_VERSION,
                             sender_ip,
