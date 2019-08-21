@@ -37,6 +37,7 @@ from email.utils import parseaddr
 from logging.handlers import SysLogHandler
 from routingmanager import RoutingManager
 from scaneventattributes import ScanEventAttributes
+from collections import OrderedDict
 
 # Constants
 AWS_REGION = "<%= @sqs_msg_producer_aws_region %>"
@@ -356,30 +357,58 @@ def get_plaintext_message():
     finally:
         plaintext_email_bytes.close()
 
-def get_metadata_for_outbound(metadata, message_headers):
-    from_header = message_headers['from']
-    if from_header is None:
-        raise Exception("Invalid from header in message with queue_id: [{0}]".format(
-            metadata.get_queue_id())
+# Inspects the headers of an outbound message and attempts to find the validated
+# sender address by looking for policy data in S3.
+#
+# At this stage jilter will already have found a validated sender in either the From or Reply-To header,
+# but this code has no way of knowing which one was used. So we look for policy data in S3 that matches
+# a header (something jilter has already done). We search against the From header first, if a
+# validated sender cannot be found, we try the Reply-To header. If a validated sender *still* cannot
+# be found, we're forced to fail.
+def get_metadata_for_outbound(metadata, headers):
+
+    # Order is important as we want to evaluate the from header first
+    headers_to_validate = OrderedDict()
+    headers_to_validate['from'] = headers['from']
+    headers_to_validate['reply-to'] = headers['reply-to']
+
+    validated_sender = None
+
+    for header_name, header_value in headers_to_validate:
+
+        if header_value is None:
+            raise Exception("Invalid {0} header in message with queue_id: [{1}]".format(
+                header_name,
+                metadata.get_queue_id())
+            )
+
+        header_sender = get_address_from_header(header_value)
+
+        logger.debug("Parsed {0} header sender: [{1}]".format(header_name, header_sender))
+
+        if header_sender is None or not header_sender:
+            raise Exception("Header {0} cannot be null or empty in outbound".format(header_name))
+
+        header_sender_policy_exists = multipolicyreaderutils.policy_file_exists_in_S3(
+            header_sender,
+            AWS_REGION, POLICY_S3_BUCKET_NAME
         )
 
-    # parseaddr always result into 2 tuple ['username', 'email address']
-    # if parse fails then result will be ['','']
-    parsed_from_address = parseaddr(from_header.strip().replace(',', ''))
+        if header_sender_policy_exists:
+            validated_sender = header_sender
+            break
 
-    if parsed_from_address is None or len(parsed_from_address) != 2:
-        raise Exception("Invalid parsed_from_address tuple: [{0}]".format(parsed_from_address))
-
-    from_sender = parsed_from_address[1]
-    logger.debug("Parsed from header sender: [{0}]".format(from_sender))
-
-    if from_sender is None or not from_sender:
-        raise Exception("From header cannot be null or empty in outbound")
+    if validated_sender is None:
+        raise Exception(
+            "No header sender address could be validated for message with queue id [{0}]".format(
+                metadata.get_queue_id()
+            )
+        )
 
     return Metadata(
         metadata.get_schema_version(),
         metadata.get_sender_ip(),
-        from_sender,
+        validated_sender,
         metadata.get_accepting_server_ip(),
         metadata.get_queue_id(),
         metadata.get_date_recorded(),
@@ -387,6 +416,30 @@ def get_metadata_for_outbound(metadata, message_headers):
         metadata.get_recipients(),
         metadata.get_x_sophos_emai_id()
     )
+
+# Given an email address header value, such as:
+#
+# "First Last" <first.last@somewhere.com>
+#
+# Uses the parseaddr method to return the email address portion of the header
+# If the parse operation fails, None is returned.
+def get_address_from_header(header_string):
+
+    # parseaddr always result into 2 tuple ['username', 'email address']
+    # if parse fails then result will be ['','']
+    parsed_address_parts = parseaddr(header_string.strip().replace(',', ''))
+
+    if parsed_address_parts is None or len(parsed_address_parts) != 2:
+        logger.warning("Invalid parsed_address_parts tuple: [{0}]".format(parsed_address_parts))
+        return None
+
+    parsed_address = parsed_address_parts[1]
+
+    if parsed_address is None or not parsed_address:
+        logger.warning('parsed_address from tuple [{0}] was null or empty'.format(parsed_address_parts))
+        return None
+
+    return parsed_address
 
 
 def get_from_sender_domain(metadata):
