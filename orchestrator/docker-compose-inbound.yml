@@ -1,5 +1,15 @@
 version: '3'
 services:
+  cyren:
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/cyren:latest
+    container_name: cyren
+    hostname: cyren
+    domainname: sandbox.sophos
+    ports:
+      - '8088:8088' #cyren port
+    networks:
+      - novanet
+
   savi:
     image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/savi:latest
     container_name: savi
@@ -82,16 +92,16 @@ services:
     ports:
     - '8050:8050'
     environment:
-      - SPRING_PROFILES_ACTIVE=local
       - APPLICATION_NAME=malware-service
+      - AUTH_ENABLED=false
       - AWS_REGION=us-east-1
       - ENVIRONMENT=local
-      - AUTH_ENABLED=false
       - LPAS_ENABLED=true
       - LPAS_ENDPOINT=http://lpas-fake:8080
-      - SQS_ENDPOINT=http://localstack:4576
       - S3_ENDPOINT=http://localstack:4572
+      - SQS_ENDPOINT=http://localstack:4576
       - SNS_ENDPOINT=http://localstack:4575
+      - SPRING_PROFILES_ACTIVE=local
     networks:
       - novanet
 
@@ -103,10 +113,10 @@ services:
     ports:
       - '5225:25' #SMTP
     environment:
-      - HOSTNAME_EXTERNAL=internet-submit
-      - INSTANCE_TYPE=internet-submit
       - DEFAULT_REGION=local
       - DEFAULT_ENVIRONMENT=sandbox
+      - HOSTNAME_EXTERNAL=internet-submit
+      - INSTANCE_TYPE=internet-submit
     depends_on:
       - jilter-inbound
     volumes:
@@ -121,17 +131,18 @@ services:
     hostname: customer-delivery
     domainname: local.sandbox.hydra.sophos.com
     environment:
-      - HOSTNAME_EXTERNAL=customer-delivery
-      - INSTANCE_TYPE=customer-delivery
+      - DEBUG=1
       - DEFAULT_REGION=local
       - DEFAULT_ENVIRONMENT=sandbox
-      - DEBUG=1
+      - HOSTNAME_EXTERNAL=customer-delivery
+      - INSTANCE_TYPE=customer-delivery
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
       - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks
     networks:
       - novanet
 
+#  Added all the required block of code for MH micro service. Testing is not in scope of INF
 #  message-history:
 #    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/message-history:latest
 #    container_name: message-history
@@ -186,6 +197,7 @@ services:
 #    networks:
 #      - novanet
 
+# This is not in scope currently, hence commented out
   # postfix-xd:
   #   image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/postfix:latest
   #   container_name: postfix-xd
@@ -222,7 +234,7 @@ services:
       - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks
       - ~/.xgemail_sandbox/jilter/inbound/:/jilter/
       - ~/.xgemail_sandbox/policy_storage:/policy-storage:rw
-      - /opt/sophos/packages:/opt/sophos/packages:rwx
+      - /opt/sophos/packages:/opt/sophos/packages:rw
     networks:
       - novanet
 

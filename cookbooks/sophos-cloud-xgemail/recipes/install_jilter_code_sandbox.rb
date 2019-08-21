@@ -12,13 +12,10 @@
 PACKAGES_DIR = '/jilter'
 LIBSPF_PACKAGES_DIR = '/opt/sophos/packages'
 DEPLOYMENT_DIR = '/opt/sophos/xgemail'
-
 NODE_TYPE = node['xgemail']['cluster_type']
 DIRECTION = node['xgemail']['direction']
 JILTER_VERSION = node['xgemail']['jilter_version']
-
 JILTER_PACKAGE_NAME = "xgemail-jilter-#{DIRECTION}-#{JILTER_VERSION}"
-
 
 directory PACKAGES_DIR do
   mode '0755'
@@ -44,6 +41,15 @@ if NODE_TYPE == 'jilter-inbound'
   EOH
   end
 
+  template "launch_darkly_sandbox.properties" do
+    path "#{DEPLOYMENT_DIR}/xgemail-jilter-#{DIRECTION}/conf/launch_darkly_sandbox.properties"
+    source 'jilter-launch-darkly.properties.erb'
+    mode '0700'
+    variables(
+        :launch_darkly_key => node['xgemail']['launch_darkly_sandbox']
+    )
+  end
+
 else
   if NODE_TYPE == 'jilter-outbound'
   execute 'extract_jilter_package' do
@@ -55,6 +61,15 @@ else
       tar xf inbound/xgemail-jilter-inbound-#{JILTER_VERSION}.tar -C #{DEPLOYMENT_DIR}
       mv #{DEPLOYMENT_DIR}/xgemail-jilter-inbound* #{DEPLOYMENT_DIR}/xgemail-jilter-inbound
   EOH
+  end
+
+  template "launch_darkly_sandbox.properties" do
+    path "#{DEPLOYMENT_DIR}/xgemail-jilter-#{DIRECTION}/conf/launch_darkly_sandbox.properties"
+    source 'jilter-launch-darkly.properties.erb'
+    mode '0700'
+    variables(
+        :launch_darkly_key => node['xgemail']['launch_darkly_sandbox']
+    )
   end
  end
 end

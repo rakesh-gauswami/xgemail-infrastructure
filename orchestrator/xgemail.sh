@@ -106,6 +106,10 @@ function initialize {
     override_files ${nova_env_file} ${mail_env_file}
 
     echo -e "${GREEN} Initialization Completed Successfully ${NC}"
+
+    #Pulling sasi images
+    docker pull 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/sasi-service:latest
+    docker pull 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/sasi-daemon:latest
 }
 
 : 'This function creates, starts and provisions the base containers required for
@@ -526,7 +530,7 @@ function check_login_to_aws {
 function download_libspf_package {
     # Make sure user has updated permissions in /etc/sudoers file
     #Create packages directory
-    sudo mkdir /opt/sophos/packages
+    sudo mkdir -p /opt/sophos/packages
     sudo chmod -R 777 /opt/sophos/packages
 
     #Download libspf package from S3 bucket
