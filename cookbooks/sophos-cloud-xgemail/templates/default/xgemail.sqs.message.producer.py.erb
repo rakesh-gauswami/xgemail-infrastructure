@@ -365,8 +365,7 @@ def get_plaintext_message():
 # a header (something jilter has already done). We search against the From header first, if a
 # validated sender cannot be found, we try the Reply-To header. If a validated sender *still* cannot
 # be found, we're forced to fail.
-def get_metadata_for_outbound(metadata, message):
-    headers = Parser().parsestr(message, headersonly=True)
+def get_metadata_for_outbound(metadata, headers):
 
     # Order is important as we want to evaluate the from header first
     headers_to_validate = OrderedDict()
