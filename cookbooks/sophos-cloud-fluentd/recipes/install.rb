@@ -113,7 +113,7 @@ end
 execute 'install td-agent fluent-plugin-s3' do
   user 'root'
   command <<-EOH
-      td-agent-gem install fluent-plugin-s3 -v 1.0.0
+      td-agent-gem install fluent-plugin-s3 -v 1.1.11
   EOH
 end
 
