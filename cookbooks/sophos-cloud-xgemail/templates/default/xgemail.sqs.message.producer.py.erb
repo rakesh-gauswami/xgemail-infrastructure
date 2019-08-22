@@ -374,7 +374,7 @@ def get_metadata_for_outbound(metadata, headers):
 
     validated_sender = None
 
-    for header_name, header_value in headers_to_validate:
+    for header_name, header_value in headers_to_validate.items():
 
         if header_value is None:
             raise Exception("Invalid {0} header in message with queue_id: [{1}]".format(
