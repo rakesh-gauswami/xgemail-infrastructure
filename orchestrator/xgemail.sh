@@ -106,10 +106,6 @@ function initialize {
     override_files ${nova_env_file} ${mail_env_file}
 
     echo -e "${GREEN} Initialization Completed Successfully ${NC}"
-
-    #Pulling sasi images
-    docker pull 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/sasi-service:latest
-    docker pull 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/sasi-daemon:latest
 }
 
 : 'This function creates, starts and provisions the base containers required for
@@ -525,6 +521,10 @@ function check_login_to_aws {
     else
         echo -e "${GREEN} Successfully logged into AWS ECR ${NC}"
     fi
+
+    #Pulling sasi images
+    docker pull 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/sasi-service:latest
+    docker pull 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/sasi-daemon:latest
 }
 
 function download_libspf_package {
