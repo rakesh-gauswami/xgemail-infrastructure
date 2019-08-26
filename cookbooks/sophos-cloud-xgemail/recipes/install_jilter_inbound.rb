@@ -209,6 +209,15 @@ else
   APPLICATION = node['xgemail']['application']
   DIRECTION   = node['xgemail']['direction']
 
+  template "launch_darkly_sandbox.properties" do
+    path "#{DEPLOYMENT_DIR}/xgemail-jilter-#{DIRECTION}/conf/launch_darkly_sandbox.properties"
+    source 'jilter-launch-darkly.properties.erb'
+    mode '0700'
+    variables(
+        :launch_darkly_key => node['xgemail']['launch_darkly_sandbox']
+    )
+  end
+
    # Create the Jilter service
   template 'xgemail.jilter.service.sh' do
     path JILTER_SCRIPT_PATH

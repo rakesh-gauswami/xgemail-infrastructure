@@ -359,7 +359,7 @@ function deploy_jilter()
     sandbox_inbound_jilter_tar_location="${HOME}/.xgemail_sandbox/jilter/inbound/"
     sandbox_outbound_jilter_tar_location="${HOME}/.xgemail_sandbox/jilter/outbound/"
 
-    chown -R svc_msguser:svc_msguser ${HOME}/.xgemail_sandbox/jilter/
+    sudo chown -R svc_msguser:svc_msguser ${HOME}/.xgemail_sandbox/jilter/
 
     jilter_inbound_build_location="${jilter_location}xgemail-jilter-inbound/build/distributions/"
     jilter_inbound_build_name="xgemail-jilter-inbound-${jilter_version}.tar"

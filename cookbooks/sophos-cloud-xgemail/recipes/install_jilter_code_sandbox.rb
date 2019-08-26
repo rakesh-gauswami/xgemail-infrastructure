@@ -41,15 +41,6 @@ if NODE_TYPE == 'jilter-inbound'
   EOH
   end
 
-  template "launch_darkly_sandbox.properties" do
-    path "#{DEPLOYMENT_DIR}/xgemail-jilter-#{DIRECTION}/conf/launch_darkly_sandbox.properties"
-    source 'jilter-launch-darkly.properties.erb'
-    mode '0700'
-    variables(
-        :launch_darkly_key => node['xgemail']['launch_darkly_sandbox']
-    )
-  end
-
 else
   if NODE_TYPE == 'jilter-outbound'
   execute 'extract_jilter_package' do
