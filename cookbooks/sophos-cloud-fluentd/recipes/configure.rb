@@ -8,7 +8,7 @@
 #
 # This recipe configures fluentd (td-agent)
 #
-
+=begin
 ACCOUNT                       = node['sophos_cloud']['environment']
 CONF_DIR                      = node['fluentd']['conf_dir']
 INSTANCE_ID                   = node['ec2']['instance_id']
@@ -396,4 +396,4 @@ service 'td-agent' do
   supports :restart => true, :start => true, :stop => true, :reload => true
   action [ :enable, :restart ]
 end
-
+=end

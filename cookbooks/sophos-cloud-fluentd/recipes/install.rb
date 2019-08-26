@@ -17,7 +17,7 @@ MAIN_DIR              = node['fluentd']['main_dir']
 PATTERNS_DIR          = node['fluentd']['patterns_dir']
 TDAGENT_PACKAGE_VERSION = "#{node['fluentd']['tdagent_version']}"
 TDAGENT_PACKAGE_NAME = "td-agent-#{TDAGENT_PACKAGE_VERSION}"
-
+=begin
 yum_package 'redhat-lsb-core' do
   action :install
 end
@@ -167,3 +167,4 @@ ruby_block 'edit rsyslog.conf' do
         end
     end
 end
+=end
