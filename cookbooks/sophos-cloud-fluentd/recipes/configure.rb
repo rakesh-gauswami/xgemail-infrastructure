@@ -396,3 +396,4 @@ service 'td-agent' do
   supports :restart => true, :start => true, :stop => true, :reload => true
   action [ :enable, :restart ]
 end
+
