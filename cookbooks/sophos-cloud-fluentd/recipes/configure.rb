@@ -94,23 +94,23 @@ template 'fluentd-source-lifecycle' do
   owner 'root'
   group 'root'
   variables(
-      :application_name => NODE_TYPE
+    :application_name => NODE_TYPE
   )
   not_if { NODE_TYPE == 'xdelivery' || NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery' }
 end
 
 # internet-delivery - Start Order: 10
-template 'fluentd-source-messagebouncer' do
-  path "#{CONF_DIR}/10-source-messagebouncer.conf"
-  source 'fluentd-source-messagebouncer.conf.erb'
-  mode '0644'
-  owner 'root'
-  group 'root'
-  variables(
-      :application_name => NODE_TYPE
-  )
-  only_if { NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'risky-delivery' }
-end
+ template 'fluentd-source-messagebouncer' do
+   path "#{CONF_DIR}/10-source-messagebouncer.conf"
+   source 'fluentd-source-messagebouncer.conf.erb'
+   mode '0644'
+   owner 'root'
+   group 'root'
+   variables(
+     :application_name => NODE_TYPE
+   )
+   only_if { NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'risky-delivery' }
+ end
 
 # internet-submit - Start Order: 10
 template 'fluentd-source-multi-policy' do
@@ -120,7 +120,7 @@ template 'fluentd-source-multi-policy' do
   owner 'root'
   group 'root'
   variables(
-      :application_name => NODE_TYPE
+    :application_name => NODE_TYPE
   )
   only_if { NODE_TYPE == 'internet-submit' }
 end
@@ -133,7 +133,7 @@ template 'fluentd-source-policy' do
   owner 'root'
   group 'root'
   variables(
-      :application_name => NODE_TYPE
+    :application_name => NODE_TYPE
   )
   only_if { NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit' }
 end
@@ -146,7 +146,7 @@ template 'fluentd-source-sqsmsgconsumer' do
   owner 'root'
   group 'root'
   variables(
-      :application_name => NODE_TYPE
+    :application_name => NODE_TYPE
   )
   only_if { NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'encryption-delivery' || NODE_TYPE == 'risky-delivery' }
 end
@@ -158,7 +158,7 @@ template '/etc/td-agent.d/10-source-sqsmsgproducer.conf' do
   owner 'root'
   group 'root'
   variables(
-      :application_name => NODE_TYPE
+    :application_name => NODE_TYPE
   )
   only_if { NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit'|| NODE_TYPE == 'encryption-submit' }
 end
@@ -171,7 +171,7 @@ template 'fluentd-source-monit' do
   owner 'root'
   group 'root'
   variables(
-      :application_name => NODE_TYPE
+    :application_name => NODE_TYPE
   )
 end
 
@@ -183,9 +183,9 @@ template 'fluentd-match-maillog' do
   owner 'root'
   group 'root'
   variables(
-      :application_name => NODE_TYPE,
-      :maillog_filter_patterns => MAILLOG_FILTER_PATTERNS,
-      :region => REGION
+    :application_name => NODE_TYPE,
+    :maillog_filter_patterns => MAILLOG_FILTER_PATTERNS,
+    :region => REGION
   )
   only_if { NODE_TYPE == 'customer-submit' || NODE_TYPE == 'encryption-submit' || NODE_TYPE == 'encryption-delivery' }
 end
@@ -198,8 +198,8 @@ template 'fluentd-filter-maillog' do
   owner 'root'
   group 'root'
   variables(
-      :application_name => NODE_TYPE,
-      :patterns_dir => PATTERNS_DIR
+    :application_name => NODE_TYPE,
+    :patterns_dir => PATTERNS_DIR
   )
 end
 
@@ -211,9 +211,9 @@ template 'fluentd-match-msg-stats-reject' do
   owner 'root'
   group 'root'
   variables(
-      :application_name => NODE_TYPE,
-      :maillog_filter_patterns => MAILLOG_FILTER_PATTERNS,
-      :region => REGION
+    :application_name => NODE_TYPE,
+    :maillog_filter_patterns => MAILLOG_FILTER_PATTERNS,
+    :region => REGION
   )
   only_if { NODE_TYPE == 'internet-submit' }
 end
@@ -226,18 +226,18 @@ template 'fluentd-match-msg-delivery' do
   owner 'root'
   group 'root'
   variables(
-      :application_name => NODE_TYPE,
-      :maillog_filter_patterns => MAILLOG_FILTER_PATTERNS,
-      :region => REGION
+    :application_name => NODE_TYPE,
+    :maillog_filter_patterns => MAILLOG_FILTER_PATTERNS,
+    :region => REGION
   )
-  only_if {
-    NODE_TYPE == 'customer-delivery' ||
-        NODE_TYPE == 'xdelivery' ||
-        NODE_TYPE == 'internet-delivery' ||
-        NODE_TYPE == 'internet-xdelivery' ||
-        NODE_TYPE == 'risky-delivery' ||
-        NODE_TYPE == 'risky-xdelivery'
-  }
+ only_if {
+            NODE_TYPE == 'customer-delivery' ||
+            NODE_TYPE == 'xdelivery' ||
+            NODE_TYPE == 'internet-delivery' ||
+            NODE_TYPE == 'internet-xdelivery' ||
+            NODE_TYPE == 'risky-delivery' ||
+            NODE_TYPE == 'risky-xdelivery'
+         }
 
 end
 
@@ -249,14 +249,14 @@ template 'fluentd-filter-msg-delivery' do
   owner 'root'
   group 'root'
   only_if {
-    NODE_TYPE == 'customer-delivery' ||
-        NODE_TYPE == 'xdelivery' ||
-        NODE_TYPE == 'internet-delivery' ||
-        NODE_TYPE == 'internet-xdelivery' ||
-        NODE_TYPE == 'risky-delivery' ||
-        NODE_TYPE == 'risky-xdelivery'
-  }
-end
+            NODE_TYPE == 'customer-delivery' ||
+            NODE_TYPE == 'xdelivery' ||
+            NODE_TYPE == 'internet-delivery' ||
+            NODE_TYPE == 'internet-xdelivery' ||
+            NODE_TYPE == 'risky-delivery' ||
+            NODE_TYPE == 'risky-xdelivery'
+         }
+  end
 
 # Only internet-submit  - Start Order: 70
 template 'fluentd-filter-msg-stats-reject' do
@@ -276,10 +276,10 @@ template 'fluentd-filter-transform' do
   owner 'root'
   group 'root'
   variables(
-      :account => ACCOUNT,
-      :application_name => NODE_TYPE,
-      :instance_id => INSTANCE_ID,
-      :region => REGION
+    :account => ACCOUNT,
+    :application_name => NODE_TYPE,
+    :instance_id => INSTANCE_ID,
+    :region => REGION
   )
 end
 
@@ -291,20 +291,20 @@ template 'fluentd-filter-transform-msg-delivery' do
   owner 'root'
   group 'root'
   variables(
-      :server_type => SERVER_TYPE,
-      :server_ip => SERVER_IP,
-      :server_type_xdelivery => SERVER_TYPE_XDELIVERY,
-      :direction => DIRECTION,
-      :non_delivery_dsn => NON_DELIVERY_DSN
+    :server_type => SERVER_TYPE,
+    :server_ip => SERVER_IP,
+    :server_type_xdelivery => SERVER_TYPE_XDELIVERY,
+    :direction => DIRECTION,
+    :non_delivery_dsn => NON_DELIVERY_DSN
   )
-  only_if {
-    NODE_TYPE == 'customer-delivery' ||
-        NODE_TYPE == 'xdelivery' ||
-        NODE_TYPE == 'internet-delivery' ||
-        NODE_TYPE == 'internet-xdelivery' ||
-        NODE_TYPE == 'risky-delivery' ||
-        NODE_TYPE == 'risky-xdelivery'
-  }
+ only_if {
+            NODE_TYPE == 'customer-delivery' ||
+            NODE_TYPE == 'xdelivery' ||
+            NODE_TYPE == 'internet-delivery' ||
+            NODE_TYPE == 'internet-xdelivery' ||
+            NODE_TYPE == 'risky-delivery' ||
+            NODE_TYPE == 'risky-xdelivery'
+         }
 end
 
 # Message delivery status on all delivery and x delivery servers
@@ -315,18 +315,18 @@ template 'fluentd-match-sns-msg-delivery' do
   owner 'root'
   group 'root'
   variables(
-      :main_dir => MAIN_DIR,
-      :region => REGION,
-      :sns_topic => DELIVERY_STATUS_SNS_TOPIC
+    :main_dir => MAIN_DIR,
+    :region => REGION,
+    :sns_topic => DELIVERY_STATUS_SNS_TOPIC
   )
-  only_if {
-    NODE_TYPE == 'customer-delivery' ||
-        NODE_TYPE == 'xdelivery' ||
-        NODE_TYPE == 'internet-delivery' ||
-        NODE_TYPE == 'internet-xdelivery' ||
-        NODE_TYPE == 'risky-delivery' ||
-        NODE_TYPE == 'risky-xdelivery'
-  }
+ only_if {
+            NODE_TYPE == 'customer-delivery' ||
+            NODE_TYPE == 'xdelivery' ||
+            NODE_TYPE == 'internet-delivery' ||
+            NODE_TYPE == 'internet-xdelivery' ||
+            NODE_TYPE == 'risky-delivery' ||
+            NODE_TYPE == 'risky-xdelivery'
+         }
 end
 
 # All instances - Start Order: 99
@@ -337,7 +337,7 @@ template 'fluentd-match-firehose' do
   owner 'root'
   group 'root'
   variables(
-      :region => REGION
+    :region => REGION
   )
 end
 
@@ -349,9 +349,9 @@ template 'fluentd-match-sns-msg-stats-reject' do
   owner 'root'
   group 'root'
   variables(
-      :main_dir => MAIN_DIR,
-      :region => REGION,
-      :sns_topic => MSG_STATS_REJECT_SNS_TOPIC
+    :main_dir => MAIN_DIR,
+    :region => REGION,
+    :sns_topic => MSG_STATS_REJECT_SNS_TOPIC
   )
   only_if { NODE_TYPE == 'internet-submit' }
 end
