@@ -117,6 +117,13 @@ execute 'install td-agent fluent-plugin-s3' do
   EOH
 end
 
+execute 'install td-agent fluent-plugin-sns' do
+  user 'root'
+  command <<-EOH
+      td-agent-gem install fluent-plugin-sns -v 3.2.0
+  EOH
+end
+
 execute 'install td-agent fluent-plugin-grok-parser' do
   user 'root'
   command <<-EOH
@@ -133,10 +140,10 @@ if ACCOUNT != 'sandbox'
   end
 end
 
-execute 'install td-agent fluent-plugin-sns' do
+execute 'Update aws-sdk' do
   user 'root'
   command <<-EOH
-      td-agent-gem install fluent-plugin-sns -v 3.2.0
+      td-agent-gem update aws-sdk --no-document
   EOH
 end
 
