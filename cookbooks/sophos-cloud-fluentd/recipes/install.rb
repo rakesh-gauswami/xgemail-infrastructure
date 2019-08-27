@@ -17,7 +17,7 @@ MAIN_DIR              = node['fluentd']['main_dir']
 PATTERNS_DIR          = node['fluentd']['patterns_dir']
 TDAGENT_PACKAGE_VERSION = "#{node['fluentd']['tdagent_version']}"
 TDAGENT_PACKAGE_NAME = "td-agent-#{TDAGENT_PACKAGE_VERSION}"
-=begin
+
 yum_package 'redhat-lsb-core' do
   action :install
 end
@@ -117,13 +117,6 @@ execute 'install td-agent fluent-plugin-s3' do
   EOH
 end
 
-execute 'install td-agent fluent-plugin-sns' do
-  user 'root'
-  command <<-EOH
-      td-agent-gem install fluent-plugin-sns -v 3.2.0
-  EOH
-end
-
 execute 'install td-agent fluent-plugin-grok-parser' do
   user 'root'
   command <<-EOH
@@ -135,9 +128,16 @@ if ACCOUNT != 'sandbox'
   execute 'install td-agent fluent-plugin-kinesis' do
     user 'root'
     command <<-EOH
-      td-agent-gem install fluent-plugin-kinesis -v 2.1.1
+      td-agent-gem install fluent-plugin-kinesis -v 3.1.0
     EOH
   end
+end
+
+execute 'install td-agent fluent-plugin-sns' do
+  user 'root'
+  command <<-EOH
+      td-agent-gem install fluent-plugin-sns -v 3.2.0
+  EOH
 end
 
 # End Temporary block
@@ -167,4 +167,3 @@ ruby_block 'edit rsyslog.conf' do
         end
     end
 end
-=end
