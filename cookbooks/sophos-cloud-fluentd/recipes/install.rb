@@ -103,20 +103,6 @@ template 'td-agent.conf' do
   )
 end
 
-execute 'uninstall td-agent fluent-plugin-s3' do
-  user 'root'
-  command <<-EOH
-      td-agent-gem uninstall fluent-plugin-s3
-  EOH
-end
-
-execute 'install td-agent fluent-plugin-s3' do
-  user 'root'
-  command <<-EOH
-      td-agent-gem install fluent-plugin-s3 -v 1.1.11
-  EOH
-end
-
 execute 'install td-agent fluent-plugin-sns' do
   user 'root'
   command <<-EOH
