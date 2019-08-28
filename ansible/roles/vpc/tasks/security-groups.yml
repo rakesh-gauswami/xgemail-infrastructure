@@ -20,6 +20,10 @@
     template_parameters:
       Branch:                "{{build.branch}}"
       Environment:           "{{account.name}}"
+      ExternalIpAccessList:  "{{external_ip_access.office.bur.a}}, {{external_ip_access.office.bur.b}}, {{external_ip_access.office.bur.c}}, {{external_ip_access.office.bur.d}}, {{external_ip_access.office.bur.e}}"
+      HopperIpAccessA:       "{{external_ip_access.hopper.a}}"
+      HopperIpAccessB:       "{{external_ip_access.hopper.b}}"
+      HopperIpAccessC:       "{{external_ip_access.hopper.c}}"
       Vpc:                   "{{cloud_email_vpc_stack.stack_outputs.Vpc}}"
   register: sg_stack
 

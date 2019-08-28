@@ -85,12 +85,13 @@ services:
       - ~/.xgemail_sandbox/jilter/outbound/:/jilter/
       - ~/.xgemail_sandbox/jilter/inbound/:/jilter/inbound
       - $XGEMAIL_HOME/xgemail-infrastructure/cookbooks:/opt/sophos/xgemail/cookbooks
+      - /opt/sophos/packages:/opt/sophos/packages:rwx
       - ~/.xgemail_sandbox/policy_storage://policy-storage:rw
     networks:
       - novanet
 
   sasi-service-outbound:
-    image: email/sasi-service
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/sasi-service:latest
     container_name: sasi-service-outbound
     hostname: sasi-service-outbound
     domainname: sandbox.sophos

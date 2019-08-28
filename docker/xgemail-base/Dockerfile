@@ -6,6 +6,8 @@ LABEL maintainer="Sophos Inc. <www.sophos.com>" \
 RUN yum -y update && \
     yum install -y \
             wget \
+            cronie \
+            net-tools \
             unzip \
             logrotate \
             patch \

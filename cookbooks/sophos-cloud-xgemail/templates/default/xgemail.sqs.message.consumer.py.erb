@@ -165,9 +165,9 @@ def add_transport_route_header(recipients_addresses, existing_headers):
 
         if 'port' in config_json:
             port = config_json['port']
-            header_value = '{0}:[{1}]:{2}'.format(transport, host, port)
+            header_value = '{0}:{1}:{2}'.format(transport, host, port)
         else:
-            header_value = '{0}:[{1}]'.format(transport, host)
+            header_value = '{0}:{1}'.format(transport, host)
 
         existing_headers[header_name] = header_value
 

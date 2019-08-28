@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: configure-internet-submit-queue
 #
-# Copyright 2016, Sophos
+# Copyright 2019, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -206,7 +206,7 @@ if ACCOUNT != 'sandbox'
     # Recipient restrictions
     "reject_rbl_client_a = #{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES_A}",
     "reject_rbl_client_b = #{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES_B}",
-    'reject_rbl_client = $reject_rbl_client_a',
+    'reject_rbl_client = $reject_rbl_client_b',
     'smtpd_recipient_restrictions = ' +
       "reject_rhsbl_reverse_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
       "reject_rhsbl_sender #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
@@ -221,7 +221,7 @@ if ACCOUNT != 'sandbox'
         "reject_non_fqdn_sender",
 
     # RBL response configuration
-    "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_A_FILENAME}",
+    "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_B_FILENAME}",
 
     'smtpd_relay_restrictions = ' +
         'permit_auth_destination, ' +
@@ -247,7 +247,7 @@ if ACCOUNT != 'sandbox'
 else
   [
     # RBL response configuration
-    "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_A_FILENAME}"
+    "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_B_FILENAME}"
   ].each do | cur |
     execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
   end
@@ -259,5 +259,7 @@ else
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_utils_structure'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_processors_structure'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_policy_service'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_multi_policy_service'
 
 end
