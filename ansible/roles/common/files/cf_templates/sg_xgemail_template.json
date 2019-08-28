@@ -468,6 +468,7 @@
 
     "SecurityGroupExternalIpAccessCustomerSubmitSmtp": {
       "Type": "AWS::EC2::SecurityGroupIngress",
+      "Condition": "ClosedToWorld",
       "Properties": {
         "GroupId": { "Ref": "XgemailCustomerSubmitSecurityGroupLb" },
         "SourceSecurityGroupId": { "Ref": "SecurityGroupExternalIpAccess" },
@@ -479,6 +480,7 @@
 
     "SecurityGroupExternalIpAccessCustomerSubmitSmtpTls": {
       "Type": "AWS::EC2::SecurityGroupIngress",
+      "Condition": "ClosedToWorld",
       "Properties": {
         "GroupId": { "Ref": "XgemailCustomerSubmitSecurityGroupLb" },
         "SourceSecurityGroupId": { "Ref": "SecurityGroupExternalIpAccess" },
@@ -490,6 +492,7 @@
 
     "SecurityGroupExternalIpAccessInternetSubmitSmtp": {
       "Type": "AWS::EC2::SecurityGroupIngress",
+      "Condition": "ClosedToWorld",
       "Properties": {
         "GroupId": { "Ref": "XgemailInternetSubmitSecurityGroupLb" },
         "SourceSecurityGroupId": { "Ref": "SecurityGroupExternalIpAccess" },
@@ -501,6 +504,7 @@
 
     "SecurityGroupExternalIpAccessInternetSubmitSmtpTls": {
       "Type": "AWS::EC2::SecurityGroupIngress",
+      "Condition": "ClosedToWorld",
       "Properties": {
         "GroupId": { "Ref": "XgemailInternetSubmitSecurityGroupLb" },
         "SourceSecurityGroupId": { "Ref": "SecurityGroupExternalIpAccess" },
@@ -1824,6 +1828,11 @@
     "SecurityGroupJavaSvcBase": {
       "Description": "Java instances base Security Group",
       "Value": { "Ref": "SecurityGroupJavaSvcBase" }
+    },
+    "SecurityGroupExternalIpAccess": {
+      "Condition": "ClosedToWorld",
+      "Description": "External IP Access security group",
+      "Value": { "Ref": "SecurityGroupExternalIpAccess" }
     },
     "SecurityGroupBastion": {
       "Description": "Bastion security group",
