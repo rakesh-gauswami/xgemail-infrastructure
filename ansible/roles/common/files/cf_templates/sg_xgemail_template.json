@@ -375,7 +375,6 @@
 
     "SecurityGroupExternalIpAccess": {
       "Type": "AWS::EC2::SecurityGroup",
-      "Condition": "ClosedToWorld",
       "Properties": {
         "GroupDescription": "IP Address of external locations such as the corporate offices..",
         "SecurityGroupIngress": [
@@ -468,6 +467,7 @@
 
     "SecurityGroupExternalIpAccessCustomerSubmitSmtp": {
       "Type": "AWS::EC2::SecurityGroupIngress",
+      "Condition": "ClosedToWorld",
       "Properties": {
         "GroupId": { "Ref": "XgemailCustomerSubmitSecurityGroupLb" },
         "SourceSecurityGroupId": { "Ref": "SecurityGroupExternalIpAccess" },
@@ -479,6 +479,7 @@
 
     "SecurityGroupExternalIpAccessCustomerSubmitSmtpTls": {
       "Type": "AWS::EC2::SecurityGroupIngress",
+      "Condition": "ClosedToWorld",
       "Properties": {
         "GroupId": { "Ref": "XgemailCustomerSubmitSecurityGroupLb" },
         "SourceSecurityGroupId": { "Ref": "SecurityGroupExternalIpAccess" },
@@ -490,6 +491,7 @@
 
     "SecurityGroupExternalIpAccessInternetSubmitSmtp": {
       "Type": "AWS::EC2::SecurityGroupIngress",
+      "Condition": "ClosedToWorld",
       "Properties": {
         "GroupId": { "Ref": "XgemailInternetSubmitSecurityGroupLb" },
         "SourceSecurityGroupId": { "Ref": "SecurityGroupExternalIpAccess" },
@@ -501,6 +503,7 @@
 
     "SecurityGroupExternalIpAccessInternetSubmitSmtpTls": {
       "Type": "AWS::EC2::SecurityGroupIngress",
+      "Condition": "ClosedToWorld",
       "Properties": {
         "GroupId": { "Ref": "XgemailInternetSubmitSecurityGroupLb" },
         "SourceSecurityGroupId": { "Ref": "SecurityGroupExternalIpAccess" },
