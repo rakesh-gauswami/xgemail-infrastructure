@@ -113,7 +113,7 @@ end
 execute 'install td-agent fluent-plugin-grok-parser' do
   user 'root'
   command <<-EOH
-      td-agent-gem install fluent-plugin-grok-parser
+      td-agent-gem install fluent-plugin-grok-parser -v 2.6.0
   EOH
 end
 
