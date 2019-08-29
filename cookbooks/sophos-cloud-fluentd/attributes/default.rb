@@ -25,7 +25,7 @@
 # cookbooks are running; e.g. do not add the name of the "next host".
 
 
-default['fluentd']['tdagent_version']         = '2.3.5-0'
+default['fluentd']['tdagent_version']         = '3.3.0-1.amazon2018.03'
 default['fluentd']['main_dir']                = '/etc/td-agent'
 default['fluentd']['conf_dir']                = '/etc/td-agent.d'
 default['fluentd']['patterns_dir']            = "#{node['fluentd']['main_dir']}/patterns"
