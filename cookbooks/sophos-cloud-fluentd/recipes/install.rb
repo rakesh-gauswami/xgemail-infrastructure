@@ -29,49 +29,45 @@ directory '/opt/sophos/packages' do
   action :create
 end
 
+cookbook_file '/etc/yum.conf' do
+  path '/etc/yum.conf'
+  source 'yum.conf'
+  mode '0644'
+  owner 'root'
+  group 'root'
+end
+
+execute 'import td-agent repo key' do
+  user 'root'
+  command <<-EOH
+      rpm --import https://packages.treasuredata.com/GPG-KEY-td-agent
+  EOH
+end
+
+cookbook_file '/etc/yum.repos.d/td.repo' do
+  path '/etc/yum.repos.d/td.repo'
+  source 'td.repo'
+  mode '0644'
+  owner 'root'
+  group 'root'
+end
+
+execute 'clean yum cache' do
+  user 'root'
+  command <<-EOH
+      yum clean all
+  EOH
+end
+
 if ACCOUNT != 'sandbox'
 
-  execute 'download_packages' do
-    user 'root'
-    cwd '/opt/sophos/packages'
-    command <<-EOH
-      aws --region us-west-2 s3 cp s3:#{node['sophos_cloud']['thirdparty']}/xgemail/#{TDAGENT_PACKAGE_NAME}.tar.gz .
-    EOH
-  end
-
-  # Extract td-agent files
-  execute 'extract td-agent files' do
-    user 'root'
-    cwd '/opt/sophos/packages'
-    command <<-EOH
-      tar xf #{TDAGENT_PACKAGE_NAME}.tar.gz
-    EOH
-  end
-
-  rpm_package 'install td-agent' do
+  yum_package 'td-agent' do
     action :install
-    package_name "#{TDAGENT_PACKAGE_NAME}.el6.x86_64.rpm"
-    source "/opt/sophos/packages/#{TDAGENT_PACKAGE_NAME}.el6.x86_64.rpm"
-  end
-
-else
-
-  execute 'download_packages' do
-    user 'root'
-    cwd '/opt/sophos/packages'
-    command <<-EOH
-      wget http://packages.treasuredata.com.s3.amazonaws.com/3/redhat/7/x86_64/#{TDAGENT_PACKAGE_NAME}.el7.x86_64.rpm
-    EOH
-  end
-
-  rpm_package 'install td-agent' do
-    action :install
-    package_name "#{TDAGENT_PACKAGE_NAME}.el7.x86_64.rpm"
-    source "/opt/sophos/packages/#{TDAGENT_PACKAGE_NAME}.el7.x86_64.rpm"
+    version "#{TDAGENT_PACKAGE_VERSION}"
+    flush_cache [ :before ]
   end
 
 end
-
 
 directory CONF_DIR do
   owner 'root'
@@ -107,46 +103,6 @@ template 'td-agent.conf' do
   )
 end
 
-# Temporary to update td-agent to latest version until 3rdparty package script can be updated in cloud-infrastructure
-execute 'import td-agent repo key' do
-  user 'root'
-  command <<-EOH
-      rpm --import https://packages.treasuredata.com/GPG-KEY-td-agent
-  EOH
-end
-
-cookbook_file '/etc/yum.repos.d/td.repo' do
-  path '/etc/yum.repos.d/td.repo'
-  source 'td.repo'
-  mode '0644'
-  owner 'root'
-  group 'root'
-end
-
-if ACCOUNT != 'sandbox'
-
-  yum_package 'td-agent' do
-    action :upgrade
-    flush_cache [ :before ]
-  end
-
-end
-
-
-execute 'uninstall td-agent fluent-plugin-s3' do
-  user 'root'
-  command <<-EOH
-      td-agent-gem uninstall fluent-plugin-s3
-  EOH
-end
-
-execute 'install td-agent fluent-plugin-s3' do
-  user 'root'
-  command <<-EOH
-      td-agent-gem install fluent-plugin-s3 -v 1.0.0
-  EOH
-end
-
 execute 'install td-agent fluent-plugin-sns' do
   user 'root'
   command <<-EOH
@@ -157,7 +113,7 @@ end
 execute 'install td-agent fluent-plugin-grok-parser' do
   user 'root'
   command <<-EOH
-      td-agent-gem install fluent-plugin-grok-parser
+      td-agent-gem install fluent-plugin-grok-parser -v 2.6.0
   EOH
 end
 
@@ -165,9 +121,16 @@ if ACCOUNT != 'sandbox'
   execute 'install td-agent fluent-plugin-kinesis' do
     user 'root'
     command <<-EOH
-      td-agent-gem install fluent-plugin-kinesis -v 2.1.1
+      td-agent-gem install fluent-plugin-kinesis -v 3.1.0
     EOH
   end
+end
+
+execute 'Update aws-sdk' do
+  user 'root'
+  command <<-EOH
+      td-agent-gem update aws-sdk --no-document
+  EOH
 end
 
 # End Temporary block
