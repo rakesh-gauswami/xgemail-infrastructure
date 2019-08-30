@@ -523,7 +523,7 @@ def base_policy_flow(metadata, direction, domain, sender, message, message_attri
     publish_msg_processing_message(
         sqs_message.get_sqs_json(),
         message_attributes,
-        metadata.is_microservice_request()
+        metadata.is_microservice_request
     )
 
     history_event = prepare_msg_history_event(
@@ -600,7 +600,7 @@ def multi_policy_flow(metadata, direction, domain, sender, message, message_attr
                 publish_msg_processing_message(
                     processing_job,
                     message_attributes,
-                    metadata.is_microservice_request()
+                    metadata.is_microservice_request
                 )
             sqs_message_json_queue = []
 
@@ -627,7 +627,7 @@ def multi_policy_flow(metadata, direction, domain, sender, message, message_attr
             publish_msg_processing_message(
                 processing_job,
                 message_attributes,
-                metadata.is_microservice_request()
+                metadata.is_microservice_request
             )
 
     if len(history_json_queue) > 0:
