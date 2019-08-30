@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: setup_xgemail_policy_service.rb
 #
-# Copyright 2017, Sophos
+# Copyright 2019, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -17,6 +17,7 @@ require 'json'
 ::Chef::Resource.send(:include, ::SophosCloudXgemail::Helper)
 
 NODE_TYPE = node['xgemail']['cluster_type']
+ACCOUNT = node['sophos_cloud']['environment']
 
 INSTANCE_DATA = node['xgemail']['postfix_instance_data'][NODE_TYPE]
 raise "Unsupported node type [#{NODE_TYPE}]" if INSTANCE_DATA.nil?
@@ -26,9 +27,13 @@ raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 
 XGEMAIL_UTILS_DIR           = node['xgemail']['xgemail_utils_files_dir']
 XGEMAIL_FILES_DIR           = node['xgemail']['xgemail_files_dir']
-INSTANCE_ID                 = node['ec2']['instance_id']
+if ACCOUNT == 'sandbox'
+  POLICY_QUEUE_NAME           = "sandbox-xgemail-policy"
+else
+  INSTANCE_ID                 = node['ec2']['instance_id']
+  POLICY_QUEUE_NAME           = "#{ACCOUNT}-xgemail-policy-#{INSTANCE_ID}"
+end
 AWS_REGION                  = node['sophos_cloud']['region']
-ACCOUNT                     = node['sophos_cloud']['environment']
 POLICY_BUCKET_NAME          = node['xgemail']['xgemail_policy_bucket_name']
 SNS_POLICY_ARN              = node['xgemail']['xgemail_policy_arn']
 PACKAGE_DIR                 = "#{XGEMAIL_FILES_DIR}/xgemail-policy-service"
@@ -36,7 +41,6 @@ CONSUMER_UTILS_SCRIPT       = 'policyconsumerutils.py'
 CONSUMER_UTILS_SCRIPT_PATH  = "#{PACKAGE_DIR}/#{CONSUMER_UTILS_SCRIPT}"
 CONSUMER_SCRIPT             = 'xgemail.policy.consumer.py'
 CONSUMER_SCRIPT_PATH        = "#{PACKAGE_DIR}/#{CONSUMER_SCRIPT}"
-POLICY_QUEUE_NAME           = "#{ACCOUNT}-xgemail-policy-#{INSTANCE_ID}"
 POLLER_SCRIPT               = 'xgemail.sqs.policy.poller.py'
 POLLER_SCRIPT_PATH          = "#{PACKAGE_DIR}/#{POLLER_SCRIPT}"
 TEMP_FAILURE_CODE           = node['xgemail']['temp_failure_code']
@@ -187,4 +191,3 @@ end
 service POLICY_POLLER_SERVICE_NAME do
   action :start
 end
-

@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: install_jilter_inbound
 #
-# Copyright 2017, Sophos
+# Copyright 2019, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -10,14 +10,12 @@
 #
 
 PACKAGES_DIR = '/jilter'
+LIBSPF_PACKAGES_DIR = '/opt/sophos/packages'
 DEPLOYMENT_DIR = '/opt/sophos/xgemail'
-
 NODE_TYPE = node['xgemail']['cluster_type']
 DIRECTION = node['xgemail']['direction']
 JILTER_VERSION = node['xgemail']['jilter_version']
-
 JILTER_PACKAGE_NAME = "xgemail-jilter-#{DIRECTION}-#{JILTER_VERSION}"
-
 
 directory PACKAGES_DIR do
   mode '0755'
@@ -51,9 +49,18 @@ else
   command <<-EOH
       tar xf #{JILTER_PACKAGE_NAME}.tar -C #{DEPLOYMENT_DIR}
       mv #{DEPLOYMENT_DIR}/xgemail-jilter-#{DIRECTION}*SNAPSHOT #{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}
-      tar xf xgemail-jilter-inbound-#{JILTER_VERSION}.tar -C #{DEPLOYMENT_DIR}
-      mv xgemail-jilter-inbound* xgemail-jilter-inbound
+      tar xf inbound/xgemail-jilter-inbound-#{JILTER_VERSION}.tar -C #{DEPLOYMENT_DIR}
+      mv #{DEPLOYMENT_DIR}/xgemail-jilter-inbound* #{DEPLOYMENT_DIR}/xgemail-jilter-inbound
   EOH
+  end
+
+  template "launch_darkly_sandbox.properties" do
+    path "#{DEPLOYMENT_DIR}/xgemail-jilter-#{DIRECTION}/conf/launch_darkly_sandbox.properties"
+    source 'jilter-launch-darkly.properties.erb'
+    mode '0700'
+    variables(
+        :launch_darkly_key => node['xgemail']['launch_darkly_sandbox']
+    )
   end
  end
 end

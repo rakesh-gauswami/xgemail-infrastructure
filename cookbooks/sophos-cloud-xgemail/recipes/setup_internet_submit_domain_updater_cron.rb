@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: setup_internet_submit_domain_updater_cron
 #
-# Copyright 2016, Sophos
+# Copyright 2019, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -92,10 +92,8 @@ if NODE_TYPE != 'encryption-submit'
   end
 end
 
-if ACCOUNT != 'sandbox'
-  cron "#{INSTANCE_NAME}-domain-cron" do
-    minute "*/#{CRON_MINUTE_FREQUENCY}"
-    user 'root'
-    command "source /etc/profile && timeout #{CRON_JOB_TIMEOUT} flock --nb /var/lock/#{CRON_SCRIPT}.lock -c '#{CRON_SCRIPT_PATH}' >/dev/null 2>&1"
-  end
+cron "#{INSTANCE_NAME}-domain-cron" do
+  minute "*/#{CRON_MINUTE_FREQUENCY}"
+  user 'root'
+  command "source /etc/profile && timeout #{CRON_JOB_TIMEOUT} flock --nb /var/lock/#{CRON_SCRIPT}.lock -c '#{CRON_SCRIPT_PATH}' >/dev/null 2>&1"
 end

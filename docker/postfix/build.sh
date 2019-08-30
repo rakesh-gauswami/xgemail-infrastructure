@@ -12,7 +12,7 @@ echo "################ Building postix ###################"
 
 THIRD_PATRY=~/g/email/thirdparty
 POSTFIX_SOPHOS_PATH=postfix3-sophos/output
-POSTFIX_SOPHOS_RPM=postfix3-sophos-3.2.4.1-1.el7.x86_64.rpm
+POSTFIX_SOPHOS_RPM=postfix3-sophos-3.2.4.2-1.el7.x86_64.rpm
 
 postfix_rpm=${THIRD_PATRY}/${POSTFIX_SOPHOS_PATH}/${POSTFIX_SOPHOS_RPM}
 

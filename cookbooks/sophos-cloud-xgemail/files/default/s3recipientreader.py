@@ -113,8 +113,8 @@ if __name__ == "__main__":
         exit without retrieving any data from S3.
     """
     parser = argparse.ArgumentParser(description = 'Retrieve Sophos Email recipients from S3')
-    parser.add_argument('--env', choices=['dev', 'dev3', 'qa', 'prod','inf'], help = 'the environment in which this script runs', required = True)
-    parser.add_argument('--region', choices=['eu-central-1', 'eu-west-1', 'us-west-2', 'us-east-2'], help = 'the region in which this script runs', required = True)
+    parser.add_argument('--env', dest='env', choices=['sandbox', 'dev', 'dev3', 'qa', 'prod','inf'], help = 'the environment in which this script runs', required = True)
+    parser.add_argument('--region', dest='region', choices=['eu-central-1', 'eu-west-1', 'us-west-2', 'us-east-2', 'local'], help = 'the region in which this script runs', required = True)
     parser.add_argument('--enabled', action = 'store_true', help = 'if set then this script will update the actual live recipient file and reload Postfix')
     parser.add_argument('--dryrun', action = 'store_true', help = 'if set then this script will retrieve recipients from S3 but store it in a temporary file')
 
@@ -124,8 +124,11 @@ if __name__ == "__main__":
         # do not execute this script, it's neither enabled nor a dryrun was requested
         logger.info('Script is neither enabled nor set to perform a dry run, exiting.')
         sys.exit(0)
+    if args.env == 'sandbox':
+        policy_bucket = sandbox-cloudemail-xgemail-policy
+    else:
+        policy_bucket = 'private-cloud-{}-{}-cloudemail-xgemail-policy'.format(args.env, args.region)
 
-    policy_bucket = 'private-cloud-{}-{}-cloudemail-xgemail-policy'.format(args.env, args.region)
     s3_bucket = boto3.resource('s3').Bucket(name = policy_bucket)
 
     postfix_config_dir = subprocess.check_output([

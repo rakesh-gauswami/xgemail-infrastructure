@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: setup_xgemail_multi_policy_service.rb
 #
-# Copyright 2018, Sophos
+# Copyright 2019, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -42,7 +42,11 @@ CONSUMER_UTILS_SCRIPT                   = 'policyconsumerutils.py'
 MULTI_POLICY_CONSUMER_UTILS_SCRIPT      = 'multipolicyconsumerutils.py'
 MULTI_POLICY_CONSUMER_UTILS_SCRIPT_PATH = "#{PACKAGE_DIR}/#{MULTI_POLICY_CONSUMER_UTILS_SCRIPT}"
 
-MULTI_POLICY_QUEUE_NAME                 = "#{STATION_VPC_ID}-Xgemail_multi_policy"
+if ACCOUNT == 'sandbox'
+  MULTI_POLICY_QUEUE_NAME               = "sandbox-Xgemail_multi_policy"
+else
+  MULTI_POLICY_QUEUE_NAME               = "#{STATION_VPC_ID}-Xgemail_multi_policy"
+end
 
 if NODE_TYPE == 'internet-submit'
   POLICY_DIR                  = "config/policies/endpoints/"
