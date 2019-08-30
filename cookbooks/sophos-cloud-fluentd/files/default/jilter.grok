@@ -14,44 +14,45 @@ QUEUEID ([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)
 SENDERADDRESS (?:%{EMAILLOCALPART:sender_name}@%{HOSTNAME:sender_domain}|%{DATA})
 RECIPIENTADDRESS (?:%{EMAILLOCALPART:recipient_name}@%{HOSTNAME:recipient_domain}|%{DATA})
 #
-DNSLOOKUPIMPL %{DNSLOOKUPIMPLA}|%{DNSLOOKUPIMPLB}|%{DNSLOOKUPIMPLC}
+DNSLOOKUPIMPL com.sophos.xgemail.jilter.service.impl.DnsLookupImpl %{DNSLOOKUPIMPLA}|%{DNSLOOKUPIMPLB}|%{DNSLOOKUPIMPLC}
 DNSLOOKUPIMPLA DNS lookup failed for domain _dmarc.%{HOSTNAME:sender_domain}
 DNSLOOKUPIMPLB MX lookup failed for domain %{HOSTNAME:sender_domain}
 DNSLOOKUPIMPLC Unable to create DirContext %{GREEDYDATA}
 #
-SOPHOSJILTERHANDLER %{SOPHOSJILTERHANDLERA}|%{SOPHOSJILTERHANDLERB}|%{SOPHOSJILTERHANDLERC}
+SOPHOSJILTERHANDLER com.sophos.xgemail.jilter.SophosJilterHandler %{SOPHOSJILTERHANDLERA}|%{SOPHOSJILTERHANDLERB}|%{SOPHOSJILTERHANDLERC}
 SOPHOSJILTERHANDLERA \[%{NUMBER:session_id}#%{GREEDYDATA:uuid}#%{IPV4:relay_ip}\] queued as \[%{QUEUEID:queue_id}\]
 SOPHOSJILTERHANDLERB \[%{NUMBER:session_id}\] Exception in module %{JAVACLASS:module}
 SOPHOSJILTERHANDLERC One or more ID's missing for session \[%{NUMBER:session_id}\]: queueId: %{QUEUEID:queue_id}, UUID: %{UUID:uuid}
 #
-SPFEVALMODULE SPF result for session <%{NUMBER:session_id}#%{IPV4:relay_ip}> is <%{NUMBER:spf_result}>
+SPFEVALMODULE com.sophos.xgemail.jilter.modules.SPFEvalModule SPF result for session <%{NUMBER:session_id}#%{IPV4:relay_ip}> is <%{NUMBER:spf_result}>
 #
-SPFCHECKERIMPL %{SPFCHECKERIMPLA}|%{SPFCHECKERIMPLB}
+SPFCHECKERIMPL com.sophos.xgemail.jilter.modules.SPFCheckerImpl.jni %{SPFCHECKERIMPLA}|%{SPFCHECKERIMPLB}
 SPFCHECKERIMPLA %{PATH}: %{NUMBER}: SPF result for %{RESULTFOR} is %{SPFRESULT:spf_result}, %{GREEDYDATA:spf_error} - session id <%{NUMBER:session_id}#%{IPV4:instance_ip}>
 SPFCHECKERIMPLB Call to (SPF_request_set_ipv4_str|SPF_request_set_helo_dom|SPF_request_set_env_from) failed: %{GREEDYDATA}, %{GREEDYDATA}
 #
-DKIMEVALMODULE %{DKIMEVALMODULEA}|%{DKIMEVALMODULEB}
+DKIMEVALMODULE com.sophos.xgemail.jilter.modules.DKIMEvalModule %{DKIMEVALMODULEA}|%{DKIMEVALMODULEB}
 DKIMEVALMODULEA DKIM result for session <%{NUMBER:session_id}#%{IPV4:relay_ip}> is <%{NUMBER:dkim_result}>
 DKIMEVALMODULEB Auth domain <%{GREEDYDATA:sender_domain}> was not a valid domain name!
 #
-DKIMACTIONMODULE session <%{NUMBER:session_id}>: DKIM is %{SPFDKIMDMARCACTIONS}
-SPFDMARCACTIONMODULE session <%{NUMBER:session_id}#%{IPV4:instance_ip}>: (SPF|DMARC) is %{SPFDKIMDMARCACTIONS}
+DKIMACTIONMODULE com.sophos.xgemail.jilter.modules.DKIMActionModule session <%{NUMBER:session_id}>: DKIM is %{SPFDKIMDMARCACTIONS}
 #
-BLOCKEDOUTBOUNDFILTERHANDLER %{BLOCKEDOUTBOUNDFILTERHANDLERA}|%{BLOCKEDOUTBOUNDFILTERHANDLERB}|%{BLOCKEDOUTBOUNDFILTERHANDLERC}
+SPFDMARCACTIONMODULE com.sophos.xgemail.jilter.modules.SPFActionModule|com.sophos.xgemail.jilter.modules.DMARCActionModule session <%{NUMBER:session_id}#%{IPV4:instance_ip}>: (SPF|DMARC) is %{SPFDKIMDMARCACTIONS}
+#
+BLOCKEDOUTBOUNDFILTERHANDLER com.sophos.xgemail.jilter.modules.BlockedOutboundFilterHandler %{BLOCKEDOUTBOUNDFILTERHANDLERA}|%{BLOCKEDOUTBOUNDFILTERHANDLERB}|%{BLOCKEDOUTBOUNDFILTERHANDLERC}
 BLOCKEDOUTBOUNDFILTERHANDLERA Envelope sender was empty, returning <EMPTY_FROM> belonging to sessionId <%{NUMBER:session_id}>
 BLOCKEDOUTBOUNDFILTERHANDLERB Domain <%{HOSTNAME:sender_domain}> or email <%{SENDERADDRESS:sender}> is black listed, rejecting
 BLOCKEDOUTBOUNDFILTERHANDLERC Envelope sender value <%{GREEDYDATA:sender}> was not a valid email address, rejecting
 #
-DKIMCHECKERIMPL %{DKIMCHECKERIMPLA}|%{DKIMCHECKERIMPLB}|%{DKIMCHECKERIMPLC}
+DKIMCHECKERIMPL com.sophos.xgemail.jilter.impl.DKIMCheckerImpl.jni %{DKIMCHECKERIMPLA}|%{DKIMCHECKERIMPLB}|%{DKIMCHECKERIMPLC}
 DKIMCHECKERIMPLA DKIMImpl.cpp: %{NUMBER}: DKIM outcome for %{RESULTFOR} is %{GREEDYDATA:dkim_result} \(%{NUMBER:dkim_code}\) - session id <%{NUMBER:session_id}#%{IPV4:instance_ip}>
 DKIMCHECKERIMPLB DKIMImpl.cpp: %{NUMBER}: Sig result for domain <%{HOSTNAME:sender_domain}>: <%{GREEDYDATA:dkim_sig_error}> flags = <%{NUMBER:dkim_sig_flag}> err = <%{GREEDYDATA:dkim_err}> sigbh = <%{NUMBER:dkim_sigbh}> sigerror = <%{NUMBER:dkim_sigerror}> - session id <%{NUMBER:session_id}#%{IPV4:instance_ip}>
 DKIMCHECKERIMPLC DKIMImpl.cpp: %{NUMBER}: %{GREEDYDATA}
 #
-DMARCCHECKERIMPL %{DMARCCHECKERIMPLA}|%{DMARCCHECKERIMPLB}
+DMARCCHECKERIMPL com.sophos.xgemail.jilter.service.impl.DMARCCheckerImpl %{DMARCCHECKERIMPLA}|%{DMARCCHECKERIMPLB}
 DMARCCHECKERIMPLA DMARC result for domain <%{HOSTNAME:sender_domain}> is %{DMARCRESULT} with policy <%{DMARCACTION:dmarc_action}>, from header: <%{GREEDYDATA:from_header}>, envelope sender: <Optional\[%{GREEDYDATA:envelope_sender}\]> - session id <%{NUMBER:session_id}#%{IPV4:relay_ip}>
 DMARCCHECKERIMPLB Couldn't parse DMARC record %{GREEDYDATA:dmarc_nonparse}
 #
-ENVELOPEFROMHANDLER %{ENVELOPEFROMHANDLERVALIDATED}|%{ENVELOPEFROMHANDLERINVALIDDOMAIN}|%{ENVELOPEFROMHANDLERINVALIDSENDER}|%{ENVELOPEFROMHANDLERACCEPT}|%{ENVELOPEFROMHANDLERREJECT}|%{ENVELOPEFROMHANDLEREMPTY}|%{ENVELOPEFROMHANDLERINVALIDEMAIL}|%{ENVELOPEFROMHANDLERSPFPASS}|%{ENVELOPEFROMHANDLERSPFFAIL}
+ENVELOPEFROMHANDLER com.sophos.xgemail.jilter.modules.EnvelopeFromHandler %{ENVELOPEFROMHANDLERVALIDATED}|%{ENVELOPEFROMHANDLERINVALIDDOMAIN}|%{ENVELOPEFROMHANDLERINVALIDSENDER}|%{ENVELOPEFROMHANDLERACCEPT}|%{ENVELOPEFROMHANDLERREJECT}|%{ENVELOPEFROMHANDLEREMPTY}|%{ENVELOPEFROMHANDLERINVALIDEMAIL}|%{ENVELOPEFROMHANDLERSPFPASS}|%{ENVELOPEFROMHANDLERSPFFAIL}
 ENVELOPEFROMHANDLERVALIDATED Validated sender local part <%{SENDERADDRESS:sender}> against domain <%{HOSTNAME:sender_domain}>
 ENVELOPEFROMHANDLERINVALIDDOMAIN Sender <%{HOSTNAME:sender_domain}> was not a hosted provider or a valid customer domain, rejecting.
 ENVELOPEFROMHANDLERINVALIDSENDER Sender local part <%{SENDERADDRESS:sender}> could not be validated for domain <%{HOSTNAME:sender_domain}>
@@ -62,9 +63,8 @@ ENVELOPEFROMHANDLERINVALIDEMAIL envelope sender value <%{SENDERADDRESS:sender}> 
 ENVELOPEFROMHANDLERSPFPASS SPF check %{PASSEDFAILED:spf_check} for hosted provider <%{GREEDYDATA:hosted_provider}>
 ENVELOPEFROMHANDLERSPFFAIL SPF check %{PASSEDFAILED:spf_check} for hosted provider <%{GREEDYDATA:hosted_provider}>, rejecting
 #
-FROMHEADERHANDLER %{FROMHEADERHANDLERA}|%{FROMHEADERHANDLERB}|%{FROMHEADERHANDLERC}|%{FROMHEADERHANDLERD}|%{FROMHEADERHANDLERE}|%{FROMHEADERHANDLERF}|%{FROMHEADERHANDLERG}
+FROMHEADERHANDLER com.sophos.xgemail.jilter.modules.FromHeaderHandler %{FROMHEADERHANDLERA}|%{FROMHEADERHANDLERB}|%{FROMHEADERHANDLERC}|%{FROMHEADERHANDLERD}|%{FROMHEADERHANDLERE}|%{FROMHEADERHANDLERF}|%{FROMHEADERHANDLERG}
 FROMHEADERHANDLERA From header value <%{GREEDYDATA:sender_domain}> was not a valid customer domain, rejecting
-#Header <%{HOSTNAME:sender_domain}> was not a valid customer domain, rejecting.
 FROMHEADERHANDLERB Header <%{GREEDYDATA:header}> was blank, rejecting
 FROMHEADERHANDLERC Header name <%{GREEDYDATA:header}> with value <%{GREEDYDATA:sender}> is not a valid email address, rejecting
 FROMHEADERHANDLERD Local part of address <%{SENDERADDRESS:sender}> is configured to be silently dropped, discarding.
@@ -72,26 +72,41 @@ FROMHEADERHANDLERE Address <%{SENDERADDRESS:sender}> was not a valid customer se
 FROMHEADERHANDLERF Accepting message for domain <%{HOSTNAME:sender_domain}> from ip <%{IPV4:sender_ip}> as ip from address <%{SENDERADDRESS:sender}> is a configured sending ip
 FROMHEADERHANDLERG Rejecting message for domain <%{HOSTNAME:sender_domain}> as client ip <%{IPV4:sender_ip}> is not a configured sending ip
 #
-BLOCKEDOUTBOUNDCONTROLMODULE (Status now set to: <%{BLOCKEDOUTBOUNDSTATUS:status}>)(?:, recipient set to <%{RECIPIENTADDRESS:recipient}> recipientDomain to <%{HOSTNAME:domain}>)?
+BLOCKEDOUTBOUNDCONTROLMODULE com.sophos.xgemail.jilter.modules.BlockedOutboundControlModule (Status now set to: <%{BLOCKEDOUTBOUNDSTATUS:status}>)(?:, recipient set to <%{RECIPIENTADDRESS:recipient}> recipientDomain to <%{HOSTNAME:domain}>)?
 #
-OUTBOUNDRELAYCONTROLMODULE %{OUTBOUNDRELAYCONTROLMODULEA}|%{OUTBOUNDRELAYCONTROLMODULEB}|%{OUTBOUNDRELAYCONTROLMODULEC}|%{OUTBOUNDRELAYCONTROLMODULED}|%{OUTBOUNDRELAYCONTROLMODULEE}
+OUTBOUNDRELAYCONTROLMODULE com.sophos.xgemail.jilter.modules.OutboundRelayControlModule %{OUTBOUNDRELAYCONTROLMODULEA}|%{OUTBOUNDRELAYCONTROLMODULEB}|%{OUTBOUNDRELAYCONTROLMODULEC}|%{OUTBOUNDRELAYCONTROLMODULED}|%{OUTBOUNDRELAYCONTROLMODULEE}
 OUTBOUNDRELAYCONTROLMODULEA Discarding email with status DISCARD
 OUTBOUNDRELAYCONTROLMODULEB No from header found, rejecting
 OUTBOUNDRELAYCONTROLMODULEC Rejecting header <%{GREEDYDATA:header}> because we've already processed one
 OUTBOUNDRELAYCONTROLMODULED Envelope sender domain <%{HOSTNAME:envelope_domain}> doesn't match from header domain <%{HOSTNAME:header_domain}>, rejecting.
 OUTBOUNDRELAYCONTROLMODULEE No client IP address receive, cannot perform outbound relay control
 #
-RECIPIENTPOLICYSERVICE %{RECIPIENTPOLICYSERVICEA}|%{RECIPIENTPOLICYSERVICEB}|%{RECIPIENTPOLICYSERVICEC}
+RECIPIENTPOLICYSERVICE com.sophos.xgemail.jilter.service.impl.RecipientPolicyServiceImpl %{RECIPIENTPOLICYSERVICEA}|%{RECIPIENTPOLICYSERVICEB}|%{RECIPIENTPOLICYSERVICEC}
 RECIPIENTPOLICYSERVICEA Recipient address <%{GREEDYDATA:recipient}> is not a valid email address
 RECIPIENTPOLICYSERVICEB Exception caught when loading allow/block data for recipient <%{UUID:recipient}>
 RECIPIENTPOLICYSERVICEC Interrupted exception caught when loading allow/block data for customer <%{UUID:customer}>
 #
-ADDRESSHEADERPARSER Exception encountered parsing from header %{GREEDYDATA:header}|Invalid from header format %{GREEDYDATA:header}
+ADDRESSHEADERPARSER com.sophos.xgemail.jilter.service.impl.AddressHeaderParserImpl Exception encountered parsing from header %{GREEDYDATA:header}|Invalid from header format %{GREEDYDATA:header}
 #
-RATELIMITSERVICE (Domain|IP address) <%{IPORHOST}> is rate limited!|Building cache with config: <%{GREEDYDATA:config}>|Global rate limit config file doesn't exist, expected at <%{GREEDYDATA:config}>|provider not available yet|Loading global rate limit config from <%{GREEDYDATA:config}>|Global rate limit config loaded as: <%{GREEDYDATA:config}>|New global rate limit config loaded from: <%{GREEDYDATA:config}>|Failed to load global rate limit config from <%{GREEDYDATA:config}>
+RATELIMITSERVICE com.sophos.xgemail.jilter.service.impl.RateLimitServiceImpl (Domain|IP address) <%{IPORHOST}> is rate limited!|Building cache with config: <%{GREEDYDATA:config}>|Global rate limit config file doesn't exist, expected at <%{GREEDYDATA:config}>|provider not available yet|Loading global rate limit config from <%{GREEDYDATA:config}>|Global rate limit config loaded as: <%{GREEDYDATA:config}>|New global rate limit config loaded from: <%{GREEDYDATA:config}>|Failed to load global rate limit config from <%{GREEDYDATA:config}>
 #
-DMARCRECORDPARSER Illegal argument in DMARC record %{GREEDYDATA:header}|p missing from DMARC record %{GREEDYDATA:header}
+DMARCRECORDPARSER com.sophos.xgemail.jilter.service.impl.DMARCRecordParserImpl Illegal argument in DMARC record %{GREEDYDATA:header}|p missing from DMARC record %{GREEDYDATA:header}
 #
-LOGBASE %{SYSLOGTIMESTAMP:time} %{SYSLOGHOST:host} \[%{COMPONENT:process}\] \[%{GREEDYDATA:thread}\] %{LOGLEVEL:level}\s+%{JAVACLASS:logger}
+TLSPROBEHEADERCREATOR com.sophos.xgemail.jilter.modules.TLSProbeHeaderCreator %{TLSPROBEHEADERCREATORA}|%{TLSPROBEHEADERCREATORB}|%{TLSPROBEHEADERCREATORC}
+TLSPROBEHEADERCREATORA Domain <%{GREEDYDATA:recipient_domain}> not a valid domain name. Will not be considered for TLS probe
+TLSPROBEHEADERCREATORB No mailbox data present, cannot verify TLS settings!
+TLSPROBEHEADERCREATORC Cannot determine if encryption enabled for sender
 #
-JILTERLOG %{LOGBASE} (?:%{DNSLOOKUPIMPL}|%{SOPHOSJILTERHANDLER}|%{SPFEVALMODULE}|%{DKIMEVALMODULE}|%{DKIMACTIONMODULE}|%{SPFDMARCACTIONMODULE}|%{DMARCCHECKERIMPL}|%{SPFCHECKERIMPL}|%{BLOCKEDOUTBOUNDFILTERHANDLER}|%{DKIMCHECKERIMPL}|%{ENVELOPEFROMHANDLER}|%{ENVELOPEFROMHANDLER}|%{BLOCKEDOUTBOUNDCONTROLMODULE}|%{OUTBOUNDRELAYCONTROLMODULE}|%{RECIPIENTPOLICYSERVICE}|%{ADDRESSHEADERPARSER}|%{RATELIMITSERVICE}|%{DMARCRECORDPARSER})
+TLSENFORCEMENTMODULE com.sophos.xgemail.jilter.modules.TlsEnforcementModule %{TLSENFORCEMENTMODULEA}|%{TLSENFORCEMENTMODULEB}|%{TLSENFORCEMENTMODULEC}|%{TLSENFORCEMENTMODULED}
+TLSENFORCEMENTMODULEA TLS enforcement not performed as sender domain <%{GREEDYDATA:sender_domain}> was either missing or invalid
+TLSENFORCEMENTMODULEB TLS enforcement not performed as no policy was found!
+TLSENFORCEMENTMODULEC TLS enforcement applied on sender <%{SENDERADDRESS:sender}>, TLS version is below 1.2, rejecting message
+TLSENFORCEMENTMODULED Invalid TLS version <%{GREEDYDATA:tls_version}>: Expected one of TLSv1/TLSv1.1/TLSv1.2
+#
+CLOUDWATCHEVENTCOUNTER com.sophos.xgemail.jilter.service.impl.CloudWatchEventCounterServiceImpl %{GREEDYDATA:msg}
+#
+NOMATCH %{JAVACLASS:logger} %{GREEDYDATA:msg}
+#
+LOGBASE %{SYSLOGTIMESTAMP:time} %{SYSLOGHOST:host} \[%{COMPONENT:process}\] \[%{GREEDYDATA:thread}\] %{LOGLEVEL:level}
+#
+JILTERLOG %{LOGBASE} (?:%{DNSLOOKUPIMPL}|%{SOPHOSJILTERHANDLER}|%{SPFEVALMODULE}|%{DKIMEVALMODULE}|%{DKIMACTIONMODULE}|%{SPFDMARCACTIONMODULE}|%{DMARCCHECKERIMPL}|%{SPFCHECKERIMPL}|%{BLOCKEDOUTBOUNDFILTERHANDLER}|%{DKIMCHECKERIMPL}|%{ENVELOPEFROMHANDLER}|%{ENVELOPEFROMHANDLER}|%{CLOUDWATCHEVENTCOUNTER}|%{BLOCKEDOUTBOUNDCONTROLMODULE}|%{OUTBOUNDRELAYCONTROLMODULE}|%{RECIPIENTPOLICYSERVICE}|%{ADDRESSHEADERPARSER}|%{RATELIMITSERVICE}|%{DMARCRECORDPARSER}|%{TLSPROBEHEADERCREATOR}|%{TLSENFORCEMENTMODULE}|%{NOMATCH})
