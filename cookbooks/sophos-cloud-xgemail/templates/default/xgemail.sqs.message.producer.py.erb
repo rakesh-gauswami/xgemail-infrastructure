@@ -385,7 +385,8 @@ def get_metadata_for_outbound(metadata, message):
         metadata.get_queue_id(),
         metadata.get_date_recorded(),
         metadata.get_recipient_domain(),
-        metadata.get_recipients()
+        metadata.get_recipients(),
+        metadata.get_x_sophos_emai_id()
     )
 
 
@@ -584,17 +585,20 @@ def multi_policy_flow(metadata, direction, domain, sender, message, message_attr
                 history_job
             )
 
+def get_message_headers(message):
+    return Parser().parsestr(message, headersonly=True)
+
 # accepts data from postfix and send message and metadata to S3 and
 # a json object to SQS which provides pointer to the message in S3
 def main():
     try:
-        metadata = get_metadata()
         domain = None
         direction = None
         sender = None
         message_attributes = None
-
         plaintext_message = get_plaintext_message()
+        message_headers = get_message_headers(plaintext_message)
+        metadata = get_metadata(message_headers)
 
         if 'INTERNET' == SUBMIT_TYPE:
             domain = metadata.get_recipient_domain()
