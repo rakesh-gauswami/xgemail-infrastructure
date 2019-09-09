@@ -1,7 +1,7 @@
 version: '3'
 services:
   sasi-daemon:
-    image: email/sasi-daemon
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/sasi-daemon:latest
     container_name: sasi-daemon-container
     hostname: sasi-daemon
     domainname: sandbox.sophos
@@ -12,7 +12,8 @@ services:
         ipv4_address: 172.16.199.111
 
   elasticsearch:
-    image: 'elasticsearch:1.7.5'
+    image: 283871543274.dkr.ecr.us-east-2.amazonaws.com/xgemail/elasticsearch:latest
+    container_name: elasticsearch
     ports:
       - '9200:9200'
       - '9300:9300'

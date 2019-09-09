@@ -27,6 +27,7 @@ import os
 import re
 import signal
 import email
+import uuidutils
 from email.parser import HeaderParser
 from awshandler import AwsHandler
 from common.metadata import Metadata
@@ -124,9 +125,7 @@ def get_metadata(message_headers):
         if (sender_address == null_sender):
             sender_address = None
 
-        x_sophos_header = message_headers['X-Sophos-Email-ID']
-        if x_sophos_header is None:
-            logger.warn("Invalid x-sophos-email-id header in message with queue_id: [{0}]".format(queue_id))
+        x_sophos_header = uuidutils.get_x_sophos_email_id(message_headers['X-Sophos-Email-ID'], queue_id)
 
         metadata = Metadata(metadataformatter.SCHEMA_VERSION,
                             sender_ip,
