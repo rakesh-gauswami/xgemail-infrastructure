@@ -383,13 +383,11 @@ def get_metadata_for_outbound(metadata, headers):
 
         header_sender = get_address_from_header(header_value)
 
-        logger.debug("Parsed {0} header sender: [{1}]".format(header_name, header_sender))
-
         if header_sender is None or not header_sender:
             raise Exception("Header {0} cannot be null or empty in outbound".format(header_name))
 
         header_sender_policy_exists = multipolicyreaderutils.policy_file_exists_in_S3(
-            header_sender,
+            header_sender.lower(),
             AWS_REGION, POLICY_S3_BUCKET_NAME
         )
 
@@ -439,7 +437,6 @@ def get_address_from_header(header_string):
         return None
 
     return parsed_address
-
 
 def get_from_sender_domain(metadata):
     try:

@@ -5,6 +5,11 @@
     alternate_branch: "{{ ami.find.ami_parent_alternate_bugfix_branch }}"
   when: build.branch | search('bugfix/')
 
+- name: "Set alternate branch for hotfix branch to fall back to."
+  set_fact:
+    alternate_branch: "{{ ami.find.ami_parent_alternate_bugfix_branch }}"
+  when: build.branch | search('hotfix/')
+
 - name: "Set alternate branch for feature branch to fall back to."
   set_fact:
     alternate_branch: "{{ ami.find.ami_parent_alternate_feature_branch }}"
