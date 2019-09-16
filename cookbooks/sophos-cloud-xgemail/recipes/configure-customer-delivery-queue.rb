@@ -39,6 +39,9 @@ SMTP_PORT = XDELIVERY_INSTANCE_DATA[:port]
 
 SMTP_FALLBACK_RELAY = "xdelivery-cloudemail-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com:#{SMTP_PORT}"
 
+# mainly used for forwarding VBSpam messages to Sophos Labs
+RECIPIENT_BCC_MAPS = "/etc/postfix-#{INSTANCE_NAME}/recipient_bcc_maps"
+
 # Run an instance of the smtp process that enforces TLS encryption
 [
   "smtp_encrypt/unix = smtp_encrypt unix - - n - - smtp"
@@ -51,7 +54,6 @@ end
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf -P '#{cur}'" )
 end
 
-
 HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
 
 # Add the header checks config file
@@ -61,7 +63,6 @@ file "#{HEADER_CHECKS_PATH}" do
   owner 'root'
   group 'root'
 end
-
 
 CONFIGURATION_COMMANDS =
   [
@@ -73,7 +74,8 @@ CONFIGURATION_COMMANDS =
     'smtp_tls_mandatory_ciphers=high',
     'smtp_tls_mandatory_protocols = TLSv1.2',
     'smtp_tls_loglevel=1',
-    'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache'
+    'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache',
+    "recipient_bcc_maps=hash:#{RECIPIENT_BCC_MAPS}"
 
     # TODO XGE-8891
     # Once we're fully cut over to push policy, uncomment the header_checks line below
@@ -84,6 +86,22 @@ CONFIGURATION_COMMANDS.each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
 end
 
+# Add the recipient BCC config file
+file "#{RECIPIENT_BCC_MAPS}" do
+  content "felix@querty.info eu-west-1-user@querty.info"
+  mode '0644'
+  owner 'root'
+  group 'root'
+end
+
+execute RECIPIENT_BCC_MAPS do
+  command lazy {
+    print_postmulti_cmd(
+      INSTANCE_NAME,
+      "postmap 'hash:#{postmulti_config_dir(INSTANCE_NAME)}/#{RECIPIENT_BCC_MAPS}'"
+    )
+  }
+end
 
 if ACCOUNT == 'sandbox'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_utils_structure'
@@ -102,4 +120,3 @@ include_recipe 'sophos-cloud-xgemail::setup_transport_route_config'
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_consumer'
 
 include_recipe 'sophos-cloud-xgemail::setup_push_policy_delivery_toggle'
-
