@@ -153,8 +153,7 @@ end
   'smtp_tls_mandatory_ciphers=high',
   'smtp_tls_mandatory_protocols = TLSv1.2',
   'smtp_tls_loglevel=1',
-  'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache',
-  "recipient_bcc_maps=hash:#{RECIPIENT_BCC_MAPS_PATH}"
+  'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache'
 ].each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
 end
@@ -178,6 +177,12 @@ if NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery'
 end
 
 if NODE_TYPE == 'xdelivery'
+
+  [
+    "recipient_bcc_maps=hash:#{RECIPIENT_BCC_MAPS_PATH}"
+  ].each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+  end
 
   TRANSPORT_ROUTE_HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
 
