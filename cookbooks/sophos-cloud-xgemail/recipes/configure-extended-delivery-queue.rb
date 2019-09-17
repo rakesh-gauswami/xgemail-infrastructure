@@ -26,7 +26,8 @@ KEY_FILE = "#{LOCAL_KEY_PATH}/#{CERT_NAME}.key"
 SERVER_PEM_FILE = "#{LOCAL_CERT_PATH}/server.pem"
 
 # mainly used for forwarding VBSpam messages to Sophos Labs
-RECIPIENT_BCC_MAPS = "/etc/postfix-#{INSTANCE_NAME}/recipient_bcc_maps"
+RECIPIENT_BCC_MAPS_FILE = 'recipient_bcc_maps'
+RECIPIENT_BCC_MAPS_PATH = "/etc/postfix-#{INSTANCE_NAME}/#{RECIPIENT_BCC_MAPS_FILE}"
 
 # Include Helper library
 ::Chef::Recipe.send(:include, ::SophosCloudXgemail::Helper)
@@ -153,7 +154,7 @@ end
   'smtp_tls_mandatory_protocols = TLSv1.2',
   'smtp_tls_loglevel=1',
   'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache',
-  "recipient_bcc_maps=hash:#{RECIPIENT_BCC_MAPS}"
+  "recipient_bcc_maps=hash:#{RECIPIENT_BCC_MAPS_PATH}"
 ].each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
 end
@@ -189,8 +190,8 @@ if NODE_TYPE == 'xdelivery'
   end
 
   # Add the recipient BCC config file
-  file "#{RECIPIENT_BCC_MAPS}" do
-    content "felix@querty.info eu-west-1-user@querty.info"
+  cookbook_file "#{RECIPIENT_BCC_MAPS_PATH}" do
+    source "#{RECIPIENT_BCC_MAPS_FILE}"
     mode '0644'
     owner 'root'
     group 'root'

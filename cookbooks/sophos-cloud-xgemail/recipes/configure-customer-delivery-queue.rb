@@ -40,7 +40,8 @@ SMTP_PORT = XDELIVERY_INSTANCE_DATA[:port]
 SMTP_FALLBACK_RELAY = "xdelivery-cloudemail-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com:#{SMTP_PORT}"
 
 # mainly used for forwarding VBSpam messages to Sophos Labs
-RECIPIENT_BCC_MAPS = "/etc/postfix-#{INSTANCE_NAME}/recipient_bcc_maps"
+RECIPIENT_BCC_MAPS_FILE = 'recipient_bcc_maps'
+RECIPIENT_BCC_MAPS_PATH = "/etc/postfix-#{INSTANCE_NAME}/#{RECIPIENT_BCC_MAPS_FILE}"
 
 # Run an instance of the smtp process that enforces TLS encryption
 [
@@ -75,7 +76,7 @@ CONFIGURATION_COMMANDS =
     'smtp_tls_mandatory_protocols = TLSv1.2',
     'smtp_tls_loglevel=1',
     'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache',
-    "recipient_bcc_maps=hash:#{RECIPIENT_BCC_MAPS}"
+    "recipient_bcc_maps=hash:#{RECIPIENT_BCC_MAPS_PATH}"
 
     # TODO XGE-8891
     # Once we're fully cut over to push policy, uncomment the header_checks line below
@@ -87,8 +88,8 @@ CONFIGURATION_COMMANDS.each do | cur |
 end
 
 # Add the recipient BCC config file
-file "#{RECIPIENT_BCC_MAPS}" do
-  content "felix@querty.info eu-west-1-user@querty.info"
+cookbook_file "#{RECIPIENT_BCC_MAPS_PATH}" do
+  source "#{RECIPIENT_BCC_MAPS_FILE}"
   mode '0644'
   owner 'root'
   group 'root'
