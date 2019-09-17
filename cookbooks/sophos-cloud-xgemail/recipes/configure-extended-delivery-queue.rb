@@ -25,10 +25,6 @@ CERT_FILE = "#{LOCAL_CERT_PATH}/#{CERT_NAME}.crt"
 KEY_FILE = "#{LOCAL_KEY_PATH}/#{CERT_NAME}.key"
 SERVER_PEM_FILE = "#{LOCAL_CERT_PATH}/server.pem"
 
-# mainly used for forwarding VBSpam messages to Sophos Labs
-RECIPIENT_BCC_MAPS_FILE = 'recipient_bcc_maps'
-RECIPIENT_BCC_MAPS_PATH = "/etc/postfix-#{INSTANCE_NAME}/#{RECIPIENT_BCC_MAPS_FILE}"
-
 # Include Helper library
 ::Chef::Recipe.send(:include, ::SophosCloudXgemail::Helper)
 ::Chef::Resource.send(:include, ::SophosCloudXgemail::Helper)
@@ -120,6 +116,10 @@ INSTANCE_NAME = INSTANCE_DATA[:instance_name]
 raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 
 HOP_COUNT_DELIVERY_INSTANCE = node['xgemail']['hop_count_delivery_instance']
+
+# mainly used for forwarding VBSpam messages to Sophos Labs
+RECIPIENT_BCC_MAPS_FILE = 'recipient_bcc_maps'
+RECIPIENT_BCC_MAPS_PATH = "/etc/postfix-#{INSTANCE_NAME}/#{RECIPIENT_BCC_MAPS_FILE}"
 
 include_recipe 'sophos-cloud-xgemail::common-postfix-multi-instance-config'
 
