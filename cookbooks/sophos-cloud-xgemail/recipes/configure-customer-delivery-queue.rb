@@ -95,11 +95,11 @@ cookbook_file "#{RECIPIENT_BCC_MAPS_PATH}" do
   group 'root'
 end
 
-execute RECIPIENT_BCC_MAPS do
+execute RECIPIENT_BCC_MAPS_PATH do
   command lazy {
     print_postmulti_cmd(
       INSTANCE_NAME,
-      "postmap 'hash:#{postmulti_config_dir(INSTANCE_NAME)}/#{RECIPIENT_BCC_MAPS}'"
+      "postmap 'hash:#{RECIPIENT_BCC_MAPS_PATH}'"
     )
   }
 end
