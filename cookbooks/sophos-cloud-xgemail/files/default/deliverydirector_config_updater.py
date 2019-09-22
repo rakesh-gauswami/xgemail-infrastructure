@@ -32,9 +32,9 @@ def update_record(updated_risk_value, type_of_record, domain_or_email):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Delivery director config updater')
-    parser.add_argument('command', metavar='command', choices=["GET", "DELETE", "ADD", "REDUCE"],
+    parser.add_argument('command', metavar='command', choices=["GET", "GET_ALL", "DELETE", "ADD", "REDUCE"],
                         help='Type of action/operation')
-    parser.add_argument('domainOrEmail', type=str, metavar='domainOrEmail', help='Domain name or email address ')
+    parser.add_argument('--domainOrEmail', type=str, metavar='domainOrEmail', help='Domain name or email address ')
     parser.add_argument('--region', choices=['eu-central-1', 'eu-west-1', 'us-west-2', 'us-east-2'],
                         help = 'the region in which this script runs', required = True)
     parser.add_argument('--risk_value', type=int, metavar='risk_value', choices=xrange(1, 101),
@@ -43,16 +43,31 @@ if __name__ == "__main__":
                         help='Type of record email/domain')
     args = parser.parse_args()
 
-    if (args.command == "ADD" or args.command == "REDUCE") and (args.risk_value is None or args.record_type is None):
-        parser.error("--risk_value and --record_type are required attribute for ADD/REDUCE operation")
+    if (args.command == "GET" or args.command == "DELETE")  and (args.domainOrEmail is None):
+        parser.error("--domainOrEmail is required attribute for GET/DELETE operation")
+
+    if (args.command == "ADD" or args.command == "REDUCE") \
+            and (args.risk_value is None or args.record_type is None or args.domainOrEmail is None):
+        parser.error("--domainOrEmail,--risk_value and --record_type are required attribute for ADD/REDUCE operation")
 
     command = args.command
-    domainOrEmail = str(args.domainOrEmail).strip()
-    riskValue = args.risk_value
-    typeOfRecord = args.record_type
+
+    if command != "GET_ALL":
+        domainOrEmail = str(args.domainOrEmail).strip()
+        riskValue = args.risk_value
+        typeOfRecord = args.record_type
 
     dynamoDb = boto3.resource('dynamodb', args.region)
     table = dynamoDb.Table('tf-delivery-director')
+
+    if command == "GET_ALL":
+        response = table.scan()
+        if len(response) == 0:
+            print "No record found in this region"
+        else:
+            for record in response['Items']:
+                print "Email/domain: %s" % record["key"]
+                print "Risk Count  : %s \n" % record["risk_count"]
 
     if command == "GET":
         try:
