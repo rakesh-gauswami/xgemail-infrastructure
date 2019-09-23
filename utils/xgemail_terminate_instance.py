@@ -146,22 +146,6 @@ def stop_sqs_consumer():
         'Stopping SQS consumer'
     )
 
-#This will be removed in sprint 2019.45
-# def stop_policy_poller_service():
-#     response = run_cmd(
-#         '/sbin/initctl status xgemail-sqs-policy-poller',
-#         'Checking SQS policy poller status'
-#     )
-#
-#     if response == 'xgemail-sqs-policy-poller stop/waiting':
-#         print 'SQS policy poller already stopped.'
-#         return
-#
-#     run_cmd(
-#         '/sbin/initctl stop xgemail-sqs-policy-poller',
-#         'Stopping SQS policy poller'
-#     )
-
 # check the postfix queue. Fail if the queue is not empty.
 def check_postfix_queue(queue):
     if not queue:

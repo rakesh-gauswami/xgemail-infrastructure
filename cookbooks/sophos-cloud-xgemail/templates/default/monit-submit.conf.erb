@@ -4,15 +4,3 @@ check process xgemail-jilter-service with pidfile /var/run/xgemail-jilter-servic
   stop  program = "/etc/init.d/xgemail-jilter-service stop"
   if changed pid then alert
   if failed port 9876 type tcp then restart
-
-# These services will no longer be used, and clean up will be part of 2019.45 sprint
-#check process xgemail-sqs-policy-poller with pidfile /var/run/xgemail-sqs-policy-poller.pid
-#  group mail
-#  start program = "/etc/init.d/xgemail-sqs-policy-poller start"
-#  stop  program = "/etc/init.d/xgemail-sqs-policy-poller stop"
-
-
-#check process xgemail-sqs-multi-policy-poller with pidfile /var/run/xgemail-sqs-multi-policy-poller.pid
-#  group mail
-#  start program = "/etc/init.d/xgemail-sqs-multi-policy-poller start"
-#  stop  program = "/etc/init.d/xgemail-sqs-multi-policy-poller stop"
