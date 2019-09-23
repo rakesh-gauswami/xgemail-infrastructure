@@ -41,8 +41,6 @@ CONSUMER_UTILS_SCRIPT       = 'policyconsumerutils.py'
 CONSUMER_UTILS_SCRIPT_PATH  = "#{PACKAGE_DIR}/#{CONSUMER_UTILS_SCRIPT}"
 CONSUMER_SCRIPT             = 'xgemail.policy.consumer.py'
 CONSUMER_SCRIPT_PATH        = "#{PACKAGE_DIR}/#{CONSUMER_SCRIPT}"
-POLLER_SCRIPT               = 'xgemail.sqs.policy.poller.py'
-POLLER_SCRIPT_PATH          = "#{PACKAGE_DIR}/#{POLLER_SCRIPT}"
 TEMP_FAILURE_CODE           = node['xgemail']['temp_failure_code']
 
 if NODE_TYPE == 'internet-submit'
@@ -140,54 +138,10 @@ template CONSUMER_SCRIPT_PATH do
   notifies :run, "execute[#{CONSUMER_SCRIPT_PATH}]", :immediately
 end
 
-# Write poller script to poller script path on an instance
-template POLLER_SCRIPT_PATH do
-  source "#{POLLER_SCRIPT}.erb"
-  mode '0750'
-  owner 'root'
-  group 'root'
-  variables(
-    :aws_region => AWS_REGION,
-    :configs => CONFIGS.to_json,
-    :node_type => NODE_TYPE,
-    :policy_queue_name => POLICY_QUEUE_NAME,
-    :policy_bucket => POLICY_BUCKET_NAME,
-    :policy_sqs_max_no_of_msgs => POLICY_SQS_POLL_MAX_NUMBER_OF_MESSAGES,
-    :policy_sqs_wait_time_in_seconds => POLICY_SQS_WAIT_TIME_SECONDS,
-    :policy_sqs_msg_visibility_timeout => POLICY_SQS_MESSAGE_VISIBILITY_TIMEOUT,
-    :xgemail_utils_path => XGEMAIL_UTILS_DIR
-  )
-end
-
-template POLICY_POLLER_SERVICE_NAME do
-  path "/etc/init.d/#{POLICY_POLLER_SERVICE_NAME}"
-  source 'xgemail.sqs.policy.poller.init.erb'
-  mode '0755'
-  owner 'root'
-  group 'root'
-  variables(
-    :service => POLICY_POLLER_SERVICE_NAME,
-    :script_path => POLLER_SCRIPT_PATH,
-    :user => 'root'
-  )
-end
-
 # Add rsyslog config file to redirect policy messages to its own log file.
 file '/etc/rsyslog.d/00-xgemail-policy.conf' do
   content "if $syslogtag contains 'policy-' and $syslogseverity <= '5' then /var/log/xgemail/policy.log\n& ~"
   mode '0600'
   owner 'root'
   group 'root'
-end
-
-
-service POLICY_POLLER_SERVICE_NAME do
-  service_name POLICY_POLLER_SERVICE_NAME
-  init_command "/etc/init.d/#{POLICY_POLLER_SERVICE_NAME}"
-  supports :restart => true, :start => true, :stop => true, :reload => true
-  subscribes :enable, 'template[xgemail-sqs-policy-poller]', :immediately
-end
-
-service POLICY_POLLER_SERVICE_NAME do
-  action :start
 end

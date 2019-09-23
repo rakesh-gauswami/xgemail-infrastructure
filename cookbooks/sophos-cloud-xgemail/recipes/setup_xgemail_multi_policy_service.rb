@@ -33,9 +33,6 @@ XGEMAIL_UTILS_DIR                       = node['xgemail']['xgemail_utils_files_d
 STATION_VPC_ID                          = node['xgemail']['station_vpc_id']
 
 PACKAGE_DIR                             = "#{XGEMAIL_FILES_DIR}/xgemail-policy-service"
-
-POLLER_SCRIPT                           = 'xgemail.sqs.policy.poller.py'
-MULTI_POLICY_POLLER_SCRIPT              = 'xgemail.sqs.multi.policy.poller.py'
 MULTI_POLLER_SCRIPT_PATH                = "#{PACKAGE_DIR}/#{MULTI_POLICY_POLLER_SCRIPT}"
 
 CONSUMER_UTILS_SCRIPT                   = 'policyconsumerutils.py'
@@ -88,53 +85,10 @@ template MULTI_POLICY_CONSUMER_UTILS_SCRIPT_PATH do
   )
 end
 
-# Write poller script to poller script path on an instance
-template MULTI_POLLER_SCRIPT_PATH do
-  source "#{POLLER_SCRIPT}.erb"
-  mode '0750'
-  owner 'root'
-  group 'root'
-  variables(
-    :aws_region => AWS_REGION,
-    :configs => CONFIGS.to_json,
-    :node_type => NODE_TYPE,
-    :policy_queue_name => MULTI_POLICY_QUEUE_NAME,
-    :policy_bucket => POLICY_BUCKET_NAME,
-    :policy_sqs_max_no_of_msgs => POLICY_SQS_POLL_MAX_NUMBER_OF_MESSAGES,
-    :policy_sqs_wait_time_in_seconds => POLICY_SQS_WAIT_TIME_SECONDS,
-    :policy_sqs_msg_visibility_timeout => POLICY_SQS_MESSAGE_VISIBILITY_TIMEOUT,
-    :xgemail_utils_path => XGEMAIL_UTILS_DIR
-  )
-end
-
-template MULTI_POLICY_POLLER_SERVICE_NAME do
-  path "/etc/init.d/#{MULTI_POLICY_POLLER_SERVICE_NAME}"
-  source 'xgemail.sqs.policy.poller.init.erb'
-  mode '0755'
-  owner 'root'
-  group 'root'
-  variables(
-    :service => MULTI_POLICY_POLLER_SERVICE_NAME,
-    :script_path => MULTI_POLLER_SCRIPT_PATH,
-    :user => 'root'
-  )
-end
-
 # Add rsyslog config file to redirect policy messages to its own log file.
 file '/etc/rsyslog.d/00-xgemail-multi-policy.conf' do
   content "if $syslogtag contains 'policy-' and $syslogseverity <= '5' then /var/log/xgemail/multi-policy.log\n& ~"
   mode '0600'
   owner 'root'
   group 'root'
-end
-
-service MULTI_POLICY_POLLER_SERVICE_NAME do
-  service_name MULTI_POLICY_POLLER_SERVICE_NAME
-  init_command "/etc/init.d/#{MULTI_POLICY_POLLER_SERVICE_NAME}"
-  supports :restart => true, :start => true, :stop => true, :reload => true
-  subscribes :enable, 'template[xgemail-sqs-multi-policy-poller]', :immediately
-end
-
-service MULTI_POLICY_POLLER_SERVICE_NAME do
-  action :start
 end
