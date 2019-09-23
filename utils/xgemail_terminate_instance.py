@@ -7,7 +7,7 @@ __author__ = 'cloud-email-dev@sophos.com'
 Properly terminates an Xgemail submit or delivery instance.
 This is expected to be run on the instance that should be terminated.
 
-Copyright 2016, Sophos Limited. All rights reserved.
+Copyright 2019, Sophos Limited. All rights reserved.
 
 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
 Sophos Limited and Sophos Group.  All other product and company
@@ -146,20 +146,21 @@ def stop_sqs_consumer():
         'Stopping SQS consumer'
     )
 
-def stop_policy_poller_service():
-    response = run_cmd(
-        '/sbin/initctl status xgemail-sqs-policy-poller',
-        'Checking SQS policy poller status'
-    )
-
-    if response == 'xgemail-sqs-policy-poller stop/waiting':
-        print 'SQS policy poller already stopped.'
-        return
-
-    run_cmd(
-        '/sbin/initctl stop xgemail-sqs-policy-poller',
-        'Stopping SQS policy poller'
-    )
+#This will be removed in sprint 2019.45
+# def stop_policy_poller_service():
+#     response = run_cmd(
+#         '/sbin/initctl status xgemail-sqs-policy-poller',
+#         'Checking SQS policy poller status'
+#     )
+#
+#     if response == 'xgemail-sqs-policy-poller stop/waiting':
+#         print 'SQS policy poller already stopped.'
+#         return
+#
+#     run_cmd(
+#         '/sbin/initctl stop xgemail-sqs-policy-poller',
+#         'Stopping SQS policy poller'
+#     )
 
 # check the postfix queue. Fail if the queue is not empty.
 def check_postfix_queue(queue):
