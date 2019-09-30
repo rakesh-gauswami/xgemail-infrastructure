@@ -88,12 +88,9 @@ else
      #do nothing since this doesn't run on any other nodes
 end
 
-POLICY_SQS_POLL_MAX_NUMBER_OF_MESSAGES  = node['xgemail']['sqs_policy_poller_max_number_of_messages']
-POLICY_SQS_WAIT_TIME_SECONDS            = node['xgemail']['sqs_policy_poller_wait_time_seconds']
 POLICY_SQS_VISIBILITY_TIMEOUT           = node['xgemail']['sqs_policy_poller_visibility_timeout']
 POLICY_SQS_MESSAGE_RETENTION_PERIOD     = node['xgemail']['sqs_policy_poller_message_retention_period']
 POLICY_SQS_MESSAGE_VISIBILITY_TIMEOUT   = node['xgemail']['sqs_policy_sqs_message_visibility_timeout']
-POLICY_POLLER_SERVICE_NAME              = node['xgemail']['sqs_policy_poller_service_name']
 
 #directory for policy services
 directory PACKAGE_DIR do

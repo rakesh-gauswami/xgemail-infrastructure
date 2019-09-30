@@ -18,23 +18,15 @@ require 'json'
 
 ACCOUNT                                 = node['sophos_cloud']['environment']
 AWS_REGION                              = node['sophos_cloud']['region']
-
 NODE_TYPE                               = node['xgemail']['cluster_type']
-MULTI_POLICY_POLLER_SERVICE_NAME        = node['xgemail']['sqs_multi_policy_poller_service_name']
 POLICY_BUCKET_NAME                      = node['xgemail']['xgemail_policy_bucket_name']
-POLICY_SQS_POLL_MAX_NUMBER_OF_MESSAGES  = node['xgemail']['sqs_policy_poller_max_number_of_messages']
-POLICY_SQS_WAIT_TIME_SECONDS            = node['xgemail']['sqs_policy_poller_wait_time_seconds']
-POLICY_SQS_MESSAGE_VISIBILITY_TIMEOUT   = node['xgemail']['sqs_policy_sqs_message_visibility_timeout']
 SNS_POLICY_ARN                          = node['xgemail']['xgemail_policy_arn']
 TEMP_FAILURE_CODE                       = node['xgemail']['temp_failure_code']
 XGEMAIL_EFS_FILES_DIR                   = node['xgemail']['policy_efs_mount_dir']
 XGEMAIL_FILES_DIR                       = node['xgemail']['xgemail_files_dir']
 XGEMAIL_UTILS_DIR                       = node['xgemail']['xgemail_utils_files_dir']
 STATION_VPC_ID                          = node['xgemail']['station_vpc_id']
-
 PACKAGE_DIR                             = "#{XGEMAIL_FILES_DIR}/xgemail-policy-service"
-MULTI_POLLER_SCRIPT_PATH                = "#{PACKAGE_DIR}/#{MULTI_POLICY_POLLER_SCRIPT}"
-
 CONSUMER_UTILS_SCRIPT                   = 'policyconsumerutils.py'
 MULTI_POLICY_CONSUMER_UTILS_SCRIPT      = 'multipolicyconsumerutils.py'
 MULTI_POLICY_CONSUMER_UTILS_SCRIPT_PATH = "#{PACKAGE_DIR}/#{MULTI_POLICY_CONSUMER_UTILS_SCRIPT}"
