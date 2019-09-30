@@ -147,13 +147,8 @@ default['xgemail']['msg_history_events_sns_topic'] = "#{node['xgemail']['station
 default['xgemail']['scan_events_sns_topic'] = "#{node['xgemail']['station_vpc_id']}-xgemail-scan-events-SNS"
 
 ## Policy service/poller settings
-default['xgemail']['sqs_policy_poller_max_number_of_messages'] = 10
-default['xgemail']['sqs_policy_poller_wait_time_seconds'] = 20
 default['xgemail']['sqs_policy_poller_visibility_timeout'] = '10'
 default['xgemail']['sqs_policy_poller_message_retention_period'] = '172800'
-default['xgemail']['sqs_policy_sqs_message_visibility_timeout'] = 300
-default['xgemail']['sqs_policy_poller_service_name'] = 'xgemail-sqs-policy-poller'
-default['xgemail']['sqs_multi_policy_poller_service_name'] = 'xgemail-sqs-multi-policy-poller'
 
 ## SQS Lifecycle Poller settings
 default['xgemail']['sqs_lifecycle_poller_max_number_of_messages'] = 10
