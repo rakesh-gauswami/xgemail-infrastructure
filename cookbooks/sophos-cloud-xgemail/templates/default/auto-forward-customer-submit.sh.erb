@@ -1,0 +1,93 @@
+#!/bin/sh
+#
+# Copyright 2019, Sophos
+#
+# All rights reserved - Do Not Redistribute
+#
+# This script allows for toggling auto forward on and off on a single
+# customer submit server.
+#
+
+get_post_data() {
+cat << EOF
+{
+"key":"relay.control.xmeirl.check",
+"value":"$1"
+}
+EOF
+}
+
+switch_passive_mode() {
+
+ local result=0
+ local _ans=$2
+ if (( $1 == 1 )); then
+    result=$(curl -s -w "\n%{http_code}" -H "Content-Type: application/json"\
+         --data "$(get_post_data true)"\
+         "http://localhost:8080/propertyConfig")
+ else
+    result=$(curl -s -w "\n%{http_code}" -H "Content-Type: application/json"\
+         --data "$(get_post_data false)"\
+         "http://localhost:8080/propertyConfig")
+ fi
+ echo "API response after setting property config..."
+ echo $result
+ eval $_ans="'$result'"
+
+}
+
+#
+# Enables Auto Forward on this specific server.
+#
+# After all configuration changes have been made, postfix is reloaded.
+# If the reload fails, all changes are reverted.
+#
+enable() {
+
+    echo "Updating xmeirl check config in jilter to OFF..."
+
+    switch_passive_mode 0 response
+    switch_passive_mode_return_code=$response
+
+    if (( switch_passive_mode_return_code != 200 )); then
+      echo "Passive mode config update FAILED! ABORTING!"
+      exit 1
+    fi
+
+    echo "DONE"
+}
+
+#
+# Disables Auto Forward on this specific server.
+#
+# After all configuration changes have been made, postfix is reloaded.
+# If the reload fails, all changes are reverted.
+#
+disable() {
+
+    echo "Updating passive mode config in ilter to ON..."
+
+    switch_passive_mode 1 response
+    switch_passive_mode_return_code=$response
+
+    if (( switch_passive_mode_return_code != 200 )); then
+      echo "Passive mode config update FAILED! ABORTING!"
+      exit 1
+    fi
+
+    echo "DONE"
+}
+
+
+case "$1" in
+    enable)
+        $1
+        ;;
+    disable)
+        $1
+        ;;
+    *)
+        echo $"Usage: $0 {enable|disable}"
+        exit 2
+esac
+exit $?
