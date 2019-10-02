@@ -4,7 +4,7 @@
 #
 # All rights reserved - Do Not Redistribute
 #
-# This script allows for toggling auto forward on and off on a single
+# This script allows for toggling Auto Forward/ XMEIRL header checks on and off on a single
 # customer submit server.
 #
 
@@ -17,7 +17,7 @@ cat << EOF
 EOF
 }
 
-switch_passive_mode() {
+switch_xmeirl_check() {
 
  local result=0
  local _ans=$2
@@ -33,24 +33,20 @@ switch_passive_mode() {
  echo "API response after setting property config..."
  echo $result
  eval $_ans="'$result'"
-
 }
 
 #
-# Enables Auto Forward on this specific server.
-#
-# After all configuration changes have been made, postfix is reloaded.
-# If the reload fails, all changes are reverted.
+# Enables Auto Forward/XMEIRL header checks on this specific server.
 #
 enable() {
 
-    echo "Updating xmeirl check config in jilter to OFF..."
+    echo "Updating Auto Forward/ XMEIRL header checks config in jilter to ON..."
 
-    switch_passive_mode 0 response
+    switch_passive_mode 1 response
     switch_passive_mode_return_code=$response
 
     if (( switch_passive_mode_return_code != 200 )); then
-      echo "Passive mode config update FAILED! ABORTING!"
+      echo "Auto Forward/ XMEIRL header checks config update FAILED! ABORTING!"
       exit 1
     fi
 
@@ -58,20 +54,17 @@ enable() {
 }
 
 #
-# Disables Auto Forward on this specific server.
-#
-# After all configuration changes have been made, postfix is reloaded.
-# If the reload fails, all changes are reverted.
+# Disables Auto Forward/ XMEIRL header checks on this specific server.
 #
 disable() {
 
-    echo "Updating passive mode config in ilter to ON..."
+    echo "Updating Auto Forward/ XMEIRL header checks config in ilter to OFF..."
 
-    switch_passive_mode 1 response
+    switch_passive_mode 0 response
     switch_passive_mode_return_code=$response
 
     if (( switch_passive_mode_return_code != 200 )); then
-      echo "Passive mode config update FAILED! ABORTING!"
+      echo "Auto Forward/ XMEIRL header checks config update FAILED! ABORTING!"
       exit 1
     fi
 
