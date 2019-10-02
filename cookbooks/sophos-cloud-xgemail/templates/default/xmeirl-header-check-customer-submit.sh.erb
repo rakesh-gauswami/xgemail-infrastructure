@@ -42,10 +42,10 @@ enable() {
 
     echo "Updating Auto Forward/ XMEIRL header checks config in jilter to ON..."
 
-    switch_passive_mode 1 response
-    switch_passive_mode_return_code=$response
+    switch_xmeirl_check 1 response
+    switch_xmeirl_check_return_code=$response
 
-    if (( switch_passive_mode_return_code != 200 )); then
+    if (( switch_xmeirl_check_return_code != 200 )); then
       echo "Auto Forward/ XMEIRL header checks config update FAILED! ABORTING!"
       exit 1
     fi
@@ -60,17 +60,16 @@ disable() {
 
     echo "Updating Auto Forward/ XMEIRL header checks config in ilter to OFF..."
 
-    switch_passive_mode 0 response
-    switch_passive_mode_return_code=$response
+    switch_xmeirl_check 0 response
+    switch_xmeirl_check_return_code=$response
 
-    if (( switch_passive_mode_return_code != 200 )); then
+    if (( switch_xmeirl_check_return_code != 200 )); then
       echo "Auto Forward/ XMEIRL header checks config update FAILED! ABORTING!"
       exit 1
     fi
 
     echo "DONE"
 }
-
 
 case "$1" in
     enable)
