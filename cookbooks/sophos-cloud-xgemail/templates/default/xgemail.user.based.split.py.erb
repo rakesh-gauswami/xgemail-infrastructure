@@ -15,19 +15,20 @@
 #    - Add/remove customers for a per-customer recipient split of messages
 #
 
-from logging.handlers import SysLogHandler
-from uuid import UUID
-
 import argparse
 import json
 import logging
-import sys
 import os
+import sys
+from logging.handlers import SysLogHandler
+from uuid import UUID
 
 # Constants
 POLICY_STORAGE_PATH = "<%= @policy_storage_path %>"
 INBOUND_RELAY_CONTROL_PATH = POLICY_STORAGE_PATH + '/config/inbound-relay-control/'
-SPLIT_RECIPIENT_CONFIG_FILE = INBOUND_RELAY_CONTROL_PATH + 'msg_producer_split_by_recipients.CONFIG'
+OUTBOUND_RELAY_CONTROL_PATH =POLICY_STORAGE_PATH + '/config/outbound-relay-control/'
+SPLIT_RECIPIENT_CONFIG_FILE_INBOUND = INBOUND_RELAY_CONTROL_PATH + 'msg_producer_split_by_recipients.CONFIG'
+SPLIT_RECIPIENT_CONFIG_FILE_OUTBOUND = OUTBOUND_RELAY_CONTROL_PATH + 'msg_outbound_split_by_recipients.CONFIG'
 
 logger = logging.getLogger('split-by-recipient')
 logger.setLevel(logging.INFO)
@@ -53,72 +54,75 @@ def validate_uuid(uuid_string):
         return False
     return True
 
-def get_config():
+def get_config(mail_flow_direction):
     '''
         Returns the current split-by-recipient configuration.
         If no CONFIG file currently exists, print out the default config
     '''
-    if os.path.isfile(SPLIT_RECIPIENT_CONFIG_FILE):
-        with open(SPLIT_RECIPIENT_CONFIG_FILE) as config_file:
+    split_config_file = SPLIT_RECIPIENT_CONFIG_FILE_INBOUND if mail_flow_direction == 'INBOUND' else SPLIT_RECIPIENT_CONFIG_FILE_OUTBOUND
+    if os.path.isfile(split_config_file):
+        with open(split_config_file) as config_file:
             config_data = json.load(config_file)
-            print 'split by recipient enabled globally: {0}'.format(config_data['is_globally_enabled'])
-
-            print 'split by recipient enabled for these {0} customer ids:'.format(len(config_data['customer_ids_enabled']))
+            print '{0} split by recipient enabled globally: {1}'.format(mail_flow_direction,config_data['is_globally_enabled'])
+            print '{0} split by recipient enabled for these {1} customer ids:'.format(mail_flow_direction,len(config_data['customer_ids_enabled']))
             for customer_id in config_data['customer_ids_enabled']:
                 print '\t{0}'.format(customer_id)
     else:
-        print 'Config file does not exist at location {0}'.format(SPLIT_RECIPIENT_CONFIG_FILE)
+        print '{0} config file does not exist at location {1}'.format(mail_flow_direction,split_config_file)
         print '[DEFAULT_CONFIG]: split by recipient enabled globally: {0}'.format(default_config['is_globally_enabled'])
         print '[DEFAULT_CONFIG]: split by recipient enabled for these customer ids: {0}'.format(default_config['customer_ids_enabled'])
 
-def update_global_config(updated_value, config_location):
+def update_global_config(updated_value, mail_flow_direction):
     '''
         Updates the global configuration setting depending on the provided value.
     '''
+    config_location = SPLIT_RECIPIENT_CONFIG_FILE_INBOUND if mail_flow_direction == 'INBOUND' else SPLIT_RECIPIENT_CONFIG_FILE_OUTBOUND
     config = get_current_config(config_location)
 
     config['is_globally_enabled'] = updated_value
 
     write_config(config, config_location)
 
-    logger.info('Set is_globally_enabled to {0} in file {1}'.format(updated_value, config_location))
-    print 'Set is_globally_enabled to {0} in file {1}'.format(updated_value, config_location)
+    logger.info('Set is_globally_enabled to {0} in file {1} for {2}'.format(updated_value, config_location,mail_flow_direction))
+    print 'Set is_globally_enabled to {0} in file {1} for {2}'.format(updated_value, config_location,mail_flow_direction)
 
-def add_customer(customer_id, config_location):
+def add_customer(customer_id, mail_flow_direction):
     '''
         Adds the provided customer_id to the list of customers for which messages should be split by recipient.
         If the customer_id already exists, this method does nothing.
     '''
+    config_location = SPLIT_RECIPIENT_CONFIG_FILE_INBOUND if mail_flow_direction == 'INBOUND' else SPLIT_RECIPIENT_CONFIG_FILE_OUTBOUND
     config = get_current_config(config_location)
 
     if customer_id in config['customer_ids_enabled']:
-        print 'Customer with id {0} already exists in file {1}'.format(customer_id, config_location)
+        print 'Customer with id {0} already exists in file {1} for {2}'.format(customer_id, config_location,mail_flow_direction)
         return
 
     config['customer_ids_enabled'].append(customer_id)
 
     write_config(config, config_location)
 
-    logger.info('Added customer_id {0} in file {1}'.format(customer_id, config_location))
-    print 'Added customer_id {0} in file {1}'.format(customer_id, config_location)
+    logger.info('Added customer_id {0} in file {1} for {2}'.format(customer_id, config_location,mail_flow_direction))
+    print 'Added customer_id {0} in file {1} for {2}'.format(customer_id, config_location,mail_flow_direction)
 
-def remove_customer(customer_id, config_location):
+def remove_customer(customer_id, mail_flow_direction):
     '''
         Removes the provided customer_id from the list of customers for which messages should be split by recipient.
         If the customer_id does not exist, this method does nothing.
     '''
+    config_location = SPLIT_RECIPIENT_CONFIG_FILE_INBOUND if mail_flow_direction == 'INBOUND' else SPLIT_RECIPIENT_CONFIG_FILE_OUTBOUND
     config = get_current_config(config_location)
 
     if not customer_id in config['customer_ids_enabled']:
-        print 'Customer with id {0} does not exist in file {1}'.format(customer_id, config_location)
+        print 'Customer with id {0} does not exist in file {1} for {2}'.format(customer_id, config_location,mail_flow_direction)
         return
 
     config['customer_ids_enabled'].remove(customer_id)
 
     write_config(config, config_location)
 
-    logger.info('Added customer_id {0} in file {1}'.format(customer_id, config_location))
-    print 'Removed customer_id {0} from file {1}'.format(customer_id, config_location)
+    logger.info('Added customer_id {0} in file {1} for {2}'.format(customer_id, config_location,mail_flow_direction))
+    print 'Removed customer_id {0} from file {1} for {2}'.format(customer_id, config_location,mail_flow_direction)
 
 def get_current_config(config_location):
     '''
@@ -148,6 +152,8 @@ def write_config(config, config_location):
 
 if __name__ == "__main__":
     user_split_parser = argparse.ArgumentParser(description='Used to modify which messages are split by recipients')
+    user_split_parser.add_argument('--direction', choices=['INBOUND', 'OUTBOUND'],
+                                   help='Mail flow direction for enabling split', required=True)
     user_split_parser.add_argument('--get', action='store_true', help='Get current split-by-recipient configuration')
     user_split_parser.add_argument('--enableglobal', action='store_true', help='Enable split-by-recipient feature on a global level')
     user_split_parser.add_argument('--disableglobal', action='store_true', help='Disable split-by-recipient feature on a global level (customer level still applies)')
@@ -155,22 +161,23 @@ if __name__ == "__main__":
     user_split_parser.add_argument('--removecustomer', help='Removes a customer id (UUID4 format) so that messages for that customer are no longer split by recipients')
 
     user_split_args = user_split_parser.parse_args()
+    direction = user_split_args.direction
 
     if user_split_args.get:
-        get_config()
+        get_config(direction)
     elif user_split_args.enableglobal:
-        update_global_config(True, SPLIT_RECIPIENT_CONFIG_FILE)
+        update_global_config(True, direction)
     elif user_split_args.disableglobal:
-        update_global_config(False, SPLIT_RECIPIENT_CONFIG_FILE)
+        update_global_config(False, direction)
     elif user_split_args.addcustomer:
         if not validate_uuid(user_split_args.addcustomer):
             print 'Invalid UUID {0}'.format(user_split_args.addcustomer)
             sys.exit(1)
-        add_customer(user_split_args.addcustomer, SPLIT_RECIPIENT_CONFIG_FILE)
+        add_customer(user_split_args.addcustomer, direction)
     elif user_split_args.removecustomer:
         if not validate_uuid(user_split_args.removecustomer):
             print 'Invalid UUID {0}'.format(user_split_args.addcustomer)
             sys.exit(1)
-        remove_customer(user_split_args.removecustomer, SPLIT_RECIPIENT_CONFIG_FILE)
+        remove_customer(user_split_args.removecustomer, direction)
     else:
         user_split_parser.print_help()
