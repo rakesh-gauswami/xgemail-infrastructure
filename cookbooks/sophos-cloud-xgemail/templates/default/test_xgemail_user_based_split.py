@@ -108,7 +108,7 @@ class UserBasedSplitTest(unittest.TestCase):
 
         user_based_split_module.remove_customer('99e61a73-5e3b-4616-8719-6098a0cb0ede', self.config_valid_file)
 
-        retrieved_config = user_based_split_module.get_current_config(self.config_valid_file, inbound_direction)
+        retrieved_config = user_based_split_module.get_current_config(self.config_valid_file)
 
         self.assertIsNotNone(retrieved_config)
         self.assertTrue(len(updated_config['customer_ids_enabled']) == 1)
