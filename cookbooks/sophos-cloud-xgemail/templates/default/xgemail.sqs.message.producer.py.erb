@@ -39,6 +39,7 @@ from logging.handlers import SysLogHandler
 from routingmanager import RoutingManager
 from scaneventattributes import ScanEventAttributes
 from collections import OrderedDict
+from recipientsplitconfig import RecipientSplitConfig
 
 # Constants
 AWS_REGION = "<%= @sqs_msg_producer_aws_region %>"
@@ -94,6 +95,10 @@ INBOUND_MESSAGE_DIRECTION = "INBOUND"
 OUTBOUND_MESSAGE_DIRECTION = "OUTBOUND"
 POLICY_ID_PATH_VALUE = "/00/"
 SQS_BATCH_SIZE = 10
+
+EFS_POLICY_STORAGE_PATH = '/policy-storage/'
+OUTBOUND_RELAY_CONTROL_PATH = EFS_POLICY_STORAGE_PATH + 'config/outbound-relay-control/'
+OUTBOUND_SPLIT_BY_RECIPIENTS_CONFIG_PATH = OUTBOUND_RELAY_CONTROL_PATH + 'msg_outbound_split_by_recipients.CONFIG'
 
 awshandler = AwsHandler(AWS_REGION)
 
@@ -795,8 +800,8 @@ def main():
             sender = metadata.get_sender_address()
             domain = get_from_sender_domain(metadata)
 
-            #TODO implement this flag
-            outbound_split = True
+            outbound_split = multipolicyreaderutils.outbound_split_by_recipient_enabled(metadata ,AWS_REGION, POLICY_S3_BUCKET_NAME)
+            print "Outbound split flag is {0}".format(outbound_split)
 
             if outbound_split and len(metadata.get_recipients) > 1 :
                 return outbound_split_by_recipients(metadata,domain,plaintext_message,direction)
