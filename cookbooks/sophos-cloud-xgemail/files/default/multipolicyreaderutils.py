@@ -9,17 +9,17 @@
 # respective owners.
 #
 
-import base64
 import json
 import logging
+import base64
+import boto3
+from awshandler import AwsHandler
+import policyformatter
+from recipientsplitconfig import RecipientSplitConfig
 import time
 from logging.handlers import SysLogHandler
-
 from botocore.exceptions import ClientError
 
-import policyformatter
-from awshandler import AwsHandler
-from recipientsplitconfig import RecipientSplitConfig
 
 #Constants
 EFS_POLICY_STORAGE_PATH = '/policy-storage/'
