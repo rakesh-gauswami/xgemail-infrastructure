@@ -387,9 +387,10 @@ def get_metadata_for_outbound(metadata, headers):
         if header_value is None:
             raise Exception("Invalid {0} header in message with queue_id: [{1}]. FROM header: {2}, REPLY-TO header: {3}".format(
                 header_name,
-                metadata.get_queue_id()),
+                metadata.get_queue_id(),
                 headers['from'],
                 headers['reply-to']
+                )
             )
 
         header_sender = get_address_from_header(header_value)
