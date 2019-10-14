@@ -31,6 +31,8 @@ import unittest
 import imp
 
 absolute_path = path.dirname(path.realpath(__file__))
+INBOUND = "INBOUND"
+OUTBOUND = "OUTBOUND"
 
 # on OSX, the file /dev/log does not exist and needs to be changed to /var/run/syslog
 if sys.platform.startswith('darwin'):
@@ -66,6 +68,8 @@ class UserBasedSplitTest(unittest.TestCase):
 
         with open(self.config_valid_file, 'w') as config_file:
             config_file.write(json.dumps(self.config_valid))
+        user_based_split_module.SPLIT_RECIPIENT_CONFIG_FILE_INBOUND = self.config_valid_file
+        user_based_split_module.SPLIT_RECIPIENT_CONFIG_FILE_OUTBOUND = self.config_valid_file
 
     def tearDown(self):
         # remove the directory after the test
@@ -83,7 +87,7 @@ class UserBasedSplitTest(unittest.TestCase):
         updated_config = copy.deepcopy(self.config_valid)
         updated_config['is_globally_enabled'] = True
 
-        user_based_split_module.update_global_config(True, self.config_valid_file)
+        user_based_split_module.update_global_config(True, INBOUND)
 
         retrieved_config = user_based_split_module.get_current_config(self.config_valid_file)
 
@@ -94,7 +98,7 @@ class UserBasedSplitTest(unittest.TestCase):
         updated_config = copy.deepcopy(self.config_valid)
         updated_config['customer_ids_enabled'].append('ffffffff-5e3b-4616-8719-6098a0cb0ede')
 
-        user_based_split_module.add_customer('ffffffff-5e3b-4616-8719-6098a0cb0ede', self.config_valid_file)
+        user_based_split_module.add_customer('ffffffff-5e3b-4616-8719-6098a0cb0ede', INBOUND)
 
         retrieved_config = user_based_split_module.get_current_config(self.config_valid_file)
 
@@ -106,7 +110,31 @@ class UserBasedSplitTest(unittest.TestCase):
         updated_config = copy.deepcopy(self.config_valid)
         updated_config['customer_ids_enabled'].remove('99e61a73-5e3b-4616-8719-6098a0cb0ede')
 
-        user_based_split_module.remove_customer('99e61a73-5e3b-4616-8719-6098a0cb0ede', self.config_valid_file)
+        user_based_split_module.remove_customer('99e61a73-5e3b-4616-8719-6098a0cb0ede', INBOUND)
+
+        retrieved_config = user_based_split_module.get_current_config(self.config_valid_file)
+
+        self.assertIsNotNone(retrieved_config)
+        self.assertTrue(len(updated_config['customer_ids_enabled']) == 1)
+        self.assertEquals(json.dumps(retrieved_config, sort_keys=True), json.dumps(updated_config, True))
+
+    def test_add_customer_outbound(self):
+        updated_config = copy.deepcopy(self.config_valid)
+        updated_config['customer_ids_enabled'].append('ffffffff-5e3b-4616-8719-6098a0cb0ede')
+
+        user_based_split_module.add_customer('ffffffff-5e3b-4616-8719-6098a0cb0ede', OUTBOUND)
+
+        retrieved_config = user_based_split_module.get_current_config(self.config_valid_file)
+
+        self.assertIsNotNone(retrieved_config)
+        self.assertTrue(len(updated_config['customer_ids_enabled']) == 3)
+        self.assertEquals(json.dumps(retrieved_config, sort_keys=True), json.dumps(updated_config, True))
+
+    def test_remove_customer_outbound(self):
+        updated_config = copy.deepcopy(self.config_valid)
+        updated_config['customer_ids_enabled'].remove('99e61a73-5e3b-4616-8719-6098a0cb0ede')
+
+        user_based_split_module.remove_customer('99e61a73-5e3b-4616-8719-6098a0cb0ede', OUTBOUND)
 
         retrieved_config = user_based_split_module.get_current_config(self.config_valid_file)
 
