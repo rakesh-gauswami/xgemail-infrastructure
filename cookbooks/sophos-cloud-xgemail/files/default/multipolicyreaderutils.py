@@ -39,7 +39,6 @@ FLAG_TO_TOC_USER_BASED_SPLIT = EFS_MULTI_POLICY_CONFIG_PATH + 'msg_producer_toc_
 INBOUND_SPLIT_BY_RECIPIENTS_CONFIG_PATH = INBOUND_RELAY_CONTROL_PATH + 'msg_producer_split_by_recipients.CONFIG'
 OUTBOUND_SPLIT_BY_RECIPIENTS_CONFIG_PATH = OUTBOUND_RELAY_CONTROL_PATH + 'msg_outbound_split_by_recipients.CONFIG'
 
-
 logger = logging.getLogger('multi-policy-reader-utils')
 logger.setLevel(logging.INFO)
 syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
