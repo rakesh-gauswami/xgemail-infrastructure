@@ -85,6 +85,10 @@ def outbound_split_by_recipient_enabled(metadata, aws_region, policy_bucket_name
     # Read outbound split config
     split_config = RecipientSplitConfig(OUTBOUND_SPLIT_BY_RECIPIENTS_CONFIG_PATH)
 
+    # No need to read policy to get customerId if globally enabled
+    if split_config.is_globally_enabled:
+        return True
+
     try:
         # For outbound we need to read sender policy to get customer id
         customer_policy = read_policy(
