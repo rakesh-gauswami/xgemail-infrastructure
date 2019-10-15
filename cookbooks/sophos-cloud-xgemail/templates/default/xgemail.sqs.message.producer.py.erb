@@ -686,6 +686,9 @@ def get_message_headers(message):
 
 
 def outbound_split_by_recipients(metadata, domain, message, direction, message_attributes=None):
+
+    # required logging for XgemailTestBase automation test
+    logger.info("Metadata json info [{0}]".format(metadata))
     recipients = metadata.get_recipients()
 
     queue_id = metadata.get_queue_id()
@@ -706,7 +709,7 @@ def outbound_split_by_recipients(metadata, domain, message, direction, message_a
         this_recipient_metadata.set_recipients([recipient])
         this_recipient_metadata.add_uuid_to_queue_id()
 
-        new_s3_file_path = s3_file_path.replace(POLICY_ID_PATH_VALUE, "/"+recipient+ "/")
+        new_s3_file_path = s3_file_path.replace(POLICY_ID_PATH_VALUE, "/"+ str(hash(recipient)) + "/")
         # create a sqs message with policy_id
         sqs_message = SqsMessage(
             messageformatter.SCHEMA_VERSION,
@@ -801,7 +804,7 @@ def main():
             domain = get_from_sender_domain(metadata)
 
             outbound_split = multipolicyreaderutils.outbound_split_by_recipient_enabled(metadata ,AWS_REGION, POLICY_S3_BUCKET_NAME)
-            print "Outbound split flag is {0}".format(outbound_split)
+            logger.debug("Outbound split flag is set to {0} for metadata {1} ".format(outbound_split,metadata));
 
             if outbound_split:
                 return outbound_split_by_recipients(metadata,domain,plaintext_message,direction)

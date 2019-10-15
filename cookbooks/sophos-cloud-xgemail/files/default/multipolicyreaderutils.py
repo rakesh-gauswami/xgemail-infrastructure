@@ -13,6 +13,7 @@ import base64
 import json
 import logging
 import time
+import traceback
 from logging.handlers import SysLogHandler
 
 from botocore.exceptions import ClientError
@@ -101,8 +102,8 @@ def outbound_split_by_recipient_enabled(metadata, aws_region, policy_bucket_name
         customer_id = customer_policy['customerId']
 
         return split_config.is_split_by_recipient_enabled(customer_id)
-    except:
-        logger.error('Unable to split by recipients')
+    except Exception:
+        logger.warn('Unable to split by recipients. Proceeding without splitting. Error {0}'.format(traceback.format_exc()))
         return False
 
 def build_policy_map(recipients, aws_region = None, policy_bucket_name = None, policies = {}):
