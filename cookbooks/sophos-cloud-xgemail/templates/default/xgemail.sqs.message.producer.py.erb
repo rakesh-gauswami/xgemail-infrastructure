@@ -803,7 +803,7 @@ def main():
             outbound_split = multipolicyreaderutils.outbound_split_by_recipient_enabled(metadata ,AWS_REGION, POLICY_S3_BUCKET_NAME)
             print "Outbound split flag is {0}".format(outbound_split)
 
-            if outbound_split and len(metadata.get_recipients) > 1 :
+            if outbound_split:
                 return outbound_split_by_recipients(metadata,domain,plaintext_message,direction)
         else:
             raise ("Wrong submit type [{0}]".format(SUBMIT_TYPE))

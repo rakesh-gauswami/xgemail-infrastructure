@@ -79,7 +79,8 @@ def outbound_split_by_recipient_enabled(metadata, aws_region, policy_bucket_name
         Determines if the current message must be split by recipients for outbound.
         Returns True if split by recipient required, False otherwise.
     """
-    if len(metadata.get_recipients) <= 1:
+    recipients = metadata.get_recipients()
+    if len(recipients) <= 1:
         return False
 
     # Read outbound split config
