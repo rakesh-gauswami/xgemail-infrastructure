@@ -13,6 +13,7 @@ import json
 import logging
 import base64
 import traceback
+import boto3
 from awshandler import AwsHandler
 import policyformatter
 from recipientsplitconfig import RecipientSplitConfig
@@ -42,7 +43,6 @@ INBOUND_SPLIT_BY_RECIPIENTS_CONFIG_PATH = INBOUND_RELAY_CONTROL_PATH + 'msg_prod
 
 # Outbound split by recipient config file path
 OUTBOUND_SPLIT_BY_RECIPIENTS_CONFIG_PATH = OUTBOUND_RELAY_CONTROL_PATH + 'msg_outbound_split_by_recipients.CONFIG'
-
 
 logger = logging.getLogger('multi-policy-reader-utils')
 logger.setLevel(logging.INFO)

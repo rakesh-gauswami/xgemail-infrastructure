@@ -39,4 +39,3 @@ class RecipientSplitConfig:
             return True
 
         return (customer_id in self.customer_ids_enabled)
-
