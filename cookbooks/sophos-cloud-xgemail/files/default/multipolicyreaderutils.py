@@ -12,6 +12,7 @@
 import json
 import logging
 import base64
+import traceback
 import boto3
 from awshandler import AwsHandler
 import policyformatter
@@ -31,11 +32,17 @@ MULTI_POLICY_ENDPOINTS_PATH = 'config/policies/endpoints/'
 EFS_MULTI_POLICY_ENDPOINTS_PATH = EFS_POLICY_STORAGE_PATH + MULTI_POLICY_ENDPOINTS_PATH
 
 INBOUND_RELAY_CONTROL_PATH = EFS_POLICY_STORAGE_PATH + 'config/inbound-relay-control/'
+OUTBOUND_RELAY_CONTROL_PATH = EFS_POLICY_STORAGE_PATH + 'config/outbound-relay-control/'
 EFS_MULTI_POLICY_CONFIG_PATH = INBOUND_RELAY_CONTROL_PATH + 'multi-policy/'
 EFS_MULTI_POLICY_CONFIG_FILE = EFS_MULTI_POLICY_CONFIG_PATH + 'global.CONFIG'
 FLAG_TO_READ_POLICY_FROM_S3_FILE = EFS_MULTI_POLICY_CONFIG_PATH + 'msg_producer_read_policy_from_s3_global.CONFIG'
 FLAG_TO_TOC_USER_BASED_SPLIT = EFS_MULTI_POLICY_CONFIG_PATH + 'msg_producer_toc_user_based_split_global.CONFIG'
-SPLIT_BY_RECIPIENTS_CONFIG_PATH = INBOUND_RELAY_CONTROL_PATH + 'msg_producer_split_by_recipients.CONFIG'
+
+# Inbound split by recipient config file path
+INBOUND_SPLIT_BY_RECIPIENTS_CONFIG_PATH = INBOUND_RELAY_CONTROL_PATH + 'msg_producer_split_by_recipients.CONFIG'
+
+# Outbound split by recipient config file path
+OUTBOUND_SPLIT_BY_RECIPIENTS_CONFIG_PATH = OUTBOUND_RELAY_CONTROL_PATH + 'msg_outbound_split_by_recipients.CONFIG'
 
 logger = logging.getLogger('multi-policy-reader-utils')
 logger.setLevel(logging.INFO)
@@ -70,6 +77,38 @@ def split_by_recipient(split_config, recipients, aws_region, policy_bucket_name,
         logger.error('Unable to split by recipients')
         return False
 
+
+def outbound_split_by_recipient_enabled(metadata, aws_region, policy_bucket_name):
+    """
+        Determines if the current message must be split by recipients for outbound.
+        Returns True if split by recipient required, False otherwise.
+    """
+    recipients = metadata.get_recipients()
+    if len(recipients) <= 1:
+        return False
+
+    # Read outbound split config
+    split_config = RecipientSplitConfig(OUTBOUND_SPLIT_BY_RECIPIENTS_CONFIG_PATH)
+
+    # No need to read policy to get customerId if globally enabled
+    if split_config.is_globally_enabled:
+        return True
+
+    try:
+        # For outbound we need to read sender policy to get customer id
+        customer_policy = read_policy(
+            metadata.get_sender_address(),
+            aws_region,
+            policy_bucket_name,
+            get_read_from_s3_enabled()
+        )
+        customer_id = customer_policy['customerId']
+
+        return split_config.is_split_by_recipient_enabled(customer_id)
+    except Exception:
+        logger.warn('Unable to split by recipients For outbound. Proceeding without splitting. Error {0}'.format(traceback.format_exc()))
+        return False
+
 def build_policy_map(recipients, aws_region = None, policy_bucket_name = None, policies = {}):
     """
         This method returns two values.
@@ -82,7 +121,7 @@ def build_policy_map(recipients, aws_region = None, policy_bucket_name = None, p
     """
     user_list = policies.copy()
     read_from_s3 = get_read_from_s3_enabled()
-    split_config = RecipientSplitConfig(SPLIT_BY_RECIPIENTS_CONFIG_PATH)
+    split_config = RecipientSplitConfig(INBOUND_SPLIT_BY_RECIPIENTS_CONFIG_PATH)
     customer_id = None
 
     if split_by_recipient(split_config, recipients, aws_region, policy_bucket_name, read_from_s3):
