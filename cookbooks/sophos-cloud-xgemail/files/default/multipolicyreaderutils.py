@@ -9,18 +9,17 @@
 # respective owners.
 #
 
-import base64
 import json
 import logging
-import time
+import base64
 import traceback
+from awshandler import AwsHandler
+import policyformatter
+from recipientsplitconfig import RecipientSplitConfig
+import time
 from logging.handlers import SysLogHandler
-
 from botocore.exceptions import ClientError
 
-import policyformatter
-from awshandler import AwsHandler
-from recipientsplitconfig import RecipientSplitConfig
 
 #Constants
 EFS_POLICY_STORAGE_PATH = '/policy-storage/'
@@ -37,7 +36,11 @@ EFS_MULTI_POLICY_CONFIG_PATH = INBOUND_RELAY_CONTROL_PATH + 'multi-policy/'
 EFS_MULTI_POLICY_CONFIG_FILE = EFS_MULTI_POLICY_CONFIG_PATH + 'global.CONFIG'
 FLAG_TO_READ_POLICY_FROM_S3_FILE = EFS_MULTI_POLICY_CONFIG_PATH + 'msg_producer_read_policy_from_s3_global.CONFIG'
 FLAG_TO_TOC_USER_BASED_SPLIT = EFS_MULTI_POLICY_CONFIG_PATH + 'msg_producer_toc_user_based_split_global.CONFIG'
+
+# Inbound split by recipient config file path
 INBOUND_SPLIT_BY_RECIPIENTS_CONFIG_PATH = INBOUND_RELAY_CONTROL_PATH + 'msg_producer_split_by_recipients.CONFIG'
+
+# Outbound split by recipient config file path
 OUTBOUND_SPLIT_BY_RECIPIENTS_CONFIG_PATH = OUTBOUND_RELAY_CONTROL_PATH + 'msg_outbound_split_by_recipients.CONFIG'
 
 
@@ -103,7 +106,7 @@ def outbound_split_by_recipient_enabled(metadata, aws_region, policy_bucket_name
 
         return split_config.is_split_by_recipient_enabled(customer_id)
     except Exception:
-        logger.warn('Unable to split by recipients. Proceeding without splitting. Error {0}'.format(traceback.format_exc()))
+        logger.warn('Unable to split by recipients For outbound. Proceeding without splitting. Error {0}'.format(traceback.format_exc()))
         return False
 
 def build_policy_map(recipients, aws_region = None, policy_bucket_name = None, policies = {}):

@@ -27,7 +27,11 @@ from uuid import UUID
 POLICY_STORAGE_PATH = "<%= @policy_storage_path %>"
 INBOUND_RELAY_CONTROL_PATH = POLICY_STORAGE_PATH + '/config/inbound-relay-control/'
 OUTBOUND_RELAY_CONTROL_PATH =POLICY_STORAGE_PATH + '/config/outbound-relay-control/'
+
+# Inbound split by recipient config file path
 SPLIT_RECIPIENT_CONFIG_FILE_INBOUND = INBOUND_RELAY_CONTROL_PATH + 'msg_producer_split_by_recipients.CONFIG'
+
+# Outbound split by recipient config file path
 SPLIT_RECIPIENT_CONFIG_FILE_OUTBOUND = OUTBOUND_RELAY_CONTROL_PATH + 'msg_outbound_split_by_recipients.CONFIG'
 
 logger = logging.getLogger('split-by-recipient')
