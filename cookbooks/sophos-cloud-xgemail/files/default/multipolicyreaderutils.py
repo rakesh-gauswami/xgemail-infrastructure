@@ -12,6 +12,7 @@
 import json
 import logging
 import base64
+import traceback
 import boto3
 from awshandler import AwsHandler
 import policyformatter
@@ -36,7 +37,11 @@ EFS_MULTI_POLICY_CONFIG_PATH = INBOUND_RELAY_CONTROL_PATH + 'multi-policy/'
 EFS_MULTI_POLICY_CONFIG_FILE = EFS_MULTI_POLICY_CONFIG_PATH + 'global.CONFIG'
 FLAG_TO_READ_POLICY_FROM_S3_FILE = EFS_MULTI_POLICY_CONFIG_PATH + 'msg_producer_read_policy_from_s3_global.CONFIG'
 FLAG_TO_TOC_USER_BASED_SPLIT = EFS_MULTI_POLICY_CONFIG_PATH + 'msg_producer_toc_user_based_split_global.CONFIG'
+
+# Inbound split by recipient config file path
 INBOUND_SPLIT_BY_RECIPIENTS_CONFIG_PATH = INBOUND_RELAY_CONTROL_PATH + 'msg_producer_split_by_recipients.CONFIG'
+
+# Outbound split by recipient config file path
 OUTBOUND_SPLIT_BY_RECIPIENTS_CONFIG_PATH = OUTBOUND_RELAY_CONTROL_PATH + 'msg_outbound_split_by_recipients.CONFIG'
 
 logger = logging.getLogger('multi-policy-reader-utils')
@@ -78,11 +83,16 @@ def outbound_split_by_recipient_enabled(metadata, aws_region, policy_bucket_name
         Determines if the current message must be split by recipients for outbound.
         Returns True if split by recipient required, False otherwise.
     """
-    if len(metadata.get_recipients) <= 1:
+    recipients = metadata.get_recipients()
+    if len(recipients) <= 1:
         return False
 
     # Read outbound split config
     split_config = RecipientSplitConfig(OUTBOUND_SPLIT_BY_RECIPIENTS_CONFIG_PATH)
+
+    # No need to read policy to get customerId if globally enabled
+    if split_config.is_globally_enabled:
+        return True
 
     try:
         # For outbound we need to read sender policy to get customer id
@@ -95,8 +105,8 @@ def outbound_split_by_recipient_enabled(metadata, aws_region, policy_bucket_name
         customer_id = customer_policy['customerId']
 
         return split_config.is_split_by_recipient_enabled(customer_id)
-    except:
-        logger.error('Unable to split by recipients')
+    except Exception:
+        logger.warn('Unable to split by recipients For outbound. Proceeding without splitting. Error {0}'.format(traceback.format_exc()))
         return False
 
 def build_policy_map(recipients, aws_region = None, policy_bucket_name = None, policies = {}):
