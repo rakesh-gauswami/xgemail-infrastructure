@@ -16,6 +16,7 @@ import copy
 import formatterutils
 import gzip
 import gziputils
+import hashlib
 import io
 import json
 import logging
@@ -704,7 +705,8 @@ def outbound_split_by_recipients(metadata, domain, message, direction, message_a
         this_recipient_metadata.set_recipients([recipient])
         this_recipient_metadata.add_uuid_to_queue_id()
 
-        new_s3_file_path = s3_file_path.replace(POLICY_ID_PATH_VALUE, "/"+ str(hash(recipient)) + "/")
+        new_s3_file_path = s3_file_path.replace(POLICY_ID_PATH_VALUE,
+                                                "/" + str(hashlib.sha256(str(recipient)).hexdigest()) + "/")
         # create a sqs message with policy_id
         sqs_message = SqsMessage(
             messageformatter.SCHEMA_VERSION,
