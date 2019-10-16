@@ -65,7 +65,6 @@ class UserBasedSplitTest(unittest.TestCase):
             self.test_dir,
             'config_valid.json'
         )
-
         with open(self.config_valid_file, 'w') as config_file:
             config_file.write(json.dumps(self.config_valid))
         user_based_split_module.SPLIT_RECIPIENT_CONFIG_FILE_INBOUND = self.config_valid_file

@@ -40,9 +40,3 @@ class RecipientSplitConfig:
 
         return (customer_id in self.customer_ids_enabled)
 
-    def is_split_by_recipient_globally_enabled(self):
-        """
-        Returns true if recipient split either globally enabled or specifically
-        enabled for the provided customer_id
-        """
-        return self.is_globally_enabled
