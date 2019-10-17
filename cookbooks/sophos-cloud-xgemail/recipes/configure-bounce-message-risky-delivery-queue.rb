@@ -49,7 +49,8 @@ if NODE_TYPE == 'risky-delivery' || NODE_TYPE == 'risky-xdelivery'
      'bounce_notice_recipient=bounces@sophos-email.com',
      'xgemail_do_sender_bounce = no',
      'xgemail_suppress_2bounce = yes',
-     "transport_maps=hash:$config_directory/#{TRANSPORT_MAPS_FILENAME}"
+     "transport_maps=hash:$config_directory/#{TRANSPORT_MAPS_FILENAME}",
+     "maximal_queue_lifetime=1d"
    ]
 
  # Rehash transport map
