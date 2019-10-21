@@ -74,7 +74,7 @@ if NODE_TYPE == 'internet-submit' or NODE_TYPE == 'encryption-submit'
   end
 elsif NODE_TYPE == 'customer-submit'
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{POLICY_FORMATTER}" do
-    source 'outboundpolicyformatter.py'
+    source 'policyformatter.py'
     mode '0644'
     owner 'root'
     group 'root'
