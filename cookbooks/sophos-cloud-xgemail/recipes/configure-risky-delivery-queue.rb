@@ -36,7 +36,7 @@ HOP_COUNT_DELIVERY_INSTANCE = node['xgemail']['hop_count_delivery_instance']
 RISKY_XDELIVERY_INSTANCE_DATA = node['xgemail']['postfix_instance_data']['risky-xdelivery']
 raise "Unsupported node type [#{NODE_TYPE}]" if RISKY_XDELIVERY_INSTANCE_DATA.nil?
 
-SMTP_PORT = INSTANCE_DATA[:port]
+SMTP_PORT = RISKY_XDELIVERY_INSTANCE_DATA[:port]
 
 SMTP_FALLBACK_RELAY = "risky-xdelivery-cloudemail-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com:#{SMTP_PORT}"
 

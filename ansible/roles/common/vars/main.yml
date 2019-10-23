@@ -396,6 +396,18 @@ aws:
       template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                                                "{{sqs.emergency_inbox_sqs_queue_sns_listener}}"
+    impersonation_request_queue:
+      stack_name:                                                 "{{stack.sqs.impersonation_request_queue}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.impersonation_request_queue}}"
+    impersonation_response_queue:
+      stack_name:                                                 "{{stack.sqs.impersonation_response_queue}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.impersonation_response_queue}}"
     internet_delivery_sqs_queue:
       stack_name:                                                 "{{stack.sqs.internet_delivery_sqs_queue}}"
       state:                                                      absent
@@ -559,4 +571,3 @@ external_ip_access:
       c:                                                          "66.110.40.242/32"
       d:                                                          "216.6.116.194/32"
       e:                                                          "198.144.101.2/32"
-

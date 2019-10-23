@@ -16,6 +16,7 @@ import copy
 import formatterutils
 import gzip
 import gziputils
+import hashlib
 import io
 import json
 import logging
@@ -39,6 +40,7 @@ from logging.handlers import SysLogHandler
 from routingmanager import RoutingManager
 from scaneventattributes import ScanEventAttributes
 from collections import OrderedDict
+from recipientsplitconfig import RecipientSplitConfig
 
 # Constants
 AWS_REGION = "<%= @sqs_msg_producer_aws_region %>"
@@ -94,7 +96,6 @@ INBOUND_MESSAGE_DIRECTION = "INBOUND"
 OUTBOUND_MESSAGE_DIRECTION = "OUTBOUND"
 POLICY_ID_PATH_VALUE = "/00/"
 SQS_BATCH_SIZE = 10
-
 awshandler = AwsHandler(AWS_REGION)
 
 routingmanager = RoutingManager(
@@ -309,11 +310,11 @@ def publish_msg_history_event(history_json):
         exit(EX_TEMPFAIL)
 
 # publishes msg processing messages to topic
-def publish_msg_processing_message(message_json, direction, message_attributes = None, customer_id = None):
+def publish_msg_processing_message(message_json, message_attributes = None, is_microservice_request = False):
     # Check if we should route to the microservice
     # Enforce that we only do this for internet submit for now.
     # This can be removed once we have an outbound microservice
-    if 'INTERNET' == SUBMIT_TYPE and routingmanager.perform_routing(customer_id):
+    if 'INTERNET' == SUBMIT_TYPE and is_microservice_request:
         # publish to topic
         publish_to_topic(
             SCAN_EVENTS_TOPIC_ARN,
@@ -359,12 +360,21 @@ def get_plaintext_message():
 # Inspects the headers of an outbound message and attempts to find the validated
 # sender address by looking for policy data in S3.
 #
-# At this stage jilter will already have found a validated sender in either the From or Reply-To header,
-# but this code has no way of knowing which one was used. So we look for policy data in S3 that matches
-# a header (something jilter has already done). We search against the From header first, if a
-# validated sender cannot be found, we try the Reply-To header. If a validated sender *still* cannot
-# be found, we're forced to fail.
+# At this stage jilter will already have found a validated sender in either the
+# From/Reply-To/x-sophos-effective-sender header,but this code has no way of knowing which one was used.
+# So we look for policy data in S3 that matches a header (something jilter has already done).
+#
+# However, if x-sophos-effective-sender exists then it is clear that we can discard other two so we search against
+# x-sophos-effective-sender header first to check Google groups or O365 auto-forward possibility
+# if a validated sender cannot be found, we try the from header and then the Reply-To header.
+# If a validated sender *still* cannot be found, we're forced to fail.
 def get_metadata_for_outbound(metadata, headers):
+
+    effective_sender_value = headers['x-sophos-effective-sender']
+    effective_sender_header = 'x-sophos-effective-sender'
+
+    if effective_sender_value is not None:
+        return get_metadata_for_outbound_effective_sender(metadata, effective_sender_header, effective_sender_value)
 
     # Order is important as we want to evaluate the from header first
     headers_to_validate = OrderedDict()
@@ -376,24 +386,19 @@ def get_metadata_for_outbound(metadata, headers):
     for header_name, header_value in headers_to_validate.items():
 
         if header_value is None:
-            raise Exception("Invalid {0} header in message with queue_id: [{1}]".format(
+            raise Exception("Invalid {0} header in message with queue_id: [{1}]. FROM header: {2}, REPLY-TO header: {3}".format(
                 header_name,
-                metadata.get_queue_id())
+                metadata.get_queue_id(),
+                headers['from'],
+                headers['reply-to']
+                )
             )
 
         header_sender = get_address_from_header(header_value)
 
-        logger.debug("Parsed {0} header sender: [{1}]".format(header_name, header_sender))
+        is_valid_sender = is_valid_outbound_sender(header_sender, header_name)
 
-        if header_sender is None or not header_sender:
-            raise Exception("Header {0} cannot be null or empty in outbound".format(header_name))
-
-        header_sender_policy_exists = multipolicyreaderutils.policy_file_exists_in_S3(
-            header_sender,
-            AWS_REGION, POLICY_S3_BUCKET_NAME
-        )
-
-        if header_sender_policy_exists:
+        if is_valid_sender:
             validated_sender = header_sender
             break
 
@@ -415,6 +420,43 @@ def get_metadata_for_outbound(metadata, headers):
         metadata.get_recipients(),
         metadata.get_x_sophos_emai_id()
     )
+
+# if get_metadata_for_outbound method finds x-sophos-effective-sender then this method returns the metadata
+def get_metadata_for_outbound_effective_sender(metadata, header, header_value):
+
+    header_sender = get_address_from_header(header_value)
+    is_valid_sender = is_valid_outbound_sender(header_sender, header)
+
+    if is_valid_sender:
+        return Metadata(
+            metadata.get_schema_version(),
+            metadata.get_sender_ip(),
+            header_sender,
+            metadata.get_accepting_server_ip(),
+            metadata.get_queue_id(),
+            metadata.get_date_recorded(),
+            metadata.get_recipient_domain(),
+            metadata.get_recipients(),
+            metadata.get_x_sophos_emai_id()
+        )
+
+    raise Exception(
+        "No header sender address could be validated for message with queue id [{0}]".format(
+            metadata.get_queue_id()
+        )
+    )
+
+def is_valid_outbound_sender(header_sender, header_name):
+
+    if header_sender is None or not header_sender:
+        raise Exception("Header {0} cannot be null or empty in outbound".format(header_name))
+
+    header_sender_policy_exists = multipolicyreaderutils.policy_file_exists_in_S3(
+        header_sender.lower(),
+        AWS_REGION, POLICY_S3_BUCKET_NAME
+    )
+
+    return header_sender_policy_exists
 
 # Given an email address header value, such as:
 #
@@ -439,7 +481,6 @@ def get_address_from_header(header_string):
         return None
 
     return parsed_address
-
 
 def get_from_sender_domain(metadata):
     try:
@@ -488,7 +529,7 @@ def upload_documents(metadata, compressed_message, s3_file_path):
         metadata
     )
 
-def base_policy_flow(metadata, direction, domain, sender, message, message_attributes = None, customer_id = None):
+def base_policy_flow(metadata, direction, domain, sender, message, message_attributes = None):
     queue_id = metadata.get_queue_id()
 
     s3_file_path = formatterutils.get_s3_path(
@@ -522,9 +563,8 @@ def base_policy_flow(metadata, direction, domain, sender, message, message_attri
 
     publish_msg_processing_message(
         sqs_message.get_sqs_json(),
-        direction,
         message_attributes,
-        customer_id
+        metadata.is_microservice_request
     )
 
     history_event = prepare_msg_history_event(
@@ -553,7 +593,7 @@ def multi_policy_flow(metadata, direction, domain, sender, message, message_attr
     logger.info("Input email metadata info [{0}]".format(metadata))
 
     if not policy_list:
-        return base_policy_flow(metadata, direction, domain, sender, message, message_attributes, customer_id)
+        return base_policy_flow(metadata, direction, domain, sender, message, message_attributes)
 
     queue_id = metadata.get_queue_id()
     s3_file_path = formatterutils.get_s3_path(
@@ -600,9 +640,8 @@ def multi_policy_flow(metadata, direction, domain, sender, message, message_attr
             for processing_job in sqs_message_json_queue:
                 publish_msg_processing_message(
                     processing_job,
-                    direction,
                     message_attributes,
-                    customer_id
+                    metadata.is_microservice_request
                 )
             sqs_message_json_queue = []
 
@@ -628,9 +667,8 @@ def multi_policy_flow(metadata, direction, domain, sender, message, message_attr
         for processing_job in sqs_message_json_queue:
             publish_msg_processing_message(
                 processing_job,
-                direction,
                 message_attributes,
-                customer_id
+                metadata.is_microservice_request
             )
 
     if len(history_json_queue) > 0:
@@ -641,6 +679,96 @@ def multi_policy_flow(metadata, direction, domain, sender, message, message_attr
 
 def get_message_headers(message):
     return Parser().parsestr(message, headersonly=True)
+
+
+def outbound_split_by_recipients(metadata, domain, message, direction, message_attributes=None):
+
+    # required logging for XgemailTestBase automation test
+    logger.info("Metadata json info [{0}]".format(metadata))
+    recipients = metadata.get_recipients()
+
+    queue_id = metadata.get_queue_id()
+    s3_file_path = formatterutils.get_s3_path(
+        ROOT_DIR,
+        TIMESTAMP_FORMAT,
+        SUBMIT_HOST_IP,
+        queue_id,
+        domain
+    )
+
+    sqs_message_json_queue = []
+    history_json_queue = []
+
+    for recipient in recipients:
+
+        this_recipient_metadata = copy.deepcopy(metadata)
+        this_recipient_metadata.set_recipients([recipient])
+        this_recipient_metadata.add_uuid_to_queue_id()
+
+        new_s3_file_path = s3_file_path.replace(POLICY_ID_PATH_VALUE,
+                                                "/" + str(hashlib.sha256(str(recipient)).hexdigest()) + "/")
+        # create a sqs message with policy_id
+        sqs_message = SqsMessage(
+            messageformatter.SCHEMA_VERSION,
+            new_s3_file_path,
+            SUBMIT_HOST_IP,
+            this_recipient_metadata.get_queue_id(),
+            AKM_KEY,
+            NONCE.encode('base64', 'strict'),
+            MESSAGE_KEY.encode('base64', 'strict'),
+            SUBMIT_TYPE,
+            None
+        )
+
+        upload_documents(
+            this_recipient_metadata,
+            gziputils.gzip_data(message),
+            new_s3_file_path
+        )
+
+        #batch SQS job - every 10 jobs as a batch
+        sqs_message_json_queue.append(sqs_message.get_sqs_json())
+        if len(sqs_message_json_queue) == SQS_BATCH_SIZE:
+            for processing_job in sqs_message_json_queue:
+                publish_msg_processing_message(
+                    processing_job,
+                    message_attributes,
+                    metadata.is_microservice_request
+                )
+            sqs_message_json_queue = []
+
+        # batch history events
+        # noinspection CookbookSourceRoot
+        history_event = prepare_msg_history_event(
+            new_s3_file_path,
+            this_recipient_metadata,
+            sqs_message,
+            direction,
+            metadata.get_sender_address()
+        )
+        history_json_queue.append(history_event.get_sqs_json())
+        if len(history_json_queue) == SQS_BATCH_SIZE:
+            for history_job in history_json_queue:
+                publish_msg_history_event(
+                    history_job
+                )
+            history_json_queue = []
+
+    #send the remaining if any
+    if len(sqs_message_json_queue) > 0:
+        for processing_job in sqs_message_json_queue:
+            publish_msg_processing_message(
+                processing_job,
+                message_attributes,
+                metadata.is_microservice_request
+            )
+
+    if len(history_json_queue) > 0:
+        for history_job in history_json_queue:
+            publish_msg_history_event(
+                history_job
+            )
+
 
 # accepts data from postfix and send message and metadata to S3 and
 # a json object to SQS which provides pointer to the message in S3
@@ -671,6 +799,12 @@ def main():
             metadata = get_metadata_for_outbound(metadata, message_headers)
             sender = metadata.get_sender_address()
             domain = get_from_sender_domain(metadata)
+
+            outbound_split = multipolicyreaderutils.outbound_split_by_recipient_enabled(metadata ,AWS_REGION, POLICY_S3_BUCKET_NAME)
+            logger.debug("Outbound split flag is set to {0} for metadata {1} ".format(outbound_split,metadata));
+
+            if outbound_split:
+                return outbound_split_by_recipients(metadata,domain,plaintext_message,direction)
         else:
             raise ("Wrong submit type [{0}]".format(SUBMIT_TYPE))
 

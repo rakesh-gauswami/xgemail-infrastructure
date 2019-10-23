@@ -706,6 +706,7 @@
     "XgemailInternetSubmitSecurityGroupLbIngressWorldSmtp": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Condition" : "OpenToWorld",
+      "Description" : "TCP/25 0.0.0.0/0 to internet-submit",
       "Properties": {
         "GroupId": { "Ref": "XgemailInternetSubmitSecurityGroupLb" },
         "CidrIp": "0.0.0.0/0",
@@ -718,6 +719,7 @@
     "XgemailInternetSubmitSecurityGroupLbIngressWorldSmtpTls": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Condition" : "OpenToWorld",
+      "Description" : "TCP/587 0.0.0.0/0 to internet-submit",
       "Properties": {
         "GroupId": { "Ref": "XgemailInternetSubmitSecurityGroupLb" },
         "CidrIp": "0.0.0.0/0",
@@ -901,6 +903,7 @@
     "XgemailCustomerSubmitSecurityGroupLbIngressWorldSmtp": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Condition" : "OpenToWorld",
+      "Description" : "TCP/25 0.0.0.0/0 to customer-submit",
       "Properties": {
         "GroupId": { "Ref": "XgemailCustomerSubmitSecurityGroupLb" },
         "CidrIp": "0.0.0.0/0",
@@ -913,6 +916,7 @@
     "XgemailCustomerSubmitSecurityGroupLbIngressWorldSmtpTls": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Condition" : "OpenToWorld",
+      "Description" : "TCP/587 0.0.0.0/0 to customer-submit",
       "Properties": {
         "GroupId": { "Ref": "XgemailCustomerSubmitSecurityGroupLb" },
         "CidrIp": "0.0.0.0/0",

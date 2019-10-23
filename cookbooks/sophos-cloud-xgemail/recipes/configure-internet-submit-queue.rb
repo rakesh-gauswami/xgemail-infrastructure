@@ -261,5 +261,4 @@ else
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_processors_structure'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_policy_service'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_multi_policy_service'
-
 end
