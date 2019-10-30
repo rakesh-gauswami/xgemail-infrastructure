@@ -58,6 +58,12 @@ if ENVIRONMENT == "sandbox"
     default['xgemail']['msg_notifier_queue_url'] = 'http://localstack:4576/queue/sandbox-Xgemail_Notifier_Request'
   end
 
+  if INSTANCE_TYPE == "jilter-inbound"
+    default['xgemail']['xgemail_bucket_name'] = ""
+  elsif INSTANCE_TYPE == "jilter-outbound"
+    default['xgemail']['xgemail_bucket_name'] = "xgemail-cust-submit"
+  end
+
   if INSTANCE_TYPE == "jilter-inbound" || INSTANCE_TYPE == "jilter-outbound"
     default['xgemail']['jilter_version'] = ENV['JILTER_VERSION']
     default['sophos_cloud']['thirdparty']  = '//cloud-sandbox-3rdparty'

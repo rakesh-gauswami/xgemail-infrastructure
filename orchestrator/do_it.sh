@@ -87,18 +87,18 @@ QUARANTINE_SQS_QUEUE_DLQ="sandbox-Xgemail_Quarantine_Delivery-DLQ"
 QUARANTINE_SQS_QUEUE_SNS_LISTENER_DLQ="sandbox-Xgemail_Quarantine_Delivery_SNS_Listener-DLQ"
 
 #SNS
-DELAY_SNS_TOPIC="sandbox-xgemail-delay-SNS"
-DELETED_EVENTS_SNS_TOPIC="sandbox-xgemail-deleted-events-SNS"
-INTERNET_DELIVERY_SNS_TOPIC="sandbox-xgemail-internet-delivery-SNS"
-MSG_HISTORY_STATUS_SNS_TOPIC="sandbox-xgemail-msg-history-delivery-status-SNS"
-MSG_HISTORY_EVENTS_SNS_TOPIC="sandbox-xgemail-msg-history-events-SNS"
-MSG_STATISTICS_REJECTION_SNS_TOPIC="sandbox-xgemail-msg-statistics-rejection-SNS"
-MULTI_POLICY_SNS_TOPIC="sandbox-XGEMAIL-multi-policy-SNS"
-POLICY_SNS_TOPIC="sandbox-xgemail-policy-SNS"
-QUARANTINED_EVENTS_SNS_TOPIC="sandbox-xgemail-quarantined-events-SNS"
-RELAY_CONTROL_SNS_TOPIC="sandbox-xgemail-relay-control-SNS"
-SCAN_EVENTS_SNS_TOPIC="sandbox-xgemail-scan-events-SNS"
-SUCCESS_EVENTS_SNS_TOPIC="sandbox-xgemail-success-events-SNS"
+DELAY_SNS_TOPIC="xgemail-delay-SNS"
+DELETED_EVENTS_SNS_TOPIC="xgemail-deleted-events-SNS"
+INTERNET_DELIVERY_SNS_TOPIC="xgemail-internet-delivery-SNS"
+MSG_HISTORY_STATUS_SNS_TOPIC="xgemail-msg-history-delivery-status-SNS"
+MSG_HISTORY_EVENTS_SNS_TOPIC="xgemail-msg-history-events-SNS"
+MSG_STATISTICS_REJECTION_SNS_TOPIC="xgemail-msg-statistics-rejection-SNS"
+MULTI_POLICY_SNS_TOPIC="xgemail-multi-policy-SNS"
+POLICY_SNS_TOPIC="xgemail-policy-SNS"
+QUARANTINED_EVENTS_SNS_TOPIC="xgemail-quarantined-events-SNS"
+RELAY_CONTROL_SNS_TOPIC="xgemail-relay-control-SNS"
+SCAN_EVENTS_SNS_TOPIC="xgemail-scan-events-SNS"
+SUCCESS_EVENTS_SNS_TOPIC="xgemail-success-events-SNS"
 
 gprintf "Waiting for localstack to be fully up."
 count=0
@@ -373,7 +373,13 @@ if [[ $startup_check -ne 0 ]]; then
       awslocal sns subscribe \
           --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${MSG_HISTORY_EVENTS_SNS_TOPIC} \
           --protocol sqs \
-          --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${MSG_HISTORY_SQS_QUEUE} | jq .
+          --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${MSG_HISTORY_SQS_QUEUE_SNS_LISTENER} | jq .
+
+      awslocal sns subscribe \
+          --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${MSG_HISTORY_STATUS_SNS_TOPIC} \
+          --protocol sqs \
+          --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${MSG_HISTORY_STATUS_SQS_QUEUE_SNS_LISTENER} | jq .
+
       awslocal sns subscribe \
           --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${SUCCESS_EVENTS_SNS_TOPIC} \
           --protocol sqs \

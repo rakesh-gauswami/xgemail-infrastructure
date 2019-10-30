@@ -16,6 +16,7 @@ NODE_TYPE = node['xgemail']['cluster_type']
 DIRECTION = node['xgemail']['direction']
 JILTER_VERSION = node['xgemail']['jilter_version']
 JILTER_PACKAGE_NAME = "xgemail-jilter-#{DIRECTION}-#{JILTER_VERSION}"
+JILTER_CONF_DIR = "#{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}/conf"
 
 directory PACKAGES_DIR do
   mode '0755'
@@ -54,8 +55,16 @@ else
   EOH
   end
 
+  # Create the jilter application properties directory
+  directory JILTER_CONF_DIR do
+    mode '0755'
+    owner 'root'
+    group 'root'
+    recursive true
+  end
+
   template "launch_darkly_sandbox.properties" do
-    path "#{DEPLOYMENT_DIR}/xgemail-jilter-#{DIRECTION}/conf/launch_darkly_sandbox.properties"
+    path "#{DEPLOYMENT_DIR}/xgemail-jilter-#{DIRECTION}-#{JILTER_VERSION}/conf/launch_darkly_sandbox.properties"
     source 'jilter-launch-darkly.properties.erb'
     mode '0700'
     variables(
