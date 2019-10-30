@@ -87,6 +87,7 @@ AKM_KEY = "akm_key"
 MESSAGE_KEY = "message_key"
 NONCE = "nonce"
 DOMAIN_NAME_REGEX_PATTERN = "[a-zA-Z0-9][-a-zA-Z0-9]*(\\.[-a-zA-Z0-9]+)*\\.[a-zA-Z]{2,}"
+EMAIL_ADDRESS_REGEX_PATTERN = "(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))";
 
 # Other constants
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
@@ -462,23 +463,16 @@ def is_valid_outbound_sender(header_sender, header_name):
 #
 # "First Last" <first.last@somewhere.com>
 #
-# Uses the parseaddr method to return the email address portion of the header
-# If the parse operation fails, None is returned.
+# Uses the Regex pattern we use in Jilter to match and return the email address portion of the header
 def get_address_from_header(header_string):
+    parsed_address = None
 
-    # parseaddr always result into 2 tuple ['username', 'email address']
-    # if parse fails then result will be ['','']
-    parsed_address_parts = parseaddr(header_string.strip().replace(',', ''))
+    match_object =  re.search(EMAIL_ADDRESS_REGEX_PATTERN, header_string)
 
-    if parsed_address_parts is None or len(parsed_address_parts) != 2:
-        logger.warning("Invalid parsed_address_parts tuple: [{0}]".format(parsed_address_parts))
-        return None
+    if match_object is None:
+        return parsed_address
 
-    parsed_address = parsed_address_parts[1]
-
-    if parsed_address is None or not parsed_address:
-        logger.warning('parsed_address from tuple [{0}] was null or empty'.format(parsed_address_parts))
-        return None
+    parsed_address = match_object.group()
 
     return parsed_address
 
