@@ -468,7 +468,7 @@ def get_address_from_header(header_string):
 
     match_object =  re.search(EMAIL_ADDRESS_REGEX_PATTERN, header_string)
 
-    if match_object is None:
+    if match_object is None or not match_object:
         return parsed_address
 
     parsed_address = match_object.group()
