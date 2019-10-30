@@ -117,10 +117,6 @@ raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 
 HOP_COUNT_DELIVERY_INSTANCE = node['xgemail']['hop_count_delivery_instance']
 
-# mainly used for forwarding VBSpam messages to Sophos Labs
-RECIPIENT_BCC_MAPS_FILE = 'recipient_bcc_maps'
-RECIPIENT_BCC_MAPS_PATH = "/etc/postfix-#{INSTANCE_NAME}/#{RECIPIENT_BCC_MAPS_FILE}"
-
 include_recipe 'sophos-cloud-xgemail::common-postfix-multi-instance-config'
 
 # Run an instance of the smtp process that enforces TLS encryption
@@ -178,12 +174,6 @@ end
 
 if NODE_TYPE == 'xdelivery'
 
-  [
-    "recipient_bcc_maps=hash:#{RECIPIENT_BCC_MAPS_PATH}"
-  ].each do | cur |
-    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
-  end
-
   TRANSPORT_ROUTE_HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
 
   # Add the header checks config file
@@ -192,23 +182,6 @@ if NODE_TYPE == 'xdelivery'
     mode '0644'
     owner 'root'
     group 'root'
-  end
-
-  # Add the recipient BCC config file
-  cookbook_file "#{RECIPIENT_BCC_MAPS_PATH}" do
-    source "#{RECIPIENT_BCC_MAPS_FILE}"
-    mode '0644'
-    owner 'root'
-    group 'root'
-  end
-
-  execute RECIPIENT_BCC_MAPS_PATH do
-    command lazy {
-      print_postmulti_cmd(
-        INSTANCE_NAME,
-        "postmap 'hash:#{RECIPIENT_BCC_MAPS_PATH}'"
-      )
-    }
   end
 
   include_recipe 'sophos-cloud-xgemail::configure-bounce-message-customer-delivery-queue'

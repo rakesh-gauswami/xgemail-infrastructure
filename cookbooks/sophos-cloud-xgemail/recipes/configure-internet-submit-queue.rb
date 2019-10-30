@@ -43,6 +43,12 @@ SERVER_PEM_FILE = "#{LOCAL_CERT_PATH}/server.pem"
 
 WELCOME_MSG_SENDER = node['xgemail']['welcome_msg_sender']
 
+# mainly used for forwarding VBSpam messages to Sophos Labs
+RECIPIENT_BCC_MAPS_FILE = 'recipient_bcc_maps'
+RECIPIENT_BCC_MAPS_PATH = "/etc/postfix-#{INSTANCE_NAME}/#{RECIPIENT_BCC_MAPS_FILE}"
+TRANSPORT_MAPS_FILE = 'transport'
+TRANSPORT_MAPS_PATH = "/etc/postfix-#{INSTANCE_NAME}/#{TRANSPORT_MAPS_FILE}"
+
 # Domain blacklists
 SXL_DBL = node["xgemail"]["sxl_dbl"]
 raise "SXL_DBL was nil" if SXL_DBL.nil?
@@ -189,6 +195,40 @@ if ACCOUNT != 'sandbox'
 
   execute CREATE_SERVER_PEM_COMMAND
 
+  # Add the recipient BCC config file
+  cookbook_file "#{RECIPIENT_BCC_MAPS_PATH}" do
+    source "#{RECIPIENT_BCC_MAPS_FILE}"
+    mode '0644'
+    owner 'root'
+    group 'root'
+  end
+
+  execute RECIPIENT_BCC_MAPS_PATH do
+    command lazy {
+      print_postmulti_cmd(
+        INSTANCE_NAME,
+        "postmap 'hash:#{RECIPIENT_BCC_MAPS_PATH}'"
+      )
+    }
+  end
+
+  # Add the transport config file
+  cookbook_file "#{TRANSPORT_MAPS_PATH}" do
+    source "#{TRANSPORT_MAPS_FILE}"
+    mode '0644'
+    owner 'root'
+    group 'root'
+  end
+
+  execute TRANSPORT_MAPS_PATH do
+    command lazy {
+      print_postmulti_cmd(
+        INSTANCE_NAME,
+        "postmap 'hash:#{TRANSPORT_MAPS_PATH}'"
+      )
+    }
+  end
+
   [
     "hopcount_limit = #{HOP_COUNT_SUBMIT_INSTANCE}",
 
@@ -228,7 +268,9 @@ if ACCOUNT != 'sandbox'
         "check_sender_access hash:$config_directory/#{SOFT_RETRY_SENDERS_MAP_FILENAME}, " +
         'reject',
 
-    "smtpd_authorized_xclient_hosts = #{SMTPD_AUTHORIZED_XCLIENT_HOSTS}"
+    "smtpd_authorized_xclient_hosts = #{SMTPD_AUTHORIZED_XCLIENT_HOSTS}",
+    "recipient_bcc_maps=hash:#{RECIPIENT_BCC_MAPS_PATH}",
+    "transport_maps=hash:#{TRANSPORT_MAPS_PATH}"
   ].each do | cur |
     execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
   end
