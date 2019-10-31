@@ -465,7 +465,7 @@ def base_policy_flow(metadata, direction, is_reply, domain, sender, message):
         domain
     )
 
-    if direction == OUTBOUND_MESSAGE_DIRECTION and is_reply == True:
+    if (direction == OUTBOUND_MESSAGE_DIRECTION and is_reply == True) or direction == INBOUND_MESSAGE_DIRECTION :
         s3_file_path = tmp_file_path
     else:
         s3_file_path = formatterutils.get_s3_file_path(tmp_file_path, '-ENCR')
