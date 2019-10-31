@@ -55,6 +55,10 @@
       "Description": "Endpoint for message history Delivery Status SNS",
       "Type": "String"
     },
+    "MessageHistoryStatusRetryQueueTopicArn": {
+      "Description": "Endpoint for message history Delivery Status Retry SNS",
+      "Type": "String"
+    },
     "MessageStatisticsRejectionTopicArn": {
       "Description": "Endpoint for message statistics rejection SNS",
       "Type": "String"
@@ -133,6 +137,10 @@
     },
     "MessageHistoryStatusQueue": {
       "Description": "Endpoint for message history Delivery Status SQS queue",
+      "Type": "String"
+    },
+    "MessageHistoryStatusRetryQueue": {
+      "Description": "Endpoint for message history Delivery Status Retry SQS queue",
       "Type": "String"
     },
     "MessageStatisticsQueue": {
@@ -317,6 +325,14 @@
         "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageHistoryStatusQueue"}]]},
         "Protocol": "sqs",
         "TopicArn": { "Ref": "MessageHistoryStatusQueueTopicArn"}
+      }
+    },
+    "MessageHistoryDeliveryStatusRetryQueueToMessageHistoryDeliveryStatusRetrySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageHistoryStatusRetryQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "MessageHistoryStatusRetryQueueTopicArn"}
       }
     },
     "MessageHistoryQueueToInternetDeliverySnsSubscription": {
@@ -800,6 +816,30 @@
           ]
         },
         "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "MessageHistoryStatusQueue" }]]}]
+      }
+    },
+    "MessageHistoryStatusRetryQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "MessageHistoryStatusRetryQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-MessageHistoryStatusRetryQueueTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "MessageHistoryStatusRetryQueueTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "MessageHistoryStatusRetryQueue" }]]}]
       }
     },
     "MessageStatisticsQueuePolicy": {
