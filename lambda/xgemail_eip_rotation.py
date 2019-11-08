@@ -1,7 +1,7 @@
 """
 Description here.
 
-Copyright 2018, Sophos Limited. All rights reserved.
+Copyright 2019, Sophos Limited. All rights reserved.
 
 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
 Sophos Limited and Sophos Group.  All other product and company
@@ -48,6 +48,11 @@ def eip_rotation_handler(event, context):
     print("Request ID:", context.aws_request_id)
     print("Mem. limits(MB):", context.memory_limit_in_mb)
 
+    if event['EC2InstanceId']:
+        logger.info("Lambda Function triggered from SSM Automation Document.")
+        ec2_instance = ec2.Instance(event['EC2InstanceId'])
+        rotate_single_eip(ec2_instance)
+        return True
     if 'EC2InstanceId' in event['detail']:
         logger.info("Lambda Function triggered from Instance Launching Lifecycle Hook.")
         ec2_instance = ec2.Instance(event['detail']['EC2InstanceId'])
@@ -59,6 +64,7 @@ def eip_rotation_handler(event, context):
                 lifecycle_action_token=event['detail']['LifecycleActionToken'],
                 lifecycle_action_result='CONTINUE'
             )
+            return True
         else:
             logger.error("Completing lifecycle action with ABANDON")
             complete_lifecycle_action(
@@ -67,9 +73,11 @@ def eip_rotation_handler(event, context):
                 lifecycle_action_token=event['detail']['LifecycleActionToken'],
                 lifecycle_action_result='ABANDON'
             )
+            return True
     else:
         logger.info("Lambda Function triggered from CloudWatch Scheduled Event for EIP Roation.")
         rotate_eip()
+        return True
 
 
 def initial_eip(instance):
@@ -117,6 +125,26 @@ def rotate_eip():
             logger.info("Unable to stop Postfix Service on Instance: {}.".format(instance.id))
             continue
     logger.info("===FINISHED=== Rotating Outbound Delivery EIP's.")
+
+
+def rotate_single_eip(instance):
+    """
+    If triggered from SSM rotate a single EC2 Instance's EIP.
+    """
+    current_eip = get_current_eip(current_eip=instance.public_ip_address)
+    new_eip = get_clean_eip()
+    hostname = socket.gethostbyaddr(new_eip['PublicIp'])[0]
+    if postfix_service(instance_id=instance.id, cmd='stop'):
+        if disassociate_address(eip=current_eip):
+            if associate_address(allocation_id=new_eip['AllocationId'], instance_id=instance.id):
+                if update_hostname(instance_id=instance.id, hostname=hostname):
+                    logger.info("Successfully rotated EIP on Instance: {}.".format(instance.id))
+        else:
+            postfix_service(instance_id=instance.id, cmd='start')
+            logger.error("There was a problem with EIP rotation for Instance: {}.".format(instance.id))
+    else:
+        logger.error("Unable to stop Postfix Service on Instance: {}.".format(instance.id))
+    logger.info("===FINISHED=== Rotating Outbound Delivery EIP on EC2 Instance: {}.".format(instance.id))
 
 
 def get_instances_by_name():
