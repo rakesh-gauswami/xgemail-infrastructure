@@ -48,10 +48,10 @@ def eip_rotation_handler(event, context):
     print("Request ID:", context.aws_request_id)
     print("Mem. limits(MB):", context.memory_limit_in_mb)
 
-    if event['EC2InstanceId']:
+    if 'EC2InstanceId' in event:
         logger.info("Lambda Function triggered from SSM Automation Document.")
         ec2_instance = ec2.Instance(event['EC2InstanceId'])
-        if event['Eip']:
+        if event.get('Eip'):
             eip = event['Eip']
         else:
             eip = None
