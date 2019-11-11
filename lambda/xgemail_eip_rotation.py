@@ -108,7 +108,7 @@ def rotate_eip():
         if (datetime.now(instance.launch_time.tzinfo) - instance.launch_time).total_seconds() <= 1800:
             logger.info("Instance Id: {} was recently deployed. Skipping".format(instance.id))
             continue
-        current_eip = get_current_eip(current_eip=instance.public_ip_address)
+        current_eip = lookup_eip(eip=instance.public_ip_address)
         if current_eip is None:
             continue
         if get_risky(instance):
@@ -135,11 +135,11 @@ def rotate_single_eip(instance,eip):
     """
     If triggered from SSM rotate a single EC2 Instance's EIP.
     """
-    current_eip = get_current_eip(current_eip=instance.public_ip_address)
+    current_eip = lookup_eip(eip=instance.public_ip_address)
     if eip == None:
         new_eip = get_clean_eip()
     else:
-        new_eip = eip
+        new_eip = lookup_eip(eip=eip)
     hostname = socket.gethostbyaddr(new_eip['PublicIp'])[0]
     if postfix_service(instance_id=instance.id, cmd='stop'):
         if disassociate_address(eip=current_eip):
@@ -245,14 +245,14 @@ def add_tags_dict(addresses):
         address["TagsDict"] = tags
 
 
-def get_current_eip(current_eip):
+def lookup_eip(eip):
     """
     Lookup EIP to check if it is in fact an EIP and return the Allocation Id and Association Id.
     """
     logger.info("Looking up EIP: {}.".format(eip))
     try:
         eip = ec2_client.describe_addresses(
-            PublicIps=[current_eip]
+            PublicIps=[eip]
         )['Addresses'][0]
     except ClientError as e:
         if e.response['Error']['Code'] == 'InvalidAddress.NotFound':
