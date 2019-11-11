@@ -212,9 +212,9 @@ def add_tags_dict(addresses):
 
 def get_current_eip(current_eip):
     """
-    Lookup current EIP to check if it is in fact an EIP and return the Allocation Id and Association Id.
+    Lookup EIP to check if it is in fact an EIP and return the Allocation Id and Association Id.
     """
-    logger.info("Looking up current EIP.")
+    logger.info("Looking up EIP: {}.".format(eip))
     try:
         eip = ec2_client.describe_addresses(
             PublicIps=[current_eip]
