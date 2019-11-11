@@ -51,7 +51,11 @@ def eip_rotation_handler(event, context):
     if event['EC2InstanceId']:
         logger.info("Lambda Function triggered from SSM Automation Document.")
         ec2_instance = ec2.Instance(event['EC2InstanceId'])
-        rotate_single_eip(ec2_instance)
+        if event['Eip']:
+            eip = event['Eip']
+        else:
+            eip = None
+        rotate_single_eip(ec2_instance, eip)
         return True
     if 'EC2InstanceId' in event['detail']:
         logger.info("Lambda Function triggered from Instance Launching Lifecycle Hook.")
@@ -127,12 +131,15 @@ def rotate_eip():
     logger.info("===FINISHED=== Rotating Outbound Delivery EIP's.")
 
 
-def rotate_single_eip(instance):
+def rotate_single_eip(instance,eip):
     """
     If triggered from SSM rotate a single EC2 Instance's EIP.
     """
     current_eip = get_current_eip(current_eip=instance.public_ip_address)
-    new_eip = get_clean_eip()
+    if eip == None:
+        new_eip = get_clean_eip()
+    else:
+        new_eip = eip
     hostname = socket.gethostbyaddr(new_eip['PublicIp'])[0]
     if postfix_service(instance_id=instance.id, cmd='stop'):
         if disassociate_address(eip=current_eip):
