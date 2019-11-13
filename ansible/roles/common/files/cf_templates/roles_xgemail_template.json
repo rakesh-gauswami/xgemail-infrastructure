@@ -53,10 +53,6 @@
     "DeliveryDirectorBucketName": {
       "Description": "Name of the delivery director bucket",
       "Type": "String"
-    },
-    "FirehoseJilterHeloTelemetryStreamArn": {
-      "Description": "ARN of the jilter helo telemetry firehose stream",
-      "Type": "String"
     }
   },
 
@@ -1356,19 +1352,6 @@
               ],
               "Effect": "Allow",
               "Resource": [ "*" ]
-            },
-            {
-              "Effect": "Allow",
-              "Action": [
-                "firehose:DescribeDeliveryStream",
-                "firehose:PutRecord",
-                "firehose:PutRecordBatch"
-              ],
-              "Resource": [
-                {
-                  "Ref": "FirehoseJilterHeloTelemetryStreamArn"
-                }
-              ]
             }
           ]
         },
