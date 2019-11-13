@@ -37,6 +37,7 @@ JILTER_SCRIPT_DIR = "#{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}/scripts"
 JILTER_SCRIPT_PATH = "#{JILTER_SCRIPT_DIR}/xgemail.jilter.service.sh"
 JILTER_CONF_DIR = "#{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}/conf"
 JILTER_APPLICATION_PROPERTIES_PATH="#{JILTER_CONF_DIR}/jilter-application.properties"
+JILTER_HELO_TELEMETRY_STREAM_NAME = node['xgemail']['jilter_helo_telemetry_stream_name']
 
 LIBOPENDKIM_VERSION = node['xgemail']['libopendkim_version']
 LIBOPENDKIM_PACKAGE_NAME = "libopendkim-#{LIBOPENDKIM_VERSION}"
@@ -154,7 +155,8 @@ template 'xgemail.jilter.properties' do
   variables(
       :policy_bucket => POLICY_BUCKET_NAME,
       :account => ACCOUNT,
-      :internet_submit_bucket => INTERNET_SUBMIT_BUCKET_NAME
+      :internet_submit_bucket => INTERNET_SUBMIT_BUCKET_NAME,
+      :jilter_helo_telemetry_stream => JILTER_HELO_TELEMETRY_STREAM_NAME
   )
 end
 
