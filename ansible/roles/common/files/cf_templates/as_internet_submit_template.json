@@ -123,6 +123,10 @@
       "Type": "String",
       "Default": "c3.large"
     },
+    "JilterHeloTelemetryStreamName": {
+      "Description": "Name of the jilter helo telemetry firehose stream",
+      "Type": "String"
+    },
     "KeyName": {
       "Type": "AWS::EC2::KeyPair::KeyName",
       "Description": "Key pair used to SSH to the instance"
@@ -686,6 +690,7 @@
                     "  \"xgemail\" : {\n",
                     "    \"alarm_topic_arn\"                        : \"{{alarm_topic_arn}}\",\n",
                     "    \"cluster_type\"                           : \"{{cluster_type}}\",\n",
+                    "    \"jilter_helo_telemetry_stream_name\"      : \"{{jilter_helo_telemetry_stream_name}}\",\n",
                     "    \"lifecycle_topic_arn\"                    : \"{{lifecycle_topic_arn}}\",\n",
                     "    \"msg_history_bucket_name\"                : \"{{msg_history_bucket_name}}\",\n",
                     "    \"msg_history_ms_bucket_name\"             : \"{{msg_history_ms_bucket_name}}\",\n",
@@ -714,6 +719,7 @@
                   "cluster":                                        { "Ref": "XgemailServiceType" },
                   "cluster_type":                                   { "Ref": "XgemailServiceType" },
                   "environment":                                    { "Ref": "Environment" },
+                  "jilter_helo_telemetry_stream_name":              { "Ref": "JilterHeloTelemetryStreamName" },
                   "lifecycle_topic_arn":                            { "Ref": "AutoScalingNotificationTopicARN" },
                   "msg_history_bucket_name":                        { "Ref": "XgemailMsgHistoryBucketName" },
                   "msg_history_ms_bucket_name":                     { "Ref": "XgemailMsgHistoryMsBucketName" },
