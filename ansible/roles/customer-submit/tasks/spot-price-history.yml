@@ -3,20 +3,22 @@
   ec2_spot_pricing_history_facts:
     instance_types: ["{{aws.asg.cs.instance_size}}"]
     region: "{{account.region}}"
-    availability_zone: "{{account.region}}a"
     product_descriptions: ["Linux/UNIX (Amazon VPC)"]
-    max_results: 1
   register: ec2_spot_pricing_output
 
 - debug:
     var: ec2_spot_pricing_output
     verbosity: 3
 
-- name: "Display Spot Instance Price"
+- name: "Display Spot Instance Prices"
   debug:
-    msg: "{{ec2_spot_pricing_output.ec2_spot_pricing_history[0].spot_price}}"
+    msg: "{{ ec2_spot_pricing_output.ec2_spot_pricing_history|map(attribute='spot_price')|list }}"
     verbosity: 2
 
 - name: Set Spot Price
   set_fact:
-    spot_price: "{{ec2_spot_pricing_output.ec2_spot_pricing_history[0].spot_price}}"
+    spot_price: "{{ ec2_spot_pricing_output.ec2_spot_pricing_history|map(attribute='spot_price')|list|max }}"
+
+- debug:
+    var: spot_price
+    verbosity: 3
