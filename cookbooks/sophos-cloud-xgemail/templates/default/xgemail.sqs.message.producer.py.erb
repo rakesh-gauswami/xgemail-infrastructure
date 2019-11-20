@@ -103,6 +103,13 @@ routingmanager = RoutingManager(
     SUBMIT_TYPE + "-SUBMIT"
 )
 
+#Strip the dot at the end of sender and/or recipients addresses as rfc:1034 mentions to consider ending dot optional
+def strip_dot_at_end(email_address):
+  if email_address.endswith("."):
+    return email_address[:-1]
+  else:
+    return email_address
+
 #postfix pipe sends metadata as sysargs.
 def get_metadata(message_headers):
     try:
@@ -113,7 +120,7 @@ def get_metadata(message_headers):
             exit(EX_TEMPFAIL)
 
         null_sender = sys.argv[1]
-        sender_address = sys.argv[2]
+        sender_address = strip_dot_at_end(sys.argv[2])
         sender_ip = sys.argv[3]
         queue_id = sys.argv[4]
         recipient_domain = sys.argv[5]
@@ -121,7 +128,7 @@ def get_metadata(message_headers):
         date_recorded = datetime.utcnow().strftime(DATETIME_FORMAT)
         recipient_list = [ ]
         for i in range (6,len(sys.argv)):
-            recipient_list.append(sys.argv[i])
+            recipient_list.append(strip_dot_at_end(sys.argv[i]))
 
         if (sender_address == null_sender):
             sender_address = None
