@@ -385,6 +385,7 @@ def get_metadata_for_outbound(metadata, headers):
 
     # Order is important as we want to evaluate the from header first
     headers_to_validate = OrderedDict()
+    headers_to_validate['sender'] = headers['sender']
     headers_to_validate['from'] = headers['from']
     headers_to_validate['reply-to'] = headers['reply-to']
 
@@ -392,22 +393,21 @@ def get_metadata_for_outbound(metadata, headers):
 
     for header_name, header_value in headers_to_validate.items():
 
-        if header_value is None:
-            raise Exception("Invalid {0} header in message with queue_id: [{1}]. FROM header: {2}, REPLY-TO header: {3}".format(
-                header_name,
-                metadata.get_queue_id(),
-                headers['from'],
-                headers['reply-to']
+        if header_value is not None:
+            header_sender = get_address_from_header(header_value)
+
+            is_valid_sender = is_valid_outbound_sender(header_sender, header_name)
+
+            if is_valid_sender:
+                validated_sender = header_sender
+                break
+            else:
+                logger.info("Invalid {0}:{1} in message with queue_id: [{1}]".format(
+                    header_name,
+                    header_value,
+                    metadata.get_queue_id()
+                    )
                 )
-            )
-
-        header_sender = get_address_from_header(header_value)
-
-        is_valid_sender = is_valid_outbound_sender(header_sender, header_name)
-
-        if is_valid_sender:
-            validated_sender = header_sender
-            break
 
     if validated_sender is None:
         raise Exception(
