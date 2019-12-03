@@ -383,7 +383,7 @@ def get_metadata_for_outbound(metadata, headers):
     if effective_sender_value is not None:
         return get_metadata_for_outbound_effective_sender(metadata, effective_sender_header, effective_sender_value)
 
-    # Order is important as we want to evaluate the from header first
+    # Order is important as we want to evaluate the Sender, From and Reply-To headers in order
     headers_to_validate = OrderedDict()
     headers_to_validate['sender'] = headers['sender']
     headers_to_validate['from'] = headers['from']
@@ -402,7 +402,7 @@ def get_metadata_for_outbound(metadata, headers):
                 validated_sender = header_sender
                 break
             else:
-                logger.info("Invalid {0}:{1} in message with queue_id: [{1}]".format(
+                logger.info("Invalid {0}:{1} in message with queue_id: [{2}]".format(
                     header_name,
                     header_value,
                     metadata.get_queue_id()
