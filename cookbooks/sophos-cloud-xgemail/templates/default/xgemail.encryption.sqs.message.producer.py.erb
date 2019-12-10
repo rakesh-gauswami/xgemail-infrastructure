@@ -456,7 +456,7 @@ def is_valid_outbound_sender(header_sender, header_name):
 
     return header_sender_policy_exists
 
-# Given an email address header value, such as:
+# Given an email address header value, such as:MessagePathTypeMessagePathType
 #
 # "First Last" <first.last@somewhere.com>
 #
@@ -467,10 +467,9 @@ def get_address_from_header(header_string):
     match_object =  re.search(EMAIL_ADDRESS_REGEX_PATTERN, header_string)
 
     if match_object is None or not match_object:
-    return parsed_address
+        return parsed_address
 
     parsed_address = match_object.group()
-
     return parsed_address
 
 def get_from_sender_domain(metadata):
@@ -518,9 +517,9 @@ def upload_documents(metadata, compressed_message, s3_file_path, direction):
 
     if should_upload_msg_history(direction):
         upload_msg_history_to_s3(
-          s3_file_path,
-          expires,
-          metadata
+            s3_file_path,
+            expires,
+            metadata
         )
 
 
