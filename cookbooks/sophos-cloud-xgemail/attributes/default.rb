@@ -122,7 +122,7 @@ default['xgemail']['sxl_dbl_response_codes'] = "127.0.1.[1;3;4;5]"
 # extension in order to spoof the source IP of the messages its sending.
 # More information can be found at
 # https://wiki.sophos.net/display/NSG/VBSpam+Integration+into+Sophos+Email
-default['xgemail']['smtpd_authorized_xclient_hosts'] = "81.136.243.94,79.99.68.210"
+default['xgemail']['smtpd_authorized_xclient_hosts'] = "81.136.243.94, 79.99.68.210"
 
 # Increase Postfix default process limit from default 100 to 300
 default['xgemail']['postfix_default_process_limit'] = 300
