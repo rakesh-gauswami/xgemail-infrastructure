@@ -341,6 +341,12 @@ aws:
         TopicName:                                                "{{sns.msg_statistics_reindex_sns_topic}}"
 
   sqs:
+    additional_action_sqs_queue_sns_listener:
+      stack_name:                                                 "{{stack.sqs.additional_action_sqs_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.additional_action_sqs_queue_sns_listener}}"
     bulk_sender_action_sqs_queue:
       stack_name:                                                 "{{stack.sqs.bulk_sender_action_sqs_queue}}"
       state:                                                      present
@@ -359,14 +365,6 @@ aws:
       template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                                                "{{sqs.bulk_sender_event_notification_sqs_queue}}"
-    lifecycle_sqs_sns:
-      stack_name:                                                 "{{stack.sqs.lifecycle_sqs_sns}}"
-      state:                                                      present
-      template:                                                   "{{template.sqs.sqs_sns_subscription_template}}"
-      template_parameters:
-        Branch:                                                   "{{build.branch}}"
-        Environment:                                              "{{account.name}}"
-        SubscriptionName:                                         "xgemail-lifecycle"
     customer_delivery_sqs_queue:
       stack_name:                                                 "{{stack.sqs.customer_delivery_sqs_queue}}"
       state:                                                      absent
@@ -385,18 +383,6 @@ aws:
       template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                                                "{{sqs.customer_delivery_sqs_queue_sns_listener}}"
-    internet_delivery_sqs_queue_sns_listener:
-      stack_name:                                                 "{{stack.sqs.internet_delivery_sqs_queue_sns_listener}}"
-      state:                                                      present
-      template:                                                   "{{template.sqs.sqs_simple_template}}"
-      template_parameters:
-        QueueName:                                                "{{sqs.internet_delivery_sqs_queue_sns_listener}}"
-    encryption_delivery_sqs_queue_sns_listener:
-      stack_name:                                                 "{{stack.sqs.encryption_delivery_sqs_queue_sns_listener}}"
-      state:                                                      present
-      template:                                                   "{{template.sqs.sqs_simple_template}}"
-      template_parameters:
-        QueueName:                                                "{{sqs.encryption_delivery_sqs_queue_sns_listener}}"
     dqs_sqs_queue:
       stack_name:                                                 "{{stack.sqs.dqs_sqs_queue}}"
       state:                                                      present
@@ -410,6 +396,18 @@ aws:
       template_parameters:
         QueueName:                                                "{{sqs.delay_sqs_queue}}"
         DelaySeconds:                                             "240"
+    dlp_report_sqs_queue:
+      stack_name:                                                 "{{stack.sqs.dlp_report_sqs_queue}}"
+      state:                                                      absent
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.dlp_report_sqs_queue}}"
+    encryption_delivery_sqs_queue_sns_listener:
+      stack_name:                                                 "{{stack.sqs.encryption_delivery_sqs_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.encryption_delivery_sqs_queue_sns_listener}}"
     emergency_inbox_sqs_queue:
       stack_name:                                                 "{{stack.sqs.emergency_inbox_sqs_queue}}"
       state:                                                      absent
@@ -422,6 +420,12 @@ aws:
       template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                                                "{{sqs.emergency_inbox_sqs_queue_sns_listener}}"
+    internet_delivery_sqs_queue_sns_listener:
+      stack_name:                                                 "{{stack.sqs.internet_delivery_sqs_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.internet_delivery_sqs_queue_sns_listener}}"
     impersonation_request_queue:
       stack_name:                                                 "{{stack.sqs.impersonation_request_queue}}"
       state:                                                      present
@@ -452,6 +456,14 @@ aws:
       template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                                                "{{sqs.internet_submit_sqs_queue}}"
+    lifecycle_sqs_sns:
+      stack_name:                                                 "{{stack.sqs.lifecycle_sqs_sns}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_sns_subscription_template}}"
+      template_parameters:
+        Branch:                                                   "{{build.branch}}"
+        Environment:                                              "{{account.name}}"
+        SubscriptionName:                                         "xgemail-lifecycle"
     msg_history_status_sqs_queue:
       stack_name:                                                 "{{stack.sqs.msg_history_status_sqs_queue}}"
       state:                                                      present
@@ -511,6 +523,18 @@ aws:
       template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                                                "{{sqs.msg_statistics_sqs_queue_sns_listener}}"
+    message_redirect_sqs_queue_sns_listener:
+      stack_name:                                                 "{{stack.sqs.message_redirect_sqs_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.message_redirect_sqs_queue_sns_listener}}"
+    message_bounce_sqs_queue_sns_listener:
+      stack_name:                                                 "{{stack.sqs.message_bounce_sqs_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.message_bounce_sqs_queue_sns_listener}}"
     notifier_request_sqs_queue:
       stack_name:                                                 "{{stack.sqs.notifier_request_sqs_queue}}"
       state:                                                      present
@@ -530,6 +554,12 @@ aws:
       template_parameters:
         QueueName:                                                "{{sqs.outbound_malware_protection_unblock_sender_queue}}"
         DelaySeconds:                                             "900"
+    policy_refresh_sqs_queue_sns_listener:
+      stack_name:                                                 "{{stack.sqs.policy_refresh_sqs_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.policy_refresh_sqs_queue_sns_listener}}"
     quarantine_sqs_queue:
       stack_name:                                                 "{{stack.sqs.quarantine_sqs_queue}}"
       state:                                                      absent
@@ -542,30 +572,6 @@ aws:
       template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                                                "{{sqs.quarantine_sqs_queue_sns_listener}}"
-    additional_action_sqs_queue_sns_listener:
-      stack_name:                                                 "{{stack.sqs.additional_action_sqs_queue_sns_listener}}"
-      state:                                                      present
-      template:                                                   "{{template.sqs.sqs_simple_template}}"
-      template_parameters:
-        QueueName:                                                "{{sqs.additional_action_sqs_queue_sns_listener}}"
-    message_redirect_sqs_queue_sns_listener:
-      stack_name:                                                 "{{stack.sqs.message_redirect_sqs_queue_sns_listener}}"
-      state:                                                      present
-      template:                                                   "{{template.sqs.sqs_simple_template}}"
-      template_parameters:
-        QueueName:                                                "{{sqs.message_redirect_sqs_queue_sns_listener}}"
-    message_bounce_sqs_queue_sns_listener:
-      stack_name:                                                 "{{stack.sqs.message_bounce_sqs_queue_sns_listener}}"
-      state:                                                      present
-      template:                                                   "{{template.sqs.sqs_simple_template}}"
-      template_parameters:
-        QueueName:                                                "{{sqs.message_bounce_sqs_queue_sns_listener}}"
-    dlp_report_sqs_queue:
-      stack_name:                                                 "{{stack.sqs.dlp_report_sqs_queue}}"
-      state:                                                      absent
-      template:                                                   "{{template.sqs.sqs_simple_template}}"
-      template_parameters:
-        QueueName:                                                "{{sqs.dlp_report_sqs_queue}}"
     risky_delivery_sqs_queue_sns_listener:
       stack_name:                                                 "{{stack.sqs.risky_delivery_sqs_queue_sns_listener}}"
       state:                                                      present
