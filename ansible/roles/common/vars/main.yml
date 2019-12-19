@@ -216,6 +216,11 @@ aws:
         S3PolicyCreate:                                           "true"
         S3PolicyPrincipalList:                                    "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
   sns:
+    additional_actions_sns_topic:
+      stack_name:                                                 "{{stack.sns.additional_actions_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                                                "{{sns.additional_actions_sns_topic}}"
     alarm_sns_topic:
       stack_name:                                                 "{{stack.sns.alarm_sns_topic}}"
       template:                                                   "{{template.sns.sns_template}}"
@@ -223,6 +228,11 @@ aws:
         SNSTopicEndpointProtocol:                                 "email"
         SNSTopicEndpointValue:                                    "cloud-inf-aws-alerts@sophos.com"
         SNSTopicName:                                             "{{sns.alarm_sns_topic}}"
+    bounce_events_sns_topic:
+      stack_name:                                                 "{{stack.sns.bounce_events_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                                                "{{sns.bounce_events_sns_topic}}"
     delay_sns_topic:
       stack_name:                                                 "{{stack.sns.delay_sns_topic}}"
       template:                                                   "{{template.sns.sns_simple_template}}"
@@ -233,26 +243,6 @@ aws:
       template:                                                   "{{template.sns.sns_simple_template}}"
       template_parameters:
         TopicName:                                                "{{sns.deleted_events_sns_topic}}"
-    scan_events_sns_topic:
-      stack_name:                                                 "{{stack.sns.scan_events_sns_topic}}"
-      template:                                                   "{{template.sns.sns_simple_template}}"
-      template_parameters:
-        TopicName:                                                "{{sns.scan_events_sns_topic}}"
-    internet_delivery_sns_topic:
-      stack_name:                                                 "{{stack.sns.internet_delivery_sns_topic}}"
-      template:                                                   "{{template.sns.sns_simple_template}}"
-      template_parameters:
-        TopicName:                                                "{{sns.internet_delivery_sns_topic}}"
-    quarantined_events_sns_topic:
-      stack_name:                                                 "{{stack.sns.quarantined_events_sns_topic}}"
-      template:                                                   "{{template.sns.sns_simple_template}}"
-      template_parameters:
-        TopicName:                                                "{{sns.quarantined_events_sns_topic}}"
-    success_events_sns_topic:
-      stack_name:                                                 "{{stack.sns.success_events_sns_topic}}"
-      template:                                                   "{{template.sns.sns_simple_template}}"
-      template_parameters:
-        TopicName:                                                "{{sns.success_events_sns_topic}}"
     encryption_delivery_events_sns_topic:
       stack_name:                                                 "{{stack.sns.encryption_delivery_events_sns_topic}}"
       template:                                                   "{{template.sns.sns_simple_template}}"
@@ -263,6 +253,11 @@ aws:
       template:                                                   "{{template.sns.sns_simple_template}}"
       template_parameters:
         TopicName:                                                "{{sns.encrypt_events_sns_topic}}"
+    internet_delivery_sns_topic:
+      stack_name:                                                 "{{stack.sns.internet_delivery_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                                                "{{sns.internet_delivery_sns_topic}}"
     mailops_notification_sns_topic:
       stack_name:                                                 "{{stack.sns.mailops_notification_sns_topic}}"
       template:                                                   "{{template.sns.sns_simple_template}}"
@@ -288,13 +283,6 @@ aws:
       template:                                                   "{{template.sns.sns_simple_template}}"
       template_parameters:
         TopicName:                                                "{{sns.msg_statistics_rejection_sns_topic}}"
-    policy_sns_topic:
-      stack_name:                                                 "{{stack.sns.policy_sns_topic}}"
-      template:                                                   "{{template.sns.sns_topic_policy_s3_template}}"
-      template_parameters:
-        TopicName:                                                "{{sns.policy_sns_topic}}"
-        SnsS3TopicPolicyBucket:                                   "{{s3.policy_bucket}}"
-        SnsS3TopicPolicyCreate:                                   "true"
     multi_policy_sns_topic:
       stack_name:                                                 "{{stack.sns.multi_policy_sns_topic}}"
       template:                                                   "{{template.sns.sns_topic_policy_s3_template}}"
@@ -302,6 +290,33 @@ aws:
         TopicName:                                                "{{sns.multi_policy_sns_topic}}"
         SnsS3TopicPolicyBucket:                                   "{{s3.policy_bucket}}"
         SnsS3TopicPolicyCreate:                                   "true"
+    msg_statistics_reindex_sns_topic:
+      stack_name:                                                 "{{stack.sns.msg_statistics_reindex_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                                                "{{sns.msg_statistics_reindex_sns_topic}}"
+    notification_sns_topic:
+      stack_name:                                                 "{{stack.sns.notification_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                                                "{{sns.notification_sns_topic}}"
+    policy_sns_topic:
+      stack_name:                                                 "{{stack.sns.policy_sns_topic}}"
+      template:                                                   "{{template.sns.sns_topic_policy_s3_template}}"
+      template_parameters:
+        TopicName:                                                "{{sns.policy_sns_topic}}"
+        SnsS3TopicPolicyBucket:                                   "{{s3.policy_bucket}}"
+        SnsS3TopicPolicyCreate:                                   "true"
+    policy_refresh_event_sns_topic:
+      stack_name:                                                 "{{stack.sns.policy_refresh_event_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                                                "{{sns.policy_refresh_event_sns_topic}}"
+    quarantined_events_sns_topic:
+      stack_name:                                                 "{{stack.sns.quarantined_events_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                                                "{{sns.quarantined_events_sns_topic}}"
     relay_control_sns_topic:
       stack_name:                                                 "{{stack.sns.relay_control_sns_topic}}"
       template:                                                   "{{template.sns.sns_topic_policy_s3_template}}"
@@ -309,21 +324,6 @@ aws:
         TopicName:                                                "{{sns.relay_control_sns_topic}}"
         SnsS3TopicPolicyBucket:                                   "{{s3.policy_bucket}}"
         SnsS3TopicPolicyCreate:                                   "true"
-    notification_sns_topic:
-      stack_name:                                                 "{{stack.sns.notification_sns_topic}}"
-      template:                                                   "{{template.sns.sns_simple_template}}"
-      template_parameters:
-        TopicName:                                                "{{sns.notification_sns_topic}}"
-    additional_actions_sns_topic:
-      stack_name:                                                 "{{stack.sns.additional_actions_sns_topic}}"
-      template:                                                   "{{template.sns.sns_simple_template}}"
-      template_parameters:
-        TopicName:                                                "{{sns.additional_actions_sns_topic}}"
-    bounce_events_sns_topic:
-      stack_name:                                                 "{{stack.sns.bounce_events_sns_topic}}"
-      template:                                                   "{{template.sns.sns_simple_template}}"
-      template_parameters:
-        TopicName:                                                "{{sns.bounce_events_sns_topic}}"
     redirect_events_sns_topic:
       stack_name:                                                 "{{stack.sns.redirect_events_sns_topic}}"
       template:                                                   "{{template.sns.sns_simple_template}}"
@@ -334,11 +334,16 @@ aws:
       template:                                                   "{{template.sns.sns_simple_template}}"
       template_parameters:
         TopicName:                                                "{{sns.risky_delivery_sns_topic}}"
-    msg_statistics_reindex_sns_topic:
-      stack_name:                                                 "{{stack.sns.msg_statistics_reindex_sns_topic}}"
+    scan_events_sns_topic:
+      stack_name:                                                 "{{stack.sns.scan_events_sns_topic}}"
       template:                                                   "{{template.sns.sns_simple_template}}"
       template_parameters:
-        TopicName:                                                "{{sns.msg_statistics_reindex_sns_topic}}"
+        TopicName:                                                "{{sns.scan_events_sns_topic}}"
+    success_events_sns_topic:
+      stack_name:                                                 "{{stack.sns.success_events_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                                                "{{sns.success_events_sns_topic}}"
 
   sqs:
     additional_action_sqs_queue_sns_listener:
