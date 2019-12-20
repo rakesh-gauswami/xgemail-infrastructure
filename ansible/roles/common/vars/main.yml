@@ -309,7 +309,7 @@ aws:
         SnsS3TopicPolicyCreate:                                   "true"
     policy_refresh_event_sns_topic:
       stack_name:                                                 "{{stack.sns.policy_refresh_event_sns_topic}}"
-      template:                                                   "{{template.sns.sns_simple_template}}"
+      template:                                                   "{{template.sns.sns_topic_policy_iam_template}}"
       template_parameters:
         TopicName:                                                "{{sns.policy_refresh_event_sns_topic}}"
     quarantined_events_sns_topic:
