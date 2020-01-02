@@ -116,13 +116,17 @@ aws:
   s3:
     customer_submit_bucket:
       stack_name:                                                 "{{stack.s3.customer_submit_bucket}}"
-      template:                                                   "{{template.s3.s3_bucket_template}}"
+      template:                                                   "{{template.s3.s3_bucket_lambda_notification_template}}"
       template_parameters:
         Environment:                                              "{{account.name}}"
         RequireEncryptionForUploads:                              "sse-s3"
         S3BucketName:                                             "{{s3.customer_submit_bucket}}"
         S3LifeCycleDelete:                                        "30"
         S3PolicyCreate:                                           "true"
+        SubmitBucketPolicy:                                       "true"
+        LambdaNotificationFunctionArn:                            "{{lambda.arn_prefix}}{{lambda.antispam_out_data_collection_for_labs_lambda_function}}"
+        LambdaNotificationFilterName:                             "suffix"
+        LambdaNotificationFilterValue:                            "SASI.HEADER"
         S3PolicyPrincipalList:                                    "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
     emergency_inbox_bucket:
       stack_name:                                                 "{{stack.s3.emergency_inbox_bucket}}"
