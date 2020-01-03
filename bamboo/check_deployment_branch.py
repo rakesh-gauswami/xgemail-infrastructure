@@ -76,7 +76,7 @@ def is_production_account(account):
 
 
 # Regex used to match good release branches.
-VALID_RELEASE_BRANCH_PATTERN = r"^release/(CSA-)?201\d\.\d\d(-[^ ]+)?$"
+VALID_RELEASE_BRANCH_PATTERN = r"^release/\d{4}.\d{2}$"
 VALID_RELEASE_BRANCH_REGEX = re.compile(VALID_RELEASE_BRANCH_PATTERN)
 
 
