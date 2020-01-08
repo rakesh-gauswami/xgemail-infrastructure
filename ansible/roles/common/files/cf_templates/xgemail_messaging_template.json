@@ -43,6 +43,11 @@
       "Description": "TopicArn for encryption delivery events SNS",
       "Type": "String"
     },
+    "EncryptionSettingsUpdateEventsTopicArn": {
+      "Description": "TopicArn for encryption settings update events SNS",
+      "Type": "String"
+    },
+
     "InternetDeliveryTopicArn": {
       "Description": "TopicArn of Internet delivery Events SNS",
       "Type": "String"
@@ -133,6 +138,10 @@
     },
     "EncryptionDeliveryQueue": {
       "Description": "Endpoint for encryption delivery SQS queue",
+      "Type": "String"
+    },
+    "EncryptionSettingsUpdateQueue": {
+      "Description": "Endpoint ARN for encryption settings update SQS queue",
       "Type": "String"
     },
     "ImpersonationRequestQueue": {
@@ -491,6 +500,14 @@
         "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "BounceEventQueue"}]]},
         "Protocol": "sqs",
         "TopicArn": { "Ref": "BounceEventTopicArn"}
+      }
+    },
+    "EncryptionSettingsUpdateSNSListenerQueueToEncryptionSettingsUpdateSnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "EncryptionSettingsUpdateQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "EncryptionSettingsUpdateEventsTopicArn"}
       }
     },
     "MessageStatisticsSNSListenerQueueToRedirectEventSnsSubscription": {
