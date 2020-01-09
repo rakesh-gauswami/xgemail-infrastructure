@@ -99,10 +99,6 @@
       "Description": "TopicArn of Success Events SNS",
       "Type": "String"
     },
-    "WarmupDeliveryTopicArn": {
-      "Description": "TopicArn of Warmup Delivery Events SNS",
-      "Type": "String"
-    },
     "AdditionalActionQueue": {
       "Description": "Endpoint ARN for Additional Action SQS Queue",
       "Type": "String"
@@ -209,10 +205,6 @@
     },
     "RiskyDeliveryQueue": {
       "Description": "Endpoint for Risky delivery SQS queue",
-      "Type": "String"
-    },
-    "WarmupDeliveryQueue": {
-      "Description": "Endpoint for Warmup delivery SQS queue",
       "Type": "String"
     }
   },
@@ -395,14 +387,6 @@
         "TopicArn": { "Ref": "RiskyDeliveryTopicArn"}
       }
     },
-    "MessageHistoryQueueToWarmupDeliverySnsSubscription": {
-      "Type" : "AWS::SNS::Subscription",
-      "Properties": {
-        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageHistoryQueue"}]]},
-        "Protocol": "sqs",
-        "TopicArn": { "Ref": "WarmupDeliveryTopicArn"}
-      }
-    },
     "MessageHistoryQueueToSuccessSnsSubscription": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
@@ -425,14 +409,6 @@
         "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageStatisticsQueue"}]]},
         "Protocol": "sqs",
         "TopicArn": { "Ref": "RiskyDeliveryTopicArn"}
-      }
-    },
-    "MessageStatisticsQueueToWarmupDeliverySnsSubscription": {
-      "Type" : "AWS::SNS::Subscription",
-      "Properties": {
-        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageStatisticsQueue"}]]},
-        "Protocol": "sqs",
-        "TopicArn": { "Ref": "WarmupDeliveryTopicArn"}
       }
     },
     "MessageStatisticsQueueToSuccessSnsSubscription": {
@@ -589,28 +565,12 @@
         "TopicArn": { "Ref": "RiskyDeliveryTopicArn"}
       }
     },
-    "AdditionalActionQueueToWarmupDeliverySnsSubscription": {
-      "Type" : "AWS::SNS::Subscription",
-      "Properties": {
-        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "AdditionalActionQueue"}]]},
-        "Protocol": "sqs",
-        "TopicArn": { "Ref": "WarmupDeliveryTopicArn"}
-      }
-    },
     "PolicyRefreshEventQueueToPolicyRefreshEventSnsSubscription": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
         "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "PolicyRefreshEventQueue"}]]},
         "Protocol": "sqs",
         "TopicArn": { "Ref": "PolicyRefreshEventTopicArn"}
-      }
-    },
-    "WarmupDeliveryQueueToWarmupDeliverySnsSubscription": {
-      "Type" : "AWS::SNS::Subscription",
-      "Properties": {
-        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "WarmupDeliveryQueue"}]]},
-        "Protocol": "sqs",
-        "TopicArn": { "Ref": "WarmupDeliveryTopicArn"}
       }
     },
 
@@ -1377,30 +1337,6 @@
           {"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "NotifierQueue" }]]},
           {"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "OutboundMalwareProtectionQueue" }]]}
         ]
-      }
-    },
-    "WarmupDeliveryQueuePolicy": {
-      "Type": "AWS::SQS::QueuePolicy",
-      "Properties": {
-        "PolicyDocument": {
-          "Version": "2012-10-17",
-          "Id": "WarmupDeliveryQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
-          "Statement": [
-            {
-              "Sid": "Allow-WarmupDeliveryTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "WarmupDeliveryTopicArn"}
-                }
-              }
-            }
-          ]
-        },
-        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "WarmupDeliveryQueue" }]]}]
       }
     }
   }

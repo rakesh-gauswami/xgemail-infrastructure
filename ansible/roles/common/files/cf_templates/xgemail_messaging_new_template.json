@@ -1,0 +1,91 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Xgemail SNS Subscription Template",
+
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2020, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ],
+
+    "Comments": [
+      "Marries SNS topics to SQS queues to support XGEMAIL messaging."
+    ]
+  },
+
+  "Parameters": {
+    "WarmupDeliveryTopicArn": {
+      "Description": "TopicArn of Warmup Delivery Events SNS",
+      "Type": "String"
+    },
+    "WarmupDeliveryQueue": {
+      "Description": "Endpoint for Warmup delivery SQS queue",
+      "Type": "String"
+    }
+  },
+
+  "Resources": {
+    "MessageHistoryQueueToWarmupDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageHistoryQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "WarmupDeliveryTopicArn"}
+      }
+    },
+    "MessageStatisticsQueueToWarmupDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageStatisticsQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "WarmupDeliveryTopicArn"}
+      }
+    },
+    "AdditionalActionQueueToWarmupDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "AdditionalActionQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "WarmupDeliveryTopicArn"}
+      }
+    },
+    "WarmupDeliveryQueueToWarmupDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "WarmupDeliveryQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "WarmupDeliveryTopicArn"}
+      }
+    },
+
+    "WarmupDeliveryQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "WarmupDeliveryQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-WarmupDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "WarmupDeliveryTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "WarmupDeliveryQueue" }]]}]
+      }
+    }
+  }
+}
