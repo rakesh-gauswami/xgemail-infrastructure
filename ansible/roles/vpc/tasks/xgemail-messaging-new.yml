@@ -6,6 +6,9 @@
     disable_rollback: true
     template: "{{template.msg.xgemail_messaging_new_template}}"
     template_parameters:
+      AdditionalActionQueue:                            "{{sqs.additional_action_sqs_queue_sns_listener}}"
+      MessageHistoryQueue:                              "{{sqs.msg_history_sqs_queue_sns_listener}}"
+      MessageStatisticsQueue:                           "{{sqs.msg_statistics_sqs_queue_sns_listener}}"
       WarmupDeliveryTopicArn:                           "{{sns.arn_prefix}}{{sns.warmup_delivery_sns_topic}}"
       WarmupDeliveryQueue:                              "{{sqs.warmup_delivery_sqs_queue_sns_listener}}"
   register: messaging_stack
