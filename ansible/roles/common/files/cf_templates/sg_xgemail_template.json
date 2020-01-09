@@ -1726,6 +1726,90 @@
       }
     },
 
+    "XgemailWarmupXdeliverySecurityGroupLb": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Controls access to internal facing warmup Xdelivery ELB.",
+        "Tags": [
+          {
+            "Key": "Branch",
+            "Value": {"Ref": "Branch"}
+
+          },
+          {
+            "Key": "Environment",
+            "Value": {"Ref": "Environment"}
+          },
+          {
+            "Key": "Role",
+            "Value": "svc-xgemail-warmup-xdelivery-elb"
+
+          },
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "Environment"
+                  },
+                  "-",
+                  {
+                    "Ref": "Branch"
+                  },
+                  "-",
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "/sg/xgemail/warmup/xdelivery/elb"
+                ]
+              ]
+            }
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      }
+    },
+
+    "XgemailWarmupXdeliverySecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Xgemail Warmup Xdelivery security group.",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "", [
+                  { "Ref": "Environment" }, "-",
+                  { "Ref": "Branch" }, "-",
+                  { "Ref": "AWS::StackName" }, "/sg/xgemail/warmup/xdelivery"
+                ]
+              ]
+            }
+          }
+        ],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "8025",
+            "ToPort": "8025",
+            "SourceSecurityGroupId": { "Ref": "XgemailWarmupXdeliverySecurityGroupLb" }
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "-1",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "VpcId": { "Ref": "Vpc" }
+      }
+    },
+
     "XgemailXdeliverySecurityGroupLbIngressCustomerDeliverySmtp": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
@@ -1753,6 +1837,17 @@
       "Properties": {
         "GroupId": { "Ref": "XgemailRiskyXdeliverySecurityGroupLb" },
         "SourceSecurityGroupId": { "Ref": "XgemailRiskyDeliverySecurityGroup" },
+        "IpProtocol": "tcp",
+        "FromPort": "8025",
+        "ToPort": "8025"
+      }
+    },
+
+    "XgemailWarmupXdeliverySecurityGroupLbIngressDeliverySmtp": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailWarmupXdeliverySecurityGroupLb" },
+        "SourceSecurityGroupId": { "Ref": "XgemailWarmupDeliverySecurityGroup" },
         "IpProtocol": "tcp",
         "FromPort": "8025",
         "ToPort": "8025"
@@ -1851,6 +1946,17 @@
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {"Ref": "XgemailRiskyXdeliverySecurityGroup"},
+        "SourceSecurityGroupId": {"Ref": "SecurityGroupBastion"},
+        "IpProtocol": "tcp",
+        "FromPort": "22",
+        "ToPort": "22"
+      }
+    },
+
+    "XgemailWarmupXdeliverySecurityGroupIngressBastionSsh": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {"Ref": "XgemailWarmupXdeliverySecurityGroup"},
         "SourceSecurityGroupId": {"Ref": "SecurityGroupBastion"},
         "IpProtocol": "tcp",
         "FromPort": "22",
@@ -2038,6 +2144,14 @@
     "XgemailWarmupDeliverySecurityGroup": {
       "Description": "Xgemail Warmup Delivery security group",
       "Value": { "Ref": "XgemailWarmupDeliverySecurityGroup" }
+    },
+    "XgemailWarmupXdeliverySecurityGroupLb": {
+      "Description": "Xgemail Warmup Xdelivery Load Balancer security group",
+      "Value": { "Ref": "XgemailWarmupXdeliverySecurityGroupLb" }
+    },
+    "XgemailWarmupXdeliverySecurityGroup": {
+      "Description": "Xgemail Warmup Xdelivery security group",
+      "Value": { "Ref": "XgemailWarmupXdeliverySecurityGroup" }
     }
   }
 }
