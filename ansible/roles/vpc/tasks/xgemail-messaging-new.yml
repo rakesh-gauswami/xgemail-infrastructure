@@ -1,0 +1,20 @@
+- name: "Deploy {{stack.msg.xgemail_messaging_new}} to {{account.name}} {{account.region}}"
+  cloudformation:
+    stack_name: "{{stack.msg.xgemail_messaging_new}}"
+    state: present
+    region: "{{account.region}}"
+    disable_rollback: true
+    template: "{{template.msg.xgemail_messaging_new_template}}"
+    template_parameters:
+      WarmupDeliveryTopicArn:                           "{{sns.arn_prefix}}{{sns.warmup_delivery_sns_topic}}"
+      WarmupDeliveryQueue:                              "{{sqs.warmup_delivery_sqs_queue_sns_listener}}"
+  register: messaging_stack
+
+- debug:
+    var: messaging_new_stack
+    verbosity: 3
+
+- name: "Display Xgemail Messaging New Stack Output"
+  debug:
+    msg: "{{messaging_new_stack.stack_outputs}}"
+    verbosity: 2
