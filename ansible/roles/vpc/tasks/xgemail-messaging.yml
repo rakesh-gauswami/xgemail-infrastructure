@@ -53,6 +53,8 @@
       RiskyDeliveryQueue:                               "{{sqs.risky_delivery_sqs_queue_sns_listener}}"
       ScanEventsTopicArn:                               "{{sns.arn_prefix}}{{sns.scan_events_sns_topic}}"
       SuccessEventsTopicArn:                            "{{sns.arn_prefix}}{{sns.success_events_sns_topic}}"
+      WarmupDeliveryTopicArn:                           "{{sns.arn_prefix}}{{sns.warmup_delivery_sns_topic}}"
+      WarmupDeliveryQueue:                              "{{sqs.warmup_delivery_sqs_queue_sns_listener}}"
   register: messaging_stack
 
 - debug:
