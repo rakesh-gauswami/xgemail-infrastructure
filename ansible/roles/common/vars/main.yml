@@ -264,9 +264,11 @@ aws:
         TopicName:                                                "{{sns.internet_delivery_sns_topic}}"
     mailops_notification_sns_topic:
       stack_name:                                                 "{{stack.sns.mailops_notification_sns_topic}}"
-      template:                                                   "{{template.sns.sns_simple_template}}"
+      template:                                                   "{{template.sns.sns_template}}"
       template_parameters:
-        TopicName:                                                "{{sns.mailops_notification_sns_topic}}"
+        SNSTopicEndpointProtocol:                                 "email"
+        SNSTopicEndpointValue:                                    "SophosMailOps@sophos.com"
+        SNSTopicName:                                             "{{sns.mailops_notification_sns_topic}}"
     msg_history_events_sns_topic:
       stack_name:                                                 "{{stack.sns.msg_history_events_sns_topic}}"
       template:                                                   "{{template.sns.sns_simple_template}}"
