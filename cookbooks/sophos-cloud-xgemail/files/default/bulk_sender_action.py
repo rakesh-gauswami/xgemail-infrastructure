@@ -24,7 +24,7 @@ def get_parsed_args(parser):
     parser.add_argument('--emailid', help = 'Email address of the bulk sender request mailbox', required = True)
     parser.add_argument('--approve', action = 'store_true', help = 'Approve the bulk sender request')
     parser.add_argument('--reject', action = 'store_true', help = 'Reject the bulk sender request')
-    parser.add_argument('--revoke', actiom = 'store_true', help = 'Revoke the bulk sender request, removes all relevant documents from S3')
+    parser.add_argument('--revoke', action = 'store_true', help = 'Revoke the bulk sender request, removes all relevant documents from S3')
     args = parser.parse_args()
     return args
 
