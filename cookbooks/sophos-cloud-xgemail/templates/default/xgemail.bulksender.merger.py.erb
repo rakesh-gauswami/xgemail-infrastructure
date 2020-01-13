@@ -41,7 +41,7 @@ def get_approved_bulksenders_json(directory_objects):
     bulksender_json =  {
         'approved_bulksenders': list(directory_objects)
     }
-    return ', '.join('%s=%s' % (key, value) for (key, value) in bulksender_json.iteritems())
+    return json.dumps(bulksender_json)
 
 
 if __name__ == "__main__":
