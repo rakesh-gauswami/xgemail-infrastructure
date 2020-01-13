@@ -60,7 +60,7 @@ execute BULKSENDER_SCRIPT_PATH do
   action :nothing
 end
 
-# Write consumer script to consumer script path on an instance
+# Write bulk sender script to customer submit instance
 template BULKSENDER_SCRIPT_PATH do
   source "#{BULKSENDER_SCRIPT}.erb"
   mode '0750'
