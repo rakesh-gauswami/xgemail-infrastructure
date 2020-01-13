@@ -47,7 +47,8 @@ MAGIC_NUMBERS = {
     b'\0SOPHDLPSMRY' : DEFAULT_FORMATTER,
     b'\0SOPHDLPDTL' : DEFAULT_FORMATTER,
     b'\0SOPHIMPREVNT' : DEFAULT_FORMATTER,
-    b'\0SOPHCLKEVT' : DEFAULT_FORMATTER
+    b'\0SOPHCLKEVT' : DEFAULT_FORMATTER,
+    b'\0SOPHBSNDR' : DEFAULT_FORMATTER
 }
 
 def is_valid_format(magic_bytes, magic_number):
@@ -77,6 +78,7 @@ def get_binary(formatted_file, magic_number):
     return formatterutils.get_decompressed_object_bytes(
         formatted_file[nonce_length_end_idx:len(formatted_file)]
     )
+
 
 def print_decoded_json(deserialized_content):
     """
