@@ -18,8 +18,8 @@ import urllib3
 MAIL_PIC_RESPONSE_TIMEOUT = 30
 
 def get_parsed_args(parser):
-    parser.add_argument('--region', defualt = 'eu-west-1', choices=['eu-central-1', 'eu-west-1', 'us-west-2', 'us-east-2'], help = 'AWS region', required = True)
-    parser.add_argument('--env', defualt = 'DEV', choices=['DEV', 'DEV3', 'QA', 'PROD','INF'], help = 'AWS environment', required = True)
+    parser.add_argument('--region', default = 'eu-west-1', choices=['eu-central-1', 'eu-west-1', 'us-west-2', 'us-east-2'], help = 'AWS region', required = True)
+    parser.add_argument('--env', default = 'DEV', choices=['DEV', 'DEV3', 'QA', 'PROD','INF'], help = 'AWS environment', required = True)
     parser.add_argument('--customerid', help = 'Customer ID of the bulk sender request sender', required = True)
     parser.add_argument('--emailid', help = 'Email address of the bulk sender request mailbox', required = True)
     parser.add_argument('--approve', action = 'store_true', help = 'Approve the bulk sender request')
