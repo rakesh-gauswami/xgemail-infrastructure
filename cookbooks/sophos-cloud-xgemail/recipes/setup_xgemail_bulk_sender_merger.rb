@@ -70,8 +70,8 @@ template BULKSENDER_SCRIPT_PATH do
     :aws_region => AWS_REGION,
     :policy_bucket => POLICY_BUCKET_NAME,
     :bulksender_s3_path => BULK_SENDER_S3_PATH,
-    :merged_bulksender_filename => MERGED_BULK_SENDER_FILENAME
-    :s3_encryption_algorithm =>  S3_ENCRYPTION_ALGORITHM
+    :merged_bulksender_filename => MERGED_BULK_SENDER_FILENAME,
+    :s3_encryption_algorithm =>  S3_ENCRYPTION_ALGORITHM,
     :temp_failure_code => TEMP_FAILURE_CODE,
     :xgemail_utils_path => XGEMAIL_UTILS_DIR
   )
