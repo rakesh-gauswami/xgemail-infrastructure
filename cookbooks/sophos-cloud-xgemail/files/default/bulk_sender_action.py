@@ -18,10 +18,10 @@ import urllib3
 MAIL_PIC_RESPONSE_TIMEOUT = 30
 
 def get_parsed_args(parser):
-    parser.add_argument('--region', defualt = 'eu-west-1', choices=['eu-central-1', 'eu-west-1', 'us-west-2', 'us-east-2'], help = 'AWS region')
-    parser.add_argument('--env', defualt = 'DEV', choices=['DEV', 'DEV3', 'QA', 'PROD','INF'], help = 'AWS environment')
-    parser.add_argument('--customerid', help = 'Customer ID of the bulk sender request sender')
-    parser.add_argument('--emailid', help = 'Email address of the bulk sender request mailbox')
+    parser.add_argument('--region', defualt = 'eu-west-1', choices=['eu-central-1', 'eu-west-1', 'us-west-2', 'us-east-2'], help = 'AWS region', required = True)
+    parser.add_argument('--env', defualt = 'DEV', choices=['DEV', 'DEV3', 'QA', 'PROD','INF'], help = 'AWS environment', required = True)
+    parser.add_argument('--customerid', help = 'Customer ID of the bulk sender request sender', required = True)
+    parser.add_argument('--emailid', help = 'Email address of the bulk sender request mailbox', required = True)
     parser.add_argument('--approve', action = 'store_true', help = 'Approve the bulk sender request')
     parser.add_argument('--reject', action = 'store_true', help = 'Reject the bulk sender request')
     parser.add_argument('--revoke', actiom = 'store_true', help = 'Revoke the bulk sender request, removes all relevant documents from S3')
@@ -50,6 +50,7 @@ def create_mail_pic_request_data(args):
         bulk_sender_api_url = mail_pic_api_url + '/bulksender/revoke'
         data.append('revoke')
     else:
+        print 'Aborting... please use any of the following options --approve / --reject / --revoke'
         return None
 
     headers = {
