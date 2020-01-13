@@ -10,10 +10,6 @@
 #
 
 
-chef_gem 'aws-sdk' do
-  action [:install]
-end
-
 require 'aws-sdk'
 require 'json'
 
@@ -22,6 +18,11 @@ require 'json'
 ::Chef::Resource.send(:include, ::SophosCloudXgemail::Helper)
 
 NODE_TYPE = node['xgemail']['cluster_type']
+
+# Only continue when it's customer-submit
+if NODE_TYPE != 'customer-submit'
+    return
+end
 
 INSTANCE_DATA = node['xgemail']['postfix_instance_data'][NODE_TYPE]
 raise "Unsupported node type [#{NODE_TYPE}]" if INSTANCE_DATA.nil?
@@ -43,10 +44,7 @@ BULK_SENDER_PATH_PREFIX         = 'config/outbound-relay-control/bulksenders/'
 MERGED_BULK_SENDER_FILENAME     = 'approved-bulksenders'
 
 
-# Only continue when it's customer-submit
-if NODE_TYPE != 'customer-submit'
-    return
-end
+
 
 #directory for bulksender services
 directory PACKAGE_DIR do
