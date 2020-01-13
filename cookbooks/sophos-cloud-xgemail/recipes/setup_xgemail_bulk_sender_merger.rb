@@ -32,18 +32,16 @@ raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 
 AWS_REGION                              = node['sophos_cloud']['region']
 S3_ENCRYPTION_ALGORITHM                 = node['xgemail']['s3_encryption_algorithm']
-SQS_MESSAGE_PRODUCER_TEMP_FAILURE_CODE  = node['xgemail']['temp_failure_code']
 XGEMAIL_UTILS_DIR                       = node['xgemail']['xgemail_utils_files_dir']
 XGEMAIL_FILES_DIR                       = node['xgemail']['xgemail_files_dir']
 TEMP_FAILURE_CODE                       = node['xgemail']['temp_failure_code']
+POLICY_BUCKET_NAME                      = node['xgemail']['xgemail_policy_bucket_name']
 
 PACKAGE_DIR                     = "#{XGEMAIL_FILES_DIR}/xgemail-bulksender-service"
 BULKSENDER_SCRIPT               = 'xgemail.bulksender.merger.py'
 BULKSENDER_SCRIPT_PATH          = "#{PACKAGE_DIR}/#{BULKSENDER_SCRIPT}"
 BULK_SENDER_PATH_PREFIX         = 'config/outbound-relay-control/bulksenders/'
 MERGED_BULK_SENDER_FILENAME     = 'approved-bulksenders'
-
-
 
 
 #directory for bulksender services
@@ -67,24 +65,10 @@ template BULKSENDER_SCRIPT_PATH do
   variables(
     :aws_region => AWS_REGION,
     :policy_bucket => POLICY_BUCKET_NAME,
-    :bulksender_s3_path => BULK_SENDER_S3_PATH,
+    :bulksender_s3_path => BULK_SENDER_PATH_PREFIX,
     :merged_bulksender_filename => MERGED_BULK_SENDER_FILENAME,
     :s3_encryption_algorithm =>  S3_ENCRYPTION_ALGORITHM,
     :temp_failure_code => TEMP_FAILURE_CODE,
     :xgemail_utils_path => XGEMAIL_UTILS_DIR
   )
-  notifies :run, "execute[#{BULKSENDER_SCRIPT_PATH}]", :immediately
 end
-
-
-service POLICY_POLLER_SERVICE_NAME do
-  service_name POLICY_POLLER_SERVICE_NAME
-  init_command "/etc/init.d/#{POLICY_POLLER_SERVICE_NAME}"
-  supports :restart => true, :start => true, :stop => true, :reload => true
-  subscribes :enable, 'template[xgemail-sqs-policy-poller]', :immediately
-end
-
-service POLICY_POLLER_SERVICE_NAME do
-  action :start
-end
-
