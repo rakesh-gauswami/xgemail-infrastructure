@@ -25,6 +25,7 @@ def get_parsed_args(parser):
     parser.add_argument('--approve', action = 'store_true', help = 'Approve the bulk sender request')
     parser.add_argument('--reject', action = 'store_true', help = 'Reject the bulk sender request')
     parser.add_argument('--revoke', action = 'store_true', help = 'Revoke the bulk sender request, removes all relevant documents from S3')
+    parser.add_argument('--status', action = 'store_true', help = 'Returns current bulk sender request status')
     args = parser.parse_args()
     return args
 
@@ -49,8 +50,11 @@ def create_mail_pic_request_data(args):
     elif args.revoke:
         bulk_sender_api_url = mail_pic_api_url + '/bulksender/revoke'
         data.append('revoke')
+    elif args.status:
+        bulk_sender_api_url = mail_pic_api_url + '/bulksender/status'
+        data.append('status')
     else:
-        print 'Aborting... please use any of the following options --approve / --reject / --revoke'
+        print 'Aborting... please use any of the following options --approve / --reject / --revoke / --status'
         return None
 
     headers = {
@@ -88,6 +92,23 @@ def post_mail_pic_request(mail_pic_api_data):
 
     return response
 
+def perform_get_request(get_mail_pic_data):
+    urllib3.disable_warnings(urllib3.exceptions.SecurityWarning)
+
+    mail_pic_response = requests.get(
+        get_mail_pic_data[1],
+        headers = get_mail_pic_data[2],
+        timeout = MAIL_PIC_RESPONSE_TIMEOUT
+    )
+
+    if mail_pic_response.ok:
+        print mail_pic_response.json()
+    else:
+        print 'Unable to retrieve the bulk sender status. HTTP Response code <{0}>'.format(mail_pic_response.status_code)
+        return None
+
+    return mail_pic_response
+
 if __name__ == '__main__':
     arg_parser = argparse.ArgumentParser(description = 'Approve/Reject/Revoke Bulk Sender Request')
     parsed_args = get_parsed_args(arg_parser)
@@ -97,7 +118,11 @@ if __name__ == '__main__':
         arg_parser.print_help(sys.stderr)
         sys.exit(1)
 
-    post_response = post_mail_pic_request(mail_pic_api_request_data)
-    if post_response is None or not post_response:
-        arg_parser.print_help(sys.stderr)
-        sys.exit(1)
+    if parsed_args.status:
+        get_response = perform_get_request(mail_pic_api_request_data)
+        if get_response is None or not get_response:
+            sys.exit(1)
+    else:
+        post_response = post_mail_pic_request(mail_pic_api_request_data)
+        if post_response is None or not post_response:
+            sys.exit(1)
