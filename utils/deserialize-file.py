@@ -81,7 +81,6 @@ def get_binary(formatted_file, magic_number):
         formatted_file[nonce_length_end_idx:len(formatted_file)]
     )
 
-
 def print_decoded_json(deserialized_content):
     """
         Prety-prints the deserialized content
