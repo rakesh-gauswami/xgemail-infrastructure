@@ -210,6 +210,7 @@ if ACCOUNT != 'sandbox'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_policy_service'
   include_recipe 'sophos-cloud-xgemail::setup_xmeirl_header_check_customer_submit_toggle'
   include_recipe 'sophos-cloud-xgemail::setup_flag_toggle_customer_submit'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_bulk_sender_merger'
 else
 
   [
