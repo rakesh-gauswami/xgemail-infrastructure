@@ -110,19 +110,25 @@ def perform_get_request(get_mail_pic_data):
     return mail_pic_response
 
 if __name__ == '__main__':
-    arg_parser = argparse.ArgumentParser(description = 'Approve/Reject/Revoke Bulk Sender Request')
-    parsed_args = get_parsed_args(arg_parser)
+    try:
+        arg_parser = argparse.ArgumentParser(description = 'Approve/Reject/Revoke Bulk Sender Request')
+        parsed_args = get_parsed_args(arg_parser)
 
-    mail_pic_api_request_data = create_mail_pic_request_data(parsed_args)
-    if mail_pic_api_request_data is None or not mail_pic_api_request_data:
-        arg_parser.print_help(sys.stderr)
+        mail_pic_api_request_data = create_mail_pic_request_data(parsed_args)
+        if mail_pic_api_request_data is None or not mail_pic_api_request_data:
+            arg_parser.print_help(sys.stderr)
+            sys.exit(1)
+
+        if parsed_args.status:
+            get_response = perform_get_request(mail_pic_api_request_data)
+            if get_response is None or not get_response:
+                sys.exit(1)
+        else:
+            post_response = post_mail_pic_request(mail_pic_api_request_data)
+            if post_response is None or not post_response:
+                sys.exit(1)
+    except Exception as e:
+        print 'An Exception occurred in main <{0}>'.format(e)
         sys.exit(1)
 
-    if parsed_args.status:
-        get_response = perform_get_request(mail_pic_api_request_data)
-        if get_response is None or not get_response:
-            sys.exit(1)
-    else:
-        post_response = post_mail_pic_request(mail_pic_api_request_data)
-        if post_response is None or not post_response:
-            sys.exit(1)
+
