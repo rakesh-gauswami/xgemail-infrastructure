@@ -14,6 +14,7 @@ import boto3
 import requests
 import sys
 import urllib3
+import json
 
 MAIL_PIC_RESPONSE_TIMEOUT = 30
 
@@ -45,7 +46,7 @@ def create_mail_pic_request_data(args):
         bulk_sender_api_url = mail_pic_api_url + '/bulksender/approve'
         data.append('approve')
     elif args.reject:
-        bulk_sender_api_url = mail_pic_api_request_data + '/bulksender/reject'
+        bulk_sender_api_url = mail_pic_api_url + '/bulksender/reject'
         data.append('reject')
     elif args.revoke:
         bulk_sender_api_url = mail_pic_api_url + '/bulksender/revoke'
@@ -57,19 +58,15 @@ def create_mail_pic_request_data(args):
         print 'Aborting... please use any of the following options --approve / --reject / --revoke / --status'
         return None
 
+    url = bulk_sender_api_url + '?customerId={0}&emailAddress={1}'.format(args.customerid, args.emailid)
+
     headers = {
         'Authorization': 'Basic ' + get_passphrase(connections_bucket, mail_pic_api_auth),
         'Content-Type': 'application/json'
     }
 
-    body = {
-        'customerId': args.customerid,
-        'emailAddress': args.emailid
-    }
-
-    data.append(bulk_sender_api_url)
+    data.append(url)
     data.append(headers)
-    data.append(body)
 
     return data
 
@@ -81,11 +78,10 @@ def post_mail_pic_request(mail_pic_api_data):
         mail_pic_api_data[1],
         headers = mail_pic_api_data[2],
         timeout = MAIL_PIC_RESPONSE_TIMEOUT,
-        data = mail_pic_api_data[3]
     )
 
     if response.ok:
-        print 'Successfully submitted {0} request, response: {1}'.format(mail_pic_api_data[0], response.json())
+        print 'Successfully submitted {0} request, response: {1}'.format(mail_pic_api_data[0], response)
     else:
         print 'There was a problem in submitting {0} request, response code {1}'.format(mail_pic_api_data[0], response.status_code)
         return None
@@ -102,7 +98,7 @@ def perform_get_request(get_mail_pic_data):
     )
 
     if mail_pic_response.ok:
-        print mail_pic_response.json()
+        print json.dumps(mail_pic_response.json(), indent = 4)
     else:
         print 'Unable to retrieve the bulk sender status. HTTP Response code <{0}>'.format(mail_pic_response.status_code)
         return None
