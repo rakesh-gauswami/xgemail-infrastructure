@@ -279,7 +279,15 @@ def get_clean_eip():
         logger.exception("Unable to describe addresses. {}".format(e))
 
     add_tags_dict(addresses)
-    addresses.sort(key=lambda address: (int(address['TagsDict']['blacklist']), address['TagsDict']['detached']))
+    addresses.sort(key=lambda address: (
+        int(address['TagsDict']['blacklist']),
+        address['TagsDict']['snds_score'],
+        address['TagsDict']['talos_score'],
+        -float(address['TagsDict']['last_month_volume']),
+        -float(address['TagsDict']['last_day_volume']),
+        address['TagsDict']['detached']
+        )
+    )
     for address in addresses:
         if 'AssociationId' not in address:
             return address
@@ -302,7 +310,15 @@ def get_clean_eip_risky():
         logger.exception("Unable to describe addresses. {}".format(e))
 
     add_tags_dict(addresses)
-    addresses.sort(key=lambda address: (int(address['TagsDict']['blacklist']), address['TagsDict']['detached']))
+    addresses.sort(key=lambda address: (
+        int(address['TagsDict']['blacklist']),
+        address['TagsDict']['snds_score'],
+        address['TagsDict']['talos_score'],
+        -float(address['TagsDict']['last_month_volume']),
+        -float(address['TagsDict']['last_day_volume']),
+        address['TagsDict']['detached']
+        )
+    )
     for address in addresses:
         if 'AssociationId' not in address:
             return address

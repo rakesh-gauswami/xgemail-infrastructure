@@ -115,10 +115,6 @@
       "Description": "Endpoint ARN for Bulk Sender Approval SQS Queue",
       "Type": "String"
     },
-    "BulkSenderEventNotificationQueue": {
-      "Description": "Endpoint ARN for Bulk Sender Event Notification SQS Queue",
-      "Type": "String"
-    },
     "DelayQueue": {
       "Description": "Endpoint for delay SQS queue",
       "Type": "String"
@@ -205,6 +201,10 @@
     },
     "RiskyDeliveryQueue": {
       "Description": "Endpoint for Risky delivery SQS queue",
+      "Type": "String"
+    },
+    "XgemailAlertQueue": {
+      "Description": "Endpoint ARN for Xgemail Alert SQS Queue",
       "Type": "String"
     }
   },
@@ -610,12 +610,12 @@
         "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "BulkSenderApprovalQueue" }]]}]
       }
     },
-    "BulkSenderEventNotificationQueuePolicy": {
+    "XgemailAlertQueuePolicy": {
       "Type": "AWS::SQS::QueuePolicy",
       "Properties": {
         "PolicyDocument": {
           "Version": "2012-10-17",
-          "Id": "BulkSenderEventNotificationQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Id": "XgemailAlertQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
           "Statement": [
             {
               "Effect": "Allow",
@@ -625,7 +625,7 @@
             }
           ]
         },
-        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "BulkSenderEventNotificationQueue" }]]}]
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "XgemailAlertQueue" }]]}]
       }
     },
     "DeliveryQueuePolicy": {
