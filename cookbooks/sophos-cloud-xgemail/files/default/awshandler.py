@@ -175,3 +175,28 @@ class AwsHandler(object):
                         return True
 
         return False
+
+    def list_filtered_objects(self, bucket, path_prefix, filter):
+        s3_list = []
+        paginator = self.s3_client.get_paginator("list_objects_v2")
+        page_iterator = paginator.paginate(
+            Bucket=bucket,
+            Prefix=path_prefix)
+        for page in page_iterator:
+            if "Contents" in page:
+                for key in page["Contents"]:
+                    file_key = key["Key"]
+                    if file_key.endswith(filter):
+                        s3_list.append(file_key)
+
+        return s3_list
+
+    # puts data into S3 bucket
+    def upload_data_in_s3_without_expiration(self, bucket, key, data, encryption):
+        params = {
+            'Body': data,
+            'Bucket': bucket,
+            'Key': key,
+            'ServerSideEncryption': encryption
+        }
+        return self.s3_client.put_object(**params)
