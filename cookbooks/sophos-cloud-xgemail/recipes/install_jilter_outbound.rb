@@ -10,6 +10,9 @@
 #
 
 package 'tar'
+AWS_REGION = node['sophos_cloud']['region']
+CENTRAL_VPC_ID = node['xgemail']['station_vpc_id']
+
 instance_type=`echo $INSTANCE_TYPE`
 NODE_TYPE = node['xgemail']['cluster_type']
 ACCOUNT = node['sophos_cloud']['environment']
@@ -171,6 +174,8 @@ if ACCOUNT != 'sandbox'
     owner SERVICE_USER
     group SERVICE_USER
     variables(
+        :aws_region => AWS_REGION,
+        :central_vpc_id => CENTRAL_VPC_ID,
         :policy_bucket => POLICY_BUCKET_NAME,
         :account => ACCOUNT,
         :customer_submit_bucket => CUSTOMER_SUBMIT_BUCKET_NAME
