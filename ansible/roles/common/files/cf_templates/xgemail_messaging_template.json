@@ -23,6 +23,10 @@
       "Description": "Endpoint for scan Additional Action arn",
       "Type": "String"
     },
+    "AtrReindexTopicArn": {
+      "Description": "Endpoint for Atr reindex  arn",
+      "Type": "String"
+    },
     "BounceEventTopicArn": {
       "Description": "Endpoint for scan Bounce events arn",
       "Type": "String"
@@ -103,8 +107,24 @@
       "Description": "TopicArn of Success Events SNS",
       "Type": "String"
     },
+    "TocSettingsUpdateEventsTopicArn": {
+      "Description": "TopicArn of Toc Settings update Events SNS",
+      "Type": "String"
+    },
+    "UserAllowBlockActionEventsTopicArn": {
+      "Description": "TopicArn of User allow block action Events SNS",
+      "Type": "String"
+    },
+    "UserDeletedActionEventsTopicArn": {
+      "Description": "TopicArn of User delete action Events SNS",
+      "Type": "String"
+    },
     "AdditionalActionQueue": {
       "Description": "Endpoint ARN for Additional Action SQS Queue",
+      "Type": "String"
+    },
+    "AtrReindexQueue": {
+      "Description": "Endpoint ARN for Atr Reindex SQS Queue",
       "Type": "String"
     },
     "BounceEventQueue": {
@@ -213,6 +233,18 @@
     },
     "RiskyDeliveryQueue": {
       "Description": "Endpoint for Risky delivery SQS queue",
+      "Type": "String"
+    },
+    "TocSettingsUpdateEventQueue": {
+      "Description": "Endpoint for Toc Settings Update SQS queue",
+      "Type": "String"
+    },
+    "UserAllowBlockActionEventQueue": {
+      "Description": "Endpoint for User allow block action SQS queue",
+      "Type": "String"
+    },
+    "UserDeletedActionEventQueue": {
+      "Description": "Endpoint for User deleted action SQS queue",
       "Type": "String"
     }
   },
@@ -493,6 +525,15 @@
         "TopicArn": { "Ref": "BounceEventTopicArn"}
       }
     },
+    "AtrReindexSNSListenerQueueToAtrReindexSnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "AtrReindexQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "AtrReindexTopicArn"},
+        "RawMessageDelivery": "true"
+      }
+    },
     "BounceEventSNSListenerQueueToBounceEventSnsSubscription": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
@@ -588,6 +629,33 @@
         "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "PolicyRefreshEventQueue"}]]},
         "Protocol": "sqs",
         "TopicArn": { "Ref": "PolicyRefreshEventTopicArn"}
+      }
+    },
+    "TocSettingsUpdateEventQueueToTocSettingsUpdateEventSnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "TocSettingsUpdateEventQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "TocSettingsUpdateEventsTopicArn"},
+        "RawMessageDelivery": "true"
+      }
+    },
+    "UserAllowBlockActionEventQueueToUserAllowBlockActionEventSnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "UserAllowBlockActionEventQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "UserAllowBlockActionEventsTopicArn"},
+        "RawMessageDelivery": "true"
+      }
+    },
+    "UserDeletedActionEventQueueToUserDeletedActionEventSnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "UserDeletedActionEventQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "UserDeletedActionEventsTopicArn"},
+        "RawMessageDelivery": "true"
       }
     },
 

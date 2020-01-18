@@ -8,6 +8,8 @@
     template_parameters:
       AdditionalActionTopicArn:                         "{{sns.arn_prefix}}{{sns.additional_actions_sns_topic}}"
       AdditionalActionQueue:                            "{{sqs.additional_action_sqs_queue_sns_listener}}"
+      AtrReindexTopicArn:                               "{{sns.arn_prefix}}{{sns.atr_reindex_sns_topic}}"
+      AtrReindexQueue:                                  "{{sqs.atr_reindex_sqs_queue_sns_listener}}"
       BounceEventTopicArn:                              "{{sns.arn_prefix}}{{sns.bounce_events_sns_topic}}"
       BulkSenderActionQueue:                            "{{sqs.bulk_sender_action_sqs_queue}}"
       BulkSenderApprovalQueue:                          "{{sqs.bulk_sender_approval_sqs_queue}}"
@@ -55,6 +57,12 @@
       RiskyDeliveryQueue:                               "{{sqs.risky_delivery_sqs_queue_sns_listener}}"
       ScanEventsTopicArn:                               "{{sns.arn_prefix}}{{sns.scan_events_sns_topic}}"
       SuccessEventsTopicArn:                            "{{sns.arn_prefix}}{{sns.success_events_sns_topic}}"
+      TocSettingsUpdateEventsTopicArn:                  "{{sns.arn_prefix}}{{sns.toc_settings_update_event_sns_topic}}"
+      TocSettingsUpdateEventQueue:                      "{{sqs.toc_settings_update_sqs_queue_sns_listener}}"
+      UserAllowBlockActionEventsTopicArn:               "{{sns.arn_prefix}}{{sns.user_allow_block_action_sns_topic}}"
+      UserAllowBlockActionEventQueue:                   "{{sqs.user_allow_block_action_sqs_queue_sns_listener}}"
+      UserDeletedActionEventsTopicArn:                  "{{sns.arn_prefix}}{{sns.user_deleted_action_sns_topic}}"
+      UserDeletedActionEventQueue:                      "{{sqs.user_deleted_action_sqs_queue_sns_listener}}"
   register: messaging_stack
 
 - debug:

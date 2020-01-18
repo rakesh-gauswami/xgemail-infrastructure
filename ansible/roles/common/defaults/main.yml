@@ -69,6 +69,7 @@ sqs:
   arn_prefix:                                           "arn:aws:sqs:{{account.region}}:{{aws_account_id}}:"
   url_prefix:                                           "https://sqs.{{account.region}}.amazonaws.com/{{aws_account_id}}/"
   additional_action_sqs_queue_sns_listener:             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_AdditionalActions_SNS_Listener"
+  atr_reindex_sqs_queue_sns_listener:                   "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Atr_Reindex_SNS_Listener"
   bulk_sender_action_sqs_queue:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Bulk_Sender_Action"
   bulk_sender_approval_sqs_queue:                       "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Bulk_Sender_Approval"
   bulk_sender_event_notification_sqs_queue:             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Bulk_Sender_Event_Notification"
@@ -107,12 +108,16 @@ sqs:
   quarantine_sqs_queue:                                 "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Quarantine_Delivery"
   quarantine_sqs_queue_sns_listener:                    "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Quarantine_Delivery_SNS_Listener"
   risky_delivery_sqs_queue_sns_listener:                "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Risky_Delivery_SNS_Listener"
+  toc_settings_update_sqs_queue_sns_listener:           "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Toc_Settings_Update_SNS_Listener"
+  user_allow_block_action_sqs_queue_sns_listener:       "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_User_Allow_Block_Action_SNS_Listener"
+  user_deleted_action_sqs_queue_sns_listener:           "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_User_Deleted_Action_SNS_Listener"
 
 # CloudEmail SNS Topic Names.
 sns:
   additional_actions_sns_topic:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-additional-actions-SNS"
   alarm_sns_topic:                                      "{{account.name}}-xgemail-alarm-topic"
   arn_prefix:                                           "arn:aws:sns:{{account.region}}:{{aws_account_id}}:"
+  atr_reindex_sns_topic:                                "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-atr-reindex-SNS"
   bounce_events_sns_topic:                              "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-bounce-events-SNS"
   delay_sns_topic:                                      "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-delay-SNS"
   deleted_events_sns_topic:                             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-deleted-events-SNS"
@@ -137,6 +142,9 @@ sns:
   risky_delivery_sns_topic:                             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-risky-delivery-SNS"
   scan_events_sns_topic:                                "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-scan-events-SNS"
   success_events_sns_topic:                             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-success-events-SNS"
+  toc_settings_update_event_sns_topic:                  "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-toc-settings-update-events-SNS"
+  user_allow_block_action_sns_topic:                    "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-user-allow-block-action-SNS"
+  user_deleted_action_sns_topic:                        "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-user-deleted-action-SNS"
 sdb:
   volume_tracker_sdb:                                   "{{volume_tracker_sdb_output.ansible_facts.cloudformation[stack.sdb.volume_tracker_sdb].stack_outputs.SimpleDbDomain}}"
 dynamodb:
@@ -229,6 +237,7 @@ stack:
     lambda_bucket:                                      "{{vpc.cloud_email.name}}-{{account.name}}-{{account.region}}-lambda-bucket-S3"
   sqs:
     additional_action_sqs_queue_sns_listener:           "{{vpc.cloud_email.name}}-XGEMAIL-AdditionalActions-SQS-SNS-Listener"
+    atr_reindex_sqs_queue_sns_listener:                 "{{vpc.cloud_email.name}}-XGEMAIL-Xgemail-Atr-Reindex-SNS-Listener"
     bulk_sender_action_sqs_queue:                       "{{vpc.cloud_email.name}}-XGEMAIL-bulk-sender-action-SQS"
     bulk_sender_approval_sqs_queue:                     "{{vpc.cloud_email.name}}-XGEMAIL-bulk-sender-approval-SQS"
     bulk_sender_event_notification_sqs_queue:           "{{vpc.cloud_email.name}}-XGEMAIL-bulk-sender-notification-SQS"
@@ -267,9 +276,13 @@ stack:
     quarantine_sqs_queue:                               "{{vpc.cloud_email.name}}-XGEMAIL-quarantine-SQS"
     quarantine_sqs_queue_sns_listener:                  "{{vpc.cloud_email.name}}-XGEMAIL-quarantine-SQS-SNS-listener"
     risky_delivery_sqs_queue_sns_listener:              "{{vpc.cloud_email.name}}-XGEMAIL-risky-delivery-SQS-SNS-listener"
+    toc_settings_update_sqs_queue_sns_listener:         "{{vpc.cloud_email.name}}-XGEMAIL-Toc-Settings-Update-SNS-Listener"
+    user_allow_block_action_sqs_queue_sns_listener:     "{{vpc.cloud_email.name}}-XGEMAIL-User-Allow-Block-Action-SNS-Listener"
+    user_deleted_action_sqs_queue_sns_listener:         "{{vpc.cloud_email.name}}-XGEMAIL-User-Deleted-Action-SNS-Listener"
   sns:
     additional_actions_sns_topic:                       "{{vpc.cloud_email.name}}-xgemail-additional-actions-SNS"
     alarm_sns_topic:                                    "{{account.name}}-{{vpc.cloud_email.name}}-Alarm-Topic"
+    atr_reindex_sns_topic:                              "{{vpc.cloud_email.name}}-xgemail-atr-reindex-SNS"
     bounce_events_sns_topic:                            "{{vpc.cloud_email.name}}-xgemail-bounce-events-SNS"
     delay_sns_topic:                                    "{{vpc.cloud_email.name}}-xgemail-delay-SNS"
     deleted_events_sns_topic:                           "{{vpc.cloud_email.name}}-xgemail-deleted-events-SNS"
@@ -293,6 +306,9 @@ stack:
     risky_delivery_sns_topic:                           "{{vpc.cloud_email.name}}-xgemail-risky-delivery-SNS"
     scan_events_sns_topic:                              "{{vpc.cloud_email.name}}-xgemail-scan-events-SNS"
     success_events_sns_topic:                           "{{vpc.cloud_email.name}}-xgemail-success-events-SNS"
+    toc_settings_update_event_sns_topic:                "{{vpc.cloud_email.name}}-xgemail-toc-settings-update-events-SNS"
+    user_allow_block_action_sns_topic:                  "{{vpc.cloud_email.name}}-xgemail-user-allow-block-action-SNS"
+    user_deleted_action_sns_topic:                      "{{vpc.cloud_email.name}}-xgemail-user-deleted-action-SNS"
   ssm:
     ssm_documents:                                      "{{vpc.cloud_email.name}}-SSM-Documents"
   msg:
