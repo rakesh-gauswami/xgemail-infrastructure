@@ -12,7 +12,6 @@
       BounceEventTopicArn:                              "{{sns.arn_prefix}}{{sns.bounce_events_sns_topic}}"
       BulkSenderActionQueue:                            "{{sqs.bulk_sender_action_sqs_queue}}"
       BulkSenderApprovalQueue:                          "{{sqs.bulk_sender_approval_sqs_queue}}"
-      BulkSenderEventNotificationQueue:                 "{{sqs.bulk_sender_event_notification_sqs_queue}}"
       BounceEventQueue:                                 "{{sqs.message_bounce_sqs_queue_sns_listener}}"
       DelayTopicArn:                                    "{{sns.arn_prefix}}{{sns.delay_sns_topic}}"
       DeletedEventsTopicArn:                            "{{sns.arn_prefix}}{{sns.deleted_events_sns_topic}}"
@@ -54,6 +53,7 @@
       RiskyDeliveryQueue:                               "{{sqs.risky_delivery_sqs_queue_sns_listener}}"
       ScanEventsTopicArn:                               "{{sns.arn_prefix}}{{sns.scan_events_sns_topic}}"
       SuccessEventsTopicArn:                            "{{sns.arn_prefix}}{{sns.success_events_sns_topic}}"
+      XgemailAlertQueue:                                "{{sqs.xgemail_alert_sqs_queue}}"
   register: messaging_stack
 
 - debug:

@@ -72,7 +72,6 @@ sqs:
   allow_block_upload_sqs_queue:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Allow_Block_Upload"
   bulk_sender_action_sqs_queue:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Bulk_Sender_Action"
   bulk_sender_approval_sqs_queue:                       "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Bulk_Sender_Approval"
-  bulk_sender_event_notification_sqs_queue:             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Bulk_Sender_Event_Notification"
   customer_delivery_sqs_queue:                          "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Customer_Delivery"
   customer_submit_sqs_queue:                            "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Customer_Submit"
   customer_delivery_sqs_queue_sns_listener:             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Customer_Delivery_SNS_Listener"
@@ -107,6 +106,7 @@ sqs:
   quarantine_sqs_queue:                                 "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Quarantine_Delivery"
   quarantine_sqs_queue_sns_listener:                    "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Quarantine_Delivery_SNS_Listener"
   risky_delivery_sqs_queue_sns_listener:                "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Risky_Delivery_SNS_Listener"
+  xgemail_alert_sqs_queue:                              "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Alert_Queue"
 
 # CloudEmail SNS Topic Names.
 sns:
@@ -231,7 +231,6 @@ stack:
     allow_block_upload_sqs_queue:                       "{{vpc.cloud_email.name}}-XGEMAIL-allow-block-upload-SQS"
     bulk_sender_action_sqs_queue:                       "{{vpc.cloud_email.name}}-XGEMAIL-bulk-sender-action-SQS"
     bulk_sender_approval_sqs_queue:                     "{{vpc.cloud_email.name}}-XGEMAIL-bulk-sender-approval-SQS"
-    bulk_sender_event_notification_sqs_queue:           "{{vpc.cloud_email.name}}-XGEMAIL-bulk-sender-notification-SQS"
     customer_delivery_sqs_queue:                        "{{vpc.cloud_email.name}}-XGEMAIL-delivery-SQS"
     customer_submit_sqs_queue:                          "{{vpc.cloud_email.name}}-XGEMAIL-customer-submit-SQS"
     customer_delivery_sqs_queue_sns_listener:           "{{vpc.cloud_email.name}}-XGEMAIL-delivery-SQS-SNS-listener"
@@ -266,6 +265,7 @@ stack:
     quarantine_sqs_queue:                               "{{vpc.cloud_email.name}}-XGEMAIL-quarantine-SQS"
     quarantine_sqs_queue_sns_listener:                  "{{vpc.cloud_email.name}}-XGEMAIL-quarantine-SQS-SNS-listener"
     risky_delivery_sqs_queue_sns_listener:              "{{vpc.cloud_email.name}}-XGEMAIL-risky-delivery-SQS-SNS-listener"
+    xgemail_alert_sqs_queue:                            "{{vpc.cloud_email.name}}-XGEMAIL-alert-SQS"
   sns:
     additional_actions_sns_topic:                       "{{vpc.cloud_email.name}}-xgemail-additional-actions-SNS"
     alarm_sns_topic:                                    "{{account.name}}-{{vpc.cloud_email.name}}-Alarm-Topic"
