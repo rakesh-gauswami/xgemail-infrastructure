@@ -61,23 +61,21 @@ if __name__ == "__main__":
             directory_objects.add(dir_object)
 
         #Upload file same policy bucket
-        if len(directory_objects) != 0:
-
-            # magic_bytes, schema_version, nonce_length, bulk_sender_json):
-            formatted_data = bulksenderformatter.get_formatted_bulk_senders(
-                gziputils.gzip_data(
-                    get_approved_bulksenders_json(directory_objects)
-                )
+        # magic_bytes, schema_version, nonce_length, bulk_sender_json):
+        formatted_data = bulksenderformatter.get_formatted_bulk_senders(
+            gziputils.gzip_data(
+                get_approved_bulksenders_json(directory_objects)
             )
+        )
 
-            awshandler.upload_data_in_s3_without_expiration(
-                POLICY_BUCKET_NAME,
-                bulksenderformatter.get_s3_bulk_sender_path(
-                    "".join([BULK_SENDER_S3_PATH, MERGED_BULK_SENDER_FILENAME])
-                ),
-                formatted_data,
-                S3_ENCRYPTION_ALGORITHM
-            )
+        awshandler.upload_data_in_s3_without_expiration(
+            POLICY_BUCKET_NAME,
+            bulksenderformatter.get_s3_bulk_sender_path(
+                "".join([BULK_SENDER_S3_PATH, MERGED_BULK_SENDER_FILENAME])
+            ),
+            formatted_data,
+            S3_ENCRYPTION_ALGORITHM
+        )
 
     except Exception as e:
         logger.exception("Unhandled exception in main ", e)
