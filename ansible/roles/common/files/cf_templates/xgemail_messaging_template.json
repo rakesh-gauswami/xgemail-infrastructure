@@ -123,6 +123,10 @@
       "Description": "Endpoint ARN for Additional Action SQS Queue",
       "Type": "String"
     },
+    "AllowBlockUploadQueue": {
+      "Description": "Endpoint ARN for Allow Block Upload SQS Queue",
+      "Type": "String"
+    },
     "AtrReindexQueue": {
       "Description": "Endpoint ARN for Atr Reindex SQS Queue",
       "Type": "String"
@@ -629,6 +633,24 @@
         "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "PolicyRefreshEventQueue"}]]},
         "Protocol": "sqs",
         "TopicArn": { "Ref": "PolicyRefreshEventTopicArn"}
+      }
+    },
+    "AllowBlockUploadQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "AllowBlockUploadQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*"
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "AllowBlockUploadQueue" }]]}]
       }
     },
     "TocSettingsUpdateEventQueueToTocSettingsUpdateEventSnsSubscription": {
