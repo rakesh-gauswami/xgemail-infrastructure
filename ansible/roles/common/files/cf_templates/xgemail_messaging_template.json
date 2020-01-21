@@ -107,6 +107,10 @@
       "Description": "Endpoint ARN for Additional Action SQS Queue",
       "Type": "String"
     },
+    "AllowBlockUploadQueue": {
+      "Description": "Endpoint ARN for Allow Block Upload SQS Queue",
+      "Type": "String"
+    },
     "BounceEventQueue": {
       "Description": "Endpoint ARN for Bounce Event Action SQS Queue",
       "Type": "String"
@@ -614,6 +618,24 @@
       }
     },
 
+    "AllowBlockUploadQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "AllowBlockUploadQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*"
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "AllowBlockUploadQueue" }]]}]
+      }
+    },
     "BulkSenderActionQueuePolicy": {
       "Type": "AWS::SQS::QueuePolicy",
       "Properties": {

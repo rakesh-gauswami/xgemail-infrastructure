@@ -70,6 +70,7 @@ sqs:
   arn_prefix:                                           "arn:aws:sqs:{{account.region}}:{{aws_account_id}}:"
   url_prefix:                                           "https://sqs.{{account.region}}.amazonaws.com/{{aws_account_id}}/"
   additional_action_sqs_queue_sns_listener:             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_AdditionalActions_SNS_Listener"
+  allow_block_upload_sqs_queue:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Allow_Block_Upload"
   bulk_sender_action_sqs_queue:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Bulk_Sender_Action"
   bulk_sender_approval_sqs_queue:                       "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Bulk_Sender_Approval"
   customer_delivery_sqs_queue:                          "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Customer_Delivery"
@@ -233,6 +234,7 @@ stack:
     lambda_bucket:                                      "{{vpc.cloud_email.name}}-{{account.name}}-{{account.region}}-lambda-bucket-S3"
   sqs:
     additional_action_sqs_queue_sns_listener:           "{{vpc.cloud_email.name}}-XGEMAIL-AdditionalActions-SQS-SNS-Listener"
+    allow_block_upload_sqs_queue:                       "{{vpc.cloud_email.name}}-XGEMAIL-allow-block-upload-SQS"
     bulk_sender_action_sqs_queue:                       "{{vpc.cloud_email.name}}-XGEMAIL-bulk-sender-action-SQS"
     bulk_sender_approval_sqs_queue:                     "{{vpc.cloud_email.name}}-XGEMAIL-bulk-sender-approval-SQS"
     customer_delivery_sqs_queue:                        "{{vpc.cloud_email.name}}-XGEMAIL-delivery-SQS"
