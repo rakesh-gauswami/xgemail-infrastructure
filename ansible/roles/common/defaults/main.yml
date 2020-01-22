@@ -22,6 +22,7 @@ ec2:
     ix:                                                 "XGEMAIL-INTERNET-XDELIVERY"
     rd:                                                 "XGEMAIL-RISKY-DELIVERY"
     rx:                                                 "XGEMAIL-RISKY-XDELIVERY"
+    wd:                                                 "XGEMAIL-WARMUP-DELIVERY"
 efs:
   policy_efs_volume:                                    "Xgemail-Policy-EFS"
 iam:
@@ -106,6 +107,7 @@ sqs:
   quarantine_sqs_queue:                                 "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Quarantine_Delivery"
   quarantine_sqs_queue_sns_listener:                    "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Quarantine_Delivery_SNS_Listener"
   risky_delivery_sqs_queue_sns_listener:                "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Risky_Delivery_SNS_Listener"
+  warmup_delivery_sqs_queue_sns_listener:               "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Warmup_Delivery_SNS_Listener"
   xgemail_alert_sqs_queue:                              "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Alert_Queue"
 
 # CloudEmail SNS Topic Names.
@@ -136,6 +138,7 @@ sns:
   risky_delivery_sns_topic:                             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-risky-delivery-SNS"
   scan_events_sns_topic:                                "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-scan-events-SNS"
   success_events_sns_topic:                             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-success-events-SNS"
+  warmup_delivery_sns_topic:                            "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-warmup-delivery-SNS"
 sdb:
   volume_tracker_sdb:                                   "{{volume_tracker_sdb_output.ansible_facts.cloudformation[stack.sdb.volume_tracker_sdb].stack_outputs.SimpleDbDomain}}"
 dynamodb:
@@ -173,6 +176,7 @@ stack:
       es:                                               "{{vpc.cloud_email.name}}-xgemail-encryption-submit"
       rd:                                               "{{vpc.cloud_email.name}}-xgemail-risky-delivery"
       rx:                                               "{{vpc.cloud_email.name}}-xgemail-risky-xdelivery-0000-"
+      wd:                                               "{{vpc.cloud_email.name}}-xgemail-warmup-delivery"
     elb:
       cs:                                               "{{vpc.cloud_email.name}}-XGEMAIL-customer-submit-ELB"
       is:                                               "{{vpc.cloud_email.name}}-XGEMAIL-submit-ELB"
@@ -184,6 +188,7 @@ stack:
       es:                                               "{{vpc.cloud_email.name}}-XGEMAIL-encryption-submit-ELB"
       rd:                                               "{{vpc.cloud_email.name}}-XGEMAIL-risky-delivery-ELB"
       rx:                                               "{{vpc.cloud_email.name}}-XGEMAIL-risky-xdelivery-ELB"
+      wd:                                               "{{vpc.cloud_email.name}}-XGEMAIL-warmup-delivery-ELB"
   efs:
     policy_efs_volume:                                  "{{vpc.cloud_email.name}}-xgemail-policy-EFS-volume"
     policy_efs_mount_target:                            "{{vpc.cloud_email.name}}-xgemail-policy-EFS-volume-mount-target"
@@ -215,6 +220,7 @@ stack:
     mx_02_route53:                                      "{{vpc.cloud_email.name}}-XGEmailMX02-Cname"
     risky_delivery_route53:                             "{{vpc.cloud_email.name}}-XGEMAIL-risky-delivery-ROUTE53"
     risky_xdelivery_route53:                            "{{vpc.cloud_email.name}}-XGEMAIL-risky-xdelivery-ROUTE53"
+    warmup_delivery_route53:                            "{{vpc.cloud_email.name}}-XGEMAIL-warmup-delivery-ROUTE53"
   s3:
     customer_submit_bucket:                             "{{vpc.cloud_email.name}}-XGEMAIL-customer-submit-bucket-S3"
     emergency_inbox_bucket:                             "{{vpc.cloud_email.name}}-XGEMAIL-emergency-inbox-bucket-S3"
@@ -265,6 +271,7 @@ stack:
     quarantine_sqs_queue:                               "{{vpc.cloud_email.name}}-XGEMAIL-quarantine-SQS"
     quarantine_sqs_queue_sns_listener:                  "{{vpc.cloud_email.name}}-XGEMAIL-quarantine-SQS-SNS-listener"
     risky_delivery_sqs_queue_sns_listener:              "{{vpc.cloud_email.name}}-XGEMAIL-risky-delivery-SQS-SNS-listener"
+    warmup_delivery_sqs_queue_sns_listener:             "{{vpc.cloud_email.name}}-XGEMAIL-warmup-delivery-SQS-SNS-listener"
     xgemail_alert_sqs_queue:                            "{{vpc.cloud_email.name}}-XGEMAIL-alert-SQS"
   sns:
     additional_actions_sns_topic:                       "{{vpc.cloud_email.name}}-xgemail-additional-actions-SNS"
@@ -291,6 +298,7 @@ stack:
     risky_delivery_sns_topic:                           "{{vpc.cloud_email.name}}-xgemail-risky-delivery-SNS"
     scan_events_sns_topic:                              "{{vpc.cloud_email.name}}-xgemail-scan-events-SNS"
     success_events_sns_topic:                           "{{vpc.cloud_email.name}}-xgemail-success-events-SNS"
+    warmup_delivery_sns_topic:                          "{{vpc.cloud_email.name}}-xgemail-warmup-delivery-SNS"
   ssm:
     ssm_documents:                                      "{{vpc.cloud_email.name}}-SSM-Documents"
   msg:
@@ -319,6 +327,7 @@ template:
       as_xgemail_internet_xdelivery_template:           "{{tmp_artifacts_dir}}/as_xgemail_internet_xdelivery_template.json"
       as_risky_delivery_template:                       "{{tmp_artifacts_dir}}/as_risky_delivery_template.json"
       as_xgemail_risky_xdelivery_template:              "{{tmp_artifacts_dir}}/as_xgemail_risky_xdelivery_template.json"
+      as_warmup_delivery_template:                      "{{tmp_artifacts_dir}}/as_warmup_delivery_template.json"
   efs:
     efs_template:                                       "{{tmp_artifacts_dir}}/efs_template.json"
     efs_mount_target_template:                          "{{tmp_artifacts_dir}}/efs_mount_target_template.json"
