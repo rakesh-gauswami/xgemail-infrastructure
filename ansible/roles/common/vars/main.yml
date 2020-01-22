@@ -237,6 +237,11 @@ aws:
       template:                                                   "{{template.sns.sns_simple_template}}"
       template_parameters:
         TopicName:                                                "{{sns.additional_actions_sns_topic}}"
+    atr_reindex_sns_topic:
+      stack_name:                                                 "{{stack.sns.atr_reindex_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                                                "{{sns.atr_reindex_sns_topic}}"
     alarm_sns_topic:
       stack_name:                                                 "{{stack.sns.alarm_sns_topic}}"
       template:                                                   "{{template.sns.sns_template}}"
@@ -269,6 +274,11 @@ aws:
       template:                                                   "{{template.sns.sns_simple_template}}"
       template_parameters:
         TopicName:                                                "{{sns.encrypt_events_sns_topic}}"
+    encryption_settings_update_sns_topic:
+      stack_name:                                                 "{{stack.sns.encryption_settings_update_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                                                "{{sns.encryption_settings_update_sns_topic}}"
     internet_delivery_sns_topic:
       stack_name:                                                 "{{stack.sns.internet_delivery_sns_topic}}"
       template:                                                   "{{template.sns.sns_simple_template}}"
@@ -362,6 +372,21 @@ aws:
       template:                                                   "{{template.sns.sns_simple_template}}"
       template_parameters:
         TopicName:                                                "{{sns.success_events_sns_topic}}"
+    toc_settings_update_event_sns_topic:
+      stack_name:                                                 "{{stack.sns.toc_settings_update_event_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                                                "{{sns.toc_settings_update_event_sns_topic}}"
+    user_allow_block_action_sns_topic:
+      stack_name:                                                 "{{stack.sns.user_allow_block_action_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                                                "{{sns.user_allow_block_action_sns_topic}}"
+    user_deleted_action_sns_topic:
+      stack_name:                                                 "{{stack.sns.user_deleted_action_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TopicName:                                                "{{sns.user_deleted_action_sns_topic}}"
     warmup_delivery_sns_topic:
       stack_name:                                                 "{{stack.sns.warmup_delivery_sns_topic}}"
       template:                                                   "{{template.sns.sns_simple_template}}"
@@ -381,6 +406,12 @@ aws:
       template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                                                "{{sqs.allow_block_upload_sqs_queue}}"
+    atr_reindex_sqs_queue_sns_listener:
+      stack_name:                                                 "{{stack.sqs.atr_reindex_sqs_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.atr_reindex_sqs_queue_sns_listener}}"
     bulk_sender_action_sqs_queue:
       stack_name:                                                 "{{stack.sqs.bulk_sender_action_sqs_queue}}"
       state:                                                      present
@@ -436,6 +467,12 @@ aws:
       template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                                                "{{sqs.encryption_delivery_sqs_queue_sns_listener}}"
+    encryption_settings_sqs_queue_sns_listener:
+      stack_name:                                                 "{{stack.sqs.encryption_settings_update_sqs_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.encryption_settings_update_sqs_queue_sns_listener}}"
     emergency_inbox_sqs_queue:
       stack_name:                                                 "{{stack.sqs.emergency_inbox_sqs_queue}}"
       state:                                                      absent
@@ -606,6 +643,24 @@ aws:
       template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                                                "{{sqs.risky_delivery_sqs_queue_sns_listener}}"
+    toc_settings_update_sqs_queue_sns_listener:
+      stack_name:                                                 "{{stack.sqs.toc_settings_update_sqs_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.toc_settings_update_sqs_queue_sns_listener}}"
+    user_allow_block_action_sqs_queue_sns_listener:
+      stack_name:                                                 "{{stack.sqs.user_allow_block_action_sqs_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.user_allow_block_action_sqs_queue_sns_listener}}"
+    user_deleted_action_sqs_queue_sns_listener:
+      stack_name:                                                 "{{stack.sqs.user_deleted_action_sqs_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.user_deleted_action_sqs_queue_sns_listener}}"
     warmup_delivery_sqs_queue_sns_listener:
       stack_name:                                                 "{{stack.sqs.warmup_delivery_sqs_queue_sns_listener}}"
       state:                                                      present
