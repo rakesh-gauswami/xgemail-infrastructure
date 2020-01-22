@@ -1,10 +1,22 @@
+---
+# Upload Files
+- name: "Upload the config file for {{stack.msg.xgemail_messaging}} to the config bucket {{cloud_applications}}"
+  s3:
+    mode:               put
+    region:             "{{account.region}}"
+    bucket:             "{{cloud_applications}}"
+    object:             "{{build.branch}}/xgemail-infrastructure/xgemail_messaging_template.json"
+    src:                "{{template.msg.xgemail_messaging_template}}"
+    overwrite:          always
+
+# CloudEmail SNS subscriptions and SQS queue policy
 - name: "Deploy {{stack.msg.xgemail_messaging}} to {{account.name}} {{account.region}}"
   cloudformation:
     stack_name: "{{stack.msg.xgemail_messaging}}"
     state: present
     region: "{{account.region}}"
     disable_rollback: true
-    template: "{{template.msg.xgemail_messaging_template}}"
+    template_url:                                       "https://s3.amazonaws.com/{{cloud_applications}}/{{build.branch}}/xgemail-infrastructure/xgemail_messaging_template.json"
     template_parameters:
       AdditionalActionTopicArn:                         "{{sns.arn_prefix}}{{sns.additional_actions_sns_topic}}"
       AdditionalActionQueue:                            "{{sqs.additional_action_sqs_queue_sns_listener}}"
