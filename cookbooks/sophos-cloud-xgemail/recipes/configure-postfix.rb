@@ -76,6 +76,7 @@ include_recipe 'sophos-cloud-xgemail::configure-internet-delivery-queue'
 include_recipe 'sophos-cloud-xgemail::configure-encryption-delivery-queue'
 include_recipe 'sophos-cloud-xgemail::configure-encryption-submit-queue'
 include_recipe 'sophos-cloud-xgemail::configure-risky-delivery-queue'
+include_recipe 'sophos-cloud-xgemail::configure-warmup-delivery-queue'
 
 if ACCOUNT == 'sandbox'
   include_recipe 'sophos-cloud-xgemail::configure-extended-delivery-queue'
@@ -88,7 +89,7 @@ MANAGED_SERVICES_IN_START_ORDER =
 
 NODE_TYPE = node['xgemail']['cluster_type']
 
-if NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'encryption-delivery' || NODE_TYPE == 'risky-delivery'
+if NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'encryption-delivery' || NODE_TYPE == 'risky-delivery' || NODE_TYPE == 'warmup-delivery'
   MANAGED_SERVICES_IN_START_ORDER = [
   'postfix'
 ]
