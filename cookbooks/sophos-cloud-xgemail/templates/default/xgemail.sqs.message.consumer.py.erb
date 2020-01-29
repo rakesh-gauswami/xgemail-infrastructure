@@ -14,7 +14,6 @@ sys.path.append("<%= @xgemail_utils_path %>")
 import base64
 import botocore
 import boto3
-import email
 import json
 import logging
 import messageformatter
@@ -26,6 +25,7 @@ import urllib
 import re
 from awshandler import AwsHandler
 from common.sqsmessage import SqsMessage
+from email.parser import Parser
 from datetime import datetime
 from queue_log import QueueLog
 from sns_message_history_delivery_status import SnsMessageHistoryDeliveryStatus
@@ -387,8 +387,10 @@ def add_headers(message, message_path, headers):
             )
             return message
 
-        parsed_message = email.message_from_string(message)
-
+        # required to keep parsing with headers with true. Change here need to be tested with
+        # DKIM Signing with Nested email
+        parsed_message = Parser().parsestr(message, True)
+        
         header_keys = []
         for header_key, header_value in headers.iteritems():
             header_keys.append(header_key)
