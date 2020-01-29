@@ -387,6 +387,8 @@ def add_headers(message, message_path, headers):
             )
             return message
 
+        # required to keep parsing with headers with true. Change here need to be tested with
+        # DKIM Signing with Nested email
         parsed_message = Parser().parsestr(message, True)
 
         header_keys = []
