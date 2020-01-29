@@ -16,6 +16,8 @@ XGEMAIL_UTILS_DIR = node['xgemail']['xgemail_utils_files_dir']
 POLICY_FORMATTER = 'policyformatter.py'
 BLOCKED_SENDER_API = 'blocked_sender_api.py'
 TRANSPORT_ROUTE_CONFIG = 'transportrouteconfig.py'
+BULKSENDER_FORMATTER = 'bulksenderformatter.py'
+BULK_SENDER_ACTION = "bulk_sender_action.py"
 
 [
     XGEMAIL_FILES_DIR,
@@ -72,6 +74,12 @@ if NODE_TYPE == 'internet-submit' or NODE_TYPE == 'encryption-submit'
     owner 'root'
     group 'root'
   end
+  cookbook_file "#{XGEMAIL_UTILS_DIR}/#{BULK_SENDER_ACTION}" do
+    source 'bulk_sender_action.py'
+    mode '0644'
+    owner 'root'
+    group 'root'
+  end
 elsif NODE_TYPE == 'customer-submit'
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{POLICY_FORMATTER}" do
     source 'policyformatter.py'
@@ -81,6 +89,18 @@ elsif NODE_TYPE == 'customer-submit'
   end
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{BLOCKED_SENDER_API}" do
     source 'blocked_sender_api.py'
+    mode '0644'
+    owner 'root'
+    group 'root'
+  end
+  cookbook_file "#{XGEMAIL_UTILS_DIR}/#{BULKSENDER_FORMATTER}" do
+    source 'bulksenderformatter.py'
+    mode '0644'
+    owner 'root'
+    group 'root'
+  end
+  cookbook_file "#{XGEMAIL_UTILS_DIR}/#{BULK_SENDER_ACTION}" do
+    source 'bulk_sender_action.py'
     mode '0644'
     owner 'root'
     group 'root'
