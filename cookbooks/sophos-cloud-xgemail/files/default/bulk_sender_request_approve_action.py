@@ -38,10 +38,9 @@ def get_mail_box_list_from_file(args):
         with open(file_name, 'r') as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
             for row in csv_reader:
-                print row
                 mailboxList.append(row)
     else:
-        print 'Aborting... please use any of the following options --approve / --reject / --revoke / --request_approve / --status'
+        print 'Aborting... please use -- file { .csv file }'
         return None
 
     return mailboxList
