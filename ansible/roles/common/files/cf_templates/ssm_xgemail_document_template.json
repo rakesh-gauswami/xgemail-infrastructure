@@ -5,7 +5,7 @@
 
   "Metadata": {
     "Copyright": [
-      "Copyright 2018, Sophos Limited. All rights reserved.",
+      "Copyright 2020, Sophos Limited. All rights reserved.",
       "",
       "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
       "Sophos Limited and Sophos Group.  All other product and company",
@@ -87,6 +87,7 @@
       }
     },
 
+
     "PostconfCommand": {
       "Type": "AWS::SSM::Document",
       "Properties":{
@@ -112,6 +113,82 @@
                 "runCommand":[
                   "postmulti -i $(postmulti -l | grep -v '^-' | awk '{print $1}') -x postconf -e {{ Parameter }}='{{ Value }}'"
                 ]
+              }
+            }
+          ]
+        }
+      }
+    },
+
+    "ExecuteScript": {
+      "Type": "AWS::SSM::Document",
+      "Properties": {
+        "DocumentType": "Automation",
+        "Content": {
+          "schemaVersion": "0.3",
+          "assumeRole": "{{assumeRole}}",
+          "description": "ExecuteScript",
+          "parameters": {
+            "assumeRole": {
+              "type": "String",
+              "description": "Role under which to run the automation",
+              "default": ""
+            },
+            "InstanceType": {
+              "type": "String",
+              "description": "The EC2 Instance Type.",
+              "allowedValues": [
+                "customer-submit"
+              ]
+            }
+          },
+          "mainSteps":[
+            {
+              "name": "getInstance",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": 3,
+              "onFailure": "Abort",
+              "inputs": {
+                "Service": "ec2",
+                "Api": "DescribeInstances",
+                "Filters": [
+                  {
+                    "Name": "tag:Application",
+                    "Values": [
+                      "{{InstanceType}}"
+                    ]
+                  },
+                  {
+                    "Name": "instance-state-name",
+                    "Values": [
+                      "running"
+                    ]
+                  }
+                ]
+              },
+              "outputs": [
+                {
+                  "Name": "InstanceId",
+                  "Selector": "$.Reservations[0].Instances[0].InstanceId",
+                  "Type": "String"
+                }
+              ],
+              "isCritical": "true",
+              "nextStep": "RunRateLimitScript"
+            },
+            {
+              "name": "RunRateLimitScript",
+              "action": "aws:runCommand",
+              "maxAttempts": 3,
+              "timeoutSeconds": 30,
+              "inputs": {
+                "DocumentName": "AWS-RunShellScript",
+                "InstanceIds": [ "{{getInstance.InstanceId}}" ],
+                "Parameters": {
+                  "commands": [
+                    "/opt/sophos/xgemail/xgemail-bulksender-service/xgemail.bulksender.merger.py"
+                  ]
+                }
               }
             }
           ]
@@ -1045,6 +1122,10 @@
     "TerminationAutomation" : {
       "Description" : "SSM Instance Terminator Automation Document name",
       "Value" : { "Ref" : "TerminationAutomation" }
+    },
+    "ExecuteScript" : {
+      "Description" : "SSM Rate Limit Automation Document name",
+      "Value" : { "Ref" : "ExecuteScript" }
     },
     "TerminationAutomationRole": {
       "Description": "AutomationTermination role",
