@@ -30,23 +30,23 @@ def get_passphrase(bucket, mail_pic_auth):
     passphrase = s3.get_object(Bucket = bucket, Key = mail_pic_auth)
     return base64.b64encode('mail:' + passphrase['Body'].read())
 
-def getListFromCsv(args):
+def get_mail_box_list_from_file(args):
 
-    emailList = []
+    mailboxList = []
     if args.file:
         file_name = args.file
         with open(file_name, 'r') as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
             for row in csv_reader:
                 print row
-                emailList.append(row)
+                mailboxList.append(row)
     else:
         print 'Aborting... please use any of the following options --approve / --reject / --revoke / --request_approve / --status'
         return None
 
-    return emailList
+    return mailboxList
 
-def call_bulk_sender_request(emailList,args):
+def call_bulk_sender_request_api(mailBoxList,args):
     pic_fqdn = 'mail-cloudstation-{0}.{1}.hydra.sophos.com'.format(args.region, args.env.lower())
     mail_pic_api_auth = 'xgemail-{0}-mail'.format(args.region)
     connections_bucket = 'cloud-{0}-connections'.format(args.env.lower())
@@ -57,10 +57,10 @@ def call_bulk_sender_request(emailList,args):
         'Content-Type': 'application/json'
     }
 
-    for emailAddress in emailList:
-        for email  in emailAddress:
+    for mailboxes in mailBoxList:
+        for mailbox  in mailboxes:
             bulk_sender_request_approved_url = mail_pic_api_url + '/bulksender/request-approved'
-            url = bulk_sender_request_approved_url + '?emailAddress={0}'.format(email)
+            url = bulk_sender_request_approved_url + '?emailAddress={0}'.format(mailbox)
             urllib3.disable_warnings(urllib3.exceptions.SecurityWarning)
             response = requests.post(
                 url,
@@ -81,9 +81,10 @@ if __name__ == '__main__':
         arg_parser = argparse.ArgumentParser(description = 'Request_Approve Bulk Sender Request')
         parsed_args = get_parsed_args(arg_parser)
 
-        emailList = getListFromCsv(parsed_args)
+        mailBoxList = get_mail_box_list_from_file(parsed_args)
 
-        result = call_bulk_sender_request(emailList,parsed_args)
+        result = call_bulk_sender_request_api(mailBoxList,parsed_args)
+
         if result is None or not result:
             arg_parser.print_help(sys.stderr)
             sys.exit(1)
