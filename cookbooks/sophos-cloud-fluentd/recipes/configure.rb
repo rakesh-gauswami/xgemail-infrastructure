@@ -59,7 +59,7 @@ elsif NODE_TYPE == 'risky-xdelivery'
   NON_DELIVERY_DSN      = '5.4.7'
 elsif NODE_TYPE == 'warmup-delivery'
   SERVER_TYPE_XDELIVERY = 'UNKNOWN'
-  SERVER_TYPE           = 'RISKY_DELIVERY'
+  SERVER_TYPE           = 'WARMUP_DELIVERY'
   DIRECTION             = 'OUTBOUND'
   NON_DELIVERY_DSN      = '5.4.7'
 else
