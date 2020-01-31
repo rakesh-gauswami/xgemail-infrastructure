@@ -46,8 +46,9 @@ def get_mail_box_list_from_file(args):
         with open(file_name, 'r') as csv_file:
             csv_reader = csv.reader(csv_file)
             for row in csv_reader:
-                if row:
-                    mailboxList.append(row)
+                for r in row:
+                        new_row = r.strip()
+                        mailboxList.append(new_row)
     else:
         print 'Aborting... please use -- file { .csv file }'
         return None
@@ -66,8 +67,7 @@ def call_bulk_sender_request_api(mailBoxList,args):
     }
 
     failed_result = []
-    for mailboxes in mailBoxList:
-        for mailbox  in mailboxes:
+    for mailbox  in mailBoxList:
             bulk_sender_request_approved_url = mail_pic_api_url + '/bulksender/request-approved'
             url = bulk_sender_request_approved_url + '?emailAddress={0}'.format(mailbox)
             urllib3.disable_warnings(urllib3.exceptions.SecurityWarning)
@@ -81,7 +81,7 @@ def call_bulk_sender_request_api(mailBoxList,args):
             else:
                 failed_result.append(mailbox)
 
-    if response.ok:
+    if len(failed_result) == 0:
         print 'Successfully submitted {0} request, response: {1}'.format('request-approved' , response)
     else:
         print 'The list of mail boxes that not successfully submitted can be found in /tmp/bulk-sender-errors.txt '
