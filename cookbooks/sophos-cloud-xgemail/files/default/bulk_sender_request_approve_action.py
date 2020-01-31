@@ -15,8 +15,16 @@ import requests
 import sys
 import urllib3
 import csv
+import pip
 
 MAIL_PIC_RESPONSE_TIMEOUT = 30
+ERROR_ENTRIES_PATH = '/tmp/bulk-sender-errors.txt'
+
+try:
+    from prettytable import PrettyTable
+except ImportError:
+    pip.main(['install', 'PrettyTable'])
+    from prettytable import PrettyTable
 
 def get_parsed_args(parser):
     parser.add_argument('--region', default = 'eu-west-1', choices=['eu-central-1', 'eu-west-1', 'us-west-2', 'us-east-2'], help = 'AWS region', required = True)
@@ -36,7 +44,7 @@ def get_mail_box_list_from_file(args):
     if args.file:
         file_name = args.file
         with open(file_name, 'r') as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=',')
+            csv_reader = csv.reader(csv_file)
             for row in csv_reader:
                 mailboxList.append(row)
     else:
@@ -56,6 +64,7 @@ def call_bulk_sender_request_api(mailBoxList,args):
         'Content-Type': 'application/json'
     }
 
+    failed_result = []
     for mailboxes in mailBoxList:
         for mailbox  in mailboxes:
             bulk_sender_request_approved_url = mail_pic_api_url + '/bulksender/request-approved'
@@ -66,14 +75,29 @@ def call_bulk_sender_request_api(mailBoxList,args):
                 headers = headers,
                 timeout = MAIL_PIC_RESPONSE_TIMEOUT,
             )
+            if response.ok:
+                ''
+            else:
+                failed_result.append(mailbox)
 
     if response.ok:
         print 'Successfully submitted {0} request, response: {1}'.format('request-approved' , response)
     else:
-        print 'There was a problem in submitting {0} request, response code {1}'.format('request-approved', response.status_code)
-        return None
+        print 'The list of mail boxes that not successfully submitted can be found in /tmp/bulk-sender-errors.txt '
+        write_error_file(failed_result)
 
     return response
+
+def write_error_file(failed_result):
+
+    t = PrettyTable(['Mail boxes '])
+    t.align = 'l'
+
+    for cur_entry in failed_result:
+            t.add_row([cur_entry])
+
+    with open(ERROR_ENTRIES_PATH, 'w') as write_file:
+        write_file.write(t.get_string())
 
 if __name__ == '__main__':
     try:
@@ -91,4 +115,3 @@ if __name__ == '__main__':
     except Exception as e:
         print 'An Exception occurred in main <{0}>'.format(e)
         sys.exit(1)
-
