@@ -46,7 +46,8 @@ def get_mail_box_list_from_file(args):
         with open(file_name, 'r') as csv_file:
             csv_reader = csv.reader(csv_file)
             for row in csv_reader:
-                mailboxList.append(row)
+                if row:
+                    mailboxList.append(row)
     else:
         print 'Aborting... please use -- file { .csv file }'
         return None
