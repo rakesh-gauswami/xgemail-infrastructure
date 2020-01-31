@@ -31,6 +31,7 @@ CRON_MINUTE_FREQUENCY = node['xgemail']['internet_submit_recipient_cron_minute_f
 STATION_VPC_NAME      = node['xgemail']['station_vpc_name']
 XGEMAIL_FILES_DIR     = node['xgemail']['xgemail_files_dir']
 RECIPIENT_ACCESS_FILENAME = node['xgemail']['recipient_access_filename']
+RECIPIENT_ACCESS_HASH_FILENAME = node['xgemail']['recipient_access_hash_filename']
 RELAY_DOMAINS_FILENAME = node['xgemail']['relay_domains_filename']
 MAIL_PIC_API_RESPONSE_TIMEOUT = node['xgemail']['mail_pic_apis_response_timeout_seconds']
 MAIL_PIC_API_AUTH = node['xgemail']['mail_pic_api_auth']
@@ -75,6 +76,7 @@ template CRON_SCRIPT_PATH do
     :xgemail_pic_fqdn => XGEMAIL_PIC_FQDN,
     :postfix_instance_name => instance_name( INSTANCE_NAME ),
     :recipient_access_filename => RECIPIENT_ACCESS_FILENAME,
+    :recipient_access_hash_filename => RECIPIENT_ACCESS_HASH_FILENAME,
     :relay_domains_filename => RELAY_DOMAINS_FILENAME,
     :mail_pic_api_response_timeout => MAIL_PIC_API_RESPONSE_TIMEOUT,
     :mail_pic_api_auth => MAIL_PIC_API_AUTH,

@@ -37,6 +37,7 @@ CERT_FILE = "#{LOCAL_CERT_PATH}/#{CERT_NAME}.crt"
 KEY_FILE = "#{LOCAL_KEY_PATH}/#{CERT_NAME}.key"
 
 RECIPIENT_ACCESS_FILENAME = node['xgemail']['recipient_access_filename']
+RECIPIENT_ACCESS_HASH_FILENAME = node['xgemail']['recipient_access_hash_filename']
 SOFT_RETRY_SENDERS_MAP_FILENAME = node['xgemail']['soft_retry_senders_map_filename']
 
 SERVER_PEM_FILE = "#{LOCAL_CERT_PATH}/server.pem"
@@ -252,7 +253,8 @@ if ACCOUNT != 'sandbox'
       "reject_rhsbl_sender #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
       "reject_rhsbl_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
       'reject_rbl_client $reject_rbl_client, ' +
-      "check_recipient_access hash:$config_directory/#{RECIPIENT_ACCESS_FILENAME}, " +
+      "check_recipient_access hash:$config_directory/#{RECIPIENT_ACCESS_FILENAME} " +
+      "hash:$config_directory/#{RECIPIENT_ACCESS_HASH_FILENAME}, " +
       "check_sender_access hash:$config_directory/#{SOFT_RETRY_SENDERS_MAP_FILENAME}, " +
       'reject',
 
