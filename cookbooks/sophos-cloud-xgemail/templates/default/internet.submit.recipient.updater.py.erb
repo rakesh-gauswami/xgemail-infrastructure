@@ -101,10 +101,10 @@ subprocess.call(['postmap', 'hash:{0}'.format(RECIPIENT_ACCESS_FILE_TMP)])
 os.rename(RECIPIENT_ACCESS_FILE_TMP, RECIPIENT_ACCESS_FILE)
 os.rename(RECIPIENT_ACCESS_FILE_TMP + '.db', RECIPIENT_ACCESS_FILE + '.db')
 
+logger.info('recipient access file [%s.db] successfully updated', RECIPIENT_ACCESS_FILE)
+
 RECIPIENT_ACCESS_HASH_FILE = POSTFIX_CONFIG_DIR + "/" +RECIPIENT_ACCESS_HASH_FILENAME
 RECIPIENT_ACCESS_HASH_FILE_TMP = RECIPIENT_ACCESS_HASH_FILE + '.tmp'
-
-logger.info('recipient access file [%s.db] successfully updated', RECIPIENT_ACCESS_FILE)
 
 # Writes a new file at /etc/postfix-is containing all the recipient email addresses starting with '#' character
 #
