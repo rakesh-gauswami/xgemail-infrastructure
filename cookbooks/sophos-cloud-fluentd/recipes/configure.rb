@@ -58,8 +58,13 @@ elsif NODE_TYPE == 'risky-xdelivery'
   DIRECTION             = 'OUTBOUND'
   NON_DELIVERY_DSN      = '5.4.7'
 elsif NODE_TYPE == 'warmup-delivery'
+  SERVER_TYPE_XDELIVERY = 'WARMUP_XDELIVERY'
+  SERVER_TYPE           = 'WARMUP_DELIVERY'
+  DIRECTION             = 'OUTBOUND'
+  NON_DELIVERY_DSN      = '5.4.7'
+elsif NODE_TYPE == 'warmup-xdelivery'
+  SERVER_TYPE           = 'WARMUP_XDELIVERY'
   SERVER_TYPE_XDELIVERY = 'UNKNOWN'
-  SERVER_TYPE           = 'RISKY_DELIVERY'
   DIRECTION             = 'OUTBOUND'
   NON_DELIVERY_DSN      = '5.4.7'
 else
@@ -101,7 +106,7 @@ template 'fluentd-source-lifecycle' do
   variables(
     :application_name => NODE_TYPE
   )
-  not_if { NODE_TYPE == 'xdelivery' || NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery' }
+  not_if { NODE_TYPE == 'xdelivery' || NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery' || NODE_TYPE == 'warmup-xdelivery' }
 end
 
 # internet-delivery - Start Order: 10
@@ -242,7 +247,8 @@ template 'fluentd-match-msg-delivery' do
             NODE_TYPE == 'internet-xdelivery' ||
             NODE_TYPE == 'risky-delivery' ||
             NODE_TYPE == 'risky-xdelivery' ||
-            NODE_TYPE == 'warmup-delivery'
+            NODE_TYPE == 'warmup-delivery' ||
+            NODE_TYPE == 'warmup-xdelivery'
          }
 
 end
@@ -261,7 +267,8 @@ template 'fluentd-filter-msg-delivery' do
             NODE_TYPE == 'internet-xdelivery' ||
             NODE_TYPE == 'risky-delivery' ||
             NODE_TYPE == 'risky-xdelivery' ||
-            NODE_TYPE == 'warmup-delivery'
+            NODE_TYPE == 'warmup-delivery' ||
+            NODE_TYPE == 'warmup-xdelivery'
          }
   end
 
@@ -311,7 +318,8 @@ template 'fluentd-filter-transform-msg-delivery' do
             NODE_TYPE == 'internet-xdelivery' ||
             NODE_TYPE == 'risky-delivery' ||
             NODE_TYPE == 'risky-xdelivery' ||
-            NODE_TYPE == 'warmup-delivery'
+            NODE_TYPE == 'warmup-delivery' ||
+            NODE_TYPE == 'warmup-xdelivery'
          }
 end
 
@@ -334,7 +342,8 @@ template 'fluentd-match-sns-msg-delivery' do
             NODE_TYPE == 'internet-xdelivery' ||
             NODE_TYPE == 'risky-delivery' ||
             NODE_TYPE == 'risky-xdelivery' ||
-            NODE_TYPE == 'warmup-delivery'
+            NODE_TYPE == 'warmup-delivery' ||
+            NODE_TYPE == 'warmup-xdelivery'
          }
 end
 
