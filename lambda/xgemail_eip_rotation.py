@@ -266,7 +266,7 @@ def get_clean_eip(lifecycle_hook_name):
     """
     logger.info("Locating a clean EIP to use.")
     try:
-        if 'risky-delivery' in lifecycle_hook_name:
+        if 'risky-delivery' in lifecycle_hook_name or 'risky-xdelivery' in lifecycle_hook_name:
             addresses = ec2_client.describe_addresses(
                 Filters=[
                     {
@@ -274,7 +274,7 @@ def get_clean_eip(lifecycle_hook_name):
                     }
                 ]
             )['Addresses']
-        elif 'warmup-delivery' in lifecycle_hook_name:
+        elif 'warmup-delivery' in lifecycle_hook_name or 'warmup-xdelivery' in lifecycle_hook_name:
             addresses = ec2_client.describe_addresses(
                 Filters=[
                     {
