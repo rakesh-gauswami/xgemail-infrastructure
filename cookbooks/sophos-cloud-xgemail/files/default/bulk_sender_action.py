@@ -21,10 +21,11 @@ MAIL_PIC_RESPONSE_TIMEOUT = 30
 def get_parsed_args(parser):
     parser.add_argument('--region', default = 'eu-west-1', choices=['eu-central-1', 'eu-west-1', 'us-west-2', 'us-east-2'], help = 'AWS region', required = True)
     parser.add_argument('--env', default = 'DEV', choices=['DEV', 'DEV3', 'QA', 'PROD','INF'], help = 'AWS environment', required = True)
-    parser.add_argument('--customerid', help = 'Customer ID of the bulk sender request sender', required = True)
+    parser.add_argument('--customerid', help = 'Customer ID of the bulk sender request sender', required = False)
     parser.add_argument('--emailid', help = 'Email address of the bulk sender request mailbox', required = True)
     parser.add_argument('--approve', action = 'store_true', help = 'Approve the bulk sender request')
     parser.add_argument('--reject', action = 'store_true', help = 'Reject the bulk sender request')
+    parser.add_argument('--request_approve', action = 'store_true', help = 'Request the bulk sender and approved the request')
     parser.add_argument('--revoke', action = 'store_true', help = 'Revoke the bulk sender request, removes all relevant documents from S3')
     parser.add_argument('--status', action = 'store_true', help = 'Returns current bulk sender request status')
     args = parser.parse_args()
@@ -51,14 +52,21 @@ def create_mail_pic_request_data(args):
     elif args.revoke:
         bulk_sender_api_url = mail_pic_api_url + '/bulksender/revoke'
         data.append('revoke')
+    elif args.request_approve:
+        bulk_sender_api_url = ''
+        bulk_sender_request_approved_url = mail_pic_api_url + '/bulksender/request-approved'
+        data.append('request_approve')
     elif args.status:
         bulk_sender_api_url = mail_pic_api_url + '/bulksender/status'
         data.append('status')
     else:
-        print 'Aborting... please use any of the following options --approve / --reject / --revoke / --status'
+        print 'Aborting... please use any of the following options --approve / --reject / --revoke / --request_approve / --status'
         return None
 
-    url = bulk_sender_api_url + '?customerId={0}&emailAddress={1}'.format(args.customerid, args.emailid)
+    if bulk_sender_api_url:
+        url = bulk_sender_api_url + '?customerId={0}&emailAddress={1}'.format(args.customerid, args.emailid)
+    else:
+        url = bulk_sender_request_approved_url + '?emailAddress={0}'.format(args.emailid)
 
     headers = {
         'Authorization': 'Basic ' + get_passphrase(connections_bucket, mail_pic_api_auth),
@@ -107,7 +115,7 @@ def perform_get_request(get_mail_pic_data):
 
 if __name__ == '__main__':
     try:
-        arg_parser = argparse.ArgumentParser(description = 'Approve/Reject/Revoke Bulk Sender Request')
+        arg_parser = argparse.ArgumentParser(description = 'Approve/Reject/Revoke/Request_Approve Bulk Sender Request')
         parsed_args = get_parsed_args(arg_parser)
 
         mail_pic_api_request_data = create_mail_pic_request_data(parsed_args)
@@ -126,5 +134,4 @@ if __name__ == '__main__':
     except Exception as e:
         print 'An Exception occurred in main <{0}>'.format(e)
         sys.exit(1)
-
 
