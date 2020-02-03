@@ -123,8 +123,14 @@ with open(RECIPIENT_ACCESS_EXTRA_FILE_TMP, 'w') as f:
     if position == 0:
       f.write('{0}\nOK\n'.format(recipient))
 
-subprocess.call(['db_load', '-T', '-t', 'hash', '-f', RECIPIENT_ACCESS_EXTRA_FILE_TMP, RECIPIENT_ACCESS_EXTRA_FILE_TMP + '.db'])
-os.rename(RECIPIENT_ACCESS_EXTRA_FILE_TMP, RECIPIENT_ACCESS_EXTRA_FILE)
-os.rename(RECIPIENT_ACCESS_EXTRA_FILE_TMP + '.db', RECIPIENT_ACCESS_EXTRA_FILE + '.db')
+try:
 
-logger.info('recipient access extra file [%s.db] successfully updated', RECIPIENT_ACCESS_EXTRA_FILE)
+  return_code = subprocess.call(['db_load', '-T', '-t', 'hash', '-f', RECIPIENT_ACCESS_EXTRA_FILE_TMP, RECIPIENT_ACCESS_EXTRA_FILE_TMP + '.db'])
+
+  if return_code == 0:
+    os.rename(RECIPIENT_ACCESS_EXTRA_FILE_TMP, RECIPIENT_ACCESS_EXTRA_FILE)
+    os.rename(RECIPIENT_ACCESS_EXTRA_FILE_TMP + '.db', RECIPIENT_ACCESS_EXTRA_FILE + '.db')
+    logger.info('recipient access extra file [%s.db] successfully updated', RECIPIENT_ACCESS_EXTRA_FILE)
+
+except Exception as e:
+  logger.info('Failed creating recipient_access_extra file using db_load, error: [%s]', e)
