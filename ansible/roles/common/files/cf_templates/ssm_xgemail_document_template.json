@@ -87,7 +87,6 @@
       }
     },
 
-
     "PostconfCommand": {
       "Type": "AWS::SSM::Document",
       "Properties":{
@@ -120,14 +119,14 @@
       }
     },
 
-    "ExecuteScript": {
+    "RunBulkSenderPython": {
       "Type": "AWS::SSM::Document",
       "Properties": {
         "DocumentType": "Automation",
         "Content": {
           "schemaVersion": "0.3",
           "assumeRole": "{{assumeRole}}",
-          "description": "ExecuteScript",
+          "description": "ExecuteBulkSenderPythonScript",
           "parameters": {
             "assumeRole": {
               "type": "String",
@@ -1123,9 +1122,9 @@
       "Description" : "SSM Instance Terminator Automation Document name",
       "Value" : { "Ref" : "TerminationAutomation" }
     },
-    "ExecuteScript" : {
+    "RunBulkSenderPython" : {
       "Description" : "SSM Rate Limit Automation Document name",
-      "Value" : { "Ref" : "ExecuteScript" }
+      "Value" : { "Ref" : "RunBulkSenderPython" }
     },
     "TerminationAutomationRole": {
       "Description": "AutomationTermination role",
