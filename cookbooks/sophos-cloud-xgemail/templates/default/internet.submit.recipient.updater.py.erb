@@ -20,6 +20,7 @@ from logging.handlers import SysLogHandler
 PIC_FQDN = '<%= @xgemail_pic_fqdn %>'
 POSTFIX_INSTANCE_NAME = '<%= @postfix_instance_name %>'
 RECIPIENT_ACCESS_FILENAME = '<%= @recipient_access_filename %>'
+RECIPIENT_ACCESS_EXTRA_FILENAME = '<%= @recipient_access_extra_filename %>'
 RELAY_DOMAINS_FILENAME = '<%= @relay_domains_filename %>'
 MAIL_PIC_API_AUTH = '<%= @mail_pic_api_auth %>'
 CONNECTIONS_BUCKET = '<%= @connections_bucket %>'
@@ -104,3 +105,34 @@ os.rename(RECIPIENT_ACCESS_FILE_TMP + '.db', RECIPIENT_ACCESS_FILE + '.db')
 
 logger.info('recipient access file [%s.db] successfully updated', RECIPIENT_ACCESS_FILE)
 
+RECIPIENT_ACCESS_EXTRA_FILE = POSTFIX_CONFIG_DIR + "/" +RECIPIENT_ACCESS_EXTRA_FILENAME
+RECIPIENT_ACCESS_EXTRA_FILE_TMP = RECIPIENT_ACCESS_EXTRA_FILE + '.tmp'
+
+# Writes a new file at /etc/postfix-is containing all the recipient email addresses starting with '#' character
+#
+# File format would be:
+# #abc@xyz.com
+# OK
+# #rk@emaild2.info
+# OK
+#
+# This file is loaded into a new berkeley DB file which is used by POSTFIX
+#
+with open(RECIPIENT_ACCESS_EXTRA_FILE_TMP, 'w') as f:
+  position = None
+  for recipient in recipients:
+    position =  recipient.find('#')
+    if position == 0:
+      f.write('{0}\nOK\n'.format(recipient))
+
+try:
+
+  return_code = subprocess.call(['db_load', '-T', '-t', 'hash', '-f', RECIPIENT_ACCESS_EXTRA_FILE_TMP, RECIPIENT_ACCESS_EXTRA_FILE_TMP + '.db'])
+
+  if return_code == 0:
+    os.rename(RECIPIENT_ACCESS_EXTRA_FILE_TMP, RECIPIENT_ACCESS_EXTRA_FILE)
+    os.rename(RECIPIENT_ACCESS_EXTRA_FILE_TMP + '.db', RECIPIENT_ACCESS_EXTRA_FILE + '.db')
+    logger.info('recipient access extra file [%s.db] successfully updated', RECIPIENT_ACCESS_EXTRA_FILE)
+
+except Exception as e:
+  logger.info('Failed creating recipient_access_extra file using db_load, error: [%s]', e)

@@ -212,6 +212,7 @@ default['xgemail']['internet_submit_recipient_cron_minute_frequency'] = 5
 default['xgemail']['xgemail_sqs_lifecycle_poller_cron_minute_frequency'] = 1
 
 default['xgemail']['recipient_access_filename'] = 'recipient_access'
+default['xgemail']['recipient_access_extra_filename'] = 'recipient_access_extra'
 default['xgemail']['relay_domains_filename']  = 'relay_domains'
 default['xgemail']['s3_encryption_algorithm'] = 'AES256'
 default['xgemail']['soft_retry_senders_map_filename'] = 'soft_retry_senders_map'
