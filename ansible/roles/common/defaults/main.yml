@@ -22,6 +22,7 @@ ec2:
     ix:                                                 "XGEMAIL-INTERNET-XDELIVERY"
     rd:                                                 "XGEMAIL-RISKY-DELIVERY"
     rx:                                                 "XGEMAIL-RISKY-XDELIVERY"
+    wd:                                                 "XGEMAIL-WARMUP-DELIVERY"
 efs:
   policy_efs_volume:                                    "Xgemail-Policy-EFS"
 iam:
@@ -69,6 +70,8 @@ sqs:
   arn_prefix:                                           "arn:aws:sqs:{{account.region}}:{{aws_account_id}}:"
   url_prefix:                                           "https://sqs.{{account.region}}.amazonaws.com/{{aws_account_id}}/"
   additional_action_sqs_queue_sns_listener:             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_AdditionalActions_SNS_Listener"
+  allow_block_upload_sqs_queue:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Allow_Block_Upload"
+  atr_reindex_sqs_queue_sns_listener:                   "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Atr_Reindex_SNS_Listener"
   bulk_sender_action_sqs_queue:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Bulk_Sender_Action"
   bulk_sender_approval_sqs_queue:                       "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Bulk_Sender_Approval"
   customer_delivery_sqs_queue:                          "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Customer_Delivery"
@@ -78,6 +81,7 @@ sqs:
   delay_sqs_queue:                                      "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Delay"
   dlp_report_sqs_queue:                                 "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_DLP_Report"
   encryption_delivery_sqs_queue_sns_listener:           "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Encryption_Delivery_SNS_Listener"
+  encryption_settings_update_sqs_queue_sns_listener:    "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Encryption_Settings_Update_SNS_Listener"
   emergency_inbox_sqs_queue:                            "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Emergency_Inbox_Delivery"
   emergency_inbox_sqs_queue_sns_listener:               "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Emergency_Inbox_Delivery_SNS_Listener"
   impersonation_request_queue:                          "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Impersonation_Request"
@@ -105,6 +109,10 @@ sqs:
   quarantine_sqs_queue:                                 "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Quarantine_Delivery"
   quarantine_sqs_queue_sns_listener:                    "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Quarantine_Delivery_SNS_Listener"
   risky_delivery_sqs_queue_sns_listener:                "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Risky_Delivery_SNS_Listener"
+  toc_settings_update_sqs_queue_sns_listener:           "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Toc_Settings_Update_SNS_Listener"
+  user_allow_block_action_sqs_queue_sns_listener:       "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_User_Allow_Block_Action_SNS_Listener"
+  user_deleted_action_sqs_queue_sns_listener:           "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_User_Deleted_Action_SNS_Listener"
+  warmup_delivery_sqs_queue_sns_listener:               "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Warmup_Delivery_SNS_Listener"
   xgemail_alert_sqs_queue:                              "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Alert_Queue"
 
 # CloudEmail SNS Topic Names.
@@ -112,11 +120,13 @@ sns:
   additional_actions_sns_topic:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-additional-actions-SNS"
   alarm_sns_topic:                                      "{{account.name}}-xgemail-alarm-topic"
   arn_prefix:                                           "arn:aws:sns:{{account.region}}:{{aws_account_id}}:"
+  atr_reindex_sns_topic:                                "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-atr-reindex-SNS"
   bounce_events_sns_topic:                              "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-bounce-events-SNS"
   delay_sns_topic:                                      "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-delay-SNS"
   deleted_events_sns_topic:                             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-deleted-events-SNS"
   encryption_delivery_events_sns_topic:                 "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-encryption-delivery-events-SNS"
   encrypt_events_sns_topic:                             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-encrypt-events-SNS"
+  encryption_settings_update_sns_topic:                 "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-encryption-settings-update-SNS"
   internet_delivery_sns_topic:                          "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-internet-delivery-SNS"
   lifecycle_sqs_sns:                                    "{{account.name}}-xgemail-lifecycle-topic"
   mailops_notification_sns_topic:                       "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-mailops-notification-SNS"
@@ -135,6 +145,10 @@ sns:
   risky_delivery_sns_topic:                             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-risky-delivery-SNS"
   scan_events_sns_topic:                                "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-scan-events-SNS"
   success_events_sns_topic:                             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-success-events-SNS"
+  toc_settings_update_event_sns_topic:                  "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-toc-settings-update-events-SNS"
+  user_allow_block_action_sns_topic:                    "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-user-allow-block-action-SNS"
+  user_deleted_action_sns_topic:                        "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-user-deleted-action-SNS"
+  warmup_delivery_sns_topic:                            "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-warmup-delivery-SNS"
 sdb:
   volume_tracker_sdb:                                   "{{volume_tracker_sdb_output.ansible_facts.cloudformation[stack.sdb.volume_tracker_sdb].stack_outputs.SimpleDbDomain}}"
 dynamodb:
@@ -172,6 +186,7 @@ stack:
       es:                                               "{{vpc.cloud_email.name}}-xgemail-encryption-submit"
       rd:                                               "{{vpc.cloud_email.name}}-xgemail-risky-delivery"
       rx:                                               "{{vpc.cloud_email.name}}-xgemail-risky-xdelivery-0000-"
+      wd:                                               "{{vpc.cloud_email.name}}-xgemail-warmup-delivery"
     elb:
       cs:                                               "{{vpc.cloud_email.name}}-XGEMAIL-customer-submit-ELB"
       is:                                               "{{vpc.cloud_email.name}}-XGEMAIL-submit-ELB"
@@ -183,6 +198,7 @@ stack:
       es:                                               "{{vpc.cloud_email.name}}-XGEMAIL-encryption-submit-ELB"
       rd:                                               "{{vpc.cloud_email.name}}-XGEMAIL-risky-delivery-ELB"
       rx:                                               "{{vpc.cloud_email.name}}-XGEMAIL-risky-xdelivery-ELB"
+      wd:                                               "{{vpc.cloud_email.name}}-XGEMAIL-warmup-delivery-ELB"
   efs:
     policy_efs_volume:                                  "{{vpc.cloud_email.name}}-xgemail-policy-EFS-volume"
     policy_efs_mount_target:                            "{{vpc.cloud_email.name}}-xgemail-policy-EFS-volume-mount-target"
@@ -215,6 +231,7 @@ stack:
     mx_02_route53:                                      "{{vpc.cloud_email.name}}-XGEmailMX02-Cname"
     risky_delivery_route53:                             "{{vpc.cloud_email.name}}-XGEMAIL-risky-delivery-ROUTE53"
     risky_xdelivery_route53:                            "{{vpc.cloud_email.name}}-XGEMAIL-risky-xdelivery-ROUTE53"
+    warmup_delivery_route53:                            "{{vpc.cloud_email.name}}-XGEMAIL-warmup-delivery-ROUTE53"
   s3:
     customer_submit_bucket:                             "{{vpc.cloud_email.name}}-XGEMAIL-customer-submit-bucket-S3"
     emergency_inbox_bucket:                             "{{vpc.cloud_email.name}}-XGEMAIL-emergency-inbox-bucket-S3"
@@ -228,6 +245,8 @@ stack:
     lambda_bucket:                                      "{{vpc.cloud_email.name}}-{{account.name}}-{{account.region}}-lambda-bucket-S3"
   sqs:
     additional_action_sqs_queue_sns_listener:           "{{vpc.cloud_email.name}}-XGEMAIL-AdditionalActions-SQS-SNS-Listener"
+    allow_block_upload_sqs_queue:                       "{{vpc.cloud_email.name}}-XGEMAIL-allow-block-upload-SQS"
+    atr_reindex_sqs_queue_sns_listener:                 "{{vpc.cloud_email.name}}-XGEMAIL-Xgemail-Atr-Reindex-SNS-Listener"
     bulk_sender_action_sqs_queue:                       "{{vpc.cloud_email.name}}-XGEMAIL-bulk-sender-action-SQS"
     bulk_sender_approval_sqs_queue:                     "{{vpc.cloud_email.name}}-XGEMAIL-bulk-sender-approval-SQS"
     customer_delivery_sqs_queue:                        "{{vpc.cloud_email.name}}-XGEMAIL-delivery-SQS"
@@ -237,6 +256,7 @@ stack:
     dqs_sqs_queue:                                      "{{vpc.cloud_email.name}}-XGEMAIL-dqs-SQS"
     delay_sqs_queue:                                    "{{vpc.cloud_email.name}}-XGEMAIL-delay-SQS"
     encryption_delivery_sqs_queue_sns_listener:         "{{vpc.cloud_email.name}}-XGEMAIL-encryption-delivery-SQS-SNS-listener"
+    encryption_settings_update_sqs_queue_sns_listener:  "{{vpc.cloud_email.name}}-XGEMAIL-encryption-settings-update-SNS-listener"
     emergency_inbox_sqs_queue:                          "{{vpc.cloud_email.name}}-XGEMAIL-emergency-inbox-SQS"
     emergency_inbox_sqs_queue_sns_listener:             "{{vpc.cloud_email.name}}-XGEMAIL-emergency-inbox-SQS-SNS-listener"
     impersonation_request_queue:                        "{{vpc.cloud_email.name}}-XGEMAIL-impersonation-request-SQS"
@@ -264,15 +284,21 @@ stack:
     quarantine_sqs_queue:                               "{{vpc.cloud_email.name}}-XGEMAIL-quarantine-SQS"
     quarantine_sqs_queue_sns_listener:                  "{{vpc.cloud_email.name}}-XGEMAIL-quarantine-SQS-SNS-listener"
     risky_delivery_sqs_queue_sns_listener:              "{{vpc.cloud_email.name}}-XGEMAIL-risky-delivery-SQS-SNS-listener"
+    toc_settings_update_sqs_queue_sns_listener:         "{{vpc.cloud_email.name}}-XGEMAIL-Toc-Settings-Update-SNS-Listener"
+    user_allow_block_action_sqs_queue_sns_listener:     "{{vpc.cloud_email.name}}-XGEMAIL-User-Allow-Block-Action-SNS-Listener"
+    user_deleted_action_sqs_queue_sns_listener:         "{{vpc.cloud_email.name}}-XGEMAIL-User-Deleted-Action-SNS-Listener"
+    warmup_delivery_sqs_queue_sns_listener:             "{{vpc.cloud_email.name}}-XGEMAIL-warmup-delivery-SQS-SNS-listener"
     xgemail_alert_sqs_queue:                            "{{vpc.cloud_email.name}}-XGEMAIL-alert-SQS"
   sns:
     additional_actions_sns_topic:                       "{{vpc.cloud_email.name}}-xgemail-additional-actions-SNS"
     alarm_sns_topic:                                    "{{account.name}}-{{vpc.cloud_email.name}}-Alarm-Topic"
+    atr_reindex_sns_topic:                              "{{vpc.cloud_email.name}}-xgemail-atr-reindex-SNS"
     bounce_events_sns_topic:                            "{{vpc.cloud_email.name}}-xgemail-bounce-events-SNS"
     delay_sns_topic:                                    "{{vpc.cloud_email.name}}-xgemail-delay-SNS"
     deleted_events_sns_topic:                           "{{vpc.cloud_email.name}}-xgemail-deleted-events-SNS"
     encryption_delivery_events_sns_topic:               "{{vpc.cloud_email.name}}-xgemail-encryption-delivery-events-SNS"
     encrypt_events_sns_topic:                           "{{vpc.cloud_email.name}}-xgemail-encrypt-events-SNS"
+    encryption_settings_update_sns_topic:               "{{vpc.cloud_email.name}}-xgemail-encryption-settings-update-SNS"
     internet_delivery_sns_topic:                        "{{vpc.cloud_email.name}}-xgemail-internet-delivery-SNS"
     mailops_notification_sns_topic:                     "{{vpc.cloud_email.name}}-xgemail-mailops-notification-SNS"
     msg_history_events_sns_topic:                       "{{vpc.cloud_email.name}}-xgemail-msg-history-events-SNS"
@@ -290,6 +316,10 @@ stack:
     risky_delivery_sns_topic:                           "{{vpc.cloud_email.name}}-xgemail-risky-delivery-SNS"
     scan_events_sns_topic:                              "{{vpc.cloud_email.name}}-xgemail-scan-events-SNS"
     success_events_sns_topic:                           "{{vpc.cloud_email.name}}-xgemail-success-events-SNS"
+    toc_settings_update_event_sns_topic:                "{{vpc.cloud_email.name}}-xgemail-toc-settings-update-events-SNS"
+    user_allow_block_action_sns_topic:                  "{{vpc.cloud_email.name}}-xgemail-user-allow-block-action-SNS"
+    user_deleted_action_sns_topic:                      "{{vpc.cloud_email.name}}-xgemail-user-deleted-action-SNS"
+    warmup_delivery_sns_topic:                          "{{vpc.cloud_email.name}}-xgemail-warmup-delivery-SNS"
   ssm:
     ssm_documents:                                      "{{vpc.cloud_email.name}}-SSM-Documents"
   msg:
@@ -318,6 +348,7 @@ template:
       as_xgemail_internet_xdelivery_template:           "{{tmp_artifacts_dir}}/as_xgemail_internet_xdelivery_template.json"
       as_risky_delivery_template:                       "{{tmp_artifacts_dir}}/as_risky_delivery_template.json"
       as_xgemail_risky_xdelivery_template:              "{{tmp_artifacts_dir}}/as_xgemail_risky_xdelivery_template.json"
+      as_warmup_delivery_template:                      "{{tmp_artifacts_dir}}/as_warmup_delivery_template.json"
   efs:
     efs_template:                                       "{{tmp_artifacts_dir}}/efs_template.json"
     efs_mount_target_template:                          "{{tmp_artifacts_dir}}/efs_mount_target_template.json"
