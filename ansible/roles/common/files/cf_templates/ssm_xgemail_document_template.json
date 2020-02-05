@@ -5,7 +5,7 @@
 
   "Metadata": {
     "Copyright": [
-      "Copyright 2018, Sophos Limited. All rights reserved.",
+      "Copyright 2020, Sophos Limited. All rights reserved.",
       "",
       "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
       "Sophos Limited and Sophos Group.  All other product and company",
@@ -112,6 +112,76 @@
                 "runCommand":[
                   "postmulti -i $(postmulti -l | grep -v '^-' | awk '{print $1}') -x postconf -e {{ Parameter }}='{{ Value }}'"
                 ]
+              }
+            }
+          ]
+        }
+      }
+    },
+
+    "BulkSenderAutomation": {
+      "Type": "AWS::SSM::Document",
+      "Properties": {
+        "DocumentType": "Automation",
+        "Content": {
+          "schemaVersion": "0.3",
+          "assumeRole": { "Fn::GetAtt" : [ "BulkSenderAutomationRole", "Arn" ] },
+          "description": "Execute BulkSender PythonScript",
+          "parameters": {
+            "assumeRole": {
+              "type": "String",
+              "description": "Role under which to run the automation",
+              "default": ""
+            },
+            "InstanceType": {
+              "type": "String",
+              "description": "The EC2 Instance Type.",
+              "allowedValues": [
+                "customer-submit"
+              ]
+            }
+          },
+          "mainSteps":[
+            {
+              "name": "getInstance",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": 3,
+              "onFailure": "Abort",
+              "inputs": {
+                "Service": "ec2",
+                "Api": "DescribeInstances",
+                "Filters": [
+                  {
+                    "Name": "instance-state-name",
+                    "Values": [
+                      "running"
+                    ]
+                  }
+                ]
+              },
+              "outputs": [
+                {
+                  "Name": "InstanceId",
+                  "Selector": "$.Reservations[0].Instances[0].InstanceId",
+                  "Type": "String"
+                }
+              ],
+              "isCritical": "true",
+              "nextStep": "RunRateLimitScript"
+            },
+            {
+              "name": "RunRateLimitScript",
+              "action": "aws:runCommand",
+              "maxAttempts": 3,
+              "timeoutSeconds": 30,
+              "inputs": {
+                "DocumentName": "AWS-RunShellScript",
+                "InstanceIds": [ "{{getInstance.InstanceId}}" ],
+                "Parameters": {
+                  "commands": [
+                    "/opt/sophos/xgemail/xgemail-bulksender-service/xgemail.bulksender.merger.py"
+                  ]
+                }
               }
             }
           ]
@@ -1006,6 +1076,94 @@
         ]
       },
       "Type": "AWS::IAM::Policy"
+    },
+
+    "BulkSenderAutomationRole" : {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [
+                "ec2.amazonaws.com",
+                "ssm.amazonaws.com"
+              ]
+            },
+            "Action": [ "sts:AssumeRole" ]
+          }]
+        },
+        "Path": "/"
+      }
+    },
+    "BulkSenderAutomationRolePolicies": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "iam:PassRole"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "ec2:DescribeInstances",
+                "ec2:DescribeTags"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:logs:*:*:*"
+              ]
+            },
+            {
+              "Action": [
+                "ssm:DescribeAutomationExecutions",
+                "ssm:DescribeAutomationStepExecutions",
+                "ssm:DescribeDocument",
+                "ssm:DescribeInstanceInformation",
+                "ssm:GetAutomationExecution",
+                "ssm:GetCommandInvocation",
+                "ssm:GetConnectionStatus",
+                "ssm:GetDocument",
+                "ssm:ListCommandInvocations",
+                "ssm:ListCommands",
+                "ssm:ListInstanceAssociations",
+                "ssm:ListDocuments",
+                "ssm:ListDocumentVersions",
+                "ssm:SendCommand",
+                "ssm:StartAutomationExecution"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ]
+        },
+        "PolicyName": "root",
+        "Roles": [
+          {
+            "Ref": "BulkSenderAutomationRole"
+          }
+        ]
+      },
+      "Type": "AWS::IAM::Policy"
     }
   },
 
@@ -1046,6 +1204,10 @@
       "Description" : "SSM Instance Terminator Automation Document name",
       "Value" : { "Ref" : "TerminationAutomation" }
     },
+    "BulkSenderAutomation" : {
+      "Description" : "SSM Rate Limit Automation Document name",
+      "Value" : { "Ref" : "BulkSenderAutomation" }
+    },
     "TerminationAutomationRole": {
       "Description": "AutomationTermination role",
       "Value": { "Ref": "TerminationAutomationRole" }
@@ -1069,6 +1231,14 @@
     "EipRotationAutomationRoleArn": {
       "Description": "EipRotation Automation role ARN",
       "Value": { "Fn::GetAtt" : [ "EipRotationAutomationRole", "Arn" ] }
+    },
+    "BulkSenderAutomationRole": {
+      "Description": "Postfix Automation role",
+      "Value": { "Ref": "BulkSenderAutomationRole" }
+    },
+    "BulkSenderAutomationRoleArn": {
+      "Description": "Postfix Automation role ARN",
+      "Value": { "Fn::GetAtt" : [ "BulkSenderAutomationRole", "Arn" ] }
     }
   }
 }
