@@ -125,8 +125,8 @@
         "DocumentType": "Automation",
         "Content": {
           "schemaVersion": "0.3",
-          "assumeRole": "{{assumeRole}}",
-          "description": "ExecuteBulkSenderPythonScript",
+          "assumeRole": { "Fn::GetAtt" : [ "BulkSenderAutomationRole", "Arn" ] },
+          "description": "Execute BulkSender PythonScript",
           "parameters": {
             "assumeRole": {
               "type": "String",
@@ -151,12 +151,6 @@
                 "Service": "ec2",
                 "Api": "DescribeInstances",
                 "Filters": [
-                  {
-                    "Name": "tag:Application",
-                    "Values": [
-                      "{{InstanceType}}"
-                    ]
-                  },
                   {
                     "Name": "instance-state-name",
                     "Values": [
@@ -1082,6 +1076,94 @@
         ]
       },
       "Type": "AWS::IAM::Policy"
+    },
+
+    "BulkSenderAutomationRole" : {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [
+                "ec2.amazonaws.com",
+                "ssm.amazonaws.com"
+              ]
+            },
+            "Action": [ "sts:AssumeRole" ]
+          }]
+        },
+        "Path": "/"
+      }
+    },
+    "BulkSenderAutomationRolePolicies": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "iam:PassRole"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "ec2:DescribeInstances",
+                "ec2:DescribeTags"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:logs:*:*:*"
+              ]
+            },
+            {
+              "Action": [
+                "ssm:DescribeAutomationExecutions",
+                "ssm:DescribeAutomationStepExecutions",
+                "ssm:DescribeDocument",
+                "ssm:DescribeInstanceInformation",
+                "ssm:GetAutomationExecution",
+                "ssm:GetCommandInvocation",
+                "ssm:GetConnectionStatus",
+                "ssm:GetDocument",
+                "ssm:ListCommandInvocations",
+                "ssm:ListCommands",
+                "ssm:ListInstanceAssociations",
+                "ssm:ListDocuments",
+                "ssm:ListDocumentVersions",
+                "ssm:SendCommand",
+                "ssm:StartAutomationExecution"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ]
+        },
+        "PolicyName": "root",
+        "Roles": [
+          {
+            "Ref": "BulkSenderAutomationRole"
+          }
+        ]
+      },
+      "Type": "AWS::IAM::Policy"
     }
   },
 
@@ -1149,6 +1231,14 @@
     "EipRotationAutomationRoleArn": {
       "Description": "EipRotation Automation role ARN",
       "Value": { "Fn::GetAtt" : [ "EipRotationAutomationRole", "Arn" ] }
+    },
+    "BulkSenderAutomationRole": {
+      "Description": "Postfix Automation role",
+      "Value": { "Ref": "BulkSenderAutomationRole" }
+    },
+    "BulkSenderAutomationRoleArn": {
+      "Description": "Postfix Automation role ARN",
+      "Value": { "Fn::GetAtt" : [ "BulkSenderAutomationRole", "Arn" ] }
     }
   }
 }
