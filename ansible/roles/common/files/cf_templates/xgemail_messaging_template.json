@@ -39,6 +39,10 @@
       "Description": "TopicArn of Deleted Events SNS",
       "Type": "String"
     },
+    "DomainDeliveryTopicArn": {
+      "Description": "TopicArn of Domain Delivery Events SNS",
+      "Type": "String"
+    },
     "EncryptEventsTopicArn": {
       "Description": "TopicArn of Encrypt Events SNS",
       "Type": "String"
@@ -153,6 +157,10 @@
     },
     "DeliveryQueue": {
       "Description": "Endpoint for delivery SQS queue",
+      "Type": "String"
+    },
+    "DomainDeliveryQueue": {
+      "Description": "Endpoint for Domain delivery SQS queue",
       "Type": "String"
     },
     "EmergencyInboxQueue": {
@@ -366,6 +374,14 @@
         "TopicArn": { "Ref": "SuccessEventsTopicArn"}
       }
     },
+    "DomainDeliveryQueueToDomainDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "DomainDeliveryQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "DomainDeliveryTopicArn"}
+      }
+    },
     "EncryptionDeliveryQueueToEncryptionDeliverySnsSubscription": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
@@ -447,6 +463,14 @@
         "TopicArn": { "Ref": "SuccessEventsTopicArn"}
       }
     },
+    "MessageStatisticsQueueToDomainDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageStatisticsQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "DomainDeliveryTopicArn"}
+      }
+    },
     "MessageStatisticsQueueToInternetDeliverySnsSubscription": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
@@ -519,6 +543,14 @@
         "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageHistoryQueue"}]]},
         "Protocol": "sqs",
         "TopicArn": { "Ref": "BounceEventTopicArn"}
+      }
+    },
+    "MessageHistoryQueueToDomainDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageHistoryQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "DomainDeliveryTopicArn"}
       }
     },
     "MessageHistoryQueueToRedirectEventSnsSubscription": {
@@ -625,6 +657,14 @@
         "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "AdditionalActionQueue"}]]},
         "Protocol": "sqs",
         "TopicArn": { "Ref": "DeletedEventsTopicArn"}
+      }
+    },
+    "AdditionalActionQueueToDomainDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "AdditionalActionQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "DomainDeliveryTopicArn"}
       }
     },
     "AdditionalActionQueueToQuarantinedSnsSubscription": {
@@ -1046,6 +1086,18 @@
                   "aws:SourceArn": {"Ref": "WarmupDeliveryTopicArn"}
                 }
               }
+            },
+            {
+              "Sid": "Allow-DomainDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "DomainDeliveryTopicArn"}
+                }
+              }
             }
           ]
         },
@@ -1200,6 +1252,18 @@
               "Condition": {
                 "ArnEquals": {
                   "aws:SourceArn": {"Ref": "WarmupDeliveryTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-DomainDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "DomainDeliveryTopicArn"}
                 }
               }
             }
@@ -1394,6 +1458,18 @@
                   "aws:SourceArn": {"Ref": "WarmupDeliveryTopicArn"}
                 }
               }
+            },
+            {
+              "Sid": "Allow-DomainDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "DomainDeliveryTopicArn"}
+                }
+              }
             }
           ]
         },
@@ -1545,6 +1621,30 @@
           ]
         },
         "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "WarmupDeliveryQueue" }]]}]
+      }
+    },
+    "DomainDeliveryQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "DomainDeliveryQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-DomainDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "DomainDeliveryTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "DomainDeliveryQueue" }]]}]
       }
     }
   }
