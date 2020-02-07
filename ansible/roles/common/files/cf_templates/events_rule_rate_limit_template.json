@@ -45,20 +45,6 @@
     "CloudWatchEventsRule": {
       "Type": "AWS::Events::Rule",
       "Properties": {
-        "EventPattern": {
-          "source": [
-            { "Ref": "EventSource" }
-          ],
-          "account": [
-            { "Ref": "AWS::AccountId" }
-          ],
-          "region": [
-            { "Ref": "AWS::Region" }
-          ],
-          "detail-type": [
-            { "Ref": "EventDetailType" }
-          ]
-        },
         "ScheduleExpression": "cron(0 * * * ? *)",
         "State": { "Ref": "EventState" },
         "Targets": [
