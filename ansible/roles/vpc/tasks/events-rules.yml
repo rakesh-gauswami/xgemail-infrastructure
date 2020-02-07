@@ -61,8 +61,6 @@
     disable_rollback:                       true
     template:                               "{{template.events.rule.events_rule_ratelimit_template}}"
     template_parameters:
-      EventDetailType:                       "Rate limit python script execution"
-      EventSource:                           "aws.events"
       TargetsArn:                            "{{ssm_stack.stack_outputs.BulkSenderAutomation}}"
       TargetsId:                             "ratelimit_automation"
   register: events_rule_ratelimit_stack

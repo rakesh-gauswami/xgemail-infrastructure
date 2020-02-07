@@ -18,14 +18,6 @@
   },
 
   "Parameters": {
-    "EventDetailType": {
-      "Description": "Identifies, in combination with the source field, the fields and values that appear in the detail field.",
-      "Type": "String"
-    },
-    "EventSource": {
-      "Description": "Identifies the service that sourced the event.",
-      "Type": "String"
-    },
     "EventState": {
       "Description": "Indicates whether the rule is enabled.",
       "Type": "String",
@@ -51,15 +43,7 @@
           {
             "Arn": { "Fn::Join": ["", [ "arn:aws:ssm:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":automation-definition/", { "Ref": "TargetsArn" } ] ] },
             "Id": { "Ref": "TargetsId" },
-            "RoleArn": { "Fn::GetAtt": [ "CloudWatchSsmAutomationExecutionRole", "Arn" ] },
-            "InputTransformer": {
-              "InputPathsMap" : {
-                "region" : "$.region",
-                "time" : "$.time",
-                "instance_id" : "$.detail.EC2InstanceId"
-              },
-              "InputTemplate" : "{\"Region\":[<region>],\"Time\":[<time>],\"InstanceId\":[<instance_id>]}"
-            }
+            "RoleArn": { "Fn::GetAtt": [ "CloudWatchSsmAutomationExecutionRole", "Arn" ] }
           }
         ]
       }
