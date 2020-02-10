@@ -152,6 +152,12 @@
                 "Api": "DescribeInstances",
                 "Filters": [
                   {
+                    "Name": "tag:Application",
+                    "Values": [
+                      "{{InstanceType}}"
+                    ]
+                  },
+                  {
                     "Name": "instance-state-name",
                     "Values": [
                       "running"
@@ -1168,61 +1174,21 @@
   },
 
   "Outputs" : {
-    "PostfixService" : {
-      "Description" : "SSM Postfix Service control document name",
-      "Value" : { "Ref" : "PostfixService" }
-    },
-    "UpdateHostname" : {
-      "Description" : "SSM Update Hostname document name",
-      "Value" : { "Ref" : "UpdateHostname" }
-    },
-    "PostconfCommand" : {
-      "Description" : "SSM Postfix Command document name",
-      "Value" : { "Ref" : "PostconfCommand" }
-    },
-    "PostfixSxlUpdate" : {
-      "Description" : "SSM Postfix Sxl Update document name",
-      "Value" : { "Ref" : "PostfixSxlUpdate" }
-    },
-    "UpdateInstance" : {
-      "Description" : "SSM Update Instance document name",
-      "Value" : { "Ref" : "UpdateInstance" }
-    },
-    "TagInstance" : {
-      "Description" : "SSM Tag Instance document name",
-      "Value" : { "Ref" : "TagInstance" }
-    },
-    "EipRotation" : {
-      "Description" : "SSM EipRotation document name",
-      "Value" : { "Ref" : "EipRotation" }
-    },
-    "InstanceTerminator" : {
-      "Description" : "SSM Instance Terminator document name",
-      "Value" : { "Ref" : "InstanceTerminator" }
-    },
-    "TerminationAutomation" : {
-      "Description" : "SSM Instance Terminator Automation Document name",
-      "Value" : { "Ref" : "TerminationAutomation" }
-    },
     "BulkSenderAutomation" : {
       "Description" : "SSM Rate Limit Automation Document name",
       "Value" : { "Ref" : "BulkSenderAutomation" }
     },
-    "TerminationAutomationRole": {
-      "Description": "AutomationTermination role",
-      "Value": { "Ref": "TerminationAutomationRole" }
-    },
-    "TerminationAutomationRoleArn": {
-      "Description": "Instance Terminator Automation role ARN",
-      "Value": { "Fn::GetAtt" : [ "TerminationAutomationRole", "Arn" ] }
-    },
-    "PostfixAutomationRole": {
+    "BulkSenderAutomationRole": {
       "Description": "Postfix Automation role",
-      "Value": { "Ref": "PostfixAutomationRole" }
+      "Value": { "Ref": "BulkSenderAutomationRole" }
     },
-    "PostfixAutomationRoleArn": {
+    "BulkSenderAutomationRoleArn": {
       "Description": "Postfix Automation role ARN",
-      "Value": { "Fn::GetAtt" : [ "PostfixAutomationRole", "Arn" ] }
+      "Value": { "Fn::GetAtt" : [ "BulkSenderAutomationRole", "Arn" ] }
+    },
+    "EipRotation" : {
+      "Description" : "SSM EipRotation document name",
+      "Value" : { "Ref" : "EipRotation" }
     },
     "EipRotationAutomationRole": {
       "Description": "EipRotation Automation role",
@@ -1232,13 +1198,53 @@
       "Description": "EipRotation Automation role ARN",
       "Value": { "Fn::GetAtt" : [ "EipRotationAutomationRole", "Arn" ] }
     },
-    "BulkSenderAutomationRole": {
-      "Description": "Postfix Automation role",
-      "Value": { "Ref": "BulkSenderAutomationRole" }
+    "InstanceTerminator" : {
+      "Description" : "SSM Instance Terminator document name",
+      "Value" : { "Ref" : "InstanceTerminator" }
     },
-    "BulkSenderAutomationRoleArn": {
+    "PostconfCommand" : {
+      "Description" : "SSM Postfix Command document name",
+      "Value" : { "Ref" : "PostconfCommand" }
+    },
+    "PostfixAutomationRole": {
+      "Description": "Postfix Automation role",
+      "Value": { "Ref": "PostfixAutomationRole" }
+    },
+    "PostfixAutomationRoleArn": {
       "Description": "Postfix Automation role ARN",
-      "Value": { "Fn::GetAtt" : [ "BulkSenderAutomationRole", "Arn" ] }
+      "Value": { "Fn::GetAtt" : [ "PostfixAutomationRole", "Arn" ] }
+    },
+    "PostfixService" : {
+      "Description" : "SSM Postfix Service control document name",
+      "Value" : { "Ref" : "PostfixService" }
+    },
+    "PostfixSxlUpdate" : {
+      "Description" : "SSM Postfix Sxl Update document name",
+      "Value" : { "Ref" : "PostfixSxlUpdate" }
+    },
+    "TagInstance" : {
+      "Description" : "SSM Tag Instance document name",
+      "Value" : { "Ref" : "TagInstance" }
+    },
+    "TerminationAutomation" : {
+      "Description" : "SSM Instance Terminator Automation Document name",
+      "Value" : { "Ref" : "TerminationAutomation" }
+    },
+    "TerminationAutomationRole": {
+      "Description": "AutomationTermination role",
+      "Value": { "Ref": "TerminationAutomationRole" }
+    },
+    "TerminationAutomationRoleArn": {
+      "Description": "Instance Terminator Automation role ARN",
+      "Value": { "Fn::GetAtt" : [ "TerminationAutomationRole", "Arn" ] }
+    },
+    "UpdateHostname" : {
+      "Description" : "SSM Update Hostname document name",
+      "Value" : { "Ref" : "UpdateHostname" }
+    },
+    "UpdateInstance" : {
+      "Description" : "SSM Update Instance document name",
+      "Value" : { "Ref" : "UpdateInstance" }
     }
   }
 }
