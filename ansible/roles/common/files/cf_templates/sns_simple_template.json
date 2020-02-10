@@ -41,7 +41,8 @@
   "Outputs": {
     "SnsTopicArn": {
       "Description": "ARN of the SNS topic",
-      "Value": { "Ref" : "SnsTopic" }
+      "Value": { "Ref" : "SnsTopic" },
+      "Export" : { "Name" : {"Fn::Sub": "${AWS::StackName}-SnsTopicArn" }}
     }
   }
 }
