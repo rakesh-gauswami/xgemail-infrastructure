@@ -39,7 +39,7 @@ SERVICE_USER = node['xgemail']['jilter_user']
 POLICY_BUCKET_NAME   = node['xgemail']['xgemail_policy_bucket_name']
 ACTIVE_PROFILE = node['xgemail']['xgemail_active_profile']
 
-INTERNET_SUBMIT_BUCKET_NAME = node['xgemail']['xgemail_bucket_name']
+CUSTOMER_SUBMIT_BUCKET_NAME = node['xgemail']['xgemail_bucket_name']
 
 include_recipe 'sophos-cloud-xgemail::install_jilter_common'
 
@@ -105,7 +105,7 @@ template 'xgemail.jilter.properties' do
   variables(
       :policy_bucket => POLICY_BUCKET_NAME,
       :account => ACCOUNT,
-      :internet_submit_bucket => INTERNET_SUBMIT_BUCKET_NAME
+      :customer_submit_bucket => CUSTOMER_SUBMIT_BUCKET_NAME
   )
 end
 
