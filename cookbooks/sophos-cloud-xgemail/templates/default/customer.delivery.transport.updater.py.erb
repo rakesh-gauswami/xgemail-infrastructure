@@ -75,29 +75,24 @@ def get_smtp_transport_tag(s3, domain_name, customer_id):
   if encryption_config_exists(s3, domain_name):
     return TLS_SMTP_TRANSPORT_TAG
 
-  if tls_config_exists(s3, customer_id):
+  if tls_config_exists(s3, customer_id , domain_name):
     return TLS_SMTP_TRANSPORT_TAG
 
   return DEFAULT_SMTP_TRANSPORT_TAG
 
 # Checks for the existence of at least one TLS configuration file
-# belonging to the customer with the given id
-def tls_config_exists(s3_client, customer_id):
+# belonging to the customer with the given id and domain name
+def tls_config_exists(s3_client, customer_id, domain_name):
 
-  customer_path = INBOUND_TLS_CONFIG_KEY + customer_id
+  if not POLICY_BUCKET:
+    return False
+
+  key_path = INBOUND_TLS_CONFIG_KEY + customer_id +"/"+ domain_name+'.TLS_CONFIG'
 
   try:
-    list_response = s3_client.list_objects(
-      Bucket = POLICY_BUCKET,
-      MaxKeys = 1,
-      Prefix = customer_path
-    )
-
-    if not 'Contents' in list_response:
-      return False
-
-    return len(list_response['Contents']) > 0
-
+    s3_client.head_object(Bucket = POLICY_BUCKET, Key = key_path)
+    logger.debug("key (%s) exists!", key_path)
+    return True
   except botocore.exceptions.ClientError as e:
     return False
 
