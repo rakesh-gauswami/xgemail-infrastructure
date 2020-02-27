@@ -7,16 +7,16 @@
 # Copyright: Copyright (c) 1997-2016. All rights reserved.
 # Company: Sophos Limited or one of its affiliates.
 
+import botocore
+import boto3
 import base64
 import json
-import logging
 import os
-import subprocess
-from logging.handlers import SysLogHandler
-
-import boto3
-import botocore
 import requests
+import subprocess
+import logging
+import sys
+from logging.handlers import SysLogHandler
 
 # Constants
 PIC_FQDN = '<%= @xgemail_pic_fqdn %>'
@@ -120,7 +120,6 @@ def tls_config_exists(s3_client, customer_id):
 
   except botocore.exceptions.ClientError as e:
     return False
-
 
 # Checks if encryption config exists for the given domain
 def encryption_config_exists(s3_client, domain_name):
