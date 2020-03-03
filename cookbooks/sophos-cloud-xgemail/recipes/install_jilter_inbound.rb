@@ -155,6 +155,8 @@ template 'xgemail.jilter.properties' do
   owner SERVICE_USER
   group SERVICE_USER
   variables(
+      :aws_region => AWS_REGION,
+      :central_vpc_id => CENTRAL_VPC_ID,
       :policy_bucket => POLICY_BUCKET_NAME,
       :account => ACCOUNT,
       :internet_submit_bucket => INTERNET_SUBMIT_BUCKET_NAME,
