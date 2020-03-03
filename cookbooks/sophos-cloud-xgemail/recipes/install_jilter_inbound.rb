@@ -10,6 +10,8 @@
 #
 
 package 'tar'
+AWS_REGION = node['sophos_cloud']['region']
+CENTRAL_VPC_ID = node['xgemail']['station_vpc_id']
 
 NODE_TYPE = node['xgemail']['cluster_type']
 ACCOUNT = node['sophos_cloud']['environment']
