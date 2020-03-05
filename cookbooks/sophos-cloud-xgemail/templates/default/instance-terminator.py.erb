@@ -187,7 +187,7 @@ class Terminator(object):
 
         # Now perform all necessary logic to make sure the postfix server has empty queues before terminating.
         self.postfix_instance = self.get_postfix_instance()
-        if self.postfix_instance == 'postfix-cd' or self.postfix_instance == 'postfix-id' or self.postfix_instance == 'postfix-ed' or self.postfix_instance == 'postfix-rd':
+        if self.postfix_instance == 'postfix-cd' or self.postfix_instance == 'postfix-id' or self.postfix_instance == 'postfix-ed' or self.postfix_instance == 'postfix-rd' or self.postfix_instance == 'postfix-wd':
             if self.stop_sqs_consumer() is False:
                 self.logger.error("Unable to continue. There is a problem with the Xgemail SQS Consumer Service.")
                 sys.exit(1)

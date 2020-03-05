@@ -106,7 +106,8 @@ elsif NODE_TYPE == 'customer-submit'
     group 'root'
   end
 elsif NODE_TYPE == 'customer-delivery' or NODE_TYPE == 'internet-delivery' or
-       NODE_TYPE == 'risky-delivery' or NODE_TYPE == 'encryption-delivery'
+       NODE_TYPE == 'risky-delivery' or NODE_TYPE == 'encryption-delivery' or
+       NODE_TYPE == 'warmup-delivery'
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{TRANSPORT_ROUTE_CONFIG}" do
     source 'transportrouteconfig.py'
     mode '0644'
@@ -120,7 +121,7 @@ end
 if NODE_TYPE == 'customer-delivery' or NODE_TYPE == 'internet-delivery' or
     NODE_TYPE == 'xdelivery' or NODE_TYPE == 'internet-xdelivery' or
     NODE_TYPE == 'encryption-delivery' or NODE_TYPE == 'risky-delivery' or
-    NODE_TYPE == 'risky-xdelivery'
+    NODE_TYPE == 'risky-xdelivery' or NODE_TYPE == 'warmup-delivery'
   [
       'postfix_injection_response.py',
       'queue_log.py',

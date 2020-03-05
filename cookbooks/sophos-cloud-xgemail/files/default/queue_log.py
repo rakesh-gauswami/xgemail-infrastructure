@@ -19,7 +19,8 @@ class QueueLog:
         'customer-delivery': 'CUSTOMER_DELIVERY',
         'customer-xdelivery': 'CUSTOMER_XDELIVERY',
         'risky-delivery': 'RISKY_DELIVERY',
-        'risky-xdelivery': 'RISKY_XDELIVERY'
+        'risky-xdelivery': 'RISKY_XDELIVERY',
+        'warmup-delivery': 'WARMUP_DELIVERY'
     }
 
     def __init__(self,

@@ -1,17 +1,17 @@
 #
 # Cookbook Name:: sophos-cloud-xgemail
-# Recipe:: configure-risky-delivery-queue
+# Recipe:: configure-warmup-delivery-queue
 #
 # Copyright 2017, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
-# This recipe configures risky delivery postfix instance
+# This recipe configures warmup delivery postfix instance
 #
 
 NODE_TYPE = node['xgemail']['cluster_type']
 
-if NODE_TYPE != 'risky-delivery'
+if NODE_TYPE != 'warmup-delivery'
   return
 end
 
@@ -33,12 +33,12 @@ ACCOUNT = node['sophos_cloud']['environment']
 
 HOP_COUNT_DELIVERY_INSTANCE = node['xgemail']['hop_count_delivery_instance']
 
-RISKY_XDELIVERY_INSTANCE_DATA = node['xgemail']['postfix_instance_data']['risky-xdelivery']
-raise "Unsupported node type [#{NODE_TYPE}]" if RISKY_XDELIVERY_INSTANCE_DATA.nil?
+WARMUP_XDELIVERY_INSTANCE_DATA = node['xgemail']['postfix_instance_data']['warmup-xdelivery']
+raise "Unsupported node type [#{NODE_TYPE}]" if WARMUP_XDELIVERY_INSTANCE_DATA.nil?
 
-SMTP_PORT = RISKY_XDELIVERY_INSTANCE_DATA[:port]
+SMTP_PORT = WARMUP_XDELIVERY_INSTANCE_DATA[:port]
 
-SMTP_FALLBACK_RELAY = "risky-xdelivery-cloudemail-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com:#{SMTP_PORT}"
+SMTP_FALLBACK_RELAY = "warmup-xdelivery-cloudemail-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com:#{SMTP_PORT}"
 
 HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
 
@@ -79,10 +79,10 @@ CONFIGURATION_COMMANDS =
 CONFIGURATION_COMMANDS.each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
 end
-include_recipe 'sophos-cloud-xgemail::configure-bounce-message-risky-delivery-queue'
+include_recipe 'sophos-cloud-xgemail::configure-bounce-message-warmup-delivery-queue'
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_consumer'
 else
-  include_recipe 'sophos-cloud-xgemail::configure-bounce-message-risky-delivery-queue'
+  include_recipe 'sophos-cloud-xgemail::configure-bounce-message-warmup-delivery-queue'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_consumer'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_utils_structure'
 end
