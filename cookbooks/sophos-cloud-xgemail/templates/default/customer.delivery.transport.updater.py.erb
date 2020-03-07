@@ -44,6 +44,7 @@ logger.addHandler(handler)
 
 PIC_XGEMAIL_API_URL = 'https://%s/mail/api/xgemail' % (PIC_FQDN)
 PIC_DOMAINS_URL = PIC_XGEMAIL_API_URL + '/domains'
+PIC_TLS_DOMAINS_URL = PIC_XGEMAIL_API_URL +'/tls-domain-exists/'
 
 logger.info('customer delivery transport cron - pic url [%s]', PIC_XGEMAIL_API_URL)
 
@@ -75,10 +76,29 @@ def get_smtp_transport_tag(s3, domain_name, customer_id):
   if encryption_config_exists(s3, domain_name):
     return TLS_SMTP_TRANSPORT_TAG
 
-  if tls_config_exists(s3, customer_id):
+  if tls_config_exists_in_api_response(customer_id):
     return TLS_SMTP_TRANSPORT_TAG
 
   return DEFAULT_SMTP_TRANSPORT_TAG
+
+
+# Checks for the existence of at least one TLS configuration belonging to the customer with given id
+def tls_config_exists_in_api_response(customer_id):
+  try:
+    logger.debug("Calling api [%s] for customer_id [%s] ", PIC_TLS_DOMAINS_URL, customer_id)
+    response = requests.get(
+      PIC_TLS_DOMAINS_URL + customer_id,
+      headers=HEADERS,
+      timeout=MAIL_PIC_RESPONSE_TIMEOUT
+    )
+    response.raise_for_status()
+    logger.debug("API response for customer id [%s] : [%s]", customer_id, response)
+    tls_response = response.json()
+    return tls_response['tls_domains_exsist']
+  except botocore.exceptions.ClientError as e:
+    logger.warn("Error [%s] occurred while calling api [%s] for customer_id [%s] ", e, PIC_TLS_DOMAINS_URL, customer_id)
+    return False
+
 
 # Checks for the existence of at least one TLS configuration file
 # belonging to the customer with the given id

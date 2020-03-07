@@ -209,6 +209,7 @@ stack:
     rule:
       lifecycle_automation:                             "{{vpc.cloud_email.name}}-xgemail-lifecycle-termination-events-rule"
       lifecycle_lambda:                                 "{{vpc.cloud_email.name}}-xgemail-lifecycle-launch-events-rule"
+      ratelimit_automation:                             "{{vpc.cloud_email.name}}-xgemail-rate-limit-events-rule"
   es:
     toc_elasticsearch_domain:                           "{{vpc.cloud_email.name}}-XGEMAIL-ToC-ES-Domain"
   kinesis:
@@ -360,6 +361,7 @@ template:
     rule:
       events_rule_lifecycle_automation_template:        "{{tmp_artifacts_dir}}/events_rule_lifecycle_automation_template.json"
       events_rule_lifecycle_lambda:                     "{{tmp_artifacts_dir}}/events_rule_lifecycle_lambda.json"
+      events_rule_ratelimit_template:                   "{{tmp_artifacts_dir}}/events_rule_rate_limit_template.json"
   es:
     es_domain_template:                                 "{{tmp_artifacts_dir}}/es_domain_template.json"
   iam:

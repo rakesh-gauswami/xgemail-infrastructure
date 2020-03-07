@@ -60,8 +60,7 @@ def eip_rotation_handler(event, context):
     if 'EC2InstanceId' in event['detail']:
         logger.info("Lambda Function triggered from Instance Launching Lifecycle Hook.")
         ec2_instance = ec2.Instance(event['detail']['EC2InstanceId'])
-        lifecycle_hook_name = event['detail']['LifecycleHookName']
-        if initial_eip(instance=ec2_instance, lifecycle_hook_name=lifecycle_hook_name):
+        if initial_eip(instance=ec2_instance, lifecycle_hook_name=event['detail']['LifecycleHookName']):
             logger.info("Completing lifecycle action with CONTINUE")
             complete_lifecycle_action(
                 autoscaling_group_name=event['detail']['AutoScalingGroupName'],
@@ -81,8 +80,7 @@ def eip_rotation_handler(event, context):
             return True
     else:
         logger.info("Lambda Function triggered from CloudWatch Scheduled Event for EIP Rotation.")
-        lifecycle_hook_name = event['detail']['LifecycleHookName']
-        rotate_eip(lifecycle_hook_name=lifecycle_hook_name)
+        rotate_eip(lifecycle_hook_name=event['detail']['LifecycleHookName'])
         return True
 
 

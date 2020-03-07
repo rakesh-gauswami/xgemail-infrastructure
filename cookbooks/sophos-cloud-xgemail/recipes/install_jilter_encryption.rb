@@ -39,6 +39,8 @@ SERVICE_USER = node['xgemail']['jilter_user']
 POLICY_BUCKET_NAME   = node['xgemail']['xgemail_policy_bucket_name']
 ACTIVE_PROFILE = node['xgemail']['xgemail_active_profile']
 
+CUSTOMER_SUBMIT_BUCKET_NAME = node['xgemail']['xgemail_bucket_name']
+
 include_recipe 'sophos-cloud-xgemail::install_jilter_common'
 
 # Modify /etc/rsyslog.conf
@@ -101,7 +103,9 @@ template 'xgemail.jilter.properties' do
   owner SERVICE_USER
   group SERVICE_USER
   variables(
-      :policy_bucket => POLICY_BUCKET_NAME
+      :policy_bucket => POLICY_BUCKET_NAME,
+      :account => ACCOUNT,
+      :customer_submit_bucket => CUSTOMER_SUBMIT_BUCKET_NAME
   )
 end
 
