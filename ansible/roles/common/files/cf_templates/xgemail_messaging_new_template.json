@@ -19,15 +19,15 @@
   },
 
   "Parameters": {
-    "DomainDeliveryTopicArn": {
-      "Description": "TopicArn of Domain Delivery Events SNS",
+    "DeltaDeliveryTopicArn": {
+      "Description": "TopicArn of Delta Delivery Events SNS",
       "Type": "String"
     },
     "AdditionalActionQueue": {
       "Description": "Endpoint ARN for Additional Action SQS Queue",
       "Type": "String"
     },
-    "DomainDeliveryQueue": {
+    "DeltaDeliveryQueue": {
       "Description": "Endpoint for Domain delivery SQS queue",
       "Type": "String"
     },
@@ -42,61 +42,61 @@
   },
 
   "Resources": {
-    "AdditionalActionQueueToDomainDeliverySnsSubscription": {
+    "AdditionalActionQueueToDeltaDeliverySnsSubscription": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
         "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "AdditionalActionQueue"}]]},
         "Protocol": "sqs",
-        "TopicArn": { "Ref": "DomainDeliveryTopicArn"}
+        "TopicArn": { "Ref": "DeltaDeliveryTopicArn"}
       }
     },
-    "DomainDeliveryQueueToDomainDeliverySnsSubscription": {
+    "DeltaDeliveryQueueToDeltaDeliverySnsSubscription": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
-        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "DomainDeliveryQueue"}]]},
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "DeltaDeliveryQueue"}]]},
         "Protocol": "sqs",
-        "TopicArn": { "Ref": "DomainDeliveryTopicArn"}
+        "TopicArn": { "Ref": "DeltaDeliveryTopicArn"}
       }
     },
-    "MessageHistoryQueueToDomainDeliverySnsSubscription": {
+    "MessageHistoryQueueToDeltaDeliverySnsSubscription": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
         "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageHistoryQueue"}]]},
         "Protocol": "sqs",
-        "TopicArn": { "Ref": "DomainDeliveryTopicArn"}
+        "TopicArn": { "Ref": "DeltaDeliveryTopicArn"}
       }
     },
-    "MessageStatisticsQueueToDomainDeliverySnsSubscription": {
+    "MessageStatisticsQueueToDeltaDeliverySnsSubscription": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
         "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageStatisticsQueue"}]]},
         "Protocol": "sqs",
-        "TopicArn": { "Ref": "DomainDeliveryTopicArn"}
+        "TopicArn": { "Ref": "DeltaDeliveryTopicArn"}
       }
     },
 
-    "DomainDeliveryQueuePolicy": {
+    "DeltaDeliveryQueuePolicy": {
       "Type": "AWS::SQS::QueuePolicy",
       "Properties": {
         "PolicyDocument": {
           "Version": "2012-10-17",
-          "Id": "DomainDeliveryQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Id": "DeltaDeliveryQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
           "Statement": [
             {
-              "Sid": "Allow-DomainDeliveryTopicArn",
+              "Sid": "Allow-DeltaDeliveryTopicArn",
               "Effect": "Allow",
               "Principal": "*",
               "Action": ["sqs:SendMessage"],
               "Resource": "*",
               "Condition": {
                 "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "DomainDeliveryTopicArn"}
+                  "aws:SourceArn": {"Ref": "DeltaDeliveryTopicArn"}
                 }
               }
             }
           ]
         },
-        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "DomainDeliveryQueue" }]]}]
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "DeltaDeliveryQueue" }]]}]
       }
     }
   }

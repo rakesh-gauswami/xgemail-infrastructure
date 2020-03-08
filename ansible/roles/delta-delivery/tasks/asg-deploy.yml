@@ -6,7 +6,7 @@
     state: present
     region:  "{{account.region}}"
     disable_rollback: no
-    template: "{{template.ec2.asg.as_domain_delivery_template}}"
+    template: "{{template.ec2.asg.as_delta_delivery_template}}"
     template_parameters:
       AesDecryptionKey:                     "{{aes_decryption_key}}"
       AlarmScalingEnabled:                  "{{aws.asg.dd.alarm_scaling_enabled}}"
@@ -26,7 +26,7 @@
       DeployMinInstancesInService:          "{{aws.asg.dd.as_min_service}}"
       Environment:                          "{{account.name}}"
       HealthCheckGracePeriod:               "{{aws.asg.dd.health_check_grace_period}}"
-      InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.XgemailDomainDeliveryInstanceProfile}}"
+      InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.XgemailDeltaDeliveryInstanceProfile}}"
       InstanceType:                         "{{aws.asg.dd.instance_size}}"
       KeyName:                              "public-{{account.region}}"
       LifecycleHookLaunching:               "{{aws.asg.dd.lifecycle_hook_launching}}"
@@ -36,7 +36,7 @@
       ScaleInOnWeekends:                    "{{weekend_scale_down}}"
       ScaleInCron:                          "{{cron_scale_down}}"
       ScaleOutCron:                         "{{cron_scale_up}}"
-      SecurityGroups:                       "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.XgemailDomainDeliverySecurityGroup}},{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.SecurityGroupBase}}"
+      SecurityGroups:                       "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.XgemailDeltaDeliverySecurityGroup}},{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.SecurityGroupBase}}"
       SpotPrice:                            "{{spot_price}}"
       StationVpcId:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}"
       StationVpcName:                       "{{vpc.cloud_station.name}}"
@@ -47,9 +47,9 @@
       XgemailMinSizeDataGB:                 "{{xgemail_size_data_gb}}"
       XgemailMsgHistoryStatusSnsArn:        "{{sns.arn_prefix}}{{sns.msg_history_status_sns_topic}}"
       XgemailNotifierQueueUrl:              "{{sqs.url_prefix}}{{sqs.notifier_request_sqs_queue}}"
-      XgemailSnsSqsQueue:                   "{{sqs.domain_delivery_sqs_queue_sns_listener}}"
-      XgemailSnsSqsQueueUrl:                "{{sqs.url_prefix}}{{sqs.domain_delivery_sqs_queue_sns_listener}}"
-      XgemailServiceType:                   "domain-delivery"
+      XgemailSnsSqsQueue:                   "{{sqs.delta_delivery_sqs_queue_sns_listener}}"
+      XgemailSnsSqsQueueUrl:                "{{sqs.url_prefix}}{{sqs.delta_delivery_sqs_queue_sns_listener}}"
+      XgemailServiceType:                   "delta-delivery"
       XgemailSxlDbl:                        "{{xgemail_sxl_dbl}}"
       XgemailSxlRbl:                        "{{xgemail_sxl_rbl}}"
   register: asg_stack_output
