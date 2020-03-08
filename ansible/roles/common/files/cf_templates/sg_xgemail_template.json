@@ -1896,6 +1896,90 @@
       }
     },
 
+    "XgemailDeltaXdeliverySecurityGroupLb": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Controls access to internal facing delta Xdelivery ELB.",
+        "Tags": [
+          {
+            "Key": "Branch",
+            "Value": {"Ref": "Branch"}
+
+          },
+          {
+            "Key": "Environment",
+            "Value": {"Ref": "Environment"}
+          },
+          {
+            "Key": "Role",
+            "Value": "svc-xgemail-delta-xdelivery-elb"
+
+          },
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "Environment"
+                  },
+                  "-",
+                  {
+                    "Ref": "Branch"
+                  },
+                  "-",
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "/sg/xgemail/delta/xdelivery/elb"
+                ]
+              ]
+            }
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      }
+    },
+
+    "XgemailDeltaXdeliverySecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Xgemail Delta Xdelivery security group.",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "", [
+                  { "Ref": "Environment" }, "-",
+                  { "Ref": "Branch" }, "-",
+                  { "Ref": "AWS::StackName" }, "/sg/xgemail/delta/xdelivery"
+                ]
+              ]
+            }
+          }
+        ],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "8025",
+            "ToPort": "8025",
+            "SourceSecurityGroupId": { "Ref": "XgemailDeltaXdeliverySecurityGroupLb" }
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "-1",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "VpcId": { "Ref": "Vpc" }
+      }
+    },
+
     "XgemailXdeliverySecurityGroupLbIngressCustomerDeliverySmtp": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
@@ -1934,6 +2018,17 @@
       "Properties": {
         "GroupId": { "Ref": "XgemailWarmupXdeliverySecurityGroupLb" },
         "SourceSecurityGroupId": { "Ref": "XgemailWarmupDeliverySecurityGroup" },
+        "IpProtocol": "tcp",
+        "FromPort": "8025",
+        "ToPort": "8025"
+      }
+    },
+
+    "XgemailDeltaXdeliverySecurityGroupLbIngressDeliverySmtp": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailDeltaXdeliverySecurityGroupLb" },
+        "SourceSecurityGroupId": { "Ref": "XgemailDeltaDeliverySecurityGroup" },
         "IpProtocol": "tcp",
         "FromPort": "8025",
         "ToPort": "8025"
@@ -2054,6 +2149,17 @@
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {"Ref": "XgemailWarmupXdeliverySecurityGroup"},
+        "SourceSecurityGroupId": {"Ref": "SecurityGroupBastion"},
+        "IpProtocol": "tcp",
+        "FromPort": "22",
+        "ToPort": "22"
+      }
+    },
+
+    "XgemailDeltaXdeliverySecurityGroupIngressBastionSsh": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {"Ref": "XgemailDeltaXdeliverySecurityGroup"},
         "SourceSecurityGroupId": {"Ref": "SecurityGroupBastion"},
         "IpProtocol": "tcp",
         "FromPort": "22",
@@ -2217,6 +2323,14 @@
     "XgemailDomainDeliverySecurityGroup": {
       "Description": "Xgemail Domain Delivery security group",
       "Value": { "Ref": "XgemailDomainDeliverySecurityGroup" }
+    },
+    "XgemailDeltaXdeliverySecurityGroupLb": {
+      "Description": "Xgemail Delta Xdelivery Load Balancer security group",
+      "Value": { "Ref": "XgemailDeltaXdeliverySecurityGroupLb" }
+    },
+    "XgemailDeltaXdeliverySecurityGroup": {
+      "Description": "Xgemail Delta Xdelivery security group",
+      "Value": { "Ref": "XgemailDeltaXdeliverySecurityGroup" }
     },
     "XgemailInternetSubmitSecurityGroupLb": {
       "Description": "Xgemail Internet Submit Load Balancer security group",
