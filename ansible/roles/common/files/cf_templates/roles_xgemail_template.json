@@ -3764,18 +3764,18 @@
       }
     },
 
-    "XgemailDomainDeliveryInstanceProfile": {
+    "XgemailDeltaDeliveryInstanceProfile": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
         "Path": "/",
         "Roles": [
           {
-            "Ref": "XgemailDomainDeliveryInstanceRole"
+            "Ref": "XgemailDeltaDeliveryInstanceRole"
           }
         ]
       }
     },
-    "XgemailDomainDeliveryInstanceRole": {
+    "XgemailDeltaDeliveryInstanceRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
         "ManagedPolicyArns": [
@@ -3799,7 +3799,7 @@
         "Path": "/"
       }
     },
-    "XgemailDomainDeliveryInstanceRolePolicies": {
+    "XgemailDeltaDeliveryInstanceRolePolicies": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
         "PolicyDocument": {
@@ -4100,7 +4100,7 @@
         "PolicyName": "root",
         "Roles": [
           {
-            "Ref": "XgemailDomainDeliveryInstanceRole"
+            "Ref": "XgemailDeltaDeliveryInstanceRole"
           }
         ]
       }
@@ -4560,17 +4560,17 @@
       "Description": "XGEMAIL Warmup Xdelivery instance role ARN",
       "Value": { "Fn::GetAtt" : [ "XgemailWarmupXdeliveryInstanceRole", "Arn" ] }
     },
-    "XgemailDomainDeliveryInstanceProfile": {
-      "Description": "XGEMAIL Domain Delivery instance profile",
-      "Value": { "Ref": "XgemailDomainDeliveryInstanceProfile" }
+    "XgemailDeltaDeliveryInstanceProfile": {
+      "Description": "XGEMAIL Delta Delivery instance profile",
+      "Value": { "Ref": "XgemailDeltaDeliveryInstanceProfile" }
     },
-    "XgemailDomainDeliveryInstanceRole": {
-      "Description": "XGEMAIL Domain Delivery instance role",
-      "Value": { "Ref": "XgemailDomainDeliveryInstanceRole" }
+    "XgemailDeltaDeliveryInstanceRole": {
+      "Description": "XGEMAIL Delta Delivery instance role",
+      "Value": { "Ref": "XgemailDeltaDeliveryInstanceRole" }
     },
-    "XgemailDomainDeliveryInstanceRoleArn": {
-      "Description": "XGEMAIL Domain Delivery instance role ARN",
-      "Value": { "Fn::GetAtt" : [ "XgemailDomainDeliveryInstanceRole", "Arn" ] }
+    "XgemailDeltaDeliveryInstanceRoleArn": {
+      "Description": "XGEMAIL Delta Delivery instance role ARN",
+      "Value": { "Fn::GetAtt" : [ "XgemailDeltaDeliveryInstanceRole", "Arn" ] }
     },
     "XgemailDeltaXdeliveryInstanceProfile": {
       "Description": "XGEMAIL Delta Xdelivery instance profile",
