@@ -367,57 +367,37 @@ def get_plaintext_message():
     finally:
         plaintext_email_bytes.close()
 
-def get_metadata_for_outbound(metadata, headers):
-    effective_sender_value = headers['x-sophos-effective-sender']
-    effective_sender_header = 'x-sophos-effective-sender'
-
-    if effective_sender_value is not None:
-        return get_metadata_for_outbound_effective_sender(metadata, effective_sender_header, effective_sender_value)
-
-    # Order is important as we want to evaluate the Sender, From and Reply-To headers in order
-    headers_to_validate = OrderedDict()
-    headers_to_validate['sender'] = headers['sender']
-    headers_to_validate['from'] = headers['from']
-    headers_to_validate['reply-to'] = headers['reply-to']
-
-    validated_sender = None
-
-    for header_name, header_value in headers_to_validate.items():
-
-        if header_value is not None:
-            header_sender = get_address_from_header(header_value)
-
-            is_valid_sender = is_valid_outbound_sender(header_sender, header_name)
-
-            if is_valid_sender:
-                validated_sender = header_sender
-                break
-            else:
-                logger.info("Invalid {0}:{1} in message with queue_id: [{2}]".format(
-                        header_name,
-                        header_value,
-                        metadata.get_queue_id()
-                    )
-                )
-
-    if validated_sender is None:
-        raise Exception(
-            "No header sender address could be validated for message with queue id [{0}]".format(
-                metadata.get_queue_id()
-            )
+def get_metadata_for_outbound(metadata, message_headers):
+    from_header = message_headers['from']
+    if from_header is None:
+        raise Exception("Invalid from header in message with queue_id: [{0}]".format(
+            metadata.get_queue_id())
         )
+
+    # parseaddr always result into 2 tuple ['username', 'email address']
+    # if parse fails then result will be ['','']
+    parsed_from_address = parseaddr(from_header.strip().replace(',', ''))
+
+    if parsed_from_address is None or len(parsed_from_address) != 2:
+        raise Exception("Invalid parsed_from_address tuple: [{0}]".format(parsed_from_address))
+
+    from_sender = parsed_from_address[1]
+    logger.debug("Parsed from header sender: [{0}]".format(from_sender))
+
+    if from_sender is None or not from_sender:
+        raise Exception("From header cannot be null or empty in outbound")
 
     return Metadata(
-            metadata.get_schema_version(),
-            metadata.get_sender_ip(),
-            validated_sender,
-            metadata.get_accepting_server_ip(),
-            metadata.get_queue_id(),
-            metadata.get_date_recorded(),
-            metadata.get_recipient_domain(),
-            metadata.get_recipients(),
-            metadata.get_x_sophos_email_id()
-        )
+        metadata.get_schema_version(),
+        metadata.get_sender_ip(),
+        from_sender,
+        metadata.get_accepting_server_ip(),
+        metadata.get_queue_id(),
+        metadata.get_date_recorded(),
+        metadata.get_recipient_domain(),
+        metadata.get_recipients(),
+        metadata.get_x_sophos_email_id()
+    )
 
 # if get_metadata_for_outbound method finds x-sophos-effective-sender then this method returns the metadata
 def get_metadata_for_outbound_effective_sender(metadata, header, header_value):
