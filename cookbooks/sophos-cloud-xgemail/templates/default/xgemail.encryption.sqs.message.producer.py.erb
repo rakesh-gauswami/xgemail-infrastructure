@@ -30,7 +30,6 @@ import email
 import uuidutils
 from email.parser import HeaderParser
 from awshandler import AwsHandler
-from collections import OrderedDict
 from common.metadata import Metadata
 from common.sqsmessage import SqsMessage
 from common.messagehistoryevent import MessageHistoryEvent
@@ -368,6 +367,12 @@ def get_plaintext_message():
         plaintext_email_bytes.close()
 
 def get_metadata_for_outbound(metadata, message_headers):
+    effective_sender_value = message_headers['x-sophos-effective-sender']
+    effective_sender_header = 'x-sophos-effective-sender'
+
+    if effective_sender_value is not None:
+        return get_metadata_for_outbound_effective_sender(metadata, effective_sender_header, effective_sender_value)
+
     from_header = message_headers['from']
     if from_header is None:
         raise Exception("Invalid from header in message with queue_id: [{0}]".format(
