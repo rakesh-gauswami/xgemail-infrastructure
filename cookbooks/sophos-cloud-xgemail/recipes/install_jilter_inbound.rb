@@ -10,8 +10,8 @@
 #
 
 package 'tar'
-AWS_REGION = node['sophos_cloud']['region']
-CENTRAL_VPC_ID = node['xgemail']['station_vpc_id']
+REGION = node['sophos_cloud']['region']
+STATION_VPC_ID = node['xgemail']['station_vpc_id']
 
 NODE_TYPE = node['xgemail']['cluster_type']
 ACCOUNT = node['sophos_cloud']['environment']
@@ -155,8 +155,8 @@ template 'xgemail.jilter.properties' do
   owner SERVICE_USER
   group SERVICE_USER
   variables(
-      :aws_region => AWS_REGION,
-      :central_vpc_id => CENTRAL_VPC_ID,
+      :region => REGION,
+      :station_vpc_id => STATION_VPC_ID,
       :policy_bucket => POLICY_BUCKET_NAME,
       :account => ACCOUNT,
       :internet_submit_bucket => INTERNET_SUBMIT_BUCKET_NAME,
