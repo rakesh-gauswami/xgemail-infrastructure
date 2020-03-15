@@ -15,6 +15,7 @@ aws:
       health_check_grace_period:                                  "1500"
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-internet-submit-Terminating-LifeCycleHook"
+      policy_target_value:                                        "85"
     cd:
       alarm_scaling_enabled:                                      "false"
       alarm_scale_in_threshold:                                   "10"
@@ -430,7 +431,7 @@ aws:
       template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                                                "{{sqs.allow_block_upload_sqs_queue}}"
-        VisibilityTimeout:                                        "3000"
+        VisibilityTimeout:                                        "18000"
     atr_reindex_sqs_queue_sns_listener:
       stack_name:                                                 "{{stack.sqs.atr_reindex_sqs_queue_sns_listener}}"
       state:                                                      present

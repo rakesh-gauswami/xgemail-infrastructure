@@ -1,0 +1,150 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Deploys A CloudWatch Event Rule on AWS.",
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2020, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ],
+
+    "Comments": [
+      { "Ref": "Description" },
+      "Deploys a CloudWatch Event Rule on AWS."
+    ]
+  },
+
+  "Parameters": {
+    "EventState": {
+      "Description": "Indicates whether the rule is enabled.",
+      "Type": "String",
+      "Default": "ENABLED"
+    },
+    "TargetsArn": {
+      "Description": "The Amazon Resource Name (ARN) of the target.",
+      "Type": "String"
+    },
+    "TargetsId": {
+      "Description": "A unique, user-defined identifier for the target.",
+      "Type": "String"
+    }
+  },
+
+  "Resources": {
+    "CloudWatchEventsRule": {
+      "Type": "AWS::Events::Rule",
+      "Properties": {
+        "ScheduleExpression": "cron(0 * * * ? *)",
+        "State": { "Ref": "EventState" },
+        "Targets": [
+          {
+            "Arn": { "Fn::Join": ["", [ "arn:aws:ssm:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":automation-definition/", { "Ref": "TargetsArn" } ] ] },
+            "Id": { "Ref": "TargetsId" },
+            "RoleArn": { "Fn::GetAtt": [ "CloudWatchSsmAutomationExecutionRole", "Arn" ] }
+          }
+        ]
+      }
+    },
+    "CloudWatchSsmAutomationExecutionRole" : {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [ "events.amazonaws.com" ]
+            },
+            "Action": [ "sts:AssumeRole" ]
+          }]
+        },
+        "Path": "/"
+      }
+    },
+    "CloudWatchSsmAutomationExecutionRolePolicies": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "ssm:DescribeAutomationExecutions",
+                "ssm:DescribeAutomationStepExecutions",
+                "ssm:DescribeDocument",
+                "ssm:DescribeInstanceInformation",
+                "ssm:GetAutomationExecution",
+                "ssm:GetCommandInvocation",
+                "ssm:GetConnectionStatus",
+                "ssm:GetDocument",
+                "ssm:ListCommandInvocations",
+                "ssm:ListCommands",
+                "ssm:ListInstanceAssociations",
+                "ssm:ListDocuments",
+                "ssm:ListDocumentVersions",
+                "ssm:SendCommand",
+                "ssm:StartAutomationExecution"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:logs:*:*:*"
+              ]
+            },
+            {
+              "Action": [
+                "ec2:DescribeAddresses"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ]
+        },
+        "PolicyName": "root",
+        "Roles": [
+          {
+            "Ref": "CloudWatchSsmAutomationExecutionRole"
+          }
+        ]
+      },
+      "Type": "AWS::IAM::Policy"
+    }
+  },
+
+  "Outputs": {
+    "CloudWatchSsmAutomationExecutionRole": {
+      "Description": "CloudWatch SSM Automation Execution role",
+      "Value": { "Ref": "CloudWatchSsmAutomationExecutionRole" }
+    },
+    "CloudWatchSsmAutomationExecutionRoleArn": {
+      "Description": "CloudWatch SSM Automation Execution role ARN",
+      "Value": { "Fn::GetAtt" : [ "CloudWatchSsmAutomationExecutionRole", "Arn" ] }
+    },
+    "CloudWatchSsmAutomationExecutionRolePolicy": {
+      "Description": "CloudWatch SSM Automation Execution role Policy Name",
+      "Value": { "Ref": "CloudWatchSsmAutomationExecutionRolePolicies" }
+    },
+    "CloudWatchEventsRule": {
+      "Description": "Resource name of the CloudWatch Events Rule.",
+      "Value": { "Ref": "CloudWatchEventsRule" }
+    },
+    "CloudWatchEventsRuleArn": {
+      "Description": "The ARN of the CloudWatch Events Rule.",
+      "Value": { "Fn::GetAtt": [ "CloudWatchEventsRule", "Arn" ]
+      }
+    }
+  }
+}
