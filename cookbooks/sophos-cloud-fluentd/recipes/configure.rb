@@ -336,7 +336,7 @@ template 'fluentd-filter-transform-sqs-msg' do
       :main_dir => MAIN_DIR
   )
   only_if {
-    NODE_TYPE == 'customer-delivery' ||
+        NODE_TYPE == 'customer-delivery' ||
         NODE_TYPE == 'xdelivery' ||
         NODE_TYPE == 'internet-delivery' ||
         NODE_TYPE == 'internet-xdelivery' ||
@@ -384,7 +384,7 @@ template 'fluentd-match-sqs-msg-delivery' do
       :delivery_status_queue => DELIVERY_STATUS_SQS
   )
   only_if {
-    NODE_TYPE == 'customer-delivery' ||
+        NODE_TYPE == 'customer-delivery' ||
         NODE_TYPE == 'xdelivery' ||
         NODE_TYPE == 'internet-delivery' ||
         NODE_TYPE == 'internet-xdelivery' ||
