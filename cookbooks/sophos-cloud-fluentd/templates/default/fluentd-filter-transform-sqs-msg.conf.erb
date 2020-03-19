@@ -1,0 +1,28 @@
+<filter sqs.msg.delivery.succeeded>
+  @type parser
+  key_name message
+  reserve_data true
+  reserve_time true
+  <parse>
+    @type regexp
+    expression /^(?<host>[^ ]+) (?<process>[^ ]+): (?<queue_id>[^ ]+): to=<(?<recipient_address>[\S ]+)>, relay=(?<relay>[^ ]+),.*dsn=(?<dsn_code>[^ ]+), status=sent (?<sent>[\S ]+)/
+  </parse>
+</filter>
+
+<filter sqs.msg.delivery.succeeded>
+  @type record_transformer
+  enable_ruby
+  <record>
+    message_path null
+    queue_log <%= @main_dir %>/sqs_msg_delivery_queue_log_template.erb>
+    next_queue_log null
+  </record>
+</filter>
+
+<filter sqs.msg.delivery.succeeded>
+  @type record_transformer
+  renew_reecord true
+  keep_keys direction, message_path, queue_log, next_queue_log, recipient_address
+  <record>
+  </record>
+</filter>

@@ -15,8 +15,10 @@ INSTANCE_ID                   = node['ec2']['instance_id']
 MAIN_DIR                      = node['fluentd']['main_dir']
 NODE_TYPE                     = node['xgemail']['cluster_type']
 PATTERNS_DIR                  = node['fluentd']['patterns_dir']
+SQS_DELIVERY_DELAY            = node['fluentd']['sqs_delivery_delay']
 REGION                        = node['sophos_cloud']['region']
 MSG_STATS_REJECT_SNS_TOPIC    = node['xgemail']['msg_statistics_rejection_sns_topic']
+DELIVERY_STATUS_SQS           = node['xgemail']['msg_history_status_sns_listener']
 DELIVERY_STATUS_SNS_TOPIC     = node['xgemail']['msg_history_status_sns_topic']
 SERVER_IP                     = node['ipaddress']
 MAILLOG_FILTER_PATTERNS       = "(\\.#{REGION}\\.compute\\.internal|:\\sdisconnect\\sfrom\\s|\\swarning:\\shostname\\s|:\\sremoved\\s|table\\shash:|sm-msp-queue|:\\sstatistics:\\s)"
@@ -323,6 +325,28 @@ template 'fluentd-filter-transform-msg-delivery' do
          }
 end
 
+# Start Order: 77
+template 'fluentd-filter-transform-sqs-msg' do
+  path "#{CONF_DIR}/77-filter-transform-sqs-msg.conf"
+  source 'fluentd-filter-transform-sqs-msg.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+      :main_dir => MAIN_DIR
+  )
+  only_if {
+    NODE_TYPE == 'customer-delivery' ||
+        NODE_TYPE == 'xdelivery' ||
+        NODE_TYPE == 'internet-delivery' ||
+        NODE_TYPE == 'internet-xdelivery' ||
+        NODE_TYPE == 'risky-delivery' ||
+        NODE_TYPE == 'risky-xdelivery' ||
+        NODE_TYPE == 'warmup-delivery' ||
+        NODE_TYPE == 'warmup-xdelivery'
+  }
+end
+
 # Message delivery status on all delivery and x delivery servers
 template 'fluentd-match-sns-msg-delivery' do
   path "#{CONF_DIR}/97-match-sns-msg-delivery.conf"
@@ -345,6 +369,30 @@ template 'fluentd-match-sns-msg-delivery' do
             NODE_TYPE == 'warmup-delivery' ||
             NODE_TYPE == 'warmup-xdelivery'
          }
+end
+
+# Message delivery status on all delivery and x delivery servers
+template 'fluentd-match-sqs-msg-delivery' do
+  path "#{CONF_DIR}/97-match-sqs-msg-delivery.conf"
+  source 'fluentd-match-sqs-msg-delivery.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+      :region => REGION,
+      :sqs_delivery_delay => SQS_DELIVERY_DELAY,
+      :delivery_status_queue => DELIVERY_STATUS_SQS
+  )
+  only_if {
+    NODE_TYPE == 'customer-delivery' ||
+        NODE_TYPE == 'xdelivery' ||
+        NODE_TYPE == 'internet-delivery' ||
+        NODE_TYPE == 'internet-xdelivery' ||
+        NODE_TYPE == 'risky-delivery' ||
+        NODE_TYPE == 'risky-xdelivery' ||
+        NODE_TYPE == 'warmup-delivery' ||
+        NODE_TYPE == 'warmup-xdelivery'
+  }
 end
 
 # All instances - Start Order: 99
@@ -395,6 +443,15 @@ end
 cookbook_file 'sns_msg_delivery_template' do
   path "#{MAIN_DIR}/sns_msg_delivery_template.erb"
   source 'fluentd_sns_msg_delivery_template.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  action :create
+end
+
+cookbook_file 'sqs_msg_delivery_queue_log_template' do
+  path "#{MAIN_DIR}/sqs_msg_delivery_queue_log_template.erb"
+  source 'fluentd_sqs_msg_delivery_queue_log_template.erb'
   mode '0644'
   owner 'root'
   group 'root'
