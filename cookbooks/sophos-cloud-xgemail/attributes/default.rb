@@ -146,6 +146,9 @@ default['xgemail']['msg_history_status_sns_topic'] = "#{node['xgemail']['station
 default['xgemail']['msg_history_events_sns_topic'] = "#{node['xgemail']['station_vpc_id']}-xgemail-msg-history-events-SNS"
 default['xgemail']['scan_events_sns_topic'] = "#{node['xgemail']['station_vpc_id']}-xgemail-scan-events-SNS"
 
+# SQS Names
+default['xgemail']['msg_history_status_sns_listener'] = "#{node['xgemail']['station_vpc_id']}-Xgemail_MessageHistory_Delivery_Status_SNS_Listener"
+
 ## Policy service/poller settings
 default['xgemail']['sqs_policy_poller_visibility_timeout'] = '10'
 default['xgemail']['sqs_policy_poller_message_retention_period'] = '172800'
