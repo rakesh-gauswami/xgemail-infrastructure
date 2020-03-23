@@ -236,7 +236,7 @@ aws:
         Environment:                                              "{{account.name}}"
         RequireEncryptionForUploads:                              "sse-s3"
         S3BucketName:                                             "{{s3.delivery_director_bucket}}"
-        S3LifeCycleDelete:                                        "30"
+        S3LifeCycleDelete:                                        "0"
         S3PolicyCreate:                                           "true"
         S3PolicyPrincipalList:                                    "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
   sns:
