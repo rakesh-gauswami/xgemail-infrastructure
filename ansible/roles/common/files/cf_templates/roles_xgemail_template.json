@@ -74,7 +74,7 @@
         "Tags": [
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "CloudEmail",
             "PropagateAtLaunch": true
           },
           {
@@ -84,7 +84,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Ref": "RoleName" },
+            "Value": { "Ref": "AutoScalingInstanceRole" },
             "PropagateAtLaunch": true
           },
           {
@@ -184,7 +184,7 @@
         "Tags": [
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "bastion",
             "PropagateAtLaunch": true
           },
           {
@@ -194,7 +194,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Ref": "RoleName" },
+            "Value": { "Ref": "BastionInstanceRole" },
             "PropagateAtLaunch": true
           },
           {
@@ -309,7 +309,7 @@
         "Tags": [
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "CloudEmail",
             "PropagateAtLaunch": true
           },
           {
@@ -319,7 +319,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Ref": "RoleName" },
+            "Value": { "Ref": "EipMonitorLambdaExecutionRole" },
             "PropagateAtLaunch": true
           },
           {
@@ -443,7 +443,7 @@
         "Tags": [
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "CloudEmail",
             "PropagateAtLaunch": true
           },
           {
@@ -453,7 +453,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Ref": "RoleName" },
+            "Value": { "Ref": "EipRotationLambdaExecutionRole" },
             "PropagateAtLaunch": true
           },
           {
@@ -561,7 +561,7 @@
         "Tags": [
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "CloudEmail",
             "PropagateAtLaunch": true
           },
           {
@@ -571,7 +571,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Ref": "RoleName" },
+            "Value": { "Ref": "FirehoseTransformationLambdaExecutionRole" },
             "PropagateAtLaunch": true
           },
           {
@@ -646,7 +646,7 @@
         "Tags": [
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "LogicMonitor",
             "PropagateAtLaunch": true
           },
           {
@@ -656,7 +656,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Ref": "RoleName" },
+            "Value": { "Ref": "LogicMonitorInstanceRole" },
             "PropagateAtLaunch": true
           },
           {
@@ -790,7 +790,7 @@
         "Tags": [
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "customer-delivery",
             "PropagateAtLaunch": true
           },
           {
@@ -800,7 +800,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Ref": "RoleName" },
+            "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/IAM" ] ] },
             "PropagateAtLaunch": true
           },
           {
@@ -1067,7 +1067,7 @@
         "Tags": [
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "internet-delivery",
             "PropagateAtLaunch": true
           },
           {
@@ -1077,7 +1077,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Ref": "RoleName" },
+            "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/IAM" ] ] },
             "PropagateAtLaunch": true
           },
           {
@@ -1333,7 +1333,7 @@
         "Tags": [
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "internet-submit",
             "PropagateAtLaunch": true
           },
           {
@@ -1343,7 +1343,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Ref": "RoleName" },
+            "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/IAM" ] ] },
             "PropagateAtLaunch": true
           },
           {
@@ -1637,7 +1637,7 @@
         "Tags": [
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "customer-submit",
             "PropagateAtLaunch": true
           },
           {
@@ -1647,7 +1647,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Ref": "RoleName" },
+            "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/IAM" ] ] },
             "PropagateAtLaunch": true
           },
           {
@@ -1961,7 +1961,7 @@
         "Tags": [
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "encryption-delivery",
             "PropagateAtLaunch": true
           },
           {
@@ -1971,7 +1971,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Ref": "RoleName" },
+            "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/IAM" ] ] },
             "PropagateAtLaunch": true
           },
           {
@@ -2237,7 +2237,7 @@
         "Tags": [
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "encryption-submit",
             "PropagateAtLaunch": true
           },
           {
@@ -2247,7 +2247,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Ref": "RoleName" },
+            "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/IAM" ] ] },
             "PropagateAtLaunch": true
           },
           {
@@ -2513,7 +2513,7 @@
         "Tags": [
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "customer-xdelivery",
             "PropagateAtLaunch": true
           },
           {
@@ -2523,7 +2523,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Ref": "RoleName" },
+            "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/IAM" ] ] },
             "PropagateAtLaunch": true
           },
           {
@@ -2739,7 +2739,7 @@
         "Tags": [
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "internet-xdelivery",
             "PropagateAtLaunch": true
           },
           {
@@ -2749,7 +2749,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Ref": "RoleName" },
+            "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/IAM" ] ] },
             "PropagateAtLaunch": true
           },
           {
@@ -2972,7 +2972,7 @@
         "Tags": [
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "risky-delivery",
             "PropagateAtLaunch": true
           },
           {
@@ -2982,7 +2982,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Ref": "RoleName" },
+            "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/IAM" ] ] },
             "PropagateAtLaunch": true
           },
           {
@@ -3359,7 +3359,7 @@
         "Tags": [
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "risky-xdelivery",
             "PropagateAtLaunch": true
           },
           {
@@ -3369,7 +3369,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Ref": "RoleName" },
+            "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/IAM" ] ] },
             "PropagateAtLaunch": true
           },
           {
@@ -3638,7 +3638,7 @@
         "Tags": [
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "warmup-delivery",
             "PropagateAtLaunch": true
           },
           {
@@ -3648,7 +3648,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Ref": "RoleName" },
+            "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/IAM" ] ] },
             "PropagateAtLaunch": true
           },
           {
@@ -4007,7 +4007,7 @@
         "Tags": [
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "warmup-xdelivery",
             "PropagateAtLaunch": true
           },
           {
@@ -4017,7 +4017,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Ref": "RoleName" },
+            "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/IAM" ] ] },
             "PropagateAtLaunch": true
           },
           {

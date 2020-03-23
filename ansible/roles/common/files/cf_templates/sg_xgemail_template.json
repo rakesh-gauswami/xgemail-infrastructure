@@ -50,11 +50,6 @@
       "Description": "Public IP of Hopper for ssh tunnel access.",
       "Type": "String"
     },
-    "TagApplication": {
-      "Description": "Tag for the Application being deployed",
-      "Type": "String",
-      "Default": ""
-    },
     "Vpc": {
       "Description": "Target VPC ID",
       "Type": "AWS::EC2::VPC::Id"
@@ -190,7 +185,7 @@
           },
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "CloudEmail",
             "PropagateAtLaunch": "true"
           },
           {
@@ -260,7 +255,7 @@
           },
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "CloudEmail",
             "PropagateAtLaunch": "true"
           },
           {
@@ -425,7 +420,7 @@
           },
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "CloudEmail",
             "PropagateAtLaunch": "true"
           },
           {
@@ -549,7 +544,7 @@
           },
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "CloudEmail",
             "PropagateAtLaunch": "true"
           },
           {
@@ -722,6 +717,26 @@
         "Tags": [
           {
             "Key": "Name", "Value": { "Fn::Join": [ "", [ { "Ref": "Environment" }, "-", { "Ref": "Branch" }, "-", { "Ref": "AWS::StackName" }, "/sg/logicmonitor" ] ] }
+          },
+          {
+            "Key": "Application",
+            "Value": "LogicMonitor",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com",
+            "PropagateAtLaunch": "true"
           }
         ]
       }
@@ -803,7 +818,7 @@
           },
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "internet-submit",
             "PropagateAtLaunch": "true"
           },
           {
@@ -870,7 +885,7 @@
         },
         {
           "Key": "Application",
-          "Value": { "Ref": "TagApplication" },
+          "Value": "internet-submit",
           "PropagateAtLaunch": "true"
         },
         {
@@ -954,7 +969,7 @@
           },
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "customer-delivery",
             "PropagateAtLaunch": "true"
           },
           {
@@ -995,7 +1010,7 @@
         },
         {
           "Key": "Application",
-          "Value": { "Ref": "TagApplication" },
+          "Value": "customer-delivery",
           "PropagateAtLaunch": "true"
         },
         {
@@ -1080,7 +1095,7 @@
           },
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "customer-submit",
             "PropagateAtLaunch": "true"
           },
           {
@@ -1147,7 +1162,7 @@
         },
         {
           "Key": "Application",
-          "Value": { "Ref": "TagApplication" },
+          "Value": "customer-submit",
           "PropagateAtLaunch": "true"
         },
         {
@@ -1232,7 +1247,7 @@
           },
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "encryption-delivery",
             "PropagateAtLaunch": "true"
           },
           {
@@ -1273,7 +1288,7 @@
         },
         {
           "Key": "Application",
-          "Value": { "Ref": "TagApplication" },
+          "Value": "encryption-delivery",
           "PropagateAtLaunch": "true"
         },
         {
@@ -1352,7 +1367,7 @@
           },
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "encryption-submit",
             "PropagateAtLaunch": "true"
           },
           {
@@ -1485,7 +1500,7 @@
         },
         {
           "Key": "Application",
-          "Value": { "Ref": "TagApplication" },
+          "Value": "encryption-submit",
           "PropagateAtLaunch": "true"
         },
         {
@@ -1564,7 +1579,7 @@
           },
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "internet-delivery",
             "PropagateAtLaunch": "true"
           },
           {
@@ -1605,7 +1620,7 @@
         },
         {
           "Key": "Application",
-          "Value": { "Ref": "TagApplication" },
+          "Value": "internet-delivery",
           "PropagateAtLaunch": "true"
         },
         {
@@ -1690,7 +1705,7 @@
           },
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "risky-delivery",
             "PropagateAtLaunch": "true"
           },
           {
@@ -1731,7 +1746,7 @@
         },
         {
           "Key": "Application",
-          "Value": { "Ref": "TagApplication" },
+          "Value": "risky-delivery",
           "PropagateAtLaunch": "true"
         },
         {
@@ -1816,7 +1831,7 @@
           },
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "warmup-delivery",
             "PropagateAtLaunch": "true"
           },
           {
@@ -1857,7 +1872,7 @@
         },
         {
           "Key": "Application",
-          "Value": { "Ref": "TagApplication" },
+          "Value": "warmup-delivery",
           "PropagateAtLaunch": "true"
         },
         {
@@ -1942,7 +1957,7 @@
           },
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "customer-xdelivery",
             "PropagateAtLaunch": "true"
           },
           {
@@ -1986,7 +2001,7 @@
           },
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "customer-xdelivery",
             "PropagateAtLaunch": "true"
           },
           {
@@ -2066,7 +2081,7 @@
           },
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "internet-xdelivery",
             "PropagateAtLaunch": "true"
           },
           {
@@ -2110,7 +2125,7 @@
           },
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "internet-xdelivery",
             "PropagateAtLaunch": "true"
           },
           {
@@ -2190,7 +2205,7 @@
           },
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "risky-xdelivery",
             "PropagateAtLaunch": "true"
           },
           {
@@ -2234,7 +2249,7 @@
           },
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "risky-xdelivery",
             "PropagateAtLaunch": "true"
           },
           {
@@ -2314,7 +2329,7 @@
           },
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "warmup-xdelivery",
             "PropagateAtLaunch": "true"
           },
           {
@@ -2358,7 +2373,7 @@
           },
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "warmup-xdelivery",
             "PropagateAtLaunch": "true"
           },
           {
@@ -2586,7 +2601,7 @@
         },
         {
           "Key": "Application",
-          "Value": { "Ref": "TagApplication" },
+          "Value": "CloudEmail",
           "PropagateAtLaunch": "true"
         },
         {

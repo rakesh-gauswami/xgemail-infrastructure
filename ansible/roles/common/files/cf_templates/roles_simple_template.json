@@ -24,11 +24,6 @@
       "Type": "String",
       "Default": "/"
     },
-    "TagApplication": {
-      "Description": "Tag for the Application being deployed",
-      "Type": "String",
-      "Default": ""
-    },
     "TrustedServices" : {
       "Description" : "Trusted services that are allowed to assume this role",
       "Type" : "CommaDelimitedList"
@@ -58,7 +53,7 @@
         "Tags": [
           {
             "Key": "Application",
-            "Value": { "Ref": "TagApplication" },
+            "Value": "CloudEmail",
             "PropagateAtLaunch": "true"
           },
           {
