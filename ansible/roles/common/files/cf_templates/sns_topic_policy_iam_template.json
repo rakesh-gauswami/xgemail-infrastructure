@@ -26,6 +26,11 @@
       "MinLength": "1",
       "MaxLength": "256",
       "AllowedPattern": "[a-zA-Z0-9_-]+"
+    },
+    "TagApplication": {
+      "Description": "Tag for the Application being deployed",
+      "Type": "String",
+      "Default": ""
     }
   },
 
@@ -33,7 +38,34 @@
     "SnsTopic": {
       "Type": "AWS::SNS::Topic",
       "Properties": {
-        "TopicName": { "Ref": "TopicName" }
+        "TopicName": { "Ref": "TopicName" },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": { "Ref": "TopicName" },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "Application",
+            "Value": { "Ref": "TagApplication" },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com",
+            "PropagateAtLaunch": "true"
+          }
+        ]
       }
     },
     "IamToSnsPolicy": {

@@ -129,6 +129,11 @@
         "false"
       ],
       "Default": "false"
+    },
+    "TagApplication": {
+      "Description": "Tag for the Application being deployed",
+      "Type": "String",
+      "Default": ""
     }
   },
   "Conditions": {
@@ -230,6 +235,26 @@
                 ]
               ]
             }
+          },
+          {
+            "Key": "Application",
+            "Value": { "Ref": "TagApplication" },
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com",
+            "PropagateAtLaunch": true
           }
         ]
       }

@@ -45,6 +45,11 @@
       "Type": "String",
       "AllowedValues": [ "true", "false" ],
       "Default": "false"
+    },
+    "TagApplication": {
+      "Description": "Tag for the Application being deployed",
+      "Type": "String",
+      "Default": ""
     }
   },
 
@@ -61,6 +66,33 @@
         "TopicName": { "Ref": "SNSTopicName" },
         "Subscription": [
           { "Endpoint": { "Ref": "SNSTopicEndpointValue" }, "Protocol": { "Ref": "SNSTopicEndpointProtocol" } }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": { "Ref": "SNSTopicName" },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "Application",
+            "Value": { "Ref": "TagApplication" },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com",
+            "PropagateAtLaunch": "true"
+          }
         ]
       }
     },

@@ -27,6 +27,11 @@
         "AZs": {
             "Description": "Availability Zones",
             "Type": "List<AWS::EC2::AvailabilityZone::Name>"
+        },
+        "TagApplication": {
+            "Description": "Tag for the Application being deployed",
+            "Type": "String",
+            "Default": ""
         }
     },
 
@@ -85,6 +90,26 @@
                     {
                         "Key": "Name",
                         "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/dhcpopt" ] ] }
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": { "Ref": "TagApplication" },
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com",
+                        "PropagateAtLaunch": "true"
                     }
                 ]
             },
@@ -109,6 +134,26 @@
                     {
                         "Key": "Name",
                         "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/igw" ] ] }
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": { "Ref": "TagApplication" },
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com",
+                        "PropagateAtLaunch": "true"
                     }
                 ]
             },
@@ -131,14 +176,66 @@
             "Type" : "AWS::EC2::NatGateway",
             "Properties" : {
                 "AllocationId" : { "Fn::GetAtt" : ["NatEipA", "AllocationId"]},
-                "SubnetId" : { "Ref" : "PublicSubnetA"}
+                "SubnetId" : { "Ref" : "PublicSubnetA"},
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/NatGateway" ] ] }
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": { "Ref": "TagApplication" },
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com",
+                        "PropagateAtLaunch": "true"
+                    }
+                ]
             }
         },
 
         "NatEipA" : {
             "Type" : "AWS::EC2::EIP",
             "Properties" : {
-                "Domain" : "vpc"
+                "Domain" : "vpc",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/EIP" ] ] }
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": { "Ref": "TagApplication" },
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com",
+                        "PropagateAtLaunch": "true"
+                    }
+                ]
             }
         },
 
@@ -156,7 +253,33 @@
             "Condition": "IsProduction",
             "Properties" : {
                 "AllocationId" : { "Fn::GetAtt" : ["NatEipB", "AllocationId"]},
-                "SubnetId" : { "Ref" : "PublicSubnetB"}
+                "SubnetId" : { "Ref" : "PublicSubnetB"},
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/NatGateway" ] ] }
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": { "Ref": "TagApplication" },
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com",
+                        "PropagateAtLaunch": "true"
+                    }
+                ]
             }
         },
 
@@ -164,7 +287,33 @@
             "Type" : "AWS::EC2::EIP",
             "Condition": "IsProduction",
             "Properties" : {
-                "Domain" : "vpc"
+                "Domain" : "vpc",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/NatGateway" ] ] }
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": { "Ref": "TagApplication" },
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com",
+                        "PropagateAtLaunch": "true"
+                    }
+                ]
             }
         },
 
@@ -190,6 +339,26 @@
                     {
                         "Key": "Type",
                         "Value": "private"
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": { "Ref": "TagApplication" },
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com",
+                        "PropagateAtLaunch": "true"
                     }
                 ],
                 "VpcId": {
@@ -224,6 +393,26 @@
                     {
                         "Key": "Type",
                         "Value": "private"
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": { "Ref": "TagApplication" },
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com",
+                        "PropagateAtLaunch": "true"
                     }
                 ],
                 "VpcId": {
@@ -261,6 +450,26 @@
                     {
                         "Key": "Type",
                         "Value": "private"
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": { "Ref": "TagApplication" },
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com",
+                        "PropagateAtLaunch": "true"
                     }
                 ],
                 "VpcId": {
@@ -296,6 +505,26 @@
                     {
                         "Key": "Type",
                         "Value": "public"
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": { "Ref": "TagApplication" },
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com",
+                        "PropagateAtLaunch": "true"
                     }
                 ],
                 "VpcId": {
@@ -329,6 +558,26 @@
                     {
                         "Key": "Type",
                         "Value": "public"
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": { "Ref": "TagApplication" },
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com",
+                        "PropagateAtLaunch": "true"
                     }
                 ],
                 "VpcId": {
@@ -363,6 +612,26 @@
                     {
                         "Key": "Type",
                         "Value": "public"
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": { "Ref": "TagApplication" },
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com",
+                        "PropagateAtLaunch": "true"
                     }
                 ],
                 "VpcId": {
@@ -420,6 +689,26 @@
                     {
                         "Key": "Name",
                         "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/rtb/private" ] ] }
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": { "Ref": "TagApplication" },
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com",
+                        "PropagateAtLaunch": "true"
                     }
                 ],
                 "VpcId": {
@@ -435,6 +724,26 @@
                     {
                         "Key": "Name",
                         "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/rtb/private/a" ] ] }
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": { "Ref": "TagApplication" },
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com",
+                        "PropagateAtLaunch": "true"
                     }
                 ],
                 "VpcId": {
@@ -451,6 +760,26 @@
                     {
                         "Key": "Name",
                         "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/rtb/private/b" ] ] }
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": { "Ref": "TagApplication" },
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com",
+                        "PropagateAtLaunch": "true"
                     }
                 ],
                 "VpcId": {
@@ -466,6 +795,26 @@
                     {
                         "Key": "Name",
                         "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/rtb/public" ] ] }
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": { "Ref": "TagApplication" },
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com",
+                        "PropagateAtLaunch": "true"
                     }
                 ],
                 "VpcId": {
@@ -502,6 +851,26 @@
                     {
                         "Key": "Name",
                         "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/vpc" ] ] }
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": { "Ref": "TagApplication" },
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com",
+                        "PropagateAtLaunch": "true"
                     }
                 ]
             },

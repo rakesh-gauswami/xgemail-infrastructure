@@ -35,6 +35,12 @@
       "Type": "String"
     },
 
+    "TagApplication": {
+      "Description": "Tag for the Application being deployed",
+      "Type": "String",
+      "Default": ""
+    },
+
     "VPCId": {
       "Description": "Id of the vpc",
       "Type": "String",
@@ -63,7 +69,46 @@
               "queue"
             ]
           ]
-        }
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-", [
+                  {"Fn::If": [ "UseVPCId",
+                    { "Ref": "VPCId" },
+                    {"Ref" : "AWS::NoValue" }
+                  ]},
+                  { "Ref": "Environment" },
+                  { "Ref": "SubscriptionName" },
+                  "queue"
+                ]
+              ]
+            },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "Application",
+            "Value": { "Ref": "TagApplication" },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com",
+            "PropagateAtLaunch": "true"
+          }
+        ]
       }
     },
 
@@ -87,7 +132,46 @@
               "topic"
             ]
           ]
-        }
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-", [
+                  {"Fn::If": [ "UseVPCId",
+                    { "Ref": "VPCId" },
+                    {"Ref" : "AWS::NoValue" }
+                  ]},
+                  { "Ref": "Environment" },
+                  { "Ref": "SubscriptionName" },
+                  "topic"
+                ]
+              ]
+            },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "Application",
+            "Value": { "Ref": "TagApplication" },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com",
+            "PropagateAtLaunch": "true"
+          }
+        ]
       }
     },
 

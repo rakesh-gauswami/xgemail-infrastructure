@@ -24,6 +24,11 @@
       "Type": "String",
       "Default": "/"
     },
+    "TagApplication": {
+      "Description": "Tag for the Application being deployed",
+      "Type": "String",
+      "Default": ""
+    },
     "TrustedServices" : {
       "Description" : "Trusted services that are allowed to assume this role",
       "Type" : "CommaDelimitedList"
@@ -49,7 +54,34 @@
           ]
         },
         "Path": { "Ref": "RolePath" },
-        "RoleName": { "Ref": "RoleName" }
+        "RoleName": { "Ref": "RoleName" },
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": { "Ref": "TagApplication" },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Ref": "RoleName" },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com",
+            "PropagateAtLaunch": "true"
+          }
+        ]
       }
     }
   },

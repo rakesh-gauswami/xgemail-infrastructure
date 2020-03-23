@@ -33,6 +33,11 @@
     "SNSNotificationTopic": {
       "Description": "SNS Topic Notification ARN",
       "Type": "String"
+    },
+    "TagApplication": {
+      "Description": "Tag for the Application being deployed",
+      "Type": "String",
+      "Default": ""
     }
   },
 
@@ -70,6 +75,26 @@
                 ]
               ]
             }
+          },
+          {
+            "Key": "Application",
+            "Value": { "Ref": "TagApplication" },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com",
+            "PropagateAtLaunch": "true"
           }
         ]
       }

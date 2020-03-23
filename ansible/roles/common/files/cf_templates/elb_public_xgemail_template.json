@@ -95,6 +95,11 @@
       "Description": "List of Subnets where instances reside for the ELB",
       "Type": "List<AWS::EC2::Subnet::Id>"
     },
+    "TagApplication": {
+      "Description": "Tag for the Application being deployed",
+      "Type": "String",
+      "Default": ""
+    },
     "Vpc": {
       "Description": "Name of an existing VPC",
       "Type": "AWS::EC2::VPC::Id"
@@ -118,6 +123,26 @@
             "Key": "Name",
             "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/lb/", { "Ref" : "LoadBalancerName" } ] ] }
 
+          },
+          {
+            "Key": "Application",
+            "Value": { "Ref": "TagApplication" },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail",
+            "PropagateAtLaunch": "true"
           }
         ],
         "ConnectionDrainingPolicy": {

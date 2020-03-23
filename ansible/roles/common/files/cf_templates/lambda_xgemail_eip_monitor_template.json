@@ -74,6 +74,12 @@
       "Default": ""
     },
 
+    "TagApplication": {
+      "Description": "Tag for the Application being deployed",
+      "Type": "String",
+      "Default": ""
+    },
+
     "Timeout": {
       "Description": "Timeout in seconds.",
       "Type": "Number",
@@ -120,7 +126,34 @@
         "Role": { "Ref": "IAMRoleArn" },
         "Runtime": { "Ref": "Runtime" },
         "Timeout": { "Ref": "Timeout" },
-        "MemorySize": { "Ref": "MemorySize" }
+        "MemorySize": { "Ref": "MemorySize" },
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": { "Ref": "TagApplication" },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Ref": "FunctionName" },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail",
+            "PropagateAtLaunch": "true"
+          }
+        ]
       }
     },
 

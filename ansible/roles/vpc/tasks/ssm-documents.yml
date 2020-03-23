@@ -9,13 +9,14 @@
     template_parameters:
       AlarmTopicArn:              "{{sns.arn_prefix}}{{sns.lifecycle_sqs_sns}}"
       EipRotationLambdaFunction:  "{{lambda.eip_rotation_lambda_function}}"
+      Environment:                "{{account.name}}"
   register: ssm_stack
 
 - debug:
     var: ssm_stack
     verbosity: 3
 
-- name: "Display SSM Docuuments Stack Output"
+- name: "Display SSM Documents Stack Output"
   debug:
     msg: "{{ssm_stack.stack_outputs}}"
     verbosity: 2

@@ -43,6 +43,12 @@
       "Default": "0"
     },
 
+    "TagApplication": {
+      "Description": "Tag for the Application being deployed",
+      "Type": "String",
+      "Default": ""
+    },
+
     "ThroughputMode": {
       "Description": "The throughput mode for the file system to be created.",
       "Type": "String",
@@ -69,6 +75,26 @@
                 { "Ref": "AWS::Region" }
               ]]
             }
+          },
+          {
+            "Key": "Application",
+            "Value": { "Ref": "TagApplication" },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail",
+            "PropagateAtLaunch": "true"
           }
         ],
         "PerformanceMode": { "Ref": "PerformanceMode" },

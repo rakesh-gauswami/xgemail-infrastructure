@@ -39,6 +39,11 @@
       "Description": "The state of the EC2 instance to attach the lifecycle hook to.",
       "Type": "String"
     },
+    "TagApplication": {
+      "Description": "Tag for the Application being deployed",
+      "Type": "String",
+      "Default": ""
+    },
     "TargetsArn": {
       "Description": "The Amazon Resource Name (ARN) of the target.",
       "Type": "String"
@@ -108,7 +113,29 @@
             "Action": [ "sts:AssumeRole" ]
           }]
         },
-        "Path": "/"
+        "Path": "/",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": { "Ref": "TagApplication" },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail",
+            "PropagateAtLaunch": "true"
+          }
+        ]
       }
     },
     "CloudWatchSsmAutomationExecutionRolePolicies": {
