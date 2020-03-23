@@ -13,9 +13,9 @@
   @type record_transformer
   enable_ruby
   <record>
-    message_path null
-    queue_log <%= @main_dir %>/sqs_msg_delivery_queue_log_template.erb>
-    next_queue_log null
+    message_path ${}
+    queue_log ${{"schema_version" => "20180610", "server_type" => record["server_type"], "server_ip" => record["server_ip"], "queue_id" => record["queue_id"], "dsn_code" => record["dsn_code"], "timestamp" => record["timestamp"]}}
+    next_queue_log ${}
   </record>
 </filter>
 
@@ -23,6 +23,4 @@
   @type record_transformer
   renew_record true
   keep_keys direction, message_path, queue_log, next_queue_log, recipient_address
-  <record>
-  </record>
 </filter>

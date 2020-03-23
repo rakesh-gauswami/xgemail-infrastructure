@@ -4,6 +4,7 @@
   create_queue false
   region <%= @region %>
   delay_seconds <%= @sqs_delivery_delay %>
+  include_tag false
 </match>
 
 <match sqs.msg.delivery.failed>
@@ -12,6 +13,7 @@
   create_queue false
   region <%= @region %>
   delay_seconds <%= @sqs_delivery_delay %>
+  include_tag false
 </match>
 
 <match sqs.msg.delivery.redirected>
@@ -20,6 +22,7 @@
   create_queue false
   region <%= @region %>
   delay_seconds <%= @sqs_delivery_delay %>
+  include_tag false
 </match>
 
 <match sqs.msg.returned>
@@ -28,4 +31,5 @@
   create_queue false
   region <%= @region %>
   delay_seconds <%= @sqs_delivery_delay %>
+  include_tag false
 </match>

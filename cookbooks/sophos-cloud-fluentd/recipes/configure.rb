@@ -18,7 +18,7 @@ PATTERNS_DIR                  = node['fluentd']['patterns_dir']
 SQS_DELIVERY_DELAY            = node['fluentd']['sqs_delivery_delay']
 REGION                        = node['sophos_cloud']['region']
 MSG_STATS_REJECT_SNS_TOPIC    = node['xgemail']['msg_statistics_rejection_sns_topic']
-DELIVERY_STATUS_SQS           = node['xgemail']['msg_history_status_sns_listener']
+DELIVERY_STATUS_SQS           = node['xgemail']['msg_history_delivery_status_sqs']
 DELIVERY_STATUS_SNS_TOPIC     = node['xgemail']['msg_history_status_sns_topic']
 SERVER_IP                     = node['ipaddress']
 MAILLOG_FILTER_PATTERNS       = "(\\.#{REGION}\\.compute\\.internal|:\\sdisconnect\\sfrom\\s|\\swarning:\\shostname\\s|:\\sremoved\\s|table\\shash:|sm-msp-queue|:\\sstatistics:\\s)"
@@ -443,15 +443,6 @@ end
 cookbook_file 'sns_msg_delivery_template' do
   path "#{MAIN_DIR}/sns_msg_delivery_template.erb"
   source 'fluentd_sns_msg_delivery_template.erb'
-  mode '0644'
-  owner 'root'
-  group 'root'
-  action :create
-end
-
-cookbook_file 'sqs_msg_delivery_queue_log_template' do
-  path "#{MAIN_DIR}/sqs_msg_delivery_queue_log_template.erb"
-  source 'fluentd_sqs_msg_delivery_queue_log_template.erb'
   mode '0644'
   owner 'root'
   group 'root'
