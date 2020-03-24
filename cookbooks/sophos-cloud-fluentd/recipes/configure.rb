@@ -256,6 +256,7 @@ template 'fluentd-match-msg-delivery' do
 end
 
 #  Start Order: 70
+#  Remove this when we shift completely to SQS type match
 template 'fluentd-filter-msg-delivery' do
   path "#{CONF_DIR}/70-filter-msg-delivery.conf"
   source 'fluentd-filter-msg-delivery.conf.erb'
@@ -348,6 +349,7 @@ template 'fluentd-filter-transform-sqs-msg' do
 end
 
 # Message delivery status on all delivery and x delivery servers
+# Remove this when we shift completely to SQS type match
 template 'fluentd-match-sns-msg-delivery' do
   path "#{CONF_DIR}/97-match-sns-msg-delivery.conf"
   source 'fluentd-match-sns-msg-delivery.conf.erb'
@@ -440,6 +442,7 @@ cookbook_file 'sns_msg_stats_reject_template' do
   action :create
 end
 
+# Remove this when we shift completely to SQS type match
 cookbook_file 'sns_msg_delivery_template' do
   path "#{MAIN_DIR}/sns_msg_delivery_template.erb"
   source 'fluentd_sns_msg_delivery_template.erb'
@@ -449,6 +452,7 @@ cookbook_file 'sns_msg_delivery_template' do
   action :create
 end
 
+# Remove this when we shift completely to SQS type match
 cookbook_file 'sns_msg_to_xdelivery_template' do
   path "#{MAIN_DIR}/sns_msg_to_xdelivery_template.erb"
   source 'fluentd_sns_msg_to_xdelivery_template.erb'
