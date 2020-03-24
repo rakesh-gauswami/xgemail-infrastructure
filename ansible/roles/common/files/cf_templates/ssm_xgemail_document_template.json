@@ -26,11 +26,6 @@
      "EipRotationLambdaFunction": {
       "Description": "The name of the EIP Rotation Lambda Function",
       "Type": "String"
-    },
-    "SSMDocumentName": {
-      "Description": "The name of the SSM Document",
-      "Type": "String",
-      "Default": ""
     }
    },
 
@@ -62,7 +57,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": { "Ref": "SSMDocumentName" },
+            "Value": { "Ref" : "PostfixService" },
             "PropagateAtLaunch": "true"
           },
           {
@@ -119,7 +114,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": { "Ref": "SSMDocumentName" },
+            "Value": { "Ref": "UpdateHostname" },
             "PropagateAtLaunch": "true"
           },
           {
@@ -178,7 +173,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": { "Ref": "SSMDocumentName" },
+            "Value": { "Ref": "PostconfCommand" },
             "PropagateAtLaunch": "true"
           },
           {
@@ -281,7 +276,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": { "Ref": "SSMDocumentName" },
+            "Value": { "Ref": "BulkSenderAutomation" },
             "PropagateAtLaunch": "true"
           },
           {
@@ -392,7 +387,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": { "Ref": "SSMDocumentName" },
+            "Value": { "Ref": "PostfixSxlUpdate" },
             "PropagateAtLaunch": "true"
           },
           {
@@ -529,7 +524,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": { "Ref": "SSMDocumentName" },
+            "Value": { "Ref": "UpdateInstance" },
             "PropagateAtLaunch": "true"
           },
           {
@@ -610,7 +605,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": { "Ref": "SSMDocumentName" },
+            "Value": { "Ref": "TagInstance" },
             "PropagateAtLaunch": "true"
           },
           {
@@ -681,7 +676,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": { "Ref": "SSMDocumentName" },
+            "Value": { "Ref": "EipRotation" },
             "PropagateAtLaunch": "true"
           },
           {
@@ -756,7 +751,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": { "Ref": "SSMDocumentName" },
+            "Value": { "Ref": "TerminateAutoScalingInstance" },
             "PropagateAtLaunch": "true"
           },
           {
@@ -831,7 +826,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": { "Ref": "SSMDocumentName" },
+            "Value": { "Ref": "InstanceTerminator" },
             "PropagateAtLaunch": "true"
           },
           {
@@ -1057,7 +1052,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": { "Ref": "SSMDocumentName" },
+            "Value": { "Ref": "TerminationAutomation" },
             "PropagateAtLaunch": "true"
           },
           {
