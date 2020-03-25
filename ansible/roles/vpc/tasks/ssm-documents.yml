@@ -9,7 +9,6 @@
     template_parameters:
       AlarmTopicArn:              "{{sns.arn_prefix}}{{sns.lifecycle_sqs_sns}}"
       EipRotationLambdaFunction:  "{{lambda.eip_rotation_lambda_function}}"
-      Environment:                "{{account.name}}"
   register: ssm_stack
 
 - debug:

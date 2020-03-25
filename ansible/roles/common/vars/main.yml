@@ -303,7 +303,7 @@ aws:
       stack_name:                                                 "{{stack.sns.encryption_settings_update_sns_topic}}"
       template:                                                   "{{template.sns.sns_simple_template}}"
       template_parameters:
-        TagApplication:                                           "xgmemail-mail"
+        TagApplication:                                           "xgemail-mail"
         TopicName:                                                "{{sns.encryption_settings_update_sns_topic}}"
     internet_delivery_sns_topic:
       stack_name:                                                 "{{stack.sns.internet_delivery_sns_topic}}"
@@ -761,7 +761,7 @@ aws:
       template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                                                "{{sqs.xgemail_alert_sqs_queue}}"
-        TagApplication:                                           ""
+        TagApplication:                                           "xgemail-mail"
 
 aes_decryption_key:                                               "{{lookup('env','AES_KEY') | default('EFB0D00E7B34527A6CFE3CD804A53312C5A7AF129650A9793D2CEF3A3C6B3741')}}"
 ami_parent_id:                                                    "{{ami_id}}"
