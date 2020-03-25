@@ -3,11 +3,11 @@
     {
       "Effect" : "Deny",
       "Principal" : "*",
-      "Action" : ["Update:Replace", "Update:Delete"],
+      "Action" : "Update:*",
       "Resource" : "*",
       "Condition" : {
         "StringEquals" : {
-          "ResourceType" : ["AWS::EC2::EIP"]
+          "ResourceType" : "AWS::EC2::EIP"
         }
       }
     },
