@@ -110,6 +110,13 @@ execute 'install td-agent fluent-plugin-sns' do
   EOH
 end
 
+execute 'install td-agent fluent-plugin-sqs' do
+  user 'root'
+  command <<-EOH
+      td-agent-gem install fluent-plugin-sqs -v 3.0.0
+  EOH
+end
+
 execute 'install td-agent fluent-plugin-grok-parser' do
   user 'root'
   command <<-EOH

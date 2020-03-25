@@ -146,6 +146,9 @@ default['xgemail']['msg_history_status_sns_topic'] = "#{node['xgemail']['station
 default['xgemail']['msg_history_events_sns_topic'] = "#{node['xgemail']['station_vpc_id']}-xgemail-msg-history-events-SNS"
 default['xgemail']['scan_events_sns_topic'] = "#{node['xgemail']['station_vpc_id']}-xgemail-scan-events-SNS"
 
+# SQS Names
+default['xgemail']['msg_history_delivery_status_sqs'] = "#{node['xgemail']['station_vpc_id']}-Xgemail_MessageHistory_Delivery_Status"
+
 ## Policy service/poller settings
 default['xgemail']['sqs_policy_poller_visibility_timeout'] = '10'
 default['xgemail']['sqs_policy_poller_message_retention_period'] = '172800'
@@ -200,6 +203,11 @@ default['xgemail']['internet_delivery_bounce_message_processor_user'] = 'bouncer
 default['xgemail']['risky_delivery_message_bouncer_processor_dir'] = XGEMAIL_SQS_MESSAGE_BOUNCER_DIR
 default['xgemail']['risky_delivery_message_bouncer_common_dir'] = "#{XGEMAIL_SQS_MESSAGE_BOUNCER_DIR}/common"
 default['xgemail']['risky_delivery_bounce_message_processor_user'] = 'bouncer'
+
+## Warmup delivery DSN/NDR settings
+default['xgemail']['warmup_delivery_message_bouncer_processor_dir'] = XGEMAIL_SQS_MESSAGE_BOUNCER_DIR
+default['xgemail']['warmup_delivery_message_bouncer_common_dir'] = "#{XGEMAIL_SQS_MESSAGE_BOUNCER_DIR}/common"
+default['xgemail']['warmup_delivery_bounce_message_processor_user'] = 'bouncer'
 
 ## Cronjob settings
 default['xgemail']['cron_job_timeout'] = '10m'
@@ -327,7 +335,23 @@ default['xgemail']['postfix_instance_data'] = {
     # Give delivery queues extra padding because extra content may be created during processing
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600),
     :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
-  }
+  },
+  # warmup-delivery
+  'warmup-delivery' => {
+    :instance_name => 'wd',
+    :port => 25,
+    # Give delivery queues extra padding because extra content may be created during processing
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800),
+    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+  },
+  # warmup-extended-delivery
+  'warmup-xdelivery' => {
+    :instance_name => 'wx',
+    :port => 8025,
+    # Give delivery queues extra padding because extra content may be created during processing
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600),
+    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+  },
 }
 
 ## The Postfix instance name for the encryption-delivery node

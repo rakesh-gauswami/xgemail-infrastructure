@@ -60,7 +60,7 @@ def eip_rotation_handler(event, context):
     if 'EC2InstanceId' in event['detail']:
         logger.info("Lambda Function triggered from Instance Launching Lifecycle Hook.")
         ec2_instance = ec2.Instance(event['detail']['EC2InstanceId'])
-        if initial_eip(instance=ec2_instance):
+        if initial_eip(instance=ec2_instance, lifecycle_hook_name=event['detail']['LifecycleHookName']):
             logger.info("Completing lifecycle action with CONTINUE")
             complete_lifecycle_action(
                 autoscaling_group_name=event['detail']['AutoScalingGroupName'],
@@ -79,19 +79,16 @@ def eip_rotation_handler(event, context):
             )
             return True
     else:
-        logger.info("Lambda Function triggered from CloudWatch Scheduled Event for EIP Roation.")
-        rotate_eip()
+        logger.info("Lambda Function triggered from CloudWatch Scheduled Event for EIP Rotation.")
+        rotate_eip(lifecycle_hook_name=event['detail']['LifecycleHookName'])
         return True
 
 
-def initial_eip(instance):
+def initial_eip(instance, lifecycle_hook_name):
     """
     If triggered via Lifecycle Hook then just assign an EIP.
     """
-    if get_risky(instance):
-        new_eip = get_clean_eip_risky()
-    else:
-        new_eip = get_clean_eip()
+    new_eip = get_clean_eip(lifecycle_hook_name)
     if associate_address(allocation_id=new_eip['AllocationId'], instance_id=instance.id):
         logger.info("===FINISHED=== Attaching initial EIP on Instance: {}.".format(instance.id))
         return True
@@ -100,7 +97,7 @@ def initial_eip(instance):
         return False
 
 
-def rotate_eip():
+def rotate_eip(lifecycle_hook_name):
     """
     If triggered from scheduled event rotate all EIP's.
     """
@@ -111,10 +108,7 @@ def rotate_eip():
         current_eip = lookup_eip(eip=instance.public_ip_address)
         if current_eip is None:
             continue
-        if get_risky(instance):
-            new_eip = get_clean_eip_risky()
-        else:
-            new_eip = get_clean_eip()
+        new_eip = get_clean_eip(lifecycle_hook_name)
         hostname = socket.gethostbyaddr(new_eip['PublicIp'])[0]
         if postfix_service(instance_id=instance.id, cmd='stop'):
             if disassociate_address(eip=current_eip):
@@ -170,7 +164,9 @@ def get_instances_by_name():
                     'CloudEmail:internet-delivery:*',
                     'CloudEmail:internet-xdelivery:*',
                     'CloudEmail:risky-delivery:*',
-                    'CloudEmail:risky-xdelivery:*'
+                    'CloudEmail:risky-xdelivery:*',
+                    'CloudEmail:warmup-delivery:*',
+                    'CloudEmail:warmup-xdelivery:*'
                 ]
             }
         ]
@@ -262,19 +258,37 @@ def lookup_eip(eip):
         return eip
 
 
-def get_clean_eip():
+def get_clean_eip(lifecycle_hook_name):
     """
     Find an xgemail-outbound EIP that is NOT listed on any blacklists and is NOT attached to an instance.
     """
     logger.info("Locating a clean EIP to use.")
     try:
-        addresses = ec2_client.describe_addresses(
-            Filters=[
-                {
-                    'Name': 'tag:Name', 'Values': ['xgemail-outbound']
-                }
-            ]
-        )['Addresses']
+        if 'risky-delivery' in lifecycle_hook_name or 'risky-xdelivery' in lifecycle_hook_name:
+            addresses = ec2_client.describe_addresses(
+                Filters=[
+                    {
+                        'Name': 'tag:Name', 'Values': ['xgemail-risky']
+                    }
+                ]
+            )['Addresses']
+        elif 'warmup-delivery' in lifecycle_hook_name or 'warmup-xdelivery' in lifecycle_hook_name:
+            addresses = ec2_client.describe_addresses(
+                Filters=[
+                    {
+                        'Name': 'tag:Name', 'Values': ['xgemail-warmup']
+                    }
+                ]
+            )['Addresses']
+        else:
+            addresses = ec2_client.describe_addresses(
+                Filters=[
+                    {
+                        'Name': 'tag:Name', 'Values': ['xgemail-outbound']
+                    }
+                ]
+            )['Addresses']
+
     except ClientError as e:
         logger.exception("Unable to describe addresses. {}".format(e))
 
@@ -291,50 +305,6 @@ def get_clean_eip():
     for address in addresses:
         if 'AssociationId' not in address:
             return address
-
-
-def get_clean_eip_risky():
-    """
-    Find an xgemail-risky EIP that is NOT listed on any blacklists and is NOT attached to an instance.
-    """
-    logger.info("Locating a clean EIP to use.")
-    try:
-        addresses = ec2_client.describe_addresses(
-            Filters=[
-                {
-                    'Name': 'tag:Name', 'Values': ['xgemail-risky']
-                }
-            ]
-        )['Addresses']
-    except ClientError as e:
-        logger.exception("Unable to describe addresses. {}".format(e))
-
-    add_tags_dict(addresses)
-    addresses.sort(key=lambda address: (
-        int(address['TagsDict']['blacklist']),
-        address['TagsDict']['snds_score'],
-        address['TagsDict']['talos_score'],
-        -float(address['TagsDict']['last_month_volume']),
-        -float(address['TagsDict']['last_day_volume']),
-        address['TagsDict']['detached']
-        )
-    )
-    for address in addresses:
-        if 'AssociationId' not in address:
-            return address
-
-
-def get_risky(instance):
-    """
-    Check if the instance is part of risky delivery or risky-xdelivery cluster.
-    """
-    for tags in instance.tags:
-        for values in tags:
-            if tags.values()[1]== 'Application':
-                if tags.values()[0] == 'risky-delivery' or tags.values()[0] == 'risky-xdelivery':
-                    return True
-                else:
-                    return False
 
 
 def associate_address(allocation_id, instance_id):
