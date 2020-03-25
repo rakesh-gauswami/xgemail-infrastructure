@@ -122,7 +122,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Ref": "CloudWatchSsmAutomationExecutionRole" },
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "CloudWatchSsmAutomationExecutionRole" ] ] },
             "PropagateAtLaunch": "true"
           },
           {

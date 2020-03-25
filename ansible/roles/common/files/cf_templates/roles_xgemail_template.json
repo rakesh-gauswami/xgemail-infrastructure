@@ -84,7 +84,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Ref": "AutoScalingInstanceRole" },
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "AutoScalingInstanceRole" ] ] },
             "PropagateAtLaunch": true
           },
           {
@@ -194,7 +194,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Ref": "BastionInstanceRole" },
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "BastionInstanceRole" ] ] },
             "PropagateAtLaunch": true
           },
           {
@@ -319,7 +319,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Ref": "EipMonitorLambdaExecutionRole" },
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "EipMonitorLambdaExecutionRole" ] ] },
             "PropagateAtLaunch": true
           },
           {
@@ -453,7 +453,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Ref": "EipRotationLambdaExecutionRole" },
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "EipRotationLambdaExecutionRole" ] ] },
             "PropagateAtLaunch": true
           },
           {
@@ -571,7 +571,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Ref": "FirehoseTransformationLambdaExecutionRole" },
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "FirehoseTransformationLambdaExecutionRole" ] ] },
             "PropagateAtLaunch": true
           },
           {
@@ -656,7 +656,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Ref": "LogicMonitorInstanceRole" },
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "LogicMonitorInstanceRole" ] ] },
             "PropagateAtLaunch": true
           },
           {
@@ -800,7 +800,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/IAM" ] ] },
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "XgemailCustomerDeliveryInstanceRole" ] ] },
             "PropagateAtLaunch": true
           },
           {
@@ -1077,7 +1077,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/IAM" ] ] },
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "XgemailInternetDeliveryInstanceRole" ] ] },
             "PropagateAtLaunch": true
           },
           {
@@ -1343,7 +1343,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/IAM" ] ] },
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "XgemailInternetSubmitInstanceRole" ] ] },
             "PropagateAtLaunch": true
           },
           {
@@ -1647,7 +1647,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/IAM" ] ] },
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "XgemailCustomerSubmitInstanceRole" ] ] },
             "PropagateAtLaunch": true
           },
           {
@@ -1971,7 +1971,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/IAM" ] ] },
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "XgemailEncryptionDeliveryInstanceRole" ] ] },
             "PropagateAtLaunch": true
           },
           {
@@ -2247,7 +2247,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/IAM" ] ] },
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "XgemailEncryptionSubmitInstanceRole" ] ] },
             "PropagateAtLaunch": true
           },
           {
@@ -2523,7 +2523,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/IAM" ] ] },
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "XgemailXdeliveryInstanceRole" ] ] },
             "PropagateAtLaunch": true
           },
           {
@@ -2749,7 +2749,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/IAM" ] ] },
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "XgemailInternetXdeliveryInstanceRole" ] ] },
             "PropagateAtLaunch": true
           },
           {
@@ -2982,7 +2982,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/IAM" ] ] },
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "XgemailRiskyDeliveryInstanceRole" ] ] },
             "PropagateAtLaunch": true
           },
           {
@@ -3369,7 +3369,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/IAM" ] ] },
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "XgemailRiskyXdeliveryInstanceRole" ] ] },
             "PropagateAtLaunch": true
           },
           {
@@ -3648,7 +3648,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/IAM" ] ] },
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "XgemailWarmupDeliveryInstanceRole" ] ] },
             "PropagateAtLaunch": true
           },
           {
@@ -4017,7 +4017,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/IAM" ] ] },
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "XgemailWarmupXdeliveryInstanceRole" ] ] },
             "PropagateAtLaunch": true
           },
           {

@@ -27,11 +27,6 @@
         "AZs": {
             "Description": "Availability Zones",
             "Type": "List<AWS::EC2::AvailabilityZone::Name>"
-        },
-        "TagApplication": {
-            "Description": "Tag for the Application being deployed",
-            "Type": "String",
-            "Default": ""
         }
     },
 
@@ -180,7 +175,8 @@
                 "Tags": [
                     {
                         "Key": "Name",
-                        "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/NatGateway" ] ] }
+                        "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/NatA" ] ] },
+                        "PropagateAtLaunch": "true"
                     },
                     {
                         "Key": "Application",
@@ -213,7 +209,8 @@
                 "Tags": [
                     {
                         "Key": "Name",
-                        "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/EIP" ] ] }
+                        "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/NatEipA" ] ] },
+                        "PropagateAtLaunch": "true"
                     },
                     {
                         "Key": "Application",
@@ -257,7 +254,7 @@
                 "Tags": [
                     {
                         "Key": "Name",
-                        "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/NatGateway" ] ] }
+                        "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/NatB" ] ] }
                     },
                     {
                         "Key": "Application",
@@ -291,7 +288,7 @@
                 "Tags": [
                     {
                         "Key": "Name",
-                        "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/NatGateway" ] ] }
+                        "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/NatEipB" ] ] }
                     },
                     {
                         "Key": "Application",
