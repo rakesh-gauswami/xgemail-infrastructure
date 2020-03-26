@@ -87,8 +87,6 @@ if __name__ == "__main__":
                         help='Type of action/operation choices=[GET, GET_ALL, DELETE, ADD, REDUCE]')
     parser.add_argument('--domainOrEmail', type=str, metavar='Domain name or email address',
                         help='Domain name or email address ')
-    parser.add_argument('--region', choices=['eu-central-1', 'eu-west-1', 'us-west-2', 'us-east-2'],
-                        help='the region in which this script runs', required=True)
     parser.add_argument('--risk_value', type=int, metavar='Risk value to add or reduce. Any value between 1 to 100',
                         choices=xrange(0, 101),
                         help="Risk value to add or reduce. Any value between 1 to 100")
@@ -108,14 +106,7 @@ if __name__ == "__main__":
     parser.add_argument("--warmup_percentage", type=int, metavar='warmup_percentage',
                         choices=xrange(1, 101),
                         help='Traffic in percentage of overall traffic to be routed via warm up delivery')
-    parser.add_argument("--account", type=str, metavar="account ['dev','inf','qa','prod']",
-                        choices=["dev", "inf", "qa", 'prod'],
-                        help="Account in which you want to update config")
     args = parser.parse_args()
-
-    print "AWS Region:" %AWS_REGION
-    print "ACCOUNT:" %ACCOUNT
-    print "DD_CONFIG_FILE_NAME:" %DD_CONFIG_FILE_NAME
 
     if (args.command == "GET" or args.command == "DELETE") and (args.domainOrEmail is None):
         parser.error("--domainOrEmail is required attribute for GET/DELETE operation")
@@ -136,16 +127,10 @@ if __name__ == "__main__":
         deliveryType = args.delivery_type
         isSubDomain = args.isSubDomain
 
-
-    dynamoDb = boto3.resource('dynamodb', args.region)
+    dynamoDb = boto3.resource('dynamodb', AWS_REGION)
     table = dynamoDb.Table('tf-delivery-director')
 
     if command == "CONFIG":
-        if args.account is None:
-            parser.error(
-                "--account is required attribute for CONFIG command"
-            )
-
         if args.domain_threshold is None and args.warmup_percentage is None and \
                 args.email_threshold is None:
             parser.error(
@@ -154,8 +139,8 @@ if __name__ == "__main__":
 
         # Read Existing Config file
         dd_current_config_object = dict()
+        bucket_name = 'private-cloud-{}-{}-cloudemail-xgemail-deliverydir'.format(ACCOUNT, AWS_REGION)
         try:
-            bucket_name = 'private-cloud-{}-{}-cloudemail-xgemail-deliverydir'.format(args.account, args.region)
             s3 = boto3.resource('s3')
             dd_current_config = s3.Object(bucket_name, DD_CONFIG_FILE_NAME)
             dd_current_config_object = json.loads(dd_current_config.get()['Body'].read())

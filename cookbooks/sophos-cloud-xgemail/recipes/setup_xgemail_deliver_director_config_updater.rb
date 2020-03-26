@@ -33,16 +33,17 @@ raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 
 AWS_REGION              = node['sophos_cloud']['region']
 ACCOUNT                 = node['sophos_cloud']['account']
+
 XGEMAIL_FILES_DIR       = node['xgemail']['xgemail_files_dir']
-PACKAGE_DIR             = "#{XGEMAIL_FILES_DIR}/delivery-director"
 DD_CONFIG_FILE_NAME     = 'delivery-director-threshold-info.json'
 XGEMAIL_UTILS_DIR       = node['xgemail']['xgemail_utils_files_dir']
 
+PACKAGE_DIR                            = "#{XGEMAIL_FILES_DIR}/delivery-director-service"
 DELIVERY_DIRECTOR_SCRIPT               = 'xgemail.deliverydirector.config.updater.py'
 DELIVERY_DIRECTOR_SCRIPT_PATH          = "#{PACKAGE_DIR}/#{DELIVERY_DIRECTOR_SCRIPT}"
 
 
-#directory for bulksender services
+#directory for delivery director services
 directory PACKAGE_DIR do
   mode '0755'
   owner 'root'
@@ -54,7 +55,7 @@ execute DELIVERY_DIRECTOR_SCRIPT_PATH do
   action :nothing
 end
 
-# Write bulk sender script to customer submit instance
+# Write delivery director script to customer submit instance
 template DELIVERY_DIRECTOR_SCRIPT_PATH do
   source "#{DELIVERY_DIRECTOR_SCRIPT}.erb"
   mode '0750'
