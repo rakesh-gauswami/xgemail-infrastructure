@@ -64,6 +64,6 @@ template DELIVERY_DIRECTOR_SCRIPT_PATH do
     :aws_region => AWS_REGION,
     :xgemail_utils_path => XGEMAIL_UTILS_DIR
     :account => ACCOUNT
-    :delivery_director_config_filename => DD_CONFIG_FILE_NAME,
+    :delivery_director_config_filename => DD_CONFIG_FILE_NAME
   )
 end
