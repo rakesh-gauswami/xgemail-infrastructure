@@ -32,7 +32,7 @@ raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 
 
 AWS_REGION              = node['sophos_cloud']['region']
-ACCOUNT                 = node['sophos_cloud']['account']
+ACCOUNT                 = node['sophos_cloud']['environment']
 
 XGEMAIL_FILES_DIR       = node['xgemail']['xgemail_files_dir']
 DD_CONFIG_FILE_NAME     = 'delivery-director-threshold-info.json'
