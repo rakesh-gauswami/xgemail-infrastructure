@@ -33,17 +33,17 @@
     <rule>
       key message
       pattern ^(?=.*?status=(deferred|bounced))((?!bounce-handler|postfix\/smtp|compute\.internal).)*$
-      tag sns.msg.delivery.failed
+      tag sqs.msg.delivery.failed
     </rule>
     <rule>
       key message
       pattern ^(?=.*?from=<(.+)>)(?=.*?status=(expired))((?!compute\.internal).)*$
-      tag sns.msg.returned
+      tag sqs.msg.returned
     </rule>
     <rule>
       key message
       pattern ^(?=.*?status=sent)(?=.*?relay=.*xdelivery)((?!bounce-handler|postfix\/smtp|compute\.internal).)*$
-      tag sns.msg.delivery.redirected
+      tag sqs.msg.delivery.redirected
     </rule>
    </store>
 </match>
