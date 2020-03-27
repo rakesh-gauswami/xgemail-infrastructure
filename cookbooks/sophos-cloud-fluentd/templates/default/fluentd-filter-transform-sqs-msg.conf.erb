@@ -1,3 +1,5 @@
+# Filters delivery events and transforms record to reflect what is expected to be in SQS body
+
 <filter sqs.msg.delivery.succeeded>
   @type parser
   key_name message
@@ -9,7 +11,40 @@
   </parse>
 </filter>
 
-<filter sqs.msg.delivery.succeeded>
+<filter sqs.msg.delivery.failed>
+  @type parser
+  key_name message
+  reserve_data true
+  reserve_time true
+  <parse>
+    @type regexp
+    expression /^(?<host>[^ ]+) (?<process>[^ ]+): (?<queue_id>[^ ]+): to=<(?<recipient_address>[\S ]+)>, relay=(?<relay>[^ ]+),.*dsn=(?<dsn_code>[^ ]+), status=(?<status>[(deferred|bounced)]+) (?<sent>[\S ]+)/
+  </parse>
+</filter>
+
+<filter sqs.msg.returned>
+  @type parser
+  key_name message
+  reserve_data true
+  reserve_time true
+  <parse>
+    @type regexp
+    expression /(?<host>[^ ]+) (?<process>[^ ]+): (?<queue_id>[^ ]+): from=<(?<sender_address>[\S ]+)>, status=expired.+/
+  </parse>
+</filter>
+
+<filter sqs.msg.delivery.redirected>
+  @type parser
+  key_name message
+  reserve_data true
+  reserve_time true
+  <parse>
+    @type regexp
+    expression /^(?<host>[^ ]+) (?<process>[^ ]+): (?<queue_id>[^ ]+): to=<(?<recipient_address>[\S ]+)>, relay=(?<relay>[^ ]+)\[(?<server_ip_xdelivery>[^ ]+)\]:(?<port>[^ ]+),.*dsn=(?<dsn_code>[^ ]+), status=sent(?<sent>[\S ]+queued as (?<queue_id_xdelivery>[^ ]+)[)])/
+  </parse>
+</filter>
+
+<filter sqs.msg.{delivery,returned}.**>
   @type record_transformer
   enable_ruby
   <record>
@@ -19,7 +54,15 @@
   </record>
 </filter>
 
-<filter sqs.msg.delivery.succeeded>
+<filter sqs.msg.delivery.redirected>
+  @type record_transformer
+  enable_ruby
+  <record>
+    next_queue_log ${{"schema_version" => "20180610", "server_type" => record["server_type_xdelivery"], "server_ip" => record["server_ip_xdelivery"], "queue_id" => record["queue_id_xdelivery"], "dsn_code" => record["dsn_code"], "timestamp" => record["timestamp"]}}
+  </record>
+</filter>
+
+<filter sqs.msg.{delivery,returned}.**>
   @type record_transformer
   renew_record true
   keep_keys direction, message_path, queue_log, next_queue_log, recipient_address
