@@ -1213,6 +1213,19 @@
                 "s3:GetBucketLocation",
                 "s3:GetObject",
                 "s3:ListBucket",
+                "s3:PutObject"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "DeliveryDirectorBucketName" }, "/*" ] ] },
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "DeliveryDirectorBucketName" } ] ] }
+              ]
+            },
+            {
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket",
                 "s3:PutObject",
                 "s3:RestoreObject"
               ],
@@ -1259,6 +1272,28 @@
               "Resource": [
                 { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailInternetSubmitBucketName" }, "/*" ] ] },
                 { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailInternetSubmitBucketName" } ] ] }
+              ]
+            },
+            {
+              "Action": [
+                "dynamodb:BatchWriteItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:BatchGetItem",
+                "dynamodb:Scan",
+                "dynamodb:ListTables",
+                "dynamodb:GetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:DescribeTable",
+                "dynamodb:PutItem",
+                "dynamodb:Query",
+                "dynamodb:UpdateItem",
+                "dynamodb:UpdateTable"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${DeliveryDirectorDynamodbTableName}"
+                }
               ]
             },
             {
@@ -1483,6 +1518,19 @@
               "Resource": [
                 { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailMsgHistoryBucketName" }, "/*" ] ] },
                 { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailMsgHistoryBucketName" } ] ] }
+              ]
+            },
+            {
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObject"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "DeliveryDirectorBucketName" }, "/*" ] ] },
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "DeliveryDirectorBucketName" } ] ] }
               ]
             },
             {
