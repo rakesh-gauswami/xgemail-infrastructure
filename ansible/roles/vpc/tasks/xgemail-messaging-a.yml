@@ -1,23 +1,23 @@
-- name: "Deploy {{stack.msg.xgemail_messaging_new}} to {{account.name}} {{account.region}}"
+- name: "Deploy {{stack.msg.xgemail_messaging_a}} to {{account.name}} {{account.region}}"
   cloudformation:
-    stack_name: "{{stack.msg.xgemail_messaging_new}}"
+    stack_name: "{{stack.msg.xgemail_messaging_a}}"
     state: present
     region: "{{account.region}}"
     disable_rollback: true
-    template: "{{template.msg.xgemail_messaging_new_template}}"
+    template: "{{template.msg.xgemail_messaging_a_template}}"
     template_parameters:
       AdditionalActionQueue:    "{{sqs.additional_action_sqs_queue_sns_listener}}"
       MessageHistoryQueue:      "{{sqs.msg_history_sqs_queue_sns_listener}}"
       MessageStatisticsQueue:   "{{sqs.msg_statistics_sqs_queue_sns_listener}}"
       DeltaDeliveryTopicArn:    "{{sns.arn_prefix}}{{sns.delta_delivery_sns_topic}}"
       DeltaDeliveryQueue:       "{{sqs.delta_delivery_sqs_queue_sns_listener}}"
-  register: messaging_new_stack
+  register: messaging_a_stack
 
 - debug:
-    var: messaging_new_stack
+    var: messaging_a_stack
     verbosity: 3
 
-- name: "Display Xgemail Messaging New Stack Output"
+- name: "Display Xgemail Messaging A Stack Output"
   debug:
-    msg: "{{messaging_new_stack.stack_outputs}}"
+    msg: "{{messaging_a_stack.stack_outputs}}"
     verbosity: 2
