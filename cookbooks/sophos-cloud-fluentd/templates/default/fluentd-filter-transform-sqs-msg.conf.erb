@@ -44,6 +44,14 @@
   </parse>
 </filter>
 
+<filter sqs.msg.delivery.redirected>
+  @type record_transformer
+  enable_ruby
+  <record>
+    dsn_code ${}
+  </record>
+</filter>
+
 <filter sqs.msg.{delivery,returned}.**>
   @type record_transformer
   enable_ruby
