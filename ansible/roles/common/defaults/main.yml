@@ -150,7 +150,7 @@ sns:
   user_allow_block_action_sns_topic:                    "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-user-allow-block-action-SNS"
   user_deleted_action_sns_topic:                        "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-user-deleted-action-SNS"
   warmup_delivery_sns_topic:                            "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-warmup-delivery-SNS"
-  journal-archive-delivery-SNS:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-journal-archive-delivery-SNS"
+  journal_archive_delivery_sns:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-journal-archive-delivery-SNS"
 sdb:
   volume_tracker_sdb:                                   "{{volume_tracker_sdb_output.ansible_facts.cloudformation[stack.sdb.volume_tracker_sdb].stack_outputs.SimpleDbDomain}}"
 dynamodb:
@@ -325,7 +325,7 @@ stack:
     user_allow_block_action_sns_topic:                  "{{vpc.cloud_email.name}}-xgemail-user-allow-block-action-SNS"
     user_deleted_action_sns_topic:                      "{{vpc.cloud_email.name}}-xgemail-user-deleted-action-SNS"
     warmup_delivery_sns_topic:                          "{{vpc.cloud_email.name}}-xgemail-warmup-delivery-SNS"
-    journal-archive-delivery-SNS:                       "{{vpc.cloud_email.name}}-xgemail-journal-archive-delivery-SNS"
+    journal_archive_delivery_sns:                       "{{vpc.cloud_email.name}}-xgemail-journal-archive-delivery-SNS"
   ssm:
     ssm_documents:                                      "{{vpc.cloud_email.name}}-SSM-Documents"
   msg:
