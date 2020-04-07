@@ -5,8 +5,8 @@
     mode:               put
     region:             "{{account.region}}"
     bucket:             "{{cloud_applications}}"
-    object:             "{{build.branch}}/xgemail-infrastructure/xgemail_messaging_template.json"
-    src:                "{{template.msg.xgemail_messaging_template}}"
+    object:             "{{build.branch}}/xgemail-infrastructure/xgemail_messaging_a_template.json"
+    src:                "{{template.msg.xgemail_messaging_a_template}}"
     overwrite:          always
 
 # CloudEmail SNS subscriptions and SQS queue policy
@@ -16,7 +16,7 @@
     state: present
     region: "{{account.region}}"
     disable_rollback: true
-    template_url:                                       "https://s3.amazonaws.com/{{cloud_applications}}/{{build.branch}}/xgemail-infrastructure/xgemail_messaging_template.json"
+    template_url:                                       "https://s3.amazonaws.com/{{cloud_applications}}/{{build.branch}}/xgemail-infrastructure/xgemail_messaging_a_template.json"
     template_parameters:
       AdditionalActionTopicArn:                         "{{sns.arn_prefix}}{{sns.additional_actions_sns_topic}}"
       AdditionalActionQueue:                            "{{sqs.additional_action_sqs_queue_sns_listener}}"
