@@ -63,7 +63,41 @@
               "queue"
             ]
           ]
-        }
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-", [
+                  {"Fn::If": [ "UseVPCId",
+                    { "Ref": "VPCId" },
+                    {"Ref" : "AWS::NoValue" }
+                  ]},
+                  { "Ref": "Environment" },
+                  { "Ref": "SubscriptionName" },
+                  "queue"
+                ]
+              ]
+            }
+          },
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
       }
     },
 
@@ -87,7 +121,41 @@
               "topic"
             ]
           ]
-        }
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-", [
+                  {"Fn::If": [ "UseVPCId",
+                    { "Ref": "VPCId" },
+                    {"Ref" : "AWS::NoValue" }
+                  ]},
+                  { "Ref": "Environment" },
+                  { "Ref": "SubscriptionName" },
+                  "topic"
+                ]
+              ]
+            }
+          },
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
       }
     },
 

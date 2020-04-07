@@ -140,7 +140,29 @@
         "Runtime": { "Ref": "Runtime" },
         "Timeout": { "Ref": "Timeout" },
         "MemorySize": {"Ref": "MemorySize"},
-        "ReservedConcurrentExecutions": "1"
+        "ReservedConcurrentExecutions": "1",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Ref": "FunctionName" }
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          }
+        ]
       }
     },
 

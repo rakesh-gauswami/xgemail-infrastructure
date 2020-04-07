@@ -129,6 +129,11 @@
         "false"
       ],
       "Default": "false"
+    },
+    "TagApplication": {
+      "Description": "Tag for the Application being deployed",
+      "Type": "String",
+      "Default": "cloudemail"
     }
   },
   "Conditions": {
@@ -230,6 +235,22 @@
                 ]
               ]
             }
+          },
+          {
+            "Key": "Application",
+            "Value": { "Ref": "TagApplication" }
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
           }
         ]
       }

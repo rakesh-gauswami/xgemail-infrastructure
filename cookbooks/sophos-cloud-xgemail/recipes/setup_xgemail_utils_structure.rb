@@ -18,6 +18,7 @@ BLOCKED_SENDER_API = 'blocked_sender_api.py'
 TRANSPORT_ROUTE_CONFIG = 'transportrouteconfig.py'
 BULKSENDER_FORMATTER = 'bulksenderformatter.py'
 BULK_SENDER_ACTION = "bulk_sender_action.py"
+DELIVERY_DIRECTOR_FORMATTER = "deliverydirectorthreshold.py"
 
 [
     XGEMAIL_FILES_DIR,
@@ -42,7 +43,6 @@ end
     'allowblockimporter.py',
     'awshandler.py',
     'configformatter.py',
-    'deliverydirector_config_updater.py',
     'diskutils.py',
     'formatterutils.py',
     'gziputils.py',
@@ -95,6 +95,12 @@ elsif NODE_TYPE == 'customer-submit'
   end
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{BULKSENDER_FORMATTER}" do
     source 'bulksenderformatter.py'
+    mode '0644'
+    owner 'root'
+    group 'root'
+  end
+  cookbook_file "#{XGEMAIL_UTILS_DIR}/#{DELIVERY_DIRECTOR_FORMATTER}" do
+    source 'deliverydirectorthreshold.py'
     mode '0644'
     owner 'root'
     group 'root'
