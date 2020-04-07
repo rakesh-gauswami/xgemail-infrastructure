@@ -71,6 +71,7 @@ s3:
 sqs:
   arn_prefix:                                           "arn:aws:sqs:{{account.region}}:{{aws_account_id}}:"
   url_prefix:                                           "https://sqs.{{account.region}}.amazonaws.com/{{aws_account_id}}/"
+  #
   additional_action_sqs_queue_sns_listener:             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_AdditionalActions_SNS_Listener"
   allow_block_upload_sqs_queue:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Allow_Block_Upload"
   atr_reindex_sqs_queue_sns_listener:                   "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Atr_Reindex_SNS_Listener"
@@ -120,9 +121,10 @@ sqs:
 
 # CloudEmail SNS Topic Names.
 sns:
+  arn_prefix:                                           "arn:aws:sns:{{account.region}}:{{aws_account_id}}:"
+  #
   additional_actions_sns_topic:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-additional-actions-SNS"
   alarm_sns_topic:                                      "{{account.name}}-xgemail-alarm-topic"
-  arn_prefix:                                           "arn:aws:sns:{{account.region}}:{{aws_account_id}}:"
   atr_reindex_sns_topic:                                "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-atr-reindex-SNS"
   bounce_events_sns_topic:                              "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-bounce-events-SNS"
   delay_sns_topic:                                      "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-delay-SNS"
@@ -409,5 +411,5 @@ template:
   ssm:
     ssm_xgemail_document_template:                      "{{tmp_artifacts_dir}}/ssm_xgemail_document_template.json"
   msg:
-    xgemail_messaging_a_template:                         "{{tmp_artifacts_dir}}/xgemail_messaging_a_template.json"
+    xgemail_messaging_a_template:                       "{{tmp_artifacts_dir}}/xgemail_messaging_a_template.json"
     xgemail_messaging_b_template:                       "{{tmp_artifacts_dir}}/xgemail_messaging_b_template.json"
