@@ -1826,6 +1826,108 @@
       }
     },
 
+    "XgemailDeltaDeliverySecurityGroupLb": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Controls access to public facing ELBs.",
+        "Tags": [
+          {
+            "Key": "Branch",
+            "Value": { "Ref" : "Branch" }
+
+          },
+          {
+            "Key": "Environment",
+            "Value": { "Ref" : "Environment" }
+          },
+          {
+            "Key": "Role",
+            "Value": "svc-xgemail-delta-delivery-elb"
+
+          },
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "Environment"
+                  },
+                  "-",
+                  {
+                    "Ref": "Branch"
+                  },
+                  "-",
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "/sg/xgemail/delta/delivery/elb"
+                ]
+              ]
+            }
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      }
+    },
+
+    "XgemailDeltaDeliverySecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Xgemail Delta Delivery security group.",
+        "Tags": [{
+          "Key": "Name",
+          "Value": {
+            "Fn::Join": [ "", [
+              { "Ref": "Environment" }, "-",
+              { "Ref": "Branch" }, "-",
+              { "Ref": "AWS::StackName" }, "/sg/xgemail/delta/delivery"
+            ]]
+          }
+        },
+        {
+          "Key": "Application",
+          "Value": "delta-delivery"
+        },
+        {
+          "Key": "BusinessUnit",
+          "Value": "MSG"
+        },
+        {
+          "Key": "Project",
+          "Value": "xgemail"
+        },
+        {
+          "Key": "OwnerEmail",
+          "Value": "sophosmailops@sophos.com"
+        }],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "25",
+            "ToPort": "25",
+            "SourceSecurityGroupId": { "Ref": "XgemailDeltaDeliverySecurityGroupLb" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "587",
+            "ToPort": "587",
+            "SourceSecurityGroupId": { "Ref": "XgemailDeltaDeliverySecurityGroupLb" }
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "-1",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "VpcId": { "Ref": "Vpc" }
+      }
+    },
+
     "XgemailXdeliverySecurityGroupLb": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
@@ -2367,6 +2469,17 @@
       }
     },
 
+    "XgemailDeltaDeliverySecurityGroupIngressBastionSsh": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailDeltaDeliverySecurityGroup" },
+        "SourceSecurityGroupId": { "Ref": "SecurityGroupBastion" },
+        "IpProtocol": "tcp",
+        "FromPort": "22",
+        "ToPort": "22"
+      }
+    },
+
     "XgemailInternetDeliverySecurityGroupIngressBastionSsh": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
@@ -2608,6 +2721,14 @@
     "XgemailCustomerSubmitSecurityGroup": {
       "Description": "Xgemail Customer Submit security group",
       "Value": { "Ref": "XgemailCustomerSubmitSecurityGroup" }
+    },
+    "XgemailDeltaDeliverySecurityGroupLb": {
+      "Description": "Xgemail Delta Delivery Load Balancer security group",
+      "Value": { "Ref": "XgemailDeltaDeliverySecurityGroupLb" }
+    },
+    "XgemailDeltaDeliverySecurityGroup": {
+      "Description": "Xgemail Delta Delivery security group",
+      "Value": { "Ref": "XgemailDeltaDeliverySecurityGroup" }
     },
     "XgemailInternetSubmitSecurityGroupLb": {
       "Description": "Xgemail Internet Submit Load Balancer security group",

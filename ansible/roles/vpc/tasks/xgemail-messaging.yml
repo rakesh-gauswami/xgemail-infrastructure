@@ -5,8 +5,8 @@
     mode:               put
     region:             "{{account.region}}"
     bucket:             "{{cloud_applications}}"
-    object:             "{{build.branch}}/xgemail-infrastructure/xgemail_messaging_template.json"
-    src:                "{{template.msg.xgemail_messaging_template}}"
+    object:             "{{build.branch}}/xgemail-infrastructure/xgemail_messaging_a_template.json"
+    src:                "{{template.msg.xgemail_messaging_a_template}}"
     overwrite:          always
 
 # CloudEmail SNS subscriptions and SQS queue policy
@@ -16,7 +16,7 @@
     state: present
     region: "{{account.region}}"
     disable_rollback: true
-    template_url:                                       "https://s3.amazonaws.com/{{cloud_applications}}/{{build.branch}}/xgemail-infrastructure/xgemail_messaging_template.json"
+    template_url:                                       "https://s3.amazonaws.com/{{cloud_applications}}/{{build.branch}}/xgemail-infrastructure/xgemail_messaging_a_template.json"
     template_parameters:
       AdditionalActionTopicArn:                         "{{sns.arn_prefix}}{{sns.additional_actions_sns_topic}}"
       AdditionalActionQueue:                            "{{sqs.additional_action_sqs_queue_sns_listener}}"
@@ -87,4 +87,29 @@
 - name: "Display Xgemail Messaging Stack Output"
   debug:
     msg: "{{messaging_stack.stack_outputs}}"
+    verbosity: 2
+
+# CloudEmail SNS subscriptions and SQS queue policy
+- name: "Deploy {{stack.msg.xgemail_messaging_b}} to {{account.name}} {{account.region}}"
+  cloudformation:
+    stack_name: "{{stack.msg.xgemail_messaging_b}}"
+    state: present
+    region: "{{account.region}}"
+    disable_rollback: true
+    template: "{{template.msg.xgemail_messaging_b_template}}"
+    template_parameters:
+      AdditionalActionQueue:    "{{sqs.additional_action_sqs_queue_sns_listener}}"
+      MessageHistoryQueue:      "{{sqs.msg_history_sqs_queue_sns_listener}}"
+      MessageStatisticsQueue:   "{{sqs.msg_statistics_sqs_queue_sns_listener}}"
+      DeltaDeliveryTopicArn:    "{{sns.arn_prefix}}{{sns.delta_delivery_sns_topic}}"
+      DeltaDeliveryQueue:       "{{sqs.delta_delivery_sqs_queue_sns_listener}}"
+  register: messaging_b_stack
+
+- debug:
+    var: messaging_b_stack
+    verbosity: 3
+
+- name: "Display Xgemail Messaging B Stack Output"
+  debug:
+    msg: "{{messaging_b_stack.stack_outputs}}"
     verbosity: 2
