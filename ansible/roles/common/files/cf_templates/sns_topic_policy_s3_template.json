@@ -37,6 +37,11 @@
       "Type": "String",
       "AllowedValues": [ "true", "false" ],
       "Default": "false"
+    },
+    "TagApplication": {
+      "Description": "Tag for the Application being deployed",
+      "Type": "String",
+      "Default": "cloudemail"
     }
   },
 
@@ -50,7 +55,29 @@
     "SnsTopic": {
       "Type": "AWS::SNS::Topic",
       "Properties": {
-        "TopicName": { "Ref": "TopicName" }
+        "TopicName": { "Ref": "TopicName" },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": { "Ref": "TopicName" }
+          },
+          {
+            "Key": "Application",
+            "Value": { "Ref": "TagApplication" }
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
       }
     },
     "SnsS3TopicPolicy": {

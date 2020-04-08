@@ -146,6 +146,9 @@ default['xgemail']['msg_history_status_sns_topic'] = "#{node['xgemail']['station
 default['xgemail']['msg_history_events_sns_topic'] = "#{node['xgemail']['station_vpc_id']}-xgemail-msg-history-events-SNS"
 default['xgemail']['scan_events_sns_topic'] = "#{node['xgemail']['station_vpc_id']}-xgemail-scan-events-SNS"
 
+# SQS Names
+default['xgemail']['msg_history_delivery_status_sqs'] = "#{node['xgemail']['station_vpc_id']}-Xgemail_MessageHistory_Delivery_Status"
+
 ## Policy service/poller settings
 default['xgemail']['sqs_policy_poller_visibility_timeout'] = '10'
 default['xgemail']['sqs_policy_poller_message_retention_period'] = '172800'
@@ -217,6 +220,7 @@ default['xgemail']['internet_submit_recipient_cron_minute_frequency'] = 5
 default['xgemail']['xgemail_sqs_lifecycle_poller_cron_minute_frequency'] = 1
 
 default['xgemail']['recipient_access_filename'] = 'recipient_access'
+default['xgemail']['recipient_access_extra_filename'] = 'recipient_access_extra'
 default['xgemail']['relay_domains_filename']  = 'relay_domains'
 default['xgemail']['s3_encryption_algorithm'] = 'AES256'
 default['xgemail']['soft_retry_senders_map_filename'] = 'soft_retry_senders_map'

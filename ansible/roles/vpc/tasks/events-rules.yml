@@ -51,3 +51,25 @@
   debug:
     msg: "{{events_rule_lifecycle_lambda_stack.stack_outputs}}"
     verbosity: 2
+
+# Rate Limit Events Rule
+- name: "Deploy Bulk Rate Limit Events Rule {{stack.events.rule.ratelimit_automation}} to {{account.name}}-{{account.region}}"
+  cloudformation:
+    stack_name:                             "{{stack.events.rule.ratelimit_automation}}"
+    state:                                  present
+    region:                                 "{{account.region}}"
+    disable_rollback:                       true
+    template:                               "{{template.events.rule.events_rule_ratelimit_template}}"
+    template_parameters:
+      TargetsArn:                            "{{ssm_stack.stack_outputs.BulkSenderAutomation}}"
+      TargetsId:                             "ratelimit_automation"
+  register: events_rule_ratelimit_stack
+
+- debug:
+    var: events_rule_ratelimit_stack
+    verbosity: 3
+
+- name: "Display Rate Limit Events Rule Stack Output"
+  debug:
+    msg: "{{events_rule_ratelimit_stack.stack_outputs}}"
+    verbosity: 2
