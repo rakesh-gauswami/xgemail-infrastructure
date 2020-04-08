@@ -129,6 +129,7 @@ sns:
   encrypt_events_sns_topic:                             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-encrypt-events-SNS"
   encryption_settings_update_sns_topic:                 "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-encryption-settings-update-SNS"
   internet_delivery_sns_topic:                          "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-internet-delivery-SNS"
+  journal_archive_delivery_sns:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-journal-archive-delivery-SNS"
   lifecycle_sqs_sns:                                    "{{account.name}}-xgemail-lifecycle-topic"
   mailops_notification_sns_topic:                       "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-mailops-notification-SNS"
   msg_history_events_sns_topic:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-msg-history-events-SNS"
@@ -150,7 +151,6 @@ sns:
   user_allow_block_action_sns_topic:                    "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-user-allow-block-action-SNS"
   user_deleted_action_sns_topic:                        "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-user-deleted-action-SNS"
   warmup_delivery_sns_topic:                            "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-warmup-delivery-SNS"
-  journal_archive_delivery_sns:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-journal-archive-delivery-SNS"
 sdb:
   volume_tracker_sdb:                                   "{{volume_tracker_sdb_output.ansible_facts.cloudformation[stack.sdb.volume_tracker_sdb].stack_outputs.SimpleDbDomain}}"
 dynamodb:
@@ -305,6 +305,7 @@ stack:
     encrypt_events_sns_topic:                           "{{vpc.cloud_email.name}}-xgemail-encrypt-events-SNS"
     encryption_settings_update_sns_topic:               "{{vpc.cloud_email.name}}-xgemail-encryption-settings-update-SNS"
     internet_delivery_sns_topic:                        "{{vpc.cloud_email.name}}-xgemail-internet-delivery-SNS"
+    journal_archive_delivery_sns:                       "{{vpc.cloud_email.name}}-xgemail-journal-archive-delivery-SNS"
     mailops_notification_sns_topic:                     "{{vpc.cloud_email.name}}-xgemail-mailops-notification-SNS"
     msg_history_events_sns_topic:                       "{{vpc.cloud_email.name}}-xgemail-msg-history-events-SNS"
     msg_history_status_sns_topic:                       "{{vpc.cloud_email.name}}-xgemail-msg-history-delivery-status-SNS"
@@ -325,7 +326,6 @@ stack:
     user_allow_block_action_sns_topic:                  "{{vpc.cloud_email.name}}-xgemail-user-allow-block-action-SNS"
     user_deleted_action_sns_topic:                      "{{vpc.cloud_email.name}}-xgemail-user-deleted-action-SNS"
     warmup_delivery_sns_topic:                          "{{vpc.cloud_email.name}}-xgemail-warmup-delivery-SNS"
-    journal_archive_delivery_sns:                       "{{vpc.cloud_email.name}}-xgemail-journal-archive-delivery-SNS"
   ssm:
     ssm_documents:                                      "{{vpc.cloud_email.name}}-SSM-Documents"
   msg:
