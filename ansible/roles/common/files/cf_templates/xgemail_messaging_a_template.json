@@ -1054,6 +1054,18 @@
                   "aws:SourceArn": {"Ref": "WarmupDeliveryTopicArn"}
                 }
               }
+            },
+            {
+              "Sid": "Allow-DeltaDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": [{ "Fn::ImportValue" :  {"Fn::Sub": "CloudEmail-xgemail-delta-delivery-SNS-SnsTopicArn" } }]
+                }
+              }
             }
           ]
         },
@@ -1220,6 +1232,18 @@
               "Condition": {
                 "ArnEquals": {
                   "aws:SourceArn": {"Ref": "EncryptEventsTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-DeltaDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": [{ "Fn::ImportValue" :  {"Fn::Sub": "CloudEmail-xgemail-delta-delivery-SNS-SnsTopicArn" } }]
                 }
               }
             }
@@ -1412,6 +1436,18 @@
               "Condition": {
                 "ArnEquals": {
                   "aws:SourceArn": {"Ref": "WarmupDeliveryTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-DeltaDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": [{ "Fn::ImportValue" :  {"Fn::Sub": "CloudEmail-xgemail-delta-delivery-SNS-SnsTopicArn" } }]
                 }
               }
             }

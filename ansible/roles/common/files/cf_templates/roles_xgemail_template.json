@@ -70,7 +70,29 @@
             "Action": [ "sts:AssumeRole" ]
           }]
         },
-        "Path": "/"
+        "Path": "/",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "AutoScalingInstanceRole" ] ] }
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
       }
     },
     "AutoScalingInstanceRolePolicies": {
@@ -153,7 +175,29 @@
             }
           ]
         },
-        "Path" : "/"
+        "Path" : "/",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "bastion"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "BastionInstanceRole" ] ] }
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
       }
     },
     "BastionInstanceRolePolicies": {
@@ -251,7 +295,29 @@
             "Action": [ "sts:AssumeRole" ]
           }]
         },
-        "Path": "/"
+        "Path": "/",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "EipMonitorLambdaExecutionRole" ] ] }
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
       }
     },
     "EipMonitorLambdaExecutionRolePolicies": {
@@ -358,7 +424,29 @@
             "Action": [ "sts:AssumeRole" ]
           }]
         },
-        "Path": "/"
+        "Path": "/",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "EipRotationLambdaExecutionRole" ] ] }
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
       }
     },
     "EipRotationLambdaExecutionRolePolicies": {
@@ -449,7 +537,29 @@
             "Action": [ "sts:AssumeRole" ]
           }]
         },
-        "Path": "/"
+        "Path": "/",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "FirehoseTransformationLambdaExecutionRole" ] ] }
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
       }
     },
     "FirehoseTransformationLambdaExecutionRolePolicies": {
@@ -507,7 +617,29 @@
             }
           ]
         },
-        "Path": "/"
+        "Path": "/",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "LogicMonitor"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "LogicMonitorInstanceRole" ] ] }
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
       },
       "Type": "AWS::IAM::Role"
     },
@@ -624,7 +756,29 @@
             }
           ]
         },
-        "Path": "/"
+        "Path": "/",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "customer-delivery"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "XgemailCustomerDeliveryInstanceRole" ] ] }
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
       }
     },
     "XgemailCustomerDeliveryInstanceRolePolicies" : {
@@ -874,7 +1028,29 @@
             }
           ]
         },
-        "Path": "/"
+        "Path": "/",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "internet-delivery"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "XgemailInternetDeliveryInstanceRole" ] ] }
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
       }
     },
     "XgemailInternetDeliveryInstanceRolePolicies" : {
@@ -1113,7 +1289,29 @@
             }
           ]
         },
-        "Path": "/"
+        "Path": "/",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "internet-submit"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "XgemailInternetSubmitInstanceRole" ] ] }
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
       }
     },
     "XgemailInternetSubmitInstanceRolePolicies": {
@@ -1425,7 +1623,29 @@
             }
           ]
         },
-        "Path": "/"
+        "Path": "/",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "customer-submit"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "XgemailCustomerSubmitInstanceRole" ] ] }
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
       }
     },
     "XgemailCustomerSubmitInstanceRolePolicies": {
@@ -1735,7 +1955,29 @@
             }
           ]
         },
-        "Path": "/"
+        "Path": "/",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "encryption-delivery"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "XgemailEncryptionDeliveryInstanceRole" ] ] }
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
       }
     },
     "XgemailEncryptionDeliveryInstanceRolePolicies" : {
@@ -1984,7 +2226,29 @@
             }
           ]
         },
-        "Path": "/"
+        "Path": "/",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "encryption-submit"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "XgemailEncryptionSubmitInstanceRole" ] ] }
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
       }
     },
     "XgemailEncryptionSubmitInstanceRolePolicies" : {
@@ -2233,7 +2497,29 @@
             }
           ]
         },
-        "Path": "/"
+        "Path": "/",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "customer-xdelivery"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "XgemailXdeliveryInstanceRole" ] ] }
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
       }
     },
     "XgemailXdeliveryInstanceRolePolicies": {
@@ -2432,7 +2718,29 @@
             }
           ]
         },
-        "Path": "/"
+        "Path": "/",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "internet-xdelivery"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "XgemailInternetXdeliveryInstanceRole" ] ] }
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
       }
     },
     "XgemailInternetXdeliveryInstanceRolePolicies": {
@@ -2638,7 +2946,29 @@
             }
           ]
         },
-        "Path": "/"
+        "Path": "/",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "risky-delivery"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "XgemailRiskyDeliveryInstanceRole" ] ] }
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
       }
     },
     "XgemailRiskyDeliveryInstanceRolePolicies": {
@@ -2998,7 +3328,29 @@
             }
           ]
         },
-        "Path": "/"
+        "Path": "/",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "risky-xdelivery"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "XgemailRiskyXdeliveryInstanceRole" ] ] }
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
       }
     },
     "XgemailRiskyXdeliveryInstanceRolePolicies": {
@@ -3250,7 +3602,29 @@
             }
           ]
         },
-        "Path": "/"
+        "Path": "/",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "warmup-delivery"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "XgemailWarmupDeliveryInstanceRole" ] ] }
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
       }
     },
     "XgemailWarmupDeliveryInstanceRolePolicies": {
@@ -3592,7 +3966,29 @@
             }
           ]
         },
-        "Path": "/"
+        "Path": "/",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "warmup-xdelivery"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "XgemailWarmupXdeliveryInstanceRole" ] ] }
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
       }
     },
     "XgemailWarmupXdeliveryInstanceRolePolicies": {
@@ -3810,6 +4206,370 @@
           }
         ]
       }
+    },
+
+    "XgemailDeltaDeliveryInstanceProfile": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Path": "/",
+        "Roles": [
+          {
+            "Ref": "XgemailDeltaDeliveryInstanceRole"
+          }
+        ]
+      }
+    },
+    "XgemailDeltaDeliveryInstanceRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
+        ],
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "ec2.amazonaws.com"
+                ]
+              }
+            }
+          ]
+        },
+        "Path": "/",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "delta-delivery"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "XgemailDeltaDeliveryInstanceRole" ] ] }
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
+      }
+    },
+    "XgemailDeltaDeliveryInstanceRolePolicies": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "autoscaling:CompleteLifecycleAction",
+                "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:DescribeLifecycleHooks",
+                "autoscaling:RecordLifecycleActionHeartbeat",
+                "autoscaling:UpdateAutoScalingGroup"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "ec2:AssociateAddress",
+                "ec2:AttachVolume",
+                "ec2:CreateSnapshot",
+                "ec2:CreateTags",
+                "ec2:CreateVolume",
+                "ec2:DeleteVolume",
+                "ec2:DescribeAddresses",
+                "ec2:DescribeImages",
+                "ec2:DescribeSnapshots",
+                "ec2:DescribeTags",
+                "ec2:DescribeVolumes",
+                "ec2:DescribeInstances",
+                "ec2:DescribeInstanceAttribute",
+                "ec2:DetachVolume",
+                "ec2:DescribeVpcs",
+                "ec2:DescribeNatGateways",
+                "ec2:DescribeSubnets",
+                "ec2:DescribeRouteTables",
+                "ec2:ModifyInstanceAttribute",
+                "ec2:ModifySnapshotAttribute"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "iam:GetRole"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "kms:CreateGrant",
+                "kms:Decrypt",
+                "kms:DescribeKey",
+                "kms:Encrypt",
+                "kms:GenerateDataKey",
+                "kms:GenerateDataKeyWithoutPlaintext",
+                "kms:List*",
+                "kms:ReEncrypt*",
+                "kms:RevokeGrant"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:DescribeLogGroups",
+                "logs:DescribeLogStreams",
+                "logs:DescribeMetricFilters",
+                "logs:PutLogEvents"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObject",
+                "s3:RestoreObject"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "XgemailMsgHistoryBucketName"
+                      },
+                      "/*"
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "XgemailMsgHistoryBucketName"
+                      }
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObject",
+                "s3:RestoreObject"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "XgemailMsgHistoryMsBucketName"
+                      },
+                      "/*"
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "XgemailMsgHistoryMsBucketName"
+                      }
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Action": [
+                "s3:DeleteObject",
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "XgemailCustomerSubmitBucketName"
+                      },
+                      "/*"
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "XgemailCustomerSubmitBucketName"
+                      }
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:ListBucket"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "-",
+                    [
+                      "arn:aws:s3:::logs-sophos-msg",
+                      {
+                        "Ref": "Environment"
+                      },
+                      "*"
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Action": [
+                "s3:PutObject"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "/",
+                    [
+                      {
+                        "Fn::Join": [
+                          "-",
+                          [
+                            "arn:aws:s3:::logs-sophos-msg",
+                            {
+                              "Ref": "Environment"
+                            },
+                            "*"
+                          ]
+                        ]
+                      },
+                      "*"
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Action": [
+                "s3:DeleteObject",
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:PutObject"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:s3:::cloud-*"
+              ]
+            },
+            {
+              "Action": [
+                "sns:ListSubscriptionsByTopic",
+                "sns:ListTopics",
+                "sns:Publish",
+                "sns:Subscribe",
+                "sns:Unsubscribe"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    ":",
+                    [
+                      "arn:aws:sns",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      "*"
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Action": [
+                "sqs:ChangeMessageVisibility",
+                "sqs:CreateQueue",
+                "sqs:DeleteMessage",
+                "sqs:DeleteQueue",
+                "sqs:GetQueueAttributes",
+                "sqs:GetQueueUrl",
+                "sqs:ListQueues",
+                "sqs:SendMessage",
+                "sqs:SetQueueAttributes",
+                "sqs:ReceiveMessage"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ]
+        },
+        "PolicyName": "root",
+        "Roles": [
+          {
+            "Ref": "XgemailDeltaDeliveryInstanceRole"
+          }
+        ]
+      }
     }
   },
 
@@ -4013,6 +4773,18 @@
     "XgemailWarmupXdeliveryInstanceRoleArn": {
       "Description": "XGEMAIL Warmup Xdelivery instance role ARN",
       "Value": { "Fn::GetAtt" : [ "XgemailWarmupXdeliveryInstanceRole", "Arn" ] }
+    },
+    "XgemailDeltaDeliveryInstanceProfile": {
+      "Description": "XGEMAIL Delta Delivery instance profile",
+      "Value": { "Ref": "XgemailDeltaDeliveryInstanceProfile" }
+    },
+    "XgemailDeltaDeliveryInstanceRole": {
+      "Description": "XGEMAIL Delta Delivery instance role",
+      "Value": { "Ref": "XgemailDeltaDeliveryInstanceRole" }
+    },
+    "XgemailDeltaDeliveryInstanceRoleArn": {
+      "Description": "XGEMAIL Delta Delivery instance role ARN",
+      "Value": { "Fn::GetAtt" : [ "XgemailDeltaDeliveryInstanceRole", "Arn" ] }
     }
   }
 }

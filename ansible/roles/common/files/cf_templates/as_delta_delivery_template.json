@@ -1,11 +1,11 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
 
-  "Description": "Sophos Email AutoScaling Group template for Sophos Cloud used for encryption-delivery EC2 Instances.",
+  "Description": "Sophos Email AutoScaling Group template for Sophos Cloud used for delta-delivery EC2 Instances.",
 
   "Metadata": {
     "Copyright": [
-      "Copyright 2019, Sophos Limited. All rights reserved.",
+      "Copyright 2020, Sophos Limited. All rights reserved.",
       "",
       "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
       "Sophos Limited and Sophos Group.  All other product and company",
@@ -14,7 +14,7 @@
     ],
 
     "Comments": [
-      "Sophos Email AutoScaling Group template for Sophos Cloud used for encryption-delivery EC2 Instances."
+      "Sophos Email AutoScaling Group template for Sophos Cloud used for delta-delivery EC2 Instances."
     ]
   },
 
@@ -22,6 +22,22 @@
     "AesDecryptionKey": {
       "Description": "Decryption key for encrypted buckets",
       "Type": "String"
+    },
+    "AlarmScalingEnabled": {
+      "Description": "Enable AutoScaling Alarms to trigger scaling policies.",
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [ "true", "false" ]
+    },
+    "AlarmScaleInThreshold": {
+      "Description": "The value against which the specified statistic is compared.",
+      "Type": "Number",
+      "Default": "1000"
+    },
+    "AlarmScaleOutThreshold": {
+      "Description": "The value against which the specified statistic is compared.",
+      "Type": "Number",
+      "Default": "5000"
     },
     "AlarmTopicArn": {
       "Description": "ARN for SNS Topic that should receive alarm notifications",
@@ -117,8 +133,12 @@
       "Type": "AWS::EC2::KeyPair::KeyName",
       "Description": "Key pair used to SSH to the instance"
     },
+    "LifecycleHookLaunching": {
+      "Description": "Name of the Launching Lifecycle Hook.",
+      "Type": "String"
+    },
     "LifecycleHookTerminating": {
-      "Description": "Name of the Lifecycle Hook.",
+      "Description": "Name of the Terminating Lifecycle Hook.",
       "Type": "String"
     },
     "LoadBalancerName": {
@@ -188,6 +208,21 @@
       "Type": "Number",
       "MinValue": "1",
       "MaxValue": "16384"
+    },
+    "XgemailMsgHistoryStatusSnsArn": {
+      "Description" : "ARN for the SNS Topic where Message History delivery status events are published",
+      "Type" : "String",
+      "Default": ""
+    },
+    "XgemailNotifierQueueUrl" : {
+      "Description" : "URL for the SQS Queue where XGEMAIL messages are sent",
+      "Type" : "String",
+      "Default": ""
+    },
+    "XgemailSnsSqsQueue": {
+      "Description": "The SNS-SQS Queue where XGEMAIL messages are sent",
+      "Type": "String",
+      "Default": ""
     },
     "XgemailSnsSqsQueueUrl": {
       "Description": "URL for the SNS-SQS Queue where XGEMAIL messages are sent",
@@ -366,6 +401,13 @@
         "LaunchConfigurationName": { "Ref": "XgemailAutoScalingLaunchConfig" },
         "LifecycleHookSpecificationList" : [
           {
+            "LifecycleHookName": { "Ref": "LifecycleHookLaunching" },
+            "HeartbeatTimeout" : "300",
+            "LifecycleTransition" : "autoscaling:EC2_INSTANCE_LAUNCHING",
+            "NotificationTargetARN" : { "Ref": "AutoScalingNotificationTopicARN" },
+            "RoleARN" : { "Ref": "AutoScalingInstanceRoleArn" }
+          },
+          {
             "LifecycleHookName": { "Ref": "LifecycleHookTerminating" },
             "HeartbeatTimeout" : "300",
             "LifecycleTransition" : "autoscaling:EC2_INSTANCE_TERMINATING",
@@ -503,12 +545,83 @@
       }
     },
 
+    "AlarmScaleIn": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "ActionsEnabled": { "Ref": "AlarmScalingEnabled" },
+        "AlarmDescription": {
+          "Fn::Join": [
+            " ", [
+              "Alarm when",
+              { "Ref": "XgemailServiceType" },
+              "visible SQS messages is below threshold of",
+              { "Ref": "AlarmScaleInThreshold" },
+              "for a duration of time"
+            ]
+          ]
+        },
+        "DatapointsToAlarm": "3",
+        "EvaluationPeriods": "10",
+        "Period": "60",
+        "Statistic": "Average",
+        "Threshold": { "Ref": "AlarmScaleInThreshold" },
+        "InsufficientDataActions": [ { "Ref": "XgemailScaleInPolicy" } ],
+        "AlarmActions": [
+          { "Ref": "XgemailScaleInPolicy" }
+        ],
+        "Namespace": "AWS/SQS",
+        "Dimensions": [
+          {
+            "Name": "QueueName",
+            "Value": { "Ref": "XgemailSnsSqsQueue" }
+          }
+        ],
+        "ComparisonOperator":"LessThanThreshold",
+        "MetricName":"ApproximateNumberOfMessagesVisible"
+      }
+    },
+
+    "AlarmScaleOut": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "ActionsEnabled": { "Ref": "AlarmScalingEnabled" },
+        "AlarmDescription": {
+          "Fn::Join": [
+            " ", [
+              "Alarm when",
+              { "Ref": "XgemailServiceType" },
+              "visible SQS messages exceeds a threshold of",
+              { "Ref": "AlarmScaleOutThreshold" },
+              "for a duration of time"
+            ]
+          ]
+        },
+        "DatapointsToAlarm": "5",
+        "EvaluationPeriods": "8",
+        "Period": "60",
+        "Statistic": "Average",
+        "Threshold": { "Ref": "AlarmScaleOutThreshold" },
+        "AlarmActions": [
+          { "Ref": "XgemailScaleOutPolicy" }
+        ],
+        "Namespace": "AWS/SQS",
+        "Dimensions": [
+          {
+            "Name": "QueueName",
+            "Value": { "Ref": "XgemailSnsSqsQueue" }
+          }
+        ],
+        "ComparisonOperator":"GreaterThanThreshold",
+        "MetricName":"ApproximateNumberOfMessagesVisible"
+      }
+    },
+
     "XgemailAutoScalingLaunchConfig": {
       "Type": "AWS::AutoScaling::LaunchConfiguration",
       "Metadata": {
         "AWS::CloudFormation::Init": {
           "configSets": {
-            "xgemail_install": [ "install_volume", "attributes", "update_cookbooks", "xgemail_install" ]
+            "xgemail_install": [ "install_volume", "attributes", "update_cookbooks" ]
           },
 
           "install_volume": {
@@ -568,6 +681,8 @@
                     "    \"alarm_topic_arn\"                        : \"{{alarm_topic_arn}}\",\n",
                     "    \"cluster_type\"                           : \"{{cluster_type}}\",\n",
                     "    \"lifecycle_topic_arn\"                    : \"{{lifecycle_topic_arn}}\",\n",
+                    "    \"msg_history_status_sns_arn\"             : \"{{msg_history_delivery_status_sns_arn}}\",\n",
+                    "    \"msg_notifier_queue_url\"                 : \"{{msg_notifier_queue_url}}\",\n",
                     "    \"station_vpc_id\"                         : \"{{station_vpc_id}}\",\n",
                     "    \"station_vpc_name\"                       : \"{{station_vpc_name}}\",\n",
                     "    \"sxl_dbl\"                                : \"{{sxl_dbl}}\",\n",
@@ -586,6 +701,8 @@
                   "cluster_type":                                   { "Ref": "XgemailServiceType" },
                   "environment":                                    { "Ref": "Environment" },
                   "lifecycle_topic_arn":                            { "Ref": "AutoScalingNotificationTopicARN" },
+                  "msg_history_delivery_status_sns_arn":            { "Ref": "XgemailMsgHistoryStatusSnsArn"},
+                  "msg_notifier_queue_url":                         { "Ref": "XgemailNotifierQueueUrl" },
                   "region":                                         { "Ref": "AWS::Region" },
                   "stack":                                          { "Ref": "AWS::StackName" },
                   "station_vpc_id":                                 { "Ref": "StationVpcId" },
@@ -759,7 +876,7 @@
             }
           }
         ],
-        "AssociatePublicIpAddress": "false",
+        "AssociatePublicIpAddress": "true",
         "ImageId": { "Ref": "AmiId" },
         "InstanceType": { "Ref": "InstanceType" },
         "KeyName": { "Ref": "KeyName" },
@@ -854,6 +971,22 @@
   },
 
   "Outputs": {
+    "AlarmScaleIn": {
+      "Description": "The name of the Scale In Alarm",
+      "Value": { "Ref": "AlarmScaleIn" }
+    },
+    "AlarmScaleInArn": {
+      "Description": "The Arn of the Scale In Alarm",
+      "Value": { "Fn::GetAtt": [ "AlarmScaleIn", "Arn" ] }
+    },
+    "AlarmScaleOut": {
+      "Description": "The name of the Scale Out Alarm",
+      "Value": { "Ref": "AlarmScaleOut" }
+    },
+    "AlarmScaleOutArn": {
+      "Description": "The Arn of the Scale Out Alarm",
+      "Value": { "Fn::GetAtt": [ "AlarmScaleOut", "Arn" ] }
+    },
     "AmiId": {
       "Description": "ID of the Ami we are using",
       "Value": { "Ref" : "AmiId" }
