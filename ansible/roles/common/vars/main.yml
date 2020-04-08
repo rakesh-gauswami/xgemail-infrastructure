@@ -790,7 +790,13 @@ aws:
       template_parameters:
         QueueName:                                                "{{sqs.xgemail_alert_sqs_queue}}"
         TagApplication:                                           "xgemail-mail"
-
+    xgemail_archive_ingestion_sqs_queue:
+          stack_name:                                                 "{{stack.sqs.archive_ingestion_sqs_queue}}"
+          state:                                                      present
+          template:                                                   "{{template.sqs.sqs_simple_template}}"
+          template_parameters:
+            QueueName:                                                "{{sqs.archive_ingestion_sqs_queue}}"
+            TagApplication:                                           "xgemail-mail"
 aes_decryption_key:                                               "{{lookup('env','AES_KEY') | default('EFB0D00E7B34527A6CFE3CD804A53312C5A7AF129650A9793D2CEF3A3C6B3741')}}"
 ami_parent_id:                                                    "{{ami_id}}"
 as_min_cap_bastion:                                               "1"
