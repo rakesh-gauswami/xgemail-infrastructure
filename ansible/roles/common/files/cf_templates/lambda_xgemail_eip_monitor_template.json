@@ -120,7 +120,29 @@
         "Role": { "Ref": "IAMRoleArn" },
         "Runtime": { "Ref": "Runtime" },
         "Timeout": { "Ref": "Timeout" },
-        "MemorySize": { "Ref": "MemorySize" }
+        "MemorySize": { "Ref": "MemorySize" },
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Ref": "FunctionName" }
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          }
+        ]
       }
     },
 

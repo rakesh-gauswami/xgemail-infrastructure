@@ -45,6 +45,12 @@
       "AllowedPattern": "[a-zA-Z0-9_-]+"
     },
 
+    "TagApplication": {
+      "Description": "Tag for the Application being deployed",
+      "Type": "String",
+      "Default": "cloudemail"
+    },
+
     "VisibilityTimeout": {
       "Description": "The length of time during which the queue will be unavailable once a message is delivered from the queue.",
       "Type": "Number",
@@ -65,7 +71,29 @@
           "deadLetterTargetArn": {"Fn::GetAtt": ["SQSDeadLetterQueue", "Arn"]},
           "maxReceiveCount" : 10
         },
-        "VisibilityTimeout": { "Ref": "VisibilityTimeout" }
+        "VisibilityTimeout": { "Ref": "VisibilityTimeout" },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": { "Ref": "QueueName" }
+          },
+          {
+            "Key": "Application",
+            "Value": { "Ref": "TagApplication" }
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
       }
     },
 
@@ -79,7 +107,29 @@
               "DLQ"
             ]
           ]
-        }
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "", [ {"Ref" : "QueueName"}, "-", "DLQ" ] ] }
+          },
+          {
+            "Key": "Application",
+            "Value": { "Ref": "TagApplication" }
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
       }
     }
   },
