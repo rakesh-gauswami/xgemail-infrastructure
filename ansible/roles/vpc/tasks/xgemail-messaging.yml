@@ -104,7 +104,7 @@
       DeltaDeliveryTopicArn:          "{{sns.arn_prefix}}{{sns.delta_delivery_sns_topic}}"
       DeltaDeliveryQueue:             "{{sqs.delta_delivery_sqs_queue_sns_listener}}"
       ArchiveIngestionQueue:          "{{sqs.archive_ingestion_sqs_queue}}"
-      JournalArchiveDeliveryTopicARN: "{{sns.journal_archive_delivery_sns}}"
+      JournalArchiveDeliveryTopicARN: "{{sns.arn_prefix}}{{sns.journal_archive_delivery_sns}}"
   register: messaging_b_stack
 
 - debug:
