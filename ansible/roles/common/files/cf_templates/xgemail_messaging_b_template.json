@@ -138,7 +138,7 @@
         "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "DeltaDeliveryQueue" }]]}]
       }
     },
-    "JournalArchiveDeliveryTopicToArchiveIngestionQueuePolicy": {
+    "ArchiveIngestionQueuePolicy": {
       "Type": "AWS::SQS::QueuePolicy",
       "Properties": {
         "PolicyDocument": {
@@ -156,43 +156,7 @@
                   "aws:SourceArn": {"Ref": "JournalArchiveDeliveryTopicARN"}
                 }
               }
-            }
-          ]
-        },
-        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "ArchiveIngestionQueue" }]]}]
-      }
-    },
-    "XgEmailSuccessEventsToArchiveIngestionQueuePolicy": {
-      "Type": "AWS::SQS::QueuePolicy",
-      "Properties": {
-        "PolicyDocument": {
-          "Version": "2012-10-17",
-          "Id": "XgEmailSuccessEventsToArchiveIngestionQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
-          "Statement": [
-            {
-              "Sid": "Allow-XgEmailSuccessEventsTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "XgemailSuccessEventTopicARN"}
-                }
-              }
-            }
-          ]
-        },
-        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "ArchiveIngestionQueue" }]]}]
-      }
-    },
-    "InternetDeliveryToArchiveIngestionQueuePolicy": {
-      "Type": "AWS::SQS::QueuePolicy",
-      "Properties": {
-        "PolicyDocument": {
-          "Version": "2012-10-17",
-          "Id": "InternetDeliverySNSToArchiveInjestionQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
-          "Statement": [
+            },
             {
               "Sid": "Allow-InternetDeliveryTopicArn",
               "Effect": "Allow",
@@ -202,6 +166,18 @@
               "Condition": {
                 "ArnEquals": {
                   "aws:SourceArn": {"Ref": "InternetDeliveryTopicARN"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-XgEmailSuccessEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "XgemailSuccessEventTopicARN"}
                 }
               }
             }
