@@ -21,7 +21,9 @@ class QueueLog:
         'risky-delivery': 'RISKY_DELIVERY',
         'risky-xdelivery': 'RISKY_XDELIVERY',
         'warmup-delivery': 'WARMUP_DELIVERY',
-        'warmup-xdelivery': 'WARMUP_XDELIVERY'
+        'warmup-xdelivery': 'WARMUP_XDELIVERY',
+        'delta-delivery': 'DELTA_DELIVERY',
+        'delta-xdelivery': 'DELTA_XDELIVERY'
     }
 
     def __init__(self,
