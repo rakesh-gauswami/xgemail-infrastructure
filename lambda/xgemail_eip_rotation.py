@@ -166,7 +166,9 @@ def get_instances_by_name():
                     'CloudEmail:risky-delivery:*',
                     'CloudEmail:risky-xdelivery:*',
                     'CloudEmail:warmup-delivery:*',
-                    'CloudEmail:warmup-xdelivery:*'
+                    'CloudEmail:warmup-xdelivery:*',
+                    'CloudEmail:beta-delivery:*',
+                    'CloudEmail:beta-xdelivery:*'
                 ]
             }
         ]

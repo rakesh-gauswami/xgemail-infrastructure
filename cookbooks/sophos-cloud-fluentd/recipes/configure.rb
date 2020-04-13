@@ -69,6 +69,16 @@ elsif NODE_TYPE == 'warmup-xdelivery'
   SERVER_TYPE_XDELIVERY = 'UNKNOWN'
   DIRECTION             = 'OUTBOUND'
   NON_DELIVERY_DSN      = '5.4.7'
+elsif NODE_TYPE == 'beta-delivery'
+  SERVER_TYPE_XDELIVERY = 'BETA_XDELIVERY'
+  SERVER_TYPE           = 'BETA_DELIVERY'
+  DIRECTION             = 'OUTBOUND'
+  NON_DELIVERY_DSN      = '5.4.7'
+elsif NODE_TYPE == 'beta-xdelivery'
+  SERVER_TYPE           = 'BETA_XDELIVERY'
+  SERVER_TYPE_XDELIVERY = 'UNKNOWN'
+  DIRECTION             = 'OUTBOUND'
+  NON_DELIVERY_DSN      = '5.4.7'
 else
   SERVER_TYPE           = 'UNKNOWN'
   SERVER_TYPE_XDELIVERY = 'UNKNOWN'
@@ -108,7 +118,7 @@ template 'fluentd-source-lifecycle' do
   variables(
     :application_name => NODE_TYPE
   )
-  not_if { NODE_TYPE == 'xdelivery' || NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery' || NODE_TYPE == 'warmup-xdelivery' }
+  not_if { NODE_TYPE == 'xdelivery' || NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery' || NODE_TYPE == 'warmup-xdelivery' || NODE_TYPE == 'beta-xdelivery'}
 end
 
 # internet-delivery - Start Order: 10
@@ -250,7 +260,9 @@ template 'fluentd-match-msg-delivery' do
             NODE_TYPE == 'risky-delivery' ||
             NODE_TYPE == 'risky-xdelivery' ||
             NODE_TYPE == 'warmup-delivery' ||
-            NODE_TYPE == 'warmup-xdelivery'
+            NODE_TYPE == 'warmup-xdelivery' ||
+            NODE_TYPE == 'beta-delivery' ||
+            NODE_TYPE == 'beta-xdelivery'
          }
 
 end
@@ -271,7 +283,9 @@ template 'fluentd-filter-msg-delivery' do
             NODE_TYPE == 'risky-delivery' ||
             NODE_TYPE == 'risky-xdelivery' ||
             NODE_TYPE == 'warmup-delivery' ||
-            NODE_TYPE == 'warmup-xdelivery'
+            NODE_TYPE == 'warmup-xdelivery' ||
+            NODE_TYPE == 'beta-delivery' ||
+            NODE_TYPE == 'beta-xdelivery'
          }
   end
 
@@ -322,7 +336,9 @@ template 'fluentd-filter-transform-msg-delivery' do
             NODE_TYPE == 'risky-delivery' ||
             NODE_TYPE == 'risky-xdelivery' ||
             NODE_TYPE == 'warmup-delivery' ||
-            NODE_TYPE == 'warmup-xdelivery'
+            NODE_TYPE == 'warmup-xdelivery'||
+            NODE_TYPE == 'beta-delivery' ||
+            NODE_TYPE == 'beta-xdelivery'
          }
 end
 
@@ -344,7 +360,9 @@ template 'fluentd-filter-transform-sqs-msg' do
         NODE_TYPE == 'risky-delivery' ||
         NODE_TYPE == 'risky-xdelivery' ||
         NODE_TYPE == 'warmup-delivery' ||
-        NODE_TYPE == 'warmup-xdelivery'
+        NODE_TYPE == 'warmup-xdelivery'||
+        NODE_TYPE == 'beta-delivery' ||
+        NODE_TYPE == 'beta-xdelivery'
   }
 end
 
@@ -369,7 +387,9 @@ template 'fluentd-match-sns-msg-delivery' do
             NODE_TYPE == 'risky-delivery' ||
             NODE_TYPE == 'risky-xdelivery' ||
             NODE_TYPE == 'warmup-delivery' ||
-            NODE_TYPE == 'warmup-xdelivery'
+            NODE_TYPE == 'warmup-xdelivery' ||
+            NODE_TYPE == 'beta-delivery' ||
+            NODE_TYPE == 'beta-xdelivery'
          }
 end
 
@@ -393,7 +413,9 @@ template 'fluentd-match-sqs-msg-delivery' do
         NODE_TYPE == 'risky-delivery' ||
         NODE_TYPE == 'risky-xdelivery' ||
         NODE_TYPE == 'warmup-delivery' ||
-        NODE_TYPE == 'warmup-xdelivery'
+        NODE_TYPE == 'warmup-xdelivery' ||
+        NODE_TYPE == 'beta-delivery' ||
+        NODE_TYPE == 'beta-xdelivery'
   }
 end
 
