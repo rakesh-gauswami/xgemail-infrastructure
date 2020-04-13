@@ -5,7 +5,7 @@
 
   "Metadata": {
     "Copyright": [
-      "Copyright 2019, Sophos Limited. All rights reserved.",
+      "Copyright 2020, Sophos Limited. All rights reserved.",
       "",
       "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
       "Sophos Limited and Sophos Group.  All other product and company",
@@ -936,6 +936,18 @@
           "Id": "MessageHistoryQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
           "Statement": [
             {
+              "Sid": "Allow-BetaDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": [{ "Fn::ImportValue" :  {"Fn::Sub": "CloudEmail-xgemail-beta-delivery-SNS-SnsTopicArn" } }]
+                }
+              }
+            },
+            {
               "Sid": "Allow-DeletedEventsTopicArn",
               "Effect": "Allow",
               "Principal": "*",
@@ -1127,6 +1139,18 @@
           "Version": "2012-10-17",
           "Id": "MessageStatisticsQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
           "Statement": [
+            {
+              "Sid": "Allow-BetaDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": [{ "Fn::ImportValue" :  {"Fn::Sub": "CloudEmail-xgemail-beta-delivery-SNS-SnsTopicArn" } }]
+                }
+              }
+            },
             {
               "Sid": "Allow-DeletedEventsTopicArn",
               "Effect": "Allow",
@@ -1331,6 +1355,18 @@
           "Version": "2012-10-17",
           "Id": "AdditionalActionQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
           "Statement": [
+            {
+              "Sid": "Allow-BetaDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": [{ "Fn::ImportValue" :  {"Fn::Sub": "CloudEmail-xgemail-beta-delivery-SNS-SnsTopicArn" } }]
+                }
+              }
+            },
             {
               "Sid": "Allow-AdditionalActionTopicArn",
               "Effect": "Allow",

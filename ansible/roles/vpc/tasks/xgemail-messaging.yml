@@ -99,6 +99,8 @@
     template: "{{template.msg.xgemail_messaging_b_template}}"
     template_parameters:
       AdditionalActionQueue:    "{{sqs.additional_action_sqs_queue_sns_listener}}"
+      BetaDeliveryTopicArn:     "{{sns.arn_prefix}}{{sns.beta_delivery_sns_topic}}"
+      BetaDeliveryQueue:        "{{sqs.beta_delivery_sqs_queue_sns_listener}}"
       MessageHistoryQueue:      "{{sqs.msg_history_sqs_queue_sns_listener}}"
       MessageStatisticsQueue:   "{{sqs.msg_statistics_sqs_queue_sns_listener}}"
       DeltaDeliveryTopicArn:    "{{sns.arn_prefix}}{{sns.delta_delivery_sns_topic}}"

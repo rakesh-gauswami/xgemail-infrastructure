@@ -1826,6 +1826,92 @@
       }
     },
 
+    "XgemailBetaDeliverySecurityGroupLb": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Controls access to public facing ELBs.",
+        "Tags": [
+          {
+            "Key": "Branch",
+            "Value": { "Ref" : "Branch" }
+
+          },
+          {
+            "Key": "Environment",
+            "Value": { "Ref" : "Environment" }
+          },
+          {
+            "Key": "Role",
+            "Value": "svc-xgemail-beta-delivery-elb"
+
+          },
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "Environment"
+                  },
+                  "-",
+                  {
+                    "Ref": "Branch"
+                  },
+                  "-",
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "/sg/xgemail/beta/delivery/elb"
+                ]
+              ]
+            }
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      }
+    },
+
+    "XgemailBetaDeliverySecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Xgemail Beta Delivery security group.",
+        "Tags": [{
+          "Key": "Name",
+          "Value": {
+            "Fn::Join": [ "", [
+              { "Ref": "Environment" }, "-",
+              { "Ref": "Branch" }, "-",
+              { "Ref": "AWS::StackName" }, "/sg/xgemail/beta/delivery"
+            ]]
+          }
+        }],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "25",
+            "ToPort": "25",
+            "SourceSecurityGroupId": { "Ref": "XgemailBetaDeliverySecurityGroupLb" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "587",
+            "ToPort": "587",
+            "SourceSecurityGroupId": { "Ref": "XgemailBetaDeliverySecurityGroupLb" }
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "-1",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "VpcId": { "Ref": "Vpc" }
+      }
+    },
+
     "XgemailDeltaDeliverySecurityGroupLb": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
@@ -2524,6 +2610,90 @@
       }
     },
 
+    "XgemailBetaXdeliverySecurityGroupLb": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Controls access to internal facing beta Xdelivery ELB.",
+        "Tags": [
+          {
+            "Key": "Branch",
+            "Value": {"Ref": "Branch"}
+
+          },
+          {
+            "Key": "Environment",
+            "Value": {"Ref": "Environment"}
+          },
+          {
+            "Key": "Role",
+            "Value": "svc-xgemail-beta-xdelivery-elb"
+
+          },
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "Environment"
+                  },
+                  "-",
+                  {
+                    "Ref": "Branch"
+                  },
+                  "-",
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "/sg/xgemail/beta/xdelivery/elb"
+                ]
+              ]
+            }
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      }
+    },
+
+    "XgemailBetaXdeliverySecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Xgemail Beta Xdelivery security group.",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "", [
+                  { "Ref": "Environment" }, "-",
+                  { "Ref": "Branch" }, "-",
+                  { "Ref": "AWS::StackName" }, "/sg/xgemail/beta/xdelivery"
+                ]
+              ]
+            }
+          }
+        ],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "8025",
+            "ToPort": "8025",
+            "SourceSecurityGroupId": { "Ref": "XgemailBetaXdeliverySecurityGroupLb" }
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "-1",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "VpcId": { "Ref": "Vpc" }
+      }
+    },
+
     "XgemailXdeliverySecurityGroupLbIngressCustomerDeliverySmtp": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
@@ -2562,6 +2732,17 @@
       "Properties": {
         "GroupId": { "Ref": "XgemailWarmupXdeliverySecurityGroupLb" },
         "SourceSecurityGroupId": { "Ref": "XgemailWarmupDeliverySecurityGroup" },
+        "IpProtocol": "tcp",
+        "FromPort": "8025",
+        "ToPort": "8025"
+      }
+    },
+
+    "XgemailBetaXdeliverySecurityGroupLbIngressDeliverySmtp": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailBetaXdeliverySecurityGroupLb" },
+        "SourceSecurityGroupId": { "Ref": "XgemailBetaDeliverySecurityGroup" },
         "IpProtocol": "tcp",
         "FromPort": "8025",
         "ToPort": "8025"
@@ -2656,6 +2837,17 @@
       }
     },
 
+    "XgemailBetaDeliverySecurityGroupIngressBastionSsh": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailBetaDeliverySecurityGroup" },
+        "SourceSecurityGroupId": { "Ref": "SecurityGroupBastion" },
+        "IpProtocol": "tcp",
+        "FromPort": "22",
+        "ToPort": "22"
+      }
+    },
+
     "XgemailXdeliverySecurityGroupIngressBastionSsh": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
@@ -2693,6 +2885,17 @@
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {"Ref": "XgemailWarmupXdeliverySecurityGroup"},
+        "SourceSecurityGroupId": {"Ref": "SecurityGroupBastion"},
+        "IpProtocol": "tcp",
+        "FromPort": "22",
+        "ToPort": "22"
+      }
+    },
+
+    "XgemailBetaXdeliverySecurityGroupIngressBastionSsh": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {"Ref": "XgemailBetaXdeliverySecurityGroup"},
         "SourceSecurityGroupId": {"Ref": "SecurityGroupBastion"},
         "IpProtocol": "tcp",
         "FromPort": "22",
@@ -2811,6 +3014,22 @@
     "SecurityGroupLogicMonitor": {
       "Description": "LogicMonitor Security Group",
       "Value": { "Ref": "SecurityGroupLogicMonitor" }
+    },
+    "XgemailBetaDeliverySecurityGroupLb": {
+      "Description": "Xgemail Beta Delivery Load Balancer security group",
+      "Value": { "Ref": "XgemailBetaDeliverySecurityGroupLb" }
+    },
+    "XgemailBetaDeliverySecurityGroup": {
+      "Description": "Xgemail Beta Delivery security group",
+      "Value": { "Ref": "XgemailBetaDeliverySecurityGroup" }
+    },
+    "XgemailBetaXdeliverySecurityGroupLb": {
+      "Description": "Xgemail Beta Xdelivery Load Balancer security group",
+      "Value": { "Ref": "XgemailBetaXdeliverySecurityGroupLb" }
+    },
+    "XgemailBetaXdeliverySecurityGroup": {
+      "Description": "Xgemail Beta Xdelivery security group",
+      "Value": { "Ref": "XgemailBetaXdeliverySecurityGroup" }
     },
     "XgemailCustomerDeliverySecurityGroupLb": {
       "Description": "Xgemail Customer Delivery Load Balancer security group",

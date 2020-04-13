@@ -12,6 +12,8 @@ vpc:
 # CloudEmail EC2 ELB Names:
 ec2:
   elb:
+    bd:                                                 "XGEMAIL-BETA-DELIVERY"
+    bx:                                                 "XGEMAIL-BETA-DELIVERY"
     cd:                                                 "XGEMAIL-DELIVERY"
     cs:                                                 "XGEMAIL-CUSTOMER-SUBMIT"
     cx:                                                 "XGEMAIL-XDELIVERY"
@@ -76,6 +78,7 @@ sqs:
   additional_action_sqs_queue_sns_listener:             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_AdditionalActions_SNS_Listener"
   allow_block_upload_sqs_queue:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Allow_Block_Upload"
   atr_reindex_sqs_queue_sns_listener:                   "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Atr_Reindex_SNS_Listener"
+  beta_delivery_sqs_queue_sns_listener:                 "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Beta_Delivery_SNS_Listener"
   bulk_sender_action_sqs_queue:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Bulk_Sender_Action"
   bulk_sender_approval_sqs_queue:                       "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Bulk_Sender_Approval"
   customer_delivery_sqs_queue:                          "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Customer_Delivery"
@@ -127,7 +130,9 @@ sns:
   additional_actions_sns_topic:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-additional-actions-SNS"
   alarm_sns_topic:                                      "{{account.name}}-xgemail-alarm-topic"
   atr_reindex_sns_topic:                                "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-atr-reindex-SNS"
+  beta_delivery_sns_topic:                              "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-beta-delivery-SNS"
   bounce_events_sns_topic:                              "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-bounce-events-SNS"
+  beta_delivery_sns_topic:
   delay_sns_topic:                                      "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-delay-SNS"
   deleted_events_sns_topic:                             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-deleted-events-SNS"
   delta_delivery_sns_topic:                             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-delta-delivery-SNS"
@@ -168,6 +173,7 @@ stack:
     cloud_station_vpc:                                  "{{vpc.cloud_station.name}}-VPC"
   iam:
     role:
+      cloud_email_beta_instance_roles:                  "{{vpc.cloud_email.name}}-BetaIAMRoles"
       cloud_email_roles:                                "{{vpc.cloud_email.name}}-IAMRoles"
       cloud_station_region_roles:                       "{{vpc.cloud_station.name}}-RegionIAMRoles"
       cloud_station_roles:                              "{{vpc.cloud_station.name}}-IAMRoles"
@@ -183,6 +189,8 @@ stack:
       cloud_station_security_groups:                    "{{vpc.cloud_station.name}}-SecurityGroups"
     asg:
       bastion:                                          "{{vpc.cloud_email.name}}-BastionHost"
+      bd:                                               "{{vpc.cloud_email.name}}-xgemail-beta-delivery"
+      bx:                                               "{{vpc.cloud_email.name}}-xgemail-beta-xdelivery"
       cd:                                               "{{vpc.cloud_email.name}}-xgemail-customer-delivery"
       cs:                                               "{{vpc.cloud_email.name}}-xgemail-customer-submit"
       cx:                                               "{{vpc.cloud_email.name}}-xgemail-xdelivery-0000-"
@@ -198,6 +206,8 @@ stack:
       wd:                                               "{{vpc.cloud_email.name}}-xgemail-warmup-delivery"
       wx:                                               "{{vpc.cloud_email.name}}-xgemail-warmup-xdelivery-0000-"
     elb:
+      bd:                                               "{{vpc.cloud_email.name}}-XGEMAIL-beta-delivery-ELB"
+      bx:                                               "{{vpc.cloud_email.name}}-XGEMAIL-beta-xdelivery-ELB"
       cs:                                               "{{vpc.cloud_email.name}}-XGEMAIL-customer-submit-ELB"
       is:                                               "{{vpc.cloud_email.name}}-XGEMAIL-submit-ELB"
       cd:                                               "{{vpc.cloud_email.name}}-XGEMAIL-delivery-ELB"
@@ -231,6 +241,8 @@ stack:
     firehose_transformation_lambda_function:            "{{vpc.cloud_email.name}}-Lambda-XgemailFirehoseTransformation"
     instance_terminator_lambda_function:                "{{vpc.cloud_email.name}}-Lambda-XgemailInstanceTerminator"
   route53:
+    beta_delivery_route53:                              "{{vpc.cloud_email.name}}-XGEMAIL-beta-delivery-ROUTE53"
+    beta_xdelivery_route53:                             "{{vpc.cloud_email.name}}-XGEMAIL-beta-xdelivery-ROUTE53"
     customer_delivery_route53:                          "{{vpc.cloud_email.name}}-XGEMAIL-delivery-ROUTE53"
     internet_delivery_route53:                          "{{vpc.cloud_email.name}}-XGEMAIL-internet-delivery-ROUTE53"
     customer_xdelivery_route53:                         "{{vpc.cloud_email.name}}-XGEMAIL-xdelivery-ROUTE53"
@@ -263,6 +275,7 @@ stack:
     additional_action_sqs_queue_sns_listener:           "{{vpc.cloud_email.name}}-XGEMAIL-AdditionalActions-SQS-SNS-Listener"
     allow_block_upload_sqs_queue:                       "{{vpc.cloud_email.name}}-XGEMAIL-allow-block-upload-SQS"
     atr_reindex_sqs_queue_sns_listener:                 "{{vpc.cloud_email.name}}-XGEMAIL-Xgemail-Atr-Reindex-SNS-Listener"
+    beta_delivery_sqs_queue_sns_listener:               "{{vpc.cloud_email.name}}-XGEMAIL-beta-delivery-SQS-SNS-listener"
     bulk_sender_action_sqs_queue:                       "{{vpc.cloud_email.name}}-XGEMAIL-bulk-sender-action-SQS"
     bulk_sender_approval_sqs_queue:                     "{{vpc.cloud_email.name}}-XGEMAIL-bulk-sender-approval-SQS"
     customer_delivery_sqs_queue:                        "{{vpc.cloud_email.name}}-XGEMAIL-delivery-SQS"
@@ -310,6 +323,7 @@ stack:
     additional_actions_sns_topic:                       "{{vpc.cloud_email.name}}-xgemail-additional-actions-SNS"
     alarm_sns_topic:                                    "{{account.name}}-{{vpc.cloud_email.name}}-Alarm-Topic"
     atr_reindex_sns_topic:                              "{{vpc.cloud_email.name}}-xgemail-atr-reindex-SNS"
+    beta_delivery_sns_topic:                            "{{vpc.cloud_email.name}}-xgemail-beta-delivery-SNS"
     bounce_events_sns_topic:                            "{{vpc.cloud_email.name}}-xgemail-bounce-events-SNS"
     delay_sns_topic:                                    "{{vpc.cloud_email.name}}-xgemail-delay-SNS"
     deleted_events_sns_topic:                           "{{vpc.cloud_email.name}}-xgemail-deleted-events-SNS"
@@ -356,7 +370,7 @@ template:
     sg:
       sg_xgemail_template:                              "{{tmp_artifacts_dir}}/sg_xgemail_template.json"
     asg:
-      bastion:                                          "{{tmp_artifacts_dir}}/as_bastion_template.json"
+      as_beta_delivery_template:                        "{{tmp_artifacts_dir}}/as_beta_delivery_template.json"
       as_customer_delivery_template:                    "{{tmp_artifacts_dir}}/as_customer_delivery_template.json"
       as_customer_submit_template:                      "{{tmp_artifacts_dir}}/as_customer_submit_template.json"
       as_delta_delivery_template:                       "{{tmp_artifacts_dir}}/as_delta_delivery_template.json"
@@ -371,6 +385,7 @@ template:
       as_xgemail_risky_xdelivery_template:              "{{tmp_artifacts_dir}}/as_xgemail_risky_xdelivery_template.json"
       as_warmup_delivery_template:                      "{{tmp_artifacts_dir}}/as_warmup_delivery_template.json"
       as_xgemail_warmup_xdelivery_template:             "{{tmp_artifacts_dir}}/as_xgemail_warmup_xdelivery_template.json"
+      bastion:                                          "{{tmp_artifacts_dir}}/as_bastion_template.json"
   efs:
     efs_template:                                       "{{tmp_artifacts_dir}}/efs_template.json"
     efs_mount_target_template:                          "{{tmp_artifacts_dir}}/efs_mount_target_template.json"
@@ -383,6 +398,7 @@ template:
     es_domain_template:                                 "{{tmp_artifacts_dir}}/es_domain_template.json"
   iam:
     role:
+      roles_beta_instance_template:                     "{{tmp_artifacts_dir}}/roles_beta_instance_template.json"
       roles_xgemail_template:                           "{{tmp_artifacts_dir}}/roles_xgemail_template.json"
       roles_simple_template:                            "{{tmp_artifacts_dir}}/roles_simple_template.json"
     policy:
