@@ -147,6 +147,10 @@
       "Description": "Endpoint ARN for Bulk Sender Approval SQS Queue",
       "Type": "String"
     },
+    "CustomerLicenseUpdateQueue": {
+      "Description": "Endpoint ARN for Customer License Update SQS Queue",
+      "Type": "String"
+    },
     "DelayQueue": {
       "Description": "Endpoint for delay SQS queue",
       "Type": "String"
@@ -576,6 +580,14 @@
         "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "BounceEventQueue"}]]},
         "Protocol": "sqs",
         "TopicArn": { "Ref": "BounceEventTopicArn"}
+      }
+    },
+    "CustomerLicenseUpdateQueueToCustomerV1SnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "CustomerLicenseUpdateQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "CustomersV1TopicArn"}
       }
     },
     "EncryptionSettingsUpdateSNSListenerQueueToEncryptionSettingsUpdateSnsSubscription": {
@@ -1502,6 +1514,24 @@
           ]
         },
         "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "BounceEventQueue" }]]}]
+      }
+    },
+    "CustomerLicenseUpdateQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "CustomerLicenseUpdateQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*"
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "CustomerLicenseUpdateQueue" }]]}]
       }
     },
     "EncryptionDeliveryQueuePolicy": {
