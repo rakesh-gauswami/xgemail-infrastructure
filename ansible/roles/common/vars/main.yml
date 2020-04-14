@@ -509,7 +509,7 @@ aws:
         TagApplication:                                           "customer-delivery"
     customer_license_update_sqs_queue:
       stack_name:                                                 "{{stack.sqs.customer_license_update_sqs_queue}}"
-      state:                                                      absent
+      state:                                                      present
       template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                                                "{{sqs.customer_license_update_sqs_queue}}"
