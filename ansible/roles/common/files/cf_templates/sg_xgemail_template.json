@@ -1826,6 +1826,7 @@
       }
     },
 
+
     "XgemailBetaDeliverySecurityGroupLb": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
@@ -1866,6 +1867,22 @@
                 ]
               ]
             }
+          },
+          {
+            "Key": "Application",
+            "Value": "beta-delivery"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
           }
         ],
         "VpcId": {
@@ -1887,7 +1904,23 @@
               { "Ref": "AWS::StackName" }, "/sg/xgemail/beta/delivery"
             ]]
           }
-        }],
+        },
+          {
+            "Key": "Application",
+            "Value": "beta-delivery"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }],
         "SecurityGroupIngress": [
           {
             "IpProtocol": "tcp",
