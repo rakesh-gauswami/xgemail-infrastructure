@@ -31,6 +31,10 @@
       "Description": "Endpoint for scan Bounce events arn",
       "Type": "String"
     },
+    "CustomersV1TopicArn": {
+      "Description": "Endpoint for scan Bounce events arn",
+      "Type": "String"
+    },
     "DelayTopicArn": {
       "Description": "TopicArn of Delay Events SNS",
       "Type": "String"
@@ -1527,7 +1531,12 @@
               "Effect": "Allow",
               "Principal": "*",
               "Action": ["sqs:SendMessage"],
-              "Resource": "*"
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "CustomersV1TopicArn"}
+                }
+              }
             }
           ]
         },

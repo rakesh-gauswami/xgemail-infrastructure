@@ -294,6 +294,12 @@ aws:
       template_parameters:
         TagApplication:                                           "xgemail-mail"
         TopicName:                                                "{{sns.bounce_events_sns_topic}}"
+    customers_v1_topic:
+      stack_name:                                                 "{{stack.sns.customers_v1_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TagApplication:                                           "xgemail-mail"
+        TopicName:                                                "{{sns.sns.customers_v1_topic}}"
     delay_sns_topic:
       stack_name:                                                 "{{stack.sns.delay_sns_topic}}"
       template:                                                   "{{template.sns.sns_simple_template}}"
