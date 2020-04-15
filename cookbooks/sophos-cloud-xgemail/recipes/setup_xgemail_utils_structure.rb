@@ -113,7 +113,7 @@ elsif NODE_TYPE == 'customer-submit'
   end
 elsif NODE_TYPE == 'customer-delivery' or NODE_TYPE == 'internet-delivery' or
        NODE_TYPE == 'risky-delivery' or NODE_TYPE == 'encryption-delivery' or
-       NODE_TYPE == 'warmup-delivery'
+       NODE_TYPE == 'warmup-delivery' or NODE_TYPE == 'beta-delivery'
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{TRANSPORT_ROUTE_CONFIG}" do
     source 'transportrouteconfig.py'
     mode '0644'

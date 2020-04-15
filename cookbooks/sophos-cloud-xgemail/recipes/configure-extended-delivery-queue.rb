@@ -198,7 +198,7 @@ else
     include_recipe 'sophos-cloud-xgemail::configure-bounce-message-warmup-delivery-queue'
   end
   if NODE_TYPE == 'beta-xdelivery'
-    include_recipe 'sophos-cloud-xgemail::configure-bounce-message-warmup-delivery-queue'
+    include_recipe 'sophos-cloud-xgemail::configure-bounce-message-beta-delivery-queue'
   end
 end
 
