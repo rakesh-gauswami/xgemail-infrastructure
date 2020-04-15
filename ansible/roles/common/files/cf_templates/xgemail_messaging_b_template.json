@@ -43,15 +43,15 @@
       "Description": "Archive Ingestion SQS queue",
       "Type": "String"
     },
-    "JournalArchiveDeliveryTopicARN":{
+    "JournalArchiveDeliveryTopicArn":{
       "Description": "TopicArn of Journal archive Events SNS",
       "Type": "String"
     },
-    "XgemailSuccessEventTopicARN":{
+    "XgemailSuccessEventTopicArn":{
       "Description": "Topic Arn of Xgemail success Events SNS",
       "Type": "String"
     },
-    "InternetDeliveryTopicARN":{
+    "InternetDeliveryTopicArn":{
       "Description": "Topic Arn of Internet Delivery SNS",
       "Type": "String"
     }
@@ -95,7 +95,7 @@
       "Properties": {
         "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "ArchiveIngestionQueue"}]]},
         "Protocol": "sqs",
-        "TopicArn": { "Ref": "JournalArchiveDeliveryTopicARN"}
+        "TopicArn": { "Ref": "JournalArchiveDeliveryTopicArn"}
       }
     },
     "SuccessEventsSnsToArchiveIngestionQueueSubscription": {
@@ -103,7 +103,7 @@
       "Properties": {
         "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "ArchiveIngestionQueue"}]]},
         "Protocol": "sqs",
-        "TopicArn": { "Ref": "XgemailSuccessEventTopicARN"}
+        "TopicArn": { "Ref": "XgemailSuccessEventTopicArn"}
       }
     },
     "InternetDeliverySnsToArchiveIngestionQueueSubscription": {
@@ -111,7 +111,7 @@
       "Properties": {
         "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "ArchiveIngestionQueue"}]]},
         "Protocol": "sqs",
-        "TopicArn": { "Ref": "InternetDeliveryTopicARN"}
+        "TopicArn": { "Ref": "InternetDeliveryTopicArn"}
       }
     },
     "DeltaDeliveryQueuePolicy": {
@@ -146,14 +146,14 @@
           "Id": "ArchiveIngestionQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
           "Statement": [
             {
-              "Sid": "Allow-JournalArchiveDeliveryTopicARN",
+              "Sid": "Allow-JournalArchiveDeliveryTopicArn",
               "Effect": "Allow",
               "Principal": "*",
               "Action": ["sqs:SendMessage"],
               "Resource": "*",
               "Condition": {
                 "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "JournalArchiveDeliveryTopicARN"}
+                  "aws:SourceArn": {"Ref": "JournalArchiveDeliveryTopicArn"}
                 }
               }
             },
@@ -165,7 +165,7 @@
               "Resource": "*",
               "Condition": {
                 "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "InternetDeliveryTopicARN"}
+                  "aws:SourceArn": {"Ref": "InternetDeliveryTopicArn"}
                 }
               }
             },
@@ -177,7 +177,7 @@
               "Resource": "*",
               "Condition": {
                 "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "XgemailSuccessEventTopicARN"}
+                  "aws:SourceArn": {"Ref": "XgemailSuccessEventTopicArn"}
                 }
               }
             }
