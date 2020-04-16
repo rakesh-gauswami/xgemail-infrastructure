@@ -166,7 +166,9 @@ def get_instances_by_name():
                     'CloudEmail:risky-delivery:*',
                     'CloudEmail:risky-xdelivery:*',
                     'CloudEmail:warmup-delivery:*',
-                    'CloudEmail:warmup-xdelivery:*'
+                    'CloudEmail:warmup-xdelivery:*',
+                    'CloudEmail:delta-delivery:*',
+                    'CloudEmail:delta-xdelivery:*'
                 ]
             }
         ]
@@ -277,6 +279,14 @@ def get_clean_eip(lifecycle_hook_name):
                 Filters=[
                     {
                         'Name': 'tag:Name', 'Values': ['xgemail-warmup']
+                    }
+                ]
+            )['Addresses']
+        elif 'delta-delivery' in lifecycle_hook_name or 'delta-xdelivery' in lifecycle_hook_name:
+            addresses = ec2_client.describe_addresses(
+                Filters=[
+                    {
+                        'Name': 'tag:Name', 'Values': ['xgemail-delta']
                     }
                 ]
             )['Addresses']
