@@ -175,7 +175,8 @@
           ]
         },
         "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "CustomerLicenseUpdateQueue" }]]}]
-     },
+      }
+    },
     "ArchiveIngestionQueuePolicy": {
       "Type": "AWS::SQS::QueuePolicy",
       "Properties": {
