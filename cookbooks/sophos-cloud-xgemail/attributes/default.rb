@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Attribute:: default
 #
-# Copyright 2018, Sophos
+# Copyright 2020, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -193,6 +193,11 @@ default['xgemail']['sqs_message_consumer_wait_time_seconds'] = 10
 default['xgemail']['mail_pic_apis_response_timeout_seconds'] = 60
 default['xgemail']['mail_pic_api_auth'] = "xgemail-#{node['sophos_cloud']['region']}-mail"
 
+## Beta delivery DSN/NDR settings
+default['xgemail']['beta_delivery_message_bouncer_processor_dir'] = XGEMAIL_SQS_MESSAGE_BOUNCER_DIR
+default['xgemail']['beta_delivery_message_bouncer_common_dir'] = "#{XGEMAIL_SQS_MESSAGE_BOUNCER_DIR}/common"
+default['xgemail']['beta_delivery_bounce_message_processor_user'] = 'bouncer'
+
 ## Internet delivery DSN/NDR settings
 XGEMAIL_SQS_MESSAGE_BOUNCER_DIR ="#{XGEMAIL_FILES_DIR}/message-bouncer"
 default['xgemail']['internet_delivery_message_bouncer_processor_dir'] = XGEMAIL_SQS_MESSAGE_BOUNCER_DIR
@@ -356,6 +361,22 @@ default['xgemail']['postfix_instance_data'] = {
     # Give delivery queues extra padding because extra content may be created during processing
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600),
     :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+  },
+  # beta-delivery
+  'beta-delivery' => {
+      :instance_name => 'bd',
+      :port => 25,
+      # Give delivery queues extra padding because extra content may be created during processing
+      :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800),
+      :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+  },
+  # beta-extended-delivery
+  'beta-xdelivery' => {
+      :instance_name => 'bx',
+      :port => 8025,
+      # Give delivery queues extra padding because extra content may be created during processing
+      :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600),
+      :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
   },
   # delta-delivery
   'delta-delivery' => {

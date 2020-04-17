@@ -26,12 +26,12 @@ TRANSPORT_MAPS_FILENAME = 'transport_maps'
 
 SERVICE_NAME='bounce-handler'
 
-WARMUP_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_DIR = node['xgemail']['beta_delivery_message_bouncer_processor_dir']
-WARMUP_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_COMMON_DIR  = node['xgemail']['beta_delivery_message_bouncer_common_dir']
+BETA_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_DIR = node['xgemail']['beta_delivery_message_bouncer_processor_dir']
+BETA_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_COMMON_DIR  = node['xgemail']['beta_delivery_message_bouncer_common_dir']
 
 BOUNCE_HANDLER_SCRIPT = 'xgemail.message.bouncer.py'
 NOTIFICATION_EVENT_FILE_NAME = 'notificationsubmitinfo.py'
-BOUNCE_HANDLER_SCRIPT_PATH = "#{WARMUP_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_DIR}/#{BOUNCE_HANDLER_SCRIPT}"
+BOUNCE_HANDLER_SCRIPT_PATH = "#{BETA_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_DIR}/#{BOUNCE_HANDLER_SCRIPT}"
 AWS_REGION = node['sophos_cloud']['region']
 ACCOUNT    = node['sophos_cloud']['context']
 
@@ -111,7 +111,7 @@ if NODE_TYPE == 'beta-delivery' || NODE_TYPE == 'beta-xdelivery'
  end
 
  # Create directory for bounce-handler script
- directory WARMUP_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_DIR do
+ directory BETA_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_DIR do
    owner BOUNCE_USER
    group BOUNCE_USER
    mode '0755'
@@ -120,7 +120,7 @@ if NODE_TYPE == 'beta-delivery' || NODE_TYPE == 'beta-xdelivery'
  end
 
  # Create directory for bounce-handler script
- directory WARMUP_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_COMMON_DIR do
+ directory BETA_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_COMMON_DIR do
    owner 'root'
    group 'root'
    mode '0755'
@@ -129,14 +129,14 @@ if NODE_TYPE == 'beta-delivery' || NODE_TYPE == 'beta-xdelivery'
  end
 
  # Ensure __init__py file is created in python module
- file "#{WARMUP_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_COMMON_DIR}/__init__.py" do
+ file "#{BETA_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_COMMON_DIR}/__init__.py" do
    mode '0644'
    owner 'root'
    group 'root'
  end
 
  # Create notification event file.
- cookbook_file "#{WARMUP_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_COMMON_DIR}/#{NOTIFICATION_EVENT_FILE_NAME}" do
+ cookbook_file "#{BETA_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_COMMON_DIR}/#{NOTIFICATION_EVENT_FILE_NAME}" do
    source NOTIFICATION_EVENT_FILE_NAME
    mode  '0644'
    owner 'root'

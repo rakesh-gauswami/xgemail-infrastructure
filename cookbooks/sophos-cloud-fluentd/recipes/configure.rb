@@ -128,7 +128,7 @@ template 'fluentd-source-lifecycle' do
   variables(
     :application_name => NODE_TYPE
   )
-  not_if { NODE_TYPE == 'xdelivery' || NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery' || NODE_TYPE == 'warmup-xdelivery' || NODE_TYPE == 'beta-xdelivery' | NODE_TYPE == 'delta-xdelivery' }
+  not_if { NODE_TYPE == 'xdelivery' || NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery' || NODE_TYPE == 'warmup-xdelivery' || NODE_TYPE == 'beta-xdelivery' || NODE_TYPE == 'delta-xdelivery' }
 end
 
 # internet-delivery - Start Order: 10
@@ -280,7 +280,7 @@ template 'fluentd-match-msg-delivery' do
             NODE_TYPE == 'warmup-delivery' ||
             NODE_TYPE == 'warmup-xdelivery' ||
             NODE_TYPE == 'beta-delivery' ||
-            NODE_TYPE == 'beta-xdelivery'
+            NODE_TYPE == 'beta-xdelivery' ||
             NODE_TYPE == 'warmup-xdelivery' ||
             NODE_TYPE == 'delta-delivery' ||
             NODE_TYPE == 'delta-xdelivery'
@@ -306,7 +306,7 @@ template 'fluentd-filter-msg-delivery' do
             NODE_TYPE == 'warmup-delivery' ||
             NODE_TYPE == 'warmup-xdelivery' ||
             NODE_TYPE == 'beta-delivery' ||
-            NODE_TYPE == 'beta-xdelivery'
+            NODE_TYPE == 'beta-xdelivery' ||
             NODE_TYPE == 'warmup-xdelivery' ||
             NODE_TYPE == 'delta-delivery' ||
             NODE_TYPE == 'delta-xdelivery'
@@ -362,7 +362,7 @@ template 'fluentd-filter-transform-msg-delivery' do
             NODE_TYPE == 'warmup-delivery' ||
             NODE_TYPE == 'warmup-xdelivery'||
             NODE_TYPE == 'beta-delivery' ||
-            NODE_TYPE == 'beta-xdelivery'
+            NODE_TYPE == 'beta-xdelivery' ||
             NODE_TYPE == 'warmup-xdelivery' ||
             NODE_TYPE == 'delta-delivery' ||
             NODE_TYPE == 'delta-xdelivery'
@@ -389,7 +389,7 @@ template 'fluentd-filter-transform-sqs-msg' do
         NODE_TYPE == 'warmup-delivery' ||
         NODE_TYPE == 'warmup-xdelivery'||
         NODE_TYPE == 'beta-delivery' ||
-        NODE_TYPE == 'beta-xdelivery'
+        NODE_TYPE == 'beta-xdelivery' ||
         NODE_TYPE == 'warmup-xdelivery' ||
         NODE_TYPE == 'delta-delivery' ||
         NODE_TYPE == 'delta-xdelivery'
@@ -419,7 +419,7 @@ template 'fluentd-match-sns-msg-delivery' do
             NODE_TYPE == 'warmup-delivery' ||
             NODE_TYPE == 'warmup-xdelivery' ||
             NODE_TYPE == 'beta-delivery' ||
-            NODE_TYPE == 'beta-xdelivery'
+            NODE_TYPE == 'beta-xdelivery' ||
             NODE_TYPE == 'warmup-xdelivery' ||
             NODE_TYPE == 'delta-delivery' ||
             NODE_TYPE == 'delta-xdelivery'
@@ -448,7 +448,7 @@ template 'fluentd-match-sqs-msg-delivery' do
         NODE_TYPE == 'warmup-delivery' ||
         NODE_TYPE == 'warmup-xdelivery' ||
         NODE_TYPE == 'beta-delivery' ||
-        NODE_TYPE == 'beta-xdelivery'
+        NODE_TYPE == 'beta-xdelivery' ||
         NODE_TYPE == 'warmup-xdelivery' ||
         NODE_TYPE == 'delta-delivery' ||
         NODE_TYPE == 'delta-xdelivery'

@@ -33,10 +33,10 @@ ACCOUNT = node['sophos_cloud']['environment']
 
 HOP_COUNT_DELIVERY_INSTANCE = node['xgemail']['hop_count_delivery_instance']
 
-WARMUP_XDELIVERY_INSTANCE_DATA = node['xgemail']['postfix_instance_data']['beta-xdelivery']
-raise "Unsupported node type [#{NODE_TYPE}]" if WARMUP_XDELIVERY_INSTANCE_DATA.nil?
+BETA_XDELIVERY_INSTANCE_DATA = node['xgemail']['postfix_instance_data']['beta-xdelivery']
+raise "Unsupported node type [#{NODE_TYPE}]" if BETA_XDELIVERY_INSTANCE_DATA.nil?
 
-SMTP_PORT = WARMUP_XDELIVERY_INSTANCE_DATA[:port]
+SMTP_PORT = BETA_XDELIVERY_INSTANCE_DATA[:port]
 
 SMTP_FALLBACK_RELAY = "beta-xdelivery-cloudemail-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com:#{SMTP_PORT}"
 
