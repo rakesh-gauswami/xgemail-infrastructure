@@ -43,6 +43,10 @@
       "Description": "Endpoint for message statistics SQS queue",
       "Type": "String"
     },
+    "CustomerLicenseUpdateQueue": {
+      "Description": "Endpoint ARN for Customer License Update SQS Queue",
+      "Type": "String"
+    },
     "ArchiveIngestionQueue":{
       "Description": "Archive Ingestion SQS queue",
       "Type": "String"
@@ -150,6 +154,28 @@
         "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "DeltaDeliveryQueue" }]]}]
       }
     },
+    "CustomerLicenseUpdateQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "CustomerLicenseUpdateQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "CustomersV1TopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "CustomerLicenseUpdateQueue" }]]}]
+     },
     "ArchiveIngestionQueuePolicy": {
       "Type": "AWS::SQS::QueuePolicy",
       "Properties": {
