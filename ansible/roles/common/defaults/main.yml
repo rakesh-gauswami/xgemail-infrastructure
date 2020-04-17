@@ -37,6 +37,8 @@ iam:
   policy:
     cloud_station_api_cs_s3_ro_policy:                  "ApiPolicyCustSubmitBucketROAccess"
     policy_publish_to_firehose:                         "PublishToFirehoseStream-firehose-log-shipper-stream-{{account.region}}-{{vpc.cloud_email.name}}"
+    policy_beta_publish_to_firehose:                    "PublishToFirehoseStream-firehose-log-shipper-stream-beta-delivery-{{account.region}}-{{vpc.cloud_email.name}}"
+    policy_beta_x_publish_to_firehose:                  "PublishToFirehoseStream-firehose-log-shipper-stream-beta-xdelivery-{{account.region}}-{{vpc.cloud_email.name}}"
     xgemail_elasticsearch_access:                       "XgemailElasticsearchAccess"
 # CloudEmail Kinesis Firehose Delivery Stream Names:
 kinesis:
@@ -82,6 +84,7 @@ sqs:
   bulk_sender_action_sqs_queue:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Bulk_Sender_Action"
   bulk_sender_approval_sqs_queue:                       "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Bulk_Sender_Approval"
   customer_delivery_sqs_queue:                          "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Customer_Delivery"
+  customer_license_update_sqs_queue:                    "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Customer_License_Update"
   customer_submit_sqs_queue:                            "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Customer_Submit"
   customer_delivery_sqs_queue_sns_listener:             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Customer_Delivery_SNS_Listener"
   dqs_sqs_queue:                                        "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_DQS"
@@ -132,6 +135,7 @@ sns:
   atr_reindex_sns_topic:                                "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-atr-reindex-SNS"
   beta_delivery_sns_topic:                              "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-beta-delivery-SNS"
   bounce_events_sns_topic:                              "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-bounce-events-SNS"
+  customers_v1_topic:                                   "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-customers-v1"
   delay_sns_topic:                                      "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-delay-SNS"
   deleted_events_sns_topic:                             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-deleted-events-SNS"
   delta_delivery_sns_topic:                             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-delta-delivery-SNS"
@@ -182,6 +186,8 @@ stack:
       cloud_station_api_cs_s3_ro_policy:                "policy-xgemail-cust-submit-api-services-s3-ro-access"
       firehose_log_shipper_stream:                      "policies-firehose-log-shipper-publish-to-s3-{{vpc.cloud_email.name}}"
       policy_publish_to_firehose:                       "policies-ec2-instance-publish-to-firehose-log-shipper-{{vpc.cloud_email.name}}"
+      policy_beta_publish_to_firehose:                  "policies-beta-instance-publish-to-firehose-log-shipper-{{vpc.cloud_email.name}}"
+      policy_beta_x_publish_to_firehose:               "policies-beta-x-instance-publish-to-firehose-log-shipper-{{vpc.cloud_email.name}}"
       xgemail_elasticsearch_access:                     "policy-xgemail-elasticsearch-access"
   ec2:
     sg:
@@ -279,6 +285,7 @@ stack:
     bulk_sender_action_sqs_queue:                       "{{vpc.cloud_email.name}}-XGEMAIL-bulk-sender-action-SQS"
     bulk_sender_approval_sqs_queue:                     "{{vpc.cloud_email.name}}-XGEMAIL-bulk-sender-approval-SQS"
     customer_delivery_sqs_queue:                        "{{vpc.cloud_email.name}}-XGEMAIL-delivery-SQS"
+    customer_license_update_sqs_queue:                  "{{vpc.cloud_email.name}}-XGEMAIL-customer-license-update-SQS"
     customer_submit_sqs_queue:                          "{{vpc.cloud_email.name}}-XGEMAIL-customer-submit-SQS"
     customer_delivery_sqs_queue_sns_listener:           "{{vpc.cloud_email.name}}-XGEMAIL-delivery-SQS-SNS-listener"
     dlp_report_sqs_queue:                               "{{vpc.cloud_email.name}}-XGEMAIL-dlp-report-SQS"
@@ -325,6 +332,7 @@ stack:
     atr_reindex_sns_topic:                              "{{vpc.cloud_email.name}}-xgemail-atr-reindex-SNS"
     beta_delivery_sns_topic:                            "{{vpc.cloud_email.name}}-xgemail-beta-delivery-SNS"
     bounce_events_sns_topic:                            "{{vpc.cloud_email.name}}-xgemail-bounce-events-SNS"
+#    customers_v1_topic:                                 "{{vpc.cloud_email.name}}-customers-v1"
     delay_sns_topic:                                    "{{vpc.cloud_email.name}}-xgemail-delay-SNS"
     deleted_events_sns_topic:                           "{{vpc.cloud_email.name}}-xgemail-deleted-events-SNS"
     delta_delivery_sns_topic:                           "{{vpc.cloud_email.name}}-xgemail-delta-delivery-SNS"
