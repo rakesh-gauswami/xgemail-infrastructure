@@ -44,8 +44,10 @@ enable_postfix_relay_domains() {
   postmulti -i postfix-$1 -x postconf "relay_domains=hash:\$config_directory/relay_domains"
 }
 
+# Usage of this property would make POSTFIX an open relay
+# This is not being used as of now, however, we would start using this in near future
 disable_postfix_relay_domains() {
-  postmulti -i postfix-$1 -x postconf -X relay_domains
+  postmulti -i postfix-$1 -x postconf "relay_domains=static:ALL"
 }
 
 modify_smtpd_recipient_restrictions () {
@@ -97,8 +99,8 @@ enable() {
     echo "Updating Postfix config to remove recipient access..."
     modify_smtpd_recipient_restrictions 0 $SERVER_NAME
 
-    echo "Updating Postfix config to remove relay domains..."
-    disable_postfix_relay_domains $SERVER_NAME
+    # echo "Updating Postfix config to remove relay domains..."
+    # disable_postfix_relay_domains $SERVER_NAME
 
     echo "Reloading Postfix..."
     reload_postfix
@@ -141,8 +143,8 @@ disable() {
     echo "Updating Postfix config to add recipient access..."
     modify_smtpd_recipient_restrictions 1 $SERVER_NAME
 
-    echo "Updating Postfix config to add relay domains..."
-    enable_postfix_relay_domains $SERVER_NAME
+    # echo "Updating Postfix config to add relay domains..."
+    # enable_postfix_relay_domains $SERVER_NAME
 
     echo "Reloading Postfix..."
     reload_postfix
