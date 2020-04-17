@@ -19,12 +19,6 @@
       DeliveryDirectorBucketName:               "{{s3.delivery_director_bucket}}"
   register: cloud_email_beta_iam_output
 
-#- name: "Gather {{stack.iam.role.cloud_email_beta_delivery_roles}} CloudFormation Stack Output"
-#  cloudformation_facts:
-#    stack_name: "{{stack.iam.role.cloud_email_beta_delivery_roles}}"
-#    region: "{{account.region}}"
-#  register: cloud_email_beta_iam_output
-
 - name: "Print {{stack.iam.role.cloud_email_beta_delivery_roles}} CloudFormation Stack Output"
   debug:
     var: cloud_email_beta_iam_output
