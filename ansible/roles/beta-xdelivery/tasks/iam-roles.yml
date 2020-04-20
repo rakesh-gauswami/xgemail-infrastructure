@@ -19,6 +19,12 @@
       DeliveryDirectorBucketName:               "{{s3.delivery_director_bucket}}"
   register: cloud_email_beta_xdelivery_iam_output
 
+- name: "Gather {{stack.iam.role.cloud_email_beta_xdelivery_roles}} CloudFormation Stack Output"
+  cloudformation_facts:
+    stack_name: "{{stack.iam.role.cloud_email_beta_xdelivery_roles}}"
+    region: "{{account.region}}"
+  register: cloud_email_beta_xdelivery_iam_output
+
 - name: "Print {{stack.iam.role.cloud_email_beta_xdelivery_roles}} CloudFormation Stack Output"
   debug:
     var: cloud_email_beta_xdelivery_iam_output
@@ -35,7 +41,7 @@
     template_parameters:
       Environment:           "{{account.name}}"
       FirehoseStreamArn:     "{{kinesis.firehose.arn_prefix}}{{kinesis.firehose.firehose_log_shipper_stream}}"
-      RoleNames:             "{{cloud_email_beta_iam_output.stack_outputs.XgemailBetaXDeliveryInstanceRole}}"
+      RoleNames:             "{{cloud_email_beta_xdelivery_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_beta_xdelivery_roles].stack_outputs.XgemailBetaXDeliveryInstanceRole}}"
       PolicyName:            "{{iam.policy.policy_beta_x_publish_to_firehose}}"
   register: log_shipper_beta_x_delivery_policy_output
 
