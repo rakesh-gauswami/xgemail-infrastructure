@@ -46,6 +46,22 @@
     "CustomerLicenseUpdateQueue": {
       "Description": "Endpoint ARN for Customer License Update SQS Queue",
       "Type": "String"
+    },
+    "ArchiveIngestionQueue":{
+      "Description": "Archive Ingestion SQS queue",
+      "Type": "String"
+    },
+    "JournalArchiveDeliveryTopicArn":{
+      "Description": "TopicArn of Journal archive Events SNS",
+      "Type": "String"
+    },
+    "InternetDeliveryTopicArn":{
+      "Description": "Topic Arn of Internet Delivery SNS",
+      "Type": "String"
+    },
+    "XgemailSuccessEventTopicArn":{
+      "Description": "Topic Arn of Xgemail success Events SNS",
+      "Type": "String"
     }
   },
 
@@ -90,7 +106,30 @@
         "TopicArn": { "Ref": "DeltaDeliveryTopicArn"}
       }
     },
-
+    "JournalArchiveDeliverySnsToArchiveIngestionQueueSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "ArchiveIngestionQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "JournalArchiveDeliveryTopicArn"}
+      }
+    },
+    "SuccessEventsSnsToArchiveIngestionQueueSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "ArchiveIngestionQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "XgemailSuccessEventTopicArn"}
+      }
+    },
+    "InternetDeliverySnsToArchiveIngestionQueueSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "ArchiveIngestionQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "InternetDeliveryTopicArn"}
+      }
+    },
     "DeltaDeliveryQueuePolicy": {
       "Type": "AWS::SQS::QueuePolicy",
       "Properties": {
@@ -136,6 +175,54 @@
           ]
         },
         "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "CustomerLicenseUpdateQueue" }]]}]
+      }
+    },
+    "ArchiveIngestionQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "ArchiveIngestionQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-JournalArchiveDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "JournalArchiveDeliveryTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-InternetDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "InternetDeliveryTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-XgEmailSuccessEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "XgemailSuccessEventTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "ArchiveIngestionQueue" }]]}]
       }
     }
   }
