@@ -193,16 +193,16 @@ default['xgemail']['sqs_message_consumer_wait_time_seconds'] = 10
 default['xgemail']['mail_pic_apis_response_timeout_seconds'] = 60
 default['xgemail']['mail_pic_api_auth'] = "xgemail-#{node['sophos_cloud']['region']}-mail"
 
-## Beta delivery DSN/NDR settings
-default['xgemail']['beta_delivery_message_bouncer_processor_dir'] = XGEMAIL_SQS_MESSAGE_BOUNCER_DIR
-default['xgemail']['beta_delivery_message_bouncer_common_dir'] = "#{XGEMAIL_SQS_MESSAGE_BOUNCER_DIR}/common"
-default['xgemail']['beta_delivery_bounce_message_processor_user'] = 'bouncer'
-
 ## Internet delivery DSN/NDR settings
 XGEMAIL_SQS_MESSAGE_BOUNCER_DIR ="#{XGEMAIL_FILES_DIR}/message-bouncer"
 default['xgemail']['internet_delivery_message_bouncer_processor_dir'] = XGEMAIL_SQS_MESSAGE_BOUNCER_DIR
 default['xgemail']['internet_delivery_message_bouncer_common_dir'] = "#{XGEMAIL_SQS_MESSAGE_BOUNCER_DIR}/common"
 default['xgemail']['internet_delivery_bounce_message_processor_user'] = 'bouncer'
+
+## Beta delivery DSN/NDR settings
+default['xgemail']['beta_delivery_message_bouncer_processor_dir'] = XGEMAIL_SQS_MESSAGE_BOUNCER_DIR
+default['xgemail']['beta_delivery_message_bouncer_common_dir'] = "#{XGEMAIL_SQS_MESSAGE_BOUNCER_DIR}/common"
+default['xgemail']['beta_delivery_bounce_message_processor_user'] = 'bouncer'
 
 ## Risky delivery DSN/NDR settings
 default['xgemail']['risky_delivery_message_bouncer_processor_dir'] = XGEMAIL_SQS_MESSAGE_BOUNCER_DIR
