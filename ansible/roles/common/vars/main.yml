@@ -294,6 +294,12 @@ aws:
       template_parameters:
         TagApplication:                                           "xgemail-mail"
         TopicName:                                                "{{sns.bounce_events_sns_topic}}"
+    clawback_event_sns_topic:
+      stack_name:                                                 "{{stack.sns.clawback_event_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TagApplication:                                           "xgemail-mail"
+        TopicName:                                                "{{sns.clawback_event_sns_topic}}"
     delay_sns_topic:
       stack_name:                                                 "{{stack.sns.delay_sns_topic}}"
       template:                                                   "{{template.sns.sns_simple_template}}"
