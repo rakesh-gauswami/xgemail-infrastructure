@@ -281,7 +281,6 @@ template 'fluentd-match-msg-delivery' do
             NODE_TYPE == 'warmup-xdelivery' ||
             NODE_TYPE == 'beta-delivery' ||
             NODE_TYPE == 'beta-xdelivery' ||
-            NODE_TYPE == 'warmup-xdelivery' ||
             NODE_TYPE == 'delta-delivery' ||
             NODE_TYPE == 'delta-xdelivery'
          }
@@ -307,7 +306,6 @@ template 'fluentd-filter-msg-delivery' do
             NODE_TYPE == 'warmup-xdelivery' ||
             NODE_TYPE == 'beta-delivery' ||
             NODE_TYPE == 'beta-xdelivery' ||
-            NODE_TYPE == 'warmup-xdelivery' ||
             NODE_TYPE == 'delta-delivery' ||
             NODE_TYPE == 'delta-xdelivery'
          }
@@ -363,7 +361,6 @@ template 'fluentd-filter-transform-msg-delivery' do
             NODE_TYPE == 'warmup-xdelivery'||
             NODE_TYPE == 'beta-delivery' ||
             NODE_TYPE == 'beta-xdelivery' ||
-            NODE_TYPE == 'warmup-xdelivery' ||
             NODE_TYPE == 'delta-delivery' ||
             NODE_TYPE == 'delta-xdelivery'
          }
@@ -390,7 +387,6 @@ template 'fluentd-filter-transform-sqs-msg' do
         NODE_TYPE == 'warmup-xdelivery'||
         NODE_TYPE == 'beta-delivery' ||
         NODE_TYPE == 'beta-xdelivery' ||
-        NODE_TYPE == 'warmup-xdelivery' ||
         NODE_TYPE == 'delta-delivery' ||
         NODE_TYPE == 'delta-xdelivery'
   }
@@ -420,7 +416,6 @@ template 'fluentd-match-sns-msg-delivery' do
             NODE_TYPE == 'warmup-xdelivery' ||
             NODE_TYPE == 'beta-delivery' ||
             NODE_TYPE == 'beta-xdelivery' ||
-            NODE_TYPE == 'warmup-xdelivery' ||
             NODE_TYPE == 'delta-delivery' ||
             NODE_TYPE == 'delta-xdelivery'
          }
@@ -449,7 +444,6 @@ template 'fluentd-match-sqs-msg-delivery' do
         NODE_TYPE == 'warmup-xdelivery' ||
         NODE_TYPE == 'beta-delivery' ||
         NODE_TYPE == 'beta-xdelivery' ||
-        NODE_TYPE == 'warmup-xdelivery' ||
         NODE_TYPE == 'delta-delivery' ||
         NODE_TYPE == 'delta-xdelivery'
   }
@@ -524,4 +518,3 @@ service 'td-agent' do
   supports :restart => true, :start => true, :stop => true, :reload => true
   action [ :enable, :restart ]
 end
-

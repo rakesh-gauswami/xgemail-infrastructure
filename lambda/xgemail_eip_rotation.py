@@ -169,7 +169,6 @@ def get_instances_by_name():
                     'CloudEmail:warmup-xdelivery:*',
                     'CloudEmail:beta-delivery:*',
                     'CloudEmail:beta-xdelivery:*',
-                    'CloudEmail:warmup-xdelivery:*',
                     'CloudEmail:delta-delivery:*',
                     'CloudEmail:delta-xdelivery:*'
                 ]

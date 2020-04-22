@@ -1,9 +1,4 @@
 ---
-#- name: Debug
-#  debug:
-#    msg: "{{item.value.stack_name}} {{item.value.AutoScalingMinSize}} {{item.value.AvailabilityZoneIndex}} {{item.value.VolumeSetId}} {{cloud_email_iam_output.stack_outputs.AutoScalingInstanceRoleArn}}"
-#  with_dict: "{{aws.ec2.asg.bx}}"
-
 - name: "Create ASG Stacks in AWS"
   async: 1000
   poll: 0
@@ -15,7 +10,7 @@
     template: "{{template.ec2.asg.as_beta_xdelivery_template}}"
     template_parameters:
       AesDecryptionKey:                     "{{aes_decryption_key}}"
-      AmiId:                                "{{ami_parent_id}}"
+      AmiId:                                "ami-06e0e9d18d578ee95"
       AutoScalingInstanceRoleArn:           "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.AutoScalingInstanceRoleArn}}"
       AutoScalingMinSize:                   "{{item.1}}"
       AutoScalingMaxSize:                   "1"
@@ -28,7 +23,7 @@
       EbsMinIops:                           "{{xgemail_iops_data_gb}}"
       Environment:                          "{{account.name}}"
       HealthCheckGracePeriod:               "{{aws.asg.bx.health_check_grace_period}}"
-      InstanceProfile:                      "{{cloud_email_beta_xdelivery_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_beta_xdelivery_roles].stack_outputs.XgemailBetaXDeliveryInstanceProfile}}"
+      InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_beta_xdelivery_roles].stack_outputs.XgemailBetaXDeliveryInstanceProfile}}"
       InstanceType:                         "{{aws.asg.bx.instance_size}}"
       KeyName:                              "public-{{account.region}}"
       LifecycleHookLaunching:               "{{aws.asg.bx.lifecycle_hook_launching}}"

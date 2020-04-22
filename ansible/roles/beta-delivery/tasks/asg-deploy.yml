@@ -25,7 +25,7 @@
       DeployMinInstancesInService:          "{{aws.asg.bd.as_min_service}}"
       Environment:                          "{{account.name}}"
       HealthCheckGracePeriod:               "{{aws.asg.bd.health_check_grace_period}}"
-      InstanceProfile:                      "{{cloud_email_beta_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_beta_delivery_roles].stack_outputs.XgemailBetaDeliveryInstanceProfile}}"
+      InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_beta_delivery_roles].stack_outputs.XgemailBetaDeliveryInstanceProfile}}"
       InstanceType:                         "{{aws.asg.bd.instance_size}}"
       KeyName:                              "public-{{account.region}}"
       LifecycleHookLaunching:               "{{aws.asg.bd.lifecycle_hook_launching}}"
