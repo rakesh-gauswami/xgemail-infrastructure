@@ -17,13 +17,13 @@
       XgemailCustomerSubmitBucketName:          "{{s3.customer_submit_bucket}}"
       DeliveryDirectorDynamodbTableName:        "{{dynamodb.delivery_director_dynamodb}}"
       DeliveryDirectorBucketName:               "{{s3.delivery_director_bucket}}"
-  register: cloud_email_iam_output
+  register: cloud_email_beta_x_iam_output
 
 - name: "Gather {{stack.iam.role.cloud_email_beta_xdelivery_roles}} CloudFormation Stack Output"
   cloudformation_facts:
     stack_name: "{{stack.iam.role.cloud_email_beta_xdelivery_roles}}"
     region: "{{account.region}}"
-  register: cloud_email_iam_output
+  register: cloud_email_beta_x_iam_output
 
 # IAM Policy for Beta xdelivery Instances to Kinesis Firehose Delivery Stream
 - name: "Deploy Beta EC2 Instances to Kinesis Firehose Log Shipper IAM Policy {{stack.iam.policy.policy_beta_x_publish_to_firehose}} to {{account.name}}-{{account.region}}"
@@ -36,7 +36,7 @@
     template_parameters:
       Environment:           "{{account.name}}"
       FirehoseStreamArn:     "{{kinesis.firehose.arn_prefix}}{{kinesis.firehose.firehose_log_shipper_stream}}"
-      RoleNames:             "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_beta_xdelivery_roles].stack_outputs.XgemailBetaXDeliveryInstanceRole}}"
+      RoleNames:             "{{cloud_email_beta_x_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_beta_xdelivery_roles].stack_outputs.XgemailBetaXDeliveryInstanceRole}}"
       PolicyName:            "{{iam.policy.policy_beta_x_publish_to_firehose}}"
   register: log_shipper_policy_output
 
