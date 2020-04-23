@@ -1,0 +1,327 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Description" : "AMI builder roles template, XGEMAIL images only.",
+
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2020, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ],
+
+    "Comments": [
+      "IAM Roles Template for the beta xdelivery Instances in the CloudEmail VPC"
+    ]
+  },
+
+  "Parameters": {
+    "Environment": {
+      "Description": "Name of the AWS account. inf, dev, qa, prod",
+      "Type": "String"
+    },
+    "XgemailMsgHistoryBucketName": {
+      "Description": "Name of the Xgemail Message History bucket",
+      "Type": "String"
+    },
+    "XgemailMsgHistoryMsBucketName": {
+      "Description": "Name of the Xgemail Message History Micro-Service bucket",
+      "Type": "String"
+    },
+    "XgemailPolicyBucketName": {
+      "Description": "Name of the Xgemail Policy bucket",
+      "Type": "String"
+    },
+    "XgemailQuarantineBucketName": {
+      "Description": "Name of the quarantine bucket",
+      "Type": "String"
+    },
+    "XgemailInternetSubmitBucketName": {
+      "Description": "Name of the submit bucket",
+      "Type": "String"
+    },
+    "XgemailCustomerSubmitBucketName": {
+      "Description": "Name of the customer submit bucket",
+      "Type": "String"
+    },
+    "DeliveryDirectorDynamodbTableName": {
+      "Description": "Name of the delivery director dynamoDB table",
+      "Type": "String"
+    },
+    "DeliveryDirectorBucketName": {
+      "Description": "Name of the delivery director bucket",
+      "Type": "String"
+    }
+  },
+
+  "Resources" : {
+    "XgemailBetaXDeliveryInstanceProfile": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Path": "/",
+        "Roles": [
+          {
+            "Ref": "XgemailBetaXDeliveryInstanceRole"
+          }
+        ]
+      }
+    },
+    "XgemailBetaXDeliveryInstanceRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
+        ],
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "ec2.amazonaws.com"
+                ]
+              }
+            }
+          ]
+        },
+        "Path": "/"
+      }
+    },
+    "XgemailBetaXDeliveryInstanceRolePolicies": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "autoscaling:UpdateAutoScalingGroup",
+                "autoscaling:DescribeAutoScalingInstances"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "ec2:AssociateAddress",
+                "ec2:AttachVolume",
+                "ec2:CreateSnapshot",
+                "ec2:CreateTags",
+                "ec2:CreateVolume",
+                "ec2:DescribeAddresses",
+                "ec2:DescribeImages",
+                "ec2:DescribeSnapshots",
+                "ec2:DescribeTags",
+                "ec2:DescribeVolumes",
+                "ec2:DescribeInstances",
+                "ec2:DescribeInstanceAttribute",
+                "ec2:DetachVolume",
+                "ec2:DescribeVpcs",
+                "ec2:DescribeNatGateways",
+                "ec2:DescribeSubnets",
+                "ec2:DescribeRouteTables",
+                "ec2:ModifyInstanceAttribute",
+                "ec2:ModifySnapshotAttribute"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "iam:GetRole"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "kms:CreateGrant",
+                "kms:Decrypt",
+                "kms:DescribeKey",
+                "kms:Encrypt",
+                "kms:GenerateDataKey",
+                "kms:GenerateDataKeyWithoutPlaintext",
+                "kms:List*",
+                "kms:ReEncrypt*",
+                "kms:RevokeGrant"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:DescribeLogGroups",
+                "logs:DescribeLogStreams",
+                "logs:DescribeMetricFilters",
+                "logs:PutLogEvents"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:ListBucket"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "-",
+                    [
+                      "arn:aws:s3:::logs-sophos-msg",
+                      {
+                        "Ref": "Environment"
+                      },
+                      "*"
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Action": [
+                "s3:PutObject"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "/",
+                    [
+                      {
+                        "Fn::Join": [
+                          "-",
+                          [
+                            "arn:aws:s3:::logs-sophos-msg",
+                            {
+                              "Ref": "Environment"
+                            },
+                            "*"
+                          ]
+                        ]
+                      },
+                      "*"
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Action": [
+                "s3:DeleteObject",
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:PutObject"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:s3:::cloud-*"
+              ]
+            },
+            {
+              "Action": [
+                "sdb:BatchDeleteAttributes",
+                "sdb:BatchPutAttributes",
+                "sdb:CreateDomain",
+                "sdb:DeleteAttributes",
+                "sdb:DeleteDomain",
+                "sdb:DomainMetadata",
+                "sdb:GetAttributes",
+                "sdb:ListDomains",
+                "sdb:PutAttributes",
+                "sdb:Select"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "sns:ListSubscriptionsByTopic",
+                "sns:ListTopics",
+                "sns:Publish",
+                "sns:Subscribe",
+                "sns:Unsubscribe"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    ":",
+                    [
+                      "arn:aws:sns",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      "*"
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Action": [
+                "sqs:ChangeMessageVisibility",
+                "sqs:CreateQueue",
+                "sqs:DeleteMessage",
+                "sqs:DeleteQueue",
+                "sqs:GetQueueAttributes",
+                "sqs:GetQueueUrl",
+                "sqs:ListQueues",
+                "sqs:SendMessage",
+                "sqs:SetQueueAttributes",
+                "sqs:ReceiveMessage"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ]
+        },
+        "PolicyName": "root",
+        "Roles": [
+          {
+            "Ref": "XgemailBetaXDeliveryInstanceRole"
+          }
+        ]
+      }
+    }
+  },
+
+  "Outputs": {
+    "XgemailBetaXdeliveryInstanceProfile": {
+      "Description": "XGEMAIL Beta Delivery instance profile",
+      "Value": { "Ref": "XgemailBetaXDeliveryInstanceProfile" }
+    },
+    "XgemailBetaXDeliveryInstanceRole": {
+      "Description": "XGEMAIL Beta Delivery instance role",
+      "Value": { "Ref": "XgemailBetaXDeliveryInstanceRole" }
+    },
+    "XgemailBetaXDeliveryInstanceRoleArn": {
+      "Description": "XGEMAIL Beta Delivery instance role ARN",
+      "Value": { "Fn::GetAtt" : [ "XgemailBetaXDeliveryInstanceRole", "Arn" ] }
+    }
+  }
+}

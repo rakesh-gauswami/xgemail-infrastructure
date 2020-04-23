@@ -1,7 +1,7 @@
 """
 Description here.
 
-Copyright 2019, Sophos Limited. All rights reserved.
+Copyright 2020, Sophos Limited. All rights reserved.
 
 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
 Sophos Limited and Sophos Group.  All other product and company
@@ -167,6 +167,8 @@ def get_instances_by_name():
                     'CloudEmail:risky-xdelivery:*',
                     'CloudEmail:warmup-delivery:*',
                     'CloudEmail:warmup-xdelivery:*',
+                    'CloudEmail:beta-delivery:*',
+                    'CloudEmail:beta-xdelivery:*',
                     'CloudEmail:delta-delivery:*',
                     'CloudEmail:delta-xdelivery:*'
                 ]
@@ -279,6 +281,14 @@ def get_clean_eip(lifecycle_hook_name):
                 Filters=[
                     {
                         'Name': 'tag:Name', 'Values': ['xgemail-warmup']
+                    }
+                ]
+            )['Addresses']
+        elif 'beta-delivery' in lifecycle_hook_name or 'beta-xdelivery' in lifecycle_hook_name:
+            addresses = ec2_client.describe_addresses(
+                Filters=[
+                    {
+                        'Name': 'tag:Name', 'Values': ['xgemail-beta']
                     }
                 ]
             )['Addresses']

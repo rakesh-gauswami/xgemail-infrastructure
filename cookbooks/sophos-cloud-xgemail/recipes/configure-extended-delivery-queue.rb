@@ -12,7 +12,7 @@
 NODE_TYPE = node['xgemail']['cluster_type']
 ACCOUNT =  node['sophos_cloud']['environment']
 
-if NODE_TYPE != 'xdelivery' && NODE_TYPE != 'internet-xdelivery' && NODE_TYPE != 'risky-xdelivery' && NODE_TYPE != 'warmup-xdelivery' && NODE_TYPE != 'delta-xdelivery'
+if NODE_TYPE != 'xdelivery' && NODE_TYPE != 'internet-xdelivery' && NODE_TYPE != 'risky-xdelivery' && NODE_TYPE != 'warmup-xdelivery' && NODE_TYPE != 'beta-xdelivery' && NODE_TYPE != 'delta-xdelivery'
   return
 end
 
@@ -154,7 +154,7 @@ end
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
 end
 
-if NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery' || NODE_TYPE == 'warmup-xdelivery' || NODE_TYPE == 'delta-xdelivery'
+if NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery' || NODE_TYPE == 'warmup-xdelivery' || NODE_TYPE == 'beta-xdelivery' || NODE_TYPE == 'delta-xdelivery'
 
   HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
 
@@ -196,6 +196,9 @@ else
   end
   if NODE_TYPE == 'warmup-xdelivery'
     include_recipe 'sophos-cloud-xgemail::configure-bounce-message-warmup-delivery-queue'
+  end
+  if NODE_TYPE == 'beta-xdelivery'
+    include_recipe 'sophos-cloud-xgemail::configure-bounce-message-beta-delivery-queue'
   end
   if NODE_TYPE == 'delta-xdelivery'
     include_recipe 'sophos-cloud-xgemail::configure-bounce-message-delta-delivery-queue'
