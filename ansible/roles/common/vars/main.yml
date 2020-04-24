@@ -4,6 +4,25 @@
 # The variables are organized into namespaces
 aws:
   asg:
+    bd:
+      alarm_scaling_enabled:                                      "false"
+      alarm_scale_in_threshold:                                   "10"
+      alarm_scale_out_threshold:                                  "50"
+      as_min_size:                                                "1"
+      as_max_size:                                                "6"
+      as_min_service:                                             "1"
+      as_max_batch_size:                                          "1"
+      health_check_grace_period:                                  "600"
+      instance_size:                                              "t2.small"
+      lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-beta-delivery-Launching-LifeCycleHook"
+      lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-beta-delivery-Terminating-LifeCycleHook"
+    bx:
+      asg_min_size:                                               [0,0,1]
+      health_check_grace_period:                                  "600"
+      instance_size:                                              "t2.small"
+      lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-beta-xdelivery-Launching-LifeCycleHook"
+      stack_number:                                               [1,2,3]
+      zone_index:                                                 [0,1,2]
     is:
       alarm_scaling_enabled:                                      "false"
       alarm_scale_in_threshold:                                   "100"
@@ -288,6 +307,12 @@ aws:
         SNSTopicEndpointProtocol:                                 "email-json"
         SNSTopicEndpointValue:                                    "SophosMailOps@sophos.com"
         SNSTopicName:                                             "{{sns.alarm_sns_topic}}"
+    beta_delivery_sns_topic:
+      stack_name:                                                 "{{stack.sns.beta_delivery_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TagApplication:                                           "beta-delivery"
+        TopicName:                                                "{{sns.beta_delivery_sns_topic}}"
     bounce_events_sns_topic:
       stack_name:                                                 "{{stack.sns.bounce_events_sns_topic}}"
       template:                                                   "{{template.sns.sns_simple_template}}"
@@ -490,8 +515,15 @@ aws:
       state:                                                      present
       template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
-        QueueName:                                                "{{sqs.atr_reindex_sqs_queue_sns_listener}}"
         TagApplication:                                           "atr-index"
+        QueueName:                                                "{{sqs.atr_reindex_sqs_queue_sns_listener}}"
+    beta_delivery_sqs_queue_sns_listener:
+      stack_name:                                                 "{{stack.sqs.beta_delivery_sqs_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.beta_delivery_sqs_queue_sns_listener}}"
+        TagApplication:                                           "beta-delivery"
     bulk_sender_action_sqs_queue:
       stack_name:                                                 "{{stack.sqs.bulk_sender_action_sqs_queue}}"
       state:                                                      present

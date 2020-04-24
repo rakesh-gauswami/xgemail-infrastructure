@@ -19,6 +19,14 @@
   },
 
   "Parameters": {
+    "BetaDeliveryQueue": {
+      "Description": "Endpoint for Beta delivery SQS queue",
+      "Type": "String"
+    },
+    "BetaDeliveryTopicArn": {
+      "Description": "TopicArn of Beta Delivery Events SNS",
+      "Type": "String"
+    },
     "DeltaDeliveryTopicArn": {
       "Description": "TopicArn of Delta Delivery Events SNS",
       "Type": "String"
@@ -66,6 +74,22 @@
   },
 
   "Resources": {
+    "AdditionalActionQueueToBetaaDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "AdditionalActionQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "BetaDeliveryTopicArn"}
+      }
+    },
+    "BetaDeliveryQueueToBetaDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "BetaDeliveryQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "BetaDeliveryTopicArn"}
+      }
+    },
     "AdditionalActionQueueToDeltaDeliverySnsSubscription": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
@@ -128,6 +152,30 @@
         "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "ArchiveIngestionQueue"}]]},
         "Protocol": "sqs",
         "TopicArn": { "Ref": "InternetDeliveryTopicArn"}
+      }
+    },
+    "BetaDeliveryQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "BetaDeliveryQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-BetaDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "BetaDeliveryTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "BetaDeliveryQueue" }]]}]
       }
     },
     "DeltaDeliveryQueuePolicy": {

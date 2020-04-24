@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Attribute:: default
 #
-# Copyright 2018, Sophos
+# Copyright 2020, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -199,6 +199,11 @@ default['xgemail']['internet_delivery_message_bouncer_processor_dir'] = XGEMAIL_
 default['xgemail']['internet_delivery_message_bouncer_common_dir'] = "#{XGEMAIL_SQS_MESSAGE_BOUNCER_DIR}/common"
 default['xgemail']['internet_delivery_bounce_message_processor_user'] = 'bouncer'
 
+## Beta delivery DSN/NDR settings
+default['xgemail']['beta_delivery_message_bouncer_processor_dir'] = XGEMAIL_SQS_MESSAGE_BOUNCER_DIR
+default['xgemail']['beta_delivery_message_bouncer_common_dir'] = "#{XGEMAIL_SQS_MESSAGE_BOUNCER_DIR}/common"
+default['xgemail']['beta_delivery_bounce_message_processor_user'] = 'bouncer'
+
 ## Risky delivery DSN/NDR settings
 default['xgemail']['risky_delivery_message_bouncer_processor_dir'] = XGEMAIL_SQS_MESSAGE_BOUNCER_DIR
 default['xgemail']['risky_delivery_message_bouncer_common_dir'] = "#{XGEMAIL_SQS_MESSAGE_BOUNCER_DIR}/common"
@@ -352,6 +357,22 @@ default['xgemail']['postfix_instance_data'] = {
   # warmup-extended-delivery
   'warmup-xdelivery' => {
     :instance_name => 'wx',
+    :port => 8025,
+    # Give delivery queues extra padding because extra content may be created during processing
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600),
+    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+  },
+  # beta-delivery
+  'beta-delivery' => {
+    :instance_name => 'bd',
+    :port => 25,
+    # Give delivery queues extra padding because extra content may be created during processing
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800),
+    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+  },
+  # beta-extended-delivery
+  'beta-xdelivery' => {
+    :instance_name => 'bx',
     :port => 8025,
     # Give delivery queues extra padding because extra content may be created during processing
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600),
