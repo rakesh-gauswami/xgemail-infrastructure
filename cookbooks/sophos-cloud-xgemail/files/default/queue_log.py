@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+    #!/usr/bin/env python
 # vim: autoindent expandtab filetype=python shiftwidth=4 softtabstop=4 tabstop=4
 #
 # Copyright 2018, Sophos Limited. All rights reserved.
@@ -22,6 +22,8 @@ class QueueLog:
         'risky-xdelivery': 'RISKY_XDELIVERY',
         'warmup-delivery': 'WARMUP_DELIVERY',
         'warmup-xdelivery': 'WARMUP_XDELIVERY',
+        'beta-delivery': 'BETA_DELIVERY',
+        'beta-xdelivery': 'BETA_XDELIVERY',
         'delta-delivery': 'DELTA_DELIVERY',
         'delta-xdelivery': 'DELTA_XDELIVERY'
     }
