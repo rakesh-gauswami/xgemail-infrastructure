@@ -111,7 +111,7 @@ if __name__ == "__main__":
     command = args.command
 
     if command != "GET_ALL":
-        domainOrEmail = str(args.domainOrEmail).strip()
+        domainOrEmail = str(args.domainOrEmail).strip().lower()
         riskValue = args.risk_value
         typeOfRecord = args.record_type
         deliveryType = args.delivery_type
@@ -169,16 +169,25 @@ if __name__ == "__main__":
             warmup_percentage = args.warmup_percentage
 
         # Create new updated object
-        dd_threshold = DeliveryDirectorThreshold(domain_threshold,
-                                                 email_threshold,
-                                                 warmup_percentage)
-        # Writer Update config object to S3 bucket
-        bucket = s3.Bucket(bucket_name)
-        bucket.put_object(Key=DD_CONFIG_FILE_NAME,
-                          Body=json.dumps(dd_threshold.get_deliverdirector_threshold_json()),
-                          ServerSideEncryption= "AES256")
+        dd_updated_threshold = DeliveryDirectorThreshold(domain_threshold,
+                                                         email_threshold,
+                                                         warmup_percentage)
 
-        print "Config update with data %s" % dd_threshold.get_deliverdirector_threshold_json()
+        dd_current_config = DeliveryDirectorThreshold(dd_current_config_object['domain_threshold'],
+                                                      dd_current_config_object['email_threshold'],
+                                                      dd_current_config_object['warmup_percentage'])
+
+        print "Current config is %s" % dd_current_config.get_deliverdirector_threshold_json()
+        print "Update request is with %s" % dd_updated_threshold.get_deliverdirector_threshold_json()
+        update_confirmation = raw_input("Are you sure you want to update config [Y/N] ? :")
+        if update_confirmation.upper() == 'Y':
+            # Writer Update config object to S3 bucket
+            bucket = s3.Bucket(bucket_name)
+            bucket.put_object(Key=DD_CONFIG_FILE_NAME,
+                              Body=json.dumps(dd_updated_threshold.get_deliverdirector_threshold_json()),
+                              ServerSideEncryption= "AES256")
+
+            print "Config update with data %s" % dd_updated_threshold.get_deliverdirector_threshold_json()
 
     if command == "GET_ALL":
         response = table.scan()
@@ -199,8 +208,8 @@ if __name__ == "__main__":
             print("No record found for given domain/email.")
 
     if command == "DELETE":
-        confirmation = raw_input("Are you sure you want to delete record[Y/N]?")
-        if confirmation == 'Y':
+        confirmation = raw_input("Are you sure you want to delete record [Y/N]? :")
+        if confirmation.upper() == 'Y':
             table.delete_item(
                 Key={
                     'key': domainOrEmail
