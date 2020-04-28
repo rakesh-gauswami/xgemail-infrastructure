@@ -457,6 +457,12 @@ aws:
       template_parameters:
         TagApplication:                                           "mail-inbound"
         TopicName:                                                "{{sns.scan_events_sns_topic}}"
+    snd_clawback_events_sns_topic:
+      stack_name:                                                 "{{stack.sns.snd_clawback_events_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TagApplication:                                           "snd-clawback"
+        TopicName:                                                "{{sns.snd_clawback_events_sns_topic}}"
     success_events_sns_topic:
       stack_name:                                                 "{{stack.sns.success_events_sns_topic}}"
       template:                                                   "{{template.sns.sns_simple_template}}"
