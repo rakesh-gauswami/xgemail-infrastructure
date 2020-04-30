@@ -512,26 +512,6 @@
       }
     },
 
-    "XgemailScaleOutPolicy": {
-      "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Properties": {
-        "AdjustmentType": "ChangeInCapacity",
-        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "Cooldown": "400",
-        "ScalingAdjustment": "1"
-      }
-    },
-
-    "XgemailScaleInPolicy": {
-      "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Properties": {
-        "AdjustmentType": "ChangeInCapacity",
-        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "Cooldown": "60",
-        "ScalingAdjustment": "-1"
-      }
-    },
-
     "XgemailAutoScalingLaunchConfig": {
       "Type": "AWS::AutoScaling::LaunchConfiguration",
       "Metadata": {
@@ -904,14 +884,6 @@
     "LaunchConfig": {
       "Description": "Auto Scaling Launch Configuration Name.",
       "Value": { "Ref": "XgemailAutoScalingLaunchConfig" }
-    },
-    "XgemailScaleOutPolicy": {
-      "Description": "Auto Scaling Scale Out Policy ARN.",
-      "Value": { "Ref": "XgemailScaleOutPolicy" }
-    },
-    "XgemailScaleInPolicy": {
-      "Description": "Auto Scaling Scale In Policy ARN..",
-      "Value": { "Ref": "XgemailScaleInPolicy" }
     },
     "XgemailScaleCpuPolicy": {
       "Description": "Auto Scaling Scale Out Policy based on CPU.",
