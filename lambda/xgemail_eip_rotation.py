@@ -57,7 +57,7 @@ def eip_rotation_handler(event, context):
             eip = None
         return rotate_single_eip(ec2_instance, eip)
 
-    if 'EC2InstanceId' in event['detail']:
+    elif 'EC2InstanceId' in event['detail']:
         logger.info("Lambda Function triggered from Instance Launching Lifecycle Hook.")
         ec2_instance = ec2.Instance(event['detail']['EC2InstanceId'])
         autoscaling_group_name = event['detail']['AutoScalingGroupName']
@@ -79,8 +79,7 @@ def eip_rotation_handler(event, context):
         )
     else:
         logger.info("Lambda Function triggered from CloudWatch Scheduled Event for EIP Rotation.")
-        rotate_eip(lifecycle_hook_name=event['detail']['LifecycleHookName'])
-        return True
+        return rotate_all_eips()
 
 
 def initial_eip(instance):
@@ -126,8 +125,7 @@ def rotate_all_eips():
         current_eip = lookup_eip(current_eip=instance.public_ip_address)
         if current_eip is None:
             continue
-        else:
-            new_eip = get_clean_eip(instance)
+        new_eip = get_clean_eip(instance)
 
         rotation_complete &= rotate_eip(instance, current_eip, new_eip)
 
