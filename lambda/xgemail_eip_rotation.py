@@ -105,10 +105,10 @@ def rotate_eip(instance, current_eip, new_eip):
                     return True
         else:
             postfix_service(instance_id=instance.id, cmd='start')
-            logger.info("There was a problem with EIP rotation for Instance: {}.".format(instance.id))
+            logger.error("There was a problem with EIP rotation for Instance: {}.".format(instance.id))
             return False
     else:
-        logger.info("Unable to stop Postfix Service on Instance: {}.".format(instance.id))
+        logger.error("Unable to stop Postfix Service on Instance: {}.".format(instance.id))
         return False
 
 
