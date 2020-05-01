@@ -125,11 +125,6 @@
       "Description": "Name for the ELB to attach to the Auto Scaling Group",
       "Type": "List<String>"
     },
-    "PolicyTargetValue": {
-      "Description": "The target value for the metric.",
-      "Type": "Number",
-      "Default": "85"
-    },
     "S3CookbookRepositoryURL": {
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
       "Type": "String",
@@ -278,14 +273,6 @@
             "prod"
           ]
         }
-      ]
-    },
-    "ScalingEnabled": {
-      "Fn::Equals": [
-        {
-          "Ref": "Environment"
-        },
-        "prod"
       ]
     },
     "UseSpotPrice": {
@@ -496,19 +483,23 @@
       }
     },
 
-    "XgemailScaleCpuPolicy": {
+    "XgemailScaleOutPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Condition": "ScalingEnabled",
       "Properties": {
+        "AdjustmentType": "ChangeInCapacity",
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "EstimatedInstanceWarmup": "400",
-        "PolicyType": "TargetTrackingScaling",
-        "TargetTrackingConfiguration": {
-          "PredefinedMetricSpecification": {
-            "PredefinedMetricType": "ASGAverageCPUUtilization"
-          },
-          "TargetValue": { "Ref": "PolicyTargetValue"}
-        }
+        "Cooldown": "400",
+        "ScalingAdjustment": "1"
+      }
+    },
+
+    "XgemailScaleInPolicy": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+      "Properties": {
+        "AdjustmentType": "ChangeInCapacity",
+        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
+        "Cooldown": "60",
+        "ScalingAdjustment": "-1"
       }
     },
 
@@ -856,7 +847,7 @@
               "\n",
 
               "# Now the onexit function will get called.\n"
-              ]
+            ]
             ]
           }
         }
@@ -885,10 +876,13 @@
       "Description": "Auto Scaling Launch Configuration Name.",
       "Value": { "Ref": "XgemailAutoScalingLaunchConfig" }
     },
-    "XgemailScaleCpuPolicy": {
-      "Description": "Auto Scaling Scale Out Policy based on CPU.",
-      "Value": { "Ref": "XgemailScaleCpuPolicy" },
-      "Condition": "ScalingEnabled"
+    "XgemailScaleOutPolicy": {
+      "Description": "Auto Scaling Scale Out Policy ARN.",
+      "Value": { "Ref": "XgemailScaleOutPolicy" }
+    },
+    "XgemailScaleInPolicy": {
+      "Description": "Auto Scaling Scale In Policy ARN..",
+      "Value": { "Ref": "XgemailScaleInPolicy" }
     }
   }
 }
