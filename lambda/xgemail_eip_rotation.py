@@ -122,7 +122,7 @@ def rotate_all_eips():
         if (datetime.now(instance.launch_time.tzinfo) - instance.launch_time).total_seconds() <= 1800:
             logger.info("Instance Id: {} was recently deployed. Skipping".format(instance.id))
             continue
-        current_eip = lookup_eip(current_eip=instance.public_ip_address)
+        current_eip = lookup_eip(eip=instance.public_ip_address)
         if current_eip is None:
             continue
         new_eip = get_clean_eip(instance)
