@@ -499,13 +499,16 @@
     "XgemailScaleCpuPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
       "Condition": "ScalingEnabled",
-      "EstimatedInstanceWarmup": "400",
-      "PolicyType": "TargetTrackingScaling",
-      "TargetTrackingConfiguration": {
-        "PredefinedMetricSpecification": {
-          "PredefinedMetricType": "ASGAverageCPUUtilization"
-        },
-        "TargetValue": { "Ref": "PolicyTargetValue"}
+      "Properties": {
+        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
+        "EstimatedInstanceWarmup": "400",
+        "PolicyType": "TargetTrackingScaling",
+        "TargetTrackingConfiguration": {
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "ASGAverageCPUUtilization"
+          },
+          "TargetValue": { "Ref": "PolicyTargetValue"}
+        }
       }
     },
 
