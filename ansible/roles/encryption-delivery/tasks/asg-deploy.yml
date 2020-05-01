@@ -28,6 +28,7 @@
       KeyName:                              "private-{{account.region}}"
       LifecycleHookTerminating:             "{{aws.asg.ed.lifecycle_hook_terminating}}"
       LoadBalancerName:                     "{{elb_stack_output.stack_outputs.LoadBalancerId}}"
+      PolicyTargetValue:                    "{{aws.asg.ed.policy_target_value}}"
       S3CookbookRepositoryURL:              "//cloud-{{account.name}}-templates/{{build.branch}}/xgemail-infrastructure/cookbooks.enc"
       ScaleInOnWeekends:                    "{{weekend_scale_down}}"
       ScaleInCron:                          "{{cron_scale_down}}"

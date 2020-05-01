@@ -107,6 +107,7 @@ aws:
       health_check_grace_period:                                  "600"
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-encryption-submit-Terminating-LifeCycleHook"
+      policy_target_value:                                        "80"
     ed:
       as_min_size:                                                "1"
       as_max_size:                                                "3"
@@ -115,6 +116,7 @@ aws:
       health_check_grace_period:                                  "600"
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-encryption-delivery-Terminating-LifeCycleHook"
+      policy_target_value:                                        "80"
     rd:
       alarm_scaling_enabled:                                      "false"
       alarm_scale_in_threshold:                                   "10"
@@ -457,6 +459,12 @@ aws:
       template_parameters:
         TagApplication:                                           "mail-inbound"
         TopicName:                                                "{{sns.scan_events_sns_topic}}"
+    snd_clawback_events_sns_topic:
+      stack_name:                                                 "{{stack.sns.snd_clawback_events_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TagApplication:                                           "snd-clawback"
+        TopicName:                                                "{{sns.snd_clawback_events_sns_topic}}"
     success_events_sns_topic:
       stack_name:                                                 "{{stack.sns.success_events_sns_topic}}"
       template:                                                   "{{template.sns.sns_simple_template}}"
