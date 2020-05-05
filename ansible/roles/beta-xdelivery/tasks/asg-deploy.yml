@@ -23,7 +23,7 @@
       EbsMinIops:                           "{{xgemail_iops_data_gb}}"
       Environment:                          "{{account.name}}"
       HealthCheckGracePeriod:               "{{aws.asg.bx.health_check_grace_period}}"
-      InstanceProfile:                      "{{cloud_email_beta_x_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_beta_xdelivery_roles].stack_outputs.XgemailBetaXDeliveryInstanceProfile}}"
+      InstanceProfile:                      "{{iam_stack_output.stack_outputs.XgemailBetaXdeliveryInstanceProfile}}"
       InstanceType:                         "{{aws.asg.bx.instance_size}}"
       KeyName:                              "public-{{account.region}}"
       LifecycleHookLaunching:               "{{aws.asg.bx.lifecycle_hook_launching}}"
