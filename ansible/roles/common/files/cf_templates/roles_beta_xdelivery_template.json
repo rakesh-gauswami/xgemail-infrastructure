@@ -21,54 +21,22 @@
     "Environment": {
       "Description": "Name of the AWS account. inf, dev, qa, prod",
       "Type": "String"
-    },
-    "XgemailMsgHistoryBucketName": {
-      "Description": "Name of the Xgemail Message History bucket",
-      "Type": "String"
-    },
-    "XgemailMsgHistoryMsBucketName": {
-      "Description": "Name of the Xgemail Message History Micro-Service bucket",
-      "Type": "String"
-    },
-    "XgemailPolicyBucketName": {
-      "Description": "Name of the Xgemail Policy bucket",
-      "Type": "String"
-    },
-    "XgemailQuarantineBucketName": {
-      "Description": "Name of the quarantine bucket",
-      "Type": "String"
-    },
-    "XgemailInternetSubmitBucketName": {
-      "Description": "Name of the submit bucket",
-      "Type": "String"
-    },
-    "XgemailCustomerSubmitBucketName": {
-      "Description": "Name of the customer submit bucket",
-      "Type": "String"
-    },
-    "DeliveryDirectorDynamodbTableName": {
-      "Description": "Name of the delivery director dynamoDB table",
-      "Type": "String"
-    },
-    "DeliveryDirectorBucketName": {
-      "Description": "Name of the delivery director bucket",
-      "Type": "String"
     }
   },
 
   "Resources" : {
-    "XgemailBetaXDeliveryInstanceProfile": {
+    "XgemailBetaXdeliveryInstanceProfile": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
         "Path": "/",
         "Roles": [
           {
-            "Ref": "XgemailBetaXDeliveryInstanceRole"
+            "Ref": "XgemailBetaXdeliveryInstanceRole"
           }
         ]
       }
     },
-    "XgemailBetaXDeliveryInstanceRole": {
+    "XgemailBetaXdeliveryInstanceRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
         "ManagedPolicyArns": [
@@ -92,7 +60,7 @@
         "Path": "/"
       }
     },
-    "XgemailBetaXDeliveryInstanceRolePolicies": {
+    "XgemailBetaXdeliveryInstanceRolePolicies": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
         "PolicyDocument": {
@@ -303,7 +271,7 @@
         "PolicyName": "root",
         "Roles": [
           {
-            "Ref": "XgemailBetaXDeliveryInstanceRole"
+            "Ref": "XgemailBetaXdeliveryInstanceRole"
           }
         ]
       }
@@ -312,16 +280,16 @@
 
   "Outputs": {
     "XgemailBetaXdeliveryInstanceProfile": {
-      "Description": "XGEMAIL Beta Delivery instance profile",
-      "Value": { "Ref": "XgemailBetaXDeliveryInstanceProfile" }
+      "Description": "XGEMAIL Beta Xdelivery instance profile",
+      "Value": { "Ref": "XgemailBetaXdeliveryInstanceProfile" }
     },
-    "XgemailBetaXDeliveryInstanceRole": {
-      "Description": "XGEMAIL Beta Delivery instance role",
-      "Value": { "Ref": "XgemailBetaXDeliveryInstanceRole" }
+    "XgemailBetaXdeliveryInstanceRole": {
+      "Description": "XGEMAIL Beta Xdelivery instance role",
+      "Value": { "Ref": "XgemailBetaXdeliveryInstanceRole" }
     },
-    "XgemailBetaXDeliveryInstanceRoleArn": {
-      "Description": "XGEMAIL Beta Delivery instance role ARN",
-      "Value": { "Fn::GetAtt" : [ "XgemailBetaXDeliveryInstanceRole", "Arn" ] }
+    "XgemailBetaXdeliveryInstanceRoleArn": {
+      "Description": "XGEMAIL Beta Xdelivery instance role ARN",
+      "Value": { "Fn::GetAtt" : [ "XgemailBetaXdeliveryInstanceRole", "Arn" ] }
     }
   }
 }
