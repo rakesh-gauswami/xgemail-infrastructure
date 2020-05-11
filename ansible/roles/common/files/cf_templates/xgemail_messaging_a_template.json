@@ -179,10 +179,6 @@
       "Description": "Endpoint for Internet delivery SQS queue",
       "Type": "String"
     },
-    "InternetSubmitServiceQueue": {
-      "Description": "Endpoint for Internet submit service SQS queue",
-      "Type": "String"
-    },
     "MailOpsNotificationEmail": {
       "Description": "MailOps group email id",
       "Type": "String"
@@ -902,30 +898,6 @@
           ]
         },
         "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "RiskyDeliveryQueue" }]]}]
-      }
-    },
-    "InternetSubmitServiceQueuePolicy": {
-      "Type": "AWS::SQS::QueuePolicy",
-      "Properties": {
-        "PolicyDocument": {
-          "Version": "2012-10-17",
-          "Id": "InternetSubmitServiceQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
-          "Statement": [
-            {
-              "Sid": "Allow-ScanEventsTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "ScanEventsTopicArn"}
-                }
-              }
-            }
-          ]
-        },
-        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "InternetSubmitServiceQueue" }]]}]
       }
     },
     "MessageHistoryQueuePolicy": {
