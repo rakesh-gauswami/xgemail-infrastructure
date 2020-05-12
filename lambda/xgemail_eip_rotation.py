@@ -55,40 +55,38 @@ def eip_rotation_handler(event, context):
             eip = event['Eip']
         else:
             eip = None
-        rotate_single_eip(ec2_instance, eip)
-        return True
-    if 'EC2InstanceId' in event['detail']:
+        return rotate_single_eip(ec2_instance, eip)
+
+    elif 'EC2InstanceId' in event['detail']:
         logger.info("Lambda Function triggered from Instance Launching Lifecycle Hook.")
         ec2_instance = ec2.Instance(event['detail']['EC2InstanceId'])
-        if initial_eip(instance=ec2_instance, lifecycle_hook_name=event['detail']['LifecycleHookName']):
+        autoscaling_group_name = event['detail']['AutoScalingGroupName']
+        lifecycle_hook_name = event['detail']['LifecycleHookName']
+        lifecycle_action_token = event['detail']['LifecycleActionToken']
+
+        if initial_eip(instance=ec2_instance):
             logger.info("Completing lifecycle action with CONTINUE")
-            complete_lifecycle_action(
-                autoscaling_group_name=event['detail']['AutoScalingGroupName'],
-                lifecycle_hook_name=event['detail']['LifecycleHookName'],
-                lifecycle_action_token=event['detail']['LifecycleActionToken'],
-                lifecycle_action_result='CONTINUE'
-            )
-            return True
+            lifecycle_action_result='CONTINUE'
         else:
             logger.error("Completing lifecycle action with ABANDON")
-            complete_lifecycle_action(
-                autoscaling_group_name=event['detail']['AutoScalingGroupName'],
-                lifecycle_hook_name=event['detail']['LifecycleHookName'],
-                lifecycle_action_token=event['detail']['LifecycleActionToken'],
-                lifecycle_action_result='ABANDON'
-            )
-            return True
+            lifecycle_action_result='ABANDON'
+
+        return complete_lifecycle_action(
+            autoscaling_group_name,
+            lifecycle_hook_name,
+            lifecycle_action_token,
+            lifecycle_action_result
+        )
     else:
         logger.info("Lambda Function triggered from CloudWatch Scheduled Event for EIP Rotation.")
-        rotate_eip(lifecycle_hook_name=event['detail']['LifecycleHookName'])
-        return True
+        return rotate_all_eips()
 
 
-def initial_eip(instance, lifecycle_hook_name):
+def initial_eip(instance):
     """
     If triggered via Lifecycle Hook then just assign an EIP.
     """
-    new_eip = get_clean_eip(lifecycle_hook_name)
+    new_eip = get_clean_eip(instance)
     if associate_address(allocation_id=new_eip['AllocationId'], instance_id=instance.id):
         logger.info("===FINISHED=== Attaching initial EIP on Instance: {}.".format(instance.id))
         return True
@@ -97,10 +95,29 @@ def initial_eip(instance, lifecycle_hook_name):
         return False
 
 
-def rotate_eip(lifecycle_hook_name):
+def rotate_eip(instance, current_eip, new_eip):
+    hostname = socket.gethostbyaddr(new_eip['PublicIp'])[0]
+    if postfix_service(instance_id=instance.id, cmd='stop'):
+        if disassociate_address(eip=current_eip):
+            if associate_address(allocation_id=new_eip['AllocationId'], instance_id=instance.id):
+                if update_hostname(instance_id=instance.id, hostname=hostname):
+                    logger.info("Successfully rotated EIP on Instance: {}.".format(instance.id))
+                    return True
+        else:
+            postfix_service(instance_id=instance.id, cmd='start')
+            logger.error("There was a problem with EIP rotation for Instance: {}.".format(instance.id))
+            return False
+    else:
+        logger.error("Unable to stop Postfix Service on Instance: {}.".format(instance.id))
+        return False
+
+
+def rotate_all_eips():
     """
     If triggered from scheduled event rotate all EIP's.
     """
+    rotation_complete = True
+
     for instance in get_instances_by_name():
         if (datetime.now(instance.launch_time.tzinfo) - instance.launch_time).total_seconds() <= 1800:
             logger.info("Instance Id: {} was recently deployed. Skipping".format(instance.id))
@@ -108,44 +125,25 @@ def rotate_eip(lifecycle_hook_name):
         current_eip = lookup_eip(eip=instance.public_ip_address)
         if current_eip is None:
             continue
-        new_eip = get_clean_eip(lifecycle_hook_name)
-        hostname = socket.gethostbyaddr(new_eip['PublicIp'])[0]
-        if postfix_service(instance_id=instance.id, cmd='stop'):
-            if disassociate_address(eip=current_eip):
-                if associate_address(allocation_id=new_eip['AllocationId'], instance_id=instance.id):
-                    if update_hostname(instance_id=instance.id, hostname=hostname):
-                        logger.info("Successfully rotated EIP on Instance: {}.".format(instance.id))
-            else:
-                postfix_service(instance_id=instance.id, cmd='start')
-                logger.info("There was a problem with EIP rotation for Instance: {}.".format(instance.id))
-                continue
-        else:
-            logger.info("Unable to stop Postfix Service on Instance: {}.".format(instance.id))
-            continue
+        new_eip = get_clean_eip(instance)
+
+        rotation_complete &= rotate_eip(instance, current_eip, new_eip)
+
     logger.info("===FINISHED=== Rotating Outbound Delivery EIP's.")
+    return rotation_complete
 
 
-def rotate_single_eip(instance,eip):
+def rotate_single_eip(instance, eip):
     """
     If triggered from SSM rotate a single EC2 Instance's EIP.
     """
     current_eip = lookup_eip(eip=instance.public_ip_address)
     if eip == None:
-        new_eip = get_clean_eip()
+        new_eip = get_clean_eip(instance)
     else:
         new_eip = lookup_eip(eip=eip)
-    hostname = socket.gethostbyaddr(new_eip['PublicIp'])[0]
-    if postfix_service(instance_id=instance.id, cmd='stop'):
-        if disassociate_address(eip=current_eip):
-            if associate_address(allocation_id=new_eip['AllocationId'], instance_id=instance.id):
-                if update_hostname(instance_id=instance.id, hostname=hostname):
-                    logger.info("Successfully rotated EIP on Instance: {}.".format(instance.id))
-        else:
-            postfix_service(instance_id=instance.id, cmd='start')
-            logger.error("There was a problem with EIP rotation for Instance: {}.".format(instance.id))
-    else:
-        logger.error("Unable to stop Postfix Service on Instance: {}.".format(instance.id))
-    logger.info("===FINISHED=== Rotating Outbound Delivery EIP on EC2 Instance: {}.".format(instance.id))
+
+    return rotate_eip(instance, current_eip, new_eip)
 
 
 def get_instances_by_name():
@@ -262,55 +260,23 @@ def lookup_eip(eip):
         return eip
 
 
-def get_clean_eip(lifecycle_hook_name):
+def get_clean_eip(instance):
     """
     Find an xgemail-outbound EIP that is NOT listed on any blacklists and is NOT attached to an instance.
     """
-    logger.info("Locating a clean EIP to use.")
+    instance_type = [ t['Value'] for t in instance.tags if t['Key'] == 'Application' ][0]
+    logger.info("Locating a clean {} EIP to use.".format(instance_type))
     try:
-        if 'risky-delivery' in lifecycle_hook_name or 'risky-xdelivery' in lifecycle_hook_name:
-            addresses = ec2_client.describe_addresses(
-                Filters=[
-                    {
-                        'Name': 'tag:Name', 'Values': ['xgemail-risky']
-                    }
-                ]
-            )['Addresses']
-        elif 'warmup-delivery' in lifecycle_hook_name or 'warmup-xdelivery' in lifecycle_hook_name:
-            addresses = ec2_client.describe_addresses(
-                Filters=[
-                    {
-                        'Name': 'tag:Name', 'Values': ['xgemail-warmup']
-                    }
-                ]
-            )['Addresses']
-        elif 'beta-delivery' in lifecycle_hook_name or 'beta-xdelivery' in lifecycle_hook_name:
-            addresses = ec2_client.describe_addresses(
-                Filters=[
-                    {
-                        'Name': 'tag:Name', 'Values': ['xgemail-beta']
-                    }
-                ]
-            )['Addresses']
-        elif 'delta-delivery' in lifecycle_hook_name or 'delta-xdelivery' in lifecycle_hook_name:
-            addresses = ec2_client.describe_addresses(
-                Filters=[
-                    {
-                        'Name': 'tag:Name', 'Values': ['xgemail-delta']
-                    }
-                ]
-            )['Addresses']
-        else:
-            addresses = ec2_client.describe_addresses(
-                Filters=[
-                    {
-                        'Name': 'tag:Name', 'Values': ['xgemail-outbound']
-                    }
-                ]
-            )['Addresses']
-
+        addresses = ec2_client.describe_addresses(
+            Filters=[
+                {
+                    'Name': 'tag:Name', 'Values': [instance_type]
+                }
+            ]
+        )['Addresses']
     except ClientError as e:
         logger.exception("Unable to describe addresses. {}".format(e))
+        return None
 
     add_tags_dict(addresses)
     addresses.sort(key=lambda address: (
@@ -384,3 +350,6 @@ def complete_lifecycle_action(autoscaling_group_name, lifecycle_hook_name, lifec
         )
     except ClientError as e:
         logger.exception("Exception completing lifecycle hook {}".format(e.response['Error']['Code']))
+        return False
+    else:
+        return True
