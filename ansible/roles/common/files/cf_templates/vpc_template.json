@@ -85,6 +85,22 @@
                     {
                         "Key": "Name",
                         "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/dhcpopt" ] ] }
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": "cloudemail"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com"
                     }
                 ]
             },
@@ -109,6 +125,22 @@
                     {
                         "Key": "Name",
                         "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/igw" ] ] }
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": "cloudemail"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com"
                     }
                 ]
             },
@@ -131,14 +163,58 @@
             "Type" : "AWS::EC2::NatGateway",
             "Properties" : {
                 "AllocationId" : { "Fn::GetAtt" : ["NatEipA", "AllocationId"]},
-                "SubnetId" : { "Ref" : "PublicSubnetA"}
+                "SubnetId" : { "Ref" : "PublicSubnetA"},
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/NatA" ] ] }
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": "cloudemail"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com"
+                    }
+                ]
             }
         },
 
         "NatEipA" : {
             "Type" : "AWS::EC2::EIP",
             "Properties" : {
-                "Domain" : "vpc"
+                "Domain" : "vpc",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/NatEipA" ] ] }
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": "cloudemail"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com"
+                    }
+                ]
             }
         },
 
@@ -156,7 +232,29 @@
             "Condition": "IsProduction",
             "Properties" : {
                 "AllocationId" : { "Fn::GetAtt" : ["NatEipB", "AllocationId"]},
-                "SubnetId" : { "Ref" : "PublicSubnetB"}
+                "SubnetId" : { "Ref" : "PublicSubnetB"},
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/NatB" ] ] }
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": "cloudemail"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com"
+                    }
+                ]
             }
         },
 
@@ -164,7 +262,29 @@
             "Type" : "AWS::EC2::EIP",
             "Condition": "IsProduction",
             "Properties" : {
-                "Domain" : "vpc"
+                "Domain" : "vpc",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/NatEipB" ] ] }
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": "cloudemail"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com"
+                    }
+                ]
             }
         },
 
@@ -190,6 +310,22 @@
                     {
                         "Key": "Type",
                         "Value": "private"
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": "cloudemail"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com"
                     }
                 ],
                 "VpcId": {
@@ -224,6 +360,22 @@
                     {
                         "Key": "Type",
                         "Value": "private"
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": "cloudemail"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com"
                     }
                 ],
                 "VpcId": {
@@ -261,6 +413,22 @@
                     {
                         "Key": "Type",
                         "Value": "private"
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": "cloudemail"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com"
                     }
                 ],
                 "VpcId": {
@@ -296,6 +464,22 @@
                     {
                         "Key": "Type",
                         "Value": "public"
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": "cloudemail"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com"
                     }
                 ],
                 "VpcId": {
@@ -329,6 +513,22 @@
                     {
                         "Key": "Type",
                         "Value": "public"
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": "cloudemail"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com"
                     }
                 ],
                 "VpcId": {
@@ -363,6 +563,22 @@
                     {
                         "Key": "Type",
                         "Value": "public"
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": "cloudemail"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com"
                     }
                 ],
                 "VpcId": {
@@ -420,6 +636,22 @@
                     {
                         "Key": "Name",
                         "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/rtb/private" ] ] }
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": "cloudemail"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com"
                     }
                 ],
                 "VpcId": {
@@ -435,6 +667,22 @@
                     {
                         "Key": "Name",
                         "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/rtb/private/a" ] ] }
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": "cloudemail"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com"
                     }
                 ],
                 "VpcId": {
@@ -451,6 +699,22 @@
                     {
                         "Key": "Name",
                         "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/rtb/private/b" ] ] }
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": "cloudemail"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com"
                     }
                 ],
                 "VpcId": {
@@ -466,6 +730,22 @@
                     {
                         "Key": "Name",
                         "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/rtb/public" ] ] }
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": "cloudemail"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com"
                     }
                 ],
                 "VpcId": {
@@ -502,6 +782,22 @@
                     {
                         "Key": "Name",
                         "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/vpc" ] ] }
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": "cloudemail"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com"
                     }
                 ]
             },
