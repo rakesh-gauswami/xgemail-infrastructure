@@ -9,6 +9,7 @@
 # Company: Sophos Limited or one of its affiliates.
 
 import sys
+import time
 sys.path.append("<%= @xgemail_utils_path %>")
 
 import base64
@@ -36,6 +37,7 @@ from smtplib import SMTPException
 from smtplib import SMTPSenderRefused
 from smtplib import SMTPRecipientsRefused
 from transportrouteconfig import TransportRouteConfig
+from e2e_telemetry_data import E2ETelemetryData
 
 # general constants
 AWS_REGION = "<%= @aws_region %>"
@@ -391,6 +393,12 @@ def add_headers(message, message_path, headers):
         # DKIM Signing with Nested email
         parsed_message = Parser().parsestr(message, True)
 
+        timestamp_value = parsed_message.get('X-Sophos-Processing-Start-Time')
+        logger.info('Header Value of X-Sophos-Processing-Start-Time for message [%s] is : %s',
+                    message_path,
+                    timestamp_header)
+
+
         header_keys = []
         for header_key, header_value in headers.iteritems():
             header_keys.append(header_key)
@@ -404,12 +412,12 @@ def add_headers(message, message_path, headers):
             header_keys
         )
 
-        return parsed_message.as_string()
+        return parsed_message.as_string(), timestamp_value
 
     except Exception:
         logger.exception("Unable to add headers for message [%s]", message_path)
         # return the original message without headers
-        return message
+        return message, timestamp_value
 
 
 # attempts to inject email into Postfix and
@@ -483,6 +491,19 @@ def create_and_publish_message_history_delivery_status_sns_job(sqs_message, post
     except Exception as e:
         logger.exception("Failed to publish event <{0}> to message history delivery status sqs queue"
                      .format(sns_message_history_delivery_status_job))
+
+
+def push_telemetry_data_to_delivery_stream(data):
+
+    client = boto3.client('firehose', AWS_REGION)
+    put_response = client.put_record(
+        #TODO Use: AWS_REGION + "_e2e_latency_telemetry"
+        DeliveryStreamName='e2e_latency_telemetry',
+        Record={
+            'Data': json.dumps(data)
+        }
+    )
+    logger.info("Response for put request [{0}] is [{0}]".format(json.dumps(data), put_response))
 
 
 while True:
@@ -580,8 +601,7 @@ while True:
                     headers
                 )
 
-            # attempt to add any existing headers to the message
-            message_binary_with_headers = add_headers(
+            message_binary_with_headers, timestamp_header  = add_headers(
                 message_binary,
                 sqs_message.message_path,
                 headers
@@ -596,6 +616,21 @@ while True:
             )
 
             if postfix_injection_response.is_successfully_injected:
+
+                try:
+                    logger.info("Message with path {0} having X-Sophos-Processing-Start-Time value {1}"
+                                .format(sqs_message.message_path, timestamp_header))
+
+                    if timestamp_header is not None:
+                        e2e_telemetry_data = E2ETelemetryData(queue_id,
+                                                              MESSAGE_DIRECTION,
+                                                              time.time() - float(timestamp_header),
+                                                              datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+                        push_telemetry_data_to_delivery_stream(e2e_telemetry_data)
+                except:
+                    logger.error("Error occurred while pushing latency telemetry data for message path {0} "
+                                 .format(sqs_message.message_path))
+
                 # Delete message from SQS after injecting into Postfix
                 awshandler.delete_message(
                     origin_sqs_queue,
