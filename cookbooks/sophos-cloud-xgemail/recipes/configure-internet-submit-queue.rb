@@ -243,6 +243,7 @@ if ACCOUNT != 'sandbox'
     'smtpd_tls_received_header = yes',
     "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
     "smtpd_tls_key_file = #{KEY_FILE}",
+    "tls_preempt_cipherlist = yes",
 
     # Recipient restrictions
     "reject_rbl_client_a = #{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES_A}",
