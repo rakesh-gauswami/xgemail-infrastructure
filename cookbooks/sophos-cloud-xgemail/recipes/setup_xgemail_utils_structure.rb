@@ -121,6 +121,7 @@ elsif NODE_TYPE == 'customer-delivery' or NODE_TYPE == 'internet-delivery' or
     mode '0644'
     owner 'root'
     group 'root'
+  end
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{TELEMETRY_DATA_FORMATTER}" do
     source 'telemetrydataformatter.py'
     mode '0644'
