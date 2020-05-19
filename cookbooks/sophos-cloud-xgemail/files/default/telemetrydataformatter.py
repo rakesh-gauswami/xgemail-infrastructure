@@ -49,3 +49,12 @@ class E2ETelemetryData:
 
     def set_timestamp(self, timestamp):
         self.timestamp = timestamp
+
+    def get_delivery_stream_json(self):
+        delivery_stream_json = {
+            'submit_queue_id': self.submit_queue_id,
+            'direction': self.direction,
+            'latency': self.latency,
+            'timestamp': self.timestamp
+        }
+        return delivery_stream_json

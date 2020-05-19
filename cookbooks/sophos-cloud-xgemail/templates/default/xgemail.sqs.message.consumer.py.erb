@@ -37,7 +37,7 @@ from smtplib import SMTPException
 from smtplib import SMTPSenderRefused
 from smtplib import SMTPRecipientsRefused
 from transportrouteconfig import TransportRouteConfig
-from e2e_telemetry_data import E2ETelemetryData
+from telemetrydataformatter import E2ETelemetryData
 
 # general constants
 AWS_REGION = "<%= @aws_region %>"
@@ -63,7 +63,7 @@ TRANSPORT_CONFIG_PATH = "<%= @transport_config_path %>"
 
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
-
+X_SOPHOS_PROCESSING_START_TIME_HEADER = 'X-Sophos-Processing-Start-Time'
 # logging to syslog setup
 logging.getLogger("botocore").setLevel(logging.WARNING)
 logger = logging.getLogger('sqsmsgconsumer')
@@ -393,12 +393,7 @@ def add_headers(message, message_path, headers):
         # DKIM Signing with Nested email
         parsed_message = Parser().parsestr(message, True)
 
-        timestamp_value = parsed_message.get('X-Sophos-Processing-Start-Time')
-        logger.info('Header Value of X-Sophos-Processing-Start-Time for message [%s] is : %s',
-                    message_path,
-                    timestamp_header)
-
-
+        timestamp_value = parsed_message.get(X_SOPHOS_PROCESSING_START_TIME_HEADER)
         header_keys = []
         for header_key, header_value in headers.iteritems():
             header_keys.append(header_key)
@@ -493,17 +488,15 @@ def create_and_publish_message_history_delivery_status_sns_job(sqs_message, post
                      .format(sns_message_history_delivery_status_job))
 
 
-def push_telemetry_data_to_delivery_stream(data):
-
+def push_telemetry_data_to_delivery_stream(stream_name, data):
     client = boto3.client('firehose', AWS_REGION)
     put_response = client.put_record(
-        #TODO Use: AWS_REGION + "_e2e_latency_telemetry"
-        DeliveryStreamName='e2e_latency_telemetry',
+        DeliveryStreamName=stream_name,
         Record={
-            'Data': json.dumps(data)
+            'Data': json.dumps(data.get_delivery_stream_json())
         }
     )
-    logger.info("Response for put request [{0}] is [{0}]".format(json.dumps(data), put_response))
+    logger.debug("Response for put request [{0}] is [{0}]".format(json.dumps(data), put_response))
 
 
 while True:
@@ -618,7 +611,7 @@ while True:
             if postfix_injection_response.is_successfully_injected:
 
                 try:
-                    logger.info("Message with path {0} having X-Sophos-Processing-Start-Time value {1}"
+                    logger.debug("Message with path: [{0}] having X-Sophos-Processing-Start-Time value : {1}"
                                 .format(sqs_message.message_path, timestamp_header))
 
                     if timestamp_header is not None:
@@ -626,10 +619,10 @@ while True:
                                                               MESSAGE_DIRECTION,
                                                               time.time() - float(timestamp_header),
                                                               datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-                        push_telemetry_data_to_delivery_stream(e2e_telemetry_data)
-                except:
-                    logger.error("Error occurred while pushing latency telemetry data for message path {0} "
-                                 .format(sqs_message.message_path))
+                        push_telemetry_data_to_delivery_stream(AWS_REGION + "_e2e_latency_telemetry",e2e_telemetry_data)
+                except Exception as e:
+                    logger.error("Error {0} occurred while pushing latency telemetry data for message path {1} "
+                                 .format(sqs_message.message_path, e))
 
                 # Delete message from SQS after injecting into Postfix
                 awshandler.delete_message(
