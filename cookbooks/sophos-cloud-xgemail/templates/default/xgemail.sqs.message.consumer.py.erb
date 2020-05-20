@@ -55,6 +55,7 @@ MAIL_PIC_API_AUTH = '<%= @mail_pic_api_auth %>'
 CONNECTIONS_BUCKET = '<%= @connections_bucket %>'
 MESSAGE_DIRECTION = '<%= @message_direction %>'
 MESSAGE_HISTORY_DELIVERY_STATUS_SNS_TOPIC = '<%= @message_history_status_sns_topic_arn %>'
+E2E_LATENCY_TELEMETRY_DELIVERY_STREAM = '<%= @e2e_latency_telemetry_delivery_stream %>'
 NODE_TYPE = '<%= @node_type %>'
 NODE_IP = '<%= @node_ip %>'
 ACCOUNT = '<%= @account %>'
@@ -609,17 +610,20 @@ while True:
             )
 
             if postfix_injection_response.is_successfully_injected:
-
                 try:
                     logger.debug("Message with path: [{0}] having X-Sophos-Processing-Start-Time value : {1}"
-                                .format(sqs_message.message_path, timestamp_header))
-
+                                 .format(sqs_message.message_path, timestamp_header))
                     if timestamp_header is not None:
                         e2e_telemetry_data = E2ETelemetryData(queue_id,
                                                               MESSAGE_DIRECTION,
                                                               time.time() - float(timestamp_header),
                                                               datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-                        push_telemetry_data_to_delivery_stream(AWS_REGION + "_e2e_latency_telemetry",e2e_telemetry_data)
+                        #put data to Kinesis firehose delivery stream
+                        response = awshandler.put_data_to_kinesis_delivery_stream(
+                            E2E_LATENCY_TELEMETRY_DELIVERY_STREAM,
+                            e2e_telemetry_data.get_delivery_stream_json())
+                        logger.debug("Response of delivery stream put operation from message path : [{}] is [{}]"
+                                     .format(sqs_message.message_path, response))
                 except Exception as e:
                     logger.error("Error {0} occurred while pushing latency telemetry data for message path {1} "
                                  .format(sqs_message.message_path, e))
