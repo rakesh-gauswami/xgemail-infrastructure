@@ -90,7 +90,7 @@ template CONSUMER_SCRIPT_PATH do
     :connections_bucket => CONNECTIONS_BUCKET,
     :message_direction => MESSAGE_DIRECTION,
     :message_history_status_sns_topic_arn => MESSAGE_HISTORY_DELIVERY_STATUS_SNS_TOPIC_ARN,
-    :e2e_latency_telemetry_delivery_stream => E2E_LATENCY_TELEMETRY_DELIVERY_STREAM
+    :e2e_latency_telemetry_delivery_stream => E2E_LATENCY_TELEMETRY_DELIVERY_STREAM,
     :node_type => NODE_TYPE,
     :node_ip => NODE_IP,
     :account => ACCOUNT,
