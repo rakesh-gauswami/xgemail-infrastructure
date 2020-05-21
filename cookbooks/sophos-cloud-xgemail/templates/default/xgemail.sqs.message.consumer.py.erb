@@ -489,17 +489,6 @@ def create_and_publish_message_history_delivery_status_sns_job(sqs_message, post
                      .format(sns_message_history_delivery_status_job))
 
 
-def push_telemetry_data_to_delivery_stream(stream_name, data):
-    client = boto3.client('firehose', AWS_REGION)
-    put_response = client.put_record(
-        DeliveryStreamName=stream_name,
-        Record={
-            'Data': json.dumps(data.get_delivery_stream_json())
-        }
-    )
-    logger.debug("Response for put request [{0}] is [{0}]".format(json.dumps(data), put_response))
-
-
 while True:
     try:
         # doing a long poll to reduce number of empty responses.
@@ -595,6 +584,7 @@ while True:
                     headers
                 )
 
+            # attempt to add any existing headers to the message
             message_binary_with_headers, timestamp_header  = add_headers(
                 message_binary,
                 sqs_message.message_path,
