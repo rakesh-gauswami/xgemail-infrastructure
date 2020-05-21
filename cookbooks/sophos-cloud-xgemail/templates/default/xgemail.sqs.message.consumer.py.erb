@@ -393,8 +393,10 @@ def add_headers(message, message_path, headers):
         # required to keep parsing with headers with true. Change here need to be tested with
         # DKIM Signing with Nested email
         parsed_message = Parser().parsestr(message, True)
-
         timestamp_value = parsed_message.get(X_SOPHOS_PROCESSING_START_TIME_HEADER)
+
+        #Remove header 'X-Sophos-Processing-Start-Time' after reading it.
+        parsed_message.__delitem__(X_SOPHOS_PROCESSING_START_TIME_HEADER)
         header_keys = []
         for header_key, header_value in headers.iteritems():
             header_keys.append(header_key)
