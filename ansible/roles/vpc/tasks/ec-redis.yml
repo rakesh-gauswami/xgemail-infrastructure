@@ -1,0 +1,32 @@
+- name: "Create ElastiCache Redis cluster Stack in AWS"
+  cloudformation:
+    stack-name: "{{stack.ec.redis.xgemail_dqs_redis}}"
+    state: present
+    region: "{{account.region}}"
+    template: {{template.ec.redis.ec_redis_template}}
+    template_parameters:
+      ReplicationGroupId:                                     "xgemail-dqs"
+      AtRestEncryptionEnabled:                                "true"
+      AutomaticFailoverEnabled:                               "true"
+      AvailabilityZones:                                      {{cloud_email_vpc_stack.stack_outputs.AvailabilityZones}}
+      CacheNodeType:                                          "cache.r5.large"
+      CacheSubnetGroup:                                       {{cloud_email_vpc_stack.stack_outputs.PrivateSubnetDefaultA}},{{cloud_email_vpc_stack.stack_outputs.PrivateSubnetDefaultB}},{{cloud_email_vpc_stack.stack_outputs.PrivateSubnetDefaultC}},{{cloud_email_vpc_stack.stack_outputs.PublicSubnetA}},{{cloud_email_vpc_stack.stack_outputs.PublicSubnetB}},{{cloud_email_vpc_stack.stack_outputs.PublicSubnetC}}
+      EngineVersion:                                          "5.0.0"
+      NumberOfCacheNodes:                                     "2"
+      RedisParameterGroupFamily:                              "redis5.0"
+      RedisParameterGroupTcpKeepalive:                        "120"
+      RedisParameterGroupTimeout:                             "120"
+      SecurityGroupIds:                                       "{{sg_stack.stack_outputs.XgemailElastiCacheRedisSecurityGroup}}"
+  register: ec_redis_stack
+
+- debug:
+    var: ec_redis_stack
+    verbosity: 3
+
+- name: "Display ElastiCache Redis Stack Output"
+  debug:
+    msg: "{{ec_redis_stack.stack_outputs}}"
+    verbosity: 2
+
+
+
