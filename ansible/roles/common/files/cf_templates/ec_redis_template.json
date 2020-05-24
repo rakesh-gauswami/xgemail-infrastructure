@@ -15,7 +15,7 @@
 
         "Comments": [
             { "Ref": "Description" },
-            ""
+            "Template definition for ElastiCache Redis"
         ]
     },
 
@@ -131,7 +131,10 @@
                 "ReplicationGroupDescription": "ElastiCache Redis Cluster",
                 "SecurityGroupIds": { "Ref": "SecurityGroupIds" },
                 "Tags" : [
-
+                    {
+                        "Key": "Name",
+                        "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "xgemail-dqs" ]]}
+                    }
                 ]
             }
         }
