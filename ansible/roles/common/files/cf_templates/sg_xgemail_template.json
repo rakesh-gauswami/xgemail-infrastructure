@@ -961,6 +961,7 @@
     "XgemailCustomerDeliverySecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
+        "GroupName": "xgemail-customer-delivery-security-group",
         "GroupDescription": "Xgemail Submit security group.",
         "Tags": [{
           "Key": "Name",
@@ -3029,9 +3030,7 @@
         "CacheSecurityGroupName" : {
           "Ref": "XgemailElastiCacheRedisSecurityGroup"
         },
-        "EC2SecurityGroupName" : {
-          "Ref": "XgemailCustomerDeliverySecurityGroup"
-        }
+        "EC2SecurityGroupName" : "xgemail-customer-delivery-security-group"
       }
     }
   },
