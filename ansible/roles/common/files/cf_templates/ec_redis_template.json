@@ -98,7 +98,7 @@
 
         "SecurityGroupIds": {
             "Description": "Subnet Group of the Java Services",
-            "Type": "List<AWS::EC2::SecurityGroup::Id>"
+            "Type": "List<String>"
         }
     },
 
@@ -129,7 +129,7 @@
                 "NumCacheClusters": { "Ref": "NumberOfCacheNodes" },
                 "PreferredCacheClusterAZs": { "Ref": "AvailabilityZones" },
                 "ReplicationGroupDescription": "ElastiCache Redis Cluster",
-                "SecurityGroupIds": { "Ref": "SecurityGroupIds" },
+                "SecurityGroupIds": [{ "Ref": "SecurityGroupIds" }],
                 "Tags" : [
                     {
                         "Key": "Name",
