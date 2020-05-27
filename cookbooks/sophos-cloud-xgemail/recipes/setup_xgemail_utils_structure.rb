@@ -19,6 +19,7 @@ TRANSPORT_ROUTE_CONFIG = 'transportrouteconfig.py'
 BULKSENDER_FORMATTER = 'bulksenderformatter.py'
 BULK_SENDER_ACTION = "bulk_sender_action.py"
 DELIVERY_DIRECTOR_FORMATTER = "deliverydirectorthreshold.py"
+TELEMETRY_DATA_FORMATTER = "telemetrydataformatter.py"
 
 [
     XGEMAIL_FILES_DIR,
@@ -117,6 +118,12 @@ elsif NODE_TYPE == 'customer-delivery' or NODE_TYPE == 'internet-delivery' or
        NODE_TYPE == 'delta-delivery'
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{TRANSPORT_ROUTE_CONFIG}" do
     source 'transportrouteconfig.py'
+    mode '0644'
+    owner 'root'
+    group 'root'
+  end
+  cookbook_file "#{XGEMAIL_UTILS_DIR}/#{TELEMETRY_DATA_FORMATTER}" do
+    source 'telemetrydataformatter.py'
     mode '0644'
     owner 'root'
     group 'root'

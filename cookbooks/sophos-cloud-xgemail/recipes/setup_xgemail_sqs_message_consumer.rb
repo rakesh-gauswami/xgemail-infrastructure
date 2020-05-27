@@ -38,6 +38,7 @@ MESSAGE_HISTORY_DELIVERY_STATUS_SNS_TOPIC_ARN = node['xgemail']['msg_history_sta
 NODE_IP                                 = node['ipaddress']
 POLICY_BUCKET_NAME                      = node['xgemail']['xgemail_policy_bucket_name']
 TRANSPORT_CONFIG_PATH                   = XGEMAIL_FILES_DIR + '/config/transport-route-config.json'
+E2E_LATENCY_TELEMETRY_DELIVERY_STREAM   =  "tf-e2e-latency-telemetry-#{AWS_REGION}-#{ACCOUNT}-firehose"
 
 if ACCOUNT == 'sandbox'
   XGEMAIL_PIC_FQDN = 'mail-service:8080'
@@ -89,6 +90,7 @@ template CONSUMER_SCRIPT_PATH do
     :connections_bucket => CONNECTIONS_BUCKET,
     :message_direction => MESSAGE_DIRECTION,
     :message_history_status_sns_topic_arn => MESSAGE_HISTORY_DELIVERY_STATUS_SNS_TOPIC_ARN,
+    :e2e_latency_telemetry_delivery_stream => E2E_LATENCY_TELEMETRY_DELIVERY_STREAM,
     :node_type => NODE_TYPE,
     :node_ip => NODE_IP,
     :account => ACCOUNT,

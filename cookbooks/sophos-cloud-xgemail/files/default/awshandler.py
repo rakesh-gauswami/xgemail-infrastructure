@@ -21,11 +21,12 @@ class AwsHandler(object):
             self.s3_client = boto3.client("s3", region_name=aws_region)
             self.sqs_client = boto3.client("sqs", region_name=aws_region)
             self.sns_client = boto3.client("sns", region_name=aws_region)
+            self.firehose_client = boto3.client('firehose', region_name=aws_region)
         else:
             self.s3_client  = boto3.client("s3", region_name='us-east-1', aws_access_key_id='', aws_secret_access_key='', endpoint_url='http://localstack:4572')
             self.sqs_client = boto3.client("sqs", region_name='us-east-1', aws_access_key_id='', aws_secret_access_key='', endpoint_url='http://localstack:4576')
             self.sns_client = boto3.client("sns", region_name='us-east-1', aws_access_key_id='', aws_secret_access_key='', endpoint_url='http://localstack:4575')
-
+            self.firehose_client = boto3.client('firehose', region_name='us-east-1', aws_access_key_id='', aws_secret_access_key='', endpoint_url='http://localstack:4575')
     # puts data into S3 bucket
     def upload_data_in_s3(self, bucket, key, data, expires, encryption):
         params = {
@@ -200,3 +201,12 @@ class AwsHandler(object):
             'ServerSideEncryption': encryption
         }
         return self.s3_client.put_object(**params)
+
+    def put_data_to_kinesis_delivery_stream(self, stream_name, data):
+        put_response = self.firehose_client.put_record(
+            DeliveryStreamName=stream_name,
+            Record={
+                'Data': json.dumps(data)
+            }
+        )
+        return put_response
