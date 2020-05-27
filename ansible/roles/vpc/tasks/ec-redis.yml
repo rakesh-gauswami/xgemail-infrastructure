@@ -5,11 +5,10 @@
     region: "{{account.region}}"
     template: "{{template.ec.redis.ec_redis_template}}"
     template_parameters:
+      Branch:                                                 "{{build.branch}}"
+      Environment:                                            "{{account.name}}"
       ReplicationGroupName:                                   "xgemail-dqs"
-      AtRestEncryptionEnabled:                                "true"
-      AutomaticFailoverEnabled:                               "true"
       AvailabilityZones:                                      "{{cloud_email_vpc_stack.stack_outputs.AvailabilityZones}}"
-      CacheNodeType:                                          "cache.r5.large"
       CacheSubnetGroup:                                       "{{cloud_email_vpc_stack.stack_outputs.ElastiCachePrivateSubnetGroup}}"
       EngineVersion:                                          "5.0.0"
       NumberOfCacheNodes:                                     "2"
