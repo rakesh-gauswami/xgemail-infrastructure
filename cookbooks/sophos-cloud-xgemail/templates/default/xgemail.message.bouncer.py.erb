@@ -120,14 +120,16 @@ def main():
             logger.debug("Hostname = {0}".format(hostname))
             logger.debug("Failure Reason = {0}".format(failure_reason))
 
-        submit_notification_info_to_sqs(
-            original_sender,
-            recipient,
-            subject,
-            hostname,
-            failure_reason,
-            sent_date
-        )
+        if len(original_sender) > 0 :
+            submit_notification_info_to_sqs(
+                original_sender,
+                recipient,
+                subject,
+                hostname,
+                failure_reason,
+                sent_date
+            )
+
     except BaseException as e:
         logger.exception("Failed handling bounce message [{0}]".format(e))
         exit(EX_TEMPFAIL)
