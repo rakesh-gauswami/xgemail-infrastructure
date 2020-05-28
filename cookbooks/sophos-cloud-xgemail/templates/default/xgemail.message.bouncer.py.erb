@@ -107,9 +107,9 @@ def main():
                     if 'return-path:' in arg:
                         original_sender = format_sender(arg.split(':', 1)[1].strip())
                         original_sender.encode("utf-8")
-                        if len(original_sender) > 0 :
+                        if len(original_sender) == 0 :
                             logger.info(
-                                "Skip processing as original sender [{0}] is empty ",
+                                " Skip processing and submitting message to SQS as original sender [{0}] is empty ",
                                 original_sender
                             )
                             return
