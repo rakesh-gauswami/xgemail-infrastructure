@@ -463,6 +463,12 @@ def is_valid_outbound_sender(header_sender, header_name):
         AWS_REGION, POLICY_S3_BUCKET_NAME
     )
 
+    if not header_sender_policy_exists:
+        header_sender_policy_exists = multipolicyreaderutils.outbound_relay_policy_file_exists_in_S3(
+            header_sender.lower(),
+            AWS_REGION, POLICY_S3_BUCKET_NAME
+        )
+
     return header_sender_policy_exists
 
 # Given an email address header value, such as:
