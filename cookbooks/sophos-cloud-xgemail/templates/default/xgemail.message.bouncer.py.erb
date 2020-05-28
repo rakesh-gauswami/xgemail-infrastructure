@@ -107,6 +107,13 @@ def main():
                     if 'return-path:' in arg:
                         original_sender = format_sender(arg.split(':', 1)[1].strip())
                         original_sender.encode("utf-8")
+                        if len(original_sender) > 0 :
+                            logger.info(
+                                "Skip processing as original sender [{0}] is empty ",
+                                original_sender
+                            )
+                            return
+
             # Format is -  <recipient> : host <hostname> said: <status code> <failure_reason>
             payload_text = part.get_payload()
             if part.get_content_type() == 'text/plain' and len(payload_text) > 1:
@@ -120,16 +127,14 @@ def main():
             logger.debug("Hostname = {0}".format(hostname))
             logger.debug("Failure Reason = {0}".format(failure_reason))
 
-        if len(original_sender) > 0 :
-            submit_notification_info_to_sqs(
-                original_sender,
-                recipient,
-                subject,
-                hostname,
-                failure_reason,
-                sent_date
-            )
-
+        submit_notification_info_to_sqs(
+            original_sender,
+            recipient,
+            subject,
+            hostname,
+            failure_reason,
+            sent_date
+        )
     except BaseException as e:
         logger.exception("Failed handling bounce message [{0}]".format(e))
         exit(EX_TEMPFAIL)
