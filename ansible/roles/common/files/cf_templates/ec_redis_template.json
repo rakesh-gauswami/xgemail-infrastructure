@@ -35,9 +35,36 @@
       "Default": "xgemail",
       "Description": "Redis replication group name"
     },
+    "AutomaticFailoverEnabled": {
+      "Type": "String",
+      "Default": "true",
+      "Description": "Indicates whether Multi-AZ is enabled. Not supported by smaller instance types"
+    },
+    "AtRestEncryptionEnabled": {
+      "Type": "String",
+      "Default": "true",
+      "Description": "Indicates whether Multi-AZ is enabled. Not supported by smaller instance types"
+    },
     "AvailabilityZones": {
       "Type": "List<AWS::EC2::AvailabilityZone::Name>",
       "Description": "Availability zones where cluster nodes should be instantiated. Comma-separated list."
+    },
+    "CacheNodeType": {
+      "Description": "The compute and memory capacity of the nodes in the Cache Cluster",
+      "Type": "String",
+      "Default": "cache.t2.small",
+      "AllowedValues": [
+        "cache.t2.small",
+        "cache.t2.medium",
+        "cache.r5.large",
+        "cache.r5.xlarge",
+        "cache.r5.2xlarge",
+        "cache.r5.4xlarge",
+        "cache.r4.8xlarge",
+        "cache.r4.xlarge",
+        "cache.r4.large"
+      ],
+      "ConstraintDescription": "Must select a valid Cache Node type."
     },
     "CacheSubnetGroup": {
       "Description": "ElastiCache Subnet Group",
@@ -84,21 +111,6 @@
     }
   },
 
-  "Conditions": {
-    "PreProd": {
-      "Fn::Not": [
-        {
-          "Fn::Equals": [
-            {
-              "Ref": "Environment"
-            },
-            "prod"
-          ]
-        }
-      ]
-    }
-  },
-
   "Resources": {
     "ElastiCacheRedisParameterGroup": {
       "Type": "AWS::ElastiCache::ParameterGroup",
@@ -125,25 +137,13 @@
           "Ref": "ReplicationGroupName"
         },
         "AtRestEncryptionEnabled": {
-          "Fn::If": [
-            "PreProd",
-            "false",
-            "true"
-          ]
+
         },
         "AutomaticFailoverEnabled": {
-          "Fn::If": [
-            "PreProd",
-            "false",
-            "true"
-          ]
+
         },
         "CacheNodeType": {
-          "Fn::If": [
-            "PreProd",
-            "cache.m5.large",
-            "cache.r5.large"
-          ]
+
         },
         "CacheParameterGroupName": {
           "Ref": "ElastiCacheRedisParameterGroup"
