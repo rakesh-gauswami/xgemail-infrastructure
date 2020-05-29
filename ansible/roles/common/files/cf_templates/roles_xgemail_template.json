@@ -997,9 +997,19 @@
                 "firehose:PutRecord",
                 "firehose:PutRecordBatch"
               ],
-               "Effect" : "Allow",
+              "Effect" : "Allow",
               "Resource": [
-                "*"
+                {
+                  "Fn::Join": [
+                    ":",
+                    [
+                      "arn:aws:firehose",
+                      { "Ref": "AWS::Region" },
+                      { "Ref": "AWS::AccountId" },
+                      "*"
+                    ]
+                  ]
+                }
               ]
             }
           ]
@@ -1270,7 +1280,19 @@
                 "firehose:PutRecordBatch"
               ],
               "Effect" : "Allow",
-              "Resource" : ["*"]
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    ":",
+                    [
+                      "arn:aws:firehose",
+                      { "Ref": "AWS::Region" },
+                      { "Ref": "AWS::AccountId" },
+                      "*"
+                    ]
+                  ]
+                }
+              ]
             }
           ]
         },
@@ -3312,7 +3334,19 @@
                 "firehose:PutRecordBatch"
               ],
               "Effect" : "Allow",
-              "Resource" : ["*"]
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    ":",
+                    [
+                      "arn:aws:firehose",
+                      { "Ref": "AWS::Region" },
+                      { "Ref": "AWS::AccountId" },
+                      "*"
+                    ]
+                  ]
+                }
+              ]
             }
           ]
         },
@@ -3959,7 +3993,19 @@
                 "firehose:PutRecordBatch"
               ],
               "Effect" : "Allow",
-              "Resource" : ["*"]
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    ":",
+                    [
+                      "arn:aws:firehose",
+                      { "Ref": "AWS::Region" },
+                      { "Ref": "AWS::AccountId" },
+                      "*"
+                    ]
+                  ]
+                }
+              ]
             }
           ]
         },
@@ -4606,7 +4652,19 @@
                 "firehose:PutRecordBatch"
               ],
               "Effect" : "Allow",
-              "Resource" : ["*"]
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    ":",
+                    [
+                      "arn:aws:firehose",
+                      { "Ref": "AWS::Region" },
+                      { "Ref": "AWS::AccountId" },
+                      "*"
+                    ]
+                  ]
+                }
+              ]
             }
           ]
         },
