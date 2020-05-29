@@ -383,7 +383,17 @@
                       "arn:aws:firehose",
                       { "Ref": "AWS::Region" },
                       { "Ref": "AWS::AccountId" },
-                      "*"
+                      {
+                        "Fn::Join": [
+                          "-",
+                          [
+                            "deliverystream/tf-e2e-latency-telemetry",
+                            { "Ref": "AWS::Region" },
+                            { "Ref": "AWS::AccountId" },
+                            "firehose"
+                          ]
+                        ]
+                      }
                     ]
                   ]
                 }
