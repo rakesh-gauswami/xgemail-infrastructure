@@ -72,13 +72,19 @@ def submit_notification_info_to_sqs(sender, recipients, subject, hostname, failu
     )
     sqs_json = notification_submit_info.get_sqs_json()
 
-    logger.info("Added notification submit info SQS job response [{0}] [{1}]]".format
-        (add_to_sqs(
-            XGEMAIL_NOTIFIER_QUEUE,
-            sqs_json
-            ),sqs_json
+    if len(sender) > 0 :
+        logger.info("Added notification submit info SQS job response [{0}] [{1}]]".format
+            (add_to_sqs(
+                XGEMAIL_NOTIFIER_QUEUE,
+                sqs_json
+                ),sqs_json
+            )
         )
-    )
+    else :
+        logger.info("Skip sending notification to SQS for empty sender [{0}]".format
+            (sqs_json)
+        )
+
 
 def main():
     try:
@@ -107,13 +113,6 @@ def main():
                     if 'return-path:' in arg:
                         original_sender = format_sender(arg.split(':', 1)[1].strip())
                         original_sender.encode("utf-8")
-                        if len(original_sender) == 0 :
-                            logger.info(
-                                " Skip processing and submitting message to SQS as original sender [{0}] is empty ",
-                                original_sender
-                            )
-                            return
-
             # Format is -  <recipient> : host <hostname> said: <status code> <failure_reason>
             payload_text = part.get_payload()
             if part.get_content_type() == 'text/plain' and len(payload_text) > 1:
