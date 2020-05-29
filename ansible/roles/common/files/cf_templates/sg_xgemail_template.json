@@ -3014,6 +3014,57 @@
           }
         ]
       }
+    },
+
+    "XgemailEcRedisSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Branch",
+            "Value": { "Ref" : "Branch" }
+          },
+          {
+            "Key": "Environment",
+            "Value": { "Ref" : "Environment" }
+          },
+          {
+          "Key": "Name",
+          "Value": {
+            "Fn::Join": [ "", [
+              { "Ref": "Environment" }, "-",
+              { "Ref": "Branch" }, "-",
+              { "Ref": "AWS::StackName" }, "/sg/xgemail/redis/ec"
+            ]]
+          }
+          },
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }],
+        "VpcId": { "Ref": "Vpc" },
+        "GroupDescription": "Controls access to the xgemail-dqs redis cluster",
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "6379",
+            "ToPort": "6379",
+            "SourceSecurityGroupId": { "Ref": "XgemailCustomerDeliverySecurityGroup" }
+          }
+        ]
+      }
     }
   },
 
@@ -3182,6 +3233,10 @@
     "XgemailWarmupXdeliverySecurityGroup": {
       "Description": "Xgemail Warmup Xdelivery security group",
       "Value": { "Ref": "XgemailWarmupXdeliverySecurityGroup" }
+    },
+    "XgemailElastiCacheRedisSecurityGroup": {
+      "Description" : "Security group for Sophos Email ElastiCache Redis",
+      "Value": {"Ref": "XgemailEcRedisSecurityGroup"}
     }
   }
 }
