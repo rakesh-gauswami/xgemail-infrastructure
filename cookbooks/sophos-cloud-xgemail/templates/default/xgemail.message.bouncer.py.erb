@@ -72,13 +72,19 @@ def submit_notification_info_to_sqs(sender, recipients, subject, hostname, failu
     )
     sqs_json = notification_submit_info.get_sqs_json()
 
-    logger.info("Added notification submit info SQS job response [{0}] [{1}]]".format
-        (add_to_sqs(
-            XGEMAIL_NOTIFIER_QUEUE,
-            sqs_json
-            ),sqs_json
+    if len(sender) > 0 :
+        logger.info("Added notification submit info SQS job response [{0}] [{1}]]".format
+            (add_to_sqs(
+                XGEMAIL_NOTIFIER_QUEUE,
+                sqs_json
+                ),sqs_json
+            )
         )
-    )
+    else :
+        logger.info("Skip sending notification to SQS for empty sender [{0}]".format
+            (sqs_json)
+        )
+
 
 def main():
     try:
