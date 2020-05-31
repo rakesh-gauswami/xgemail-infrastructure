@@ -153,6 +153,12 @@ aws:
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-warmup-xdelivery-Launching-LifeCycleHook"
       stack_number:                                               [1,2,3]
       zone_index:                                                 [0,1,2]
+  ec:
+    redis:
+      xgemail_dqs:
+        node_type:                                                "cache.t2.small"
+        at_rest_encryption:                                       "false"
+        automatic_failover:                                       "false"
   efs:
     policy_efs_volume:
       encrypted:                                                  "true"

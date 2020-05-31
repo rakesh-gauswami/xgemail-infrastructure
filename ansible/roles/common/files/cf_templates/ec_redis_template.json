@@ -1,0 +1,232 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "ElastiCache Redis for Sophos Email.",
+
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2020, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ],
+    "Comments": [
+      {
+        "Ref": "Description"
+      },
+      "Template definition for ElastiCache Redis"
+    ]
+  },
+
+
+  "Parameters": {
+    "Branch": {
+      "Description": "Git branch (develop, feature/CPLAT-9660, etc.).",
+      "Type": "String"
+    },
+    "Environment": {
+      "Description": "AWS account being used (inf, dev, qa, etc.).",
+      "Type": "String"
+    },
+    "ReplicationGroupName": {
+      "Type": "String",
+      "Default": "xgemail",
+      "Description": "Redis replication group name"
+    },
+    "AutomaticFailoverEnabled": {
+      "Type": "String",
+      "Default": "true",
+      "Description": "Indicates whether Multi-AZ is enabled. Not supported by smaller instance types"
+    },
+    "AtRestEncryptionEnabled": {
+      "Type": "String",
+      "Default": "true",
+      "Description": "Indicates whether Multi-AZ is enabled. Not supported by smaller instance types"
+    },
+    "AvailabilityZones": {
+      "Type": "List<AWS::EC2::AvailabilityZone::Name>",
+      "Description": "Availability zones where cluster nodes should be instantiated. Comma-separated list."
+    },
+    "CacheNodeType": {
+      "Description": "The compute and memory capacity of the nodes in the Cache Cluster",
+      "Type": "String",
+      "Default": "cache.t2.small",
+      "AllowedValues": [
+        "cache.t2.small",
+        "cache.t2.medium",
+        "cache.r5.large",
+        "cache.r5.xlarge",
+        "cache.r5.2xlarge",
+        "cache.r5.4xlarge",
+        "cache.r4.8xlarge",
+        "cache.r4.xlarge",
+        "cache.r4.large",
+        "cache.m5.large"
+      ],
+      "ConstraintDescription": "Must select a valid Cache Node type."
+    },
+    "CacheSubnetGroup": {
+      "Description": "ElastiCache Subnet Group",
+      "Type": "String"
+    },
+    "EngineVersion": {
+      "Description": "Redis Engine Version",
+      "Type": "String",
+      "Default": "5.0.0"
+    },
+    "NumberOfCacheNodes": {
+      "Default": "2",
+      "Description": "The number of Cache Nodes the Cache Cluster should have",
+      "Type": "Number",
+      "MinValue": "1",
+      "MaxValue": "5",
+      "ConstraintDescription": "Must be between 1 and 5."
+    },
+    "RedisParameterGroupFamily": {
+      "Description": "Parameter group family value for ElastiCache Redis.",
+      "Type": "String",
+      "Default": "redis2.8",
+      "AllowedValues": [
+        "redis2.6",
+        "redis2.8",
+        "redis3.2",
+        "redis4.0",
+        "redis5.0"
+      ]
+    },
+    "RedisParameterGroupTcpKeepalive": {
+      "Description": "Parameter group tcp-keepalive value for ElastiCache Redis in seconds.",
+      "Type": "Number",
+      "Default": "120"
+    },
+    "RedisParameterGroupTimeout": {
+      "Description": "Parameter group timeout value for ElastiCache Redis in seconds.",
+      "Type": "Number",
+      "Default": "120"
+    },
+    "SecurityGroupIds": {
+      "Description": "Subnet Group of the Java Services",
+      "Type": "List<AWS::EC2::SecurityGroup::Id>"
+    }
+  },
+
+  "Resources": {
+    "ElastiCacheRedisParameterGroup": {
+      "Type": "AWS::ElastiCache::ParameterGroup",
+      "Properties": {
+        "Description": "Parameter group with timeout and tcp-keepalive specified.",
+        "CacheParameterGroupFamily": {
+          "Ref": "RedisParameterGroupFamily"
+        },
+        "Properties": {
+          "tcp-keepalive": {
+            "Ref": "RedisParameterGroupTcpKeepalive"
+          },
+          "timeout": {
+            "Ref": "RedisParameterGroupTimeout"
+          }
+        }
+      }
+    },
+
+    "ElastiCacheRedisReplicationGroup": {
+      "Type": "AWS::ElastiCache::ReplicationGroup",
+      "Properties": {
+        "ReplicationGroupId": {
+          "Ref": "ReplicationGroupName"
+        },
+        "AtRestEncryptionEnabled": {
+          "Ref": "AtRestEncryptionEnabled"
+        },
+        "AutomaticFailoverEnabled": {
+          "Ref": "AutomaticFailoverEnabled"
+        },
+        "CacheNodeType": {
+          "Ref": "CacheNodeType"
+        },
+        "CacheParameterGroupName": {
+          "Ref": "ElastiCacheRedisParameterGroup"
+        },
+        "CacheSubnetGroupName": {
+          "Ref": "CacheSubnetGroup"
+        },
+        "Engine": "redis",
+        "EngineVersion": {
+          "Ref": "EngineVersion"
+        },
+        "NumCacheClusters": {
+          "Ref": "NumberOfCacheNodes"
+        },
+        "PreferredCacheClusterAZs": {
+          "Ref": "AvailabilityZones"
+        },
+        "ReplicationGroupDescription": "ElastiCache Redis Cluster",
+        "SecurityGroupIds": {
+          "Ref": "SecurityGroupIds"
+        },
+        "Tags": [
+          {
+            "Key": "Branch",
+            "Value": { "Ref" : "Branch" }
+          },
+          {
+            "Key": "Environment",
+            "Value": { "Ref" : "Environment" }
+          },
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "xgemail-dqs"
+                ]
+              ]
+            }
+          },
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "RedisEndpointAddress": {
+      "Value": {
+        "Fn::GetAtt": [
+          "ElastiCacheRedisReplicationGroup",
+          "PrimaryEndPoint.Address"
+        ]
+      },
+      "Description": "ElastiCache Redis Endpoint Address"
+    },
+    "RedisEndpointPort": {
+      "Value": {
+        "Fn::GetAtt": [
+          "ElastiCacheRedisReplicationGroup",
+          "PrimaryEndPoint.Port"
+        ]
+      },
+      "Description": "ElastiCache Redis Endpoint Port"
+    }
+  }
+}
