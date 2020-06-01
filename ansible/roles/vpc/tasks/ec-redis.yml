@@ -10,7 +10,7 @@
       ReplicationGroupName:                                   "xgemail-dqs"
       AtRestEncryptionEnabled:                                "{{aws.ec.redis.xgemail_dqs.at_rest_encryption}}"
       AutomaticFailoverEnabled:                               "{{aws.ec.redis.xgemail_dqs.automatic_failover}}"
-      AvailabilityZones:                                      "{{cloud_email_vpc_stack.stack_outputs.AvailabilityZones}}"
+      AvailabilityZones:                                      "{{cloud_email_vpc_stack.stack_outputs.AvailabilityZoneA}},{{cloud_email_vpc_stack.stack_outputs.AvailabilityZoneB}}"
       CacheNodeType:                                          "{{aws.ec.redis.xgemail_dqs.node_type}}"
       CacheSubnetGroup:                                       "{{cloud_email_vpc_stack.stack_outputs.ElastiCachePrivateSubnetGroup}}"
       EngineVersion:                                          "5.0.0"
