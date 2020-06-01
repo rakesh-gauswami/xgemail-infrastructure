@@ -23,6 +23,8 @@ aws:
         node_type:                              "cache.m5.large"
         at_rest_encryption:                     "false"
         automatic_failover:                     "false"
+        number_of_nodes:                        "1"
+        availability_zones:                     "{{cloud_email_vpc_stack.stack_outputs.AvailabilityZoneA}}"
   es:
     toc_elasticsearch_domain:
       state:                                                      present
