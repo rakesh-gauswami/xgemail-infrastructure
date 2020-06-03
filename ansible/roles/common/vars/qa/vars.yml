@@ -28,7 +28,9 @@ aws:
       xgemail_dqs:
         node_type:                             "cache.m5.large"
         at_rest_encryption:                    "false"
-        automatic_failover:                    "false"
+        automatic_failover:                    "true"
+        number_of_nodes:                       "2"
+        availability_zones:                    "{{az.a}},{{az.b}}"
   efs:
     policy_efs_volume:
       provisioned_throughput_in_mibps:          "1"
