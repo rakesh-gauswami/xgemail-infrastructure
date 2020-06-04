@@ -382,13 +382,13 @@ def add_headers(message, message_path, headers):
     try:
         if headers is None:
             logger.warn("Unable to add headers for message [%s]: header object was None.", message_path)
-            return message
+            return message , None
 
         if len(headers) == 0:
             logger.debug(
                 "No headers found for message [%s]", message_path
             )
-            return message
+            return message , None
 
         # required to keep parsing with headers with true. Change here need to be tested with
         # DKIM Signing with Nested email
@@ -415,7 +415,7 @@ def add_headers(message, message_path, headers):
     except Exception:
         logger.exception("Unable to add headers for message [%s]", message_path)
         # return the original message without headers
-        return message, timestamp_value
+        return message, None
 
 
 # attempts to inject email into Postfix and
