@@ -605,7 +605,11 @@ while True:
                 try:
                     logger.debug("Message with path: [{0}] having X-Sophos-Processing-Start-Time value : {1}"
                                  .format(sqs_message.message_path, timestamp_header))
-                    if timestamp_header is not None:
+
+                    #publish from normal delivery instances and skip from  all x delivery and encryption delivery
+                    if timestamp_header is not None and NODE_TYPE in ['internet-delivery', 'customer-delivery',
+                                                                      'beta-delivery', 'delta-delivery',
+                                                                      'risky-delivery', 'warmup-delivery']:
                         e2e_telemetry_data = E2ETelemetryData(queue_id,
                                                               MESSAGE_DIRECTION,
                                                               float(round(time.time() * 1000)) - float(timestamp_header),
