@@ -166,6 +166,8 @@ if ACCOUNT != 'sandbox'
   GLOBAL_SIGN_ROOT = "#{GLOBAL_SIGN_DIR}/global-sign-root.crt"
 
   # Add xgemail certificate
+  # api-mcs-mob-prod.crt currently includes the intermediate CA cert in it so
+  # GLOBAL_SIGN_INTERMEDIARY is removed from CREATE_SERVER_PEM_COMMAND below.
   remote_file "/etc/ssl/certs/#{CERT_NAME}.crt" do
     source "file:///tmp/sophos/certificates/api-mcs-mob-prod.crt"
     owner 'root'
@@ -183,7 +185,6 @@ if ACCOUNT != 'sandbox'
 
   CREATE_SERVER_PEM_COMMAND = 'cat ' +
     "'#{CERT_FILE}' " +
-    "'#{GLOBAL_SIGN_INTERMEDIARY}' " +
     "'#{GLOBAL_SIGN_ROOT}' " +
     "> '#{SERVER_PEM_FILE}'"
 
