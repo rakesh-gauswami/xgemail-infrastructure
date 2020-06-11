@@ -7,7 +7,7 @@
     disable_rollback:             true
     template:                     "{{template.ssm.ssm_xgemail_document_template}}"
     template_parameters:
-      AlarmTopicArn:              "{{sns.arn_prefix}}{{sns.lifecycle_sqs_sns}}"
+      AlarmTopicArn:              "{{sns.arn_prefix}}{{sns.alarm_sns_topic}}"
       EipRotationLambdaFunction:  "{{lambda.eip_rotation_lambda_function}}"
   register: ssm_stack
 
