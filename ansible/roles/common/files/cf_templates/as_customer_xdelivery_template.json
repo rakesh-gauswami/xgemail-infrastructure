@@ -1,7 +1,7 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
 
-  "Description": "Sophos Email AutoScaling Group template for Sophos Cloud used for risky-xdelivery EC2 Instances.",
+  "Description": "Sophos Email AutoScaling Group template for Sophos Cloud used for customer-delivery EC2 Instances.",
 
   "Metadata": {
     "Copyright": [
@@ -12,6 +12,7 @@
       "names mentioned are trademarks or registered trademarks of their",
       "respective owners."
     ],
+
     "Comments": [
       "Xgemail Extended Delivery Instances are for delivering email that is temporarily undeliverable.",
       "After a configurable number of attempts delivery instances will be able to transfer messages here.",
@@ -25,6 +26,7 @@
       "for each replica set member."
     ]
   },
+
   "Parameters": {
     "AesDecryptionKey": {
       "Description": "Decryption key for encrypted buckets",
@@ -32,10 +34,6 @@
     },
     "AmiId": {
       "Description": "AMI ID to use as a base for the stack",
-      "Type": "String"
-    },
-    "AutoScalingInstanceRoleArn": {
-      "Description": "Arn of the AutoScaling Role.",
       "Type": "String"
     },
     "AutoScalingMaxSize": {
@@ -103,10 +101,6 @@
     "KeyName": {
       "Description": "Key pair used to SSH to the instance",
       "Type": "AWS::EC2::KeyPair::KeyName"
-    },
-    "LifecycleHookLaunching": {
-      "Description": "Name of the Launching Lifecycle Hook.",
-      "Type": "String"
     },
     "LoadBalancerName": {
       "Description": "Name for the ELB to attach to the Auto Scaling Group",
@@ -191,8 +185,8 @@
       "Type" : "String",
       "Default": ""
     },
-    "XgemailNotifierQueueUrl" : {
-      "Description" : "URL for the SQS Queue where XGEMAIL notification messages are sent",
+    "XgemailPolicyBucketName" : {
+      "Description" : "Name of the S3 Bucket where XGEMAIL policy docs are stored",
       "Type" : "String",
       "Default": ""
     },
@@ -330,15 +324,6 @@
         "HealthCheckGracePeriod": { "Ref": "HealthCheckGracePeriod" },
         "HealthCheckType": "ELB",
         "LaunchConfigurationName": { "Ref": "XgemailAutoScalingLaunchConfig" },
-        "LifecycleHookSpecificationList" : [
-          {
-            "LifecycleHookName": { "Ref": "LifecycleHookLaunching" },
-            "HeartbeatTimeout" : "300",
-            "LifecycleTransition" : "autoscaling:EC2_INSTANCE_LAUNCHING",
-            "NotificationTargetARN" : { "Ref": "AutoScalingNotificationTopicARN" },
-            "RoleARN" : { "Ref": "AutoScalingInstanceRoleArn" }
-          }
-        ],
         "LoadBalancerNames": { "Ref": "LoadBalancerName" },
         "MaxSize": { "Ref": "AutoScalingMaxSize" },
         "MinSize": { "Ref": "AutoScalingMinSize" },
@@ -356,8 +341,7 @@
               ]
             },
             "PropagateAtLaunch": true
-          },
-          {
+          }, {
             "Key": "BuildResultKey",
             "Value": { "Ref": "BuildVersion" },
             "PropagateAtLaunch": "true"
@@ -373,8 +357,23 @@
             "PropagateAtLaunch": "true"
           },
           {
+            "Key": "BaseAmi",
+            "Value": { "Ref": "AmiId" },
+            "PropagateAtLaunch": "true"
+          },
+          {
             "Key": "BusinessUnit",
             "Value": "MSG",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail",
             "PropagateAtLaunch": "true"
           },
           {
@@ -458,8 +457,10 @@
                       "    \"msg_history_status_queue_url\"   : \"{{msg_history_status_queue_url}}\",\n",
                       "    \"msg_history_status_sns_arn\"     : \"{{msg_history_delivery_status_sns_arn}}\",\n",
                       "    \"msg_notifier_queue_url\"         : \"{{msg_notifier_queue_url}}\",\n",
+                      "    \"notification_sns_arn\"           : \"{{notification_sns_arn}}\",\n",
                       "    \"station_vpc_id\"                 : \"{{station_vpc_id}}\",\n",
-                      "    \"station_vpc_name\"               : \"{{station_vpc_name}}\"\n",
+                      "    \"station_vpc_name\"               : \"{{station_vpc_name}}\",\n",
+                      "    \"xgemail_policy_bucket_name\"     : \"{{xgemail_policy_bucket_name}}\"\n",
                       "  }\n",
                       "}\n"
                     ]
@@ -476,7 +477,6 @@
                   "environment":                              { "Ref": "Environment" },
                   "msg_history_status_queue_url":             { "Ref": "XgemailMsgHistoryStatusQueueUrl" },
                   "msg_history_delivery_status_sns_arn":      { "Ref": "XgemailMsgHistoryStatusSnsArn"},
-                  "msg_notifier_queue_url":                   { "Ref": "XgemailNotifierQueueUrl" },
                   "region":                                   { "Ref": "AWS::Region" },
                   "station_vpc_id":                           { "Ref": "StationVpcId" },
                   "stack":                                    { "Ref": "AWS::StackName" },
@@ -486,7 +486,8 @@
                   "volume_set_id":                            { "Ref": "VolumeSetId" },
                   "volume_tracker_sdb_domain":                { "Ref": "VolumeTrackerSimpleDbDomain" },
                   "vpc_id":                                   { "Ref": "Vpc" },
-                  "vpc_name":                                 { "Ref": "VpcName" }
+                  "vpc_name":                                 { "Ref": "VpcName" },
+                  "xgemail_policy_bucket_name":               { "Ref": "XgemailPolicyBucketName" }
                 },
                 "owner": "root",
                 "mode": "000444"
@@ -744,7 +745,7 @@
         }
       },
       "Properties": {
-        "AssociatePublicIpAddress": "true",
+        "AssociatePublicIpAddress": "false",
         "IamInstanceProfile": { "Ref": "InstanceProfile" },
         "ImageId": { "Ref": "AmiId" },
         "InstanceMonitoring": {

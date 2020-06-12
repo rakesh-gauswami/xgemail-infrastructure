@@ -123,6 +123,10 @@
       "Type": "String",
       "Default": "c3.large"
     },
+    "JilterHeloTelemetryStreamName": {
+      "Description": "Name of the jilter helo telemetry firehose stream",
+      "Type": "String"
+    },
     "KeyName": {
       "Type": "AWS::EC2::KeyPair::KeyName",
       "Description": "Key pair used to SSH to the instance"
@@ -134,6 +138,11 @@
     "LoadBalancerName": {
       "Description": "Name for the ELB to attach to the Auto Scaling Group",
       "Type": "String"
+    },
+    "PolicyTargetValue": {
+      "Description": "The target value for the metric.",
+      "Type": "Number",
+      "Default": "85"
     },
     "S3CookbookRepositoryURL": {
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
@@ -251,11 +260,6 @@
       "Description": "Service type for the xgemail instance (Defaults to unknown so not to break builds)",
       "Type": "String",
       "Default": "unknown"
-    },
-    "XgemailSubmitServiceQueueUrl" : {
-      "Description" : "URL for the SQS Queue where XGEMAIL submit micro service messages are sent",
-      "Type" : "String",
-      "Default": ""
     },
     "XgemailSxlDbl": {
       "Description": "SXL Domain Blacklist used by Xgemail Submit Servers",
@@ -410,6 +414,14 @@
           ]
         }
       ]
+    },
+    "ScalingEnabled": {
+      "Fn::Equals": [
+        {
+          "Ref": "Environment"
+        },
+        "prod"
+      ]
     }
   },
 
@@ -465,8 +477,23 @@
             "PropagateAtLaunch": "true"
           },
           {
+            "Key": "BaseAmi",
+            "Value": { "Ref": "AmiId" },
+            "PropagateAtLaunch": "true"
+          },
+          {
             "Key": "BusinessUnit",
             "Value": "MSG",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail",
             "PropagateAtLaunch": "true"
           },
           {
@@ -548,6 +575,22 @@
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
         "Cooldown": "60",
         "ScalingAdjustment": "-1"
+      }
+    },
+
+    "XgemailScaleCpuPolicy": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+      "Condition": "ScalingEnabled",
+      "Properties": {
+        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
+        "EstimatedInstanceWarmup": "400",
+        "PolicyType": "TargetTrackingScaling",
+        "TargetTrackingConfiguration": {
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "ASGAverageCPUUtilization"
+          },
+          "TargetValue": { "Ref": "PolicyTargetValue"}
+        }
       }
     },
 
@@ -686,6 +729,7 @@
                     "  \"xgemail\" : {\n",
                     "    \"alarm_topic_arn\"                        : \"{{alarm_topic_arn}}\",\n",
                     "    \"cluster_type\"                           : \"{{cluster_type}}\",\n",
+                    "    \"jilter_helo_telemetry_stream_name\"      : \"{{jilter_helo_telemetry_stream_name}}\",\n",
                     "    \"lifecycle_topic_arn\"                    : \"{{lifecycle_topic_arn}}\",\n",
                     "    \"msg_history_bucket_name\"                : \"{{msg_history_bucket_name}}\",\n",
                     "    \"msg_history_ms_bucket_name\"             : \"{{msg_history_ms_bucket_name}}\",\n",
@@ -714,6 +758,7 @@
                   "cluster":                                        { "Ref": "XgemailServiceType" },
                   "cluster_type":                                   { "Ref": "XgemailServiceType" },
                   "environment":                                    { "Ref": "Environment" },
+                  "jilter_helo_telemetry_stream_name":              { "Ref": "JilterHeloTelemetryStreamName" },
                   "lifecycle_topic_arn":                            { "Ref": "AutoScalingNotificationTopicARN" },
                   "msg_history_bucket_name":                        { "Ref": "XgemailMsgHistoryBucketName" },
                   "msg_history_ms_bucket_name":                     { "Ref": "XgemailMsgHistoryMsBucketName" },
@@ -731,7 +776,6 @@
                   "xgemail_policy_arn":                             { "Ref": "XgemailPolicyArn" },
                   "xgemail_policy_bucket_name":                     { "Ref": "XgemailPolicyBucketName" },
                   "xgemail_queue_url":                              { "Ref": "XgemailQueueUrl" },
-                  "xgemail_service_queue_url":                      { "Ref": "XgemailSubmitServiceQueueUrl" },
                   "xgemail_sns_sqs_url":                            { "Ref": "XgemailSnsSqsQueueUrl" },
                   "xgemail_scan_events_topic_arn":                  { "Ref": "XgemailScanEventsTopicArn" },
                   "xgemail_msg_history_events_topic_arn":           { "Ref": "MessageHistoryEventsTopicArn" }
@@ -1036,6 +1080,11 @@
     "XgemailScaleInPolicy": {
       "Description": "Auto Scaling Scale In Policy ARN..",
       "Value": { "Ref": "XgemailScaleInPolicy" }
+    },
+    "XgemailScaleCpuPolicy": {
+      "Description": "Auto Scaling Scale Out Policy based on CPU.",
+      "Value": { "Ref": "XgemailScaleCpuPolicy" },
+      "Condition": "ScalingEnabled"
     }
   }
 }

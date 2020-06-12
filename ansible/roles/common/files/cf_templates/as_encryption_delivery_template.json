@@ -125,6 +125,11 @@
       "Description": "Name for the ELB to attach to the Auto Scaling Group",
       "Type": "List<String>"
     },
+    "PolicyTargetValue": {
+      "Description": "The target value for the metric.",
+      "Type": "Number",
+      "Default": "80"
+    },
     "S3CookbookRepositoryURL": {
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
       "Type": "String",
@@ -301,6 +306,14 @@
         }
       ]
     },
+    "ScalingEnabled": {
+      "Fn::Equals": [
+        {
+          "Ref": "Environment"
+        },
+        "prod"
+      ]
+    },
     "EnableScaleInOnWeekends": {
       "Fn::And": [
         {
@@ -407,8 +420,23 @@
             "PropagateAtLaunch": "true"
           },
           {
+            "Key": "BaseAmi",
+            "Value": { "Ref": "AmiId" },
+            "PropagateAtLaunch": "true"
+          },
+          {
             "Key": "BusinessUnit",
             "Value": "MSG",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail",
             "PropagateAtLaunch": "true"
           },
           {
@@ -468,23 +496,19 @@
       }
     },
 
-    "XgemailScaleOutPolicy": {
+    "XgemailScaleCpuPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
+      "Condition": "ScalingEnabled",
       "Properties": {
-        "AdjustmentType": "ChangeInCapacity",
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "Cooldown": "400",
-        "ScalingAdjustment": "1"
-      }
-    },
-
-    "XgemailScaleInPolicy": {
-      "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Properties": {
-        "AdjustmentType": "ChangeInCapacity",
-        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "Cooldown": "60",
-        "ScalingAdjustment": "-1"
+        "EstimatedInstanceWarmup": "400",
+        "PolicyType": "TargetTrackingScaling",
+        "TargetTrackingConfiguration": {
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "ASGAverageCPUUtilization"
+          },
+          "TargetValue": { "Ref": "PolicyTargetValue"}
+        }
       }
     },
 
@@ -744,7 +768,7 @@
             }
           }
         ],
-        "AssociatePublicIpAddress": "true",
+        "AssociatePublicIpAddress": "false",
         "ImageId": { "Ref": "AmiId" },
         "InstanceType": { "Ref": "InstanceType" },
         "KeyName": { "Ref": "KeyName" },
@@ -781,17 +805,19 @@
               "  # Disable errexit so errors below don't prevent the call to cfn-signal.\n",
               "  set +o errexit\n",
               "\n",
+              "  ACCOUNT='", { "Ref" : "Environment" }, "'\n",
+              "  BRANCH='", { "Ref": "Branch" }, "'\n",
+              "  DEPLOYMENT_NAME='", { "Ref": "XgemailServiceType" }, "'\n",
               "  # Set LastHealth tag so cloud list command shows progress.\n",
               "  if [ \"$exit_code\" == 0 ]; then\n",
               "    /opt/sophos/bin/set_instance_tag.py LastHealth UserDataSuccess\n",
-              "    /opt/sophos/bin/ebs-delete-on-termination.py\n",
+              "    if [ \"$ACCOUNT\" == \"prod\" ]; then\n",
+              "      /opt/sophos/bin/ebs-delete-on-termination.py\n",
+              "    fi\n",
               "    /sbin/service monit start\n",
               "  else\n",
               "    /opt/sophos/bin/set_instance_tag.py LastHealth UserDataFailure\n",
               "    # Upload logs before reporting failure to avoid race against termination.\n",
-              "    ACCOUNT='", { "Ref" : "Environment" }, "'\n",
-              "    BRANCH='", { "Ref": "Branch" }, "'\n",
-              "    DEPLOYMENT_NAME='", { "Ref": "XgemailServiceType" }, "'\n",
               "    /opt/sophos/bin/upload_deployment_logs.py -a ${ACCOUNT} -b ${BRANCH} ${DEPLOYMENT_NAME} -c netstat_tuna.out='netstat -tuna'\n",
               "  fi\n",
               "\n",
@@ -859,13 +885,10 @@
       "Description": "Auto Scaling Launch Configuration Name.",
       "Value": { "Ref": "XgemailAutoScalingLaunchConfig" }
     },
-    "XgemailScaleOutPolicy": {
-      "Description": "Auto Scaling Scale Out Policy ARN.",
-      "Value": { "Ref": "XgemailScaleOutPolicy" }
-    },
-    "XgemailScaleInPolicy": {
-      "Description": "Auto Scaling Scale In Policy ARN..",
-      "Value": { "Ref": "XgemailScaleInPolicy" }
+    "XgemailScaleCpuPolicy": {
+      "Description": "Auto Scaling Scale Out Policy based on CPU.",
+      "Value": { "Ref": "XgemailScaleCpuPolicy" },
+      "Condition": "ScalingEnabled"
     }
   }
 }

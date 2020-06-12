@@ -70,6 +70,8 @@ HOP_COUNT_SUBMIT_INSTANCE = node['xgemail']['hop_count_submit_instance']
 
 if ACCOUNT != 'sandbox'
   # Add xgemail certificate
+  # api-mcs-mob-prod.crt currently includes the intermediate CA cert in it so
+  # GLOBAL_SIGN_INTERMEDIARY is removed from CREATE_SERVER_PEM_COMMAND below.
   remote_file "/etc/ssl/certs/#{CERT_NAME}.crt" do
     source "file:///tmp/sophos/certificates/api-mcs-mob-prod.crt"
     owner 'root'
@@ -89,7 +91,6 @@ end
 
 CREATE_SERVER_PEM_COMMAND = 'cat ' +
   "'#{CERT_FILE}' " +
-  "'#{GLOBAL_SIGN_INTERMEDIARY}' " +
   "'#{GLOBAL_SIGN_ROOT}' " +
   "> '#{SERVER_PEM_FILE}'"
 
@@ -210,6 +211,8 @@ if ACCOUNT != 'sandbox'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_policy_service'
   include_recipe 'sophos-cloud-xgemail::setup_xmeirl_header_check_customer_submit_toggle'
   include_recipe 'sophos-cloud-xgemail::setup_flag_toggle_customer_submit'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_bulk_sender_merger'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_deliver_director_config_updater'
 else
 
   [

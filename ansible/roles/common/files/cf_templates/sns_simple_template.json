@@ -26,6 +26,11 @@
       "MinLength": "1",
       "MaxLength": "256",
       "AllowedPattern": "[a-zA-Z0-9_-]+"
+    },
+    "TagApplication": {
+      "Description": "Tag for the Application being deployed",
+      "Type": "String",
+      "Default": ""
     }
   },
 
@@ -33,7 +38,29 @@
     "SnsTopic": {
       "Type": "AWS::SNS::Topic",
       "Properties": {
-        "TopicName": { "Ref": "TopicName" }
+        "TopicName": { "Ref": "TopicName" },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": { "Ref": "TopicName" }
+          },
+          {
+            "Key": "Application",
+            "Value": { "Ref": "TagApplication" }
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
       }
     }
   },
@@ -41,7 +68,8 @@
   "Outputs": {
     "SnsTopicArn": {
       "Description": "ARN of the SNS topic",
-      "Value": { "Ref" : "SnsTopic" }
+      "Value": { "Ref" : "SnsTopic" },
+      "Export" : { "Name" : {"Fn::Sub": "${AWS::StackName}-SnsTopicArn" }}
     }
   }
 }

@@ -1,0 +1,91 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "SNS Topic template.",
+
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2016, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ],
+
+    "Comments": [
+      "Creates SNS topic",
+      "This will basically give every IAM Role to publish message to the SNS topic"
+    ]
+  },
+
+  "Parameters": {
+    "TopicName": {
+      "Description": "Name of the SNS topic",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "256",
+      "AllowedPattern": "[a-zA-Z0-9_-]+"
+    },
+    "TagApplication": {
+      "Description": "Tag for the Application being deployed",
+      "Type": "String",
+      "Default": "cloudemail"
+    }
+  },
+
+  "Resources": {
+    "SnsTopic": {
+      "Type": "AWS::SNS::Topic",
+      "Properties": {
+        "TopicName": { "Ref": "TopicName" },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": { "Ref": "TopicName" }
+          },
+          {
+            "Key": "Application",
+            "Value": { "Ref": "TagApplication" }
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
+      }
+    },
+    "IamToSnsPolicy": {
+      "Type" : "AWS::SNS::TopicPolicy",
+      "Properties" : {
+        "PolicyDocument" : {
+          "Id" : "SnsTopicPolicyDocument",
+          "Version" : "2012-10-17",
+          "Statement" : [ {
+            "Sid" : "sns-topic-policy-document",
+            "Effect" : "Allow",
+            "Principal" : { "AWS": "*" },
+            "Action" : "sns:Publish",
+            "Resource" : { "Ref": "SnsTopic" }
+          } ]
+        },
+        "Topics" : [ { "Ref": "SnsTopic" } ]
+      }
+    }
+  },
+
+  "Outputs": {
+    "SnsTopicArn": {
+      "Description": "ARN of the SNS topic",
+      "Value": { "Ref" : "SnsTopic" }
+    }
+  }
+}

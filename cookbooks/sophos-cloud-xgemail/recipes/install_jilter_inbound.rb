@@ -10,6 +10,8 @@
 #
 
 package 'tar'
+REGION = node['sophos_cloud']['region']
+STATION_VPC_ID = node['xgemail']['station_vpc_id']
 
 NODE_TYPE = node['xgemail']['cluster_type']
 ACCOUNT = node['sophos_cloud']['environment']
@@ -37,6 +39,7 @@ JILTER_SCRIPT_DIR = "#{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}/scripts"
 JILTER_SCRIPT_PATH = "#{JILTER_SCRIPT_DIR}/xgemail.jilter.service.sh"
 JILTER_CONF_DIR = "#{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}/conf"
 JILTER_APPLICATION_PROPERTIES_PATH="#{JILTER_CONF_DIR}/jilter-application.properties"
+JILTER_HELO_TELEMETRY_STREAM_NAME = node['xgemail']['jilter_helo_telemetry_stream_name']
 
 LIBOPENDKIM_VERSION = node['xgemail']['libopendkim_version']
 LIBOPENDKIM_PACKAGE_NAME = "libopendkim-#{LIBOPENDKIM_VERSION}"
@@ -152,9 +155,12 @@ template 'xgemail.jilter.properties' do
   owner SERVICE_USER
   group SERVICE_USER
   variables(
+      :region => REGION,
+      :station_vpc_id => STATION_VPC_ID,
       :policy_bucket => POLICY_BUCKET_NAME,
       :account => ACCOUNT,
-      :internet_submit_bucket => INTERNET_SUBMIT_BUCKET_NAME
+      :internet_submit_bucket => INTERNET_SUBMIT_BUCKET_NAME,
+      :jilter_helo_telemetry_stream => JILTER_HELO_TELEMETRY_STREAM_NAME
   )
 end
 
@@ -199,6 +205,7 @@ if ACCOUNT != 'sandbox'
       'smtpd_milters = inet:localhost:9876',
       'milter_connect_macros = {client_addr}, {j}',
       'milter_mail_macros = {mail_addr}, {tls_version}',
+      'milter_helo_macros = {client_ptr}',
       'milter_end_of_data_macros = {i}'
   ].each do | cur |
     execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )

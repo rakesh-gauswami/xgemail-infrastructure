@@ -1,11 +1,11 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
 
-  "Description": "Sophos Email AutoScaling Group template for Sophos Cloud used for internet-xdelivery EC2 Instances.",
+  "Description": "Sophos Email AutoScaling Group template for Sophos Cloud used for warmup-xdelivery EC2 Instances.",
 
   "Metadata": {
     "Copyright": [
-      "Copyright 2019, Sophos Limited. All rights reserved.",
+      "Copyright 2020, Sophos Limited. All rights reserved.",
       "",
       "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
       "Sophos Limited and Sophos Group.  All other product and company",
@@ -15,7 +15,7 @@
     "Comments": [
       "Xgemail Extended Delivery Instances are for delivering email that is temporarily undeliverable.",
       "After a configurable number of attempts delivery instances will be able to transfer messages here.",
-      "These instances are also for assisting the AutoScaling of Delivery Instances during termnination.",
+      "These instances are also for assisting the AutoScaling of Delivery Instances during termination.",
       "They may transfer mail to Extended Delivery preventing the loss of email.",
       "We use auto-scaling here for repair but not horizontal scaling.",
       "We need to associate each replica member with a set of volumes.",
@@ -180,6 +180,11 @@
       "Type": "Number",
       "MinValue": "1",
       "MaxValue": "16384"
+    },
+    "XgemailMsgHistoryStatusQueueUrl" : {
+      "Description" : "URL for the SQS Queue where Message History delivery status events are sent",
+      "Type" : "String",
+      "Default": ""
     },
     "XgemailMsgHistoryStatusSnsArn": {
       "Description" : "ARN for the SNS Topic where Message History delivery status events are published",
@@ -368,8 +373,23 @@
             "PropagateAtLaunch": "true"
           },
           {
+            "Key": "BaseAmi",
+            "Value": { "Ref": "AmiId" },
+            "PropagateAtLaunch": "true"
+          },
+          {
             "Key": "BusinessUnit",
             "Value": "MSG",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail",
             "PropagateAtLaunch": "true"
           },
           {
@@ -450,6 +470,7 @@
                       "  },\n",
                       "  \"xgemail\" : {\n",
                       "    \"cluster_type\"                   : \"{{cluster_type}}\",\n",
+                      "    \"msg_history_status_queue_url\"   : \"{{msg_history_status_queue_url}}\",\n",
                       "    \"msg_history_status_sns_arn\"     : \"{{msg_history_delivery_status_sns_arn}}\",\n",
                       "    \"msg_notifier_queue_url\"         : \"{{msg_notifier_queue_url}}\",\n",
                       "    \"station_vpc_id\"                 : \"{{station_vpc_id}}\",\n",
@@ -468,6 +489,7 @@
                   "cluster":                                  { "Ref": "XgemailServiceType" },
                   "cluster_type":                             { "Ref": "XgemailServiceType" },
                   "environment":                              { "Ref": "Environment" },
+                  "msg_history_status_queue_url":             { "Ref": "XgemailMsgHistoryStatusQueueUrl" },
                   "msg_history_delivery_status_sns_arn":      { "Ref": "XgemailMsgHistoryStatusSnsArn"},
                   "msg_notifier_queue_url":                   { "Ref": "XgemailNotifierQueueUrl" },
                   "region":                                   { "Ref": "AWS::Region" },

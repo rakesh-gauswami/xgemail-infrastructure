@@ -27,10 +27,12 @@ import json
 import os
 import messageformatter
 import metadataformatter
+import bulksenderformatter
 
 DEFAULT_FORMATTER = 'default_formatter'
 MESSAGE_FORMATTER = 'message_formatter'
 METADATA_FORMATTER = 'metadata_formatter'
+BULKSENDER_FORMATTER = 'bulksender_formatter'
 
 MAGIC_NUMBERS = {
     b'\0SOPHCONFIG' : DEFAULT_FORMATTER,
@@ -45,7 +47,10 @@ MAGIC_NUMBERS = {
     b'\0SOPHSTAT' : DEFAULT_FORMATTER,
     b'\0SOPHACTRSN' : DEFAULT_FORMATTER,
     b'\0SOPHDLPSMRY' : DEFAULT_FORMATTER,
-    b'\0SOPHDLPDTL' : DEFAULT_FORMATTER
+    b'\0SOPHDLPDTL' : DEFAULT_FORMATTER,
+    b'\0SOPHIMPREVNT' : DEFAULT_FORMATTER,
+    b'\0SOPHCLKEVT' : DEFAULT_FORMATTER,
+    b'\0SOPHBSNDR' : BULKSENDER_FORMATTER
 }
 
 def is_valid_format(magic_bytes, magic_number):
@@ -98,6 +103,9 @@ def deserialize(file_path, output_file_path, magic_number, formatter):
             deserialized_content = messageformatter.get_message_binary(the_file.read())
         elif formatter == METADATA_FORMATTER:
             deserialized_content = metadataformatter.get_metadata_binary(the_file.read())
+            print_decoded_json(deserialized_content)
+        elif formatter == BULKSENDER_FORMATTER:
+            deserialized_content = bulksenderformatter.get_bulk_sender_binary(the_file.read())
             print_decoded_json(deserialized_content)
         with open(output_file_path, 'w') as output_file:
             output_file.write(deserialized_content)

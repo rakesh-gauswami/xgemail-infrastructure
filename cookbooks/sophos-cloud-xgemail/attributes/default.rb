@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Attribute:: default
 #
-# Copyright 2018, Sophos
+# Copyright 2020, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -122,7 +122,7 @@ default['xgemail']['sxl_dbl_response_codes'] = "127.0.1.[1;3;4;5]"
 # extension in order to spoof the source IP of the messages its sending.
 # More information can be found at
 # https://wiki.sophos.net/display/NSG/VBSpam+Integration+into+Sophos+Email
-default['xgemail']['smtpd_authorized_xclient_hosts'] = "81.136.243.94"
+default['xgemail']['smtpd_authorized_xclient_hosts'] = "81.136.243.94, 79.99.68.210"
 
 # Increase Postfix default process limit from default 100 to 300
 default['xgemail']['postfix_default_process_limit'] = 300
@@ -145,6 +145,9 @@ default['xgemail']['msg_statistics_rejection_sns_topic'] = "#{node['xgemail']['s
 default['xgemail']['msg_history_status_sns_topic'] = "#{node['xgemail']['station_vpc_id']}-xgemail-msg-history-delivery-status-SNS"
 default['xgemail']['msg_history_events_sns_topic'] = "#{node['xgemail']['station_vpc_id']}-xgemail-msg-history-events-SNS"
 default['xgemail']['scan_events_sns_topic'] = "#{node['xgemail']['station_vpc_id']}-xgemail-scan-events-SNS"
+
+# SQS Names
+default['xgemail']['msg_history_delivery_status_sqs'] = "#{node['xgemail']['station_vpc_id']}-Xgemail_MessageHistory_Delivery_Status"
 
 ## Policy service/poller settings
 default['xgemail']['sqs_policy_poller_visibility_timeout'] = '10'
@@ -196,10 +199,25 @@ default['xgemail']['internet_delivery_message_bouncer_processor_dir'] = XGEMAIL_
 default['xgemail']['internet_delivery_message_bouncer_common_dir'] = "#{XGEMAIL_SQS_MESSAGE_BOUNCER_DIR}/common"
 default['xgemail']['internet_delivery_bounce_message_processor_user'] = 'bouncer'
 
+## Beta delivery DSN/NDR settings
+default['xgemail']['beta_delivery_message_bouncer_processor_dir'] = XGEMAIL_SQS_MESSAGE_BOUNCER_DIR
+default['xgemail']['beta_delivery_message_bouncer_common_dir'] = "#{XGEMAIL_SQS_MESSAGE_BOUNCER_DIR}/common"
+default['xgemail']['beta_delivery_bounce_message_processor_user'] = 'bouncer'
+
 ## Risky delivery DSN/NDR settings
 default['xgemail']['risky_delivery_message_bouncer_processor_dir'] = XGEMAIL_SQS_MESSAGE_BOUNCER_DIR
 default['xgemail']['risky_delivery_message_bouncer_common_dir'] = "#{XGEMAIL_SQS_MESSAGE_BOUNCER_DIR}/common"
 default['xgemail']['risky_delivery_bounce_message_processor_user'] = 'bouncer'
+
+## Warmup delivery DSN/NDR settings
+default['xgemail']['warmup_delivery_message_bouncer_processor_dir'] = XGEMAIL_SQS_MESSAGE_BOUNCER_DIR
+default['xgemail']['warmup_delivery_message_bouncer_common_dir'] = "#{XGEMAIL_SQS_MESSAGE_BOUNCER_DIR}/common"
+default['xgemail']['warmup_delivery_bounce_message_processor_user'] = 'bouncer'
+
+## Delta delivery DSN/NDR settings
+default['xgemail']['delta_delivery_message_bouncer_processor_dir'] = XGEMAIL_SQS_MESSAGE_BOUNCER_DIR
+default['xgemail']['delta_delivery_message_bouncer_common_dir'] = "#{XGEMAIL_SQS_MESSAGE_BOUNCER_DIR}/common"
+default['xgemail']['delta_delivery_bounce_message_processor_user'] = 'bouncer'
 
 ## Cronjob settings
 default['xgemail']['cron_job_timeout'] = '10m'
@@ -212,6 +230,7 @@ default['xgemail']['internet_submit_recipient_cron_minute_frequency'] = 5
 default['xgemail']['xgemail_sqs_lifecycle_poller_cron_minute_frequency'] = 1
 
 default['xgemail']['recipient_access_filename'] = 'recipient_access'
+default['xgemail']['recipient_access_extra_filename'] = 'recipient_access_extra'
 default['xgemail']['relay_domains_filename']  = 'relay_domains'
 default['xgemail']['s3_encryption_algorithm'] = 'AES256'
 default['xgemail']['soft_retry_senders_map_filename'] = 'soft_retry_senders_map'
@@ -326,7 +345,55 @@ default['xgemail']['postfix_instance_data'] = {
     # Give delivery queues extra padding because extra content may be created during processing
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600),
     :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
-  }
+  },
+  # warmup-delivery
+  'warmup-delivery' => {
+    :instance_name => 'wd',
+    :port => 25,
+    # Give delivery queues extra padding because extra content may be created during processing
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800),
+    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+  },
+  # warmup-extended-delivery
+  'warmup-xdelivery' => {
+    :instance_name => 'wx',
+    :port => 8025,
+    # Give delivery queues extra padding because extra content may be created during processing
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600),
+    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+  },
+  # beta-delivery
+  'beta-delivery' => {
+    :instance_name => 'bd',
+    :port => 25,
+    # Give delivery queues extra padding because extra content may be created during processing
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800),
+    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+  },
+  # beta-extended-delivery
+  'beta-xdelivery' => {
+    :instance_name => 'bx',
+    :port => 8025,
+    # Give delivery queues extra padding because extra content may be created during processing
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600),
+    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+  },
+  # delta-delivery
+  'delta-delivery' => {
+    :instance_name => 'dd',
+    :port => 25,
+    # Give delivery queues extra padding because extra content may be created during processing
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800),
+    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+  },
+  # delta-extended-delivery
+  'delta-xdelivery' => {
+    :instance_name => 'dx',
+    :port => 8025,
+    # Give delivery queues extra padding because extra content may be created during processing
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600),
+    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+  },
 }
 
 ## The Postfix instance name for the encryption-delivery node

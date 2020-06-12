@@ -19,6 +19,19 @@ aws:
       as_min_service:                           "3"
       as_max_batch_size:                        "3"
       instance_size:                            "m4.2xlarge"
+      policy_target_value:                      "85"
+    bd:
+      alarm_scaling_enabled:                    "true"
+      alarm_scale_in_threshold:                 "100"
+      alarm_scale_out_threshold:                "500"
+      as_min_size:                              "3"
+      as_max_size:                              "12"
+      as_min_service:                           "3"
+      as_max_batch_size:                        "3"
+      instance_size:                            "c4.large"
+    bx:
+      asg_min_size:                             [1,1,1]
+      instance_size:                            "c4.large"
     cd:
       alarm_scaling_enabled:                    "true"
       alarm_scale_in_threshold:                 "100"
@@ -32,14 +45,24 @@ aws:
       asg_min_size:                             [1,1,1]
       instance_size:                            "c4.large"
     cs:
-      alarm_scaling_enabled:                    "true"
-      alarm_scale_in_threshold:                 "5000"
-      alarm_scale_out_threshold:                "30000"
       as_min_size:                              "6"
       as_max_size:                              "12"
       as_min_service:                           "3"
       as_max_batch_size:                        "3"
       instance_size:                            "m4.2xlarge"
+      policy_target_value:                      "65"
+    dd:
+      alarm_scaling_enabled:                    "true"
+      alarm_scale_in_threshold:                 "100"
+      alarm_scale_out_threshold:                "500"
+      as_min_size:                              "3"
+      as_max_size:                              "12"
+      as_min_service:                           "3"
+      as_max_batch_size:                        "3"
+      instance_size:                            "c4.large"
+    dx:
+      asg_min_size:                             [1,1,1]
+      instance_size:                            "c4.large"
     id:
       alarm_scaling_enabled:                    "true"
       alarm_scale_in_threshold:                 "100"
@@ -58,13 +81,25 @@ aws:
       as_min_service:                           "1"
       as_max_batch_size:                        "2"
       instance_size:                            "c4.large"
+      policy_target_value:                      "80"
     ed:
       as_min_size:                              "3"
       as_max_size:                              "12"
       as_min_service:                           "1"
       as_max_batch_size:                        "2"
       instance_size:                            "c4.large"
+      policy_target_value:                      "80"
     rd:
+      as_min_size:                              "3"
+      as_max_size:                              "12"
+      as_min_service:                           "3"
+      as_max_batch_size:                        "3"
+      instance_size:                            "c4.large"
+      policy_target_value:                      "80"
+    rx:
+      asg_min_size:                             [1,1,1]
+      instance_size:                            "c4.large"
+    wd:
       alarm_scaling_enabled:                    "true"
       alarm_scale_in_threshold:                 "100"
       alarm_scale_out_threshold:                "500"
@@ -73,9 +108,17 @@ aws:
       as_min_service:                           "3"
       as_max_batch_size:                        "3"
       instance_size:                            "c4.large"
-    rx:
+    wx:
       asg_min_size:                             [1,1,1]
       instance_size:                            "c4.large"
+  ec:
+    redis:
+      xgemail_dqs:
+        node_type:                             "cache.r5.large"
+        at_rest_encryption:                    "true"
+        automatic_failover:                    "true"
+        number_of_nodes:                       "2"
+        availability_zones:                    "{{az.a}},{{az.b}}"
   efs:
     policy_efs_volume:
       provisioned_throughput_in_mibps:          "5"

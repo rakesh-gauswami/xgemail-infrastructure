@@ -9,9 +9,6 @@
     template: "{{template.ec2.asg.as_risky_delivery_template}}"
     template_parameters:
       AesDecryptionKey:                     "{{aes_decryption_key}}"
-      AlarmScalingEnabled:                  "{{aws.asg.rd.alarm_scaling_enabled}}"
-      AlarmScaleInThreshold:                "{{aws.asg.rd.alarm_scale_in_threshold}}"
-      AlarmScaleOutThreshold:               "{{aws.asg.rd.alarm_scale_out_threshold}}"
       AlarmTopicArn:                        "{{sns.arn_prefix}}{{sns.alarm_sns_topic}}"
       AmiId:                                "{{ami_parent_id}}"
       AutoScalingInstanceRoleArn:           "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.AutoScalingInstanceRoleArn}}"
@@ -32,6 +29,7 @@
       LifecycleHookLaunching:               "{{aws.asg.rd.lifecycle_hook_launching}}"
       LifecycleHookTerminating:             "{{aws.asg.rd.lifecycle_hook_terminating}}"
       LoadBalancerName:                     "{{elb_stack_output.stack_outputs.LoadBalancerId}}"
+      PolicyTargetValue:                    "{{aws.asg.rd.policy_target_value}}"
       S3CookbookRepositoryURL:              "//cloud-{{account.name}}-templates/{{build.branch}}/xgemail-infrastructure/cookbooks.enc"
       ScaleInOnWeekends:                    "{{weekend_scale_down}}"
       ScaleInCron:                          "{{cron_scale_down}}"

@@ -5,7 +5,7 @@
 
   "Metadata": {
     "Copyright": [
-      "Copyright 2019, Sophos Limited. All rights reserved.",
+      "Copyright 2020, Sophos Limited. All rights reserved.",
       "",
       "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
       "Sophos Limited and Sophos Group.  All other product and company",
@@ -21,6 +21,10 @@
   "Parameters": {
     "AdditionalActionTopicArn": {
       "Description": "Endpoint for scan Additional Action arn",
+      "Type": "String"
+    },
+    "AtrReindexTopicArn": {
+      "Description": "Endpoint for Atr reindex  arn",
       "Type": "String"
     },
     "BounceEventTopicArn": {
@@ -43,8 +47,16 @@
       "Description": "TopicArn for encryption delivery events SNS",
       "Type": "String"
     },
+    "EncryptionSettingsUpdateEventsTopicArn": {
+      "Description": "TopicArn for encryption settings update events SNS",
+      "Type": "String"
+    },
     "InternetDeliveryTopicArn": {
       "Description": "TopicArn of Internet delivery Events SNS",
+      "Type": "String"
+    },
+    "MailOpsNotificationTopicArn": {
+      "Description": "TopicArn of MailOps notification SNS",
       "Type": "String"
     },
     "MessageHistoryEventsTopicArn": {
@@ -53,6 +65,10 @@
     },
     "MessageHistoryStatusQueueTopicArn": {
       "Description": "Endpoint for message history Delivery Status SNS",
+      "Type": "String"
+    },
+    "MessageHistoryStatusRetryQueueTopicArn": {
+      "Description": "Endpoint for message history Delivery Status Retry SNS",
       "Type": "String"
     },
     "MessageStatisticsRejectionTopicArn": {
@@ -65,6 +81,10 @@
     },
     "NotifierQueueTopicArn": {
       "Description": "TopicArn of notifications SNS",
+      "Type": "String"
+    },
+    "PolicyRefreshEventTopicArn": {
+      "Description": "TopicArn of Policy Refresh Events SNS",
       "Type": "String"
     },
     "QuarantinedEventsTopicArn": {
@@ -87,12 +107,44 @@
       "Description": "TopicArn of Success Events SNS",
       "Type": "String"
     },
+    "TocSettingsUpdateEventsTopicArn": {
+      "Description": "TopicArn of Toc Settings update Events SNS",
+      "Type": "String"
+    },
+    "UserAllowBlockActionEventsTopicArn": {
+      "Description": "TopicArn of User allow block action Events SNS",
+      "Type": "String"
+    },
+    "UserDeletedActionEventsTopicArn": {
+      "Description": "TopicArn of User delete action Events SNS",
+      "Type": "String"
+    },
+    "WarmupDeliveryTopicArn": {
+      "Description": "TopicArn of Warmup Delivery Events SNS",
+      "Type": "String"
+    },
     "AdditionalActionQueue": {
       "Description": "Endpoint ARN for Additional Action SQS Queue",
       "Type": "String"
     },
+    "AllowBlockUploadQueue": {
+      "Description": "Endpoint ARN for Allow Block Upload SQS Queue",
+      "Type": "String"
+    },
+    "AtrReindexQueue": {
+      "Description": "Endpoint ARN for Atr Reindex SQS Queue",
+      "Type": "String"
+    },
     "BounceEventQueue": {
       "Description": "Endpoint ARN for Bounce Event Action SQS Queue",
+      "Type": "String"
+    },
+    "BulkSenderActionQueue": {
+      "Description": "Endpoint ARN for Bulk Sender Action SQS Queue",
+      "Type": "String"
+    },
+    "BulkSenderApprovalQueue": {
+      "Description": "Endpoint ARN for Bulk Sender Approval SQS Queue",
       "Type": "String"
     },
     "DelayQueue": {
@@ -111,6 +163,10 @@
       "Description": "Endpoint for encryption delivery SQS queue",
       "Type": "String"
     },
+    "EncryptionSettingsUpdateQueue": {
+      "Description": "Endpoint ARN for encryption settings update SQS queue",
+      "Type": "String"
+    },
     "ImpersonationRequestQueue": {
       "Description": "Endpoint for impersonation request SQS queue",
       "Type": "String"
@@ -123,8 +179,8 @@
       "Description": "Endpoint for Internet delivery SQS queue",
       "Type": "String"
     },
-    "InternetSubmitServiceQueue": {
-      "Description": "Endpoint for Internet submit service SQS queue",
+    "MailOpsNotificationEmail": {
+      "Description": "MailOps group email id",
       "Type": "String"
     },
     "MessageHistoryQueue": {
@@ -133,6 +189,10 @@
     },
     "MessageHistoryStatusQueue": {
       "Description": "Endpoint for message history Delivery Status SQS queue",
+      "Type": "String"
+    },
+    "MessageHistoryStatusRetryQueue": {
+      "Description": "Endpoint for message history Delivery Status Retry SQS queue",
       "Type": "String"
     },
     "MessageStatisticsQueue": {
@@ -159,6 +219,10 @@
       "Description": "Endpoint for outbound malware protection unblock sender SQS queue",
       "Type": "String"
     },
+    "PolicyRefreshEventQueue": {
+      "Description": "Endpoint for Policy Refresh Event SQS queue",
+      "Type": "String"
+    },
     "QuarantineQueue": {
       "Description": "Endpoint for quarantine SQS queue",
       "Type": "String"
@@ -170,10 +234,38 @@
     "RiskyDeliveryQueue": {
       "Description": "Endpoint for Risky delivery SQS queue",
       "Type": "String"
+    },
+    "TocSettingsUpdateEventQueue": {
+      "Description": "Endpoint for Toc Settings Update SQS queue",
+      "Type": "String"
+    },
+    "UserAllowBlockActionEventQueue": {
+      "Description": "Endpoint for User allow block action SQS queue",
+      "Type": "String"
+    },
+    "UserDeletedActionEventQueue": {
+      "Description": "Endpoint for User deleted action SQS queue",
+      "Type": "String"
+    },
+    "WarmupDeliveryQueue": {
+      "Description": "Endpoint for Warmup delivery SQS queue",
+      "Type": "String"
+    },
+    "XgemailAlertQueue": {
+      "Description": "Endpoint ARN for Xgemail Alert SQS Queue",
+      "Type": "String"
     }
   },
 
   "Resources": {
+    "MailOpsNotificationSnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": { "Ref": "MailOpsNotificationEmail"},
+        "Protocol": "Email-JSON",
+        "TopicArn": { "Ref": "MailOpsNotificationTopicArn"}
+      }
+    },
     "MacroDetectionQueueToSuccessSnsSubscription": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
@@ -319,6 +411,14 @@
         "TopicArn": { "Ref": "MessageHistoryStatusQueueTopicArn"}
       }
     },
+    "MessageHistoryDeliveryStatusRetryQueueToMessageHistoryDeliveryStatusRetrySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageHistoryStatusRetryQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "MessageHistoryStatusRetryQueueTopicArn"}
+      }
+    },
     "MessageHistoryQueueToInternetDeliverySnsSubscription": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
@@ -365,6 +465,22 @@
         "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageStatisticsQueue"}]]},
         "Protocol": "sqs",
         "TopicArn": { "Ref": "SuccessEventsTopicArn"}
+      }
+    },
+    "MessageStatisticsQueueToEncryptionEventSnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageStatisticsQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "EncryptEventsTopicArn"}
+      }
+    },
+    "MessageStatisticsQueueToWarmupDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageStatisticsQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "WarmupDeliveryTopicArn"}
       }
     },
     "MessageStatisticsRejectionQueueToMessageStatisticsRejectionSnsSubscription": {
@@ -417,6 +533,14 @@
         "TopicArn": { "Ref": "RedirectEventTopicArn"}
       }
     },
+    "MessageHistoryQueueToWarmupDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageHistoryQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "WarmupDeliveryTopicArn"}
+      }
+    },
     "MessageStatisticsSNSListenerQueueToBounceEventSnsSubscription": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
@@ -433,12 +557,30 @@
         "TopicArn": { "Ref": "BounceEventTopicArn"}
       }
     },
+    "AtrReindexSNSListenerQueueToAtrReindexSnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "AtrReindexQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "AtrReindexTopicArn"},
+        "RawMessageDelivery": "true"
+      }
+    },
     "BounceEventSNSListenerQueueToBounceEventSnsSubscription": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
         "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "BounceEventQueue"}]]},
         "Protocol": "sqs",
         "TopicArn": { "Ref": "BounceEventTopicArn"}
+      }
+    },
+    "EncryptionSettingsUpdateSNSListenerQueueToEncryptionSettingsUpdateSnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "EncryptionSettingsUpdateQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "EncryptionSettingsUpdateEventsTopicArn"},
+        "RawMessageDelivery": "true"
       }
     },
     "MessageStatisticsSNSListenerQueueToRedirectEventSnsSubscription": {
@@ -513,7 +655,131 @@
         "TopicArn": { "Ref": "RiskyDeliveryTopicArn"}
       }
     },
+    "AdditionalActionQueueToWarmupDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "AdditionalActionQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "WarmupDeliveryTopicArn"}
+      }
+    },
+    "PolicyRefreshEventQueueToPolicyRefreshEventSnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "PolicyRefreshEventQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "PolicyRefreshEventTopicArn"}
+      }
+    },
+    "WarmupDeliveryQueueToWarmupDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "WarmupDeliveryQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "WarmupDeliveryTopicArn"}
+      }
+    },
 
+    "AllowBlockUploadQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "AllowBlockUploadQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*"
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "AllowBlockUploadQueue" }]]}]
+      }
+    },
+    "TocSettingsUpdateEventQueueToTocSettingsUpdateEventSnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "TocSettingsUpdateEventQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "TocSettingsUpdateEventsTopicArn"},
+        "RawMessageDelivery": "true"
+      }
+    },
+    "UserAllowBlockActionEventQueueToUserAllowBlockActionEventSnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "UserAllowBlockActionEventQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "UserAllowBlockActionEventsTopicArn"},
+        "RawMessageDelivery": "true"
+      }
+    },
+    "UserDeletedActionEventQueueToUserDeletedActionEventSnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "UserDeletedActionEventQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "UserDeletedActionEventsTopicArn"},
+        "RawMessageDelivery": "true"
+      }
+    },
+
+    "BulkSenderActionQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "BulkSenderActionQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*"
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "BulkSenderActionQueue" }]]}]
+      }
+    },
+    "BulkSenderApprovalQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "BulkSenderApprovalQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*"
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "BulkSenderApprovalQueue" }]]}]
+      }
+    },
+    "XgemailAlertQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "XgemailAlertQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*"
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "XgemailAlertQueue" }]]}]
+      }
+    },
     "DeliveryQueuePolicy": {
       "Type": "AWS::SQS::QueuePolicy",
       "Properties": {
@@ -634,30 +900,6 @@
         "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "RiskyDeliveryQueue" }]]}]
       }
     },
-    "InternetSubmitServiceQueuePolicy": {
-      "Type": "AWS::SQS::QueuePolicy",
-      "Properties": {
-        "PolicyDocument": {
-          "Version": "2012-10-17",
-          "Id": "InternetSubmitServiceQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
-          "Statement": [
-            {
-              "Sid": "Allow-ScanEventsTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "ScanEventsTopicArn"}
-                }
-              }
-            }
-          ]
-        },
-        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "InternetSubmitServiceQueue" }]]}]
-      }
-    },
     "MessageHistoryQueuePolicy": {
       "Type": "AWS::SQS::QueuePolicy",
       "Properties": {
@@ -665,6 +907,18 @@
           "Version": "2012-10-17",
           "Id": "MessageHistoryQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
           "Statement": [
+            {
+              "Sid": "Allow-BetaDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": [{ "Fn::ImportValue" :  {"Fn::Sub": "CloudEmail-xgemail-beta-delivery-SNS-SnsTopicArn" } }]
+                }
+              }
+            },
             {
               "Sid": "Allow-DeletedEventsTopicArn",
               "Effect": "Allow",
@@ -772,6 +1026,30 @@
                   "aws:SourceArn": {"Ref": "MessageHistoryEventsTopicArn"}
                 }
               }
+            },
+            {
+              "Sid": "Allow-WarmupDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "WarmupDeliveryTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-DeltaDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": [{ "Fn::ImportValue" :  {"Fn::Sub": "CloudEmail-xgemail-delta-delivery-SNS-SnsTopicArn" } }]
+                }
+              }
             }
           ]
         },
@@ -802,6 +1080,30 @@
         "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "MessageHistoryStatusQueue" }]]}]
       }
     },
+    "MessageHistoryStatusRetryQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "MessageHistoryStatusRetryQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-MessageHistoryStatusRetryQueueTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "MessageHistoryStatusRetryQueueTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "MessageHistoryStatusRetryQueue" }]]}]
+      }
+    },
     "MessageStatisticsQueuePolicy": {
       "Type": "AWS::SQS::QueuePolicy",
       "Properties": {
@@ -809,6 +1111,18 @@
           "Version": "2012-10-17",
           "Id": "MessageStatisticsQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
           "Statement": [
+            {
+              "Sid": "Allow-BetaDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": [{ "Fn::ImportValue" :  {"Fn::Sub": "CloudEmail-xgemail-beta-delivery-SNS-SnsTopicArn" } }]
+                }
+              }
+            },
             {
               "Sid": "Allow-DeletedEventsTopicArn",
               "Effect": "Allow",
@@ -890,6 +1204,42 @@
               "Condition": {
                 "ArnEquals": {
                   "aws:SourceArn": {"Ref": "RiskyDeliveryTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-WarmupDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "WarmupDeliveryTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-EncryptEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "EncryptEventsTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-DeltaDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": [{ "Fn::ImportValue" :  {"Fn::Sub": "CloudEmail-xgemail-delta-delivery-SNS-SnsTopicArn" } }]
                 }
               }
             }
@@ -977,6 +1327,18 @@
           "Version": "2012-10-17",
           "Id": "AdditionalActionQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
           "Statement": [
+            {
+              "Sid": "Allow-BetaDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": [{ "Fn::ImportValue" :  {"Fn::Sub": "CloudEmail-xgemail-beta-delivery-SNS-SnsTopicArn" } }]
+                }
+              }
+            },
             {
               "Sid": "Allow-AdditionalActionTopicArn",
               "Effect": "Allow",
@@ -1072,6 +1434,30 @@
                   "aws:SourceArn": {"Ref": "RiskyDeliveryTopicArn"}
                 }
               }
+            },
+            {
+              "Sid": "Allow-WarmupDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "WarmupDeliveryTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-DeltaDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": [{ "Fn::ImportValue" :  {"Fn::Sub": "CloudEmail-xgemail-delta-delivery-SNS-SnsTopicArn" } }]
+                }
+              }
             }
           ]
         },
@@ -1150,6 +1536,30 @@
         "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "EncryptionDeliveryQueue" }]]}]
       }
     },
+    "PolicyRefreshEventQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "PolicyRefreshEventQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-PolicyRefreshEventTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "PolicyRefreshEventTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "PolicyRefreshEventQueue" }]]}]
+      }
+    },
     "NotifierQueuePolicy": {
       "Type": "AWS::SQS::QueuePolicy",
       "Properties": {
@@ -1175,6 +1585,150 @@
           {"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "NotifierQueue" }]]},
           {"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "OutboundMalwareProtectionQueue" }]]}
         ]
+      }
+    },
+    "WarmupDeliveryQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "WarmupDeliveryQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-WarmupDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "WarmupDeliveryTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "WarmupDeliveryQueue" }]]}]
+      }
+    },
+    "AtrReindexQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "AtrReindexQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-AtrReindexTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "AtrReindexTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "AtrReindexQueue" }]]}]
+      }
+    },
+    "EncryptionSettingsUpdateQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "EncryptionSettingsUpdateQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-EncryptionSettingsUpdateEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "EncryptionSettingsUpdateEventsTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "EncryptionSettingsUpdateQueue" }]]}]
+      }
+    },
+    "TocSettingsUpdateEventQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "TocSettingsUpdateEventQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-TocSettingsUpdateEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "TocSettingsUpdateEventsTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "TocSettingsUpdateEventQueue" }]]}]
+      }
+    },
+    "UserAllowBlockActionEventQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "UserAllowBlockActionEventQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-UserAllowBlockActionEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "UserAllowBlockActionEventsTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "UserAllowBlockActionEventQueue" }]]}]
+      }
+    },
+    "UserDeletedActionEventQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "UserDeletedActionEventQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-UserDeletedActionEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "UserDeletedActionEventsTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "UserDeletedActionEventQueue" }]]}]
       }
     }
   }

@@ -1,0 +1,319 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Xgemail SNS Subscription Template",
+
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2020, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ],
+
+    "Comments": [
+      "Marries SNS topics to SQS queues to support XGEMAIL messaging."
+    ]
+  },
+
+  "Parameters": {
+    "BetaDeliveryQueue": {
+      "Description": "Endpoint for Beta delivery SQS queue",
+      "Type": "String"
+    },
+    "BetaDeliveryTopicArn": {
+      "Description": "TopicArn of Beta Delivery Events SNS",
+      "Type": "String"
+    },
+    "DeltaDeliveryTopicArn": {
+      "Description": "TopicArn of Delta Delivery Events SNS",
+      "Type": "String"
+    },
+    "CustomersV1TopicArn": {
+      "Description": "Endpoint for customer license change event arn",
+      "Type": "String"
+    },
+    "AdditionalActionQueue": {
+      "Description": "Endpoint ARN for Additional Action SQS Queue",
+      "Type": "String"
+    },
+    "DeltaDeliveryQueue": {
+      "Description": "Endpoint for Delta delivery SQS queue",
+      "Type": "String"
+    },
+    "MessageHistoryQueue": {
+      "Description": "Endpoint for message history SQS queue",
+      "Type": "String"
+    },
+    "MessageStatisticsQueue": {
+      "Description": "Endpoint for message statistics SQS queue",
+      "Type": "String"
+    },
+    "CustomerLicenseUpdateQueue": {
+      "Description": "Endpoint ARN for Customer License Update SQS Queue",
+      "Type": "String"
+    },
+    "ArchiveIngestionQueue":{
+      "Description": "Archive Ingestion SQS queue",
+      "Type": "String"
+    },
+    "JournalArchiveDeliveryTopicArn":{
+      "Description": "TopicArn of Journal archive Events SNS",
+      "Type": "String"
+    },
+    "InternetDeliveryTopicArn":{
+      "Description": "Topic Arn of Internet Delivery SNS",
+      "Type": "String"
+    },
+    "SenderCheckRejectTopicArn": {
+      "Description": "Endpoint for Sender Check Reject Events arn",
+      "Type": "String"
+    },
+    "SenderCheckRejectQueue": {
+      "Description": "Endpoint ARN for Sender Check Reject SQS Queue",
+      "Type": "String"
+    },
+    "XgemailSuccessEventTopicArn":{
+      "Description": "Topic Arn of Xgemail success Events SNS",
+      "Type": "String"
+    }
+  },
+
+  "Resources": {
+    "AdditionalActionQueueToBetaaDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "AdditionalActionQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "BetaDeliveryTopicArn"}
+      }
+    },
+    "BetaDeliveryQueueToBetaDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "BetaDeliveryQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "BetaDeliveryTopicArn"}
+      }
+    },
+    "AdditionalActionQueueToDeltaDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "AdditionalActionQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "DeltaDeliveryTopicArn"}
+      }
+    },
+    "DeltaDeliveryQueueToDeltaDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "DeltaDeliveryQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "DeltaDeliveryTopicArn"}
+      }
+    },
+    "MessageHistoryQueueToDeltaDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageHistoryQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "DeltaDeliveryTopicArn"}
+      }
+    },
+    "CustomerLicenseUpdateQueueToCustomerV1SnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "CustomerLicenseUpdateQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "CustomersV1TopicArn"}
+      }
+    },
+    "MessageStatisticsQueueToDeltaDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageStatisticsQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "DeltaDeliveryTopicArn"}
+      }
+    },
+    "JournalArchiveDeliverySnsToArchiveIngestionQueueSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "ArchiveIngestionQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "JournalArchiveDeliveryTopicArn"}
+      }
+    },
+    "SenderCheckRejectQueueToSenderCheckRejectSnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "SenderCheckRejectQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "SenderCheckRejectTopicArn"},
+        "RawMessageDelivery": "true"
+      }
+    },
+    "SuccessEventsSnsToArchiveIngestionQueueSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "ArchiveIngestionQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "XgemailSuccessEventTopicArn"}
+      }
+    },
+    "InternetDeliverySnsToArchiveIngestionQueueSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "ArchiveIngestionQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "InternetDeliveryTopicArn"}
+      }
+    },
+    "BetaDeliveryQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "BetaDeliveryQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-BetaDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "BetaDeliveryTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "BetaDeliveryQueue" }]]}]
+      }
+    },
+    "DeltaDeliveryQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "DeltaDeliveryQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-DeltaDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "DeltaDeliveryTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "DeltaDeliveryQueue" }]]}]
+      }
+    },
+    "CustomerLicenseUpdateQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "CustomerLicenseUpdateQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "CustomersV1TopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "CustomerLicenseUpdateQueue" }]]}]
+      }
+    },
+    "ArchiveIngestionQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "ArchiveIngestionQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-JournalArchiveDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "JournalArchiveDeliveryTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-InternetDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "InternetDeliveryTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-XgEmailSuccessEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "XgemailSuccessEventTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "ArchiveIngestionQueue" }]]}]
+      }
+    },
+    "SenderCheckRejectQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "SenderCheckRejectQueue-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-SenderCheckRejectTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "SenderCheckRejectTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "SenderCheckRejectQueue" }]]}
+        ]
+      }
+    }
+  }
+}

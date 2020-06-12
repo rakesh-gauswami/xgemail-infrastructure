@@ -15,8 +15,10 @@ INSTANCE_ID                   = node['ec2']['instance_id']
 MAIN_DIR                      = node['fluentd']['main_dir']
 NODE_TYPE                     = node['xgemail']['cluster_type']
 PATTERNS_DIR                  = node['fluentd']['patterns_dir']
+SQS_DELIVERY_DELAY            = node['fluentd']['sqs_delivery_delay']
 REGION                        = node['sophos_cloud']['region']
 MSG_STATS_REJECT_SNS_TOPIC    = node['xgemail']['msg_statistics_rejection_sns_topic']
+DELIVERY_STATUS_SQS           = node['xgemail']['msg_history_delivery_status_sqs']
 DELIVERY_STATUS_SNS_TOPIC     = node['xgemail']['msg_history_status_sns_topic']
 SERVER_IP                     = node['ipaddress']
 MAILLOG_FILTER_PATTERNS       = "(\\.#{REGION}\\.compute\\.internal|:\\sdisconnect\\sfrom\\s|\\swarning:\\shostname\\s|:\\sremoved\\s|table\\shash:|sm-msp-queue|:\\sstatistics:\\s)"
@@ -54,6 +56,36 @@ elsif NODE_TYPE == 'encryption-delivery'
   NON_DELIVERY_DSN      = '5.4.7'
 elsif NODE_TYPE == 'risky-xdelivery'
   SERVER_TYPE           = 'RISKY_XDELIVERY'
+  SERVER_TYPE_XDELIVERY = 'UNKNOWN'
+  DIRECTION             = 'OUTBOUND'
+  NON_DELIVERY_DSN      = '5.4.7'
+elsif NODE_TYPE == 'warmup-delivery'
+  SERVER_TYPE_XDELIVERY = 'WARMUP_XDELIVERY'
+  SERVER_TYPE           = 'WARMUP_DELIVERY'
+  DIRECTION             = 'OUTBOUND'
+  NON_DELIVERY_DSN      = '5.4.7'
+elsif NODE_TYPE == 'warmup-xdelivery'
+  SERVER_TYPE           = 'WARMUP_XDELIVERY'
+  SERVER_TYPE_XDELIVERY = 'UNKNOWN'
+  DIRECTION             = 'OUTBOUND'
+  NON_DELIVERY_DSN      = '5.4.7'
+elsif NODE_TYPE == 'beta-delivery'
+  SERVER_TYPE_XDELIVERY = 'BETA_XDELIVERY'
+  SERVER_TYPE           = 'BETA_DELIVERY'
+  DIRECTION             = 'OUTBOUND'
+  NON_DELIVERY_DSN      = '5.4.7'
+elsif NODE_TYPE == 'beta-xdelivery'
+  SERVER_TYPE           = 'BETA_XDELIVERY'
+  SERVER_TYPE_XDELIVERY = 'UNKNOWN'
+  DIRECTION             = 'OUTBOUND'
+  NON_DELIVERY_DSN      = '5.4.7'
+elsif NODE_TYPE == 'delta-delivery'
+  SERVER_TYPE_XDELIVERY = 'DELTA_XDELIVERY'
+  SERVER_TYPE           = 'DELTA_DELIVERY'
+  DIRECTION             = 'OUTBOUND'
+  NON_DELIVERY_DSN      = '5.4.7'
+elsif NODE_TYPE == 'delta-xdelivery'
+  SERVER_TYPE           = 'DELTA_XDELIVERY'
   SERVER_TYPE_XDELIVERY = 'UNKNOWN'
   DIRECTION             = 'OUTBOUND'
   NON_DELIVERY_DSN      = '5.4.7'
@@ -97,7 +129,7 @@ template 'fluentd-source-lifecycle' do
   variables(
     :application_name => NODE_TYPE
   )
-  not_if { NODE_TYPE == 'xdelivery' || NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery' }
+  not_if { NODE_TYPE == 'xdelivery' || NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery' || NODE_TYPE == 'warmup-xdelivery' || NODE_TYPE == 'beta-xdelivery' || NODE_TYPE == 'delta-xdelivery' }
 end
 
 # internet-delivery - Start Order: 10
@@ -110,7 +142,7 @@ end
    variables(
      :application_name => NODE_TYPE
    )
-   only_if { NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'risky-delivery' }
+   only_if { NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'risky-delivery' || NODE_TYPE == 'warmup-delivery' || NODE_TYPE == 'beta-delivery'|| NODE_TYPE == 'delta-delivery' }
  end
 
 # internet-submit - Start Order: 10
@@ -149,7 +181,15 @@ template 'fluentd-source-sqsmsgconsumer' do
   variables(
     :application_name => NODE_TYPE
   )
-  only_if { NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'encryption-delivery' || NODE_TYPE == 'risky-delivery' }
+  only_if {
+             NODE_TYPE == 'customer-delivery' ||
+             NODE_TYPE == 'internet-delivery' ||
+             NODE_TYPE == 'encryption-delivery' ||
+             NODE_TYPE == 'risky-delivery' ||
+             NODE_TYPE == 'warmup-delivery' ||
+             NODE_TYPE == 'beta-delivery' ||
+             NODE_TYPE == 'delta-delivery'
+          }
 end
 
 # internet-submit and customer-submit - Start Order: 10
@@ -237,12 +277,19 @@ template 'fluentd-match-msg-delivery' do
             NODE_TYPE == 'internet-delivery' ||
             NODE_TYPE == 'internet-xdelivery' ||
             NODE_TYPE == 'risky-delivery' ||
-            NODE_TYPE == 'risky-xdelivery'
+            NODE_TYPE == 'risky-xdelivery' ||
+            NODE_TYPE == 'warmup-delivery' ||
+            NODE_TYPE == 'warmup-xdelivery' ||
+            NODE_TYPE == 'beta-delivery' ||
+            NODE_TYPE == 'beta-xdelivery' ||
+            NODE_TYPE == 'delta-delivery' ||
+            NODE_TYPE == 'delta-xdelivery'
          }
 
 end
 
 #  Start Order: 70
+#  Remove this when we shift completely to SQS type match
 template 'fluentd-filter-msg-delivery' do
   path "#{CONF_DIR}/70-filter-msg-delivery.conf"
   source 'fluentd-filter-msg-delivery.conf.erb'
@@ -255,7 +302,13 @@ template 'fluentd-filter-msg-delivery' do
             NODE_TYPE == 'internet-delivery' ||
             NODE_TYPE == 'internet-xdelivery' ||
             NODE_TYPE == 'risky-delivery' ||
-            NODE_TYPE == 'risky-xdelivery'
+            NODE_TYPE == 'risky-xdelivery' ||
+            NODE_TYPE == 'warmup-delivery' ||
+            NODE_TYPE == 'warmup-xdelivery' ||
+            NODE_TYPE == 'beta-delivery' ||
+            NODE_TYPE == 'beta-xdelivery' ||
+            NODE_TYPE == 'delta-delivery' ||
+            NODE_TYPE == 'delta-xdelivery'
          }
   end
 
@@ -304,11 +357,44 @@ template 'fluentd-filter-transform-msg-delivery' do
             NODE_TYPE == 'internet-delivery' ||
             NODE_TYPE == 'internet-xdelivery' ||
             NODE_TYPE == 'risky-delivery' ||
-            NODE_TYPE == 'risky-xdelivery'
+            NODE_TYPE == 'risky-xdelivery' ||
+            NODE_TYPE == 'warmup-delivery' ||
+            NODE_TYPE == 'warmup-xdelivery'||
+            NODE_TYPE == 'beta-delivery' ||
+            NODE_TYPE == 'beta-xdelivery' ||
+            NODE_TYPE == 'delta-delivery' ||
+            NODE_TYPE == 'delta-xdelivery'
          }
 end
 
+# Start Order: 77
+template 'fluentd-filter-transform-sqs-msg' do
+  path "#{CONF_DIR}/77-filter-transform-sqs-msg.conf"
+  source 'fluentd-filter-transform-sqs-msg.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+      :main_dir => MAIN_DIR
+  )
+  only_if {
+        NODE_TYPE == 'customer-delivery' ||
+        NODE_TYPE == 'xdelivery' ||
+        NODE_TYPE == 'internet-delivery' ||
+        NODE_TYPE == 'internet-xdelivery' ||
+        NODE_TYPE == 'risky-delivery' ||
+        NODE_TYPE == 'risky-xdelivery' ||
+        NODE_TYPE == 'warmup-delivery' ||
+        NODE_TYPE == 'warmup-xdelivery'||
+        NODE_TYPE == 'beta-delivery' ||
+        NODE_TYPE == 'beta-xdelivery' ||
+        NODE_TYPE == 'delta-delivery' ||
+        NODE_TYPE == 'delta-xdelivery'
+  }
+end
+
 # Message delivery status on all delivery and x delivery servers
+# Remove this when we shift completely to SQS type match
 template 'fluentd-match-sns-msg-delivery' do
   path "#{CONF_DIR}/97-match-sns-msg-delivery.conf"
   source 'fluentd-match-sns-msg-delivery.conf.erb'
@@ -326,8 +412,42 @@ template 'fluentd-match-sns-msg-delivery' do
             NODE_TYPE == 'internet-delivery' ||
             NODE_TYPE == 'internet-xdelivery' ||
             NODE_TYPE == 'risky-delivery' ||
-            NODE_TYPE == 'risky-xdelivery'
+            NODE_TYPE == 'risky-xdelivery' ||
+            NODE_TYPE == 'warmup-delivery' ||
+            NODE_TYPE == 'warmup-xdelivery' ||
+            NODE_TYPE == 'beta-delivery' ||
+            NODE_TYPE == 'beta-xdelivery' ||
+            NODE_TYPE == 'delta-delivery' ||
+            NODE_TYPE == 'delta-xdelivery'
          }
+end
+
+# Message delivery status on all delivery and x delivery servers
+template 'fluentd-match-sqs-msg-delivery' do
+  path "#{CONF_DIR}/97-match-sqs-msg-delivery.conf"
+  source 'fluentd-match-sqs-msg-delivery.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+      :region => REGION,
+      :sqs_delivery_delay => SQS_DELIVERY_DELAY,
+      :delivery_status_queue => DELIVERY_STATUS_SQS
+  )
+  only_if {
+        NODE_TYPE == 'customer-delivery' ||
+        NODE_TYPE == 'xdelivery' ||
+        NODE_TYPE == 'internet-delivery' ||
+        NODE_TYPE == 'internet-xdelivery' ||
+        NODE_TYPE == 'risky-delivery' ||
+        NODE_TYPE == 'risky-xdelivery' ||
+        NODE_TYPE == 'warmup-delivery' ||
+        NODE_TYPE == 'warmup-xdelivery' ||
+        NODE_TYPE == 'beta-delivery' ||
+        NODE_TYPE == 'beta-xdelivery' ||
+        NODE_TYPE == 'delta-delivery' ||
+        NODE_TYPE == 'delta-xdelivery'
+  }
 end
 
 # All instances - Start Order: 99
@@ -384,6 +504,7 @@ cookbook_file 'sns_msg_stats_reject_template' do
   action :create
 end
 
+# Remove this when we shift completely to SQS type match
 cookbook_file 'sns_msg_delivery_template' do
   path "#{MAIN_DIR}/sns_msg_delivery_template.erb"
   source 'fluentd_sns_msg_delivery_template.erb'
@@ -393,6 +514,7 @@ cookbook_file 'sns_msg_delivery_template' do
   action :create
 end
 
+# Remove this when we shift completely to SQS type match
 cookbook_file 'sns_msg_to_xdelivery_template' do
   path "#{MAIN_DIR}/sns_msg_to_xdelivery_template.erb"
   source 'fluentd_sns_msg_to_xdelivery_template.erb'
@@ -406,4 +528,3 @@ service 'td-agent' do
   supports :restart => true, :start => true, :stop => true, :reload => true
   action [ :enable, :restart ]
 end
-

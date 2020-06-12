@@ -12,17 +12,25 @@ xgemail_size_data_gb: "100"
 aws:
   asg:
     cd:
-      instance_size:                            "c4.large"
+      instance_size:                            "c4.xlarge"
     cs:
       instance_size:                            "m4.large"
     cx:
-      instance_size:                            "c4.large"
+      instance_size:                            "c4.xlarge"
     id:
-      instance_size:                            "c4.large"
+      instance_size:                            "c4.xlarge"
     is:
       instance_size:                            "m4.large"
     ix:
-      instance_size:                            "c4.large"
+      instance_size:                            "c4.xlarge"
+  ec:
+    redis:
+      xgemail_dqs:
+        node_type:                             "cache.m5.large"
+        at_rest_encryption:                    "false"
+        automatic_failover:                    "true"
+        number_of_nodes:                       "2"
+        availability_zones:                    "{{az.a}},{{az.b}}"
   efs:
     policy_efs_volume:
       provisioned_throughput_in_mibps:          "1"

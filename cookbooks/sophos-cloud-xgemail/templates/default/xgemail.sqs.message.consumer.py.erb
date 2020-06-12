@@ -9,12 +9,13 @@
 # Company: Sophos Limited or one of its affiliates.
 
 import sys
+import time
 sys.path.append("<%= @xgemail_utils_path %>")
 
 import base64
 import botocore
 import boto3
-import email
+from email.parser import Parser
 import json
 import logging
 import messageformatter
@@ -36,6 +37,7 @@ from smtplib import SMTPException
 from smtplib import SMTPSenderRefused
 from smtplib import SMTPRecipientsRefused
 from transportrouteconfig import TransportRouteConfig
+from telemetrydataformatter import E2ETelemetryData
 
 # general constants
 AWS_REGION = "<%= @aws_region %>"
@@ -53,6 +55,7 @@ MAIL_PIC_API_AUTH = '<%= @mail_pic_api_auth %>'
 CONNECTIONS_BUCKET = '<%= @connections_bucket %>'
 MESSAGE_DIRECTION = '<%= @message_direction %>'
 MESSAGE_HISTORY_DELIVERY_STATUS_SNS_TOPIC = '<%= @message_history_status_sns_topic_arn %>'
+E2E_LATENCY_TELEMETRY_DELIVERY_STREAM = '<%= @e2e_latency_telemetry_delivery_stream %>'
 NODE_TYPE = '<%= @node_type %>'
 NODE_IP = '<%= @node_ip %>'
 ACCOUNT = '<%= @account %>'
@@ -61,7 +64,7 @@ TRANSPORT_CONFIG_PATH = "<%= @transport_config_path %>"
 
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
-
+X_SOPHOS_PROCESSING_START_TIME_HEADER = 'X-Sophos-Processing-Start-Time'
 # logging to syslog setup
 logging.getLogger("botocore").setLevel(logging.WARNING)
 logger = logging.getLogger('sqsmsgconsumer')
@@ -379,16 +382,21 @@ def add_headers(message, message_path, headers):
     try:
         if headers is None:
             logger.warn("Unable to add headers for message [%s]: header object was None.", message_path)
-            return message
+            return message , None
 
         if len(headers) == 0:
             logger.debug(
                 "No headers found for message [%s]", message_path
             )
-            return message
+            return message , None
 
-        parsed_message = email.message_from_string(message)
+        # required to keep parsing with headers with true. Change here need to be tested with
+        # DKIM Signing with Nested email
+        parsed_message = Parser().parsestr(message, True)
+        timestamp_value = parsed_message.get(X_SOPHOS_PROCESSING_START_TIME_HEADER)
 
+        #Remove header 'X-Sophos-Processing-Start-Time' after reading it.
+        parsed_message.__delitem__(X_SOPHOS_PROCESSING_START_TIME_HEADER)
         header_keys = []
         for header_key, header_value in headers.iteritems():
             header_keys.append(header_key)
@@ -402,12 +410,12 @@ def add_headers(message, message_path, headers):
             header_keys
         )
 
-        return parsed_message.as_string()
+        return parsed_message.as_string(), timestamp_value
 
     except Exception:
         logger.exception("Unable to add headers for message [%s]", message_path)
         # return the original message without headers
-        return message
+        return message, None
 
 
 # attempts to inject email into Postfix and
@@ -579,7 +587,7 @@ while True:
                 )
 
             # attempt to add any existing headers to the message
-            message_binary_with_headers = add_headers(
+            message_binary_with_headers, timestamp_header  = add_headers(
                 message_binary,
                 sqs_message.message_path,
                 headers
@@ -594,6 +602,28 @@ while True:
             )
 
             if postfix_injection_response.is_successfully_injected:
+                try:
+                    logger.debug("Message with path: [{0}] having X-Sophos-Processing-Start-Time value : {1}"
+                                 .format(sqs_message.message_path, timestamp_header))
+
+                    #publish from normal delivery instances and skip from  all x delivery and encryption delivery
+                    if timestamp_header is not None and NODE_TYPE in ['internet-delivery', 'customer-delivery',
+                                                                      'beta-delivery', 'delta-delivery',
+                                                                      'risky-delivery', 'warmup-delivery']:
+                        e2e_telemetry_data = E2ETelemetryData(queue_id,
+                                                              MESSAGE_DIRECTION,
+                                                              float(round(time.time() * 1000)) - float(timestamp_header),
+                                                              datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+                        #put data to Kinesis firehose delivery stream
+                        response = awshandler.put_data_to_kinesis_delivery_stream(
+                            E2E_LATENCY_TELEMETRY_DELIVERY_STREAM,
+                            e2e_telemetry_data.get_delivery_stream_json())
+                        logger.debug("Response of delivery stream put operation from message path : [{}] is [{}]"
+                                     .format(sqs_message.message_path, response))
+                except Exception as e:
+                    logger.error("Error {0} occurred while pushing latency telemetry data for message path {1} "
+                                 .format(sqs_message.message_path, e))
+
                 # Delete message from SQS after injecting into Postfix
                 awshandler.delete_message(
                     origin_sqs_queue,

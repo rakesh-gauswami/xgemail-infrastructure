@@ -51,6 +51,8 @@ SUBMIT_TYPE = "<%= @xgemail_submit_type %>"
 S3_ENCRYPTION_ALGORITHM = "<%= @s3_encryption_algorithm %>"
 SUBMIT_BUCKET_NAME = "<%= @sqs_msg_producer_s3_bucket_name %>"
 CUSTOMER_SUBMIT_BUCKET_NAME = "<%= @sqs_msg_producer_s3_customer_submit_bucket_name %>"
+POLICY_S3_BUCKET_NAME = "<%= @sqs_msg_producer_policy_s3_bucket_name %>"
+
 SUBMIT_HOST_IP = "<%= @sqs_msg_producer_submit_ip %>"
 SUBMIT_SQS_URL = "<%= @sqs_msg_producer_sqs_url %>"
 CUSTOMER_SUBMIT_SQS_URL = "<%= @sqs_msg_producer_customer_submit_sqs_url %>"
@@ -82,6 +84,7 @@ AKM_KEY = "akm_key"
 MESSAGE_KEY = "message_key"
 NONCE = "nonce"
 DOMAIN_NAME_REGEX_PATTERN = "[a-zA-Z0-9][-a-zA-Z0-9]*(\\.[-a-zA-Z0-9]+)*\\.[a-zA-Z]{2,}"
+EMAIL_ADDRESS_REGEX_PATTERN = "(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))";
 
 # Other constants
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
@@ -102,6 +105,13 @@ ECHOWORX_REPLY_HEADER = "x-echoworx-portal"
 
 awshandler = AwsHandler(AWS_REGION)
 
+#Strip the dot at the end of sender and/or recipients addresses as rfc:1034 mentions to consider ending dot optional
+def strip_dot_at_end(email_address):
+  if email_address.endswith("."):
+    return email_address[:-1]
+  else:
+    return email_address
+
 #postfix pipe sends metadata as sysargs.
 def get_metadata(message_headers):
     try:
@@ -112,7 +122,7 @@ def get_metadata(message_headers):
             exit(EX_TEMPFAIL)
 
         null_sender = sys.argv[1]
-        sender_address = sys.argv[2]
+        sender_address = strip_dot_at_end(sys.argv[2])
         sender_ip = sys.argv[3]
         queue_id = sys.argv[4]
         recipient_domain = sys.argv[5]
@@ -120,7 +130,7 @@ def get_metadata(message_headers):
         date_recorded = datetime.utcnow().strftime(DATETIME_FORMAT)
         recipient_list = [ ]
         for i in range (6,len(sys.argv)):
-            recipient_list.append(sys.argv[i])
+            recipient_list.append(strip_dot_at_end(sys.argv[i]))
 
         if (sender_address == null_sender):
             sender_address = None
@@ -276,7 +286,7 @@ def prepare_msg_history_event(s3_file_path, metadata, sqs_message, direction, se
     try:
         # create a message history event object
         msg_history_event = MessageHistoryEvent(
-            metadata.schema_version,
+            messagehistoryformatter.SCHEMA_VERSION,
             s3_file_path,
             metadata.accepting_server_ip,
             metadata.queue_id,
@@ -357,6 +367,12 @@ def get_plaintext_message():
         plaintext_email_bytes.close()
 
 def get_metadata_for_outbound(metadata, message_headers):
+    effective_sender_value = message_headers['x-sophos-effective-sender']
+    effective_sender_header = 'x-sophos-effective-sender'
+
+    if effective_sender_value is not None:
+        return get_metadata_for_outbound_effective_sender(metadata, effective_sender_header, effective_sender_value)
+
     from_header = message_headers['from']
     if from_header is None:
         raise Exception("Invalid from header in message with queue_id: [{0}]".format(
@@ -385,9 +401,61 @@ def get_metadata_for_outbound(metadata, message_headers):
         metadata.get_date_recorded(),
         metadata.get_recipient_domain(),
         metadata.get_recipients(),
-        metadata.get_x_sophos_emai_id()
+        metadata.get_x_sophos_email_id()
     )
 
+# if get_metadata_for_outbound method finds x-sophos-effective-sender then this method returns the metadata
+def get_metadata_for_outbound_effective_sender(metadata, header, header_value):
+
+    header_sender = get_address_from_header(header_value)
+    is_valid_sender = is_valid_outbound_sender(header_sender, header)
+
+    if is_valid_sender:
+        return Metadata(
+            metadata.get_schema_version(),
+            metadata.get_sender_ip(),
+            header_sender,
+            metadata.get_accepting_server_ip(),
+            metadata.get_queue_id(),
+            metadata.get_date_recorded(),
+            metadata.get_recipient_domain(),
+            metadata.get_recipients(),
+            metadata.get_x_sophos_email_id()
+        )
+
+    raise Exception(
+        "No header sender address could be validated for message with queue id [{0}]".format(
+        metadata.get_queue_id()
+        )
+    )
+
+def is_valid_outbound_sender(header_sender, header_name):
+
+    if header_sender is None or not header_sender:
+      raise Exception("Header {0} cannot be null or empty in outbound".format(header_name))
+
+    header_sender_policy_exists = multipolicyreaderutils.policy_file_exists_in_S3(
+          header_sender.lower(),
+          AWS_REGION, POLICY_S3_BUCKET_NAME
+        )
+
+    return header_sender_policy_exists
+
+# Given an email address header value, such as:
+#
+# "First Last" <first.last@somewhere.com>
+#
+# Uses the Regex pattern we use in Jilter to match and return the email address portion of the header
+def get_address_from_header(header_string):
+    parsed_address = None
+
+    match_object =  re.search(EMAIL_ADDRESS_REGEX_PATTERN, header_string)
+
+    if match_object is None or not match_object:
+        return parsed_address
+
+    parsed_address = match_object.group()
+    return parsed_address
 
 def get_from_sender_domain(metadata):
     try:
@@ -434,9 +502,9 @@ def upload_documents(metadata, compressed_message, s3_file_path, direction):
 
     if should_upload_msg_history(direction):
         upload_msg_history_to_s3(
-          s3_file_path,
-          expires,
-          metadata
+            s3_file_path,
+            expires,
+            metadata
         )
 
 
@@ -465,7 +533,7 @@ def base_policy_flow(metadata, direction, is_reply, domain, sender, message):
         domain
     )
 
-    if direction == OUTBOUND_MESSAGE_DIRECTION and is_reply == True:
+    if (direction == OUTBOUND_MESSAGE_DIRECTION and is_reply == True) or direction == INBOUND_MESSAGE_DIRECTION :
         s3_file_path = tmp_file_path
     else:
         s3_file_path = formatterutils.get_s3_file_path(tmp_file_path, '-ENCR')

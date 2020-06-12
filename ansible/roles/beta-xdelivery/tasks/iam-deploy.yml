@@ -1,0 +1,37 @@
+---
+# CloudEmail IAM Roles for Beta Xdelivery Instances
+- name: "Deploy {{stack.iam.role.cloud_email_beta_xdelivery_roles}} to {{account.name}} {{account.region}}"
+  cloudformation:
+    stack_name:                                 "{{stack.iam.role.cloud_email_beta_xdelivery_roles}}"
+    state:                                      present
+    region:                                     "{{account.region}}"
+    disable_rollback:                           true
+    template:                                   "{{template.iam.role.roles_beta_xdelivery_template}}"
+    template_parameters:
+      Environment:                              "{{account.name}}"
+  register: iam_stack_output
+
+- name: "Print {{stack.iam.role.cloud_email_beta_xdelivery_roles}} CloudFormation Stack Output"
+  debug:
+    var: iam_stack_output
+    verbosity: 3
+
+# IAM Policy for Beta xdelivery Instances to Kinesis Firehose Delivery Stream
+- name: "Deploy Beta EC2 Instances to Kinesis Firehose Log Shipper IAM Policy {{stack.iam.policy.policy_beta_x_publish_to_firehose}} to {{account.name}}-{{account.region}}"
+  cloudformation:
+    stack_name:              "{{stack.iam.policy.policy_beta_x_publish_to_firehose}}"
+    state:                   present
+    region:                  "{{account.region}}"
+    disable_rollback:        true
+    template:                "{{template.iam.policy.policy_publish_to_firehose_template}}"
+    template_parameters:
+      Environment:           "{{account.name}}"
+      FirehoseStreamArn:     "{{kinesis.firehose.arn_prefix}}{{kinesis.firehose.firehose_log_shipper_stream}}"
+      RoleNames:             "{{iam_stack_output.stack_outputs.XgemailBetaXdeliveryInstanceRole}}"
+      PolicyName:            "{{iam.policy.policy_beta_x_publish_to_firehose}}"
+  register: log_shipper_policy_output
+
+- name: "Display Kinesis Firehose Log Shipper IAM Policy Stack Output for Beta X instances"
+  debug:
+    var: log_shipper_policy_output
+    verbosity: 2

@@ -37,11 +37,18 @@ CERT_FILE = "#{LOCAL_CERT_PATH}/#{CERT_NAME}.crt"
 KEY_FILE = "#{LOCAL_KEY_PATH}/#{CERT_NAME}.key"
 
 RECIPIENT_ACCESS_FILENAME = node['xgemail']['recipient_access_filename']
+RECIPIENT_ACCESS_EXTRA_FILENAME = node['xgemail']['recipient_access_extra_filename']
 SOFT_RETRY_SENDERS_MAP_FILENAME = node['xgemail']['soft_retry_senders_map_filename']
 
 SERVER_PEM_FILE = "#{LOCAL_CERT_PATH}/server.pem"
 
 WELCOME_MSG_SENDER = node['xgemail']['welcome_msg_sender']
+
+# mainly used for forwarding VBSpam messages to Sophos Labs
+RECIPIENT_BCC_MAPS_FILE = 'recipient_bcc_maps'
+RECIPIENT_BCC_MAPS_PATH = "/etc/postfix-#{INSTANCE_NAME}/#{RECIPIENT_BCC_MAPS_FILE}"
+TRANSPORT_MAPS_FILE = 'transport'
+TRANSPORT_MAPS_PATH = "/etc/postfix-#{INSTANCE_NAME}/#{TRANSPORT_MAPS_FILE}"
 
 # Domain blacklists
 SXL_DBL = node["xgemail"]["sxl_dbl"]
@@ -159,6 +166,8 @@ if ACCOUNT != 'sandbox'
   GLOBAL_SIGN_ROOT = "#{GLOBAL_SIGN_DIR}/global-sign-root.crt"
 
   # Add xgemail certificate
+  # api-mcs-mob-prod.crt currently includes the intermediate CA cert in it so
+  # GLOBAL_SIGN_INTERMEDIARY is removed from CREATE_SERVER_PEM_COMMAND below.
   remote_file "/etc/ssl/certs/#{CERT_NAME}.crt" do
     source "file:///tmp/sophos/certificates/api-mcs-mob-prod.crt"
     owner 'root'
@@ -176,7 +185,6 @@ if ACCOUNT != 'sandbox'
 
   CREATE_SERVER_PEM_COMMAND = 'cat ' +
     "'#{CERT_FILE}' " +
-    "'#{GLOBAL_SIGN_INTERMEDIARY}' " +
     "'#{GLOBAL_SIGN_ROOT}' " +
     "> '#{SERVER_PEM_FILE}'"
 
@@ -188,6 +196,40 @@ if ACCOUNT != 'sandbox'
   end
 
   execute CREATE_SERVER_PEM_COMMAND
+
+  # Add the recipient BCC config file
+  cookbook_file "#{RECIPIENT_BCC_MAPS_PATH}" do
+    source "#{RECIPIENT_BCC_MAPS_FILE}"
+    mode '0644'
+    owner 'root'
+    group 'root'
+  end
+
+  execute RECIPIENT_BCC_MAPS_PATH do
+    command lazy {
+      print_postmulti_cmd(
+        INSTANCE_NAME,
+        "postmap 'hash:#{RECIPIENT_BCC_MAPS_PATH}'"
+      )
+    }
+  end
+
+  # Add the transport config file
+  cookbook_file "#{TRANSPORT_MAPS_PATH}" do
+    source "#{TRANSPORT_MAPS_FILE}"
+    mode '0644'
+    owner 'root'
+    group 'root'
+  end
+
+  execute TRANSPORT_MAPS_PATH do
+    command lazy {
+      print_postmulti_cmd(
+        INSTANCE_NAME,
+        "postmap 'hash:#{TRANSPORT_MAPS_PATH}'"
+      )
+    }
+  end
 
   [
     "hopcount_limit = #{HOP_COUNT_SUBMIT_INSTANCE}",
@@ -202,6 +244,7 @@ if ACCOUNT != 'sandbox'
     'smtpd_tls_received_header = yes',
     "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
     "smtpd_tls_key_file = #{KEY_FILE}",
+    "tls_preempt_cipherlist = yes",
 
     # Recipient restrictions
     "reject_rbl_client_a = #{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES_A}",
@@ -212,7 +255,8 @@ if ACCOUNT != 'sandbox'
       "reject_rhsbl_sender #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
       "reject_rhsbl_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
       'reject_rbl_client $reject_rbl_client, ' +
-      "check_recipient_access hash:$config_directory/#{RECIPIENT_ACCESS_FILENAME}, " +
+      "check_recipient_access hash:$config_directory/#{RECIPIENT_ACCESS_FILENAME} " +
+      "hash:$config_directory/#{RECIPIENT_ACCESS_EXTRA_FILENAME}, " +
       "check_sender_access hash:$config_directory/#{SOFT_RETRY_SENDERS_MAP_FILENAME}, " +
       'reject',
 
@@ -228,7 +272,9 @@ if ACCOUNT != 'sandbox'
         "check_sender_access hash:$config_directory/#{SOFT_RETRY_SENDERS_MAP_FILENAME}, " +
         'reject',
 
-    "smtpd_authorized_xclient_hosts = #{SMTPD_AUTHORIZED_XCLIENT_HOSTS}"
+    "smtpd_authorized_xclient_hosts = #{SMTPD_AUTHORIZED_XCLIENT_HOSTS}",
+    "recipient_bcc_maps=hash:#{RECIPIENT_BCC_MAPS_PATH}",
+    "transport_maps=hash:#{TRANSPORT_MAPS_PATH}"
   ].each do | cur |
     execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
   end

@@ -72,10 +72,10 @@ class Metadata:
     def set_recipients(self, recipients):
         self.recipients = recipients
 
-    def get_x_sophos_emai_id(self):
+    def get_x_sophos_email_id(self):
         return self.x_sophos_email_id
 
-    def set_x_sophos_emai_id(self, x_sophos_email_id):
+    def set_x_sophos_email_id(self, x_sophos_email_id):
         self.x_sophos_email_id = x_sophos_email_id
 
     def is_microservice_request(self):

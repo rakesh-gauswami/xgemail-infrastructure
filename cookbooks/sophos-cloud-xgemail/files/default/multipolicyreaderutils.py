@@ -33,6 +33,7 @@ EFS_MULTI_POLICY_ENDPOINTS_PATH = EFS_POLICY_STORAGE_PATH + MULTI_POLICY_ENDPOIN
 
 INBOUND_RELAY_CONTROL_PATH = EFS_POLICY_STORAGE_PATH + 'config/inbound-relay-control/'
 OUTBOUND_RELAY_CONTROL_PATH = EFS_POLICY_STORAGE_PATH + 'config/outbound-relay-control/'
+OUTBOUND_RELAY_CONTROL_DOMAIN_PATH = 'config/outbound-relay-control/domains/'
 EFS_MULTI_POLICY_CONFIG_PATH = INBOUND_RELAY_CONTROL_PATH + 'multi-policy/'
 EFS_MULTI_POLICY_CONFIG_FILE = EFS_MULTI_POLICY_CONFIG_PATH + 'global.CONFIG'
 FLAG_TO_READ_POLICY_FROM_S3_FILE = EFS_MULTI_POLICY_CONFIG_PATH + 'msg_producer_read_policy_from_s3_global.CONFIG'
@@ -97,7 +98,7 @@ def outbound_split_by_recipient_enabled(metadata, aws_region, policy_bucket_name
     try:
         # For outbound we need to read sender policy to get customer id
         customer_policy = read_policy(
-            metadata.get_sender_address(),
+            metadata.get_sender_address().lower(),
             aws_region,
             policy_bucket_name,
             get_read_from_s3_enabled()
@@ -250,6 +251,20 @@ def policy_file_exists_in_S3(recipient, aws_region, policy_bucket_name):
         return policy_data is not None
     except (IOError, ClientError):
         logger.warn("File [{0}] does not exist or failed to read".format(file_name))
+        return False
+
+
+def outbound_relay_policy_file_exists_in_S3(recipient, aws_region, policy_bucket_name):
+    file_name = build_recipient_file_path(recipient, OUTBOUND_RELAY_CONTROL_DOMAIN_PATH)
+    if not file_name:
+        return False
+
+    try:
+        awshandler = AwsHandler(aws_region)
+        policy_data = awshandler.download_data_from_s3(policy_bucket_name, file_name)
+        return policy_data is not None
+    except (IOError, ClientError):
+        logger.warn("Outbound relay control mailbox File [{0}] does not exist or failed to read".format(file_name))
         return False
 
 

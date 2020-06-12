@@ -52,7 +52,7 @@ template '/etc/monit.d/delivery.conf' do
   mode '0644'
   owner 'root'
   group 'root'
-  only_if { NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'encryption-delivery' || NODE_TYPE == 'risky-delivery' }
+  only_if { NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'encryption-delivery' || NODE_TYPE == 'risky-delivery' || NODE_TYPE == 'warmup-delivery' || NODE_TYPE == 'beta-delivery' || NODE_TYPE == 'delta-delivery' }
 end
 
 # Restart rsyslog service

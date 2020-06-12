@@ -108,7 +108,29 @@
             "Action": [ "sts:AssumeRole" ]
           }]
         },
-        "Path": "/"
+        "Path": "/",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "CloudWatchSsmAutomationExecutionRole" ] ] }
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          }
+        ]
       }
     },
     "CloudWatchSsmAutomationExecutionRolePolicies": {

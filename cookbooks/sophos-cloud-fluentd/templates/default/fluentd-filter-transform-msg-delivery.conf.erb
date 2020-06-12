@@ -9,7 +9,8 @@
     timestamp ${time.strftime("%Y-%m-%dT%H:%M:%S%z")}
   </record>
 </filter>
-<filter sns.msg.returned>
+
+<filter sqs.msg.returned>
   @type record_transformer
   enable_ruby
   <record>
@@ -22,3 +23,16 @@
     recipient_address null
   </record>
 </filter>
+
+<filter sqs.msg.delivery.**>
+  @type record_transformer
+  enable_ruby
+  <record>
+    server_type <%= @server_type %>
+    server_ip <%= @server_ip %>
+    server_type_xdelivery <%= @server_type_xdelivery %>
+    direction <%= @direction %>
+    timestamp ${time.strftime("%Y-%m-%dT%H:%M:%S%z")}
+  </record>
+</filter>
+

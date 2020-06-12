@@ -16,6 +16,10 @@ XGEMAIL_UTILS_DIR = node['xgemail']['xgemail_utils_files_dir']
 POLICY_FORMATTER = 'policyformatter.py'
 BLOCKED_SENDER_API = 'blocked_sender_api.py'
 TRANSPORT_ROUTE_CONFIG = 'transportrouteconfig.py'
+BULKSENDER_FORMATTER = 'bulksenderformatter.py'
+BULK_SENDER_ACTION = "bulk_sender_action.py"
+DELIVERY_DIRECTOR_FORMATTER = "deliverydirectorthreshold.py"
+TELEMETRY_DATA_FORMATTER = "telemetrydataformatter.py"
 
 [
     XGEMAIL_FILES_DIR,
@@ -40,7 +44,6 @@ end
     'allowblockimporter.py',
     'awshandler.py',
     'configformatter.py',
-    'deliverydirector_config_updater.py',
     'diskutils.py',
     'formatterutils.py',
     'gziputils.py',
@@ -72,6 +75,12 @@ if NODE_TYPE == 'internet-submit' or NODE_TYPE == 'encryption-submit'
     owner 'root'
     group 'root'
   end
+  cookbook_file "#{XGEMAIL_UTILS_DIR}/#{BULK_SENDER_ACTION}" do
+    source 'bulk_sender_action.py'
+    mode '0644'
+    owner 'root'
+    group 'root'
+  end
 elsif NODE_TYPE == 'customer-submit'
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{POLICY_FORMATTER}" do
     source 'policyformatter.py'
@@ -85,10 +94,36 @@ elsif NODE_TYPE == 'customer-submit'
     owner 'root'
     group 'root'
   end
+  cookbook_file "#{XGEMAIL_UTILS_DIR}/#{BULKSENDER_FORMATTER}" do
+    source 'bulksenderformatter.py'
+    mode '0644'
+    owner 'root'
+    group 'root'
+  end
+  cookbook_file "#{XGEMAIL_UTILS_DIR}/#{DELIVERY_DIRECTOR_FORMATTER}" do
+    source 'deliverydirectorthreshold.py'
+    mode '0644'
+    owner 'root'
+    group 'root'
+  end
+  cookbook_file "#{XGEMAIL_UTILS_DIR}/#{BULK_SENDER_ACTION}" do
+    source 'bulk_sender_action.py'
+    mode '0644'
+    owner 'root'
+    group 'root'
+  end
 elsif NODE_TYPE == 'customer-delivery' or NODE_TYPE == 'internet-delivery' or
-       NODE_TYPE == 'risky-delivery' or NODE_TYPE == 'encryption-delivery'
+       NODE_TYPE == 'risky-delivery' or NODE_TYPE == 'encryption-delivery' or
+       NODE_TYPE == 'warmup-delivery' or NODE_TYPE == 'beta-delivery' or
+       NODE_TYPE == 'delta-delivery'
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{TRANSPORT_ROUTE_CONFIG}" do
     source 'transportrouteconfig.py'
+    mode '0644'
+    owner 'root'
+    group 'root'
+  end
+  cookbook_file "#{XGEMAIL_UTILS_DIR}/#{TELEMETRY_DATA_FORMATTER}" do
+    source 'telemetrydataformatter.py'
     mode '0644'
     owner 'root'
     group 'root'
@@ -100,7 +135,10 @@ end
 if NODE_TYPE == 'customer-delivery' or NODE_TYPE == 'internet-delivery' or
     NODE_TYPE == 'xdelivery' or NODE_TYPE == 'internet-xdelivery' or
     NODE_TYPE == 'encryption-delivery' or NODE_TYPE == 'risky-delivery' or
-    NODE_TYPE == 'risky-xdelivery'
+    NODE_TYPE == 'risky-xdelivery' or NODE_TYPE == 'warmup-delivery' or
+    NODE_TYPE == 'warmup-xdelivery' or NODE_TYPE == 'beta-delivery' or
+    NODE_TYPE == 'beta-xdelivery' or NODE_TYPE == 'delta-delivery' or
+    NODE_TYPE == 'delta-xdelivery'
   [
       'postfix_injection_response.py',
       'queue_log.py',
