@@ -22,6 +22,7 @@ DELIVERY_STATUS_SQS           = node['xgemail']['msg_history_delivery_status_sqs
 DELIVERY_STATUS_SNS_TOPIC     = node['xgemail']['msg_history_status_sns_topic']
 SERVER_IP                     = node['ipaddress']
 MAILLOG_FILTER_PATTERNS       = "(\\.#{REGION}\\.compute\\.internal|:\\sdisconnect\\sfrom\\s|\\swarning:\\shostname\\s|:\\sremoved\\s|table\\shash:|sm-msp-queue|:\\sstatistics:\\s)"
+JILTER_FILTER_PATTERNS        = "(com\\.launchdarkly\\.client\\.LDClient|com\\.launchdarkly\\.client\\.LDUser)"
 
 # Configs
 if NODE_TYPE == 'customer-delivery'
@@ -112,10 +113,6 @@ template 'fluentd-source-jilter' do
   mode '0644'
   owner 'root'
   group 'root'
-  variables(
-      :application_name => NODE_TYPE,
-      :patterns_dir => PATTERNS_DIR
-  )
   only_if { NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit' || NODE_TYPE == 'encryption-submit' }
 end
 
@@ -192,7 +189,7 @@ template 'fluentd-source-sqsmsgconsumer' do
           }
 end
 
-# internet-submit and customer-submit - Start Order: 10
+# Submit instances - Start Order: 10
 template '/etc/td-agent.d/10-source-sqsmsgproducer.conf' do
   source 'fluentd-source-sqsmsgproducer.conf.erb'
   mode '0644'
@@ -231,6 +228,21 @@ template 'fluentd-match-maillog' do
   only_if { NODE_TYPE == 'customer-submit' || NODE_TYPE == 'encryption-submit' || NODE_TYPE == 'encryption-delivery' }
 end
 
+# Submit instances - Start Order: 20
+template 'fluentd-match-jilter' do
+  path "#{CONF_DIR}/20-match-jilter.conf"
+  source 'fluentd-match-jilter.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :application_name => NODE_TYPE,
+    :jilter_filter_patterns => JILTER_FILTER_PATTERNS,
+    :region => REGION
+  )
+  only_if { NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit'|| NODE_TYPE == 'encryption-submit' }
+end
+
 # All instances - Start Order: 50
 template 'fluentd-filter-maillog' do
   path "#{CONF_DIR}/50-filter-maillog.conf"
@@ -242,6 +254,20 @@ template 'fluentd-filter-maillog' do
     :application_name => NODE_TYPE,
     :patterns_dir => PATTERNS_DIR
   )
+end
+
+# Submit instances - Start Order: 50
+template 'fluentd-filter-jilter' do
+  path "#{CONF_DIR}/50-filter-jilter.conf"
+  source 'fluentd-filter-jilter.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :application_name => NODE_TYPE,
+    :patterns_dir => PATTERNS_DIR
+  )
+  only_if { NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit'|| NODE_TYPE == 'encryption-submit' }
 end
 
 # Only internet-submit  - Start Order: 60

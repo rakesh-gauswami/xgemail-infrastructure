@@ -1,12 +1,19 @@
+#<source>
+#  @type tail
+#  path /var/log/xgemail/jilter.log
+#  tag sophos.xgemail.<%= @application_name %>.jilter
+#  pos_file /var/log/td-agent/jilter.pos
+#  <parse>
+#    @type grok
+#    custom_pattern_path <%= @patterns_dir %>/jilter
+#    grok_pattern %{JILTERLOG}
+#    grok_failure_key grokfailure
+#  </parse>
+#</source>
+
 <source>
   @type tail
   path /var/log/xgemail/jilter.log
-  tag sophos.xgemail.<%= @application_name %>.jilter
   pos_file /var/log/td-agent/jilter.pos
-  <parse>
-    @type grok
-    custom_pattern_path <%= @patterns_dir %>/jilter
-    grok_pattern %{JILTERLOG}
-    grok_failure_key grokfailure
-  </parse>
+  tag raw.jilter.log
 </source>
