@@ -104,9 +104,9 @@ TLSENFORCEMENTMODULEB TLS enforcement not performed as no policy was found!
 TLSENFORCEMENTMODULEC TLS enforcement applied on sender <%{SENDERADDRESS:sender}>, TLS version is below 1.2, rejecting message
 TLSENFORCEMENTMODULED Invalid TLS version <%{GREEDYDATA:tls_version}>: Expected one of TLSv1/TLSv1.1/TLSv1.2
 #
-CLOUDWATCHEVENTCOUNTER com.sophos.xgemail.jilter.service.impl.CloudWatchEventCounterServiceImpl %{GREEDYDATA:msg}
+CLOUDWATCHEVENTCOUNTER com.sophos.xgemail.jilter.service.impl.CloudWatchEventCounterServiceImpl %{GREEDYDATA:message}
 #
-NOMATCH %{JAVACLASS:logger} %{GREEDYDATA:msg}
+NOMATCH %{JAVACLASS:logger} %{GREEDYDATA:message}
 #
 LOGBASE %{SYSLOGHOST:host} \[%{COMPONENT:process}\] \[%{GREEDYDATA:thread}\] %{LEVEL:level}
 #
