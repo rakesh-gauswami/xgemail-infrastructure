@@ -1,18 +1,9 @@
-#<source>
-#  @type tail
-#  path /var/log/xgemail/jilter.log
-#  tag sophos.xgemail.<%= @application_name %>.jilter
-#  pos_file /var/log/td-agent/jilter.pos
-#  <parse>
-#    @type grok
-#    custom_pattern_path <%= @patterns_dir %>/jilter
-#    grok_pattern %{JILTERLOG}
-#    grok_failure_key grokfailure
-#  </parse>
-#</source>
-
 <source>
   @type tail
+  format /^(?<time>(?:\S+\s+){2}\S+)\s+(?<message>.*)/
+  time_key time
+  keep_time_key true
+  time_format %b %d %H:%M:%S
   path /var/log/xgemail/jilter.log
   pos_file /var/log/td-agent/jilter.pos
   tag raw.jilter.log

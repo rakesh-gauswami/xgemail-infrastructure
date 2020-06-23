@@ -106,14 +106,18 @@ template 'fluentd-source-maillog' do
   group 'root'
 end
 
-# internet-submit and customer-submit - Start Order: 10
+# Submit instances - Start Order: 10
 template 'fluentd-source-jilter' do
   path "#{CONF_DIR}/10-source-jilter.conf"
   source 'fluentd-source-jilter.conf.erb'
   mode '0644'
   owner 'root'
   group 'root'
-  only_if { NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit' || NODE_TYPE == 'encryption-submit' }
+  only_if {
+    NODE_TYPE == 'internet-submit' ||
+    NODE_TYPE == 'customer-submit' ||
+    NODE_TYPE == 'encryption-submit'
+  }
 end
 
 # All instances except extended delivery - Start Order: 10
@@ -126,7 +130,14 @@ template 'fluentd-source-lifecycle' do
   variables(
     :application_name => NODE_TYPE
   )
-  not_if { NODE_TYPE == 'xdelivery' || NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery' || NODE_TYPE == 'warmup-xdelivery' || NODE_TYPE == 'beta-xdelivery' || NODE_TYPE == 'delta-xdelivery' }
+  not_if {
+    NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'internet-xdelivery' ||
+    NODE_TYPE == 'risky-xdelivery' ||
+    NODE_TYPE == 'warmup-xdelivery' ||
+    NODE_TYPE == 'beta-xdelivery' ||
+    NODE_TYPE == 'delta-xdelivery'
+  }
 end
 
 # internet-delivery - Start Order: 10
@@ -139,7 +150,13 @@ end
    variables(
      :application_name => NODE_TYPE
    )
-   only_if { NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'risky-delivery' || NODE_TYPE == 'warmup-delivery' || NODE_TYPE == 'beta-delivery'|| NODE_TYPE == 'delta-delivery' }
+   only_if {
+     NODE_TYPE == 'internet-delivery' ||
+     NODE_TYPE == 'risky-delivery' ||
+     NODE_TYPE == 'warmup-delivery' ||
+     NODE_TYPE == 'beta-delivery'||
+     NODE_TYPE == 'delta-delivery'
+   }
  end
 
 # internet-submit - Start Order: 10
@@ -152,7 +169,9 @@ template 'fluentd-source-multi-policy' do
   variables(
     :application_name => NODE_TYPE
   )
-  only_if { NODE_TYPE == 'internet-submit' }
+  only_if {
+    NODE_TYPE == 'internet-submit'
+  }
 end
 
 # internet-submit and customer-submit - Start Order: 10
@@ -165,7 +184,10 @@ template 'fluentd-source-policy' do
   variables(
     :application_name => NODE_TYPE
   )
-  only_if { NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit' }
+  only_if {
+    NODE_TYPE == 'internet-submit' ||
+    NODE_TYPE == 'customer-submit'
+  }
 end
 
 # All delivery instances - Start Order: 10
@@ -179,18 +201,19 @@ template 'fluentd-source-sqsmsgconsumer' do
     :application_name => NODE_TYPE
   )
   only_if {
-             NODE_TYPE == 'customer-delivery' ||
-             NODE_TYPE == 'internet-delivery' ||
-             NODE_TYPE == 'encryption-delivery' ||
-             NODE_TYPE == 'risky-delivery' ||
-             NODE_TYPE == 'warmup-delivery' ||
-             NODE_TYPE == 'beta-delivery' ||
-             NODE_TYPE == 'delta-delivery'
-          }
+    NODE_TYPE == 'customer-delivery' ||
+    NODE_TYPE == 'internet-delivery' ||
+    NODE_TYPE == 'encryption-delivery' ||
+    NODE_TYPE == 'risky-delivery' ||
+    NODE_TYPE == 'warmup-delivery' ||
+    NODE_TYPE == 'beta-delivery' ||
+    NODE_TYPE == 'delta-delivery'
+  }
 end
 
 # Submit instances - Start Order: 10
-template '/etc/td-agent.d/10-source-sqsmsgproducer.conf' do
+template 'fluentd-source-sqsmsgproducer' do
+  path "#{CONF_DIR}/10-source-sqsmsgproducer.conf"
   source 'fluentd-source-sqsmsgproducer.conf.erb'
   mode '0644'
   owner 'root'
@@ -198,7 +221,11 @@ template '/etc/td-agent.d/10-source-sqsmsgproducer.conf' do
   variables(
     :application_name => NODE_TYPE
   )
-  only_if { NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit'|| NODE_TYPE == 'encryption-submit' }
+  only_if {
+    NODE_TYPE == 'internet-submit' ||
+    NODE_TYPE == 'customer-submit'||
+    NODE_TYPE == 'encryption-submit'
+  }
 end
 
 # All instances - Start Order: 10
@@ -222,10 +249,13 @@ template 'fluentd-match-maillog' do
   group 'root'
   variables(
     :application_name => NODE_TYPE,
-    :maillog_filter_patterns => MAILLOG_FILTER_PATTERNS,
-    :region => REGION
+    :maillog_filter_patterns => MAILLOG_FILTER_PATTERNS
   )
-  only_if { NODE_TYPE == 'customer-submit' || NODE_TYPE == 'encryption-submit' || NODE_TYPE == 'encryption-delivery' }
+  only_if {
+    NODE_TYPE == 'customer-submit' ||
+    NODE_TYPE == 'encryption-submit' ||
+    NODE_TYPE == 'encryption-delivery'
+  }
 end
 
 # Submit instances - Start Order: 20
@@ -237,10 +267,13 @@ template 'fluentd-match-jilter' do
   group 'root'
   variables(
     :application_name => NODE_TYPE,
-    :jilter_filter_patterns => JILTER_FILTER_PATTERNS,
-    :region => REGION
+    :jilter_filter_patterns => JILTER_FILTER_PATTERNS
   )
-  only_if { NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit'|| NODE_TYPE == 'encryption-submit' }
+  only_if {
+    NODE_TYPE == 'internet-submit' ||
+    NODE_TYPE == 'customer-submit'||
+    NODE_TYPE == 'encryption-submit'
+  }
 end
 
 # All instances - Start Order: 50
@@ -267,7 +300,11 @@ template 'fluentd-filter-jilter' do
     :application_name => NODE_TYPE,
     :patterns_dir => PATTERNS_DIR
   )
-  only_if { NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit'|| NODE_TYPE == 'encryption-submit' }
+  only_if {
+    NODE_TYPE == 'internet-submit' ||
+    NODE_TYPE == 'customer-submit'||
+    NODE_TYPE == 'encryption-submit'
+  }
 end
 
 # Only internet-submit  - Start Order: 60
@@ -282,12 +319,14 @@ template 'fluentd-match-msg-stats-reject' do
     :maillog_filter_patterns => MAILLOG_FILTER_PATTERNS,
     :region => REGION
   )
-  only_if { NODE_TYPE == 'internet-submit' }
+  only_if {
+    NODE_TYPE == 'internet-submit'
+  }
 end
 
-#  - Start Order: 65
+#  - Start Order: 60
 template 'fluentd-match-msg-delivery' do
-  path "#{CONF_DIR}/65-match-msg-delivery.conf"
+  path "#{CONF_DIR}/60-match-msg-delivery.conf"
   source 'fluentd-match-msg-delivery.conf.erb'
   mode '0644'
   owner 'root'
@@ -297,21 +336,20 @@ template 'fluentd-match-msg-delivery' do
     :maillog_filter_patterns => MAILLOG_FILTER_PATTERNS,
     :region => REGION
   )
- only_if {
-            NODE_TYPE == 'customer-delivery' ||
-            NODE_TYPE == 'xdelivery' ||
-            NODE_TYPE == 'internet-delivery' ||
-            NODE_TYPE == 'internet-xdelivery' ||
-            NODE_TYPE == 'risky-delivery' ||
-            NODE_TYPE == 'risky-xdelivery' ||
-            NODE_TYPE == 'warmup-delivery' ||
-            NODE_TYPE == 'warmup-xdelivery' ||
-            NODE_TYPE == 'beta-delivery' ||
-            NODE_TYPE == 'beta-xdelivery' ||
-            NODE_TYPE == 'delta-delivery' ||
-            NODE_TYPE == 'delta-xdelivery'
-         }
-
+  only_if {
+    NODE_TYPE == 'customer-delivery' ||
+    NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'internet-delivery' ||
+    NODE_TYPE == 'internet-xdelivery' ||
+    NODE_TYPE == 'risky-delivery' ||
+    NODE_TYPE == 'risky-xdelivery' ||
+    NODE_TYPE == 'warmup-delivery' ||
+    NODE_TYPE == 'warmup-xdelivery' ||
+    NODE_TYPE == 'beta-delivery' ||
+    NODE_TYPE == 'beta-xdelivery' ||
+    NODE_TYPE == 'delta-delivery' ||
+    NODE_TYPE == 'delta-xdelivery'
+  }
 end
 
 #  Start Order: 70
@@ -323,19 +361,19 @@ template 'fluentd-filter-msg-delivery' do
   owner 'root'
   group 'root'
   only_if {
-            NODE_TYPE == 'customer-delivery' ||
-            NODE_TYPE == 'xdelivery' ||
-            NODE_TYPE == 'internet-delivery' ||
-            NODE_TYPE == 'internet-xdelivery' ||
-            NODE_TYPE == 'risky-delivery' ||
-            NODE_TYPE == 'risky-xdelivery' ||
-            NODE_TYPE == 'warmup-delivery' ||
-            NODE_TYPE == 'warmup-xdelivery' ||
-            NODE_TYPE == 'beta-delivery' ||
-            NODE_TYPE == 'beta-xdelivery' ||
-            NODE_TYPE == 'delta-delivery' ||
-            NODE_TYPE == 'delta-xdelivery'
-         }
+    NODE_TYPE == 'customer-delivery' ||
+    NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'internet-delivery' ||
+    NODE_TYPE == 'internet-xdelivery' ||
+    NODE_TYPE == 'risky-delivery' ||
+    NODE_TYPE == 'risky-xdelivery' ||
+    NODE_TYPE == 'warmup-delivery' ||
+    NODE_TYPE == 'warmup-xdelivery' ||
+    NODE_TYPE == 'beta-delivery' ||
+    NODE_TYPE == 'beta-xdelivery' ||
+    NODE_TYPE == 'delta-delivery' ||
+    NODE_TYPE == 'delta-xdelivery'
+  }
   end
 
 # Only internet-submit  - Start Order: 70
@@ -345,7 +383,9 @@ template 'fluentd-filter-msg-stats-reject' do
   mode '0644'
   owner 'root'
   group 'root'
-  only_if { NODE_TYPE == 'internet-submit' }
+  only_if {
+    NODE_TYPE == 'internet-submit'
+  }
 end
 
 # All instances - Start Order: 70
@@ -377,20 +417,20 @@ template 'fluentd-filter-transform-msg-delivery' do
     :direction => DIRECTION,
     :non_delivery_dsn => NON_DELIVERY_DSN
   )
- only_if {
-            NODE_TYPE == 'customer-delivery' ||
-            NODE_TYPE == 'xdelivery' ||
-            NODE_TYPE == 'internet-delivery' ||
-            NODE_TYPE == 'internet-xdelivery' ||
-            NODE_TYPE == 'risky-delivery' ||
-            NODE_TYPE == 'risky-xdelivery' ||
-            NODE_TYPE == 'warmup-delivery' ||
-            NODE_TYPE == 'warmup-xdelivery'||
-            NODE_TYPE == 'beta-delivery' ||
-            NODE_TYPE == 'beta-xdelivery' ||
-            NODE_TYPE == 'delta-delivery' ||
-            NODE_TYPE == 'delta-xdelivery'
-         }
+  only_if {
+    NODE_TYPE == 'customer-delivery' ||
+    NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'internet-delivery' ||
+    NODE_TYPE == 'internet-xdelivery' ||
+    NODE_TYPE == 'risky-delivery' ||
+    NODE_TYPE == 'risky-xdelivery' ||
+    NODE_TYPE == 'warmup-delivery' ||
+    NODE_TYPE == 'warmup-xdelivery'||
+    NODE_TYPE == 'beta-delivery' ||
+    NODE_TYPE == 'beta-xdelivery' ||
+    NODE_TYPE == 'delta-delivery' ||
+    NODE_TYPE == 'delta-xdelivery'
+  }
 end
 
 # Start Order: 77
@@ -404,18 +444,18 @@ template 'fluentd-filter-transform-sqs-msg' do
       :main_dir => MAIN_DIR
   )
   only_if {
-        NODE_TYPE == 'customer-delivery' ||
-        NODE_TYPE == 'xdelivery' ||
-        NODE_TYPE == 'internet-delivery' ||
-        NODE_TYPE == 'internet-xdelivery' ||
-        NODE_TYPE == 'risky-delivery' ||
-        NODE_TYPE == 'risky-xdelivery' ||
-        NODE_TYPE == 'warmup-delivery' ||
-        NODE_TYPE == 'warmup-xdelivery'||
-        NODE_TYPE == 'beta-delivery' ||
-        NODE_TYPE == 'beta-xdelivery' ||
-        NODE_TYPE == 'delta-delivery' ||
-        NODE_TYPE == 'delta-xdelivery'
+    NODE_TYPE == 'customer-delivery' ||
+    NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'internet-delivery' ||
+    NODE_TYPE == 'internet-xdelivery' ||
+    NODE_TYPE == 'risky-delivery' ||
+    NODE_TYPE == 'risky-xdelivery' ||
+    NODE_TYPE == 'warmup-delivery' ||
+    NODE_TYPE == 'warmup-xdelivery'||
+    NODE_TYPE == 'beta-delivery' ||
+    NODE_TYPE == 'beta-xdelivery' ||
+    NODE_TYPE == 'delta-delivery' ||
+    NODE_TYPE == 'delta-xdelivery'
   }
 end
 
@@ -432,20 +472,20 @@ template 'fluentd-match-sns-msg-delivery' do
     :region => REGION,
     :sns_topic => DELIVERY_STATUS_SNS_TOPIC
   )
- only_if {
-            NODE_TYPE == 'customer-delivery' ||
-            NODE_TYPE == 'xdelivery' ||
-            NODE_TYPE == 'internet-delivery' ||
-            NODE_TYPE == 'internet-xdelivery' ||
-            NODE_TYPE == 'risky-delivery' ||
-            NODE_TYPE == 'risky-xdelivery' ||
-            NODE_TYPE == 'warmup-delivery' ||
-            NODE_TYPE == 'warmup-xdelivery' ||
-            NODE_TYPE == 'beta-delivery' ||
-            NODE_TYPE == 'beta-xdelivery' ||
-            NODE_TYPE == 'delta-delivery' ||
-            NODE_TYPE == 'delta-xdelivery'
-         }
+  only_if {
+    NODE_TYPE == 'customer-delivery' ||
+    NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'internet-delivery' ||
+    NODE_TYPE == 'internet-xdelivery' ||
+    NODE_TYPE == 'risky-delivery' ||
+    NODE_TYPE == 'risky-xdelivery' ||
+    NODE_TYPE == 'warmup-delivery' ||
+    NODE_TYPE == 'warmup-xdelivery' ||
+    NODE_TYPE == 'beta-delivery' ||
+    NODE_TYPE == 'beta-xdelivery' ||
+    NODE_TYPE == 'delta-delivery' ||
+    NODE_TYPE == 'delta-xdelivery'
+  }
 end
 
 # Message delivery status on all delivery and x delivery servers
@@ -461,18 +501,18 @@ template 'fluentd-match-sqs-msg-delivery' do
       :delivery_status_queue => DELIVERY_STATUS_SQS
   )
   only_if {
-        NODE_TYPE == 'customer-delivery' ||
-        NODE_TYPE == 'xdelivery' ||
-        NODE_TYPE == 'internet-delivery' ||
-        NODE_TYPE == 'internet-xdelivery' ||
-        NODE_TYPE == 'risky-delivery' ||
-        NODE_TYPE == 'risky-xdelivery' ||
-        NODE_TYPE == 'warmup-delivery' ||
-        NODE_TYPE == 'warmup-xdelivery' ||
-        NODE_TYPE == 'beta-delivery' ||
-        NODE_TYPE == 'beta-xdelivery' ||
-        NODE_TYPE == 'delta-delivery' ||
-        NODE_TYPE == 'delta-xdelivery'
+    NODE_TYPE == 'customer-delivery' ||
+    NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'internet-delivery' ||
+    NODE_TYPE == 'internet-xdelivery' ||
+    NODE_TYPE == 'risky-delivery' ||
+    NODE_TYPE == 'risky-xdelivery' ||
+    NODE_TYPE == 'warmup-delivery' ||
+    NODE_TYPE == 'warmup-xdelivery' ||
+    NODE_TYPE == 'beta-delivery' ||
+    NODE_TYPE == 'beta-xdelivery' ||
+    NODE_TYPE == 'delta-delivery' ||
+    NODE_TYPE == 'delta-xdelivery'
   }
 end
 
@@ -500,7 +540,9 @@ template 'fluentd-match-sns-msg-stats-reject' do
     :region => REGION,
     :sns_topic => MSG_STATS_REJECT_SNS_TOPIC
   )
-  only_if { NODE_TYPE == 'internet-submit' }
+  only_if {
+    NODE_TYPE == 'internet-submit'
+  }
 end
 
 cookbook_file 'postfix grok patterns' do
