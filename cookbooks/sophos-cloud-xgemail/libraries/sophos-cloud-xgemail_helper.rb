@@ -103,9 +103,11 @@ module SophosCloudXgemail
       region = node['sophos_cloud']['region']
       account = node['sophos_cloud']['environment']
       case type
-        when 'customer-submit', 'customer-delivery', 'customer-xdelivery'
+        when 'customer-submit'
           return "relay-#{region}.#{account}.hydra.sophos.com"
-        when 'encryption-submit', 'encryption-delivery'
+        when 'encryption-delivery'
+          return "encryption-#{region}.#{account}.hydra.sophos.com"
+        when 'encryption-submit'
           return "encryption-#{region}.#{account}.hydra.sophos.com"
         when 'internet-submit', 'internet-delivery', 'internet-xdelivery', 'risky-delivery', 'risky-xdelivery', 'warmup-delivery', 'warmup-xdelivery', 'beta-delivery', 'beta-xdelivery', 'delta-delivery', 'delta-xdelivery'
           return "mx-01-#{region}.#{account}.hydra.sophos.com"
