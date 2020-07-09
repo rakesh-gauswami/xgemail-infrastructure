@@ -102,14 +102,15 @@ def initial_eip(instance):
 
 
 def rotate_eip(instance, current_eip, new_eip):
+    hostname = socket.gethostbyaddr(new_eip['PublicIp'])[0]
     if postfix_service(instance_id=instance.id, cmd='stop'):
         if disassociate_address(eip=current_eip):
             if associate_address(allocation_id=new_eip['AllocationId'], instance_id=instance.id):
-                if postfix_service(instance_id=instance.id, cmd='start'):
+                if update_hostname(instance_id=instance.id, hostname=hostname):
                     logger.info("Successfully rotated EIP on Instance: {}.".format(instance.id))
                     return True
                 else:
-                    logger.error("Unable to start Postfix Service on Instance: {}.".format(instance.id))
+                    logger.error("Unable to Update Hostname on Instance: {}.".format(instance.id))
                     return False
             else:
                 logger.error("There was a problem with EIP association for Instance: {}.".format(instance.id))
@@ -293,17 +294,6 @@ def postfix_service(instance_id, cmd):
         return False
     else:
         return command_invocation_waiter(command_id=ssmresponse['Command']['CommandId'], instance_id=instance_id)
-        # ssm_status = ssmresponse['Command']['Status']
-        # if ssm_status == 'Success':
-        #     return True
-        # while ssm_status == 'Pending' or ssm_status == 'InProgress':
-        #     time.sleep(3)
-        #     ssm_status = ssm.list_commands(
-        #         CommandId=ssmresponse['Command']['CommandId']
-        #     )['Commands'][0]['Status']
-        # if ssm_status != 'Success':
-        #     return False
-        # return True
 
 
 def update_hostname(instance_id, hostname):
@@ -322,17 +312,6 @@ def update_hostname(instance_id, hostname):
         return False
     else:
         return command_invocation_waiter(command_id=ssmresponse['Command']['CommandId'], instance_id=instance_id)
-        # ssm_status = ssmresponse['Command']['Status']
-        # if ssm_status == 'Success':
-        #     return True
-        # while ssm_status == 'Pending' or ssm_status == 'InProgress':
-        #     time.sleep(3)
-        #     ssm_status = ssm.list_commands(
-        #         CommandId=ssmresponse['Command']['CommandId']
-        #     )['Commands'][0]['Status']
-        # if ssm_status != 'Success':
-        #     return False
-        # return True
 
 
 def add_tags_dict(addresses):
@@ -459,4 +438,3 @@ def complete_lifecycle_action(autoscaling_group_name, lifecycle_hook_name, lifec
         return False
     else:
         return True
-
