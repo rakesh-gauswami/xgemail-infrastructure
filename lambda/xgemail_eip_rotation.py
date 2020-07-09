@@ -18,7 +18,9 @@ import time
 import os
 import socket
 from datetime import datetime, timedelta
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError, WaiterError
+from botocore.waiter import WaiterModel
+from botocore.waiter import create_waiter_with_client
 
 
 print('Loading function')
@@ -87,11 +89,15 @@ def initial_eip(instance):
     If triggered via Lifecycle Hook then just assign an EIP.
     """
     new_eip = get_clean_eip(instance)
-    if associate_address(allocation_id=new_eip['AllocationId'], instance_id=instance.id):
-        logger.info("===FINISHED=== Attaching initial EIP on Instance: {}.".format(instance.id))
-        return True
+    if new_eip is not None:
+        if associate_address(allocation_id=new_eip['AllocationId'], instance_id=instance.id):
+            logger.info("===FINISHED=== Attaching initial EIP on Instance: {}.".format(instance.id))
+            return True
+        else:
+            logger.error("Unable to attach EIP to Instance: {}.".format(instance.id))
+            return False
     else:
-        logger.error("Unable to attach EIP to Instance: {}.".format(instance.id))
+        logger.error("Unable to obtain EIP for Instance: {}.".format(instance.id))
         return False
 
 
@@ -103,9 +109,15 @@ def rotate_eip(instance, current_eip, new_eip):
                 if update_hostname(instance_id=instance.id, hostname=hostname):
                     logger.info("Successfully rotated EIP on Instance: {}.".format(instance.id))
                     return True
+                else:
+                    logger.error("Unable to Update Hostname on Instance: {}.".format(instance.id))
+                    return False
+            else:
+                logger.error("There was a problem with EIP association for Instance: {}.".format(instance.id))
+                return False
         else:
             postfix_service(instance_id=instance.id, cmd='start')
-            logger.error("There was a problem with EIP rotation for Instance: {}.".format(instance.id))
+            logger.error("There was a problem with EIP disassociation for Instance: {}.".format(instance.id))
             return False
     else:
         logger.error("Unable to stop Postfix Service on Instance: {}.".format(instance.id))
@@ -176,6 +188,96 @@ def get_instances_by_name():
     return instances
 
 
+def command_invocation_waiter(command_id, instance_id):
+    """
+    SSM Command Invocation Waiter.
+    """
+    delay = 5
+    max_attempts = 20
+    waiter_name = 'CommandComplete'
+
+    waiter_config = {
+          "version": 2,
+          "waiters": {
+              waiter_name: {
+                  "operation": "GetCommandInvocation",
+                  "maxAttempts": max_attempts,
+                  "delay": delay,
+                  "acceptors": [
+                      {
+                          "state": "retry",
+                          "matcher": "path",
+                          "argument": "Status",
+                          "expected": "Pending"
+                      },
+                      {
+                          "state": "retry",
+                          "matcher": "path",
+                          "argument": "Status",
+                          "expected": "InProgress"
+                      },
+                      {
+                          "state": "retry",
+                          "matcher": "path",
+                          "argument": "Status",
+                          "expected": "Delayed"
+                      },
+                      {
+                          "state": "success",
+                          "matcher": "path",
+                          "argument": "Status",
+                          "expected": "Success"
+                      },
+                      {
+                          "state": "failure",
+                          "matcher": "path",
+                          "argument": "Status",
+                          "expected": "Cancelled"
+                      },
+                      {
+                          "state": "failure",
+                          "matcher": "path",
+                          "argument": "Status",
+                          "expected": "TimedOut"
+                      },
+                      {
+                          "state": "failure",
+                          "matcher": "path",
+                          "argument": "Status",
+                          "expected": "Failed"
+                      },
+                      {
+                          "state": "retry",
+                          "matcher": "path",
+                          "argument": "Status",
+                          "expected": "Cancelling"
+                      },
+                      {
+                          "state": "retry",
+                          "matcher": "error",
+                          "expected": "InvocationDoesNotExist"
+                      }
+                  ]
+              }
+          }
+    }
+
+    waiter_model = WaiterModel(waiter_config)
+    custom_waiter = create_waiter_with_client(waiter_name, waiter_model, ssm)
+
+    try:
+        custom_waiter.wait(CommandId=command_id, InstanceId=instance_id)
+
+    except WaiterError as we:
+        if "Max Attempts Exceeded" in we.message:
+            logger.exception("Timeout")
+        else:
+            logger.exception(we.message)
+        return False
+    else:
+        return True
+
+
 def postfix_service(instance_id, cmd):
     """
     Run SSM Command to Start or Stop the Postfix Service.
@@ -191,17 +293,7 @@ def postfix_service(instance_id, cmd):
         logger.exception("Unable to send SSM command. {}".format(e))
         return False
     else:
-        ssm_status = ssmresponse['Command']['Status']
-        if ssm_status == 'Success':
-            return True
-        while ssm_status == 'Pending' or ssm_status == 'InProgress':
-            time.sleep(3)
-            ssm_status = ssm.list_commands(
-                CommandId=ssmresponse['Command']['CommandId']
-            )['Commands'][0]['Status']
-        if ssm_status != 'Success':
-            return False
-        return True
+        return command_invocation_waiter(command_id=ssmresponse['Command']['CommandId'], instance_id=instance_id)
 
 
 def update_hostname(instance_id, hostname):
@@ -219,17 +311,7 @@ def update_hostname(instance_id, hostname):
         logger.exception("Unable to send SSM command. {}".format(e))
         return False
     else:
-        ssm_status = ssmresponse['Command']['Status']
-        if ssm_status == 'Success':
-            return True
-        while ssm_status == 'Pending' or ssm_status == 'InProgress':
-            time.sleep(3)
-            ssm_status = ssm.list_commands(
-                CommandId=ssmresponse['Command']['CommandId']
-            )['Commands'][0]['Status']
-        if ssm_status != 'Success':
-            return False
-        return True
+        return command_invocation_waiter(command_id=ssmresponse['Command']['CommandId'], instance_id=instance_id)
 
 
 def add_tags_dict(addresses):
@@ -278,19 +360,22 @@ def get_clean_eip(instance):
         logger.exception("Unable to describe addresses. {}".format(e))
         return None
 
-    add_tags_dict(addresses)
-    addresses.sort(key=lambda address: (
-        int(address['TagsDict']['blacklist']),
-        address['TagsDict']['snds_score'],
-        address['TagsDict']['talos_score'],
-        -float(address['TagsDict']['last_month_volume']),
-        -float(address['TagsDict']['last_day_volume']),
-        address['TagsDict']['detached']
+    if addresses is not None:
+        add_tags_dict(addresses)
+        addresses.sort(key=lambda address: (
+            int(address['TagsDict']['blacklist']),
+            address['TagsDict']['snds_score'],
+            address['TagsDict']['talos_score'],
+            -float(address['TagsDict']['last_month_volume']),
+            -float(address['TagsDict']['last_day_volume']),
+            address['TagsDict']['detached']
+            )
         )
-    )
-    for address in addresses:
-        if 'AssociationId' not in address:
-            return address
+        for address in addresses:
+            if 'AssociationId' not in address:
+                return address
+    else:
+        return None
 
 
 def associate_address(allocation_id, instance_id):
