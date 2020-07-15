@@ -29,4 +29,4 @@ default['fluentd']['tdagent_version']         = '3.3.0-1.amazon2018.03'
 default['fluentd']['main_dir']                = '/etc/td-agent'
 default['fluentd']['conf_dir']                = '/etc/td-agent.d'
 default['fluentd']['patterns_dir']            = "#{node['fluentd']['main_dir']}/patterns"
-default['fluentd']['sqs_delivery_delay']      = 60
+default['fluentd']['sqs_delivery_delay']      = 240
