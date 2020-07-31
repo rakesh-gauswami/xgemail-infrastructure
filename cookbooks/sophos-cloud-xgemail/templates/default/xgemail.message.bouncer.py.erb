@@ -9,6 +9,7 @@
 import sys
 sys.path.append("<%= @utils_dir %>")
 import email
+from email.header import decode_header
 import json
 import re
 import string
@@ -107,10 +108,12 @@ def main():
                 payload = part.get_payload()
                 args = payload.split("\n")
                 for arg in args:
-                    arg = arg.lower()
-                    if 'subject:' in arg:
+                    header_key = arg.split(':', 1)[0].strip().lower();
+                    if header_key.startswith('subject:'):
                         subject = arg.split(':', 1)[1].strip()
-                    if 'return-path:' in arg:
+                        logger.log("raw subject: {0}".format(subject))
+                        subject, encoding = decode_header(subject)[0]
+                    if header_key.startswith('return-path:'):
                         original_sender = format_sender(arg.split(':', 1)[1].strip())
                         original_sender.encode("utf-8")
             # Format is -  <recipient> : host <hostname> said: <status code> <failure_reason>
