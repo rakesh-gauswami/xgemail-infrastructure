@@ -111,7 +111,6 @@ def main():
                     header_key = arg.split(':', 1)[0].strip().lower();
                     if header_key.startswith('subject:'):
                         subject = arg.split(':', 1)[1].strip()
-                        logger.log("raw subject: {0}".format(subject))
                         subject, encoding = decode_header(subject)[0]
                     if header_key.startswith('return-path:'):
                         original_sender = format_sender(arg.split(':', 1)[1].strip())
