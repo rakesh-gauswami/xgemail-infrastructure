@@ -53,6 +53,7 @@ class Terminator(object):
         self.sns_policy_arn = "<%= @sns_policy_arn %>"
         self.sqs_policy_queue_name = "<%= @sqs_policy_queue_name %>"
         self.postfix_queue_count = None
+        self.postfix_queue_flushed = False
 
         # Create EC2 Resource
         self.ec2 = boto3.resource('ec2', region_name=self.aws_region)
@@ -169,7 +170,6 @@ class Terminator(object):
         messages = 0
 
         for q in subdirs:
-            # TODO: replace static storage path with new asg volume when XGE-1807 is pulled in
             path = ("/storage/{}/{}".format(self.postfix_instance, q))
             for root, dirs, files in os.walk(path):
                 messages += len(files)
@@ -214,21 +214,23 @@ class Terminator(object):
                         continue
 
                     elif self.postfix_queue_count >= last_count:
-                        self.logger.warning("Email queue doesn't seem to be draining. Flushing queue and waiting 30 seconds before checking again.")
-                        # Attempt to flush postfix queue then wait for drop
-                        self.run_cmd(['/usr/sbin/postmulti', '-i', self.postfix_instance, '-x', 'postqueue', '-f'])
-                        sleep(30)
+                      self.logger.warning("Email queue doesn't seem to be draining.")
+                      if self.postfix_queue_flushed is False:
+                          self.logger.info("Flushing queue")
+                          self.run_cmd(['/usr/sbin/postmulti', '-i', self.postfix_instance, '-x', 'postqueue', '-f'])
+                          self.postfix_queue_flushed = True
+                      self.logger.info("Waiting 30 seconds before checking again.")
+                      sleep(30)
 
-                        self.postfix_queue_count = self.check_postfix_queue()
+                      self.postfix_queue_count = self.check_postfix_queue()
 
-                        if self.postfix_queue_count < last_count:
-                            self.logger.info("Email queue is draining. Continuing with regular check.")
-                            continue
+                      if self.postfix_queue_count < last_count:
+                          self.logger.info("Email queue is draining. Continuing with regular check.")
+                          continue
 
-                        elif self.postfix_queue_count >= last_count:
-                            error_message = "CRITICAL! *** {} *** Undelivered messages are stuck in the email queue.".format(self.postfix_queue_count)
-                            self.logger.critical(error_message)
-                            return self.postfix_queue_count
+                      elif self.postfix_queue_count >= last_count:
+                          self.logger.warning("Email queue is still not empty. Continuing with regular check.")
+                          continue
 
                 if self.postfix_queue_count == 0:
                     break
@@ -240,7 +242,8 @@ class Terminator(object):
                 self.logger.info("The Postfix queue is empty.")
                 return self.postfix_queue_count
 
-            self.logger.critical("LIFECYCLE HOOK EXHAUSTED!")
+            error_message = "LIFECYCLE HOOK EXHAUSTED! *** {} *** Undelivered messages are stuck in the email queue.".format(self.postfix_queue_count)
+            self.logger.critical(error_message)
             return self.postfix_queue_count
 
     def sqs_sns_cleanup(self):
