@@ -111,7 +111,11 @@ def main():
                     header_key = arg.split(':', 1)[0].strip().lower();
                     if header_key.startswith('subject:'):
                         subject = arg.split(':', 1)[1].strip()
-                        subject, encoding = decode_header(subject)[0]
+                        try:
+                            subject, encoding = decode_header(subject)[0]
+                        except email.errors.HeaderParseError:
+                            logger.warn("Failed to decode subject = {0}".format(subject) )
+                            subject = arg.split(':', 1)[1].strip()
                     if header_key.startswith('return-path:'):
                         original_sender = format_sender(arg.split(':', 1)[1].strip())
                         original_sender.encode("utf-8")
