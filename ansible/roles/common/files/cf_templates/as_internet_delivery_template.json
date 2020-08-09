@@ -965,7 +965,7 @@
 
               "# Create Volume Tagging. \n",
               "export AWS_INSTANCE_ID=$(curl -f http://169.254.169.254/latest/meta-data/instance-id)\n",
-              "id=$(aws ec2 describe-volumes --region us-east-1 --filters Name=attachment.instance-id,Values=${AWS_INSTANCE_ID} --query Volumes[*].VolumeId --output text) \n",
+              "export id=$(aws ec2 describe-volumes --region us-east-1 --filters Name=attachment.instance-id,Values=${AWS_INSTANCE_ID} --query Volumes[*].VolumeId --output text) \n",
               "echo $id \n"
               ]
             ]
