@@ -968,7 +968,7 @@
               "#!/bin/bash -xe\n",
               "export AWS_INSTANCE_ID=$(curl -f http://169.254.169.254/latest/meta-data/instance-id)\n",
               "export AWS_STACK_NAME='", { "Ref": "AWS::StackName" }, "'\n",
-              "export AWS_REGION=$({ \"Ref\" : \"AWS::Region\" }) \n",
+              "export AWS_REGION=$\"({ \"Ref\" : \"AWS::Region\" }\") \n",
               "echo #!/bin/bash > /tmp/get_volume_id.sh \n",
               "echo AWS_INSTANCE_ID=$AWS_INSTANCE_ID >> /tmp/get_volume_id.sh \n",
               "echo AWS_STACK_NAME=$AWS_STACK_NAME >> /tmp/get_volume_id.sh \n",
