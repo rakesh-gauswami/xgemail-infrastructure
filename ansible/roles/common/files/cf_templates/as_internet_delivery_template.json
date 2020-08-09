@@ -665,8 +665,8 @@
                       "#echo AWS_INSTANCE_ID=$AWS_INSTANCE_ID >> /tmp/get_volume_id.sh \n",
                       "#echo AWS_STACK_NAME=$AWS_STACK_NAME >> /tmp/get_volume_id.sh \n",
                       "#echo AWS_REGION=$AWS_REGION >> /tmp/get_volume_id.sh \n",
-                      "echo 'for i in $(aws ec2 describe-volumes --region { \"Ref\" : \"AWS::Region\" } --filters Name=attachment.instance-id,Values=$AWS_INSTANCE_ID --query Volumes[*].VolumeId --output text); do echo $i; done > /tmp/get_volume_id.txt' >> /tmp/get_volume_id.sh \n",
-                      "echo 'while read id; do aws ec2 create-tags --resources $id --tags Key=Name,Value={\"Ref\" : \"AWS::StackName\"}, Key=OwnerEmail,Value=sophosmailops@sophos.com --region { \"Ref\" : \"AWS::Region\" }; done < /tmp/get_volume_id.txt' >> /tmp/get_volume_id.sh \n"
+                      "echo 'for i in $(aws ec2 describe-volumes --region $AWS_REGION --filters Name=attachment.instance-id,Values=$AWS_INSTANCE_ID --query Volumes[*].VolumeId --output text); do echo $i; done > /tmp/get_volume_id.txt' >> /tmp/get_volume_id.sh \n",
+                      "echo 'while read id; do aws ec2 create-tags --resources $id --tags Key=Name,Value=$AWS_STACK_NAME, Key=OwnerEmail,Value=sophosmailops@sophos.com --region $AWS_REGION; done < /tmp/get_volume_id.txt' >> /tmp/get_volume_id.sh \n"
                     ]
                   ]
                 },
