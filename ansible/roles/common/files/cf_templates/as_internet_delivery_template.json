@@ -965,30 +965,30 @@
 
               "# Create Volume Tagging. \n",
               "export AWS_INSTANCE_ID=$(curl -f http://169.254.169.254/latest/meta-data/instance-id)\n",
-              "ROOT_DISK_ID=$(/usr/local/bin/aws ec2 describe-volumes  --region ",{ "Ref" : "AWS::Region" },
+              "ROOT_DISK_ID=$(aws ec2 describe-volumes  --region ",{ "Ref" : "AWS::Region" },
               " --filters Name=attachment.instance-id,Values=${AWS_INSTANCE_ID} Name=attachment.device,Values=/dev/xvda",
               " --query Volumes[*].VolumeId --output text)\n",
-              "/usr/local/bin/aws ec2 create-tags --resources \"${ROOT_DISK_ID}\" --tags Key=Name,Value=",{"Ref" : "AWS::StackName"},"-root --region ",{ "Ref" : "AWS::Region" }," Key=BusinessUnit,Value=MSG Key=Project,Value=reflexion Key=Application,Value=reflexion-rtc Key=OwnerEmail,Value=reflexion-devs@sophos.com \n",
+              "aws ec2 create-tags --resources \"${ROOT_DISK_ID}\" --tags Key=Name,Value=",{"Ref" : "AWS::StackName"},"-root --region ",{ "Ref" : "AWS::Region" }," Key=BusinessUnit,Value=MSG Key=Project,Value=reflexion Key=Application,Value=reflexion-rtc Key=OwnerEmail,Value=reflexion-devs@sophos.com \n",
 
-              "SECONDARY_DISK_XVDF_ID=$(/usr/local/bin/aws ec2 describe-volumes  --region ",{ "Ref" : "AWS::Region" },
+              "SECONDARY_DISK_XVDF_ID=$(aws ec2 describe-volumes  --region ",{ "Ref" : "AWS::Region" },
               " --filters Name=attachment.instance-id,Values=${AWS_INSTANCE_ID} Name=attachment.device,Values=/dev/xvdf",
               " --query Volumes[*].VolumeId --output text)\n",
-              "/usr/local/bin/aws ec2 create-tags --resources \"${SECONDARY_DISK_XVDF_ID}\" --tags Key=Name,Value=",{"Ref" : "AWS::StackName"},"-root --region ",{ "Ref" : "AWS::Region" }," Key=BusinessUnit,Value=MSG Key=Project,Value=reflexion Key=Application,Value=reflexion-rtc Key=OwnerEmail,Value=reflexion-devs@sophos.com \n",
+              "aws ec2 create-tags --resources \"${SECONDARY_DISK_XVDF_ID}\" --tags Key=Name,Value=",{"Ref" : "AWS::StackName"},"-root --region ",{ "Ref" : "AWS::Region" }," Key=BusinessUnit,Value=MSG Key=Project,Value=reflexion Key=Application,Value=reflexion-rtc Key=OwnerEmail,Value=reflexion-devs@sophos.com \n",
 
-              "SECONDARY_DISK_XVDG_ID=$(/usr/local/bin/aws ec2 describe-volumes  --region ",{ "Ref" : "AWS::Region" },
+              "SECONDARY_DISK_XVDG_ID=$(aws ec2 describe-volumes  --region ",{ "Ref" : "AWS::Region" },
               " --filters Name=attachment.instance-id,Values=${AWS_INSTANCE_ID} Name=attachment.device,Values=/dev/xvdg",
               " --query Volumes[*].VolumeId --output text)\n",
-              "/usr/local/bin/aws ec2 create-tags --resources \"${SECONDARY_DISK_XVDG_ID}\" --tags Key=Name,Value=",{"Ref" : "AWS::StackName"},"-root --region ",{ "Ref" : "AWS::Region" }," Key=BusinessUnit,Value=MSG Key=Project,Value=reflexion Key=Application,Value=reflexion-rtc Key=OwnerEmail,Value=reflexion-devs@sophos.com \n",
+              "aws ec2 create-tags --resources \"${SECONDARY_DISK_XVDG_ID}\" --tags Key=Name,Value=",{"Ref" : "AWS::StackName"},"-root --region ",{ "Ref" : "AWS::Region" }," Key=BusinessUnit,Value=MSG Key=Project,Value=reflexion Key=Application,Value=reflexion-rtc Key=OwnerEmail,Value=reflexion-devs@sophos.com \n",
 
-              "SECONDARY_DISK_XVDH_ID=$(/usr/local/bin/aws ec2 describe-volumes  --region ",{ "Ref" : "AWS::Region" },
+              "SECONDARY_DISK_XVDH_ID=$(aws ec2 describe-volumes  --region ",{ "Ref" : "AWS::Region" },
               " --filters Name=attachment.instance-id,Values=${AWS_INSTANCE_ID} Name=attachment.device,Values=/dev/xvdh",
               " --query Volumes[*].VolumeId --output text)\n",
-              "/usr/local/bin/aws ec2 create-tags --resources \"${SECONDARY_DISK_XVDH_ID}\" --tags Key=Name,Value=",{"Ref" : "AWS::StackName"},"-root --region ",{ "Ref" : "AWS::Region" }," Key=BusinessUnit,Value=MSG Key=Project,Value=reflexion Key=Application,Value=reflexion-rtc Key=OwnerEmail,Value=reflexion-devs@sophos.com \n",
+              "aws ec2 create-tags --resources \"${SECONDARY_DISK_XVDH_ID}\" --tags Key=Name,Value=",{"Ref" : "AWS::StackName"},"-root --region ",{ "Ref" : "AWS::Region" }," Key=BusinessUnit,Value=MSG Key=Project,Value=reflexion Key=Application,Value=reflexion-rtc Key=OwnerEmail,Value=reflexion-devs@sophos.com \n",
 
-              "SECONDARY_DISK_XVDI_ID=$(/usr/local/bin/aws ec2 describe-volumes  --region ",{ "Ref" : "AWS::Region" },
+              "SECONDARY_DISK_XVDI_ID=$(aws ec2 describe-volumes  --region ",{ "Ref" : "AWS::Region" },
               " --filters Name=attachment.instance-id,Values=${AWS_INSTANCE_ID} Name=attachment.device,Values=/dev/xvdi",
               " --query Volumes[*].VolumeId --output text)\n",
-              "/usr/local/bin/aws ec2 create-tags --resources \"${SECONDARY_DISK_XVDI_ID}\" --tags Key=Name,Value=",{"Ref" : "AWS::StackName"},"-root --region ",{ "Ref" : "AWS::Region" }," Key=BusinessUnit,Value=MSG Key=Project,Value=reflexion Key=Application,Value=reflexion-rtc Key=OwnerEmail,Value=reflexion-devs@sophos.com \n"
+              "aws ec2 create-tags --resources \"${SECONDARY_DISK_XVDI_ID}\" --tags Key=Name,Value=",{"Ref" : "AWS::StackName"},"-root --region ",{ "Ref" : "AWS::Region" }," Key=BusinessUnit,Value=MSG Key=Project,Value=reflexion Key=Application,Value=reflexion-rtc Key=OwnerEmail,Value=reflexion-devs@sophos.com \n"
               ]
             ]
           }
