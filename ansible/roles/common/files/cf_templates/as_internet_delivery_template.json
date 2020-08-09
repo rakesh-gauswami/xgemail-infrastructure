@@ -965,11 +965,8 @@
 
               "# Create Volume Tagging. \n",
               "export AWS_INSTANCE_ID=$(curl -f http://169.254.169.254/latest/meta-data/instance-id)\n",
-              "ROOT_DISK_ID=$(/usr/local/bin/aws ec2 describe-volumes  --region ",{ "Ref" : "AWS::Region" },
-              " --filters Name=attachment.instance-id,Values=${AWS_INSTANCE_ID} Name=attachment.device,Values=/dev/sda1",
-              " --query Volumes[*].VolumeId --output text)\n",
-              "for i in $(/usr/local/bin/aws ec2 describe-volumes --region us-east-1 --filters Name=attachment.instance-id,Values=${AWS_INSTANCE_ID} --query Volumes[*].VolumeId --output text); do echo $i; done > /tmp/get_volume_id.txt \n",
-              "while read id; do /usr/local/bin/aws ec2 create-tags --resources $id --tags Key=Name,Value=",{"Ref" : "AWS::StackName"}," Key=OwnerEmail,Value=sophosmailops@sophos.com --region us-east-1; done < /tmp/get_volume_id.txt \n"
+              "for i in $(aws ec2 describe-volumes --region us-east-1 --filters Name=attachment.instance-id,Values=${AWS_INSTANCE_ID} --query Volumes[*].VolumeId --output text); do echo $i; done > /tmp/get_volume_id.txt \n",
+              "while read id; do aws ec2 create-tags --resources $id --tags Key=Name,Value=",{"Ref" : "AWS::StackName"}," Key=OwnerEmail,Value=sophosmailops@sophos.com --region us-east-1; done < /tmp/get_volume_id.txt \n"
               ]
             ]
           }
