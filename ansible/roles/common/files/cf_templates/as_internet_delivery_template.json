@@ -663,7 +663,7 @@
                       "#export AWS_STACK_NAME='", { "Ref": "AWS::StackName" }, "'\n",
                       "export AWS_NAME='", { "Ref": "VpcName"} , { "Ref": "XgemailServiceType," } , { "Ref": "Branch" }, { "Ref": "BundleVersion" }, "'\n",
                       "export AWS_REGION='", { "Ref" : "AWS::Region" }, "'\n",
-                      "for i in $(aws ec2 describe-volumes --region $AWS_REGION --filters Name=attachment.instance-id,Values=$AWS_INSTANCE_ID --query Volumes[*].VolumeId --output text); do aws ec2 create-tags --resources $i --tags Key=Name,Value=\"$AWS_NAME:$AWS_NAME:$AWS_NAME\" Key=OwnerEmail,Value=sophosmailops@sophos.com --region $AWS_REGION; done \n"
+                      "for i in $(aws ec2 describe-volumes --region $AWS_REGION --filters Name=attachment.instance-id,Values=$AWS_INSTANCE_ID --query Volumes[*].VolumeId --output text); do aws ec2 create-tags --resources $i --tags Key=Name,Value=\"$AWS_NAME\" Key=OwnerEmail,Value=sophosmailops@sophos.com --region $AWS_REGION; done \n"
                     ]
                   ]
                 },
