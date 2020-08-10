@@ -660,11 +660,14 @@
                     "", [
                       "#!/bin/bash\n",
                       "export AWS_INSTANCE_ID=$(curl -f http://169.254.169.254/latest/meta-data/instance-id)\n",
-                      "#export AWS_STACK_NAME='", { "Ref": "AWS::StackName" }, "'\n",
-                      "export AWS_VPC_NAME='", { "Ref": "VpcName"} , { "Ref": "XgemailServiceType" } , { "Ref": "Branch" }, { "Ref": "BundleVersion" }, "'\n",
-                      "export AWS_XGEMAIL_SERVICE_TYPE='", { "Ref": "XgemailServiceType" }, "'\n",
-                      "#export AWS_REGION='", { "Ref" : "AWS::Region" }, "'\n",
-                      "for i in $(aws ec2 describe-volumes --region ", { "Ref" : "AWS::Region" }, " --filters Name=attachment.instance-id,Values=$AWS_INSTANCE_ID --query Volumes[*].VolumeId --output text); do aws ec2 create-tags --resources $i --tags Key=Name,Value=\"$AWS_NAME:$AWS_NAME:$AWS_NAME\" Key=OwnerEmail,Value=sophosmailops@sophos.com --region $AWS_REGION; done \n"
+                      "export AWS_AMI_ID='", { "Ref" : "AWS::AmiId" }, "'\n",
+                      "export AWS_BRANCH='", { "Ref" : "AWS::Branch" }, "'\n",
+                      "export AWS_BUILD_RESULT_KEY='", { "Ref" : "AWS::BuildVersion" }, "'\n",
+                      "export AWS_BUNDLE_VERSION='", { "Ref" : "AWS::BundleVersion" }, "'\n",
+                      "export AWS_REGION='", { "Ref" : "AWS::Region" }, "'\n",
+                      "export AWS_APPLICATION='", { "Ref": "XgemailServiceType" }, "'\n",
+                      "export AWS_VPC_NAME='", { "Ref": "VpcName"} , "'\n",
+                      "for i in $(aws ec2 describe-volumes --region $AWS_REGION --filters Name=attachment.instance-id,Values=$AWS_INSTANCE_ID --query Volumes[*].VolumeId --output text); do aws ec2 create-tags --resources $i --tags Key=Application,Value=\"$AWS_APPLICATION\" Key=BaseAmi,Value=\"$AWS_AMI_ID\" Key=BuildResultKey,Value=\"$AWS_BUILD_RESULT_KEY\" Key=BundleVersion,Value=\"$AWS_BUNDLE_VERSION\" Key=BusinessUnit,Value=MSG Key=Name,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION:$AWS_BRANCH:$AWS_BUNDLE_VERSION\" Key=OwnerEmail,Value=sophosmailops@sophos.com Key=Project,Value=xgemail Key=ServiceCategory,Value=\"$AWS_VPC_NAME:email\" Key=ServiceType,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION\" --region $AWS_REGION; done \n"
                     ]
                   ]
                 },
