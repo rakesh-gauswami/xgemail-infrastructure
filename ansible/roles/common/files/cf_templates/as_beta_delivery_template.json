@@ -616,7 +616,7 @@
       "Metadata": {
         "AWS::CloudFormation::Init": {
           "configSets": {
-            "xgemail_install": [ "install_volume", "attributes", "update_cookbooks", "xgemail_install" ]
+            "xgemail_install": [ "install_volume", "attributes", "update_cookbooks", "xgemail_install", "tag_volume" ]
           },
 
           "install_volume": {
@@ -857,9 +857,40 @@
                 }
               }
             }
+          },
+
+          "tag_volume": {
+            "files": {
+              "/tmp/tag_volume.sh": {
+                "content": {
+                  "Fn::Join": [
+                    "", [
+                      "#!/bin/bash\n",
+                      "export AWS_AMI_ID='", { "Ref" : "AmiId" }, "'\n",
+                      "export AWS_APPLICATION='", { "Ref": "XgemailServiceType" }, "'\n",
+                      "export AWS_BRANCH='", { "Ref" : "Branch" }, "'\n",
+                      "export AWS_BUILD_RESULT_KEY='", { "Ref" : "BuildVersion" }, "'\n",
+                      "export AWS_BUNDLE_VERSION='", { "Ref" : "BundleVersion" }, "'\n",
+                      "export AWS_INSTANCE_ID=$(curl -f http://169.254.169.254/latest/meta-data/instance-id)\n",
+                      "export AWS_REGION='", { "Ref" : "AWS::Region" }, "'\n",
+                      "export AWS_VPC_NAME='", { "Ref": "VpcName"} , "'\n",
+                      "for i in $(aws ec2 describe-volumes --region $AWS_REGION --filters Name=attachment.instance-id,Values=$AWS_INSTANCE_ID --query Volumes[*].VolumeId --output text); do aws ec2 create-tags --resources $i --tags Key=Application,Value=\"$AWS_APPLICATION\" Key=BaseAmi,Value=\"$AWS_AMI_ID\" Key=BuildResultKey,Value=\"$AWS_BUILD_RESULT_KEY\" Key=BundleVersion,Value=\"$AWS_BUNDLE_VERSION\" Key=BusinessUnit,Value=MSG Key=Name,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION:$AWS_BRANCH:$AWS_BUNDLE_VERSION\" Key=OwnerEmail,Value=sophosmailops@sophos.com Key=Project,Value=xgemail Key=ServiceCategory,Value=\"$AWS_VPC_NAME:email\" Key=ServiceType,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION\" --region $AWS_REGION; done \n",
+                      "for i in $(aws ec2 describe-network-interfaces --region $AWS_REGION --filters Name=attachment.instance-id,Values=$AWS_INSTANCE_ID --query NetworkInterfaces[0].NetworkInterfaceId --output text); do aws ec2 create-tags --resources $i --tags Key=Application,Value=\"$AWS_APPLICATION\" Key=BaseAmi,Value=\"$AWS_AMI_ID\" Key=BuildResultKey,Value=\"$AWS_BUILD_RESULT_KEY\" Key=BundleVersion,Value=\"$AWS_BUNDLE_VERSION\" Key=BusinessUnit,Value=MSG Key=Name,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION:$AWS_BRANCH:$AWS_BUNDLE_VERSION\" Key=OwnerEmail,Value=sophosmailops@sophos.com Key=Project,Value=xgemail Key=ServiceCategory,Value=\"$AWS_VPC_NAME:email\" Key=ServiceType,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION\" --region $AWS_REGION; done \n"
+                    ]
+                  ]
+                },
+                "owner": "root",
+                "group": "root",
+                "mode": "000755"
+              }
+            },
+            "commands": {
+              "01_run_script": { "command": "bash /tmp/tag_volume.sh" }
+            }
           }
         }
       },
+
       "Properties": {
         "BlockDeviceMappings": [
           {
