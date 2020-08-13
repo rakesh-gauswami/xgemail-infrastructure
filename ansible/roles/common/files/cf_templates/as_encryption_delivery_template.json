@@ -517,7 +517,13 @@
       "Metadata": {
         "AWS::CloudFormation::Init": {
           "configSets": {
-            "xgemail_install": [ "install_volume", "attributes", "update_cookbooks", "xgemail_install", "tag_volume" ]
+            "xgemail_install": [
+              "install_volume",
+              "attributes",
+              "update_cookbooks",
+              "xgemail_install",
+              "tag_volume"
+            ]
           },
 
           "install_volume": {
@@ -781,7 +787,7 @@
               }
             },
             "commands": {
-              "01_run_script": { "command": "bash /tmp/tag_volume.sh" }
+              "01_run_script": { "command": "/tmp/tag_volume.sh" }
             }
           }
         }
