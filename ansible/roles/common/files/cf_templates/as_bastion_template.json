@@ -51,15 +51,6 @@
       "Description": "(Develop, XGE-XXXX, etc...)",
       "Type": "String"
     },
-    "BuildVersion": {
-      "Description": "Version of the application from Bamboo",
-      "Type": "String",
-      "Default": "1.0"
-    },
-    "BundleVersion": {
-      "Description": "Version of the AMI bundle",
-      "Type": "Number"
-    },
     "DeployIgnoreUnmodifiedGroupSize": {
       "Description": "During a stack update, indicates whether AWS CloudFormation ignores any group size property differences between your current Auto Scaling group and the Auto Scaling group that is described in the update.",
       "Type": "String",
@@ -483,14 +474,12 @@
                       "#!/bin/bash\n",
                       "export AWS_AMI_ID='", { "Ref" : "AmiId" }, "'\n",
                       "export AWS_BRANCH='", { "Ref" : "Branch" }, "'\n",
-                      "export AWS_BUILD_RESULT_KEY='", { "Ref" : "BuildVersion" }, "'\n",
-                      "export AWS_BUNDLE_VERSION='", { "Ref" : "BundleVersion" }, "'\n",
                       "export AWS_ENVIRONMENT='", { "Ref" : "Environment" }, "'\n",
                       "export AWS_INSTANCE_ID=$(curl -f http://169.254.169.254/latest/meta-data/instance-id)\n",
                       "export AWS_REGION='", { "Ref" : "AWS::Region" }, "'\n",
                       "export AWS_VPC_NAME='", { "Ref": "VpcName"} , "'\n",
-                      "for i in $(aws ec2 describe-volumes --region $AWS_REGION --filters Name=attachment.instance-id,Values=$AWS_INSTANCE_ID --query Volumes[*].VolumeId --output text); do aws ec2 create-tags --resources $i --tags Key=BaseAmi,Value=\"$AWS_AMI_ID\" Key=BuildResultKey,Value=\"$AWS_BUILD_RESULT_KEY\" Key=BundleVersion,Value=\"$AWS_BUNDLE_VERSION\" Key=BusinessUnit,Value=MSG Key=Name,Value=\"$AWS_VPC_NAME:$AWS_BRANCH:$AWS_ENVIRONMENT\" Key=OwnerEmail,Value=sophosmailops@sophos.com Key=Project,Value=xgemail Key=ServiceCategory,Value=\"$AWS_VPC_NAME:email\" --region $AWS_REGION; done \n",
-                      "for i in $(aws ec2 describe-network-interfaces --region $AWS_REGION --filters Name=attachment.instance-id,Values=$AWS_INSTANCE_ID --query NetworkInterfaces[0].NetworkInterfaceId --output text); do aws ec2 create-tags --resources $i --tags Key=BaseAmi,Value=\"$AWS_AMI_ID\" Key=BuildResultKey,Value=\"$AWS_BUILD_RESULT_KEY\" Key=BundleVersion,Value=\"$AWS_BUNDLE_VERSION\" Key=BusinessUnit,Value=MSG Key=Name,Value=\"$AWS_VPC_NAME:$AWS_BRANCH:$AWS_ENVIRONMENT\" Key=OwnerEmail,Value=sophosmailops@sophos.com Key=Project,Value=xgemail Key=ServiceCategory,Value=\"$AWS_VPC_NAME:email\" --region $AWS_REGION; done \n"
+                      "for i in $(aws ec2 describe-volumes --region $AWS_REGION --filters Name=attachment.instance-id,Values=$AWS_INSTANCE_ID --query Volumes[*].VolumeId --output text); do aws ec2 create-tags --resources $i --tags Key=BaseAmi,Value=\"$AWS_AMI_ID\" Key=BusinessUnit,Value=MSG Key=Name,Value=\"$AWS_VPC_NAME:$AWS_BRANCH:$AWS_ENVIRONMENT\" Key=OwnerEmail,Value=sophosmailops@sophos.com Key=Project,Value=xgemail Key=ServiceCategory,Value=\"$AWS_VPC_NAME:email\" --region $AWS_REGION; done \n",
+                      "for i in $(aws ec2 describe-network-interfaces --region $AWS_REGION --filters Name=attachment.instance-id,Values=$AWS_INSTANCE_ID --query NetworkInterfaces[0].NetworkInterfaceId --output text); do aws ec2 create-tags --resources $i --tags Key=BaseAmi,Value=\"$AWS_AMI_ID\" Key=BusinessUnit,Value=MSG Key=Name,Value=\"$AWS_VPC_NAME:$AWS_BRANCH:$AWS_ENVIRONMENT\" Key=OwnerEmail,Value=sophosmailops@sophos.com Key=Project,Value=xgemail Key=ServiceCategory,Value=\"$AWS_VPC_NAME:email\" --region $AWS_REGION; done \n"
                     ]
                   ]
                 },
