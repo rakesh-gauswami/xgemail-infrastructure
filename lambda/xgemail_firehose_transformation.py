@@ -24,7 +24,10 @@ logger.setLevel(logging.INFO)
 
 DROP_PATTERNS = [
     'Unknown feature flag',
-    'Missing value for <Authentication-Results> header'
+    'Missing value for <Authentication-Results> header',
+    'REPORT RequestId:',
+    'START RequestId:',
+    'END RequestId:'
 ]
 
 def firehose_transformation_handler(event, context):
