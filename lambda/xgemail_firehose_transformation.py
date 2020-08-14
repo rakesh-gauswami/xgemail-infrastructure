@@ -25,6 +25,8 @@ logger.setLevel(logging.INFO)
 DROP_PATTERNS = [
     'Unknown feature flag',
     'Missing value for <Authentication-Results> header',
+    'com.launchdarkly.client.LDClient',
+    'com.launchdarkly.client.LDUser',
     'REPORT RequestId:',
     'START RequestId:',
     'END RequestId:'
