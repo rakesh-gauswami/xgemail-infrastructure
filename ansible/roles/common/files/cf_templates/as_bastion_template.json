@@ -329,7 +329,8 @@
           "configSets": {
             "bastion_install": [
               "attributes",
-              "bastion_install"
+              "bastion_install",
+              "tag_volume"
             ]
           },
           "attributes": {
@@ -462,6 +463,33 @@
                   "HOME": "/var/chef"
                 }
               }
+            }
+          },
+          "tag_volume": {
+            "files": {
+              "/tmp/tag_volume.sh": {
+                "content": {
+                  "Fn::Join": [
+                    "", [
+                      "#!/bin/bash\n",
+                      "export AWS_AMI_ID='", { "Ref" : "AmiId" }, "'\n",
+                      "export AWS_BRANCH='", { "Ref" : "Branch" }, "'\n",
+                      "export AWS_ENVIRONMENT='", { "Ref" : "Environment" }, "'\n",
+                      "export AWS_INSTANCE_ID=$(curl -f http://169.254.169.254/latest/meta-data/instance-id)\n",
+                      "export AWS_REGION='", { "Ref" : "AWS::Region" }, "'\n",
+                      "export AWS_VPC_NAME='", { "Ref": "VpcName"} , "'\n",
+                      "for i in $(aws ec2 describe-volumes --region $AWS_REGION --filters Name=attachment.instance-id,Values=$AWS_INSTANCE_ID --query Volumes[*].VolumeId --output text); do aws ec2 create-tags --resources $i --tags Key=BaseAmi,Value=\"$AWS_AMI_ID\" Key=BusinessUnit,Value=MSG Key=Name,Value=\"$AWS_VPC_NAME:$AWS_BRANCH:$AWS_ENVIRONMENT\" Key=OwnerEmail,Value=sophosmailops@sophos.com Key=Project,Value=xgemail Key=ServiceCategory,Value=\"$AWS_VPC_NAME:email\" --region $AWS_REGION; done \n",
+                      "for i in $(aws ec2 describe-network-interfaces --region $AWS_REGION --filters Name=attachment.instance-id,Values=$AWS_INSTANCE_ID --query NetworkInterfaces[0].NetworkInterfaceId --output text); do aws ec2 create-tags --resources $i --tags Key=BaseAmi,Value=\"$AWS_AMI_ID\" Key=BusinessUnit,Value=MSG Key=Name,Value=\"$AWS_VPC_NAME:$AWS_BRANCH:$AWS_ENVIRONMENT\" Key=OwnerEmail,Value=sophosmailops@sophos.com Key=Project,Value=xgemail Key=ServiceCategory,Value=\"$AWS_VPC_NAME:email\" --region $AWS_REGION; done \n"
+                    ]
+                  ]
+                },
+                "owner": "root",
+                "group": "root",
+                "mode": "000755"
+              }
+            },
+            "commands": {
+              "01_run_script": { "command": "bash /tmp/tag_volume.sh" }
             }
           }
         }
