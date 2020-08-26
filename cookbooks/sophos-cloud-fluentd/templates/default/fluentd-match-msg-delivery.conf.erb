@@ -27,12 +27,12 @@
     @type rewrite_tag_filter
     <rule>
       key message
-      pattern ^(?=.*?status=sent)((?!bounce-handler|relay=.*xdelivery|postfix\/smtp|compute\.internal).)*$
+      pattern ^(?=.*?status=sent)((?!bounce-handler|relay=.*xdelivery|postfix\/smtp).)*$
       tag sqs.msg.delivery.succeeded
     </rule>
     <rule>
       key message
-      pattern ^(?=.*?status=(deferred|bounced))((?!bounce-handler|postfix\/smtp|compute\.internal).)*$
+      pattern ^(?=.*?status=(deferred|bounced))((?!bounce-handler|postfix\/smtp).)*$
       tag sqs.msg.delivery.failed
     </rule>
     <rule>
@@ -42,7 +42,7 @@
     </rule>
     <rule>
       key message
-      pattern ^(?=.*?status=sent)(?=.*?relay=.*xdelivery)((?!bounce-handler|postfix\/smtp|compute\.internal).)*$
+      pattern ^(?=.*?status=sent)(?=.*?relay=.*xdelivery)((?!bounce-handler|postfix\/smtp).)*$
       tag sqs.msg.delivery.redirected
     </rule>
    </store>
