@@ -156,6 +156,12 @@
       "Default": "false",
       "AllowedValues": [ "true", "false" ]
     },
+    "ScaleInOnWeekdays": {
+      "Description": "Enable scale in to zero on Friday at evening and scale out on Monday morning. (Times are UTC, NON PROD/QA ENVIRONMENT ONLY)",
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [ "true", "false" ]
+    },
     "ScaleInCron": {
       "Description": "Cron string for when to begin scale in.",
       "Type": "String",
@@ -165,6 +171,16 @@
       "Description": "Cron string for when to begin scale out.",
       "Type": "String",
       "Default": "0 4 * * 1"
+    },
+    "ScaleInOnWeekdaysCron": {
+      "Description": "Cron string for when to begin scale in.",
+      "Type": "String",
+      "Default": "0 18 * * 1-5"
+    },
+    "ScaleOutOnWeekdaysCron": {
+      "Description": "Cron string for when to begin scale out.",
+      "Type": "String",
+      "Default": "0 8 * * 1-5"
     },
     "SecurityGroups": {
       "Description": "The security group that allows communication within the VPC.",
@@ -366,6 +382,36 @@
         }
       ]
     },
+    "EnableScaleInOnWeekdays": {
+      "Fn::And": [
+        {
+          "Fn::Not": [
+            {
+              "Fn::Or": [
+                {
+                  "Fn::Equals": [
+                    { "Ref": "Environment" },
+                    "prod"
+                  ]
+                },
+                {
+                  "Fn::Equals": [
+                    { "Ref": "Environment" },
+                    "qa"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "Fn::Equals": [
+            { "Ref": "ScaleInOnWeekdays" },
+            "true"
+          ]
+        }
+      ]
+    },
     "IsInfDevelopmentEnvironment": {
       "Fn::Or": [
         {
@@ -524,7 +570,25 @@
         "Recurrence": { "Ref": "ScaleOutCron" }
       }
     },
+    "AutoScalingScheduledScaleInWeekdays": {
+      "Type": "AWS::AutoScaling::ScheduledAction",
+      "Condition": "EnableScaleInOnWeekdays",
+      "Properties": {
+        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
+        "MinSize": "0",
+        "Recurrence": { "Ref": "ScaleInOnWeekdaysCron" }
+      }
+    },
 
+    "AutoScalingScheduledScaleOutWeekdays": {
+      "Type": "AWS::AutoScaling::ScheduledAction",
+      "Condition": "EnableScaleInOnWeekdays",
+      "Properties": {
+        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
+        "MinSize": { "Ref": "AutoScalingMinSize" },
+        "Recurrence": { "Ref": "ScaleOutOnWeekdaysCron" }
+      }
+    },
     "XgemailScaleOutPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
       "Properties": {
