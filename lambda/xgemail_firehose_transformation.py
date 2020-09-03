@@ -25,8 +25,9 @@ logger.setLevel(logging.INFO)
 DROP_PATTERNS = [
     'Unknown feature flag',
     'Missing value for <Authentication-Results> header',
-    'com.launchdarkly.client.LDClient',
-    'com.launchdarkly.client.LDUser',
+    'User was created with null/empty key',
+    'User key is blank. Flag evaluation will proceed, but the user will not be stored in LaunchDarkly',
+    'Successfully initialized the consumer org.apache.kafka.clients.consumer.KafkaConsumer@',
     'REPORT RequestId:',
     'START RequestId:',
     'END RequestId:'
@@ -43,22 +44,28 @@ def firehose_transformation_handler(event, context):
         record_id = record['recordId']
         payload = base64.b64decode(record['data'])
         data = json.loads(payload)
-        message = data['message']
-        logger.debug('Record ID {} for {} message.'.format(record_id, message))
 
         output_record = {
             'recordId': record_id,
             'result': 'Ok',
             'data': base64.b64encode(payload)
         }
-        for drop_pattern in DROP_PATTERNS:
-            logger.debug('Dropping Record Id {}'.format(record_id))
-            if drop_pattern in message:
-                output_record = {
-                    'result': 'Dropped',
-                    'recordId': record_id
-                }
-                break
+
+        if data.get('message'):
+            message = data['message']
+            for drop_pattern in DROP_PATTERNS:
+                logger.debug('drop_pattern {} message {}'.format(drop_pattern, message))
+                if drop_pattern in message:
+                    logger.debug('Dropping Record Id {}'.format(record_id))
+                    output_record = {
+                        'result': 'Dropped',
+                        'recordId': record_id
+                    }
+                    break
+        else:
+            logger.debug('message field not present in data {}'.format(data))
+        logger.debug('Record ID {} for {} message.'.format(record_id, message))
+
         output.append(output_record)
 
     logger.debug('Successfully processed {} records.'.format(len(event['records'])))
