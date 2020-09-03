@@ -64,7 +64,7 @@ def firehose_transformation_handler(event, context):
                     break
         else:
             logger.debug('message field not present in data {}'.format(data))
-        logger.debug('Record ID {} for {} message.'.format(record_id, message))
+        logger.debug('Record ID {} for {} record.'.format(record_id, record))
 
         output.append(output_record)
 
