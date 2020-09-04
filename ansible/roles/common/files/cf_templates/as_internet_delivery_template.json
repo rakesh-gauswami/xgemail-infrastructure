@@ -175,12 +175,12 @@
     "ScaleInOnWeekdaysCron": {
       "Description": "Cron string for when to begin scale in.",
       "Type": "String",
-      "Default": "30 23 * * 1-5"
+      "Default": "30 22 * * 1-5"
     },
     "ScaleOutOnWeekdaysCron": {
       "Description": "Cron string for when to begin scale out.",
       "Type": "String",
-      "Default": "30 13 * * 1-5"
+      "Default": "40 20 * * 1-5"
     },
     "SecurityGroups": {
       "Description": "The security group that allows communication within the VPC.",
@@ -576,7 +576,7 @@
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
         "MinSize": "2",
-        "MinSize": "2",
+        "MaxSize": "2",
         "Recurrence": { "Ref": "ScaleInOnWeekdaysCron" }
       }
     },
