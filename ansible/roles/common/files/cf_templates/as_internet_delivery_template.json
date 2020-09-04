@@ -576,6 +576,7 @@
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
         "MinSize": "2",
+        "MinSize": "2",
         "Recurrence": { "Ref": "ScaleInOnWeekdaysCron" }
       }
     },
@@ -585,7 +586,8 @@
       "Condition": "EnableScaleInOnWeekdays",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "MinSize": { "Ref": "AutoScalingMaxSize" },
+        "MinSize": "3",
+        "MaxSize": "5",
         "Recurrence": { "Ref": "ScaleOutOnWeekdaysCron" }
       }
     },
