@@ -141,6 +141,12 @@
       "Default": "false",
       "AllowedValues": [ "true", "false" ]
     },
+    "ScaleInOnWeekdays": {
+      "Description": "Enable scale in on at evening and scale out on morning.  (Times are UTC)",
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [ "true", "false" ]
+    },
     "ScaleInCron": {
       "Description": "Cron string for when to begin scale in.",
       "Type": "String",
@@ -150,6 +156,36 @@
       "Description": "Cron string for when to begin scale out.",
       "Type": "String",
       "Default": "0 4 * * 1"
+    },
+    "ScaleInOnWeekdaysCron": {
+      "Description": "Cron string for when to begin scale in.",
+      "Type": "String",
+      "Default": "00 18 * * 1-5"
+    },
+    "ScaleOutOnWeekdaysCron": {
+      "Description": "Cron string for when to begin scale out.",
+      "Type": "String",
+      "Default": "00 08 * * 1-5"
+    },
+    "ScheduledAutoScalingOutsideBusinessHourMinSize": {
+      "Description": "Minimum number of instances in the Auto Scaling Group outside of business hour.",
+      "Type": "String",
+      "Default": "2"
+    },
+    "ScheduledAutoScalingOutsideBusinessHourMaxSize": {
+      "Description": "Maximum number of instances in the Auto Scaling Group outside of business hour.",
+      "Type": "String",
+      "Default": "2"
+    },
+    "ScheduledAutoScalingInsideBusinessHourMinSize": {
+      "Description": "Minimum number of instances in the Auto Scaling Group inside of business hour.",
+      "Type": "String",
+      "Default": "4"
+    },
+    "ScheduledAutoScalingInsideBusinessHourMaxSize": {
+      "Description": "Maximum number of instances in the Auto Scaling Group inside of business hour.",
+      "Type": "String",
+      "Default": "8"
     },
     "SecurityGroups": {
       "Description": "The security group that allows communication within the VPC.",
@@ -538,7 +574,25 @@
         "Recurrence": { "Ref": "ScaleOutCron" }
       }
     },
+    "AutoScalingScheduledScaleInWeekdays": {
+      "Type": "AWS::AutoScaling::ScheduledAction",
+      "Properties": {
+        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
+        "MinSize": { "Ref": "ScheduledAutoScalingOutsideBusinessHourMinSize" },
+        "MaxSize": { "Ref": "ScheduledAutoScalingOutsideBusinessHourMaxSize" },
+        "Recurrence": { "Ref": "ScaleInOnWeekdaysCron" }
+      }
+    },
 
+    "AutoScalingScheduledScaleOutWeekdays": {
+      "Type": "AWS::AutoScaling::ScheduledAction",
+      "Properties": {
+        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
+        "MinSize": { "Ref": "ScheduledAutoScalingInsideBusinessHourMinSize" },
+        "MaxSize": { "Ref": "ScheduledAutoScalingInsideBusinessHourMaxSize" },
+        "Recurrence": { "Ref": "ScaleOutOnWeekdaysCron" }
+      }
+    },
     "XgemailAutoScalePolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
       "Condition": "ScalingEnabled",
