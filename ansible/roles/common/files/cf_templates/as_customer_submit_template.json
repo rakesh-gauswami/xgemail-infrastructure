@@ -141,6 +141,12 @@
       "Default": "false",
       "AllowedValues": [ "true", "false" ]
     },
+    "ScaleInAndOutOnWeekdays": {
+      "Description": "Enable scale in on at evening and scale out on morning.  (Times are UTC)",
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [ "true", "false" ]
+    },
     "ScaleInCron": {
       "Description": "Cron string for when to begin scale in.",
       "Type": "String",
@@ -404,6 +410,36 @@
         }
       ]
     },
+    "EnableScaleInOutOnWeekdays": {
+      "Fn::And": [
+        {
+          "Fn::Not": [
+            {
+              "Fn::Or": [
+                {
+                  "Fn::Equals": [
+                    { "Ref": "Environment" },
+                    "prod"
+                  ]
+                },
+                {
+                  "Fn::Equals": [
+                    { "Ref": "Environment" },
+                    "qa"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "Fn::Equals": [
+            { "Ref": "ScaleInAndOutOnWeekdays" },
+            "true"
+          ]
+        }
+      ]
+    },
     "IsInfDevelopmentEnvironment": {
       "Fn::Or": [
         {
@@ -570,6 +606,7 @@
     },
     "AutoScalingScheduledScaleInWeekdays": {
       "Type": "AWS::AutoScaling::ScheduledAction",
+      "Condition": "EnableScaleInOutOnWeekdays",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
         "MinSize": { "Ref": "ScheduledAutoScalingOutsideBusinessHourMinSize" },
@@ -580,6 +617,7 @@
 
     "AutoScalingScheduledScaleOutWeekdays": {
       "Type": "AWS::AutoScaling::ScheduledAction",
+      "Condition": "EnableScaleInOutOnWeekdays",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
         "MinSize": { "Ref": "ScheduledAutoScalingInsideBusinessHourMinSize" },
