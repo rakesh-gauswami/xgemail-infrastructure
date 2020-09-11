@@ -183,7 +183,7 @@ if ACCOUNT != 'sandbox'
         :central_vpc_id => CENTRAL_VPC_ID,
         :policy_bucket => POLICY_BUCKET_NAME,
         :account => ACCOUNT,
-        :customer_submit_bucket => CUSTOMER_SUBMIT_BUCKET_NAME
+        :customer_submit_bucket => CUSTOMER_SUBMIT_BUCKET_NAME,
         :reflexion_relay_allow_ips => REFLEXION_RELAY_ALLOW_IPS
     )
   end
