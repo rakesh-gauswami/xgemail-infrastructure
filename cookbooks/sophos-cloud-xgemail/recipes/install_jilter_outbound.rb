@@ -57,6 +57,11 @@ else
   include_recipe 'sophos-cloud-xgemail::install_jilter_common'
 end
 
+if ACCOUNT == 'prod'
+  REFLEXION_RELAY_ALLOW_IPS = '208.70.208.0/22'
+else
+  REFLEXION_RELAY_ALLOW_IPS = '208.70.208.0/22,52.11.211.86,52.26.62.6,198.144.101.58'
+end
 # Modify /etc/rsyslog.conf
 execute 'modify_rsyslog.conf' do
   user 'root'
@@ -178,7 +183,8 @@ if ACCOUNT != 'sandbox'
         :central_vpc_id => CENTRAL_VPC_ID,
         :policy_bucket => POLICY_BUCKET_NAME,
         :account => ACCOUNT,
-        :customer_submit_bucket => CUSTOMER_SUBMIT_BUCKET_NAME
+        :customer_submit_bucket => CUSTOMER_SUBMIT_BUCKET_NAME,
+        :reflexion_relay_allow_ips => REFLEXION_RELAY_ALLOW_IPS
     )
   end
 
