@@ -6,7 +6,6 @@
   delay_seconds <%= @sqs_delivery_delay %>
   include_tag false
 </match>
-
 <match sqs.msg.delivery.failed>
   @type sqs
   queue_name <%= @delivery_status_queue %>
@@ -15,7 +14,6 @@
   delay_seconds <%= @sqs_delivery_delay %>
   include_tag false
 </match>
-
 <match sqs.msg.delivery.redirected>
   @type sqs
   queue_name <%= @delivery_status_queue %>
@@ -24,7 +22,6 @@
   delay_seconds <%= @sqs_delivery_delay %>
   include_tag false
 </match>
-
 <match sqs.msg.returned>
   @type sqs
   queue_name <%= @delivery_status_queue %>

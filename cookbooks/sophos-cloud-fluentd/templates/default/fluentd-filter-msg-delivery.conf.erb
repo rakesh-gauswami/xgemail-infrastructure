@@ -16,6 +16,7 @@
     expression /^(?<host>[^ ]+) (?<process>[^ ]+): (?<queue_id>[^ ]+): to=<(?<recipient_address>[\S ]+)>, relay=(?<relay>[^ ]+),.*dsn=(?<dsn_code>[^ ]+), status=sent (?<sent>[\S ]+)/
   </parse>
 </filter>
+
 <filter sns.msg.delivery.failed>
   @type parser
   key_name message
@@ -26,6 +27,7 @@
     expression /^(?<host>[^ ]+) (?<process>[^ ]+): (?<queue_id>[^ ]+): to=<(?<recipient_address>[\S ]+)>, relay=(?<relay>[^ ]+),.*dsn=(?<dsn_code>[^ ]+), status=(?<status>[(deferred|bounced)]+) (?<sent>[\S ]+)/
   </parse>
 </filter>
+
 <filter sns.msg.returned>
   @type parser
   key_name message
@@ -36,6 +38,7 @@
     expression /(?<host>[^ ]+) (?<process>[^ ]+): (?<queue_id>[^ ]+): from=<(?<sender_address>[\S ]+)>, status=expired.+/
   </parse>
 </filter>
+
 <filter sns.msg.delivery.redirected>
   @type parser
   key_name message

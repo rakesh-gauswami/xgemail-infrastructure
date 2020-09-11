@@ -1,14 +1,14 @@
-<match raw.postfix.maillog>
+<match raw.jilter.log>
   @type rewrite_tag_filter
   <rule>
     key message
-    pattern  <%= @maillog_filter_patterns %>
+    pattern  <%= @jilter_filter_patterns %>
     tag clear
   </rule>
   <rule>
     key message
     pattern .+
-    tag sophos.xgemail.<%= @application_name %>.maillog
+    tag sophos.xgemail.<%= @application_name %>.jilter
   </rule>
 </match>
 

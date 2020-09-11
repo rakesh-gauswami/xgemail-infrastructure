@@ -27,6 +27,7 @@
     expression /^(?<host>[^ ]+) (?<process>[^ ]+): (?<qid>[^ ]+): (?<action>[^ ]+): (?<msg>[^ ]+ from (?<sender_host>[^ ]+)\[(?<sender_ip>[^ ]+)\]: (?<code>[^;]+); from=<(?<sender_address>((?<sender>[^>]+)@(?<sender_domain>\S*))|.*)> to=<(?<rcpt_address>(?<rcpt>[^>]+)@(?<rcpt_domain>\S*))> proto=(?<proto>[^ ]+))/
   </parse>
 </filter>
+
 <filter sns.msg_stats_reject.XGEMAIL_0004>
   @type parser
   key_name message
@@ -37,6 +38,7 @@
     expression /^(?<host>[^ ]+) (?<process>[^\/]+\/smtpd\[\d+\]): (?<qid>[^ ]+): (?<action>reject): (?<uuid>SOPHOS_UUID_[^ ]+): (?<msg>(RCPT from (?<sender_host>[^ ]+)\[(?<sender_ip>[^ ]+)\]:) (?<code>554 5.7.1 Service unavailable); (?<reason>Client host \S* is blacklisted). (?<delist>([^;]+)); from=<(?<sender_address>((?<sender>[^>]+)@(?<sender_domain>\S*))|.*)> to=<(?<rcpt_address>([^>]+)(@(?<rcpt_domain>\S*)))> proto=(?<proto>[^ ]+))/
   </parse>
 </filter>
+
 <filter sns.msg_stats_reject.XGEMAIL_0005>
   @type parser
   key_name message
@@ -56,4 +58,3 @@
     message_rejection_code ${tag_suffix[2]}
   </record>
 </filter>
-
