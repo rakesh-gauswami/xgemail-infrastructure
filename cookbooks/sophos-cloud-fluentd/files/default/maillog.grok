@@ -1,0 +1,82 @@
+# Syslog stuff
+COMPONENT ([\w._\/%-]+)
+COMPID postfix-[a-z]{2,}\/%{COMPONENT:process}(?:\[%{NUMBER:pid}\])?
+POSTFIX %{SYSLOGHOST:host} %{COMPID}:
+
+# Milter
+HELO (?:\[%{IP:helo}\]|%{HOSTNAME:helo}|%{DATA:helo})
+
+MILTERCONNECT %{QUEUEID:queue_id}: milter-reject: CONNECT from %{RELAY:relay}: %{GREEDYDATA:milter_reason}; proto=%{WORD:proto}
+MILTERUNKNOWN %{QUEUEID:queue_id}: milter-reject: UNKNOWN from %{RELAY:relay}: %{GREEDYDATA:milter_reason}; proto=%{WORD:proto}
+MILTEREHLO %{QUEUEID:queue_id}: milter-reject: EHLO from %{RELAY:relay}: %{GREEDYDATA:milter_reason}; proto=%{WORD:proto} helo=<%{HELO}>
+MILTERMAIL %{QUEUEID:queue_id}: milter-reject: MAIL from %{RELAY:relay}: %{GREEDYDATA:milter_reason}; from=<%{SENDERADDRESS:sender}> proto=%{WORD:proto} helo=<%{HELO}>
+MILTERHELO %{QUEUEID:queue_id}: milter-reject: HELO from %{RELAY:relay}: %{GREEDYDATA:milter_reason}; proto=%{WORD:proto} helo=<%{HELO}>
+MILTERRCPT %{QUEUEID:queue_id}: milter-reject: RCPT from %{RELAY:relay}: %{GREEDYDATA:milter_reason}; from=<%{SENDERADDRESS:sender}> to=<%{RECIPIENTADDRESS:recipient}> proto=%{WORD:proto} helo=<%{HELO}>
+MILTERENDOFMESSAGE %{QUEUEID:queue_id}: milter-reject: END-OF-MESSAGE from %{RELAY:relay}: %{GREEDYDATA:milter_reason}; from=<%{SENDERADDRESS:sender}> to=<%{RECIPIENTADDRESS:recipient}> proto=%{WORD:proto} helo=<%{HELO}>
+
+# Postfix stuff
+HELO (?:\[%{IP:helo}\]|%{HOSTNAME:helo}|%{DATA:helo})
+QUEUEID ([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)
+EMAILADDRESSPART [a-zA-Z0-9_.+-=:~]+
+SENDERADDRESS (?:%{EMAILLOCALPART:sender_name}@%{HOSTNAME:sender_domain}|%{DATA})
+RECIPIENTADDRESS (?:%{EMAILLOCALPART:recipient_name}@%{HOSTNAME:recipient_domain}|%{DATA})
+RELAY (?:%{HOSTNAME:relay_host}(?:\[%{IP:relay_ip}\](?::[0-9]+(.[0-9]+)?)?)?)
+POSREAL [0-9]+(.[0-9]+)?
+DSN %{NONNEGINT}.%{NONNEGINT}.%{NONNEGINT}
+STATUS sent|deferred|bounced|expired
+PERMERROR 5[0-9]{2}
+MESSAGELEVEL reject|warning|error|fatal|panic
+
+# Sophos stuff
+SOPHOS_UUID SOPHOS_UUID_%{UUID}
+
+POSTFIXSMTPMESSAGE %{MESSAGELEVEL}: %{GREEDYDATA:reason}
+POSTFIXACTION discard|dunno|filter|hold|ignore|info|prepend|redirect|replace|reject|warn
+
+# postfix/smtp and postfix/lmtp, postfix/local and postfix/error
+POSTFIXSMTP %{POSTFIXSMTPRELAY}|%{POSTFIXSMTPCONNECT}|%{POSTFIXSMTP5XX}|%{POSTFIXSMTPREFUSAL}|%{POSTFIXSMTPDEFERRED}|%{POSTFIXSMTPLOSTCONNECTION}|%{POSTFIXSMTPTIMEOUT}
+POSTFIXSMTPRELAY %{QUEUEID:queue_id}: to=<%{RECIPIENTADDRESS:recipient}>,(?:\sorig_to=<%{RECIPIENTADDRESS:orig_to}>,)? relay=%{RELAY},(?: delay=%{POSREAL:delay},)?(?: delays=%{DATA:delays}?,)?(?: conn_use=%{POSREAL:conn_use},)?( %{WORD}=%{DATA},)+? dsn=%{DSN:dsn}, status=%{STATUS:result} %{GREEDYDATA:reason}
+POSTFIXSMTPCONNECT connect to %{RELAY}: %{GREEDYDATA:reason}
+POSTFIXSMTP5XX %{QUEUEID:queue_id}: to=<%{RECIPIENTADDRESS:recipient}>,(?:\sorig_to=<%{RECIPIENTADDRESS:orig_to}>,)? relay=%{RELAY}, (%{WORD}=%{DATA},)+ dsn=%{DSN:dsn}, status=%{STATUS:result} \(host %{HOSTNAME}\[%{IP}\] said: %{PERMERROR:response_code} %{DATA:smtp_response} \(in reply to %{DATA:command} command\)\)
+POSTFIXSMTPREFUSAL %{QUEUEID:queue_id}: host %{RELAY} refused to talk to me: %{GREEDYDATA:reason}
+POSTFIXSMTPDEFERRED %{QUEUEID:queue_id}: host %{RELAY} said: %{GREEDYDATA:reason}
+POSTFIXSMTPLOSTCONNECTION %{QUEUEID:queue_id}: lost connection with %{RELAY} while %{GREEDYDATA:reason}
+POSTFIXSMTPTIMEOUT %{QUEUEID:queue_id}: conversation with %{RELAY} timed out while %{GREEDYDATA:reason}
+
+# postfix/smtpd
+POSTFIXSMTPD %{POSTFIXSMTPDCONNECTS}|%{POSTFIXSMTPDMILTER}|%{POSTFIXSMTPDACTIONSUUID}|%{POSTFIXSMTPDACTIONS}|%{POSTFIXSMTPDTIMEOUTS}|%{POSTFIXSMTPDLOGIN}|%{POSTFIXSMTPDCLIENT}|%{POSTFIXSMTPDNOQUEUEUUID}|%{POSTFIXSMTPDNOQUEUE}|%{POSTFIXSMTPDWARNING}|%{POSTFIXSMTPDLOSTCONNECTION}|%{POSTFIXSMTPDSSLERROR}
+POSTFIXSMTPDCONNECTS (?:dis)?connect from %{RELAY}
+POSTFIXSMTPDMILTER %{MILTERCONNECT}|%{MILTERUNKNOWN}|%{MILTEREHLO}|%{MILTERMAIL}|%{MILTERHELO}|%{MILTERRCPT}
+POSTFIXSMTPDACTIONSUUID %{QUEUEID:queue_id}: %{POSTFIXACTION:postfix_action}: %{SOPHOS_UUID:sophos_uuid}: %{DATA:command} from %{RELAY}: %{PERMERROR:response_code} %{DSN:dsn} %{DATA}: %{DATA:reason}; from=<%{SENDERADDRESS:sender}> to=<%{RECIPIENTADDRESS:recipient}> proto=%{DATA:proto} helo=<%{HELO}>
+POSTFIXSMTPDACTIONS %{QUEUEID:queue_id}: %{POSTFIXACTION:postfix_action}: %{DATA:command} from %{RELAY}: %{PERMERROR:response_code} %{DSN:dsn} %{DATA}: %{DATA:reason}; from=<%{SENDERADDRESS:sender}> to=<%{RECIPIENTADDRESS:recipient}> proto=%{DATA:proto} helo=<%{HELO}>
+POSTFIXSMTPDTIMEOUTS timeout after %{DATA:command} from %{RELAY}
+POSTFIXSMTPDLOGIN %{QUEUEID:queue_id}: client=%{DATA:client}, sasl_method=%{DATA:saslmethod}, sasl_username=%{GREEDYDATA:sasl_username}
+POSTFIXSMTPDCLIENT %{QUEUEID:queue_id}: client=%{GREEDYDATA:client}
+POSTFIXSMTPDNOQUEUEUUID NOQUEUE: %{POSTFIXACTION:postfix_action}: %{SOPHOS_UUID:sophos_uuid}: %{DATA:command} from %{RELAY}: %{GREEDYDATA:reason}
+POSTFIXSMTPDNOQUEUE NOQUEUE: %{POSTFIXACTION:postfix_action}: %{DATA:command} from %{RELAY}: %{GREEDYDATA:reason}
+POSTFIXSMTPDWARNING warning:( %{IP}: | hostname %{HOSTNAME} )?%{GREEDYDATA:reason}
+POSTFIXSMTPDLOSTCONNECTION (?:lost connection after %{DATA:smtp_response} from %{RELAY}|improper command pipelining after HELO from %{GREEDYDATA:reason})
+POSTFIXSMTPDSSLERROR SSL_accept error from %{RELAY}: %{DATA}
+
+# postfix/cleanup
+POSTFIXCLEANUP %{POSTFIXCLEANUPMESSAGE}|%{POSTFIXCLEANUPMILTER}
+POSTFIXCLEANUPMESSAGE %{QUEUEID:queue_id}: (resent-)?message-id=(<)?%{GREEDYDATA:message_id}(>)?
+POSTFIXCLEANUPMILTER %{MILTERENDOFMESSAGE}
+
+# postfix/bounce
+POSTFIXBOUNCE %{POSTFIXBOUNCEQUEUE}|%{POSTFIXBOUNCENODELIVER}|%{POSTFIXBOUNCESUPR}
+POSTFIXBOUNCEQUEUE %{QUEUEID:queue_id}: sender (non-)?delivery( status)? notification: %{QUEUEID:bounce_queue_id}
+POSTFIXBOUNCENODELIVER %{QUEUEID:queue_id}: postmaster non-delivery notification: %{QUEUEID:bounce_queue_id}
+POSTFIXBOUNCESUPR Suppressing sender bounce to %{RECIPIENTADDRESS:recipient} %{DATA}
+
+# postfix/qmgr and postfix/pickup
+POSTFIXQMGR %{QUEUEID:queue_id}: (?:removed|from=<(?:%{SENDERADDRESS:sender})?>(?:, size=%{NUMBER:size}, nrcpt=%{NUMBER:nrcpt} \(%{GREEDYDATA:queue_status}\))?)
+
+# postfix/anvil
+POSTFIXANVIL statistics: %{GREEDYDATA:reason}
+
+# postfix/trivial-rewrite
+POSTFIXREWRITE warning: do not list domain %{DATA:domain} in BOTH mydestination and virtual_alias_domains
+
+# Postfix wrap em up
+MAILLOG %{POSTFIX} (?:%{POSTFIXSMTP}|%{POSTFIXANVIL}|%{POSTFIXQMGR}|%{POSTFIXBOUNCE}|%{POSTFIXCLEANUP}|%{POSTFIXSMTPD}|%{POSTFIXREWRITE})
