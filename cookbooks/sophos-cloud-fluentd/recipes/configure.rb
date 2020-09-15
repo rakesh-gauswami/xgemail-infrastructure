@@ -9,20 +9,26 @@
 # This recipe configures fluentd (td-agent)
 #
 
-ACCOUNT                       = node['sophos_cloud']['environment']
-CONF_DIR                      = node['fluentd']['conf_dir']
-INSTANCE_ID                   = node['ec2']['instance_id']
-MAIN_DIR                      = node['fluentd']['main_dir']
-NODE_TYPE                     = node['xgemail']['cluster_type']
-PATTERNS_DIR                  = node['fluentd']['patterns_dir']
-SQS_DELIVERY_DELAY            = node['fluentd']['sqs_delivery_delay']
-REGION                        = node['sophos_cloud']['region']
-MSG_STATS_REJECT_SNS_TOPIC    = node['xgemail']['msg_statistics_rejection_sns_topic']
-DELIVERY_STATUS_SQS           = node['xgemail']['msg_history_delivery_status_sqs']
-DELIVERY_STATUS_SNS_TOPIC     = node['xgemail']['msg_history_status_sns_topic']
-SERVER_IP                     = node['ipaddress']
-MAILLOG_FILTER_PATTERNS       = "(\\.#{REGION}\\.compute\\.internal|:\\sdisconnect\\sfrom\\s|\\swarning:\\shostname\\s|:\\sremoved\\s|table\\shash:|sm-msp-queue|:\\sstatistics:\\s)"
-JILTER_FILTER_PATTERNS        = "(com\\.launchdarkly\\.client\\.LDClient|com\\.launchdarkly\\.client\\.LDUser)"
+ACCOUNT                         = node['sophos_cloud']['environment']
+CONF_DIR                        = node['fluentd']['conf_dir']
+INSTANCE_ID                     = node['ec2']['instance_id']
+MAIN_DIR                        = node['fluentd']['main_dir']
+NODE_TYPE                       = node['xgemail']['cluster_type']
+PATTERNS_DIR                    = node['fluentd']['patterns_dir']
+SQS_DELIVERY_DELAY              = node['fluentd']['sqs_delivery_delay']
+REGION                          = node['sophos_cloud']['region']
+MSG_STATS_REJECT_SNS_TOPIC      = node['xgemail']['msg_statistics_rejection_sns_topic']
+DELIVERY_STATUS_SQS             = node['xgemail']['msg_history_delivery_status_sqs']
+DELIVERY_STATUS_SNS_TOPIC       = node['xgemail']['msg_history_status_sns_topic']
+SERVER_IP                       = node['ipaddress']
+MAILLOG_FILTER_PATTERNS         = "(\\.#{REGION}\\.compute\\.internal|:\\sdisconnect\\sfrom\\s|\\swarning:\\shostname\\s|:\\sremoved\\s|table\\shash:|sm-msp-queue|:\\sstatistics:\\s)"
+JILTER_FILTER_PATTERNS          = "(com\\.launchdarkly\\.client\\.LDClient|com\\.launchdarkly\\.client\\.LDUser)"
+LIFECYCLE_FILTER_PATTERNS       = ""
+MESSAGEBOUNCER_FILTER_PATTERNS  = ""
+MULTIPOLICY_FILTER_PATTERNS     = ""
+POLICY_FILTER_PATTERNS          = ""
+SQSMSGCONSUMER_FILTER_PATTERNS  = ""
+SQSMSGPRODUCER_FILTER_PATTERNS  = ""
 
 # Configs
 if NODE_TYPE == 'customer-delivery'
@@ -97,22 +103,32 @@ else
   NON_DELIVERY_DSN      = 'UNKNOWN'
 end
 
+### Fluentd Source Configuration Files ###
+
 # All instances - Start Order: 10
 template 'fluentd-source-maillog' do
   path "#{CONF_DIR}/10-source-maillog.conf"
-  source 'fluentd-source-maillog.conf.erb'
+  source 'fluentd-source-generic.conf.erb'
   mode '0644'
   owner 'root'
   group 'root'
+  variables(
+    :log_name => 'maillog',
+    :log_path => '/var/log/maillog'
+  )
 end
 
 # Submit instances - Start Order: 10
 template 'fluentd-source-jilter' do
   path "#{CONF_DIR}/10-source-jilter.conf"
-  source 'fluentd-source-jilter.conf.erb'
+  source 'fluentd-source-generic.conf.erb'
   mode '0644'
   owner 'root'
   group 'root'
+  variables(
+    :log_name => 'jilter',
+    :log_path => '/var/log/xgemail/jilter.log'
+  )
   only_if {
     NODE_TYPE == 'internet-submit' ||
     NODE_TYPE == 'customer-submit' ||
@@ -123,12 +139,13 @@ end
 # All instances except extended delivery - Start Order: 10
 template 'fluentd-source-lifecycle' do
   path "#{CONF_DIR}/10-source-lifecycle.conf"
-  source 'fluentd-source-lifecycle.conf.erb'
+  source 'fluentd-source-generic.conf.erb'
   mode '0644'
   owner 'root'
   group 'root'
   variables(
-    :application_name => NODE_TYPE
+    :log_name => 'lifecycle',
+    :log_path => '/var/log/xgemail/lifecycle.log'
   )
   not_if {
     NODE_TYPE == 'xdelivery' ||
@@ -143,12 +160,13 @@ end
 # internet-delivery - Start Order: 10
  template 'fluentd-source-messagebouncer' do
    path "#{CONF_DIR}/10-source-messagebouncer.conf"
-   source 'fluentd-source-messagebouncer.conf.erb'
+   source 'fluentd-source-generic.conf.erb'
    mode '0644'
    owner 'root'
    group 'root'
    variables(
-     :application_name => NODE_TYPE
+     :log_name => 'messagebouncer',
+     :log_path => '/var/log/xgemail/messagebouncer.log'
    )
    only_if {
      NODE_TYPE == 'internet-delivery' ||
@@ -162,12 +180,13 @@ end
 # internet-submit - Start Order: 10
 template 'fluentd-source-multi-policy' do
   path "#{CONF_DIR}/10-source-multi-policy.conf"
-  source 'fluentd-source-multi-policy.conf.erb'
+  source 'fluentd-source-generic.conf.erb'
   mode '0644'
   owner 'root'
   group 'root'
   variables(
-    :application_name => NODE_TYPE
+    :log_name => 'multi-policy',
+    :log_path => '/var/log/xgemail/multi-policy.log'
   )
   only_if {
     NODE_TYPE == 'internet-submit'
@@ -177,12 +196,13 @@ end
 # internet-submit and customer-submit - Start Order: 10
 template 'fluentd-source-policy' do
   path "#{CONF_DIR}/10-source-policy.conf"
-  source 'fluentd-source-policy.conf.erb'
+  source 'fluentd-source-generic.conf.erb'
   mode '0644'
   owner 'root'
   group 'root'
   variables(
-    :application_name => NODE_TYPE
+    :log_name => 'policy',
+    :log_path => '/var/log/xgemail/policy.log'
   )
   only_if {
     NODE_TYPE == 'internet-submit' ||
@@ -193,12 +213,13 @@ end
 # All delivery instances - Start Order: 10
 template 'fluentd-source-sqsmsgconsumer' do
   path "#{CONF_DIR}/10-source-sqsmsgconsumer.conf"
-  source 'fluentd-source-sqsmsgconsumer.conf.erb'
+  source 'fluentd-source-generic.conf.erb'
   mode '0644'
   owner 'root'
   group 'root'
   variables(
-    :application_name => NODE_TYPE
+    :log_name => 'sqsmsgconsumer',
+    :log_path => '/var/log/xgemail/sqsmsgconsumer.log'
   )
   only_if {
     NODE_TYPE == 'customer-delivery' ||
@@ -214,12 +235,13 @@ end
 # Submit instances - Start Order: 10
 template 'fluentd-source-sqsmsgproducer' do
   path "#{CONF_DIR}/10-source-sqsmsgproducer.conf"
-  source 'fluentd-source-sqsmsgproducer.conf.erb'
+  source 'fluentd-source-generic.conf.erb'
   mode '0644'
   owner 'root'
   group 'root'
   variables(
-    :application_name => NODE_TYPE
+    :log_name => 'sqsmsgproducer',
+    :log_path => '/var/log/xgemail/sqsmsgproducer.log'
   )
   only_if {
     NODE_TYPE == 'internet-submit' ||
@@ -236,20 +258,23 @@ template 'fluentd-source-monit' do
   owner 'root'
   group 'root'
   variables(
-    :application_name => NODE_TYPE
+    :application_name => NODE_TYPE,
   )
 end
+
+### Fluentd Match Configuration Files ###
 
 # customer-submit, encryption-submit, and encryption-delivery - Start Order: 20
 template 'fluentd-match-maillog' do
   path "#{CONF_DIR}/20-match-maillog.conf"
-  source 'fluentd-match-maillog.conf.erb'
+  source 'fluentd-match-generic.conf.erb'
   mode '0644'
   owner 'root'
   group 'root'
   variables(
     :application_name => NODE_TYPE,
-    :maillog_filter_patterns => MAILLOG_FILTER_PATTERNS
+    :log_name => 'maillog',
+    :filter_patterns => MAILLOG_FILTER_PATTERNS
   )
   only_if {
     NODE_TYPE == 'customer-submit' ||
@@ -261,13 +286,14 @@ end
 # Submit instances - Start Order: 20
 template 'fluentd-match-jilter' do
   path "#{CONF_DIR}/20-match-jilter.conf"
-  source 'fluentd-match-jilter.conf.erb'
+  source 'fluentd-match-generic.conf.erb'
   mode '0644'
   owner 'root'
   group 'root'
   variables(
     :application_name => NODE_TYPE,
-    :jilter_filter_patterns => JILTER_FILTER_PATTERNS
+    :log_name => 'jilter',
+    :filter_patterns => JILTER_FILTER_PATTERNS
   )
   only_if {
     NODE_TYPE == 'internet-submit' ||
@@ -276,15 +302,140 @@ template 'fluentd-match-jilter' do
   }
 end
 
-# All instances - Start Order: 50
-template 'fluentd-filter-maillog' do
-  path "#{CONF_DIR}/50-filter-maillog.conf"
-  source 'fluentd-filter-maillog.conf.erb'
+# All instances except extended delivery - Start Order: 20
+template 'fluentd-match-lifecycle' do
+  path "#{CONF_DIR}/20-match-lifecycle.conf"
+  source 'fluentd-match-generic.conf.erb'
   mode '0644'
   owner 'root'
   group 'root'
   variables(
     :application_name => NODE_TYPE,
+    :log_name => 'lifecycle',
+    :filter_patterns => LIFECYCLE_FILTER_PATTERNS
+  )
+  not_if {
+    NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'internet-xdelivery' ||
+    NODE_TYPE == 'risky-xdelivery' ||
+    NODE_TYPE == 'warmup-xdelivery' ||
+    NODE_TYPE == 'beta-xdelivery' ||
+    NODE_TYPE == 'delta-xdelivery'
+  }
+end
+
+# internet-delivery - Start Order: 20
+ template 'fluentd-match-messagebouncer' do
+   path "#{CONF_DIR}/20-match-messagebouncer.conf"
+   source 'fluentd-match-generic.conf.erb'
+   mode '0644'
+   owner 'root'
+   group 'root'
+   variables(
+    :application_name => NODE_TYPE,
+    :log_name => 'messagebouncer',
+    :filter_patterns => MESSAGEBOUNCER_FILTER_PATTERNS
+  )
+   only_if {
+     NODE_TYPE == 'internet-delivery' ||
+     NODE_TYPE == 'risky-delivery' ||
+     NODE_TYPE == 'warmup-delivery' ||
+     NODE_TYPE == 'beta-delivery'||
+     NODE_TYPE == 'delta-delivery'
+   }
+ end
+
+# internet-submit - Start Order: 20
+template 'fluentd-match-multi-policy' do
+  path "#{CONF_DIR}/20-match-multi-policy.conf"
+  source 'fluentd-match-generic.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :application_name => NODE_TYPE,
+    :log_name => 'multi-policy',
+    :filter_patterns => MULTIPOLICY_FILTER_PATTERNS
+  )
+  only_if {
+    NODE_TYPE == 'internet-submit'
+  }
+end
+
+# internet-submit and customer-submit - Start Order: 20
+template 'fluentd-match-policy' do
+  path "#{CONF_DIR}/20-match-policy.conf"
+  source 'fluentd-match-generic.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :application_name => NODE_TYPE,
+    :log_name => 'policy',
+    :filter_patterns => POLICY_FILTER_PATTERNS
+  )
+  only_if {
+    NODE_TYPE == 'internet-submit' ||
+    NODE_TYPE == 'customer-submit'
+  }
+end
+
+# Submit instances - Start Order: 20
+template 'fluentd-match-sqsmsgproducer' do
+  path "#{CONF_DIR}/20-match-sqsmsgproducer.conf"
+  source 'fluentd-match-generic.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :application_name => NODE_TYPE,
+    :log_name => 'sqsmsgproducer',
+    :filter_patterns => SQSMSGPRODUCER_FILTER_PATTERNS
+  )
+  only_if {
+    NODE_TYPE == 'internet-submit' ||
+    NODE_TYPE == 'customer-submit'||
+    NODE_TYPE == 'encryption-submit'
+  }
+end
+
+# All delivery instances - Start Order: 20
+template 'fluentd-match-sqsmsgconsumer' do
+  path "#{CONF_DIR}/20-match-sqsmsgconsumer.conf"
+  source 'fluentd-match-generic.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :application_name => NODE_TYPE,
+    :log_name => 'sqsmsgconsumer',
+    :filter_patterns => SQSMSGCONSUMER_FILTER_PATTERNS
+  )
+  only_if {
+    NODE_TYPE == 'customer-delivery' ||
+    NODE_TYPE == 'internet-delivery' ||
+    NODE_TYPE == 'encryption-delivery' ||
+    NODE_TYPE == 'risky-delivery' ||
+    NODE_TYPE == 'warmup-delivery' ||
+    NODE_TYPE == 'beta-delivery' ||
+    NODE_TYPE == 'delta-delivery'
+  }
+end
+
+### Fluentd Filter Configuration Files ###
+
+# All instances - Start Order: 50
+template 'fluentd-filter-maillog' do
+  path "#{CONF_DIR}/50-filter-maillog.conf"
+  source 'fluentd-filter-generic.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :application_name => NODE_TYPE,
+    :log_name => 'maillog',
+    :grok_pattern => 'MAILLOG',
+    :reserve_data => 'false',
     :patterns_dir => PATTERNS_DIR
   )
 end
@@ -292,12 +443,15 @@ end
 # Submit instances - Start Order: 50
 template 'fluentd-filter-jilter' do
   path "#{CONF_DIR}/50-filter-jilter.conf"
-  source 'fluentd-filter-jilter.conf.erb'
+  source 'fluentd-filter-generic.conf.erb'
   mode '0644'
   owner 'root'
   group 'root'
   variables(
     :application_name => NODE_TYPE,
+    :log_name => 'jilter',
+    :grok_pattern => 'JILTER',
+    :reserve_data => 'true',
     :patterns_dir => PATTERNS_DIR
   )
   only_if {
@@ -307,6 +461,140 @@ template 'fluentd-filter-jilter' do
   }
 end
 
+# All instances except extended delivery - Start Order: 50
+template 'fluentd-filter-lifecycle' do
+  path "#{CONF_DIR}/50-filter-lifecycle.conf"
+  source 'fluentd-filter-generic.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :application_name => NODE_TYPE,
+    :log_name => 'lifecycle',
+    :grok_pattern => 'LIFECYCLE',
+    :reserve_data => 'true',
+    :patterns_dir => PATTERNS_DIR
+  )
+  not_if {
+    NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'internet-xdelivery' ||
+    NODE_TYPE == 'risky-xdelivery' ||
+    NODE_TYPE == 'warmup-xdelivery' ||
+    NODE_TYPE == 'beta-xdelivery' ||
+    NODE_TYPE == 'delta-xdelivery'
+  }
+end
+
+# internet-delivery - Start Order: 50
+ template 'fluentd-filter-messagebouncer' do
+   path "#{CONF_DIR}/50-filter-messagebouncer.conf"
+   source 'fluentd-filter-generic.conf.erb'
+   mode '0644'
+   owner 'root'
+   group 'root'
+   variables(
+    :application_name => NODE_TYPE,
+    :log_name => 'messagebouncer',
+    :grok_pattern => 'MESSAGEBOUNCER',
+    :reserve_data => 'true',
+    :patterns_dir => PATTERNS_DIR
+  )
+   only_if {
+     NODE_TYPE == 'internet-delivery' ||
+     NODE_TYPE == 'risky-delivery' ||
+     NODE_TYPE == 'warmup-delivery' ||
+     NODE_TYPE == 'beta-delivery'||
+     NODE_TYPE == 'delta-delivery'
+   }
+ end
+
+# internet-submit - Start Order: 50
+template 'fluentd-filter-multi-policy' do
+  path "#{CONF_DIR}/50-filter-multi-policy.conf"
+  source 'fluentd-filter-generic.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :application_name => NODE_TYPE,
+    :log_name => 'multi-policy',
+    :grok_pattern => 'MULTIPOLICY',
+    :reserve_data => 'true',
+    :patterns_dir => PATTERNS_DIR
+  )
+  only_if {
+    NODE_TYPE == 'internet-submit'
+  }
+end
+
+# internet-submit and customer-submit - Start Order: 50
+template 'fluentd-filter-policy' do
+  path "#{CONF_DIR}/50-filter-policy.conf"
+  source 'fluentd-filter-generic.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :application_name => NODE_TYPE,
+    :log_name => 'policy',
+    :grok_pattern => 'POLICY',
+    :reserve_data => 'true',
+    :patterns_dir => PATTERNS_DIR
+  )
+  only_if {
+    NODE_TYPE == 'internet-submit' ||
+    NODE_TYPE == 'customer-submit'
+  }
+end
+
+# Submit instances - Start Order: 50
+template 'fluentd-filter-sqsmsgproducer' do
+  path "#{CONF_DIR}/50-filter-sqsmsgproducer.conf"
+  source 'fluentd-filter-generic.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :application_name => NODE_TYPE,
+    :log_name => 'sqsmsgproducer',
+    :grok_pattern => 'SQSMSGPRODUCER',
+    :reserve_data => 'true',
+    :patterns_dir => PATTERNS_DIR
+  )
+  only_if {
+    NODE_TYPE == 'internet-submit' ||
+    NODE_TYPE == 'customer-submit'||
+    NODE_TYPE == 'encryption-submit'
+  }
+end
+
+# All delivery instances - Start Order: 50
+template 'fluentd-filter-sqsmsgconsumer' do
+  path "#{CONF_DIR}/50-filter-sqsmsgconsumer.conf"
+  source 'fluentd-filter-generic.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :application_name => NODE_TYPE,
+    :log_name => 'sqsmsgconsumer',
+    :grok_pattern => 'SQSMSGCONSUMER',
+    :reserve_data => 'true',
+    :patterns_dir => PATTERNS_DIR
+  )
+  only_if {
+    NODE_TYPE == 'customer-delivery' ||
+    NODE_TYPE == 'internet-delivery' ||
+    NODE_TYPE == 'encryption-delivery' ||
+    NODE_TYPE == 'risky-delivery' ||
+    NODE_TYPE == 'warmup-delivery' ||
+    NODE_TYPE == 'beta-delivery' ||
+    NODE_TYPE == 'delta-delivery'
+  }
+end
+
+### Fluentd Customized Configuration Files ###
+#
 # Only internet-submit  - Start Order: 60
 template 'fluentd-match-msg-stats-reject' do
   path "#{CONF_DIR}/60-match-msg-stats-reject.conf"
@@ -545,9 +833,9 @@ template 'fluentd-match-sns-msg-stats-reject' do
   }
 end
 
-cookbook_file 'postfix grok patterns' do
-  path "#{PATTERNS_DIR}/postfix"
-  source 'postfix.grok'
+cookbook_file 'maillog grok patterns' do
+  path "#{PATTERNS_DIR}/maillog"
+  source 'maillog.grok'
   mode '0644'
   owner 'root'
   group 'root'
@@ -557,6 +845,60 @@ end
 cookbook_file 'jilter grok patterns' do
   path "#{PATTERNS_DIR}/jilter"
   source 'jilter.grok'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  action :create
+end
+
+cookbook_file 'lifecycle grok patterns' do
+  path "#{PATTERNS_DIR}/lifecycle"
+  source 'lifecycle.grok'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  action :create
+end
+
+cookbook_file 'messagebouncer grok patterns' do
+  path "#{PATTERNS_DIR}/messagebouncer"
+  source 'messagebouncer.grok'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  action :create
+end
+
+cookbook_file 'multi-policy grok patterns' do
+  path "#{PATTERNS_DIR}/multi-policy"
+  source 'multi-policy.grok'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  action :create
+end
+
+cookbook_file 'policy grok patterns' do
+  path "#{PATTERNS_DIR}/policy"
+  source 'policy.grok'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  action :create
+end
+
+cookbook_file 'sqsmsgconsumer grok patterns' do
+  path "#{PATTERNS_DIR}/sqsmsgconsumer"
+  source 'sqsmsgconsumer.grok'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  action :create
+end
+
+cookbook_file 'sqsmsgproducer grok patterns' do
+  path "#{PATTERNS_DIR}/sqsmsgproducer"
+  source 'sqsmsgproducer.grok'
   mode '0644'
   owner 'root'
   group 'root'
