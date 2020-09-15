@@ -1,0 +1,17 @@
+<match raw.<%= @log_name %>.log>
+  @type rewrite_tag_filter
+  <rule>
+    key message
+    pattern  <%= @filter_patterns %>
+    tag clear
+  </rule>
+  <rule>
+    key message
+    pattern .+
+    tag sophos.xgemail.<%= @application_name %>.<%= @log_name %>
+  </rule>
+</match>
+
+<match clear>
+  @type null
+</match>
