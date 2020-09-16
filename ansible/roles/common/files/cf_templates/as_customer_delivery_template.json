@@ -581,8 +581,7 @@
       "Condition": "EnableScaleInOutOnWeekdays",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "MinSize": { "Ref": "ScheduledAutoScalingOutsideBusinessHourMinSize" },
-        "MaxSize": { "Ref": "ScheduledAutoScalingOutsideBusinessHourMaxSize" },
+        "DesiredCapacity": "3",
         "Recurrence": { "Ref": "ScaleInOnWeekdaysCron" }
       }
     },
@@ -592,8 +591,7 @@
       "Condition": "EnableScaleInOutOnWeekdays",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "MinSize": { "Ref": "ScheduledAutoScalingInsideBusinessHourMinSize" },
-        "MaxSize": { "Ref": "ScheduledAutoScalingInsideBusinessHourMaxSize" },
+        "DesiredCapacity": "3",
         "Recurrence": { "Ref": "ScaleOutOnWeekdaysCron" }
       }
     },
