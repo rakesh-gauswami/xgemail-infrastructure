@@ -181,25 +181,15 @@
       "Type": "String",
       "Default": "00 08 * * 1-5"
     },
-    "ScheduledAutoScalingOutsideBusinessHourMinSize": {
-      "Description": "Minimum number of instances in the Auto Scaling Group outside of business hour.",
+    "ScheduledAutoScalingOutsideBusinessHourDesiredCapacity": {
+      "Description": "DesiredCapacity of instances in the Auto Scaling Group outside of business hour.",
       "Type": "String",
       "Default": "2"
     },
-    "ScheduledAutoScalingOutsideBusinessHourMaxSize": {
-      "Description": "Maximum number of instances in the Auto Scaling Group outside of business hour.",
+    "ScheduledAutoScalingInsideBusinessHourDesiredCapacity": {
+      "Description": "DesiredCapacity of instances in the Auto Scaling Group inside of business hour.",
       "Type": "String",
-      "Default": "2"
-    },
-    "ScheduledAutoScalingInsideBusinessHourMinSize": {
-      "Description": "Minimum number of instances in the Auto Scaling Group inside of business hour.",
-      "Type": "String",
-      "Default": "4"
-    },
-    "ScheduledAutoScalingInsideBusinessHourMaxSize": {
-      "Description": "Maximum number of instances in the Auto Scaling Group inside of business hour.",
-      "Type": "String",
-      "Default": "8"
+      "Default": "3"
     },
     "SecurityGroups": {
       "Description": "The security group that allows communication within the VPC.",
@@ -604,8 +594,7 @@
       "Condition": "EnableScaleInOutOnWeekdays",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "MinSize": { "Ref": "ScheduledAutoScalingOutsideBusinessHourMinSize" },
-        "MaxSize": { "Ref": "ScheduledAutoScalingOutsideBusinessHourMaxSize" },
+        "DesiredCapacity": {"Ref": "ScheduledAutoScalingOutsideBusinessHourDesiredCapacity"},
         "Recurrence": { "Ref": "ScaleInOnWeekdaysCron" }
       }
     },
@@ -615,8 +604,7 @@
       "Condition": "EnableScaleInOutOnWeekdays",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "MinSize": { "Ref": "ScheduledAutoScalingInsideBusinessHourMinSize" },
-        "MaxSize": { "Ref": "ScheduledAutoScalingInsideBusinessHourMaxSize" },
+        "DesiredCapacity": {"Ref": "ScheduledAutoScalingInsideBusinessHourDesiredCapacity"},
         "Recurrence": { "Ref": "ScaleOutOnWeekdaysCron" }
       }
     },
