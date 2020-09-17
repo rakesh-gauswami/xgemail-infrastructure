@@ -79,7 +79,6 @@ sqs:
   #
   additional_action_sqs_queue_sns_listener:             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_AdditionalActions_SNS_Listener"
   allow_block_upload_sqs_queue:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Allow_Block_Upload"
-  archive_ingestion_sqs_queue:                          "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail-archive_injestion_queue"
   atr_reindex_sqs_queue_sns_listener:                   "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Atr_Reindex_SNS_Listener"
   beta_delivery_sqs_queue_sns_listener:                 "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Beta_Delivery_SNS_Listener"
   bulk_sender_action_sqs_queue:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Bulk_Sender_Action"
@@ -287,7 +286,6 @@ stack:
   sqs:
     additional_action_sqs_queue_sns_listener:           "{{vpc.cloud_email.name}}-XGEMAIL-AdditionalActions-SQS-SNS-Listener"
     allow_block_upload_sqs_queue:                       "{{vpc.cloud_email.name}}-XGEMAIL-allow-block-upload-SQS"
-    archive_ingestion_sqs_queue:                        "{{vpc.cloud_email.name}}-XGEMAIL-archive-injestion-SQS"
     atr_reindex_sqs_queue_sns_listener:                 "{{vpc.cloud_email.name}}-XGEMAIL-Xgemail-Atr-Reindex-SNS-Listener"
     beta_delivery_sqs_queue_sns_listener:               "{{vpc.cloud_email.name}}-XGEMAIL-beta-delivery-SQS-SNS-listener"
     bulk_sender_action_sqs_queue:                       "{{vpc.cloud_email.name}}-XGEMAIL-bulk-sender-action-SQS"
