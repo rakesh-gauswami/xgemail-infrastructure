@@ -26,7 +26,6 @@ JILTER_FILTER_PATTERNS          = "(com\\.launchdarkly\\.client\\.LDClient|com\\
 LIFECYCLE_FILTER_PATTERNS       = "(?!.*)"
 MESSAGEBOUNCER_FILTER_PATTERNS  = "(?!.*)"
 MULTIPOLICY_FILTER_PATTERNS     = "(?!.*)"
-POLICY_FILTER_PATTERNS          = "(?!.*)"
 SQSMSGCONSUMER_FILTER_PATTERNS  = "(?!.*)"
 SQSMSGPRODUCER_FILTER_PATTERNS  = "(?!.*)"
 
@@ -193,23 +192,6 @@ template 'fluentd-source-multi-policy' do
   }
 end
 
-# internet-submit and customer-submit - Start Order: 10
-template 'fluentd-source-policy' do
-  path "#{CONF_DIR}/10-source-policy.conf"
-  source 'fluentd-source-generic.conf.erb'
-  mode '0644'
-  owner 'root'
-  group 'root'
-  variables(
-    :log_name => 'policy',
-    :log_path => '/var/log/xgemail/policy.log'
-  )
-  only_if {
-    NODE_TYPE == 'internet-submit' ||
-    NODE_TYPE == 'customer-submit'
-  }
-end
-
 # All delivery instances - Start Order: 10
 template 'fluentd-source-sqsmsgconsumer' do
   path "#{CONF_DIR}/10-source-sqsmsgconsumer.conf"
@@ -362,24 +344,6 @@ template 'fluentd-match-multi-policy' do
   }
 end
 
-# internet-submit and customer-submit - Start Order: 20
-template 'fluentd-match-policy' do
-  path "#{CONF_DIR}/20-match-policy.conf"
-  source 'fluentd-match-generic.conf.erb'
-  mode '0644'
-  owner 'root'
-  group 'root'
-  variables(
-    :application_name => NODE_TYPE,
-    :log_name => 'policy',
-    :filter_patterns => POLICY_FILTER_PATTERNS
-  )
-  only_if {
-    NODE_TYPE == 'internet-submit' ||
-    NODE_TYPE == 'customer-submit'
-  }
-end
-
 # Submit instances - Start Order: 20
 template 'fluentd-match-sqsmsgproducer' do
   path "#{CONF_DIR}/20-match-sqsmsgproducer.conf"
@@ -524,26 +488,6 @@ template 'fluentd-filter-multi-policy' do
   )
   only_if {
     NODE_TYPE == 'internet-submit'
-  }
-end
-
-# internet-submit and customer-submit - Start Order: 50
-template 'fluentd-filter-policy' do
-  path "#{CONF_DIR}/50-filter-policy.conf"
-  source 'fluentd-filter-generic.conf.erb'
-  mode '0644'
-  owner 'root'
-  group 'root'
-  variables(
-    :application_name => NODE_TYPE,
-    :log_name => 'policy',
-    :grok_pattern => 'POLICY',
-    :reserve_data => 'true',
-    :patterns_dir => PATTERNS_DIR
-  )
-  only_if {
-    NODE_TYPE == 'internet-submit' ||
-    NODE_TYPE == 'customer-submit'
   }
 end
 
@@ -872,15 +816,6 @@ end
 cookbook_file 'multi-policy grok patterns' do
   path "#{PATTERNS_DIR}/multi-policy"
   source 'multi-policy.grok'
-  mode '0644'
-  owner 'root'
-  group 'root'
-  action :create
-end
-
-cookbook_file 'policy grok patterns' do
-  path "#{PATTERNS_DIR}/policy"
-  source 'policy.grok'
   mode '0644'
   owner 'root'
   group 'root'
