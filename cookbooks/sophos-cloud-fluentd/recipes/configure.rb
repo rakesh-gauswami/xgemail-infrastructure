@@ -23,12 +23,12 @@ DELIVERY_STATUS_SNS_TOPIC       = node['xgemail']['msg_history_status_sns_topic'
 SERVER_IP                       = node['ipaddress']
 MAILLOG_FILTER_PATTERNS         = "(\\.#{REGION}\\.compute\\.internal|:\\sdisconnect\\sfrom\\s|\\swarning:\\shostname\\s|:\\sremoved\\s|table\\shash:|sm-msp-queue|:\\sstatistics:\\s)"
 JILTER_FILTER_PATTERNS          = "(com\\.launchdarkly\\.client\\.LDClient|com\\.launchdarkly\\.client\\.LDUser)"
-LIFECYCLE_FILTER_PATTERNS       = ""
-MESSAGEBOUNCER_FILTER_PATTERNS  = ""
-MULTIPOLICY_FILTER_PATTERNS     = ""
-POLICY_FILTER_PATTERNS          = ""
-SQSMSGCONSUMER_FILTER_PATTERNS  = ""
-SQSMSGPRODUCER_FILTER_PATTERNS  = ""
+LIFECYCLE_FILTER_PATTERNS       = "(?!.*)"
+MESSAGEBOUNCER_FILTER_PATTERNS  = "(?!.*)"
+MULTIPOLICY_FILTER_PATTERNS     = "(?!.*)"
+POLICY_FILTER_PATTERNS          = "(?!.*)"
+SQSMSGCONSUMER_FILTER_PATTERNS  = "(?!.*)"
+SQSMSGPRODUCER_FILTER_PATTERNS  = "(?!.*)"
 
 # Configs
 if NODE_TYPE == 'customer-delivery'
