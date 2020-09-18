@@ -50,8 +50,6 @@ class Terminator(object):
         self.lifecycle_hook_name = hook
         self.lifecycle_action_token = token
         self.sqs_consumer_service = "<%= @sqs_consumer_service_name %>"
-        self.sns_policy_arn = "<%= @sns_policy_arn %>"
-        self.sqs_policy_queue_name = "<%= @sqs_policy_queue_name %>"
         self.postfix_queue_count = None
         self.postfix_queue_flushed = False
 
@@ -377,6 +375,4 @@ if __name__ == '__main__':
     print json.dumps(response)
     t.service_controller('postfixStats', 'stop')
     t.service_controller('postfix', 'stop')
-    if t.postfix_instance == 'postfix-is' or t.postfix_instance == 'postfix-cs':
-        t.sqs_sns_cleanup()
     sys.exit(queue_count)
