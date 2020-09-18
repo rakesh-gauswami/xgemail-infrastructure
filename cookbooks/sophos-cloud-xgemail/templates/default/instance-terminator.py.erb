@@ -244,30 +244,6 @@ class Terminator(object):
             self.logger.critical(error_message)
             return self.postfix_queue_count
 
-    def sqs_sns_cleanup(self):
-        """
-        Unsubscribe SQS Queue from SNS Topic
-        """
-        for service in os.listdir('/etc/init.d/'):
-            if service.startswith('xgemail-'):
-                self.service_controller(service, 'stop')
-        try:
-            sqs_policy_queue = self.sqs.get_queue_by_name(QueueName=self.sqs_policy_queue_name)
-            sqs_policy_queue_dlq = self.sqs.get_queue_by_name(QueueName=self.sqs_policy_queue_name + '-DLQ')
-            sns_policy_topic = self.sns.Topic(self.sns_policy_arn)
-            self.logger.info('Getting policy subscription ARN.')
-            sns_policy_subscription = [s for s in sns_policy_topic.subscriptions.all() if s.attributes['Endpoint'] == sqs_policy_queue.attributes['QueueArn']][0]
-            self.logger.info("Unsubscribing SNS Subscription {}.".format(sns_policy_subscription.arn))
-            sns_policy_subscription.delete()
-            self.logger.info("Deleting SQS queue {}".format(sqs_policy_queue.url))
-            sqs_policy_queue.delete()
-            self.logger.info("Deleting SQS queue {}".format(sqs_policy_queue_dlq.url))
-            sqs_policy_queue_dlq.delete()
-            self.logger.info("Finished SQS and SNS Cleanup.")
-        except ClientError as e:
-            self.logger.exception("Exception during SQS and SNS cleanup: {}".format(e.response['Error']['Code']))
-            pass
-
 
 class LifecycleHook(object):
 
