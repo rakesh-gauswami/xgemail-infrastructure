@@ -155,6 +155,12 @@
       "Default": "false",
       "AllowedValues": [ "true", "false" ]
     },
+    "ScaleInAndOutOnWeekdays": {
+      "Description": "Enable scale in on at evening and scale out on morning.  (Times are UTC)",
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [ "true", "false" ]
+    },
     "ScaleInCron": {
       "Description": "Cron string for when to begin scale in.",
       "Type": "String",
@@ -164,6 +170,26 @@
       "Description": "Cron string for when to begin scale out.",
       "Type": "String",
       "Default": "0 4 * * 1"
+    },
+    "ScaleInOnWeekdaysCron": {
+      "Description": "Cron string for when to begin scale in.",
+      "Type": "String",
+      "Default": "00 18 * * 1-5"
+    },
+    "ScaleOutOnWeekdaysCron": {
+      "Description": "Cron string for when to begin scale out.",
+      "Type": "String",
+      "Default": "00 08 * * 1-5"
+    },
+    "ScheduledAutoScalingOutsideBusinessHourDesiredCapacity": {
+      "Description": "DesiredCapacity of instances in the Auto Scaling Group outside of business hour.",
+      "Type": "String",
+      "Default": "2"
+    },
+    "ScheduledAutoScalingInsideBusinessHourDesiredCapacity": {
+      "Description": "DesiredCapacity of instances in the Auto Scaling Group inside of business hour.",
+      "Type": "String",
+      "Default": "3"
     },
     "SecurityGroups": {
       "Description": "The security group that allows communication within the VPC.",
@@ -393,6 +419,12 @@
         }
       ]
     },
+    "EnableScaleInOutOnWeekdays": {
+      "Fn::Equals": [
+        { "Ref": "ScaleInAndOutOnWeekdays" },
+        "true"
+      ]
+    },
     "IsInfDevelopmentEnvironment": {
       "Fn::Or": [
         {
@@ -557,7 +589,25 @@
         "Recurrence": { "Ref": "ScaleOutCron" }
       }
     },
+    "AutoScalingScheduledScaleInWeekdays": {
+      "Type": "AWS::AutoScaling::ScheduledAction",
+      "Condition": "EnableScaleInOutOnWeekdays",
+      "Properties": {
+        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
+        "DesiredCapacity": {"Ref": "ScheduledAutoScalingOutsideBusinessHourDesiredCapacity"},
+        "Recurrence": { "Ref": "ScaleInOnWeekdaysCron" }
+      }
+    },
 
+    "AutoScalingScheduledScaleOutWeekdays": {
+      "Type": "AWS::AutoScaling::ScheduledAction",
+      "Condition": "EnableScaleInOutOnWeekdays",
+      "Properties": {
+        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
+        "DesiredCapacity": {"Ref": "ScheduledAutoScalingInsideBusinessHourDesiredCapacity"},
+        "Recurrence": { "Ref": "ScaleOutOnWeekdaysCron" }
+      }
+    },
     "XgemailScaleOutPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
       "Properties": {
