@@ -293,7 +293,7 @@ class LifecycleHook(object):
         """
         Calculates elapsed time: Current time in AWS format '%Y-%m-%dT%H:%M:%S.%fZ' minus the Heartbeat Start Time in AWS format.
         """
-        seconds_buffer = 60
+        seconds_buffer = 90
         elapsed_time = datetime.strptime(datetime.now().strftime(self.aws_time_format), self.aws_time_format) - self.heartbeat_start_time
         elapsed_time.total_seconds()
         self.logger.info("Time Check - Elapsed Time: {:04.1f} seconds, Heartbeat Timeout: {} seconds, Heartbeat Request Count: {}".format(elapsed_time.total_seconds(), self.heartbeat_timeout, self.heartbeat_request_count))
