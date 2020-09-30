@@ -102,6 +102,7 @@ module SophosCloudXgemail
     def get_hostname ( type )
       region = node['sophos_cloud']['region']
       account = node['sophos_cloud']['environment']
+      ec2 = Aws::EC2::Client.new(region: region)
       case type
         when 'internet-submit'
           return "mx-01-#{region}.#{account}.hydra.sophos.com"
@@ -116,8 +117,9 @@ module SophosCloudXgemail
             # Return docker instance fully qualified domain name
             return node['fqdn']
           else
-            # Get a clean EIP from the pool and associate to the instance, errors are handled within the function
-            eip = node['cloud']['public_ipv4']
+            instance_id = node['ec2']['instance_id']
+            instance = Aws::EC2::Instance.new(instance_id, options={client: ec2})
+            eip = instance.public_ip_address
             begin
               # Lookup the reverse DNS record of the EIP and use it as postfix hostname
               Chef::Log.info("Getting reverse DNS of EIP: #{eip}")
@@ -139,7 +141,6 @@ module SophosCloudXgemail
           subnet_id = node['ec2']['network_interfaces_macs'][mac]['subnet_id']
           destination_cidr_block = '0.0.0.0/0'
           begin
-            ec2 = Aws::EC2::Client.new(region: region)
             resp = ec2.describe_route_tables({
                 filters:[{
                     name:'association.subnet-id',
