@@ -60,7 +60,7 @@ end
 if ACCOUNT == 'prod'
   REFLEXION_RELAY_ALLOW_IPS = '208.70.208.0/22'
 else
-  REFLEXION_RELAY_ALLOW_IPS = '208.70.208.0/22,52.11.211.86,52.26.62.6,198.144.101.58'
+  REFLEXION_RELAY_ALLOW_IPS = '208.70.208.0/22,52.11.211.86,52.26.62.6'
 end
 # Modify /etc/rsyslog.conf
 execute 'modify_rsyslog.conf' do

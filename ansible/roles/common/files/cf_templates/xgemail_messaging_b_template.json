@@ -55,10 +55,6 @@
       "Description": "Endpoint ARN for Customer License Update SQS Queue",
       "Type": "String"
     },
-    "ArchiveIngestionQueue":{
-      "Description": "Archive Ingestion SQS queue",
-      "Type": "String"
-    },
     "EncryptEventsTopicArn": {
       "Description": "TopicArn of Encrypt Events SNS",
       "Type": "String"
@@ -142,48 +138,12 @@
         "TopicArn": { "Ref": "DeltaDeliveryTopicArn"}
       }
     },
-    "JournalArchiveDeliverySnsToArchiveIngestionQueueSubscription": {
-      "Type" : "AWS::SNS::Subscription",
-      "Properties": {
-        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "ArchiveIngestionQueue"}]]},
-        "Protocol": "sqs",
-        "TopicArn": { "Ref": "JournalArchiveDeliveryTopicArn"},
-        "RawMessageDelivery": "true"
-      }
-    },
-    "EncryptEventSnsToArchiveIngestionQueueSubscription": {
-      "Type" : "AWS::SNS::Subscription",
-      "Properties": {
-        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "ArchiveIngestionQueue"}]]},
-        "Protocol": "sqs",
-        "TopicArn": { "Ref": "EncryptEventsTopicArn"},
-        "RawMessageDelivery": "true"
-      }
-    },
     "SenderCheckRejectQueueToSenderCheckRejectSnsSubscription": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
         "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "SenderCheckRejectQueue"}]]},
         "Protocol": "sqs",
         "TopicArn": { "Ref": "SenderCheckRejectTopicArn"},
-        "RawMessageDelivery": "true"
-      }
-    },
-    "SuccessEventsSnsToArchiveIngestionQueueSubscription": {
-      "Type" : "AWS::SNS::Subscription",
-      "Properties": {
-        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "ArchiveIngestionQueue"}]]},
-        "Protocol": "sqs",
-        "TopicArn": { "Ref": "XgemailSuccessEventTopicArn"},
-        "RawMessageDelivery": "true"
-      }
-    },
-    "InternetDeliverySnsToArchiveIngestionQueueSubscription": {
-      "Type" : "AWS::SNS::Subscription",
-      "Properties": {
-        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "ArchiveIngestionQueue"}]]},
-        "Protocol": "sqs",
-        "TopicArn": { "Ref": "InternetDeliveryTopicArn"},
         "RawMessageDelivery": "true"
       }
     },
@@ -256,66 +216,6 @@
           ]
         },
         "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "CustomerLicenseUpdateQueue" }]]}]
-      }
-    },
-    "ArchiveIngestionQueuePolicy": {
-      "Type": "AWS::SQS::QueuePolicy",
-      "Properties": {
-        "PolicyDocument": {
-          "Version": "2012-10-17",
-          "Id": "ArchiveIngestionQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
-          "Statement": [
-            {
-              "Sid": "Allow-JournalArchiveDeliveryTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "JournalArchiveDeliveryTopicArn"}
-                }
-              }
-            },
-            {
-              "Sid": "Allow-InternetDeliveryTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "InternetDeliveryTopicArn"}
-                }
-              }
-            },
-            {
-              "Sid": "Allow-XgEmailSuccessEventsTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "XgemailSuccessEventTopicArn"}
-                }
-              }
-            },
-            {
-              "Sid": "Allow-XgEmailSuccessEventsTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "EncryptEventsTopicArn"}
-                }
-              }
-            }
-          ]
-        },
-        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "ArchiveIngestionQueue" }]]}]
       }
     },
     "SenderCheckRejectQueuePolicy": {

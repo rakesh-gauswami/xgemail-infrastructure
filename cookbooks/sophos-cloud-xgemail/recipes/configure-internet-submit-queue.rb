@@ -286,7 +286,6 @@ if ACCOUNT != 'sandbox'
   include_recipe 'sophos-cloud-xgemail::setup_internet_submit_domain_updater_cron'
   include_recipe 'sophos-cloud-xgemail::setup_internet_submit_recipient_updater_cron'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
-  include_recipe 'sophos-cloud-xgemail::setup_xgemail_policy_service'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_multi_policy_service'
   include_recipe 'sophos-cloud-xgemail::setup_push_policy_submit_toggle'
 
@@ -305,6 +304,5 @@ else
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_utils_structure'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_processors_structure'
-  include_recipe 'sophos-cloud-xgemail::setup_xgemail_policy_service'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_multi_policy_service'
 end
