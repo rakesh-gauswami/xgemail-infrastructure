@@ -399,7 +399,7 @@ template 'fluentd-filter-maillog' do
     :application_name => NODE_TYPE,
     :log_name => 'maillog',
     :grok_pattern => 'MAILLOG',
-    :reserve_data => 'false',
+    :reserve_data => 'true',
     :patterns_dir => PATTERNS_DIR
   )
 end
