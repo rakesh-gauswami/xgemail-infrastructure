@@ -59,6 +59,10 @@
       "Description": "Office 365 Disconnect SQS Queue",
       "Type": "String"
     },
+    "O365DomainSyncQueue": {
+      "Description": "Office 365 DomainSync SQS Queue",
+      "Type": "String"
+    },
     "EncryptEventsTopicArn": {
       "Description": "TopicArn of Encrypt Events SNS",
       "Type": "String"
@@ -85,6 +89,10 @@
     },
     "O365DisconnectEventTopicArn":{
       "Description": "Topic Arn of office 365 disconnect Events SNS",
+      "Type": "String"
+    },
+    "O365DomainSyncEventTopicArn":{
+      "Description": "Topic Arn of office 365 domain sync Events SNS",
       "Type": "String"
     }
   },
@@ -161,6 +169,15 @@
         "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "O365DisconnectQueue"}]]},
         "Protocol": "sqs",
         "TopicArn": { "Ref": "O365DisconnectEventTopicArn"},
+        "RawMessageDelivery": "true"
+      }
+    },
+    "O365DomainSyncQueueToO365DomainSyncSnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "O365DomainSyncQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "O365DomainSyncEventTopicArn"},
         "RawMessageDelivery": "true"
       }
     },
@@ -282,6 +299,30 @@
           ]
         },
         "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "O365DisconnectQueue" }]]}]
+      }
+    },
+    "O365DomainSyncQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "O365DomainSyncQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-O365DomainSyncEventTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "O365DomainSyncEventTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "O365DomainSyncQueue" }]]}]
       }
     }
   }
