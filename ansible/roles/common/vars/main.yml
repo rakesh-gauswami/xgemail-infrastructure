@@ -418,6 +418,18 @@ aws:
       template_parameters:
         TagApplication:                                           "xgemail-mail"
         TopicName:                                                "{{sns.notification_sns_topic}}"
+    o365_disconnect_events_sns_topic:
+      stack_name:                                                 "{{stack.sns.o365_disconnect_events_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TagApplication:                                           "xgemail-mail"
+        TopicName:                                                "{{sns.o365_disconnect_events_sns_topic}}"
+    o365_domainsync_events_sns_topic:
+      stack_name:                                                 "{{stack.sns.o365_domainsync_events_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TagApplication:                                           "xgemail-mail"
+        TopicName:                                                "{{sns.o365_domainsync_events_sns_topic}}"
     policy_sns_topic:
       stack_name:                                                 "{{stack.sns.policy_sns_topic}}"
       template:                                                   "{{template.sns.sns_topic_policy_s3_template}}"
@@ -793,6 +805,20 @@ aws:
         QueueName:                                                "{{sqs.outbound_malware_protection_unblock_sender_queue}}"
         DelaySeconds:                                             "900"
         TagApplication:                                           "xgemail-omp"
+    o365_disconnect_queue:
+      stack_name:                                                 "{{stack.sqs.o365_disconnect_queue}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.o365_disconnect_queue}}"
+        TagApplication:                                           "xgemail-mail"
+    o365_domainsync_queue:
+      stack_name:                                                 "{{stack.sqs.o365_domainsync_queue}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.o365_domainsync_queue}}"
+        TagApplication:                                           "xgemail-mail"
     policy_refresh_event_sqs_queue_sns_listener:
       stack_name:                                                 "{{stack.sqs.policy_refresh_event_sqs_queue_sns_listener}}"
       state:                                                      present

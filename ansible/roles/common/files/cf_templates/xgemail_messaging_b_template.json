@@ -19,6 +19,10 @@
   },
 
   "Parameters": {
+    "AdditionalActionQueue": {
+      "Description": "Endpoint ARN for Additional Action SQS Queue",
+      "Type": "String"
+    },
     "BetaDeliveryQueue": {
       "Description": "Endpoint for Beta delivery SQS queue",
       "Type": "String"
@@ -27,20 +31,32 @@
       "Description": "TopicArn of Beta Delivery Events SNS",
       "Type": "String"
     },
-    "DeltaDeliveryTopicArn": {
-      "Description": "TopicArn of Delta Delivery Events SNS",
-      "Type": "String"
-    },
     "CustomersV1TopicArn": {
       "Description": "Endpoint for customer license change event arn",
       "Type": "String"
     },
-    "AdditionalActionQueue": {
-      "Description": "Endpoint ARN for Additional Action SQS Queue",
+    "CustomerLicenseUpdateQueue": {
+      "Description": "Endpoint ARN for Customer License Update SQS Queue",
+      "Type": "String"
+    },
+    "DeltaDeliveryTopicArn": {
+      "Description": "TopicArn of Delta Delivery Events SNS",
       "Type": "String"
     },
     "DeltaDeliveryQueue": {
       "Description": "Endpoint for Delta delivery SQS queue",
+      "Type": "String"
+    },
+    "EncryptEventsTopicArn": {
+      "Description": "TopicArn of Encrypt Events SNS",
+      "Type": "String"
+    },
+    "InternetDeliveryTopicArn":{
+      "Description": "Topic Arn of Internet Delivery SNS",
+      "Type": "String"
+    },
+    "JournalArchiveDeliveryTopicArn":{
+      "Description": "TopicArn of Journal archive Events SNS",
       "Type": "String"
     },
     "MessageHistoryQueue": {
@@ -51,20 +67,20 @@
       "Description": "Endpoint for message statistics SQS queue",
       "Type": "String"
     },
-    "CustomerLicenseUpdateQueue": {
-      "Description": "Endpoint ARN for Customer License Update SQS Queue",
+    "O365DisconnectQueue": {
+      "Description": "Office 365 Disconnect SQS Queue",
       "Type": "String"
     },
-    "EncryptEventsTopicArn": {
-      "Description": "TopicArn of Encrypt Events SNS",
+    "O365DomainSyncQueue": {
+      "Description": "Office 365 DomainSync SQS Queue",
       "Type": "String"
     },
-    "JournalArchiveDeliveryTopicArn":{
-      "Description": "TopicArn of Journal archive Events SNS",
+    "O365DisconnectEventTopicArn":{
+      "Description": "Topic Arn of office 365 disconnect Events SNS",
       "Type": "String"
     },
-    "InternetDeliveryTopicArn":{
-      "Description": "Topic Arn of Internet Delivery SNS",
+    "O365DomainSyncEventTopicArn":{
+      "Description": "Topic Arn of office 365 domain sync Events SNS",
       "Type": "String"
     },
     "SenderCheckRejectTopicArn": {
@@ -144,6 +160,24 @@
         "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "SenderCheckRejectQueue"}]]},
         "Protocol": "sqs",
         "TopicArn": { "Ref": "SenderCheckRejectTopicArn"},
+        "RawMessageDelivery": "true"
+      }
+    },
+    "O365DisconnectQueueToO365DisconnectSnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "O365DisconnectQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "O365DisconnectEventTopicArn"},
+        "RawMessageDelivery": "true"
+      }
+    },
+    "O365DomainSyncQueueToO365DomainSyncSnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "O365DomainSyncQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "O365DomainSyncEventTopicArn"},
         "RawMessageDelivery": "true"
       }
     },
@@ -241,6 +275,54 @@
         },
         "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "SenderCheckRejectQueue" }]]}
         ]
+      }
+    },
+    "O365DisconnectQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "O365DisconnectQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-O365DisconnectEventTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "O365DisconnectEventTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "O365DisconnectQueue" }]]}]
+      }
+    },
+    "O365DomainSyncQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "O365DomainSyncQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-O365DomainSyncEventTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "O365DomainSyncEventTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "O365DomainSyncQueue" }]]}]
       }
     }
   }
