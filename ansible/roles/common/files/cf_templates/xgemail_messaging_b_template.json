@@ -19,6 +19,10 @@
   },
 
   "Parameters": {
+    "AdditionalActionQueue": {
+      "Description": "Endpoint ARN for Additional Action SQS Queue",
+      "Type": "String"
+    },
     "BetaDeliveryQueue": {
       "Description": "Endpoint for Beta delivery SQS queue",
       "Type": "String"
@@ -27,20 +31,32 @@
       "Description": "TopicArn of Beta Delivery Events SNS",
       "Type": "String"
     },
-    "DeltaDeliveryTopicArn": {
-      "Description": "TopicArn of Delta Delivery Events SNS",
-      "Type": "String"
-    },
     "CustomersV1TopicArn": {
       "Description": "Endpoint for customer license change event arn",
       "Type": "String"
     },
-    "AdditionalActionQueue": {
-      "Description": "Endpoint ARN for Additional Action SQS Queue",
+    "CustomerLicenseUpdateQueue": {
+      "Description": "Endpoint ARN for Customer License Update SQS Queue",
+      "Type": "String"
+    },
+    "DeltaDeliveryTopicArn": {
+      "Description": "TopicArn of Delta Delivery Events SNS",
       "Type": "String"
     },
     "DeltaDeliveryQueue": {
       "Description": "Endpoint for Delta delivery SQS queue",
+      "Type": "String"
+    },
+    "EncryptEventsTopicArn": {
+      "Description": "TopicArn of Encrypt Events SNS",
+      "Type": "String"
+    },
+    "InternetDeliveryTopicArn":{
+      "Description": "Topic Arn of Internet Delivery SNS",
+      "Type": "String"
+    },
+    "JournalArchiveDeliveryTopicArn":{
+      "Description": "TopicArn of Journal archive Events SNS",
       "Type": "String"
     },
     "MessageHistoryQueue": {
@@ -51,10 +67,6 @@
       "Description": "Endpoint for message statistics SQS queue",
       "Type": "String"
     },
-    "CustomerLicenseUpdateQueue": {
-      "Description": "Endpoint ARN for Customer License Update SQS Queue",
-      "Type": "String"
-    },
     "O365DisconnectQueue": {
       "Description": "Office 365 Disconnect SQS Queue",
       "Type": "String"
@@ -63,16 +75,12 @@
       "Description": "Office 365 DomainSync SQS Queue",
       "Type": "String"
     },
-    "EncryptEventsTopicArn": {
-      "Description": "TopicArn of Encrypt Events SNS",
+    "O365DisconnectEventTopicArn":{
+      "Description": "Topic Arn of office 365 disconnect Events SNS",
       "Type": "String"
     },
-    "JournalArchiveDeliveryTopicArn":{
-      "Description": "TopicArn of Journal archive Events SNS",
-      "Type": "String"
-    },
-    "InternetDeliveryTopicArn":{
-      "Description": "Topic Arn of Internet Delivery SNS",
+    "O365DomainSyncEventTopicArn":{
+      "Description": "Topic Arn of office 365 domain sync Events SNS",
       "Type": "String"
     },
     "SenderCheckRejectTopicArn": {
@@ -85,14 +93,6 @@
     },
     "XgemailSuccessEventTopicArn":{
       "Description": "Topic Arn of Xgemail success Events SNS",
-      "Type": "String"
-    },
-    "O365DisconnectEventTopicArn":{
-      "Description": "Topic Arn of office 365 disconnect Events SNS",
-      "Type": "String"
-    },
-    "O365DomainSyncEventTopicArn":{
-      "Description": "Topic Arn of office 365 domain sync Events SNS",
       "Type": "String"
     }
   },

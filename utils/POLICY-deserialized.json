@@ -1,0 +1,2370 @@
+{
+    "endpointId": "21ec71f2-88a1-4010-97a3-a9d108806dcd", 
+    "policyAttributes": {
+        "policyType": 53, 
+        "xgemail_dlp/delete/rules": [], 
+        "xgemail_dlp/has_adv_feature": true, 
+        "xgemail_dlp/has_feature": true, 
+        "xgemail_dlp/inbound/cf/keyword/action": "QUARANTINE", 
+        "xgemail_dlp/inbound/cf/keyword/enable": false, 
+        "xgemail_dlp/inbound/cf/keyword/list": [], 
+        "xgemail_dlp/inbound/cf/keyword/match_type": "EXACT", 
+        "xgemail_dlp/inbound/cf/keyword/subject_prefix": "[ATTACHMENT REMOVED]", 
+        "xgemail_dlp/inbound/cf/tft/action": "QUARANTINE", 
+        "xgemail_dlp/inbound/cf/tft/default_sophos": true, 
+        "xgemail_dlp/inbound/cf/tft/enable": false, 
+        "xgemail_dlp/inbound/cf/tft/groups": [], 
+        "xgemail_dlp/inbound/cf/tft/subject_prefix": "[ATTACHMENT REMOVED]", 
+        "xgemail_dlp/inbound/rules": [
+            {
+                "attachment_scan_type": "TRUE_FILE_TYPE_WITH_EXTENSION", 
+                "category": "KEYWORD", 
+                "ccl_names": [], 
+                "ccl_threshold": 1, 
+                "description": "", 
+                "external_user_list": [], 
+                "external_user_list_type": "ALL", 
+                "id": "26f3f727-23c9-44d2-ad42-c8f06b80621a", 
+                "is_ccl_threshold_match_all": false, 
+                "is_continue_processing": true, 
+                "is_enabled": true, 
+                "is_notify_administrator": false, 
+                "is_notify_recipient": false, 
+                "is_notify_sender": false, 
+                "is_sophos_default_ccl": true, 
+                "is_tag_subject_bounce": true, 
+                "is_tag_subject_encrypt": false, 
+                "is_tag_subject_redirect": true, 
+                "is_tag_subject_strip_attachment": true, 
+                "is_tft_default": true, 
+                "keyword_list": [
+                    {
+                        "search_content": "DqtM7RtoCaF0rDZUOJa09bbfV5wRGg0V6CbbZViNkQsbXz_@AI18240", 
+                        "type": "TEXT"
+                    }
+                ], 
+                "name": "GTUBE", 
+                "primary_action": "QUARANTINE", 
+                "rank": 1, 
+                "search_type": "SUBJECT_BODY_ATTACHMENT", 
+                "subject_prefix_attachment_removed": "[ATTACHMENT REMOVED]", 
+                "subject_prefix_bounced": "[BOUNCED]", 
+                "subject_prefix_encrypt": "[ENCRYPTED]", 
+                "subject_prefix_redirect": "[MESSAGE REDIRECTED]", 
+                "tft_list": []
+            }, 
+            {
+                "category": "KEYWORD", 
+                "ccl_names": [], 
+                "ccl_threshold": 1, 
+                "description": "Filter text in attachment name, subject and body.", 
+                "external_user_list": [], 
+                "external_user_list_type": "ALL", 
+                "id": "ca55e973-4423-4858-b376-9024fe119220", 
+                "is_ccl_threshold_match_all": false, 
+                "is_continue_processing": true, 
+                "is_enabled": false, 
+                "is_notify_administrator": false, 
+                "is_notify_recipient": false, 
+                "is_notify_sender": false, 
+                "is_sophos_default_ccl": false, 
+                "is_tag_subject_bounce": true, 
+                "is_tag_subject_encrypt": false, 
+                "is_tag_subject_redirect": true, 
+                "is_tag_subject_strip_attachment": true, 
+                "is_tft_default": true, 
+                "keyword_list": [
+                    {
+                        "search_content": "google", 
+                        "type": "TEXT"
+                    }
+                ], 
+                "name": "Keywords (Inbound)", 
+                "primary_action": "QUARANTINE", 
+                "rank": 1, 
+                "search_type": "SUBJECT_BODY_ATTACHMENT", 
+                "subject_prefix_attachment_removed": "[ATTACHMENT REMOVED]", 
+                "subject_prefix_bounced": "[BOUNCED]", 
+                "subject_prefix_encrypt": "[ENCRYPTED]", 
+                "subject_prefix_redirect": "[MESSAGE REDIRECTED]", 
+                "tft_list": []
+            }, 
+            {
+                "category": "FILE_TYPE", 
+                "ccl_names": [], 
+                "ccl_threshold": 1, 
+                "description": "Filter messages that contain potentially malicious attachment file types.", 
+                "external_user_list": [], 
+                "external_user_list_type": "ALL", 
+                "id": "5dbc3d8e-4526-4534-827f-d173f121d976", 
+                "is_ccl_threshold_match_all": false, 
+                "is_continue_processing": true, 
+                "is_enabled": false, 
+                "is_notify_administrator": false, 
+                "is_notify_recipient": false, 
+                "is_notify_sender": false, 
+                "is_sophos_default_ccl": false, 
+                "is_tag_subject_bounce": true, 
+                "is_tag_subject_encrypt": false, 
+                "is_tag_subject_redirect": true, 
+                "is_tag_subject_strip_attachment": true, 
+                "is_tft_default": true, 
+                "keyword_list": [], 
+                "name": "Attachment file types (Inbound)", 
+                "primary_action": "QUARANTINE", 
+                "rank": 1, 
+                "search_type": "SUBJECT_BODY_ATTACHMENT", 
+                "subject_prefix_attachment_removed": "[ATTACHMENT REMOVED]", 
+                "subject_prefix_bounced": "[BOUNCED]", 
+                "subject_prefix_encrypt": "[ENCRYPTED]", 
+                "subject_prefix_redirect": "[MESSAGE REDIRECTED]", 
+                "tft_list": []
+            }, 
+            {
+                "admin_message_address": "mailbox1@emaildev1-gl.info", 
+                "attachment_scan_type": "TRUE_FILE_TYPE_WITH_EXTENSION", 
+                "category": "FI", 
+                "ccl_names": [
+                    {
+                        "name": "InternationalBankAccountNumbersGlobal", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "BankroutingnumberswithqualifyingtermsGlobal", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationGlobal", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationAustralia", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationCanada", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationGermany", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationSpain", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "BankaccountdetailsnearpersonallyidentifiableinformationFrance", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationFrance", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationHK", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationIreland", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationItaly", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankaccountdetailsnearpersonallyidentifiableinformationUK", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationUK", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationUSA", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "CreditordebitcardnumberswithqualifyingtermsGlobal", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "CreditordebitcardnumbersGlobal", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "BankaccountdetailsnearpersonallyidentifiableinformationNewZealand", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationNewZealand", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "CUSIPidentifier", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationSG", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "CCMagStripeTrack1", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "CCMagStripeTrack2", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationIndia", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankroutingnumberswithqualifyingtermsAU", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankroutingnumberswithqualifyingtermsCA", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankroutingnumberswithqualifyingtermsDE", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankroutingnumberswithqualifyingtermsNZ", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankroutingnumberswithqualifyingtermsUK", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankroutingnumberswithqualifyingtermsUS", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationBrazil", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankaccountdetailsnearpersonallyidentifiableinformationSouthAfrica", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationSouthAfrica", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "BankroutingnumberswithqualifyingtermsSweden", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationSweden", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationDenmark", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankroutingnumberswithqualifyingtermsDenmark", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankroutingnumberswithqualifyingtermsFI", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "CreditordebitcardnumbersnearpersonallyidentifiableinformationFinland", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankroutingnumbersBelgium", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "CreditordebitcardnumbersnearpersonallyidentifiableinformationBelgium", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankroutingnumbersNorway", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "FinancialorpersonalidentifiersnearcontactdetailsNorway", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "FinancialorpersonalidentifiersNorway", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankaccountdetailsNorway", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "InternationalBankAccountNumbersDenmark", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "InternationalBankAccountNumbersBelgium", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "InternationalBankAccountNumbersSpain", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "InternationalBankAccountNumbersIreland", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "InternationalBankAccountNumbersUK", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "InternationalBankAccountNumbersItaly", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "InternationalBankAccountNumbersSweden", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "InternationalBankAccountNumbersBrazil", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "InternationalBankAccountNumbersFrance", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "InternationalBankAccountNumbersGermany", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "InternationalBankAccountNumbersNorway", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "InternationalBankAccountNumbersFinland", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "InternationalBankAccountNumbersNetherlands", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonorbankingidentifierswithcontactdetailsCanada", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "BankaccountdetailsCanada", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "BankaccountdetailsUSA", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "PersonorbankingidentifierswithcontactdetailsGermany", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "BankaccountdetailsAustralia", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "PersonorbankingidentifierswithcontactdetailsUK", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "BankaccountdetailsUK", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "PersonorbankingidentifierswithcontactdetailsAustralia", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "BankaccountdetailsGermany", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "BankroutingnumbersAustralia", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "EmployerIdentificationNumberafterqualifyingtermsUSA", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "BankaccountnumbersUSA", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "BankaccountdetailsAustralia2", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "UniqueTaxReferenceLOOSEUK", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "UniqueTaxReferenceDEFAULTUK", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "BankaccountdetailsNewZealand", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "TaxidentificationnumberNIPPoland", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "BankaccountdetailsGlobal", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "BankaccountdetailsPoland", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "BankaccountdetailsSouthAfrica", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "BankaccountdetailsIndia", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "BankaccountdetailsFrance", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonorbankingidentifiersnearcontactdetailsFrance", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonorbankingidnearcontactNewZealand", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "BankaccountdetailsSpain", 
+                        "number_of_matches": 1
+                    }
+                ], 
+                "ccl_threshold": 1, 
+                "description": "", 
+                "external_user_list": [], 
+                "external_user_list_type": "ALL", 
+                "id": "33683c40-3480-42bc-842d-06e4b6301dd9", 
+                "is_ccl_threshold_match_all": false, 
+                "is_continue_processing": true, 
+                "is_enabled": false, 
+                "is_notify_administrator": true, 
+                "is_notify_recipient": true, 
+                "is_notify_sender": false, 
+                "is_sophos_default_ccl": false, 
+                "is_tag_subject_bounce": true, 
+                "is_tag_subject_encrypt": false, 
+                "is_tag_subject_redirect": true, 
+                "is_tag_subject_strip_attachment": true, 
+                "is_tft_default": true, 
+                "keyword_list": [], 
+                "name": "test", 
+                "primary_action": "STRIP_ATTACHMENT", 
+                "rank": 1, 
+                "search_type": "SUBJECT_BODY", 
+                "subject_prefix_attachment_removed": "[ATTACHMENT REMOVED]", 
+                "subject_prefix_bounced": "[BOUNCED]", 
+                "subject_prefix_encrypt": "[ENCRYPTED]", 
+                "subject_prefix_redirect": "[MESSAGE REDIRECTED]", 
+                "tft_list": []
+            }, 
+            {
+                "attachment_scan_type": "TRUE_FILE_TYPE_WITH_EXTENSION", 
+                "category": "HI", 
+                "ccl_names": [], 
+                "ccl_threshold": 1, 
+                "description": "", 
+                "external_user_list": [], 
+                "external_user_list_type": "ALL", 
+                "id": "b6d15b82-a4db-441c-92a6-308c3b3fcef5", 
+                "is_ccl_threshold_match_all": false, 
+                "is_continue_processing": true, 
+                "is_enabled": false, 
+                "is_notify_administrator": false, 
+                "is_notify_recipient": false, 
+                "is_notify_sender": false, 
+                "is_sophos_default_ccl": true, 
+                "is_tag_subject_bounce": true, 
+                "is_tag_subject_encrypt": false, 
+                "is_tag_subject_redirect": true, 
+                "is_tag_subject_strip_attachment": true, 
+                "is_tft_default": true, 
+                "keyword_list": [], 
+                "name": "health policy", 
+                "primary_action": "LOG", 
+                "rank": 1, 
+                "search_type": "SUBJECT_BODY", 
+                "subject_prefix_attachment_removed": "[ATTACHMENT REMOVED]", 
+                "subject_prefix_bounced": "[BOUNCED]", 
+                "subject_prefix_encrypt": "[ENCRYPTED]", 
+                "subject_prefix_redirect": "[MESSAGE REDIRECTED]", 
+                "tft_list": []
+            }, 
+            {
+                "attachment_scan_type": "TRUE_FILE_TYPE_WITH_EXTENSION", 
+                "category": "CCL", 
+                "ccl_names": [
+                    {
+                        "name": "MedicalailmentsanddiseasesUSA", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "BankaccountdetailsAustralia", 
+                        "number_of_matches": 5
+                    }
+                ], 
+                "ccl_threshold": 1, 
+                "description": "Custom-CCL", 
+                "external_user_list": [], 
+                "external_user_list_type": "ALL", 
+                "id": "3733f2f9-95e4-44d4-8117-ee232e0dac23", 
+                "is_ccl_threshold_match_all": false, 
+                "is_continue_processing": true, 
+                "is_enabled": false, 
+                "is_notify_administrator": false, 
+                "is_notify_recipient": false, 
+                "is_notify_sender": false, 
+                "is_sophos_default_ccl": false, 
+                "is_tag_subject_bounce": true, 
+                "is_tag_subject_encrypt": false, 
+                "is_tag_subject_redirect": true, 
+                "is_tag_subject_strip_attachment": true, 
+                "is_tft_default": true, 
+                "keyword_list": [], 
+                "name": "Custom-CCL", 
+                "primary_action": "QUARANTINE", 
+                "rank": 1, 
+                "search_type": "SUBJECT_BODY", 
+                "subject_prefix_attachment_removed": "[ATTACHMENT REMOVED]", 
+                "subject_prefix_bounced": "[BOUNCED]", 
+                "subject_prefix_encrypt": "[ENCRYPTED]", 
+                "subject_prefix_redirect": "[MESSAGE REDIRECTED]", 
+                "tft_list": []
+            }, 
+            {
+                "attachment_scan_type": "TRUE_FILE_TYPE_WITH_EXTENSION", 
+                "category": "HI", 
+                "ccl_names": [
+                    {
+                        "name": "SocialsecuritynumbersnearpersonallyidentifiableinformationUSA", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "NationalinsurancenumbersUK", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "NationalinsurancenumberswithqualifyingtermsUK", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "SocialsecuritynumberswithqualifyingtermsUSA", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "SocialsecuritynumbersUSA", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "NPI", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "NHSNumber", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PrescriptionDrugsUSA", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PharmaceuticalCompaniesUSA", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "MedicalPatientFormsUSA", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "phi", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "DEANumber", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "MedicalailmentsanddiseasesUSA", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "PersonalhealthnumberBCCanada", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonalhealthnumberBCnearDOBCanada", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonalhealthnumberBCwithqualifyingtermsCanada", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonalhealthnumberOntarioCanada", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonalhealthnumberOntarionearDOBCanada", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonalhealthnumberOntariowithqualifyingtermsCanada", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonalhealthnumberQuebecCanada", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonalhealthnumberQuebecnearDOBCanada", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonalhealthnumberQuebecwithqualifyingtermsCanada", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "SocialsecuritynumbersnoseperatorUSA", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "EDIX12HIPAA", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "CommunityHealthIndexUK", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "NHSnumberpersonalidentifierneardateofbirthUK", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "NPIwithqualifyingtermsUSA", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "MedicaidRecipientIDNewYork", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "SocialSecurityNumbersstrictformatUSA", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "NHInumbersDEFAULTNewZealand", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "NHInumberswithphraseNewZealand", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PESELpersonalidentifierdefaultPoland", 
+                        "number_of_matches": 1
+                    }
+                ], 
+                "ccl_threshold": 1, 
+                "description": "", 
+                "external_user_list": [
+                    {
+                        "type": "DOMAIN", 
+                        "value": "test.com"
+                    }, 
+                    {
+                        "type": "EMAIL", 
+                        "value": "foo@bar.com"
+                    }, 
+                    {
+                        "type": "DOMAIN", 
+                        "value": "foo.com"
+                    }, 
+                    {
+                        "type": "DOMAIN", 
+                        "value": "foobar.com"
+                    }
+                ], 
+                "external_user_list_type": "INCLUDE", 
+                "id": "da4349ff-b228-437f-9b5a-0f7a53e7459e", 
+                "is_ccl_threshold_match_all": false, 
+                "is_continue_processing": true, 
+                "is_enabled": false, 
+                "is_notify_administrator": false, 
+                "is_notify_recipient": false, 
+                "is_notify_sender": false, 
+                "is_sophos_default_ccl": false, 
+                "is_tag_subject_bounce": true, 
+                "is_tag_subject_encrypt": false, 
+                "is_tag_subject_redirect": true, 
+                "is_tag_subject_strip_attachment": true, 
+                "is_tft_default": true, 
+                "keyword_list": [], 
+                "name": "external-sender-inbound", 
+                "primary_action": "QUARANTINE", 
+                "rank": 1, 
+                "search_type": "SUBJECT_BODY", 
+                "subject_prefix_attachment_removed": "[ATTACHMENT REMOVED]", 
+                "subject_prefix_bounced": "[BOUNCED]", 
+                "subject_prefix_encrypt": "[ENCRYPTED]", 
+                "subject_prefix_redirect": "[MESSAGE REDIRECTED]", 
+                "tft_list": []
+            }
+        ], 
+        "xgemail_dlp/outbound/cf/keyword/action": "QUARANTINE", 
+        "xgemail_dlp/outbound/cf/keyword/enable": false, 
+        "xgemail_dlp/outbound/cf/keyword/list": [], 
+        "xgemail_dlp/outbound/cf/keyword/match_type": "EXACT", 
+        "xgemail_dlp/outbound/cf/keyword/subject_prefix": "[ATTACHMENT REMOVED]", 
+        "xgemail_dlp/outbound/cf/tft/action": "QUARANTINE", 
+        "xgemail_dlp/outbound/cf/tft/default_sophos": true, 
+        "xgemail_dlp/outbound/cf/tft/enable": false, 
+        "xgemail_dlp/outbound/cf/tft/groups": [], 
+        "xgemail_dlp/outbound/cf/tft/subject_prefix": "[ATTACHMENT REMOVED]", 
+        "xgemail_dlp/outbound/rules": [
+            {
+                "admin_message_address": "mailbox1@emaildev1-gl.info", 
+                "attachment_scan_type": "TRUE_FILE_TYPE_WITH_EXTENSION", 
+                "category": "KEYWORD", 
+                "ccl_names": [], 
+                "ccl_threshold": 1, 
+                "description": "", 
+                "external_user_list": [], 
+                "external_user_list_type": "ALL", 
+                "id": "fde83581-6809-425f-a4b5-2b6bf9b1d796", 
+                "is_ccl_threshold_match_all": false, 
+                "is_continue_processing": true, 
+                "is_enabled": false, 
+                "is_notify_administrator": true, 
+                "is_notify_recipient": false, 
+                "is_notify_sender": true, 
+                "is_sophos_default_ccl": true, 
+                "is_tag_subject_bounce": true, 
+                "is_tag_subject_encrypt": false, 
+                "is_tag_subject_redirect": true, 
+                "is_tag_subject_strip_attachment": true, 
+                "is_tft_default": true, 
+                "keyword_list": [
+                    {
+                        "search_content": "google", 
+                        "type": "TEXT"
+                    }, 
+                    {
+                        "search_content": "hello", 
+                        "type": "TEXT"
+                    }, 
+                    {
+                        "search_content": "billing", 
+                        "type": "TEXT"
+                    }
+                ], 
+                "name": "testOutbound", 
+                "primary_action": "QUARANTINE", 
+                "rank": 1, 
+                "search_type": "SUBJECT_BODY_ATTACHMENT", 
+                "subject_prefix_attachment_removed": "[ATTACHMENT REMOVED]", 
+                "subject_prefix_bounced": "[BOUNCED]", 
+                "subject_prefix_encrypt": "[ENCRYPTED]", 
+                "subject_prefix_redirect": "[MESSAGE REDIRECTED]", 
+                "tft_list": []
+            }, 
+            {
+                "category": "FILE_TYPE", 
+                "ccl_names": [], 
+                "ccl_threshold": 1, 
+                "description": "Filter messages that contain potentially malicious attachment file types.", 
+                "external_user_list": [], 
+                "external_user_list_type": "ALL", 
+                "id": "f933f6ec-da0f-4e9d-a6e7-c14720377bbe", 
+                "is_ccl_threshold_match_all": false, 
+                "is_continue_processing": true, 
+                "is_enabled": false, 
+                "is_notify_administrator": false, 
+                "is_notify_recipient": false, 
+                "is_notify_sender": false, 
+                "is_sophos_default_ccl": false, 
+                "is_tag_subject_bounce": true, 
+                "is_tag_subject_encrypt": false, 
+                "is_tag_subject_redirect": true, 
+                "is_tag_subject_strip_attachment": true, 
+                "is_tft_default": true, 
+                "keyword_list": [], 
+                "name": "Attachment file types (Outbound)", 
+                "primary_action": "QUARANTINE", 
+                "rank": 1, 
+                "search_type": "SUBJECT_BODY_ATTACHMENT", 
+                "subject_prefix_attachment_removed": "[ATTACHMENT REMOVED]", 
+                "subject_prefix_bounced": "[BOUNCED]", 
+                "subject_prefix_encrypt": "[ENCRYPTED]", 
+                "subject_prefix_redirect": "[MESSAGE REDIRECTED]", 
+                "tft_list": []
+            }, 
+            {
+                "category": "KEYWORD", 
+                "ccl_names": [], 
+                "ccl_threshold": 1, 
+                "description": "Filter text in attachment name, subject and body.", 
+                "external_user_list": [], 
+                "external_user_list_type": "ALL", 
+                "id": "c2800ea5-4b7b-4022-baf6-3ac3d8b5d1c1", 
+                "is_ccl_threshold_match_all": false, 
+                "is_continue_processing": true, 
+                "is_enabled": false, 
+                "is_notify_administrator": false, 
+                "is_notify_recipient": false, 
+                "is_notify_sender": false, 
+                "is_sophos_default_ccl": false, 
+                "is_tag_subject_bounce": true, 
+                "is_tag_subject_encrypt": false, 
+                "is_tag_subject_redirect": true, 
+                "is_tag_subject_strip_attachment": true, 
+                "is_tft_default": true, 
+                "keyword_list": [], 
+                "name": "Keywords (Outbound)", 
+                "primary_action": "QUARANTINE", 
+                "rank": 2, 
+                "search_type": "SUBJECT_BODY", 
+                "subject_prefix_attachment_removed": "[ATTACHMENT REMOVED]", 
+                "subject_prefix_bounced": "[BOUNCED]", 
+                "subject_prefix_encrypt": "[ENCRYPTED]", 
+                "subject_prefix_redirect": "[MESSAGE REDIRECTED]", 
+                "tft_list": []
+            }, 
+            {
+                "attachment_scan_type": "TRUE_FILE_TYPE_WITH_EXTENSION", 
+                "category": "CCL", 
+                "ccl_names": [
+                    {
+                        "name": "MedicalailmentsanddiseasesUSA", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "BankaccountdetailsAustralia", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "BankaccountdetailsCanada", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "BankaccountdetailsFrance", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "BankaccountdetailsGermany", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "BankaccountdetailsGlobal", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "BankaccountdetailsIndia", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "BankaccountdetailsNetherlands", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankaccountdetailsNewZealand", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "BankaccountdetailsNorway", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankaccountdetailsPoland", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "BankaccountdetailsSouthAfrica", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "BankaccountdetailsSpain", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "BankaccountdetailsUK", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "BankaccountdetailsUSA", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "BankaccountdetailsnearpersonallyidentifiableinformationUK", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "BankaccountdetailsnearpersonallyidentifiableinformationBrazil", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankaccountdetailsnearpersonallyidentifiableinformationDenmark", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankaccountdetailsnearpersonallyidentifiableinformationFinland", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankaccountdetailsnearpersonallyidentifiableinformationGermany", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankaccountdetailsnearpersonallyidentifiableinformationHK", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankaccountdetailsnearpersonallyidentifiableinformationIndia", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankaccountdetailsnearpersonallyidentifiableinformationIreland", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankaccountdetailsnearpersonallyidentifiableinformationItaly", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankaccountdetailsnearpersonallyidentifiableinformationSG", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankaccountdetailsnearpersonallyidentifiableinformationSweden", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankaccountdetailsnearpersonallyidentifiableinformationUSA", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "BankaccountdetailsAustralia2", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "BankaccountnumbersUSA", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "BankroutingnumbersAustralia", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "BankroutingnumbersBelgium", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "BankroutingnumbersNorway", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankroutingnumberswithqualifyingtermsUS", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "BankroutingnumberswithqualifyingtermsAU", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankroutingnumberswithqualifyingtermsCA", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankroutingnumberswithqualifyingtermsDenmark", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankroutingnumberswithqualifyingtermsFI", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankroutingnumberswithqualifyingtermsDE", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankroutingnumberswithqualifyingtermsGlobal", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankroutingnumberswithqualifyingtermsNZ", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankroutingnumberswithqualifyingtermsSweden", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "BankroutingnumberswithqualifyingtermsUK", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "CombinationofcontactdetailsAustralia", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "CombinationofcontactdetailsCanada", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "CombinationofcontactdetailsGermany", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "CombinationofcontactdetailsNetherlands", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "CombinationofcontactdetailsNorway", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "CombinationofcontactdetailsUK", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "CombinationofpersonallyidentifiableinformationDenmark", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "CombinationofpersonallyidentifiableinformationFinland", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "CombinationofpersonallyidentifiableinformationGermany", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "CombinationofpersonallyidentifiableinformationIreland", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "CombinationofpersonallyidentifiableinformationItaly", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "CombinationofpersonallyidentifiableinformationUK", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "CombinationofpersonallyidentifiableinformationAustralia", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "CombinationofpersonallyidentifiableinformationBelgium", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "CombinationofpersonallyidentifiableinformationCanada", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "CombinationofpersonallyidentifiableinformationFrance", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "CombinationofpersonallyidentifiableinformationGlobal", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "CombinationofpersonallyidentifiableinformationIndia", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "CombinationofpersonallyidentifiableinformationNewZealand", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "CombinationofPIIPoland", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "CombinationofpersonallyidentifiableinformationSingapore", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "CombinationofpersonallyidentifiableinformationSouthAfrica", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "CombinationofpersonallyidentifiableinformationSpain", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "CombinationofpersonallyidentifiableinformationSweden", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "CombinationofpersonallyidentifiableinformationUSA", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "CommunityHealthIndexUK", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "ConfidentialdocumentmarkersAustralia", 
+                        "number_of_matches": 2
+                    }, 
+                    {
+                        "name": "ConfidentialdocumentmarkersBelgium", 
+                        "number_of_matches": 2
+                    }, 
+                    {
+                        "name": "ConfidentialdocumentmarkersBrazil", 
+                        "number_of_matches": 2
+                    }, 
+                    {
+                        "name": "ConfidentialdocumentmarkersCanada", 
+                        "number_of_matches": 2
+                    }, 
+                    {
+                        "name": "ConfidentialdocumentmarkersDenmark", 
+                        "number_of_matches": 2
+                    }, 
+                    {
+                        "name": "ConfidentialdocumentmarkersFinland", 
+                        "number_of_matches": 2
+                    }, 
+                    {
+                        "name": "ConfidentialdocumentmarkersFrance", 
+                        "number_of_matches": 2
+                    }, 
+                    {
+                        "name": "ConfidentialdocumentmarkersGermany", 
+                        "number_of_matches": 2
+                    }, 
+                    {
+                        "name": "ConfidentialdocumentmarkersGlobal", 
+                        "number_of_matches": 2
+                    }, 
+                    {
+                        "name": "ConfidentialdocumentmarkersHK", 
+                        "number_of_matches": 2
+                    }, 
+                    {
+                        "name": "ConfidentialdocumentmarkersIndia", 
+                        "number_of_matches": 2
+                    }, 
+                    {
+                        "name": "ConfidentialdocumentmarkersIreland", 
+                        "number_of_matches": 2
+                    }, 
+                    {
+                        "name": "ConfidentialdocumentmarkersItaly", 
+                        "number_of_matches": 2
+                    }, 
+                    {
+                        "name": "ConfidentialdocumentmarkersJapan", 
+                        "number_of_matches": 2
+                    }, 
+                    {
+                        "name": "ConfidentialdocumentmarkersNetherlands", 
+                        "number_of_matches": 2
+                    }, 
+                    {
+                        "name": "ConfidentialdocumentmarkersNewZealand", 
+                        "number_of_matches": 2
+                    }, 
+                    {
+                        "name": "ConfidentialdocumentmarkersNorway", 
+                        "number_of_matches": 2
+                    }, 
+                    {
+                        "name": "ConfidentialdocumentmarkersSingapore", 
+                        "number_of_matches": 2
+                    }, 
+                    {
+                        "name": "ConfidentialdocumentmarkersSouthAfrica", 
+                        "number_of_matches": 2
+                    }, 
+                    {
+                        "name": "ConfidentialdocumentmarkersSpain", 
+                        "number_of_matches": 2
+                    }, 
+                    {
+                        "name": "ConfidentialdocumentmarkersSweden", 
+                        "number_of_matches": 2
+                    }, 
+                    {
+                        "name": "ConfidentialdocumentmarkersUK", 
+                        "number_of_matches": 2
+                    }, 
+                    {
+                        "name": "ConfidentialdocumentmarkersUSA", 
+                        "number_of_matches": 2
+                    }, 
+                    {
+                        "name": "ContactdetailsmixedPoland", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "CombinationofcontactdetailsUSA", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "ContactdetailssetsUSA", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "ContactdetailsAustralia", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "ContactdetailsBelgium", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "ContactdetailsCanada", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "ContactdetailsFrance", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "ContactdetailsGermany", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "ContactdetailsGlobal", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "ContactdetailsIndia", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "ContactdetailsNewZealand", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "ContactdetailsPoland", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "ContactdetailsSouthAfrica", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "ContactdetailsSpain", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "ContactdetailsUK", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "ContactdetailsUSA", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "CCMagStripeTrack1", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "CCMagStripeTrack2", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "CreditordebitcardnumberswithqualifyingtermsGlobal", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "CreditordebitcardnumbersGlobal", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "CreditordebitcardnumbersnearpersonallyidentifiableinformationBelgium", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationBrazil", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "CreditordebitcardnumbersnearpersonallyidentifiableinformationFinland", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationGermany", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationHK", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationIndia", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationIreland", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationItaly", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationSG", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationSweden", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationUSA", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationDenmark", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "CurriculumvitaeUK", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "CUSIPidentifier", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "dateofbirth", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "BankaccountdetailsnearpersonallyidentifiableinformationAustralia", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "BankaccountdetailsnearpersonallyidentifiableinformationCanada", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "BankaccountdetailsnearpersonallyidentifiableinformationFrance", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "BankaccountdetailsnearpersonallyidentifiableinformationNewZealand", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "BankaccountdetailsnearpersonallyidentifiableinformationSouthAfrica", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "BankaccountdetailsnearpersonallyidentifiableinformationSpain", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "BankaccountdetailsnearpersonallyidentifiableinformationGlobal", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationAustralia", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationCanada", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationFrance", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationGlobal", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationNewZealand", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationSouthAfrica", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationSpain", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "CreditordebitnumbersnearpersonallyidentifiableinformationUK", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "INSEEnumbersneartopersonallyidentifiableinformationFrance", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "InlandRevenueDepartmentnumbersnearpersonallyidentifiableinformationNewZealand", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "NationalidentificationnumbersnearpersonallyidentifiableinformationSouthAfrica", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "FiscalidentificationnumbersnearpersonallyidentifiableinformationSpain", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "NationalidentificationnumbersnearpersonallyidentifiableinformationGlobal", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "SocialinsurancenumbersnearpersonallyidentifiableinformationCanada", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "SocialsecuritynumbersnearpersonallyidentifiableinformationUSA", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "DriversLicenceAustralia", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "DriverslicencePoland", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "DriversLicenceQualifyingTermsAustralia", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "DriversLicenseUSA", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "DriversLicensewithqualifyingtermsUSA", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "DEANumber", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "EDIX12HIPAA", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "EmailaddressesGlobal", 
+                        "number_of_matches": 20
+                    }, 
+                    {
+                        "name": "employeridentificationnumber", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "EmployerIdentificationNumberafterqualifyingtermsUSA", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "EthnicitytermsCA", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "EthnicitytermsUK", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "EthnicitytermsUSA", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "FinancialorpersonalidentifiersNetherlands", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "FinancialorpersonalidentifiersNorway", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "FinancialorpersonalidentifiersnearcontactdetailsNetherlands", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "FinancialorpersonalidentifiersnearcontactdetailsNorway", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "FiscalcodenumbersItaly", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "FiscalcodenumbersnearpersonallyidentifiableinformationItaly", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "FiscalcodenumberswithqualifyingtermsItaly", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "FiscalidentificationnumbersSpain", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "NIFBUSES", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "FiscalidentificationnumberswithqualifyingtermsSpain", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "HighlysensitivecontentmarkerGlobal", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "NationalidentitycardHK", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "HongKongIdentityCardstrongHongKong", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "NationalidentitycardswithqualifyingtermsHK", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "IdentityDocumentSouthAfrica", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "IdentityDocumentwithqualifyingtermsSouthAfrica", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "INSEEnumberswithqualifyingtermsFrance", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "INSEEnumberswithqualifiersFrance", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "InternationalBankAccountNumbersBelgium", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "InternationalBankAccountNumbersBrazil", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "InternationalBankAccountNumbersDenmark", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "InternationalBankAccountNumbersFinland", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "InternationalBankAccountNumbersFrance", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "InternationalBankAccountNumbersGermany", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "InternationalBankAccountNumbersGlobal", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "InternationalBankAccountNumbersIreland", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "InternationalBankAccountNumbersItaly", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "InternationalBankAccountNumbersNetherlands", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "InternationalBankAccountNumbersNorway", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "InternationalBankAccountNumbersSpain", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "InternationalBankAccountNumbersSweden", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "InternationalBankAccountNumbersUK", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "InlandRevenueDepartmentnumberswithqualifyingtermsNewZealand", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "MedicaidRecipientIDNewYork", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "MedicalPatientFormsUSA", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "MicrosoftlicensekeysGlobal", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "ModeratelysensitivecontentmarkerGlobal", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "MyNumberstrictformatJapan", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "MyNumberweakformatJapan", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "MyNumberwithqualifyingtermsJapan", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "NationalidentificationnumbersBrazil", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "NationalidentificationnumbersJapan", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "NationalidentificationnumbersMalaysia", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "NationalidentificationnumbersnearpersonallyidentifiableinformationBelgium", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "NationalidentificationnumbersnearpersonallyidentifiableinformationBrazil", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "NationalidentificationnumbersnearpersonallyidentifiableinformationDenmark", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "NationalidentificationnumbersnearpersonallyidentifiableinformationSweden", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "NationalidentificationnumbersNetherlands", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "NationalidentitynumbersnearpersonallyidentifiableinformationFinland", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "NationalidentitycardsnearpersonallyidentifiableinformationHK", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "NationalidentitycardsnearpersonallyidentifiableinformationSG", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "NationalInsurancenumbersflexibleformatUK", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "NationalInsurancenumbersstrictformatUK", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "NationalInsuranceNumbersID", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "NationalinsurancenumbersUK", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "NationalinsurancenumberswithqualifyingtermsUK", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "NPI", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "NPIwithqualifyingtermsUSA", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "NationalregistrationidentitycardSG", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "NationalregistrationidentitycardwithqualifyingtermsSG", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "NHInumbersDEFAULTNewZealand", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "NHInumberswithphraseNewZealand", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "NHSNumber", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "NHSnumberpersonalidentifierneardateofbirthUK", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PassportdetailsGlobal", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PassportnumbersSingapore", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "PermanentaccountnumbersIndia", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PermanentaccountnumberswithqualifyingtermsIndia", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PermanentaccountnumbersnearpersonallyidentifiableinformationIndia", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PersonidentificationnumbersAustralia", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "NationalidentificationnumbersBelgium", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "PersonidentificationnumbersCanada", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "NationalidentificationnumbersDenmark", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "NationalidentificationnumbersFinland", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "PersonidentificationnumbersFrance", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonidentificationnumbersGermany", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "NationalidentificationnumberswithqualifyingtermsGlobal", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PersonidentificationnumbersHongKong", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonidentificationnumbersIndia", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonidentificationnumbersItaly", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonidentificationnumbersNewZealand", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "NationalidentificationnumbersNorway", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "PersonidentificationnumbersPoland", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonidentificationnumbersSingapore", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "PersonidentificationnumbersSouthAfrica", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonidentificationnumbersSpain", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "NationalidentificationnumberswithqualifyingtermsSweden", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonidentificationnumbersUK", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "NationalidentificationnumbersUSA", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PersonorbankingidentifierswithcontactdetailsCanada", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonorbankingidentifiersnearcontactdetailsFrance", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonorbankingidnearcontactNewZealand", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonorbankingidentifiersnearcontactdetailsPoland", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonorbankingidentifiersnearcontactdetailsSouthAfrica", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonorbankingidentifiersnearcontactdetailsSpain", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonorbankingidentifierswithcontactdetailsUSA", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonorbankingidentifierswithcontactdetailsAustralia", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonorbankingidentifierswithcontactdetailsGermany", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonorbankingidentifierswithcontactdetailsUK", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonalhealthnumberBCCanada", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonalhealthnumberBCnearDOBCanada", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonalhealthnumberBCwithqualifyingtermsCanada", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonalhealthnumberOntarioCanada", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonalhealthnumberOntarionearDOBCanada", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonalhealthnumberOntariowithqualifyingtermsCanada", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonalhealthnumberQuebecCanada", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonalhealthnumberQuebecnearDOBCanada", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonalhealthnumberQuebecwithqualifyingtermsCanada", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonalIDcardnumberweakformatPoland", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "PersonalIDcardnumberwithphrasePoland", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "NationalinsurancenumbersnearpersonallyidentifiableinformationUK", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PersonalPublicServicenumbersIreland", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PersonalpublicservicenumbersnearpersonallyidentifiableinformationIreland", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PersonalPublicServicenumberswithqualifyingtermsIreland", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PersonalsensitivedataAustralia", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "PersonalsensitivedataCanada", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PersonalsensitivedataGermany", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "PersonalsensitivedataUK", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "PersonalsensitivedataUSA", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PESELpersonalidentifierdefaultPoland", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PharmaceuticalCompaniesUSA", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PostaladdressesAustralia", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PostaladdressesBelgium", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PostaladdressesBrazil", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PostaladdressesCanada", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PostaladdressesDenmark", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PostaladdressesFrance", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PostaladdressesGermany", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PostaladdressesGlobal", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PostaladdressesHK", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PostaladdressesIndia", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PostaladdressesIreland", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PostaladdressesItaly", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PostaladdressesNetherlands", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PostaladdressesNewZealand", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "PostaladdressesNorway", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PostaladdressesPoland", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PostaladdressesSingapore", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PostaladdressesSouthAfrica", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PostaladdressesSpain", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PostaladdressesSweden", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PostaladdressesUK", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PostaladdressesUSA", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PostalboxesNewZealand", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "PostalboxesUK", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "PostalboxesUSA", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PostalcodesDEFAULTPoland", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "PostalcodesweakformatPoland", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PostalcodesNewZealand", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "PostalcodesUK", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "PostalcodesUSA", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PostaladdressesFinland", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "PrescriptionDrugsUSA", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "phi", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "RestrictedinformationAustralia", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "RestrictedinformationCanada", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "RestrictedinformationGermany", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "RestrictedinformationUK", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "RestrictedinformationUSA", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "CurriculumvitaeCanada", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "CurriculumvitaeUSA", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "SensitivecontentmarkerGlobal", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "SocialinsurancenumbersGermany", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "SocialinsurancenumbersDEFAULTCanada", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "SocialinsurancenumberswithqualifyingtermsCanada", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "SocialinsurancenumbersstrictformatCanada", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "SocialinsurancenumbersCanada", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "SocialinsurancenumbersnearpersonallyidentifiableinformationGermany", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "SocialinsurancenumberswithqualifyingtermsGermany", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "SocialsecuritynumbersUSA", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "SocialSecurityNumbersstrictformatUSA", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "SocialsecuritynumbersnoseperatorUSA", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "SocialsecuritynumberswithqualifyingtermsUSA", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "TaxfilenumberswithqualifyingtermsAustralia", 
+                        "number_of_matches": 5
+                    }, 
+                    {
+                        "name": "TaxfilenumbersnearpersonallyidentifiableinformationAustralia", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "TaxidentificationnumberNIPPoland", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "TelephonenumbersAustralia", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "TelephonenumbersBelgium", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "TelephonenumbersBrazil", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "TelephonenumbersCanada", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "TelephonenumbersDenmark", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "TelephonenumbersFinland", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "TelephonenumbersFrance", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "TelephonenumbersGermany", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "TelephonenumbersGlobal", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "TelephonenumbersHK", 
+                        "number_of_matches": 100
+                    }, 
+                    {
+                        "name": "TelephonenumbersIndia", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "TelephonenumbersIreland", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "TelephonenumbersItaly", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "TelephonenumbersNetherlands", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "TelephonenumbersNewZealand", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "TelephonenumbersNorway", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "TelephonenumbersPoland", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "TelephonenumbersSingapore", 
+                        "number_of_matches": 100
+                    }, 
+                    {
+                        "name": "TelephonenumbersSouthAfrica", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "TelephonenumbersSpain", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "TelephonenumbersSweden", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "TelephonenumbersSwitzerland", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "TelephonenumbersUK", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "TelephonenumbersUSA", 
+                        "number_of_matches": 10
+                    }, 
+                    {
+                        "name": "UniqueTaxReferenceDEFAULTUK", 
+                        "number_of_matches": 1
+                    }, 
+                    {
+                        "name": "UniqueTaxReferenceLOOSEUK", 
+                        "number_of_matches": 3
+                    }, 
+                    {
+                        "name": "VehiclelicenseplatesUK", 
+                        "number_of_matches": 5
+                    }
+                ], 
+                "ccl_threshold": 1, 
+                "description": "", 
+                "external_user_list": [
+                    {
+                        "type": "EMAIL", 
+                        "value": "foo@bar.com"
+                    }, 
+                    {
+                        "type": "DOMAIN", 
+                        "value": "foo.com"
+                    }, 
+                    {
+                        "type": "DOMAIN", 
+                        "value": "foobar.com"
+                    }
+                ], 
+                "external_user_list_type": "EXCLUDE", 
+                "id": "982656a7-7d81-4d06-80f0-a8bcf7dad0b5", 
+                "is_ccl_threshold_match_all": false, 
+                "is_continue_processing": true, 
+                "is_enabled": false, 
+                "is_notify_administrator": false, 
+                "is_notify_recipient": false, 
+                "is_notify_sender": false, 
+                "is_sophos_default_ccl": false, 
+                "is_tag_subject_bounce": true, 
+                "is_tag_subject_encrypt": false, 
+                "is_tag_subject_redirect": true, 
+                "is_tag_subject_strip_attachment": true, 
+                "is_tft_default": true, 
+                "keyword_list": [], 
+                "name": "external-rcpt-outbound", 
+                "primary_action": "QUARANTINE", 
+                "rank": 1, 
+                "search_type": "SUBJECT_BODY", 
+                "subject_prefix_attachment_removed": "[ATTACHMENT REMOVED]", 
+                "subject_prefix_bounced": "[BOUNCED]", 
+                "subject_prefix_encrypt": "[ENCRYPTED]", 
+                "subject_prefix_redirect": "[MESSAGE REDIRECTED]", 
+                "tft_list": []
+            }
+        ], 
+        "xgemail_dlp/policy_name": "Base Policy", 
+        "xgemail_dlp/rules/rev_id": "6d817c163c2585b95daab859f96008a3a2fb709daf7e15a32843c2e78d68d935"
+    }, 
+    "policyId": "569f189466f8b2b952e8fe12348a84bc08e73edfd3b8ccd38dc30f4ed4836309", 
+    "schema_version": 20170825, 
+    "userId": "5c372ce9726f7c0f7e9e7169"
+}
+Deserialized file </Users/bhanuprakash.katta/Downloads/5c372ce9726f7c0f7e9e7169.POLICY> using magic number < SOPHPOLCY> to </Users/bhanuprakash.katta/Downloads/5c372ce9726f7c0f7e9e7169.POLICY.deserialized>
