@@ -808,14 +808,14 @@ aws:
     o365_disconnect_queue:
       stack_name:                                                 "{{stack.sqs.o365_disconnect_queue}}"
       state:                                                      present
-      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template:                                                   "{{template.sqs.sqs_sns_subscription_template}}"
       template_parameters:
         QueueName:                                                "{{sqs.o365_disconnect_queue}}"
         TagApplication:                                           "xgemail-mail"
     o365_domainsync_queue:
       stack_name:                                                 "{{stack.sqs.o365_domainsync_queue}}"
       state:                                                      present
-      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template:                                                   "{{template.sqs.sqs_sns_subscription_template}}"
       template_parameters:
         QueueName:                                                "{{sqs.o365_domainsync_queue}}"
         TagApplication:                                           "xgemail-mail"
