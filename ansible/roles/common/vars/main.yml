@@ -37,7 +37,9 @@ aws:
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-internet-submit-Terminating-LifeCycleHook"
       policy_target_value:                                        "85"
-      scale_in_and_out_on_weekdays:                               "true"
+      off_hour_desired:                                           "3"
+      on_hour_desired:                                            "2"
+      scale_in_out_weekdays:                                      "true"
     cd:
       alarm_scaling_enabled:                                      "false"
       alarm_scale_in_threshold:                                   "10"
@@ -51,7 +53,9 @@ aws:
       health_check_grace_period:                                  "900"
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-customer-delivery-Terminating-LifeCycleHook"
-      scale_in_and_out_on_weekdays:                               "true"
+      off_hour_desired:                                           "3"
+      on_hour_desired:                                            "2"
+      scale_in_out_weekdays:                                      "true"
     cx:
       asg_min_size:                                               [0,0,1]
       health_check_grace_period:                                  "900"
@@ -70,7 +74,9 @@ aws:
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-customer-submit-Terminating-LifeCycleHook"
       policy_target_value:                                        "90"
-      scale_in_and_out_on_weekdays:                               "true"
+      off_hour_desired:                                           "3"
+      on_hour_desired:                                            "2"
+      scale_in_out_weekdays:                                      "false"
     dd:
       alarm_scaling_enabled:                                      "false"
       alarm_scale_in_threshold:                                   "10"

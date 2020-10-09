@@ -178,12 +178,12 @@
       "Type": "String",
       "Default": "00 08 * * 1-5"
     },
-    "ScheduledAutoScalingOutsideBusinessHourDesiredCapacity": {
+    "ScheduledASOffHourDesiredCapacity": {
       "Description": "DesiredCapacity of instances in the Auto Scaling Group outside of business hour.",
       "Type": "String",
       "Default": "2"
     },
-    "ScheduledAutoScalingInsideBusinessHourDesiredCapacity": {
+    "ScheduledASOnHourDesiredCapacity": {
       "Description": "DesiredCapacity of instances in the Auto Scaling Group inside of business hour.",
       "Type": "String",
       "Default": "3"
@@ -571,7 +571,7 @@
       "Condition": "EnableScaleInOutOnWeekdays",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "DesiredCapacity": {"Ref": "ScheduledAutoScalingOutsideBusinessHourDesiredCapacity"},
+        "DesiredCapacity": {"Ref": "ScheduledASOffHourDesiredCapacity"},
         "Recurrence": { "Ref": "ScaleInOnWeekdaysCron" }
       }
     },
@@ -581,7 +581,7 @@
       "Condition": "EnableScaleInOutOnWeekdays",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "DesiredCapacity": {"Ref": "ScheduledAutoScalingInsideBusinessHourDesiredCapacity"},
+        "DesiredCapacity": {"Ref": "ScheduledASOnHourDesiredCapacity"},
         "Recurrence": { "Ref": "ScaleOutOnWeekdaysCron" }
       }
     },
