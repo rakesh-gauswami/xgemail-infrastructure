@@ -6,8 +6,24 @@ az:
 aws:
   asg:
     cd:
-      as_min_size:                              "9"
+      as_min_size:                              "18"
       as_max_size:                              "24"
+      cron_scale_in:                            "00 02 * * 1-5"
+      cron_scale_out:                           "30 14 * * 1-5"
+      off_hour_desired:                         "15"
+      on_hour_desired:                          "18"
+      scale_in_out_weekdays:                    "true"
+    cs:
+      cron_scale_in:                            "00 02 * * 1-5"
+      cron_scale_out:                           "30 14 * * 1-5"
+      off_hour_desired:                         "3"
+      on_hour_desired:                          "2"
+      scale_in_out_weekdays:                    "false"
     is:
-      as_min_size:                              "12"
+      as_min_size:                              "15"
       as_max_size:                              "24"
+      cron_scale_in:                            "00 02 * * 1-5"
+      cron_scale_out:                           "30 14 * * 1-5"
+      off_hour_desired:                         "12"
+      on_hour_desired:                          "15"
+      scale_in_out_weekdays:                    "true"
