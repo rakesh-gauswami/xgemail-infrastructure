@@ -31,10 +31,15 @@ aws:
       as_max_size:                                                "3"
       as_min_service:                                             "1"
       as_max_batch_size:                                          "1"
+      cron_scale_in:                                              "00 02 * * 1-5"
+      cron_scale_out:                                             "30 14 * * 1-5"
       health_check_grace_period:                                  "1800"
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-internet-submit-Terminating-LifeCycleHook"
       policy_target_value:                                        "85"
+      off_hour_desired:                                           "3"
+      on_hour_desired:                                            "2"
+      scale_in_out_weekdays:                                      "false"
     cd:
       alarm_scaling_enabled:                                      "false"
       alarm_scale_in_threshold:                                   "10"
@@ -43,9 +48,14 @@ aws:
       as_max_size:                                                "6"
       as_min_service:                                             "1"
       as_max_batch_size:                                          "1"
+      cron_scale_in:                                              "00 02 * * 1-5"
+      cron_scale_out:                                             "30 14 * * 1-5"
       health_check_grace_period:                                  "900"
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-customer-delivery-Terminating-LifeCycleHook"
+      off_hour_desired:                                           "3"
+      on_hour_desired:                                            "2"
+      scale_in_out_weekdays:                                      "false"
     cx:
       asg_min_size:                                               [0,0,1]
       health_check_grace_period:                                  "900"
@@ -53,14 +63,20 @@ aws:
       stack_number:                                               [1,2,3]
       zone_index:                                                 [0,1,2]
     cs:
+      alarm_scaling_enabled:                                      "false"
       as_min_size:                                                "1"
       as_max_size:                                                "3"
       as_min_service:                                             "1"
       as_max_batch_size:                                          "1"
+      cron_scale_in:                                              "00 02 * * 1-5"
+      cron_scale_out:                                             "30 14 * * 1-5"
       health_check_grace_period:                                  "2400"
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-customer-submit-Terminating-LifeCycleHook"
       policy_target_value:                                        "90"
+      off_hour_desired:                                           "3"
+      on_hour_desired:                                            "2"
+      scale_in_out_weekdays:                                      "false"
     dd:
       alarm_scaling_enabled:                                      "false"
       alarm_scale_in_threshold:                                   "10"
