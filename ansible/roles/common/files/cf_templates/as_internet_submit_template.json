@@ -84,7 +84,7 @@
       "Type": "Number"
     },
     "CPUScaling": {
-      "Description": "Enable or Disable AutoScaling for SQS and CPU based Scaling. It wont affect Scheduled Scaling",
+      "Description": "Enable or Disable AutoScaling for CPU based Scaling. It wont affect Scheduled Scaling",
       "Type": "String",
       "Default": "false",
       "AllowedValues": [ "true", "false" ]
@@ -156,7 +156,7 @@
       "Default": "//cloud-applications/develop/cookbooks.enc"
     },
     "SQSScaling": {
-      "Description": "Enable or Disable AutoScaling for SQS and CPU based Scaling. It wont affect Scheduled Scaling",
+      "Description": "Enable or Disable AutoScaling for SQS based Scaling. It wont affect Scheduled Scaling",
       "Type": "String",
       "Default": "false",
       "AllowedValues": [ "true", "false" ]
@@ -462,13 +462,13 @@
     "SQSScalingState": {
       "Fn::Equals": [
         { "Ref": "SQSScaling" },
-        "false"
+        "true"
       ]
     },
     "CPUScalingState": {
       "Fn::Equals": [
         { "Ref": "CPUScaling" },
-        "false"
+        "true"
       ]
     },
     "ScalingEnabled": {
