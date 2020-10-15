@@ -461,13 +461,13 @@
     },
     "SQSScalingState": {
       "Fn::Equals": [
-        { "Ref": "CPUScaling" },
+        { "Ref": "SQSScaling" },
         "false"
       ]
     },
-    "EnableCPUState": {
+    "CPUScalingState": {
       "Fn::Equals": [
-        { "Ref": "SQSScaling" },
+        { "Ref": "CPUScaling" },
         "false"
       ]
     },
@@ -655,7 +655,7 @@
 
     "XgemailScaleCpuPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Condition": "EnableCPUState",
+      "Condition": "CPUScalingState",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
         "EstimatedInstanceWarmup": "400",
