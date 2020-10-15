@@ -23,7 +23,13 @@
       "Description": "Decryption key for encrypted buckets",
       "Type": "String"
     },
-    "AlarmScalingEnabled": {
+    "AlarmScaleInEnabled": {
+      "Description": "Enable AutoScaling Alarms to trigger scaling policies.",
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [ "true", "false" ]
+    },
+    "AlarmScaleOutEnabled": {
       "Description": "Enable AutoScaling Alarms to trigger scaling policies.",
       "Type": "String",
       "Default": "false",
@@ -82,12 +88,6 @@
     "BundleVersion": {
       "Description": "Version of the AMI bundle",
       "Type": "Number"
-    },
-    "CPUScaling": {
-      "Description": "Enable or Disable AutoScaling for CPU based Scaling. It wont affect Scheduled Scaling",
-      "Type": "String",
-      "Default": "false",
-      "AllowedValues": [ "true", "false" ]
     },
     "DeployIgnoreUnmodifiedGroupSize": {
       "Description": "During a stack update, indicates whether AWS CloudFormation ignores any group size property differences between your current Auto Scaling group and the Auto Scaling group that is described in the update.",
@@ -154,12 +154,6 @@
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
       "Type": "String",
       "Default": "//cloud-applications/develop/cookbooks.enc"
-    },
-    "SQSScaling": {
-      "Description": "Enable or Disable AutoScaling for SQS based Scaling. It wont affect Scheduled Scaling",
-      "Type": "String",
-      "Default": "false",
-      "AllowedValues": [ "true", "false" ]
     },
     "ScaleInOnWeekends": {
       "Description": "Enable scale in to zero on Saturday at midnight and scale out on Monday morning. (Times are UTC, NON PROD/QA ENVIRONMENT ONLY)",
@@ -459,18 +453,6 @@
         }
       ]
     },
-    "SQSScalingState": {
-      "Fn::Equals": [
-        { "Ref": "SQSScaling" },
-        "true"
-      ]
-    },
-    "CPUScalingState": {
-      "Fn::Equals": [
-        { "Ref": "CPUScaling" },
-        "true"
-      ]
-    },
     "ScalingEnabled": {
       "Fn::Equals": [
         {
@@ -644,7 +626,6 @@
 
     "XgemailScaleInPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Condition": "SQSScalingState",
       "Properties": {
         "AdjustmentType": "ChangeInCapacity",
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
@@ -655,7 +636,7 @@
 
     "XgemailScaleCpuPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Condition": "CPUScalingState",
+      "Condition": "ScalingEnabled",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
         "EstimatedInstanceWarmup": "400",
@@ -672,7 +653,7 @@
     "AlarmScaleIn": {
       "Type": "AWS::CloudWatch::Alarm",
       "Properties": {
-        "ActionsEnabled": { "Ref": "AlarmScalingEnabled" },
+        "ActionsEnabled": { "Ref": "AlarmScaleInEnabled" },
         "AlarmDescription": {
           "Fn::Join": [
             " ", [
@@ -708,7 +689,7 @@
     "AlarmScaleOut": {
       "Type": "AWS::CloudWatch::Alarm",
       "Properties": {
-        "ActionsEnabled": { "Ref": "AlarmScalingEnabled" },
+        "ActionsEnabled": { "Ref": "AlarmScaleOutEnabled" },
         "AlarmDescription": {
           "Fn::Join": [
             " ", [

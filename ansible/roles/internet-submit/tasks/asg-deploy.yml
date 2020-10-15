@@ -9,7 +9,8 @@
     template: "{{template.ec2.asg.as_internet_submit_template}}"
     template_parameters:
       AesDecryptionKey:                     "{{aes_decryption_key}}"
-      AlarmScalingEnabled:                  "{{aws.asg.is.alarm_scaling_enabled}}"
+      AlarmScaleInEnabled:                  "{{aws.asg.is.alarm_scale_in_enabled}}"
+      AlarmScaleOutEnabled:                 "{{aws.asg.is.alarm_scale_out_enabled}}"
       AlarmScaleInThreshold:                "{{aws.asg.is.alarm_scale_in_threshold}}"
       AlarmScaleOutThreshold:               "{{aws.asg.is.alarm_scale_out_threshold}}"
       AlarmTopicArn:                        "{{sns.arn_prefix}}{{sns.alarm_sns_topic}}"
