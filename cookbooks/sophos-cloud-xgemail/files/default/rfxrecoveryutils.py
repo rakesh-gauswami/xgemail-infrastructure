@@ -11,16 +11,12 @@
 # Helper for all xgemail related utilities holder.
 import ipaddress
 
-
-# logging to syslog setup
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-
 RFX_JOURNAL = "JOURNAL"
 RFX_RECOVERY_DIRECTION_HEADER = "X-MRP-Queue"
 RFX_RECOVERY_IP = ["208.70.208.67", "208.70.208.68", "208.70.208.0/22", "69.84.129.224/27"]
 INBOUND_MESSAGE_DIRECTION = "INBOUND"
 OUTBOUND_MESSAGE_DIRECTION = "OUTBOUND"
+
 
 def is_reflexion_ip(sender_ip):
     """
@@ -32,12 +28,13 @@ def is_reflexion_ip(sender_ip):
             return True
     return False
 
+
 def get_direction_for_recovered_mail(message_headers):
     """
     :param message_headers: Set of headers from message
     :return: direction for recovered mail from reflexion
     """
-    is_reply = False # Set to false to avoid -ENCR append in message path
+    is_reply = False  # Set to false to avoid -ENCR append in message path
     if message_headers[RFX_RECOVERY_DIRECTION_HEADER] is OUTBOUND_MESSAGE_DIRECTION or message_headers[
         RFX_RECOVERY_DIRECTION_HEADER] is RFX_JOURNAL:
         direction = OUTBOUND_MESSAGE_DIRECTION
