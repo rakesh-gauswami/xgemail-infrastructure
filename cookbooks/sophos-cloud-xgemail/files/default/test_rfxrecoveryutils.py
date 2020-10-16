@@ -31,16 +31,10 @@ class XgemailHelperTest(unittest.TestCase):
         message_headers_outbound = {"X-MRP-Queue": "OUTBOUND"}
         message_headers_journal = {"X-MRP-Queue": "JOURNAL"}
 
-        direction , is_reply = rfxrecoveryutils.get_direction_for_recovered_mail(message_headers_inbound)
-        self.assertEqual(direction,"INBOUND")
-        self.assertFalse(is_reply)
-        direction , is_reply = rfxrecoveryutils.get_direction_for_recovered_mail(message_headers_outbound)
-        self.assertEqual(direction,"OUTBOUND")
-        self.assertFalse(is_reply)
-        direction , is_reply = rfxrecoveryutils.get_direction_for_recovered_mail(message_headers_journal)
-        self.assertEqual(direction,"OUTBOUND")
-        self.assertFalse(is_reply)
-
+        self.assertEqual(rfxrecoveryutils.get_direction_for_reflexion_mail(message_headers_inbound),"INBOUND")
+        self.assertEqual(rfxrecoveryutils.get_direction_for_reflexion_mail(message_headers_outbound),"OUTBOUND")
+        self.assertEqual(rfxrecoveryutils.get_direction_for_reflexion_mail(message_headers_journal),"OUTBOUND")
+        self.assertEqual(rfxrecoveryutils.get_direction_for_reflexion_mail({}),"OUTBOUND")
 
 if __name__ == "__main__":
     unittest.main()

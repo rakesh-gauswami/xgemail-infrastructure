@@ -526,7 +526,7 @@ def get_submit_message_type_for_encryption(direction):
         return SQS_MESSAGE_SUBMIT_TYPE_INBOUND
 
 
-def base_policy_flow(metadata, direction, is_reply, domain, sender, message, rfx_recovered):
+def base_policy_flow(metadata, direction, is_reply, domain, sender, message, rfx_submit):
     queue_id = metadata.get_queue_id()
 
     tmp_file_path = formatterutils.get_s3_path(
@@ -537,7 +537,8 @@ def base_policy_flow(metadata, direction, is_reply, domain, sender, message, rfx
         domain
     )
 
-    if (direction == OUTBOUND_MESSAGE_DIRECTION and is_reply == True) or direction == INBOUND_MESSAGE_DIRECTION :
+    if (direction == OUTBOUND_MESSAGE_DIRECTION and is_reply == True) or direction == INBOUND_MESSAGE_DIRECTION \
+        or rfx_submit is True:
         s3_file_path = tmp_file_path
     else:
         s3_file_path = formatterutils.get_s3_file_path(tmp_file_path, '-ENCR')
@@ -561,7 +562,7 @@ def base_policy_flow(metadata, direction, is_reply, domain, sender, message, rfx
         gziputils.gzip_data(message),
         s3_file_path,
         direction,
-        rfx_recovered
+        rfx_submit
     )
 
     send_msg_processing_sqs_message(
@@ -569,7 +570,7 @@ def base_policy_flow(metadata, direction, is_reply, domain, sender, message, rfx
         direction
     )
 
-    if should_upload_msg_history(direction, rfx_recovered):
+    if should_upload_msg_history(direction, rfx_submit):
 
         history_event = prepare_msg_history_event(
             s3_file_path,
@@ -621,15 +622,15 @@ def main():
         message_headers = get_message_headers(plaintext_message)
         metadata = get_metadata(message_headers)
 
-        #For reflexion recovered mails decide direction based on header X-MRP-Queue
-        if rfxrecoveryutils.is_reflexion_ip(metadata.get_sensder_ip()):
+        if rfxrecoveryutils.is_reflexion_ip(metadata.get_sender_ip()):
+            rfx_submit = True
             logger.info(
-                "Reflexion IP: [{0}] found from metdata treating as recovery of archived mails".format(
-                    metadata.get_sensder_ip()))
-            rfx_recovered = True
-            direction, is_reply = rfxrecoveryutils.get_direction_for_recovered_mail(message_headers)
+                "Reflexion IP: [{0}] found from metdata treating as recovered or new mail from reflexion web UI".format(
+                    metadata.get_sender_ip()))
+            direction = rfxrecoveryutils.get_direction_for_reflexion_mail(message_headers)
+            is_reply = False # Setting it false to avoid -ENCR append on path on reflexion mails
         else:
-            rfx_recovered = False
+            rfx_submit = False
             direction, is_reply = get_direction(plaintext_message)
 
         sender = metadata.get_sender_address()
@@ -642,7 +643,7 @@ def main():
         # required logging for XgemailTestBase automation test
         logger.info("Metadata json info [{0}]".format(metadata))
 
-        base_policy_flow(metadata, direction, is_reply, domain, sender, plaintext_message, rfx_recovered)
+        base_policy_flow(metadata, direction, is_reply, domain, sender, plaintext_message, rfx_submit)
 
     except BaseException as e:
         logger.exception("Failed in processing email [{0}]".format(e))

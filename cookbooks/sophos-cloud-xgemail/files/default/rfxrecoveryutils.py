@@ -30,15 +30,17 @@ def is_reflexion_ip(sender_ip):
     return False
 
 
-def get_direction_for_recovered_mail(message_headers):
+def get_direction_for_reflexion_mail(message_headers):
     """
     :param message_headers: Set of headers from message
-    :return: direction for recovered mail from reflexion
+    :return: direction for Reflexion mail based on header
     """
-    is_reply = False  # Set to false to avoid -ENCR append in message path
+    # If direction header is missing then it is new email/forward/reply so treat it as outbound
+    if message_headers.get(RFX_RECOVERY_DIRECTION_HEADER, None) is None:
+        return OUTBOUND_MESSAGE_DIRECTION
+
     if message_headers[RFX_RECOVERY_DIRECTION_HEADER] is OUTBOUND_MESSAGE_DIRECTION or message_headers[
         RFX_RECOVERY_DIRECTION_HEADER] is RFX_JOURNAL:
-        direction = OUTBOUND_MESSAGE_DIRECTION
+        return OUTBOUND_MESSAGE_DIRECTION
     else:
-        direction = INBOUND_MESSAGE_DIRECTION
-    return direction, is_reply
+        return INBOUND_MESSAGE_DIRECTION
