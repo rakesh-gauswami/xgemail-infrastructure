@@ -481,7 +481,7 @@ def get_from_sender_domain(metadata):
         )
 
 
-def upload_documents(metadata, compressed_message, s3_file_path, direction):
+def upload_documents(metadata, compressed_message, s3_file_path, direction, rfx_recovered):
 
     # prepared expiration date based on ttl_in_days
     expires = datetime.now() + timedelta(days=TTL_IN_DAYS)
@@ -500,7 +500,7 @@ def upload_documents(metadata, compressed_message, s3_file_path, direction):
         direction
     )
 
-    if should_upload_msg_history(direction):
+    if should_upload_msg_history(direction, rfx_recovered):
         upload_msg_history_to_s3(
             s3_file_path,
             expires,
@@ -559,7 +559,8 @@ def base_policy_flow(metadata, direction, is_reply, domain, sender, message, rfx
         metadata,
         gziputils.gzip_data(message),
         s3_file_path,
-        direction
+        direction,
+        rfx_recovered
     )
 
     send_msg_processing_sqs_message(
