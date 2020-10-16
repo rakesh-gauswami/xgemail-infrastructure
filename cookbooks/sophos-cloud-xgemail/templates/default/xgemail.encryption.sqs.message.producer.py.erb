@@ -608,8 +608,8 @@ def get_direction(message):
 def get_message_headers(message):
     return Parser().parsestr(message, headersonly=True)
 
-# accepts data from postfix and send message and metadata to S3 and
-# We receive email from Reflexion recovery of archived mail as well as Echoworx here.
+# We receive email from Reflexion recovery of a archived mail as well as encrypted mails from Echoworx here.
+# Method accepts data from postfix and send message and metadata to S3 and
 # a json object to SQS which provides pointer to the message in S3
 def main():
     try:

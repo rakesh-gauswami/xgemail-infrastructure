@@ -13,7 +13,7 @@ import ipaddress
 
 RFX_JOURNAL = "JOURNAL"
 RFX_RECOVERY_DIRECTION_HEADER = "X-MRP-Queue"
-RFX_RECOVERY_IP = ["208.70.208.67", "208.70.208.68", "208.70.208.0/22", "69.84.129.224/27"]
+RFX_RECOVERY_IP = ["208.70.208.0/22", "69.84.129.224/27"]
 INBOUND_MESSAGE_DIRECTION = "INBOUND"
 OUTBOUND_MESSAGE_DIRECTION = "OUTBOUND"
 
@@ -23,6 +23,7 @@ def is_reflexion_ip(sender_ip):
     :param sender_ip: Ip of the sender.
     :return: Boolean indicating if its reflexion IP or not.
     """
+    #This will not match exact IP, We have only CIDR for now.
     for ip in RFX_RECOVERY_IP:
         if ipaddress.ip_address(unicode(sender_ip)) in ipaddress.ip_network(unicode(ip)):
             return True
