@@ -25,7 +25,7 @@ aws:
       zone_index:                                                 [0,1,2]
     is:
       alarm_scale_in_enabled:                                     "false"
-      alarm_scale_out_enabled:                                    "false"
+      alarm_scale_out_enabled:                                    "true"
       alarm_scale_in_threshold:                                   "100"
       alarm_scale_out_threshold:                                  "500"
       as_min_size:                                                "1"
@@ -38,10 +38,11 @@ aws:
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-internet-submit-Terminating-LifeCycleHook"
       policy_target_value:                                        "85"
-      off_hour_desired:                                           "1"
       on_hour_desired:                                            "2"
       scale_in_out_weekdays:                                      "false"
     cd:
+      alarm_scale_in_enabled:                                     "false"
+      alarm_scale_out_enabled:                                    "true"
       alarm_scaling_enabled:                                      "false"
       alarm_scale_in_threshold:                                   "10"
       alarm_scale_out_threshold:                                  "50"
@@ -54,7 +55,6 @@ aws:
       health_check_grace_period:                                  "900"
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-customer-delivery-Terminating-LifeCycleHook"
-      off_hour_desired:                                           "1"
       on_hour_desired:                                            "2"
       scale_in_out_weekdays:                                      "false"
     cx:
