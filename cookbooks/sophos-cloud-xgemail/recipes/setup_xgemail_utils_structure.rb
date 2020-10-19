@@ -59,7 +59,7 @@ end
     'routingmanager.py',
     'scaneventattributes.py',
     'uuidutils.py',
-    'rfxrecoveryutils'
+    'rfxrecoveryutils.py'
 ].each do | cur |
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{cur}" do
     source cur
