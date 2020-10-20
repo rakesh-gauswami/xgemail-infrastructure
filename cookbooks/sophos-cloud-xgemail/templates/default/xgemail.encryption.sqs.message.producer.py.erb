@@ -28,6 +28,7 @@ import re
 import signal
 import email
 import uuidutils
+import rfxrecoveryutils
 from email.parser import HeaderParser
 from awshandler import AwsHandler
 from common.metadata import Metadata
@@ -481,7 +482,7 @@ def get_from_sender_domain(metadata):
         )
 
 
-def upload_documents(metadata, compressed_message, s3_file_path, direction):
+def upload_documents(metadata, compressed_message, s3_file_path, direction, rfx_recovered):
 
     # prepared expiration date based on ttl_in_days
     expires = datetime.now() + timedelta(days=TTL_IN_DAYS)
@@ -500,7 +501,7 @@ def upload_documents(metadata, compressed_message, s3_file_path, direction):
         direction
     )
 
-    if should_upload_msg_history(direction):
+    if should_upload_msg_history(direction, rfx_recovered):
         upload_msg_history_to_s3(
             s3_file_path,
             expires,
@@ -508,7 +509,10 @@ def upload_documents(metadata, compressed_message, s3_file_path, direction):
         )
 
 
-def should_upload_msg_history(direction):
+def should_upload_msg_history(direction, rfx_recovered):
+    #We want MH update for recovered mail.
+    if rfx_recovered is True:
+        return True
     if INBOUND_MESSAGE_DIRECTION == direction:
         return True
     else:
@@ -522,7 +526,7 @@ def get_submit_message_type_for_encryption(direction):
         return SQS_MESSAGE_SUBMIT_TYPE_INBOUND
 
 
-def base_policy_flow(metadata, direction, is_reply, domain, sender, message):
+def base_policy_flow(metadata, direction, is_reply, domain, sender, message, rfx_submit):
     queue_id = metadata.get_queue_id()
 
     tmp_file_path = formatterutils.get_s3_path(
@@ -533,7 +537,8 @@ def base_policy_flow(metadata, direction, is_reply, domain, sender, message):
         domain
     )
 
-    if (direction == OUTBOUND_MESSAGE_DIRECTION and is_reply == True) or direction == INBOUND_MESSAGE_DIRECTION :
+    if (direction == OUTBOUND_MESSAGE_DIRECTION and is_reply == True) or direction == INBOUND_MESSAGE_DIRECTION \
+        or rfx_submit is True:
         s3_file_path = tmp_file_path
     else:
         s3_file_path = formatterutils.get_s3_file_path(tmp_file_path, '-ENCR')
@@ -556,7 +561,8 @@ def base_policy_flow(metadata, direction, is_reply, domain, sender, message):
         metadata,
         gziputils.gzip_data(message),
         s3_file_path,
-        direction
+        direction,
+        rfx_submit
     )
 
     send_msg_processing_sqs_message(
@@ -564,7 +570,7 @@ def base_policy_flow(metadata, direction, is_reply, domain, sender, message):
         direction
     )
 
-    if should_upload_msg_history(direction):
+    if should_upload_msg_history(direction, rfx_submit):
 
         history_event = prepare_msg_history_event(
             s3_file_path,
@@ -603,7 +609,8 @@ def get_direction(message):
 def get_message_headers(message):
     return Parser().parsestr(message, headersonly=True)
 
-# accepts data from postfix and send message and metadata to S3 and
+# We receive email from Reflexion recovery of a archived mail as well as encrypted mails from Echoworx here.
+# Method accepts data from postfix and send message and metadata to S3 and
 # a json object to SQS which provides pointer to the message in S3
 def main():
     try:
@@ -614,7 +621,18 @@ def main():
         plaintext_message = get_plaintext_message()
         message_headers = get_message_headers(plaintext_message)
         metadata = get_metadata(message_headers)
-        direction, is_reply = get_direction(plaintext_message)
+
+        if rfxrecoveryutils.is_reflexion_ip(metadata.get_sender_ip()):
+            rfx_submit = True
+            logger.info(
+                "Reflexion IP: [{0}] found from metdata treating as recovered or new mail from reflexion web UI".format(
+                    metadata.get_sender_ip()))
+            direction = rfxrecoveryutils.get_direction_for_reflexion_mail(message_headers)
+            is_reply = False # Setting it false to avoid -ENCR append on path on reflexion mails
+        else:
+            rfx_submit = False
+            direction, is_reply = get_direction(plaintext_message)
+
         sender = metadata.get_sender_address()
         if direction == OUTBOUND_MESSAGE_DIRECTION:
           metadata = get_metadata_for_outbound(metadata, message_headers)
@@ -625,7 +643,7 @@ def main():
         # required logging for XgemailTestBase automation test
         logger.info("Metadata json info [{0}]".format(metadata))
 
-        base_policy_flow(metadata, direction, is_reply, domain, sender, plaintext_message)
+        base_policy_flow(metadata, direction, is_reply, domain, sender, plaintext_message, rfx_submit)
 
     except BaseException as e:
         logger.exception("Failed in processing email [{0}]".format(e))
