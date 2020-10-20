@@ -22,7 +22,6 @@ class XgemailHelperTest(unittest.TestCase):
         self.assertTrue(rfxrecoveryutils.is_reflexion_ip("208.70.208.67"))
         self.assertTrue(rfxrecoveryutils.is_reflexion_ip("208.70.208.68"))
         self.assertTrue(rfxrecoveryutils.is_reflexion_ip("208.70.208.224"))
-        self.assertTrue(rfxrecoveryutils.is_reflexion_ip("69.84.129.224"))
 
 
     def test_get_direction_for_recovered_mail(self):
