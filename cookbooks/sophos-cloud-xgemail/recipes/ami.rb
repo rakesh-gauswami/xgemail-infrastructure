@@ -285,6 +285,11 @@ execute 'enable_postfix_service' do
   command 'chkconfig --level 2345 postfix on'
 end
 
+execute 'add ipaddress module' do
+  user 'root'
+  command 'pip install ipaddress'
+end
+
 yum_package 'sendmail' do
   action :remove
   flush_cache [:before]
