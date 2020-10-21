@@ -48,14 +48,9 @@ import time
 from datetime import datetime, timedelta
 from botocore.exceptions import ClientError
 
-aws_access_key_id = os.environ['bamboo_custom_aws_accessKeyId']
-aws_secret_access_key = os.environ['bamboo_custom_aws_secretAccessKey_password']
-aws_session_token = os.environ['bamboo_custom_aws_sessionToken_password']
-region = os.environ['REGION']
-session = boto3.Session(aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key, aws_session_token=aws_session_token, region_name=region)
-
-ec2_client = session.client('ec2')
-""":type: pyboto3.ec2 """
+aws_access_key_id = os.environ['AWS_ACCESS_KEY_ID']
+aws_secret_access_key = os.environ['AWS_SECRET_ACCESS_KEY']
+aws_session_token = os.environ['AWS_SESSION_TOKEN']
 
 
 def get_eips(iplist):
@@ -129,6 +124,7 @@ def parse_command_line():
         'inf', 'dev', 'dev3', 'qa', 'prod'], help='The account you are working in.')
     parser.add_argument('--region', '-r', dest='region', default='eu-central-1', choices=[
         'eu-central-1', 'eu-west-1', 'us-west-2', 'us-east-2'], help='The region you are working in.')
+    parser.add_argument('--profile', '-p', dest='profile', default=None, help='The AWS credentials profile.')
 
     return parser.parse_args()
 
@@ -156,6 +152,14 @@ if __name__ == '__main__':
             ip_net = ipaddress.ip_network(unicode(block))
             for host in ip_net.hosts():
                 ip_list.append(str(host))
+
+        if args.profile is not None:
+            session = boto3.Session(profile_name=args.profile, region_name=args.region)
+        else:
+            session = boto3.Session(aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key, aws_session_token=aws_session_token, region_name=args.region)
+
+        ec2_client = session.client('ec2')
+        """:type: pyboto3.ec2 """
 
         for eip in get_eips(ip_list):
             tag_eip(eip['AllocationId'])
