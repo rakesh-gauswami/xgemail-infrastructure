@@ -44,8 +44,8 @@ def get_direction_for_reflexion_mail(message_headers):
             return INBOUND_MESSAGE_DIRECTION
         return OUTBOUND_MESSAGE_DIRECTION
 
-    if message_headers[RFX_RECOVERY_DIRECTION_HEADER] is OUTBOUND_MESSAGE_DIRECTION or message_headers[
-        RFX_RECOVERY_DIRECTION_HEADER] is RFX_JOURNAL:
+    if message_headers[RFX_RECOVERY_DIRECTION_HEADER] == OUTBOUND_MESSAGE_DIRECTION or message_headers[
+        RFX_RECOVERY_DIRECTION_HEADER] == RFX_JOURNAL:
         return OUTBOUND_MESSAGE_DIRECTION
     else:
         return INBOUND_MESSAGE_DIRECTION
