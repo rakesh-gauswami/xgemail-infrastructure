@@ -29,11 +29,16 @@ class XgemailHelperTest(unittest.TestCase):
         message_headers_inbound = {"X-MRP-Queue": "INBOUND"}
         message_headers_outbound = {"X-MRP-Queue": "OUTBOUND"}
         message_headers_journal = {"X-MRP-Queue": "JOURNAL"}
+        message_headers_both_missing = {}
+        message_headers_inbound_present_queue_missing = {"X-Sophos-Deliver-Inbound": "true"}
+        message_headers_inbound_present_with_false = {"X-Sophos-Deliver-Inbound": "false"}
 
         self.assertEqual(rfxrecoveryutils.get_direction_for_reflexion_mail(message_headers_inbound),"INBOUND")
         self.assertEqual(rfxrecoveryutils.get_direction_for_reflexion_mail(message_headers_outbound),"OUTBOUND")
         self.assertEqual(rfxrecoveryutils.get_direction_for_reflexion_mail(message_headers_journal),"OUTBOUND")
-        self.assertEqual(rfxrecoveryutils.get_direction_for_reflexion_mail({}),"OUTBOUND")
+        self.assertEqual(rfxrecoveryutils.get_direction_for_reflexion_mail(message_headers_both_missing),"OUTBOUND")
+        self.assertEqual(rfxrecoveryutils.get_direction_for_reflexion_mail(message_headers_inbound_present_queue_missing),"INBOUND")
+        self.assertEqual(rfxrecoveryutils.get_direction_for_reflexion_mail(message_headers_inbound_present_with_false),"OUTBOUND")
 
 if __name__ == "__main__":
     unittest.main()
