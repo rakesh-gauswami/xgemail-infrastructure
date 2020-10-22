@@ -40,7 +40,7 @@ def get_direction_for_reflexion_mail(message_headers):
     # If direction header is missing and X-Sophos-Deliver-Inbound then treat it as inbound
     # If Deliver-Inbound header is missing or false then its new email/forward/reply form radar so treat it as outbound
     if message_headers.get(RFX_RECOVERY_DIRECTION_HEADER, None) is None:
-        if message_headers.get(X_SOPHOS_DELIVER_INBOUND, None) is X_SOPHOS_DELIVER_INBOUND_VALUE:
+        if message_headers.get(X_SOPHOS_DELIVER_INBOUND, None) == X_SOPHOS_DELIVER_INBOUND_VALUE:
             return INBOUND_MESSAGE_DIRECTION
         return OUTBOUND_MESSAGE_DIRECTION
 
