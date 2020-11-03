@@ -638,9 +638,10 @@
         "PolicyType": "TargetTrackingScaling",
         "TargetTrackingConfiguration": {
           "PredefinedMetricSpecification": {
-            "DisableScaleIn" : "true"
+            "PredefinedMetricType": "ASGAverageCPUUtilization"
           },
-          "TargetValue": { "Ref": "PolicyTargetValue"}
+          "TargetValue": { "Ref": "PolicyTargetValue"},
+          "DisableScaleIn" : "true"
         }
       }
     },
