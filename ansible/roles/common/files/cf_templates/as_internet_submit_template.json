@@ -637,8 +637,11 @@
         "EstimatedInstanceWarmup": "400",
         "PolicyType": "TargetTrackingScaling",
         "TargetTrackingConfiguration": {
-            "DisableScaleIn" : "true"
-          }
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "ASGAverageCPUUtilization",
+            "DisableScaleIn" : true
+          },
+          "TargetValue": { "Ref": "PolicyTargetValue"}
         }
       }
     },
