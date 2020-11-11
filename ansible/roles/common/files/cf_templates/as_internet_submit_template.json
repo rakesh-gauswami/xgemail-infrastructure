@@ -23,7 +23,13 @@
       "Description": "Decryption key for encrypted buckets",
       "Type": "String"
     },
-    "AlarmScalingEnabled": {
+    "AlarmScaleInEnabled": {
+      "Description": "Enable AutoScaling Alarms to trigger scaling policies.",
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [ "true", "false" ]
+    },
+    "AlarmScaleOutEnabled": {
       "Description": "Enable AutoScaling Alarms to trigger scaling policies.",
       "Type": "String",
       "Default": "false",
@@ -181,12 +187,7 @@
       "Type": "String",
       "Default": "00 08 * * 1-5"
     },
-    "ScheduledASOffHourDesiredCapacity": {
-      "Description": "DesiredCapacity of instances in the Auto Scaling Group outside of business hour.",
-      "Type": "String",
-      "Default": "2"
-    },
-    "ScheduledASOnHourDesiredCapacity": {
+    "ScheduledAsOnHourDesiredCapacity": {
       "Description": "DesiredCapacity of instances in the Auto Scaling Group inside of business hour.",
       "Type": "String",
       "Default": "3"
@@ -594,7 +595,7 @@
       "Condition": "EnableScaleInOutOnWeekdays",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "DesiredCapacity": {"Ref": "ScheduledASOffHourDesiredCapacity"},
+        "DesiredCapacity": {"Ref": "AutoScalingMinSize"},
         "Recurrence": { "Ref": "ScaleInOnWeekdaysCron" }
       }
     },
@@ -604,7 +605,7 @@
       "Condition": "EnableScaleInOutOnWeekdays",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "DesiredCapacity": {"Ref": "ScheduledASOnHourDesiredCapacity"},
+        "DesiredCapacity": {"Ref": "ScheduledAsOnHourDesiredCapacity"},
         "Recurrence": { "Ref": "ScaleOutOnWeekdaysCron" }
       }
     },
@@ -639,7 +640,8 @@
           "PredefinedMetricSpecification": {
             "PredefinedMetricType": "ASGAverageCPUUtilization"
           },
-          "TargetValue": { "Ref": "PolicyTargetValue"}
+          "TargetValue": { "Ref": "PolicyTargetValue"},
+          "DisableScaleIn" : "true"
         }
       }
     },
@@ -647,7 +649,7 @@
     "AlarmScaleIn": {
       "Type": "AWS::CloudWatch::Alarm",
       "Properties": {
-        "ActionsEnabled": { "Ref": "AlarmScalingEnabled" },
+        "ActionsEnabled": { "Ref": "AlarmScaleInEnabled" },
         "AlarmDescription": {
           "Fn::Join": [
             " ", [
@@ -683,7 +685,7 @@
     "AlarmScaleOut": {
       "Type": "AWS::CloudWatch::Alarm",
       "Properties": {
-        "ActionsEnabled": { "Ref": "AlarmScalingEnabled" },
+        "ActionsEnabled": { "Ref": "AlarmScaleOutEnabled" },
         "AlarmDescription": {
           "Fn::Join": [
             " ", [
