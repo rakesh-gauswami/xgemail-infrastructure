@@ -56,6 +56,33 @@
     }
   },
 
+  "Conditions": {
+    "DevAcct": {
+      "Fn::Or": [
+        {
+          "Fn::Equals": [
+            {"Ref": "Environment"},
+            "dev"
+          ]
+        },
+        {
+          "Fn::Equals": [
+            {"Ref": "Environment"},
+            "inf"
+          ]
+        }
+      ]
+    },
+    "ProdAcct": {
+      "Fn::Equals": [
+        {
+          "Ref": "Environment"
+        },
+        "prod"
+      ]
+    }
+  },
+
   "Resources" : {
     "AutoScalingInstanceRole" : {
       "Type": "AWS::IAM::Role",
@@ -5012,6 +5039,92 @@
         "Roles": [
           {
             "Ref": "XgemailDeltaXdeliveryInstanceRole"
+          }
+        ]
+      }
+    },
+    "XgemailDevMsgFilterRole" : {
+      "Type": "AWS::IAM::Role",
+      "Condition": "DevAcct",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::792368871298:role/MSG-Filter-Role"
+              }
+            }
+          ]
+        },
+        "Path": "/",
+        "RoleName": "MSG-Filter-Role",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "msg-filter-role"
+          },
+          {
+            "Key": "Name",
+            "Value": "msg-filter-role"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
+      }
+    },
+    "XgemailProdMsgFilterRole" : {
+      "Type": "AWS::IAM::Role",
+      "Condition": "ProdAcct",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::872445321290:role/MSG-Filter-Role"
+              }
+            }
+          ]
+        },
+        "Path": "/",
+        "RoleName": "MSG-Filter-Role",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "msg-filter-role"
+          },
+          {
+            "Key": "Name",
+            "Value": "msg-filter-role"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
           }
         ]
       }
