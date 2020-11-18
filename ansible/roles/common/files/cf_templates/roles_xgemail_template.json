@@ -58,27 +58,51 @@
 
   "Conditions": {
     "DevAcct": {
-      "Fn::Or": [
+      "Fn::And": [
         {
           "Fn::Equals": [
-            {"Ref": "Environment"},
-            "dev"
+            {
+              "Ref": "AWS::Region"
+            },
+            "eu-west-1"
           ]
         },
         {
-          "Fn::Equals": [
-            {"Ref": "Environment"},
-            "inf"
+          "Fn::Or": [
+            {
+              "Fn::Equals": [
+                {"Ref": "Environment"},
+                "dev"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {"Ref": "Environment"},
+                "inf"
+              ]
+            }
           ]
         }
       ]
     },
     "ProdAcct": {
-      "Fn::Equals": [
+      "Fn::And": [
         {
-          "Ref": "Environment"
+          "Fn::Equals": [
+            {
+              "Ref": "AWS::Region"
+            },
+            "eu-west-1"
+          ]
         },
-        "prod"
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "Environment"
+            },
+            "prod"
+          ]
+        }
       ]
     }
   },
