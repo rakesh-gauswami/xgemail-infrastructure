@@ -22,11 +22,6 @@
       "Description": "Name of the AWS account. inf, dev, qa, prod",
       "Type": "String"
     },
-    "Region": {
-      "Description": "AWS region. eu-west-1, eu-central-1, us-west-2, us-east-2",
-      "Type": "String",
-      "Default": ""
-    },
     "XgemailMsgHistoryBucketName": {
       "Description": "Name of the Xgemail Message History bucket",
       "Type": "String"
@@ -67,7 +62,7 @@
         {
           "Fn::Equals": [
             {
-              "Ref": "Region"
+              "Ref": "AWS::Region"
             },
             "eu-west-1"
           ]
@@ -95,7 +90,7 @@
         {
           "Fn::Equals": [
             {
-              "Ref": "Region"
+              "Ref": "AWS::Region"
             },
             "eu-west-1"
           ]
