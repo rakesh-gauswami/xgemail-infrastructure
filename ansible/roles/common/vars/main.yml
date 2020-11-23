@@ -13,13 +13,13 @@ aws:
       as_min_service:                                             "1"
       as_max_batch_size:                                          "1"
       health_check_grace_period:                                  "600"
-      instance_size:                                              "t2.small"
+      instance_size:                                              "c5a.large"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-beta-delivery-Launching-LifeCycleHook"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-beta-delivery-Terminating-LifeCycleHook"
     bx:
       asg_min_size:                                               [0,0,1]
       health_check_grace_period:                                  "600"
-      instance_size:                                              "t2.small"
+      instance_size:                                              "c5a.large"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-beta-xdelivery-Launching-LifeCycleHook"
       stack_number:                                               [1,2,3]
       zone_index:                                                 [0,1,2]
@@ -35,7 +35,7 @@ aws:
       cron_scale_in:                                              "00 02 * * 1-5"
       cron_scale_out:                                             "30 14 * * 1-5"
       health_check_grace_period:                                  "1800"
-      instance_size:                                              "t2.small"
+      instance_size:                                              "m5.2xlarge"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-internet-submit-Terminating-LifeCycleHook"
       policy_target_value:                                        "85"
       on_hour_desired:                                            "2"
@@ -53,14 +53,14 @@ aws:
       cron_scale_in:                                              "00 02 * * 1-5"
       cron_scale_out:                                             "30 14 * * 1-5"
       health_check_grace_period:                                  "900"
-      instance_size:                                              "t2.small"
+      instance_size:                                              "m5a.large"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-customer-delivery-Terminating-LifeCycleHook"
       on_hour_desired:                                            "2"
       scale_in_out_weekdays:                                      "false"
     cx:
       asg_min_size:                                               [0,0,1]
       health_check_grace_period:                                  "900"
-      instance_size:                                              "t2.small"
+      instance_size:                                              "c5a.large"
       stack_number:                                               [1,2,3]
       zone_index:                                                 [0,1,2]
     cs:
@@ -72,7 +72,7 @@ aws:
       cron_scale_in:                                              "00 02 * * 1-5"
       cron_scale_out:                                             "30 14 * * 1-5"
       health_check_grace_period:                                  "2400"
-      instance_size:                                              "t2.small"
+      instance_size:                                              "m5.2xlarge"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-customer-submit-Terminating-LifeCycleHook"
       policy_target_value:                                        "90"
       on_hour_desired:                                            "2"
@@ -86,13 +86,13 @@ aws:
       as_min_service:                                             "1"
       as_max_batch_size:                                          "1"
       health_check_grace_period:                                  "600"
-      instance_size:                                              "t2.small"
+      instance_size:                                              "c5a.large"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-delta-delivery-Launching-LifeCycleHook"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-delta-delivery-Terminating-LifeCycleHook"
     dx:
       asg_min_size:                                               [0,0,1]
       health_check_grace_period:                                  "600"
-      instance_size:                                              "t2.small"
+      instance_size:                                              "c5a.large"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-delta-xdelivery-Launching-LifeCycleHook"
       stack_number:                                               [1,2,3]
       zone_index:                                                 [0,1,2]
@@ -105,13 +105,13 @@ aws:
       as_min_service:                                             "1"
       as_max_batch_size:                                          "1"
       health_check_grace_period:                                  "600"
-      instance_size:                                              "t2.small"
+      instance_size:                                              "c5a.large"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-internet-delivery-Launching-LifeCycleHook"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-internet-delivery-Terminating-LifeCycleHook"
     ix:
       asg_min_size:                                               [0,0,1]
       health_check_grace_period:                                  "600"
-      instance_size:                                              "t2.small"
+      instance_size:                                              "c5a.large"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-internet-xdelivery-Launching-LifeCycleHook"
       stack_number:                                               [1,2,3]
       zone_index:                                                 [0,1,2]
@@ -121,7 +121,7 @@ aws:
       as_min_service:                                             "1"
       as_max_batch_size:                                          "1"
       health_check_grace_period:                                  "600"
-      instance_size:                                              "t2.small"
+      instance_size:                                              "c5a.large"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-encryption-submit-Terminating-LifeCycleHook"
       policy_target_value:                                        "80"
     ed:
@@ -130,7 +130,7 @@ aws:
       as_min_service:                                             "1"
       as_max_batch_size:                                          "1"
       health_check_grace_period:                                  "600"
-      instance_size:                                              "t2.small"
+      instance_size:                                              "c5a.large"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-encryption-delivery-Terminating-LifeCycleHook"
       policy_target_value:                                        "80"
     rd:
@@ -139,14 +139,14 @@ aws:
       as_min_service:                                             "1"
       as_max_batch_size:                                          "1"
       health_check_grace_period:                                  "600"
-      instance_size:                                              "t2.small"
+      instance_size:                                              "c5a.large"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-risky-delivery-Launching-LifeCycleHook"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-risky-delivery-Terminating-LifeCycleHook"
       policy_target_value:                                        "80"
     rx:
       asg_min_size:                                               [0,0,1]
       health_check_grace_period:                                  "600"
-      instance_size:                                              "t2.small"
+      instance_size:                                              "c5a.large"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-risky-xdelivery-Launching-LifeCycleHook"
       stack_number:                                               [1,2,3]
       zone_index:                                                 [0,1,2]
@@ -159,13 +159,13 @@ aws:
       as_min_service:                                             "1"
       as_max_batch_size:                                          "1"
       health_check_grace_period:                                  "600"
-      instance_size:                                              "t2.small"
+      instance_size:                                              "c5a.large"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-warmup-delivery-Launching-LifeCycleHook"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-warmup-delivery-Terminating-LifeCycleHook"
     wx:
       asg_min_size:                                               [0,0,1]
       health_check_grace_period:                                  "600"
-      instance_size:                                              "t2.small"
+      instance_size:                                              "c5a.large"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-warmup-xdelivery-Launching-LifeCycleHook"
       stack_number:                                               [1,2,3]
       zone_index:                                                 [0,1,2]
