@@ -53,7 +53,19 @@
     "DeliveryDirectorBucketName": {
       "Description": "Name of the delivery director bucket",
       "Type": "String"
-    }
+    },
+    "MsgHistoryFailureBucketName": {
+      "Description": "Name of the Xgemail Message History V2 bucket",
+      "Type": "String"
+    },
+    "MsgHistoryDynamodbTableName": {
+      "Description": "Name of the message history dynamoDB table",
+      "Type": "String"
+    },
+    "MsgHistoryStreamName": {
+      "Description": "Name of the message history stream name",
+      "Type": "String" 
+    }        
   },
 
   "Conditions": {
@@ -939,6 +951,18 @@
             },
             {
               "Action" : [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObject",
+                "s3:RestoreObject"
+              ],
+              "Effect" : "Allow",
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }]]}]
+            },            
+            {
+              "Action" : [
                 "s3:DeleteObject",
                 "s3:GetBucketLocation",
                 "s3:GetObject",
@@ -1075,7 +1099,54 @@
                   ]
                 }
               ]
-            }
+            },
+            {
+              "Action": [
+                "firehose:DescribeDeliveryStream",
+                "firehose:PutRecord",
+                "firehose:PutRecordBatch"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryStreamName}"
+                }
+              ]
+            },            
+            {
+              "Action" : [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObject",
+                "s3:RestoreObject"
+              ],
+              "Effect" : "Allow",
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }]]}]
+            },            
+            {
+              "Action": [
+                "dynamodb:BatchWriteItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:BatchGetItem",
+                "dynamodb:Scan",
+                "dynamodb:ListTables",
+                "dynamodb:GetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:DescribeTable",
+                "dynamodb:PutItem",
+                "dynamodb:Query",
+                "dynamodb:UpdateItem",
+                "dynamodb:UpdateTable"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryDynamoDbTableName}"
+                }
+              ]
+            }          
           ]
         },
         "PolicyName" : "root",
@@ -1245,6 +1316,18 @@
             },
             {
               "Action" : [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObject",
+                "s3:RestoreObject"
+              ],
+              "Effect" : "Allow",
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }]]}]
+            },                    
+            {
+              "Action" : [
                 "s3:DeleteObject",
                 "s3:GetBucketLocation",
                 "s3:GetObject",
@@ -1368,7 +1451,42 @@
                   ]
                 }
               ]
-            }
+            },
+            {
+              "Action": [
+                "firehose:DescribeDeliveryStream",
+                "firehose:PutRecord",
+                "firehose:PutRecordBatch"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryStreamName}"
+                }
+              ]
+            },                       
+            {
+              "Action": [
+                "dynamodb:BatchWriteItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:BatchGetItem",
+                "dynamodb:Scan",
+                "dynamodb:ListTables",
+                "dynamodb:GetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:DescribeTable",
+                "dynamodb:PutItem",
+                "dynamodb:Query",
+                "dynamodb:UpdateItem",
+                "dynamodb:UpdateTable"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryDynamoDbTableName}"
+                }
+              ]
+            }             
           ]
         },
         "PolicyName" : "root",
@@ -1524,6 +1642,18 @@
                 { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailMsgHistoryBucketName" } ] ] }
               ]
             },
+            {
+              "Action" : [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObject",
+                "s3:RestoreObject"
+              ],
+              "Effect" : "Allow",
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }]]}]
+            },                    
             {
               "Action": [
                 "s3:GetBucketLocation",
@@ -1703,7 +1833,20 @@
               ],
               "Effect": "Allow",
               "Resource": [ "*" ]
-            }
+            },
+            {
+              "Action": [
+                "firehose:DescribeDeliveryStream",
+                "firehose:PutRecord",
+                "firehose:PutRecordBatch"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryStreamName}"
+                }
+              ]
+            }                       
           ]
         },
         "PolicyName": "root",
@@ -1859,6 +2002,18 @@
                 { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailMsgHistoryBucketName" } ] ] }
               ]
             },
+            {
+              "Action" : [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObject",
+                "s3:RestoreObject"
+              ],
+              "Effect" : "Allow",
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }]]}]
+            },                    
             {
               "Action": [
                 "s3:GetBucketLocation",
@@ -2036,7 +2191,20 @@
                   "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${DeliveryDirectorDynamodbTableName}"
                 }
               ]
-            }
+            },
+            {
+              "Action": [
+                "firehose:DescribeDeliveryStream",
+                "firehose:PutRecord",
+                "firehose:PutRecordBatch"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryStreamName}"
+                }
+              ]
+            }            
           ]
         },
         "PolicyName": "root",
@@ -2203,6 +2371,18 @@
             },
             {
               "Action" : [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObject",
+                "s3:RestoreObject"
+              ],
+              "Effect" : "Allow",
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }]]}]
+            },                    
+            {
+              "Action" : [
                 "s3:DeleteObject",
                 "s3:GetBucketLocation",
                 "s3:GetObject",
@@ -2308,7 +2488,42 @@
               ],
               "Effect" : "Allow",
               "Resource" : ["*"]
-            }
+            },
+            {
+              "Action": [
+                "dynamodb:BatchWriteItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:BatchGetItem",
+                "dynamodb:Scan",
+                "dynamodb:ListTables",
+                "dynamodb:GetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:DescribeTable",
+                "dynamodb:PutItem",
+                "dynamodb:Query",
+                "dynamodb:UpdateItem",
+                "dynamodb:UpdateTable"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryDynamoDbTableName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "firehose:DescribeDeliveryStream",
+                "firehose:PutRecord",
+                "firehose:PutRecordBatch"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryStreamName}"
+                }
+              ]
+            }                                    
           ]
         },
         "PolicyName" : "root",
@@ -2475,6 +2690,18 @@
             },
             {
               "Action" : [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObject",
+                "s3:RestoreObject"
+              ],
+              "Effect" : "Allow",
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }]]}]
+            },                    
+            {
+              "Action" : [
                 "s3:DeleteObject",
                 "s3:GetBucketLocation",
                 "s3:GetObject",
@@ -2580,7 +2807,42 @@
               ],
               "Effect" : "Allow",
               "Resource" : ["*"]
-            }
+            },
+            {
+              "Action": [
+                "firehose:DescribeDeliveryStream",
+                "firehose:PutRecord",
+                "firehose:PutRecordBatch"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryStreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "dynamodb:BatchWriteItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:BatchGetItem",
+                "dynamodb:Scan",
+                "dynamodb:ListTables",
+                "dynamodb:GetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:DescribeTable",
+                "dynamodb:PutItem",
+                "dynamodb:Query",
+                "dynamodb:UpdateItem",
+                "dynamodb:UpdateTable"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryDynamoDbTableName}"
+                }
+              ]
+            }                           
           ]
         },
         "PolicyName" : "root",
@@ -2801,8 +3063,42 @@
               ],
               "Effect": "Allow",
               "Resource": [ "*" ]
-            }
-
+            },
+            {
+              "Action": [
+                "dynamodb:BatchWriteItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:BatchGetItem",
+                "dynamodb:Scan",
+                "dynamodb:ListTables",
+                "dynamodb:GetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:DescribeTable",
+                "dynamodb:PutItem",
+                "dynamodb:Query",
+                "dynamodb:UpdateItem",
+                "dynamodb:UpdateTable"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryDynamoDbTableName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "firehose:DescribeDeliveryStream",
+                "firehose:PutRecord",
+                "firehose:PutRecordBatch"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryStreamName}"
+                }
+              ]
+            }                         
           ]
         },
         "PolicyName": "root",
@@ -3025,7 +3321,42 @@
               ],
               "Effect" : "Allow",
               "Resource" : ["*"]
-            }
+            },
+            {
+              "Action": [
+                "dynamodb:BatchWriteItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:BatchGetItem",
+                "dynamodb:Scan",
+                "dynamodb:ListTables",
+                "dynamodb:GetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:DescribeTable",
+                "dynamodb:PutItem",
+                "dynamodb:Query",
+                "dynamodb:UpdateItem",
+                "dynamodb:UpdateTable"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryDynamoDbTableName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "firehose:DescribeDeliveryStream",
+                "firehose:PutRecord",
+                "firehose:PutRecordBatch"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryStreamName}"
+                }
+              ]
+            }                
           ]
         },
         "PolicyName": "root",
@@ -3252,6 +3583,18 @@
               ]
             },
             {
+              "Action" : [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObject",
+                "s3:RestoreObject"
+              ],
+              "Effect" : "Allow",
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }]]}]
+            },                    
+            {
               "Action": [
                 "s3:DeleteObject",
                 "s3:GetBucketLocation",
@@ -3437,7 +3780,42 @@
                       }
                     ]
                   ]
-                }
+                },
+                {
+                  "Action": [
+                    "dynamodb:BatchWriteItem",
+                    "dynamodb:DeleteItem",
+                    "dynamodb:BatchGetItem",
+                    "dynamodb:Scan",
+                    "dynamodb:ListTables",
+                    "dynamodb:GetItem",
+                    "dynamodb:GetRecords",
+                    "dynamodb:DescribeTable",
+                    "dynamodb:PutItem",
+                    "dynamodb:Query",
+                    "dynamodb:UpdateItem",
+                    "dynamodb:UpdateTable"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryDynamoDbTableName}"
+                    }
+                  ]
+                },
+                {
+                  "Action": [
+                    "firehose:DescribeDeliveryStream",
+                    "firehose:PutRecord",
+                    "firehose:PutRecordBatch"
+                  ],
+                  "Effect" : "Allow",
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryStreamName}"
+                    }
+                  ]
+                }                    
               ]
             }
           ]
@@ -3714,7 +4092,42 @@
               "Resource": [
                 "*"
               ]
-            }
+            },
+            {
+              "Action": [
+                "dynamodb:BatchWriteItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:BatchGetItem",
+                "dynamodb:Scan",
+                "dynamodb:ListTables",
+                "dynamodb:GetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:DescribeTable",
+                "dynamodb:PutItem",
+                "dynamodb:Query",
+                "dynamodb:UpdateItem",
+                "dynamodb:UpdateTable"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryDynamoDbTableName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "firehose:DescribeDeliveryStream",
+                "firehose:PutRecord",
+                "firehose:PutRecordBatch"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryStreamName}"
+                }
+              ]
+            }                
           ]
         },
         "PolicyName": "root",
@@ -3941,6 +4354,18 @@
               ]
             },
             {
+              "Action" : [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObject",
+                "s3:RestoreObject"
+              ],
+              "Effect" : "Allow",
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }]]}]
+            },                    
+            {
               "Action": [
                 "s3:DeleteObject",
                 "s3:GetBucketLocation",
@@ -4110,7 +4535,42 @@
                   ]
                 }
               ]
-            }
+            },
+            {
+              "Action": [
+                "dynamodb:BatchWriteItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:BatchGetItem",
+                "dynamodb:Scan",
+                "dynamodb:ListTables",
+                "dynamodb:GetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:DescribeTable",
+                "dynamodb:PutItem",
+                "dynamodb:Query",
+                "dynamodb:UpdateItem",
+                "dynamodb:UpdateTable"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryDynamoDbTableName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "firehose:DescribeDeliveryStream",
+                "firehose:PutRecord",
+                "firehose:PutRecordBatch"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryStreamName}"
+                }
+              ]
+            }                
           ]
         },
         "PolicyName": "root",
@@ -4385,7 +4845,42 @@
               "Resource": [
                 "*"
               ]
-            }
+            },
+            {
+              "Action": [
+                "dynamodb:BatchWriteItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:BatchGetItem",
+                "dynamodb:Scan",
+                "dynamodb:ListTables",
+                "dynamodb:GetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:DescribeTable",
+                "dynamodb:PutItem",
+                "dynamodb:Query",
+                "dynamodb:UpdateItem",
+                "dynamodb:UpdateTable"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryDynamoDbTableName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "firehose:DescribeDeliveryStream",
+                "firehose:PutRecord",
+                "firehose:PutRecordBatch"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryStreamName}"
+                }
+              ]
+            }                
           ]
         },
         "PolicyName": "root",
@@ -4612,6 +5107,18 @@
               ]
             },
             {
+              "Action" : [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObject",
+                "s3:RestoreObject"
+              ],
+              "Effect" : "Allow",
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }]]}]
+            },                    
+            {
               "Action": [
                 "s3:DeleteObject",
                 "s3:GetBucketLocation",
@@ -4781,7 +5288,42 @@
                   ]
                 }
               ]
-            }
+            },
+            {
+              "Action": [
+                "dynamodb:BatchWriteItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:BatchGetItem",
+                "dynamodb:Scan",
+                "dynamodb:ListTables",
+                "dynamodb:GetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:DescribeTable",
+                "dynamodb:PutItem",
+                "dynamodb:Query",
+                "dynamodb:UpdateItem",
+                "dynamodb:UpdateTable"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryDynamoDbTableName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "firehose:DescribeDeliveryStream",
+                "firehose:PutRecord",
+                "firehose:PutRecordBatch"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryStreamName}"
+                }
+              ]
+            }               
           ]
         },
         "PolicyName": "root",
@@ -5056,7 +5598,42 @@
               "Resource": [
                 "*"
               ]
-            }
+            },
+            {
+              "Action": [
+                "dynamodb:BatchWriteItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:BatchGetItem",
+                "dynamodb:Scan",
+                "dynamodb:ListTables",
+                "dynamodb:GetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:DescribeTable",
+                "dynamodb:PutItem",
+                "dynamodb:Query",
+                "dynamodb:UpdateItem",
+                "dynamodb:UpdateTable"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryDynamoDbTableName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "firehose:DescribeDeliveryStream",
+                "firehose:PutRecord",
+                "firehose:PutRecordBatch"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryStreamName}"
+                }
+              ]
+            }                
           ]
         },
         "PolicyName": "root",
