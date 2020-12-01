@@ -126,7 +126,7 @@ def parse_sqs_message(msg, receipt):
                       msg_as_json["submit_message_type"],
                       receipt,
                       None,
-                      message_context if 'message_context' in msg_as_json else None)
+                      msg_as_json['message_context'] if 'message_context' in msg_as_json else None)
 
 # Attempts to create a new header of the format:
 #
