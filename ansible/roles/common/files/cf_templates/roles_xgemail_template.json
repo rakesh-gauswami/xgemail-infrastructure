@@ -1112,19 +1112,7 @@
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryStreamName}"
                 }
               ]
-            },            
-            {
-              "Action" : [
-                "s3:GetBucketLocation",
-                "s3:GetObject",
-                "s3:ListBucket",
-                "s3:PutObject",
-                "s3:RestoreObject"
-              ],
-              "Effect" : "Allow",
-              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }, "/*"]]},
-                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }]]}]
-            },            
+            },                      
             {
               "Action": [
                 "dynamodb:BatchWriteItem",
@@ -5658,7 +5646,7 @@
               "Effect" : "Allow",
               "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }, "/*"]]},
                 { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }]]}]
-            },           
+            },             
             {
               "Action": [
                 "dynamodb:BatchWriteItem",
