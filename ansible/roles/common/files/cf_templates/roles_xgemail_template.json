@@ -3792,43 +3792,44 @@
                       }
                     ]
                   ]
-                },
-                {
-                  "Action": [
-                    "dynamodb:BatchWriteItem",
-                    "dynamodb:DeleteItem",
-                    "dynamodb:BatchGetItem",
-                    "dynamodb:Scan",
-                    "dynamodb:ListTables",
-                    "dynamodb:GetItem",
-                    "dynamodb:GetRecords",
-                    "dynamodb:DescribeTable",
-                    "dynamodb:PutItem",
-                    "dynamodb:Query",
-                    "dynamodb:UpdateItem",
-                    "dynamodb:UpdateTable"
-                  ],
-                  "Effect": "Allow",
-                  "Resource": [
-                    {
-                      "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryDynamoDbTableName}"
-                    }
-                  ]
-                },
-                {
-                  "Action": [
-                    "firehose:DescribeDeliveryStream",
-                    "firehose:PutRecord",
-                    "firehose:PutRecordBatch"
-                  ],
-                  "Effect" : "Allow",
-                  "Resource": [
-                    {
-                      "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryStreamName}"
-                    }
-                  ]
-                }                    
+                }
               ]
+            },
+            {
+                
+              "Action": [
+                "dynamodb:BatchWriteItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:BatchGetItem",
+                "dynamodb:Scan",
+                "dynamodb:ListTables",
+                "dynamodb:GetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:DescribeTable",
+                "dynamodb:PutItem",
+                "dynamodb:Query",
+                "dynamodb:UpdateItem",
+                "dynamodb:UpdateTable"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryDynamoDbTableName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "firehose:DescribeDeliveryStream",
+                "firehose:PutRecord",
+                "firehose:PutRecordBatch"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryStreamName}"
+                }
+              ]                   
             }
           ]
         },
