@@ -1,0 +1,26 @@
+#
+# Cookbook Name:: sophos-cloud-xgemail
+# Recipe:: setup_message_history_storage_dir
+#
+# Copyright 2020, Sophos
+#
+# All rights reserved - Do Not Redistribute
+#
+# This recipe creates directory for message history storage
+
+MH_MAIL_INFO_STORAGE_DIR  = node['xgemail']['mh_mail_info_storage_dir']
+NODE_TYPE                 = node['xgemail']['cluster_type']
+SERVICE_USER              = node['xgemail']['sqs_message_processor_user']
+
+# create mh mail info storage directory in delivery servers
+if NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'encryption-delivery' || 
+    NODE_TYPE == 'risky-delivery' || NODE_TYPE == 'warmup-delivery' || NODE_TYPE == 'beta-delivery' || NODE_TYPE == 'delta-delivery'
+
+    directory MH_MAIL_INFO_STORAGE_DIR do
+      mode '0755'
+      owner SERVICE_USER
+      group SERVICE_USER
+      recursive true
+    end
+
+end

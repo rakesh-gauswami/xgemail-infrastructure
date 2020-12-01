@@ -49,6 +49,7 @@ end
     'gziputils.py',
     'impersonation_updater.py',
     'messageformatter.py',
+    'messagehistory.py',
     'messagehistoryformatter.py',
     'metadataformatter.py',
     'multipolicyreaderutils.py',

@@ -97,6 +97,9 @@ default['xgemail']['libopendkim_version'] = '2.11.0'
 
 default['xgemail']['policy_efs_mount_dir'] = '/policy-storage'
 
+# Message History
+default['xgemail']['mh_mail_info_storage_dir'] = '/storage/msg-history/mh-mail-info'
+
 ## SAVi SXL Live Protection settings
 default['xgemail']['savdid_sxl_pua_detection'] = 1
 default['xgemail']['savdid_sxl_dns_res'] = '/etc/resolv.conf'
