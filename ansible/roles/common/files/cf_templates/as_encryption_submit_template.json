@@ -253,7 +253,11 @@
     "MsgHistoryFailureBucketName" : {
       "Description" : "Message History s3 bucket name for writing failure records",
       "Type": "String"
-    }    
+    },
+    "MsgHistoryDynamoDbTableName": {
+      "Description": "Name of the message history DynamoDB table",
+      "Type": "String"
+    }        
   },
 
   "Mappings": {
@@ -639,7 +643,8 @@
                     "    \"xgemail_queue_url\"                      : \"{{xgemail_queue_url}}\",\n",
                     "    \"xgemail_msg_history_events_topic_arn\"   : \"{{xgemail_msg_history_events_topic_arn}}\",\n",
                     "    \"msg_history_stream_name\"                : \"{{msg_history_stream_name}}\",\n",
-                    "    \"msg_history_failure_bucket_name\"        : \"{{msg_history_failure_bucket_name}}\"\n",                       
+                    "    \"msg_history_failure_bucket_name\"        : \"{{msg_history_failure_bucket_name}}\",\n",     
+                    "    \"msg_history_dynamodb_table_name\"        : \"{{msg_history_dynamodb_table_name}}\"\n",                                                 
                     "  }\n",
                     "}\n"
                   ]]
@@ -670,7 +675,8 @@
                   "xgemail_queue_url":                              { "Ref": "XgemailQueueUrl" },
                   "xgemail_msg_history_events_topic_arn":           { "Ref": "MessageHistoryEventsTopicArn" },
                   "msg_history_stream_name":                        { "Ref": "MsgHistoryStreamName" },
-                  "msg_history_failure_bucket_name":                { "Ref": "MsgHistoryFailureBucketName" }                    
+                  "msg_history_failure_bucket_name":                { "Ref": "MsgHistoryFailureBucketName" },
+                  "msg_history_dynamodb_table_name":                { "Ref": "MsgHistoryDynamoDbTableName"}                            
                 },
                 "mode": "000444",
                 "owner": "root"
