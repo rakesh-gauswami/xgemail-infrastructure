@@ -44,6 +44,11 @@ JILTER_HELO_TELEMETRY_STREAM_NAME = node['xgemail']['jilter_helo_telemetry_strea
 LIBOPENDKIM_VERSION = node['xgemail']['libopendkim_version']
 LIBOPENDKIM_PACKAGE_NAME = "libopendkim-#{LIBOPENDKIM_VERSION}"
 
+NODE_IP = node['ipaddress']
+MSG_HISTORY_STREAM_NAME = node['xgemail']['msg_history_stream_name']
+MSG_HISTORY_FAILURE_BUCKET_NAME = node['xgemail']['msg_history_failure_bucket_name']
+MSG_HISTORY_EVENT_DIR = node['xgemail']['mh_event_storage_dir']
+
 SERVICE_USER = node['xgemail']['jilter_user']
 POLICY_BUCKET_NAME   = node['xgemail']['xgemail_policy_bucket_name']
 ACTIVE_PROFILE = node['xgemail']['xgemail_active_profile']
@@ -139,6 +144,14 @@ user SERVICE_USER do
   shell '/sbin/nologin'
 end
 
+# Create dir where Jilter writes accepted events temporarily for producers to read.
+directory MSG_HISTORY_EVENT_DIR do
+  mode '0755'
+  owner SERVICE_USER
+  group SERVICE_USER
+  recursive true
+end
+
 # Give ownership to the jilter service user
 file "#{JILTER_CONF_DIR}/launch_darkly_#{ACCOUNT}.properties" do
   owner SERVICE_USER
@@ -160,7 +173,11 @@ template 'xgemail.jilter.properties' do
       :policy_bucket => POLICY_BUCKET_NAME,
       :account => ACCOUNT,
       :internet_submit_bucket => INTERNET_SUBMIT_BUCKET_NAME,
-      :jilter_helo_telemetry_stream => JILTER_HELO_TELEMETRY_STREAM_NAME
+      :jilter_helo_telemetry_stream => JILTER_HELO_TELEMETRY_STREAM_NAME,
+      :node_ip => NODE_IP,
+      :msg_history_stream_name => MSG_HISTORY_STREAM_NAME,
+      :msg_history_failure_bucket_name => MSG_HISTORY_FAILURE_BUCKET_NAME,
+      :msg_history_event_dir => MSG_HISTORY_EVENT_DIR         
   )
 end
 

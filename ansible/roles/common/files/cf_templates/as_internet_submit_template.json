@@ -295,7 +295,15 @@
     "XgemailSxlRbl": {
       "Description": "SXL Reputation Blacklist used by Xgemail Submit Servers",
       "Type": "String"
-    }
+    },
+    "MsgHistoryStreamName" : {
+      "Description" : "Message History firehose stream name",
+      "Type": "String"
+    },
+    "MsgHistoryFailureBucketName" : {
+      "Description" : "Message History s3 bucket name for writing failure records",
+      "Type": "String"
+    }     
   },
 
   "Mappings": {
@@ -805,6 +813,8 @@
                     "    \"xgemail_queue_url\"                      : \"{{xgemail_queue_url}}\",\n",
                     "    \"xgemail_scan_events_topic_arn\"          : \"{{xgemail_scan_events_topic_arn}}\",\n",
                     "    \"xgemail_msg_history_events_topic_arn\"   : \"{{xgemail_msg_history_events_topic_arn}}\"\n",
+                    "    \"msg_history_stream_name\"                : \"{{msg_history_stream_name}}\"\n",
+                    "    \"msg_history_failure_bucket_name\"        : \"{{msg_history_failure_bucket_name}}\"\n",                       
                     "  }\n",
                     "}\n"
                   ]]
@@ -836,7 +846,9 @@
                   "xgemail_queue_url":                              { "Ref": "XgemailQueueUrl" },
                   "xgemail_sns_sqs_url":                            { "Ref": "XgemailSnsSqsQueueUrl" },
                   "xgemail_scan_events_topic_arn":                  { "Ref": "XgemailScanEventsTopicArn" },
-                  "xgemail_msg_history_events_topic_arn":           { "Ref": "MessageHistoryEventsTopicArn" }
+                  "xgemail_msg_history_events_topic_arn":           { "Ref": "MessageHistoryEventsTopicArn" },
+                  "msg_history_stream_name":                        { "Ref": "MsgHistoryStreamName" },
+                  "msg_history_failure_bucket_name":                { "Ref": "MsgHistoryFailureBucketName" }                    
                 },
                 "mode": "000444",
                 "owner": "root"
