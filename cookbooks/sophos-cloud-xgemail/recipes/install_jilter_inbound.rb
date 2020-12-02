@@ -44,7 +44,6 @@ JILTER_HELO_TELEMETRY_STREAM_NAME = node['xgemail']['jilter_helo_telemetry_strea
 LIBOPENDKIM_VERSION = node['xgemail']['libopendkim_version']
 LIBOPENDKIM_PACKAGE_NAME = "libopendkim-#{LIBOPENDKIM_VERSION}"
 
-NODE_IP = node['ipaddress']
 MSG_HISTORY_STREAM_NAME = node['xgemail']['msg_history_stream_name']
 MSG_HISTORY_FAILURE_BUCKET_NAME = node['xgemail']['msg_history_failure_bucket_name']
 MSG_HISTORY_EVENT_DIR = node['xgemail']['mh_event_storage_dir']
@@ -174,7 +173,6 @@ template 'xgemail.jilter.properties' do
       :account => ACCOUNT,
       :internet_submit_bucket => INTERNET_SUBMIT_BUCKET_NAME,
       :jilter_helo_telemetry_stream => JILTER_HELO_TELEMETRY_STREAM_NAME,
-      :node_ip => NODE_IP,
       :msg_history_stream_name => MSG_HISTORY_STREAM_NAME,
       :msg_history_failure_bucket_name => MSG_HISTORY_FAILURE_BUCKET_NAME,
       :msg_history_event_dir => MSG_HISTORY_EVENT_DIR         
