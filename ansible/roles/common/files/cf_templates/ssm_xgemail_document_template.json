@@ -597,6 +597,160 @@
       }
     },
 
+    "BlockSenderScript": {
+      "Type": "AWS::SSM::Document",
+      "Properties": {
+        "DocumentType": "Automation",
+        "Content": {
+          "schemaVersion": "0.3",
+          "assumeRole": { "Fn::GetAtt" : [ "PostfixAutomationRole", "Arn" ] },
+          "description": "Update Postfix configuration on an EC2 instance in an AutoScaling Group",
+          "parameters": {
+            "SenderAddress": {
+              "type": "String",
+              "description": "The sender address to block in Postfix config."
+            }
+          },
+          "mainSteps":[
+            {
+              "name": "submitSenderAddress",
+              "action": "aws:executeAutomation",
+              "maxAttempts": 3,
+              "timeoutSeconds": 3600,
+              "isEnd": "true",
+              "onFailure": "Abort",
+              "inputs": {
+                "DocumentName": { "Ref" : "PostfixCommandBlockSender" },
+                "RuntimeParameters": {
+                  "SenderAddress": "{{SenderAddress}}"
+                }
+              }
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "BlockSenderScript" ] ] }
+          },
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
+      }
+    },
+
+    "PostfixCommandBlockSender": {
+      "Type": "AWS::SSM::Document",
+      "Properties": {
+        "DocumentType": "Automation",
+        "Content": {
+          "schemaVersion": "0.3",
+          "assumeRole": "{{assumeRole}}",
+          "description": "Update Postfix configuration on an EC2 instance in an AutoScaling Group",
+          "parameters": {
+            "assumeRole": {
+              "type": "String",
+              "description": "Role under which to run the automation",
+              "default": ""
+            },
+            "SenderAddress": {
+              "type": "String",
+              "description": "The sender address to block in Postfix config."
+            }
+          },
+          "mainSteps":[
+            {
+              "name": "getInstance",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": 3,
+              "onFailure": "Abort",
+              "inputs": {
+                "Service": "ec2",
+                "Api": "DescribeInstances",
+                "Filters": [
+                  {
+                    "Name": "tag:Application",
+                    "Values": [
+                      "internet-submit"
+                    ]
+                  },
+                  {
+                    "Name": "instance-state-name",
+                    "Values": [
+                      "running"
+                    ]
+                  }
+                ]
+              },
+              "outputs": [
+                {
+                  "Name": "InstanceId",
+                  "Selector": "$.Reservations[0].Instances[0].InstanceId",
+                  "Type": "String"
+                }
+              ],
+              "isCritical": "true",
+              "nextStep": "PostfixConfig"
+            },
+            {
+              "name": "PostfixConfig",
+              "action": "aws:runCommand",
+              "maxAttempts": 3,
+              "timeoutSeconds": 3600,
+              "inputs": {
+                "DocumentName": "AWS-RunShellScript",
+                "InstanceIds": [ "{{getInstance.InstanceId}}" ],
+                "Parameters": {
+                  "commands": [
+                    "echo {{SenderAddress}} REJECT >> /etc/postfix-is/sender_access",
+                    "postmap /etc/postfix-is/sender_access",
+                    "postmulti -i postfix-is -x postconf smtpd_sender_restrictions='reject_non_fqdn_sender check_sender_access hash:/etc/postfix/sender_access'",
+                    "postmulti -i postfix-is -p reload"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "PostfixCommandBlockSender" ] ] }
+          },
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
+      }
+    },
+
     "EipRotation": {
       "Type": "AWS::SSM::Document",
       "Properties": {
