@@ -4,7 +4,7 @@
 
   "Metadata": {
     "Copyright": [
-      "Copyright 2018, Sophos Limited. All rights reserved.",
+      "Copyright 2020, Sophos Limited. All rights reserved.",
       "",
       "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
       "Sophos Limited and Sophos Group.  All other product and company",
@@ -57,7 +57,7 @@
   },
 
   "Conditions": {
-    "DevAcct": {
+    "isPreProd": {
       "Fn::And": [
         {
           "Fn::Equals": [
@@ -68,24 +68,20 @@
           ]
         },
         {
-          "Fn::Or": [
+          "Fn::Not": [
             {
               "Fn::Equals": [
-                {"Ref": "Environment"},
-                "dev"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {"Ref": "Environment"},
-                "inf"
+                {
+                  "Ref": "Environment"
+                },
+                "prod"
               ]
             }
           ]
         }
       ]
     },
-    "ProdAcct": {
+    "isProd": {
       "Fn::And": [
         {
           "Fn::Equals": [
@@ -5069,7 +5065,7 @@
     },
     "XgemailDevMsgFilterRole" : {
       "Type": "AWS::IAM::Role",
-      "Condition": "DevAcct",
+      "Condition": "isPreProd",
       "Properties": {
         "AssumeRolePolicyDocument": {
           "Statement": [
@@ -5112,7 +5108,7 @@
     },
     "XgemailProdMsgFilterRole" : {
       "Type": "AWS::IAM::Role",
-      "Condition": "ProdAcct",
+      "Condition": "isProd",
       "Properties": {
         "AssumeRolePolicyDocument": {
           "Statement": [
