@@ -30,6 +30,7 @@
    },
 
   "Resources" : {
+
     "PostfixService": {
       "Type": "AWS::SSM::Document",
       "Properties":{
@@ -576,62 +577,6 @@
           {
             "Key": "Name",
             "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "TagInstance" ] ] }
-          },
-          {
-            "Key": "Application",
-            "Value": "cloudemail"
-          },
-          {
-            "Key": "BusinessUnit",
-            "Value": "MSG"
-          },
-          {
-            "Key": "Project",
-            "Value": "xgemail"
-          },
-          {
-            "Key": "OwnerEmail",
-            "Value": "sophosmailops@sophos.com"
-          }
-        ]
-      }
-    },
-
-    "BlockSenderScript": {
-      "Type": "AWS::SSM::Document",
-      "Properties": {
-        "DocumentType": "Automation",
-        "Content": {
-          "schemaVersion": "0.3",
-          "assumeRole": { "Fn::GetAtt" : [ "PostfixAutomationRole", "Arn" ] },
-          "description": "Update Postfix configuration on an EC2 instance in an AutoScaling Group",
-          "parameters": {
-            "SenderAddress": {
-              "type": "String",
-              "description": "The sender address to block in Postfix config."
-            }
-          },
-          "mainSteps":[
-            {
-              "name": "submitSenderAddress",
-              "action": "aws:executeAutomation",
-              "maxAttempts": 3,
-              "timeoutSeconds": 3600,
-              "isEnd": "true",
-              "onFailure": "Abort",
-              "inputs": {
-                "DocumentName": { "Ref" : "PostfixCommandBlockSender" },
-                "RuntimeParameters": {
-                  "SenderAddress": "{{SenderAddress}}"
-                }
-              }
-            }
-          ]
-        },
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "BlockSenderScript" ] ] }
           },
           {
             "Key": "Application",
