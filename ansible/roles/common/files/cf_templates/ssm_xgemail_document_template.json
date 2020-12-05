@@ -605,13 +605,8 @@
         "Content": {
           "schemaVersion": "0.3",
           "assumeRole": { "Fn::GetAtt" : [ "PostfixAutomationRole", "Arn" ] },
-          "description": "Update Postfix configuration on an EC2 instance in an AutoScaling Group",
+          "description": "Blocked Sender address in all internet-submit Postfix instances.",
           "parameters": {
-            "assumeRole": {
-              "type": "String",
-              "description": "Role under which to run the automation",
-              "default": ""
-            },
             "SenderAddress": {
               "type": "String",
               "description": "The sender address to block in Postfix config."
