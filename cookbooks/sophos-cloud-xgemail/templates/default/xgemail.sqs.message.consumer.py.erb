@@ -25,6 +25,8 @@ import requests
 import smtplib
 import urllib
 import re
+import os.path
+import messagehistory
 from awshandler import AwsHandler
 from common.sqsmessage import SqsMessage
 from datetime import datetime
@@ -61,6 +63,8 @@ NODE_IP = '<%= @node_ip %>'
 ACCOUNT = '<%= @account %>'
 POLICY_BUCKET_NAME = "<%= @policy_bucket %>"
 TRANSPORT_CONFIG_PATH = "<%= @transport_config_path %>"
+MH_MAIL_INFO_STORAGE_DIR = "<%= @mh_mail_info_storage_dir %>"
+DELIVERY_JILTER_ENABLED_FILE_PATH = "<%= @delivery_jilter_enabled_file_path %>"
 
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
@@ -120,8 +124,9 @@ def parse_sqs_message(msg, receipt):
                       msg_as_json["nonce"],
                       msg_as_json["message_key"],
                       msg_as_json["submit_message_type"],
-                      receipt)
-
+                      receipt,
+                      None,
+                      msg_as_json['message_context'] if 'message_context' in msg_as_json else None)
 
 # Attempts to create a new header of the format:
 #
@@ -490,6 +495,8 @@ def create_and_publish_message_history_delivery_status_sns_job(sqs_message, post
         logger.exception("Failed to publish event <{0}> to message history delivery status sqs queue"
                      .format(sns_message_history_delivery_status_job))
 
+def is_delivery_jilter_enabled():
+    return os.path.isfile(DELIVERY_JILTER_ENABLED_FILE_PATH)
 
 while True:
     try:
@@ -578,6 +585,26 @@ while True:
                     '>, <'.join(r.encode('utf-8') for r in recipients)
                 )
             )
+
+            if is_delivery_jilter_enabled() and messagehistory.can_generate_mh_event(sqs_message):
+                logger.debug("QueueId [{0}] can generate message history event".format(queue_id.encode('utf-8')))
+                mh_mail_info = sqs_message.message_context['mh_mail_info']
+                mh_mail_info_path = None
+                try:
+                    mh_mail_info_path = messagehistory.write_mh_mail_info(
+                        mh_mail_info,
+                        MH_MAIL_INFO_STORAGE_DIR
+                    )
+                    logger.debug("mh_mail_info_path [{0}] written for QueueId [{1}]".format(mh_mail_info_path, queue_id.encode('utf-8')))
+                except Exception as e:
+                    logger.debug("Exception [{0}] while writing mh_mail_info_path for QueueId [{1}]".format(e, queue_id.encode('utf-8')))
+                
+                # add mh_mail_info_path to headers
+                if mh_mail_info_path:
+                    messagehistory.add_header(
+                        mh_mail_info_path,
+                        headers
+                    )
 
             # Add the transport route header to the existing headers if it's an INBOUND message
             if MESSAGE_DIRECTION == 'INBOUND':
