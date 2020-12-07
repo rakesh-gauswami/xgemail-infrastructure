@@ -613,7 +613,7 @@
           },
           "mainSteps":[
             {
-              "name": "getInstance",
+              "name": "getInstanceIds",
               "action": "aws:executeAwsApi",
               "maxAttempts": 3,
               "onFailure": "Abort",
@@ -638,7 +638,7 @@
               "outputs": [
                 {
                   "Name": "InstanceIds",
-                  "Selector": "$.Reservations.Instances.InstanceId",
+                  "Selector": "$.Reservations..Instances..InstanceId",
                   "Type": "StringList"
                 }
               ],
@@ -652,7 +652,7 @@
               "timeoutSeconds": 3600,
               "inputs": {
                 "DocumentName": "AWS-RunShellScript",
-                "InstanceIds": [ "{{getInstance.InstanceIds}}" ],
+                "InstanceIds": [ "{{getInstanceIds.InstanceIds}}" ],
                 "Parameters": {
                   "commands": [
                     "echo {{SenderAddress}} REJECT >> /etc/postfix-is/sender_access",
