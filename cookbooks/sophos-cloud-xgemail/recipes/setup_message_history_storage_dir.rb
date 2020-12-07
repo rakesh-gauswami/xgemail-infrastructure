@@ -17,7 +17,7 @@ if NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' || NODE_
     NODE_TYPE == 'risky-delivery' || NODE_TYPE == 'warmup-delivery' || NODE_TYPE == 'beta-delivery' || NODE_TYPE == 'delta-delivery'
 
     directory MH_MAIL_INFO_STORAGE_DIR do
-      mode '0755'
+      mode '0777'
       owner SERVICE_USER
       group SERVICE_USER
       recursive true
