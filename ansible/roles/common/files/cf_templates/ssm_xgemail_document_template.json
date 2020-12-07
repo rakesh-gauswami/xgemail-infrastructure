@@ -30,7 +30,6 @@
    },
 
   "Resources" : {
-
     "PostfixService": {
       "Type": "AWS::SSM::Document",
       "Properties":{
@@ -638,8 +637,8 @@
               },
               "outputs": [
                 {
-                  "Name": "InstanceId",
-                  "Selector": "$.Reservations[0].Instances[0].InstanceId",
+                  "Name": "InstanceIds",
+                  "Selector": "$.Reservations.Instances.InstanceId",
                   "Type": "String"
                 }
               ],
@@ -653,7 +652,7 @@
               "timeoutSeconds": 3600,
               "inputs": {
                 "DocumentName": "AWS-RunShellScript",
-                "InstanceIds": [ "{{getInstance.InstanceId}}" ],
+                "InstanceIds": [ "{{getInstance.InstanceIds}}" ],
                 "Parameters": {
                   "commands": [
                     "echo {{SenderAddress}} REJECT >> /etc/postfix-is/sender_access",
@@ -662,7 +661,9 @@
                     "postmulti -i postfix-is -p reload"
                   ]
                 }
-              }
+              },
+              "isCritical": "true",
+              "isEnd": "true"
             }
           ]
         },
