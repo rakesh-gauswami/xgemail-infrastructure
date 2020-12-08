@@ -26,9 +26,12 @@
       InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.XgemailEncryptionSubmitInstanceProfile}}"
       InstanceType:                         "{{aws.asg.es.instance_size}}"
       KeyName:                              "public-{{account.region}}"
-      LifecycleHookTerminating:             "{{aws.asg.es.lifecycle_hook_terminating}}"
+      LifecycleHookTerminating:             "{{aws.asg.es.lifecycle_hook_terminating}}"      
       LoadBalancerName:                     "{{elb_stack_output.stack_outputs.LoadBalancerId}}"
-      MessageHistoryEventsTopicArn:         "{{sns.arn_prefix}}{{sns.msg_history_events_sns_topic}}"
+      MsgHistoryDynamoDbTableName:          "{{dynamodb.msg_history_dynamodb}}"       
+      MsgHistoryFailureBucketName:          "{{s3.msg_history_failure_bucket_name}}"      
+      MsgHistoryStreamName:                 "{{kinesis.firehose.msg_history_stream_name}}"    
+      MessageHistoryEventsTopicArn:         "{{sns.arn_prefix}}{{sns.msg_history_events_sns_topic}}"       
       PolicyTargetValue:                    "{{aws.asg.es.policy_target_value}}"
       S3CookbookRepositoryURL:              "//cloud-{{account.name}}-templates/{{build.branch}}/xgemail-infrastructure/cookbooks.enc"
       ScaleInOnWeekends:                    "{{weekend_scale_down}}"
@@ -53,9 +56,6 @@
       XgemailServiceType:                   "encryption-submit"
       XgemailSxlDbl:                        "{{xgemail_sxl_dbl}}"
       XgemailSxlRbl:                        "{{xgemail_sxl_rbl}}"
-      MsgHistoryStreamName:                 "{{kinesis.firehose.msg_history_stream_name}}"
-      MsgHistoryFailureBucketName:          "{{s3.msg_history_failure_bucket_name}}"
-      MsgHistoryDynamoDbTableName:          "{{dynamodb.msg_history_dynamodb}}"
   register: asg_stack_output
 
 - debug:
