@@ -39,6 +39,8 @@ NODE_IP                                 = node['ipaddress']
 POLICY_BUCKET_NAME                      = node['xgemail']['xgemail_policy_bucket_name']
 TRANSPORT_CONFIG_PATH                   = XGEMAIL_FILES_DIR + '/config/transport-route-config.json'
 E2E_LATENCY_TELEMETRY_DELIVERY_STREAM   =  "tf-e2e-latency-telemetry-#{AWS_REGION}-#{ACCOUNT}-firehose"
+MH_MAIL_INFO_STORAGE_DIR                = node['xgemail']['mh_mail_info_storage_dir']
+DELIVERY_JILTER_ENABLED_FILE_PATH       = XGEMAIL_FILES_DIR + '/config/delivery.jilter.enabled'
 
 if ACCOUNT == 'sandbox'
   XGEMAIL_PIC_FQDN = 'mail-service:8080'
@@ -95,7 +97,9 @@ template CONSUMER_SCRIPT_PATH do
     :node_ip => NODE_IP,
     :account => ACCOUNT,
     :policy_bucket => POLICY_BUCKET_NAME,
-    :transport_config_path => TRANSPORT_CONFIG_PATH
+    :transport_config_path => TRANSPORT_CONFIG_PATH,
+    :mh_mail_info_storage_dir => MH_MAIL_INFO_STORAGE_DIR,
+    :delivery_jilter_enabled_file_path => DELIVERY_JILTER_ENABLED_FILE_PATH
   )
 end
 

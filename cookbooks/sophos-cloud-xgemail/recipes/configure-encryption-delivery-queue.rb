@@ -68,3 +68,5 @@ CONFIGURATION_COMMANDS.each do | cur |
 end
 
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_consumer'
+include_recipe 'sophos-cloud-xgemail::setup_message_history_storage_dir'
+include_recipe 'sophos-cloud-xgemail::setup_message_history_files_cleanup_cron'
