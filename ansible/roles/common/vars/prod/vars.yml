@@ -9,17 +9,6 @@ mail_domain: p0.p.hmr.sophos.com
 xgemail_size_data_gb:                           "100"
 aws:
   asg:
-    is:
-      alarm_scale_in_enabled:                   "false"
-      alarm_scale_out_enabled:                  "true"
-      alarm_scale_in_threshold:                 "5000"
-      alarm_scale_out_threshold:                "30000"
-      as_min_size:                              "6"
-      as_max_size:                              "12"
-      as_min_service:                           "3"
-      as_max_batch_size:                        "3"
-      instance_size:                            "m4.2xlarge"
-      policy_target_value:                      "85"
     bd:
       alarm_scaling_enabled:                    "true"
       alarm_scale_in_threshold:                 "100"
@@ -28,10 +17,10 @@ aws:
       as_max_size:                              "12"
       as_min_service:                           "3"
       as_max_batch_size:                        "3"
-      instance_size:                            "c4.large"
+      instance_size:                            "c5a.large"
     bx:
       asg_min_size:                             [1,1,1]
-      instance_size:                            "c4.large"
+      instance_size:                            "c5.large"
     cd:
       alarm_scale_in_enabled:                   "false"
       alarm_scale_out_enabled:                  "true"
@@ -41,18 +30,18 @@ aws:
       as_max_size:                              "12"
       as_min_service:                           "3"
       as_max_batch_size:                        "3"
-      instance_size:                            "c4.large"
-    cx:
-      asg_min_size:                             [1,1,1]
-      instance_size:                            "c4.large"
+      instance_size:                            "m5a.large"
     cs:
       alarm_scaling_enabled:                    "false"
       as_min_size:                              "6"
       as_max_size:                              "12"
       as_min_service:                           "3"
       as_max_batch_size:                        "3"
-      instance_size:                            "m4.2xlarge"
+      instance_size:                            "m5.2xlarge"
       policy_target_value:                      "65"
+    cx:
+      asg_min_size:                             [ 1,1,1 ]
+      instance_size:                            "m5a.large"
     dd:
       alarm_scaling_enabled:                    "true"
       alarm_scale_in_threshold:                 "100"
@@ -61,10 +50,24 @@ aws:
       as_max_size:                              "12"
       as_min_service:                           "3"
       as_max_batch_size:                        "3"
-      instance_size:                            "c4.large"
+      instance_size:                            "c5a.large"
     dx:
       asg_min_size:                             [1,1,1]
-      instance_size:                            "c4.large"
+      instance_size:                            "c5.large"
+    ed:
+      as_min_size:                              "3"
+      as_max_size:                              "12"
+      as_min_service:                           "1"
+      as_max_batch_size:                        "2"
+      instance_size:                            "c5a.large"
+      policy_target_value:                      "80"
+    es:
+      as_min_size:                              "3"
+      as_max_size:                              "12"
+      as_min_service:                           "1"
+      as_max_batch_size:                        "2"
+      instance_size:                            "c5a.large"
+      policy_target_value:                      "80"
     id:
       alarm_scaling_enabled:                    "true"
       alarm_scale_in_threshold:                 "100"
@@ -73,34 +76,31 @@ aws:
       as_max_size:                              "12"
       as_min_service:                           "3"
       as_max_batch_size:                        "3"
-      instance_size:                            "c4.large"
+      instance_size:                            "m5a.large"
+    is:
+      alarm_scale_in_enabled:                   "false"
+      alarm_scale_out_enabled:                  "true"
+      alarm_scale_in_threshold:                 "5000"
+      alarm_scale_out_threshold:                "30000"
+      as_min_size:                              "6"
+      as_max_size:                              "12"
+      as_min_service:                           "3"
+      as_max_batch_size:                        "3"
+      instance_size:                            "m5.2xlarge"
+      policy_target_value:                      "85"
     ix:
       asg_min_size:                             [1,1,1]
-      instance_size:                            "c4.large"
-    es:
-      as_min_size:                              "3"
-      as_max_size:                              "12"
-      as_min_service:                           "1"
-      as_max_batch_size:                        "2"
-      instance_size:                            "c4.large"
-      policy_target_value:                      "80"
-    ed:
-      as_min_size:                              "3"
-      as_max_size:                              "12"
-      as_min_service:                           "1"
-      as_max_batch_size:                        "2"
-      instance_size:                            "c4.large"
-      policy_target_value:                      "80"
+      instance_size:                            "c5.large"
     rd:
       as_min_size:                              "3"
       as_max_size:                              "12"
       as_min_service:                           "3"
       as_max_batch_size:                        "3"
-      instance_size:                            "c4.large"
+      instance_size:                            "c5a.large"
       policy_target_value:                      "80"
     rx:
       asg_min_size:                             [1,1,1]
-      instance_size:                            "c4.large"
+      instance_size:                            "c5.large"
     wd:
       alarm_scaling_enabled:                    "true"
       alarm_scale_in_threshold:                 "100"
@@ -109,10 +109,10 @@ aws:
       as_max_size:                              "12"
       as_min_service:                           "3"
       as_max_batch_size:                        "3"
-      instance_size:                            "c4.large"
+      instance_size:                            "c5a.large"
     wx:
       asg_min_size:                             [1,1,1]
-      instance_size:                            "c4.large"
+      instance_size:                            "c5.large"
   ec:
     redis:
       xgemail_dqs:
