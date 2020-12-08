@@ -26,7 +26,7 @@
       InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.XgemailEncryptionSubmitInstanceProfile}}"
       InstanceType:                         "{{aws.asg.es.instance_size}}"
       KeyName:                              "public-{{account.region}}"
-      LifecycleHookTerminating:             "{{aws.asg.es.lifecycle_hook_terminating}}"      
+      LifecycleHookTerminating:             "{{aws.asg.es.lifecycle_hook_terminating}}"
       LoadBalancerName:                     "{{elb_stack_output.stack_outputs.LoadBalancerId}}"
       MsgHistoryDynamoDbTableName:          "{{dynamodb.msg_history_dynamodb}}"
       MsgHistoryFailureBucketName:          "{{s3.msg_history_failure_bucket_name}}"
