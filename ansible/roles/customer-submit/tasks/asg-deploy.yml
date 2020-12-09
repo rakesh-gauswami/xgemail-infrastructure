@@ -28,6 +28,8 @@
       KeyName:                              "public-{{account.region}}"
       LifecycleHookTerminating:             "{{aws.asg.cs.lifecycle_hook_terminating}}"
       LoadBalancerName:                     "{{elb_stack_output.stack_outputs.LoadBalancerId}}"
+      MsgHistoryFailureBucketName:          "{{s3.msg_history_failure_bucket_name}}"
+      MsgHistoryStreamName:                 "{{kinesis.firehose.msg_history_stream_name}}"
       MessageHistoryEventsTopicArn:         "{{sns.arn_prefix}}{{sns.msg_history_events_sns_topic}}"
       PolicyTargetValue:                    "{{aws.asg.cs.policy_target_value}}"
       S3CookbookRepositoryURL:              "//cloud-{{account.name}}-templates/{{build.branch}}/xgemail-infrastructure/cookbooks.enc"

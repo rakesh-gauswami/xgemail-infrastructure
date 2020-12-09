@@ -41,6 +41,11 @@ JILTER_SCRIPT_PATH = "#{JILTER_SCRIPT_DIR}/xgemail.jilter.service.sh"
 JILTER_CONF_DIR = "#{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}/conf"
 JILTER_APPLICATION_PROPERTIES_PATH = "#{JILTER_CONF_DIR}/jilter-application.properties"
 
+NODE_IP = node['ipaddress']
+MSG_HISTORY_STREAM_NAME = node['xgemail']['msg_history_stream_name']
+MSG_HISTORY_FAILURE_BUCKET_NAME = node['xgemail']['msg_history_failure_bucket_name']
+MSG_HISTORY_EVENT_DIR = node['xgemail']['mh_event_storage_dir']
+
 LIBOPENDKIM_VERSION = node['xgemail']['libopendkim_version']
 LIBOPENDKIM_PACKAGE_NAME = "libopendkim-#{LIBOPENDKIM_VERSION}"
 
@@ -157,6 +162,14 @@ if ACCOUNT != 'sandbox'
     action :touch
   end
 
+  # Create dir where Jilter writes accepted events temporarily for producers to read.
+  directory MSG_HISTORY_EVENT_DIR do
+    mode '0755'
+    owner SERVICE_USER
+    group SERVICE_USER
+    recursive true
+  end
+
   # Create the Jilter service
   template 'xgemail.jilter.service.sh' do
     path JILTER_SCRIPT_PATH
@@ -184,7 +197,11 @@ if ACCOUNT != 'sandbox'
         :policy_bucket => POLICY_BUCKET_NAME,
         :account => ACCOUNT,
         :customer_submit_bucket => CUSTOMER_SUBMIT_BUCKET_NAME,
-        :reflexion_relay_allow_ips => REFLEXION_RELAY_ALLOW_IPS
+        :reflexion_relay_allow_ips => REFLEXION_RELAY_ALLOW_IPS,
+        :node_ip => NODE_IP,
+        :msg_history_stream_name => MSG_HISTORY_STREAM_NAME,
+        :msg_history_failure_bucket_name => MSG_HISTORY_FAILURE_BUCKET_NAME,
+        :msg_history_event_dir => MSG_HISTORY_EVENT_DIR           
     )
   end
 

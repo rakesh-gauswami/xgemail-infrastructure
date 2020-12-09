@@ -23,3 +23,9 @@ ACCOUNT=<%= @account %>
 # Need to explicitly ignore redis auto configuration
 spring.data.redis.repositories.enabled=false
 spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+
+NODE_IP=<%= @node_ip %> 
+MSG_HISTORY_KINESIS_STREAM_NAME=<%= @msg_history_stream_name %>
+MSG_HISTORY_EVENT_DIR=<%= @msg_history_event_dir %>
+MSG_HISTORY_FAILURE_BUCKET_ROOT=s3://<%= @msg_history_failure_bucket_name %>
+MSG_HISTORY_DYNAMODB_TABLE_NAME=<%= @msg_history_dynamodb_table_name %>
