@@ -383,6 +383,7 @@ stack:
     warmup_delivery_sns_topic:                          "{{vpc.cloud_email.name}}-xgemail-warmup-delivery-SNS"
   ssm:
     ssm_documents:                                      "{{vpc.cloud_email.name}}-SSM-Documents"
+    ssm_postfix_documents:                               "{{vpc.cloud_email.name}}-SSM-Postfix-Documents"
   msg:
     xgemail_messaging:                                  "{{vpc.cloud_email.name}}-XGEMAIL-messaging"
     xgemail_messaging_b:                                "{{vpc.cloud_email.name}}-XGEMAIL-messaging-b"
@@ -465,6 +466,7 @@ template:
     sns_topic_policy_iam_template:                      "{{tmp_artifacts_dir}}/sns_topic_policy_iam_template.json"
   ssm:
     ssm_xgemail_document_template:                      "{{tmp_artifacts_dir}}/ssm_xgemail_document_template.json"
+    ssm_xgemail_postfix_document_template:               "{{tmp_artifacts_dir}}/ssm_xgemail_postfix_document_template.json"
   msg:
     xgemail_messaging_a_template:                       "{{tmp_artifacts_dir}}/xgemail_messaging_a_template.json"
     xgemail_messaging_b_template:                       "{{tmp_artifacts_dir}}/xgemail_messaging_b_template.json"
