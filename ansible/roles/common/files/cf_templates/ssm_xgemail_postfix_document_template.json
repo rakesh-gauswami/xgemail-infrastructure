@@ -26,117 +26,6 @@
   },
 
   "Resources": {
-    "PostfixAutomationRole" : {
-      "Type": "AWS::IAM::Role",
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Version": "2012-10-17",
-          "Statement": [{
-            "Effect": "Allow",
-            "Principal": {
-              "Service": [
-                "ec2.amazonaws.com",
-                "ssm.amazonaws.com"
-              ]
-            },
-            "Action": [ "sts:AssumeRole" ]
-          }]
-        },
-        "Path": "/",
-        "Tags": [
-          {
-            "Key": "Application",
-            "Value": "cloudemail"
-          },
-          {
-            "Key": "BusinessUnit",
-            "Value": "MSG"
-          },
-          {
-            "Key": "Name",
-            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "PostfixAutomationRole" ] ] }
-          },
-          {
-            "Key": "Project",
-            "Value": "xgemail"
-          },
-          {
-            "Key": "OwnerEmail",
-            "Value": "sophosmailops@sophos.com"
-          }
-        ]
-      }
-    },
-    "PostfixAutomationRolePolicies": {
-      "Properties": {
-        "PolicyDocument": {
-          "Statement": [
-            {
-              "Action": [
-                "iam:PassRole"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
-            },
-            {
-              "Action": [
-                "ec2:CreateTags",
-                "ec2:DescribeInstances",
-                "ec2:DescribeTags"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
-            },
-            {
-              "Action": [
-                "logs:CreateLogGroup",
-                "logs:CreateLogStream",
-                "logs:PutLogEvents"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                "arn:aws:logs:*:*:*"
-              ]
-            },
-            {
-              "Action": [
-                "ssm:DescribeAutomationExecutions",
-                "ssm:DescribeAutomationStepExecutions",
-                "ssm:DescribeDocument",
-                "ssm:DescribeInstanceInformation",
-                "ssm:GetAutomationExecution",
-                "ssm:GetCommandInvocation",
-                "ssm:GetConnectionStatus",
-                "ssm:GetDocument",
-                "ssm:ListCommandInvocations",
-                "ssm:ListCommands",
-                "ssm:ListInstanceAssociations",
-                "ssm:ListDocuments",
-                "ssm:ListDocumentVersions",
-                "ssm:SendCommand",
-                "ssm:StartAutomationExecution"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
-            }
-          ]
-        },
-        "PolicyName": "root",
-        "Roles": [
-          {
-            "Ref": "PostfixAutomationRole"
-          }
-        ]
-      },
-      "Type": "AWS::IAM::Policy"
-    },
-
     "PostfixCommandBlockSender": {
       "Type": "AWS::SSM::Document",
       "Properties": {
@@ -292,6 +181,7 @@
                 "InstanceIds": [ "{{getInstanceId.InstanceId}}" ],
                 "Parameters": {
                   "commands": [
+                    "python /opt/sophos/xgemail/utils/blocked_sender_api.py --region {{Region}} --env {{Environment}} --block {{SenderAddress}}"
                   ]
                 }
               },
@@ -323,6 +213,117 @@
           }
         ]
       }
+    },
+
+    "PostfixAutomationRole" : {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [
+                "ec2.amazonaws.com",
+                "ssm.amazonaws.com"
+              ]
+            },
+            "Action": [ "sts:AssumeRole" ]
+          }]
+        },
+        "Path": "/",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "PostfixAutomationRole" ] ] }
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
+      }
+    },
+    "PostfixAutomationRolePolicies": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "iam:PassRole"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "ec2:CreateTags",
+                "ec2:DescribeInstances",
+                "ec2:DescribeTags"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:logs:*:*:*"
+              ]
+            },
+            {
+              "Action": [
+                "ssm:DescribeAutomationExecutions",
+                "ssm:DescribeAutomationStepExecutions",
+                "ssm:DescribeDocument",
+                "ssm:DescribeInstanceInformation",
+                "ssm:GetAutomationExecution",
+                "ssm:GetCommandInvocation",
+                "ssm:GetConnectionStatus",
+                "ssm:GetDocument",
+                "ssm:ListCommandInvocations",
+                "ssm:ListCommands",
+                "ssm:ListInstanceAssociations",
+                "ssm:ListDocuments",
+                "ssm:ListDocumentVersions",
+                "ssm:SendCommand",
+                "ssm:StartAutomationExecution"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ]
+        },
+        "PolicyName": "root",
+        "Roles": [
+          {
+            "Ref": "PostfixAutomationRole"
+          }
+        ]
+      },
+      "Type": "AWS::IAM::Policy"
     }
   },
 
