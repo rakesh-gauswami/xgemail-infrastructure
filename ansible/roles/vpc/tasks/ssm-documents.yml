@@ -8,6 +8,7 @@
     template:                     "{{template.ssm.ssm_xgemail_document_template}}"
     template_parameters:
       AlarmTopicArn:              "{{sns.arn_prefix}}{{sns.alarm_sns_topic}}"
+      Environment:                "{{account.name}}"
       EipRotationLambdaFunction:  "{{lambda.eip_rotation_lambda_function}}"
   register: ssm_stack
 
