@@ -40,6 +40,8 @@ MSG_HISTORY_STREAM_NAME = node['xgemail']['msg_history_stream_name']
 MSG_HISTORY_FAILURE_BUCKET_NAME = node['xgemail']['msg_history_failure_bucket_name']
 MSG_HISTORY_EVENT_DIR = node['xgemail']['mh_event_storage_dir']
 MSG_HISTORY_DYNAMODB_TABLE_NAME = node['xgemail']['msg_history_dynamodb_table_name']
+MSG_HISTORY_EVENT_PROCESSOR_POOL_SIZE = node['xgemail']['mh_event_processor_pool_size']
+MSG_HISTORY_EVENT_PROCESSOR_PORT = node['xgemail']['mh_event_processor_port']
 
 SERVICE_USER = node['xgemail']['jilter_user']
 POLICY_BUCKET_NAME   = node['xgemail']['xgemail_policy_bucket_name']
@@ -124,7 +126,9 @@ template 'xgemail.jilter.properties' do
       :msg_history_stream_name => MSG_HISTORY_STREAM_NAME,
       :msg_history_failure_bucket_name => MSG_HISTORY_FAILURE_BUCKET_NAME,
       :msg_history_event_dir => MSG_HISTORY_EVENT_DIR,
-      :msg_history_dynamodb_table_name =>  MSG_HISTORY_DYNAMODB_TABLE_NAME        
+      :msg_history_dynamodb_table_name =>  MSG_HISTORY_DYNAMODB_TABLE_NAME,
+      :msg_history_event_processor_pool_size => MSG_HISTORY_EVENT_PROCESSOR_POOL_SIZE,
+      :msg_history_event_processor_port => MSG_HISTORY_EVENT_PROCESSOR_PORT
   )
 end
 

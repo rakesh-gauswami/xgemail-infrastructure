@@ -48,6 +48,7 @@ end
     'formatterutils.py',
     'gziputils.py',
     'impersonation_updater.py',
+    'mailinfoformatter.py'
     'messageformatter.py',
     'messagehistory.py',
     'messagehistoryformatter.py',

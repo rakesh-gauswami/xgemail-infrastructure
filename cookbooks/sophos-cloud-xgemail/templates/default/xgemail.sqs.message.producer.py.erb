@@ -28,6 +28,8 @@ import os
 import re
 import signal
 import uuidutils
+import messagehistory
+import mailinfoformatter
 from awshandler import AwsHandler
 from common.metadata import Metadata
 from common.sqsmessage import SqsMessage
@@ -60,6 +62,11 @@ SUBMIT_HOST_IP = "<%= @sqs_msg_producer_submit_ip %>"
 SUBMIT_SQS_URL = "<%= @sqs_msg_producer_sqs_url %>"
 SUBMIT_SERVICE_SQS_URL = "<%= @sqs_msg_producer_service_sqs_url %>"
 TTL_IN_DAYS = <%= @sqs_msg_producer_ttl_in_days %>
+
+MSG_HISTORY_V2_BUCKET = "<%= @msg_history_v2_bucket_name %>"
+MSG_HISTORY_MAIL_INFO_MAX_SIZE_IN_MSG_CONTEXT = 20 * 1024
+MSG_HISTORY_EVENT_DIR = "<%= @msg_history_event_dir %>"
+MSG_HISTORY_EVENT_PROCESSOR_URL = "http://127.0.0.1/<%= @msg_history_event_processor_port %>/accept_event"
 
 # Exit codes from sysexits
 EX_TEMPFAIL = <%= @sqs_msg_producer_ex_temp_failure_code %>
@@ -535,6 +542,58 @@ def upload_documents(metadata, compressed_message, s3_file_path):
         metadata
     )
 
+
+def upload_msghistory_mail_info_to_s3(s3_file_path, msghistory_mail_info):
+    try:
+        msghistory_mail_info_path = mailinfoformatter.get_mail_info_path(
+            s3_file_path
+        )
+        logger.debug("Processing message history [{0}]".format(mh_mail_info_file_path))
+
+        formatted_mail_info = mailinfoformatter.get_formatted_mail_info(
+            gziputils.gzip_data(
+                json.dumps(msghistory_mail_info)
+            ),
+            msghistory_mail_info['schema_version']
+        )
+    
+        # prepared expiration date based on ttl_in_days
+        expires = datetime.now() + timedelta(days=TTL_IN_DAYS)
+
+        # upload msg history to message history bucket
+        upload_to_s3(
+            MSG_HISTORY_V2_BUCKET,
+            msghistory_mail_info_path,
+            formatted_mail_info,
+            expires
+        )
+
+        logger.debug("Uploaded mail info to S3 [{0}]".format(msghistory_mail_info_path))
+        return msghistory_mail_info_path
+    except Exception as e:
+        logger.warning("Failed in uploading mail info to S3 [{0}]".format(e))
+    
+def prepare_message_context(s3_file_path, mh_mail_info):
+
+    message_context = None
+
+    #convert mail_info to str
+    mail_info_str = json.dumps(mh_mail_info)
+
+    if len(mail_info_str) > MSG_HISTORY_MAIL_INFO_MAX_SIZE_IN_MSG_CONTEXT:
+        message_context = { 'mh_mail_info_s3_path' : upload_mh_mail_info_to_s3(s3_file_path, mh_mail_info)}
+    else:
+        message_context = { 'mh_mail_info' : mh_mail_info}
+    return message_context
+
+def update_msghistory_event_and_get_message_context(msghistory_events, s3_file_path, policy_metadata, recipients):
+    mh_mail_info = None
+    messagehistory.update_msghistory_event(msghistory_events, s3_file_path, policy_metadata, recipients)
+    recipient = recipients[0]
+    mh_mail_info = mh_events[recipient]['mail_info']
+    if mh_mail_info is not None:
+        return prepare_message_context(s3_file_path, mh_mail_info)
+
 def base_policy_flow(metadata, direction, domain, sender, message, message_attributes = None):
     queue_id = metadata.get_queue_id()
 
@@ -546,6 +605,11 @@ def base_policy_flow(metadata, direction, domain, sender, message, message_attri
         domain
     )
 
+    msghistory_events = messagehistory.read_msghistory_accepted_events(queue_id, MSG_HISTORY_EVENT_DIR)
+    message_context = None
+    if msghistory_events is not None:
+      message_context = update_msghistory_event_and_get_message_context(msghistory_events, s3_file_path, metadata, metadata.get_recipients())
+
     # create a sqs object
     sqs_message = SqsMessage(
         messageformatter.SCHEMA_VERSION,
@@ -555,7 +619,10 @@ def base_policy_flow(metadata, direction, domain, sender, message, message_attri
         AKM_KEY,
         NONCE.encode('base64','strict'),
         MESSAGE_KEY.encode('base64','strict'),
-        SUBMIT_TYPE
+        SUBMIT_TYPE,
+        None,
+        None,
+        message_context
     )
 
     # required logging for EncryptionServiceTest automation test
@@ -585,6 +652,9 @@ def base_policy_flow(metadata, direction, domain, sender, message, message_attri
         history_event.get_sqs_json()
     )
 
+    if msghistory_events is not None:
+        messagehistory.send_msghistory_events(msghistory_events.values(), MSG_HISTORY_EVENT_PROCESSOR_URL)
+
 # Mail flow goes through multi_policy_flow if multi-policy flag is enabled
 # but if there are error conditions such as file read error etc, the mail
 # fall back to base_policy_flow.
@@ -613,6 +683,9 @@ def multi_policy_flow(metadata, direction, domain, sender, message, message_attr
     sqs_message_json_queue = []
     history_json_queue = []
 
+    msghistory_events = messagehistory.read_msghistory_accepted_events(queue_id, MSG_HISTORY_EVENT_DIR)
+    message_context = None
+
     for policy_id, value in policy_list.items():
         this_policy_metadata = copy.deepcopy(metadata)
         this_policy_metadata.set_recipients(value)
@@ -620,6 +693,10 @@ def multi_policy_flow(metadata, direction, domain, sender, message, message_attr
 
         policy_id_path = "/" + policy_id + "/"
         new_s3_file_path = s3_file_path.replace(POLICY_ID_PATH_VALUE, policy_id_path)
+
+        if msghistory_events is not None:
+          message_context = update_msghistory_event_and_get_message_context(msghistory_events, new_s3_file_path, this_policy_metadata, value)
+ 
         # create a sqs message with policy_id
         sqs_message = SqsMessage(
             messageformatter.SCHEMA_VERSION,
@@ -631,7 +708,8 @@ def multi_policy_flow(metadata, direction, domain, sender, message, message_attr
             MESSAGE_KEY.encode('base64','strict'),
             SUBMIT_TYPE,
             None,
-            policy_id
+            policy_id,
+            message_context
         )
 
         upload_documents(
@@ -683,6 +761,9 @@ def multi_policy_flow(metadata, direction, domain, sender, message, message_attr
                 history_job
             )
 
+    if msghistory_events is not None:
+        messagehistory.send_msghistory_events(msghistory_events.values(), MSG_HISTORY_EVENT_PROCESSOR_URL)
+
 def get_message_headers(message):
     return Parser().parsestr(message, headersonly=True)
 
@@ -705,6 +786,9 @@ def outbound_split_by_recipients(metadata, domain, message, direction, message_a
     sqs_message_json_queue = []
     history_json_queue = []
 
+    msghistory_events = messagehistory.read_msghistory_accepted_events(queue_id, MSG_HISTORY_EVENT_DIR)
+    message_context = None
+
     for recipient in recipients:
 
         this_recipient_metadata = copy.deepcopy(metadata)
@@ -713,6 +797,10 @@ def outbound_split_by_recipients(metadata, domain, message, direction, message_a
 
         new_s3_file_path = s3_file_path.replace(POLICY_ID_PATH_VALUE,
                                                 "/" + str(hashlib.sha256(str(recipient)).hexdigest()) + "/")
+
+        if msghistory_events is not None:
+            message_context = update_msghistory_event_and_get_message_context(msghistory_events, new_s3_file_path, this_policy_metadata, value)
+
         # create a sqs message with policy_id
         sqs_message = SqsMessage(
             messageformatter.SCHEMA_VERSION,
@@ -723,7 +811,9 @@ def outbound_split_by_recipients(metadata, domain, message, direction, message_a
             NONCE.encode('base64', 'strict'),
             MESSAGE_KEY.encode('base64', 'strict'),
             SUBMIT_TYPE,
-            None
+            None,
+            None,
+            message_context
         )
 
         upload_documents(
@@ -774,6 +864,9 @@ def outbound_split_by_recipients(metadata, domain, message, direction, message_a
             publish_msg_history_event(
                 history_job
             )
+
+    if msghistory_events is not None:
+        messagehistory.send_msghistory_events(msghistory_events.values(), MSG_HISTORY_EVENT_PROCESSOR_URL)
 
 
 # accepts data from postfix and send message and metadata to S3 and
