@@ -140,13 +140,14 @@ class MessageHistoryTest(unittest.TestCase):
         expected_json = json.dumps(expected_accept_event, sort_keys=True)
         actual_json = json.dumps(actual_accept_event, sort_keys=True)
 
-    def test_update_accepted_event(self):
+    def test_update_accepted_event_inbound(self):
         raw_accept_event = "{\"user_1@somedomain.com\": {\"mail_info\": {\"effective_message_id\": \"eeb19bed-a4b0-4437-b8c4-1d76acea8c00\", \"client_ip\": \"172.19.102.214\", \"generate_mh_events\": true, \"header_to_list\": [{\"local_address\": \"user_1\", \"domain_address\": \"somedomain.com\", \"name\": \"\", \"whole_address\": \"user_1@somedomain.com\"}], \"env_from\": {\"local_address\": \"admin\", \"domain_address\": \"senderdomain.com\", \"name\": \"\", \"whole_address\": \"admin@senderdomain.com\"}, \"header_cc_list\": [{\"local_address\": \"admin\", \"domain_address\": \"somedomain.com\", \"name\": \"\", \"whole_address\": \"admin@somedomain.com\"}], \"submit_server_ip\": \"172.19.0.124\", \"direction\": \"INBOUND\", \"mailbox_address\": \"user_1@somedomain.com\", \"first_seen_at\": \"2020-12-07T17:20:07.689Z\", \"x_sophos_email_id\": \"eeb19bed-a4b0-4437-b8c4-1d76acea8c00\", \"submit_type\": \"INTERNET\", \"schema_version\": 20201026, \"queue_id\": \"ADE4326878\", \"mailbox_id\": \"5f50cf8e7390760cea68c09d\", \"customer_id\": \"b385bb51-1533-447c-b71a-8084c028421d\", \"env_recipient_list\": [{\"local_address\": \"user_1\", \"domain_address\": \"somedomain.com\", \"name\": \"\", \"whole_address\": \"user_1@somedomain.com\"}, {\"local_address\": \"user_2\", \"domain_address\": \"somedomain.com\", \"name\": \"\", \"whole_address\": \"user_2@somedomain.com\"}], \"subject\": \"Hi\"}, \"schema_version\": 20201026, \"event_info\": {\"server_type\": \"INTERNET_SUBMIT\", \"created_at\": \"2020-12-07T17:20:07.689Z\", \"sequence\": 100, \"schema_version\": 20201026, \"event\": \"ACCEPTED\", \"env_recipient_list\": [\"user_1@somedomain.com\", \"user_2@somedomain.com\"], \"reason_list\": [\"reason1\", \"reason2\"], \"id\": \"b4bb79c9-bd5a-43fc-9da8-266f909fd29a\"}},\"user_2@somedomain.com\": {\"mail_info\": {\"effective_message_id\": \"eeb19bed-a4b0-4437-b8c4-1d76acea8c00\", \"client_ip\": \"172.19.102.214\", \"generate_mh_events\": true, \"header_to_list\": [{\"local_address\": \"user_2\", \"domain_address\": \"somedomain.com\", \"name\": \"\", \"whole_address\": \"user_2@somedomain.com\"}], \"env_from\": {\"local_address\": \"admin\", \"domain_address\": \"senderdomain.com\", \"name\": \"\", \"whole_address\": \"admin@senderdomain.com\"}, \"header_cc_list\": [{\"local_address\": \"admin\", \"domain_address\": \"somedomain.com\", \"name\": \"\", \"whole_address\": \"admin@somedomain.com\"}], \"submit_server_ip\": \"172.19.0.124\", \"direction\": \"INBOUND\", \"mailbox_address\": \"user_2@somedomain.com\", \"first_seen_at\": \"2020-12-07T17:20:07.689Z\", \"x_sophos_email_id\": \"eeb19bed-a4b0-4437-b8c4-1d76acea8c01\", \"submit_type\": \"INTERNET\", \"schema_version\": 20201026, \"queue_id\": \"ADE4326878\", \"mailbox_id\": \"5f50cf8e7390760cea68c09d\", \"customer_id\": \"b385bb51-1533-447c-b71a-8084c028421d\", \"env_recipient_list\": [{\"local_address\": \"user_1\", \"domain_address\": \"somedomain.com\", \"name\": \"\", \"whole_address\": \"user_1@somedomain.com\"}, {\"local_address\": \"user_2\", \"domain_address\": \"somedomain.com\", \"name\": \"\", \"whole_address\": \"user_2@somedomain.com\"}], \"subject\": \"Hi\"}, \"schema_version\": 20201026, \"event_info\": {\"server_type\": \"INTERNET_SUBMIT\", \"created_at\": \"2020-12-07T17:20:07.689Z\", \"sequence\": 100, \"schema_version\": 20201026, \"event\": \"ACCEPTED\", \"env_recipient_list\": [\"user_1@somedomain.com\", \"user_2@somedomain.com\"], \"reason_list\": [\"reason1\", \"reason2\"], \"id\": \"b4bb79c9-bd5a-43fc-9da8-266f909fd29b\"}}}"
   
         #Read accepted event for two users.
         accept_events = json.loads(raw_accept_event)
         user_1 = 'user_1@somedomain.com'
         user_2 = 'user_2@somedomain.com'
+        sender = 'admin@senderdomain.com'
         
         mail_info_user1 = accept_events[user_1]['mail_info']
         mail_info_user2 = accept_events[user_2]['mail_info']
@@ -160,7 +161,7 @@ class MessageHistoryTest(unittest.TestCase):
         s3_file_path = '/messages/2020/12/10/00/xyz'
 
         #Apply metadata to one user.
-        messagehistory.update_msghistory_event(accept_events, s3_file_path, metadata, recipients) 
+        messagehistory.update_msghistory_event(accept_events, s3_file_path, metadata, 'INBOUND', recipients, sender) 
        
         #Check mail info is updated with s3 path for one user.
         self.assertEqual(mail_info_user1['s3_resource_id'], s3_file_path)
@@ -170,11 +171,39 @@ class MessageHistoryTest(unittest.TestCase):
         metadata.add_uuid_to_queue_id()
 
         #Apply metadata to one user.
-        messagehistory.update_msghistory_event(accept_events, s3_file_path, metadata, recipients)
+        messagehistory.update_msghistory_event(accept_events, s3_file_path, metadata, 'INBOUND', recipients, sender) 
 
-        #Ensure for that user mail_info now has decorated queue id information as well.    
+        #Ensure for that user mail_info now has decorated queue id information as well.
         self.assertEqual(mail_info_user1['decorated_queue_id'], metadata.get_queue_id())
         self.assertFalse('decorated_queue_id' in mail_info_user2)
+
+    def test_update_accepted_event_outbound(self):
+        raw_accept_event =  "{\"admin@senderdomain.com\": {\"mail_info\": {\"effective_message_id\": \"eeb19bed-a4b0-4437-b8c4-1d76acea8c00\", \"client_ip\": \"172.19.102.214\", \"generate_mh_events\": true, \"header_to_list\": [{\"local_address\": \"user_1\", \"domain_address\": \"somedomain.com\", \"name\": \"\", \"whole_address\": \"user_1@somedomain.com\"}], \"env_from\": {\"local_address\": \"admin\", \"domain_address\": \"senderdomain.com\", \"name\": \"\", \"whole_address\": \"admin@senderdomain.com\"}, \"header_cc_list\": [{\"local_address\": \"admin\", \"domain_address\": \"somedomain.com\", \"name\": \"\", \"whole_address\": \"admin@somedomain.com\"}], \"submit_server_ip\": \"172.19.0.124\", \"direction\": \"OUTBOUND\", \"mailbox_address\": \"admin@senderdomain.com\", \"first_seen_at\": \"2020-12-07T17:20:07.689Z\", \"x_sophos_email_id\": \"eeb19bed-a4b0-4437-b8c4-1d76acea8c00\", \"submit_type\": \"INTERNET\", \"schema_version\": 20201026, \"queue_id\": \"ADE4326878\", \"mailbox_id\": \"5f50cf8e7390760cea68c09d\", \"customer_id\": \"b385bb51-1533-447c-b71a-8084c028421d\", \"env_recipient_list\": [{\"local_address\": \"user_1\", \"domain_address\": \"somedomain.com\", \"name\": \"\", \"whole_address\": \"user_1@somedomain.com\"}], \"subject\": \"Hi\"}, \"schema_version\": 20201026, \"event_info\": {\"server_type\": \"INTERNET_SUBMIT\", \"created_at\": \"2020-12-07T17:20:07.689Z\", \"sequence\": 100, \"schema_version\": 20201026, \"event\": \"ACCEPTED\", \"env_recipient_list\": [\"user_1@somedomain.com\", \"user_2@somedomain.com\"], \"reason_list\": [\"reason1\", \"reason2\"], \"id\": \"b4bb79c9-bd5a-43fc-9da8-266f909fd29a\"}}}"
+
+        #Read accepted event for two users.
+        accept_events = json.loads(raw_accept_event)
+
+        sender = 'admin@senderdomain.com'
+        mail_info = accept_events[sender]['mail_info']
+
+        #Prepare metadata
+        metadata = self.get_sample_metadata(mail_info)
+
+        recipients = []
+        recipients.append(sender) #To make sure we are not considering recipients when direction is outbound.
+
+        s3_file_path = '/messages/2020/12/10/00/xyz'
+
+        messagehistory.update_msghistory_event(accept_events, s3_file_path, metadata, 'OUTBOUND', recipients, 'someothersender@senderdomain.com') 
+        self.assertFalse('s3_resource_id' in mail_info) #Because we used incorrect sender in above line.
+
+        recipients = []
+        metadata.add_uuid_to_queue_id()
+
+        messagehistory.update_msghistory_event(accept_events, s3_file_path, metadata, 'OUTBOUND', recipients, sender)
+
+        self.assertEqual(mail_info['s3_resource_id'], s3_file_path)
+        self.assertEqual(mail_info['decorated_queue_id'], metadata.get_queue_id())
 
     def test_delete_msghistory_events_file(self):
         raw_accept_event_two_recipients = "{\"user_1@somedomain.com\": {\"mail_info\": {\"effective_message_id\": \"eeb19bed-a4b0-4437-b8c4-1d76acea8c00\", \"client_ip\": \"172.19.102.214\", \"generate_mh_events\": true, \"header_to_list\": [{\"local_address\": \"user_1\", \"domain_address\": \"somedomain.com\", \"name\": \"\", \"whole_address\": \"user_1@somedomain.com\"}], \"env_from\": {\"local_address\": \"admin\", \"domain_address\": \"senderdomain.com\", \"name\": \"\", \"whole_address\": \"admin@senderdomain.com\"}, \"header_cc_list\": [{\"local_address\": \"admin\", \"domain_address\": \"somedomain.com\", \"name\": \"\", \"whole_address\": \"admin@somedomain.com\"}], \"submit_server_ip\": \"172.19.0.124\", \"direction\": \"INBOUND\", \"mailbox_address\": \"user_1@somedomain.com\", \"first_seen_at\": \"2020-12-07T17:20:07.689Z\", \"x_sophos_email_id\": \"eeb19bed-a4b0-4437-b8c4-1d76acea8c00\", \"submit_type\": \"INTERNET\", \"schema_version\": 20201026, \"queue_id\": \"ADE4326878\", \"mailbox_id\": \"5f50cf8e7390760cea68c09d\", \"customer_id\": \"b385bb51-1533-447c-b71a-8084c028421d\", \"env_recipient_list\": [{\"local_address\": \"user_1\", \"domain_address\": \"somedomain.com\", \"name\": \"\", \"whole_address\": \"user_1@somedomain.com\"}, {\"local_address\": \"user_2\", \"domain_address\": \"somedomain.com\", \"name\": \"\", \"whole_address\": \"user_2@somedomain.com\"}], \"subject\": \"Hi\"}, \"schema_version\": 20201026, \"event_info\": {\"server_type\": \"INTERNET_SUBMIT\", \"created_at\": \"2020-12-07T17:20:07.689Z\", \"sequence\": 100, \"schema_version\": 20201026, \"event\": \"ACCEPTED\", \"env_recipient_list\": [\"user_1@somedomain.com\", \"user_2@somedomain.com\"], \"reason_list\": [\"reason1\", \"reason2\"], \"id\": \"b4bb79c9-bd5a-43fc-9da8-266f909fd29a\"}},\"user_2@somedomain.com\": {\"mail_info\": {\"effective_message_id\": \"eeb19bed-a4b0-4437-b8c4-1d76acea8c00\", \"client_ip\": \"172.19.102.214\", \"generate_mh_events\": true, \"header_to_list\": [{\"local_address\": \"user_2\", \"domain_address\": \"somedomain.com\", \"name\": \"\", \"whole_address\": \"user_2@somedomain.com\"}], \"env_from\": {\"local_address\": \"admin\", \"domain_address\": \"senderdomain.com\", \"name\": \"\", \"whole_address\": \"admin@senderdomain.com\"}, \"header_cc_list\": [{\"local_address\": \"admin\", \"domain_address\": \"somedomain.com\", \"name\": \"\", \"whole_address\": \"admin@somedomain.com\"}], \"submit_server_ip\": \"172.19.0.124\", \"direction\": \"INBOUND\", \"mailbox_address\": \"user_2@somedomain.com\", \"first_seen_at\": \"2020-12-07T17:20:07.689Z\", \"x_sophos_email_id\": \"eeb19bed-a4b0-4437-b8c4-1d76acea8c01\", \"submit_type\": \"INTERNET\", \"schema_version\": 20201026, \"queue_id\": \"ADE4326878\", \"mailbox_id\": \"5f50cf8e7390760cea68c09d\", \"customer_id\": \"b385bb51-1533-447c-b71a-8084c028421d\", \"env_recipient_list\": [{\"local_address\": \"user_1\", \"domain_address\": \"somedomain.com\", \"name\": \"\", \"whole_address\": \"user_1@somedomain.com\"}, {\"local_address\": \"user_2\", \"domain_address\": \"somedomain.com\", \"name\": \"\", \"whole_address\": \"user_2@somedomain.com\"}], \"subject\": \"Hi\"}, \"schema_version\": 20201026, \"event_info\": {\"server_type\": \"INTERNET_SUBMIT\", \"created_at\": \"2020-12-07T17:20:07.689Z\", \"sequence\": 100, \"schema_version\": 20201026, \"event\": \"ACCEPTED\", \"env_recipient_list\": [\"user_1@somedomain.com\", \"user_2@somedomain.com\"], \"reason_list\": [\"reason1\", \"reason2\"], \"id\": \"b4bb79c9-bd5a-43fc-9da8-266f909fd29b\"}}}"
@@ -189,7 +218,7 @@ class MessageHistoryTest(unittest.TestCase):
 
         accept_events = json.loads(raw_accept_event_two_recipients)
 
-        messagehistory.delete_msghistory_events_file(accept_events.values(), QUEUE_ID, MH_EVENT_STORAGE_DIR)
+        messagehistory.delete_msghistory_events_file(accept_events.values()[0]['mail_info'], QUEUE_ID, MH_EVENT_STORAGE_DIR)
 
         #File should not deleted 
         self.assertTrue(os.path.exists(file_path))
@@ -200,7 +229,7 @@ class MessageHistoryTest(unittest.TestCase):
           json_file.write(unicode(raw_accept_event_single_recipient))
 
         accept_events = json.loads(raw_accept_event_single_recipient)
-        messagehistory.delete_msghistory_events_file(accept_events.values(), QUEUE_ID, MH_EVENT_STORAGE_DIR)
+        messagehistory.delete_msghistory_events_file(accept_events.values()[0]['mail_info'], QUEUE_ID, MH_EVENT_STORAGE_DIR)
 
         #File should be deleted  as only one recipient in message
         self.assertFalse(os.path.exists(file_path))

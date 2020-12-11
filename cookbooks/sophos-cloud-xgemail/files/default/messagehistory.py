@@ -20,6 +20,9 @@ import logging
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+INBOUND_MESSAGE_DIRECTION = "INBOUND"
+OUTBOUND_MESSAGE_DIRECTION = "OUTBOUND"
+
 def can_generate_mh_event(sqs_message):
     if (sqs_message.message_context and
         'mh_mail_info' in sqs_message.message_context and
@@ -60,17 +63,29 @@ def read_msghistory_accepted_events(queue_id, directory):
         msghistory_events = json.load(f)
         return msghistory_events
     except Exception as ex:
-      logger.warning("Error reading accepted events: [{0}]".format(ex))
+      logger.debug("Error reading accepted events: [{0}]".format(ex))
 
-def update_msghistory_event(msghistory_events, s3_file_path, policy_metadata, recipients):
+def update_msghistory_event_inbound(msghistory_events, s3_file_path, policy_metadata, recipients):
+    for recipient in recipients:
+      if recipient in msghistory_events.keys():
+        if msghistory_events[recipient]['mail_info']['queue_id'] != policy_metadata.get_queue_id():
+            msghistory_events[recipient]['mail_info']['decorated_queue_id'] = policy_metadata.get_queue_id()
+        msghistory_events[recipient]['mail_info']['s3_resource_id'] = s3_file_path
+
+def update_msghistory_event_outbound(msghistory_events, s3_file_path, policy_metadata, sender):
+    if sender in msghistory_events.keys():
+        if msghistory_events[sender]['mail_info']['queue_id'] != policy_metadata.get_queue_id():
+            msghistory_events[sender]['mail_info']['decorated_queue_id'] = policy_metadata.get_queue_id()
+        msghistory_events[sender]['mail_info']['s3_resource_id'] = s3_file_path
+
+def update_msghistory_event(msghistory_events, s3_file_path, policy_metadata, direction , recipients, sender):
     """
     Updates the accepted events of the given recipients with the S3 file path and decorated_queue_id. 
     """
-    for recipient in recipients:
-        if recipient in msghistory_events.keys():
-            if msghistory_events[recipient]['mail_info']['queue_id'] != policy_metadata.get_queue_id():
-                msghistory_events[recipient]['mail_info']['decorated_queue_id'] = policy_metadata.get_queue_id()
-            msghistory_events[recipient]['mail_info']['s3_resource_id'] = s3_file_path
+    if direction == INBOUND_MESSAGE_DIRECTION:
+        update_msghistory_event_inbound(msghistory_events, s3_file_path, policy_metadata, recipients)
+    else:
+        update_msghistory_event_outbound(msghistory_events, s3_file_path, policy_metadata, sender)
 
 def send_msghistory_events(msghistory_events, url):
     """
@@ -83,14 +98,13 @@ def send_msghistory_events(msghistory_events, url):
     except Exception as ex:
       logger.warning("Error sending MH events: [{0}]".format(ex))
 
-def delete_msghistory_events_file(msghistory_events, queue_id, directory):
+def delete_msghistory_events_file(mail_info, queue_id, directory):
     """
     Deletes the accepted events file written by Jilter. This is done only if
     number of envelope recipients is equal to 1.
     """
 
     try:
-      mail_info = msghistory_events[0]['mail_info']
       if (mail_info['env_recipient_list']  is not None  and
              len(mail_info['env_recipient_list']) == 1):
         #Delete the file written by jilter.
