@@ -130,6 +130,8 @@
           "assumeRole": { "Fn::GetAtt": [ "PostfixAutomationRole", "Arn" ] },
           "description": "Blocked Sender address in all internet-submit Postfix instances.",
           "parameters": {
+            "Environment": { "Ref": "Environment" },
+            "Region": { "Ref": "AWS::Region" },
             "SenderAddress": {
               "type": "String",
               "description": "The sender address to block in Postfix config."
