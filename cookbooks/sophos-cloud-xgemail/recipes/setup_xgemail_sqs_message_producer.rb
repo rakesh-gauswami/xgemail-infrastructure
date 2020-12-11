@@ -94,7 +94,7 @@ template PRODUCER_SCRIPT_PATH do
       :sqs_msg_producer_ttl_in_days => SQS_MESSAGE_PRODUCER_TTL_IN_DAYS,
       :policy_storage_path => POLICY_STORAGE_PATH,
       :msg_history_v2_bucket_name => MSG_HISTORY_V2_BUCKET,
-      :msg_history_event_dir => MSG_HISTORY_EVENT_DIR
+      :msg_history_event_dir => MSG_HISTORY_EVENT_DIR,
       :msg_history_event_processor_port => MSG_HISTORY_EVENT_PROCESSOR_PORT
   )
 end
