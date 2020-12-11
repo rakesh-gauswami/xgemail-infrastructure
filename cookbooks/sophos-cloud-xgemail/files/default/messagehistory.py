@@ -90,7 +90,7 @@ def delete_msghistory_events_file(msghistory_events, queue_id, directory):
     """
 
     try:
-      mail_info = msghistory_events.values()[0]['mail_info']
+      mail_info = msghistory_events[0]['mail_info']
       if (mail_info['env_recipient_list']  is not None  and
              len(mail_info['env_recipient_list']) == 1):
         #Delete the file written by jilter.

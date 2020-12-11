@@ -189,7 +189,7 @@ class MessageHistoryTest(unittest.TestCase):
 
         accept_events = json.loads(raw_accept_event_two_recipients)
 
-        messagehistory.delete_msghistory_events_file(accept_events, QUEUE_ID, MH_EVENT_STORAGE_DIR)
+        messagehistory.delete_msghistory_events_file(accept_events.values(), QUEUE_ID, MH_EVENT_STORAGE_DIR)
 
         #File should not deleted 
         self.assertTrue(os.path.exists(file_path))
@@ -200,7 +200,7 @@ class MessageHistoryTest(unittest.TestCase):
           json_file.write(unicode(raw_accept_event_single_recipient))
 
         accept_events = json.loads(raw_accept_event_single_recipient)
-        messagehistory.delete_msghistory_events_file(accept_events, QUEUE_ID, MH_EVENT_STORAGE_DIR)
+        messagehistory.delete_msghistory_events_file(accept_events.values(), QUEUE_ID, MH_EVENT_STORAGE_DIR)
 
         #File should be deleted  as only one recipient in message
         self.assertFalse(os.path.exists(file_path))
