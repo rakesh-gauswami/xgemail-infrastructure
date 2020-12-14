@@ -67,13 +67,13 @@ def read_msghistory_accepted_events(queue_id, directory):
 
 def update_msghistory_event_inbound(msghistory_events, s3_file_path, policy_metadata, recipients):
     for recipient in recipients:
-      if recipient in msghistory_events.keys():
+      if recipient in msghistory_events:
         if msghistory_events[recipient]['mail_info']['queue_id'] != policy_metadata.get_queue_id():
             msghistory_events[recipient]['mail_info']['decorated_queue_id'] = policy_metadata.get_queue_id()
         msghistory_events[recipient]['mail_info']['s3_resource_id'] = s3_file_path
 
 def update_msghistory_event_outbound(msghistory_events, s3_file_path, policy_metadata, sender):
-    if sender in msghistory_events.keys():
+    if sender in msghistory_events:
         if msghistory_events[sender]['mail_info']['queue_id'] != policy_metadata.get_queue_id():
             msghistory_events[sender]['mail_info']['decorated_queue_id'] = policy_metadata.get_queue_id()
         msghistory_events[sender]['mail_info']['s3_resource_id'] = s3_file_path
@@ -87,16 +87,35 @@ def update_msghistory_event(msghistory_events, s3_file_path, policy_metadata, di
     else:
         update_msghistory_event_outbound(msghistory_events, s3_file_path, policy_metadata, sender)
 
-def send_msghistory_events(msghistory_events, url):
+def send_msghistory_events(queue_id, msghistory_events, url):
     """
     Post the list of events to the given url
     """
     try:
-      headers = {'Content-Type': 'application/json' }
+      headers = {'Content-Type': 'application/json' , 'X-QUEUE-ID' : queue_id}
       r = requests.post(url, data=json.dumps(msghistory_events), headers=headers)
       logger.debug("Received response from MessageHistoryEventProcessor with status [{0}]".format(r.status_code))
+      r.close()
     except Exception as ex:
-      logger.warning("Error sending MH events: [{0}]".format(ex))
+      logger.warning("Queue Id:[{0}]. Error sending MH events: [{1}]".format(queue_id, ex))
+
+def handle_msghistory_events(queue_id, msghistory_events, url, event_dir):
+    """
+    Post the list of events which has 's3_resource_id' to the given url
+    """    
+    try:
+      #We could have read events for more recipients from the file than the list of recipients for which this producer script was called by postfix.
+      events_list = []
+      for event in msghistory_events.values():
+        if  's3_resource_id' in event['mail_info']:
+            events_list.append(event)
+     
+      send_msghistory_events(queue_id, events_list, url)
+
+      #We can send any mail_info to 'delete_msghistory_events_file' . All are same.
+      delete_msghistory_events_file(msghistory_events.values()[0]['mail_info'], queue_id, event_dir)
+    except Exception as ex:
+      logger.warning("Queue Id [{0}]. Error in sending message history event [{1}]".format(queue_id, ex))
 
 def delete_msghistory_events_file(mail_info, queue_id, directory):
     """
@@ -110,4 +129,4 @@ def delete_msghistory_events_file(mail_info, queue_id, directory):
         #Delete the file written by jilter.
         os.remove(directory + '/' + queue_id)
     except Exception as ex:
-        logger.warning("Error deleteing MH accepted events file: [{0}]".format(ex))
+        logger.warning("Queue Id:[{0}]. Error deleteing MH accepted events file: [{1}]".format(queue_id, ex))

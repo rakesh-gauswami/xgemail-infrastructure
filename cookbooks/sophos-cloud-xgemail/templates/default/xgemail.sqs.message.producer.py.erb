@@ -64,7 +64,7 @@ SUBMIT_SERVICE_SQS_URL = "<%= @sqs_msg_producer_service_sqs_url %>"
 TTL_IN_DAYS = <%= @sqs_msg_producer_ttl_in_days %>
 
 MSG_HISTORY_V2_BUCKET = "<%= @msg_history_v2_bucket_name %>"
-MSG_HISTORY_MAIL_INFO_MAX_SIZE_IN_MSG_CONTEXT = 20 * 1024
+MSG_HISTORY_MAIL_INFO_MAX_BYTES_IN_MSG_CONTEXT = 20 * 1024
 MSG_HISTORY_EVENT_DIR = "<%= @msg_history_event_dir %>"
 MSG_HISTORY_EVENT_PROCESSOR_URL = "http://127.0.0.1:<%= @msg_history_event_processor_port %>/accept_event"
 
@@ -571,66 +571,36 @@ def upload_msghistory_mail_info_to_s3(s3_file_path, msghistory_mail_info):
         logger.debug("Uploaded mail info to S3 [{0}]".format(msghistory_mail_info_path))
         return msghistory_mail_info_path
     except Exception as e:
-        logger.warning("Failed in uploading mail info to S3 [{0}]".format(e))
+        logger.warning("S3 File Path [{0}]. Failed in uploading mail info to S3 [{1}]".format(s3_file_path, e))
     
-def prepare_message_context(s3_file_path, mh_mail_info):
+def prepare_message_context(s3_file_path, mail_info):
 
     message_context = None
 
     #convert mail_info to str
-    mail_info_str = json.dumps(mh_mail_info)
+    mail_info_str = json.dumps(mail_info)
 
-    if len(mail_info_str) > MSG_HISTORY_MAIL_INFO_MAX_SIZE_IN_MSG_CONTEXT:
-        mail_info_path = upload_msghistory_mail_info_to_s3(s3_file_path, mh_mail_info)
+    if len(mail_info_str) > MSG_HISTORY_MAIL_INFO_MAX_BYTES_IN_MSG_CONTEXT:
+        mail_info_path = upload_msghistory_mail_info_to_s3(s3_file_path, mail_info)
         if mail_info_path is not None:
-           message_context = { 'mh_mail_info_s3_path' :  mail_info_path }
+           message_context = { 'mail_info_s3_path' :  mail_info_path }
     else:
-        message_context = { 'mh_mail_info' : mh_mail_info}
+        message_context = { 'mail_info' : mail_info}
     return message_context
 
 #The accepted events written by Jilter needs to be updated with 's3_file_path' and 'decorated_queue_id'
 def update_msghistory_event_and_get_message_context(msghistory_events, s3_file_path, policy_metadata, direction, recipients, sender):
     try:
-      mh_mail_info = None
+      mail_info = None
       messagehistory.update_msghistory_event(msghistory_events, s3_file_path, policy_metadata, direction, recipients, sender)
       recipient = recipients[0]
-      mh_mail_info = msghistory_events[recipient]['mail_info']
-      if mh_mail_info is not None:
-        return prepare_message_context(s3_file_path, mh_mail_info)
+      if (msghistory_events[recipient] is not None and 
+          'mail_info' in msghistory_events[recipient]):
+        mail_info = msghistory_events[recipient]['mail_info']
+        return prepare_message_context(s3_file_path, mail_info)
     except Exception as ex:
-      logger.warning("Error in processing message history event [{0}]".format(ex))
-
-def delete_msghistory_events_file2(mail_info, queue_id, directory):
-    """
-    Deletes the accepted events file written by Jilter. This is done only if
-    number of envelope recipients is equal to 1.
-    """
-
-    try:
-      if (mail_info['env_recipient_list']  is not None  and
-        len(mail_info['env_recipient_list']) == 1):
-      #Delete the file written by jilter.
-      os.remove(directory + '/' + queue_id)
-    except Exception as ex:
-      logger.warning("Error deleteing MH accepted events file: [{0}]".format(ex))
-
-except Exception as ex:
-    logger.warning("Error deleteing MH accepted events file: [{0}]".format(ex))
+      logger.warning("Queue Id [{0}]. Error in processing message history event [{1}]".format(policy_metadata.get_queue_id(), ex))
     
-def send_msghistory_events(queue_id, msghistory_events):
-    try:
-      #We could have read events for more recipients from the file than the list of recipients for which this producer script was called by postfix.
-      events_list = []
-      for event in msghistory_events.values():
-        if event['mail_info']['s3_resource_id'] is not None:
-            events_list.append(event)
-     
-      messagehistory.send_msghistory_events(events_list, MSG_HISTORY_EVENT_PROCESSOR_URL)
-
-      #We can send any mail_info to 'delete_msghistory_events_file' . All are same.
-      delete_msghistory_events_file2(msghistory_events.values()[0]['mail_info'], queue_id, MSG_HISTORY_EVENT_DIR)
-    except Exception as ex:
-      logger.warning("Error in sending message history event [{0}]".format(ex))
 
 def base_policy_flow(metadata, direction, domain, sender, message, message_attributes = None):
     queue_id = metadata.get_queue_id()
@@ -692,7 +662,7 @@ def base_policy_flow(metadata, direction, domain, sender, message, message_attri
     )
 
     if msghistory_events is not None:
-        send_msghistory_events(queue_id, msghistory_events)
+        messagehistory.handle_msghistory_events(queue_id, msghistory_events, MSG_HISTORY_EVENT_PROCESSOR_URL, MSG_HISTORY_EVENT_DIR)
 
 # Mail flow goes through multi_policy_flow if multi-policy flag is enabled
 # but if there are error conditions such as file read error etc, the mail
@@ -802,7 +772,7 @@ def multi_policy_flow(metadata, direction, domain, sender, message, message_attr
             )
 
     if msghistory_events is not None:
-        send_msghistory_events(queue_id, msghistory_events)
+        messagehistory.handle_msghistory_events(queue_id, msghistory_events, MSG_HISTORY_EVENT_PROCESSOR_URL, MSG_HISTORY_EVENT_DIR)
 
 def get_message_headers(message):
     return Parser().parsestr(message, headersonly=True)
@@ -907,7 +877,7 @@ def outbound_split_by_recipients(metadata, domain, message, direction, message_a
             )
 
     if msghistory_events is not None:
-        send_msghistory_events(queue_id, msghistory_events)
+        messagehistory.handle_msghistory_events(queue_id, msghistory_events, MSG_HISTORY_EVENT_PROCESSOR_URL, MSG_HISTORY_EVENT_DIR)
 
 
 # accepts data from postfix and send message and metadata to S3 and

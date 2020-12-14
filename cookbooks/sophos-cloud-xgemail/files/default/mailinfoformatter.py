@@ -7,8 +7,7 @@
 # names mentioned are trademarks or registered trademarks of their
 # respective owners.
 #
-# This script is responsible for formatting metadata object as a message history parent
-# document that we store in S3 as described here:
+# This script is responsible for formatting mailinfo object and storing it in S3 as described here:
 # https://wiki.sophos.net/display/SophosCloud/Message+History+File+Formats
 
 import formatterutils
