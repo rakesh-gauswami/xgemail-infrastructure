@@ -85,7 +85,7 @@ class MessageHistoryTest(unittest.TestCase):
             MH_MAIL_INFO_STORAGE_DIR
         )
 
-        with io.open(mh_mail_info_path, 'r', encoding='utf8') as json_file:
+        with io.open(MH_MAIL_INFO_STORAGE_DIR + '/' + mh_mail_info_path, 'r', encoding='utf8') as json_file:
             mh_mail_info_read = json.load(json_file)
 
         json1 = json.dumps(mh_mail_info, sort_keys=True)
@@ -94,17 +94,17 @@ class MessageHistoryTest(unittest.TestCase):
         self.assertEqual(json1 == json2, True)
 
     def test_add_header(self):
-        mh_mail_info_path = '/storage/mh-mail-info/217952ea-ba18-4224-9a93-61f166251db0'
+        mh_mail_info_filename = '217952ea-ba18-4224-9a93-61f166251db0'
         headers = {
             'X-Orig-Id': '455a800e-dcc1-453c-ac53-141541e2a7bb'
         }
         messagehistory.add_header(
-            mh_mail_info_path,
+            mh_mail_info_filename,
             headers
         )
-        self.assertEqual('X-Sophos-MH-Mail-Info-Path' in headers, True)
+        self.assertEqual('X-Sophos-MH-Mail-Info-FileName' in headers, True)
         self.assertEqual(
-            headers['X-Sophos-MH-Mail-Info-Path'] == mh_mail_info_path, True)
+            headers['X-Sophos-MH-Mail-Info-FileName'] == mh_mail_info_filename, True)
 
     # for testing in local
     # def test_read_mail_info_from_s3(self):
