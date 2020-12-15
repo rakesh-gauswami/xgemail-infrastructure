@@ -63,7 +63,7 @@ def read_msghistory_accepted_events(queue_id, directory):
         msghistory_events = json.load(f)
         return msghistory_events
     except Exception as ex:
-      logger.debug("Error reading accepted events: [{0}]".format(ex))
+      logger.debug("Queue Id:[{0}]. Error reading accepted events: [{1}]".format(queue_id, ex))
 
 def update_msghistory_event_inbound(msghistory_events, s3_file_path, policy_metadata, recipients):
     for recipient in recipients:
