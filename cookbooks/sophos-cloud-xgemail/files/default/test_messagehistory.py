@@ -70,7 +70,6 @@ class MessageHistoryTest(unittest.TestCase):
         raw_sqs_message = "{ \"schema_version\": 20170224, \"message_path\": \"messages/2020/11/17/17/bb9da2f8b7bc4e7594b4bf6cc1d91e992120a065dae6a4a89a33011f1f9866c2/172.20.0.150-4CbCqX0zJRzRhQm-o365.qa1.sasubr.com\", \"accepting_server_ip\": \"172.20.0.150\", \"queue_id\": \"4CbCqX0zJRzRhQm_UUID_a32958e5f18345e39096be8a077ed820\", \"akm_key\": \"not_supported\", \"nonce\": \"not_supported\", \"message_key\": \"not_supported\", \"message_path_type\": \"NORMAL\", \"submit_message_type\": \"INTERNET\", \"message_context\":  { \"mh_mail_info\" : { \"generate_mh_events\" : false} } }"
         sqs_message = self.parse_sqs_message(raw_sqs_message, "test")
         mail_info = messagehistory.get_mail_info(sqs_message, None, None)
-        print(mail_info)
         self.assertEqual(
             messagehistory.can_generate_mh_event(mail_info), False)
 
@@ -107,7 +106,7 @@ class MessageHistoryTest(unittest.TestCase):
 
     # def test_read_mail_info_from_s3(self):
     #     mail_info = messagehistory.load_mail_info_file_from_S3('us-west-1', 'tf-xgemail-msghistory-v2-eu-west-1-inf-bucket',
-    #                                                            'messages/2020/12/14/15/00/172.19.0.92-5346826A9D-devtest.jpsbim.com.MAIL_INFO')
+    #                                                            'messages/2020/12/14/15/00/172.19.0.92-5346826A9D-devtest.jpsbim1.com.MAIL_INFO')
 
     #     print mail_info
     #     print messagehistory.can_generate_mh_event(mail_info)

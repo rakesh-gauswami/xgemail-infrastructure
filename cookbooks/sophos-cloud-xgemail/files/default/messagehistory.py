@@ -48,8 +48,8 @@ def get_mail_info(sqs_message, aws_region, policy_bucket_name):
                     sqs_message.message_context['mail_info_s3_path']
                 )
             except Exception as e:
-                logger.warn("Exception [{0}] while reading mh_mail_info from S3 for QueueId [{1}]".format(
-                    e, queue_id.encode('utf-8')))
+                logger.warn("Exception [{0}] while reading mh_mail_info from S3 [{1}]".format(
+                    e, sqs_message.message_context['mail_info_s3_path']))
                 return None
         else:
             return None
