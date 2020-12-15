@@ -38,23 +38,27 @@ def can_generate_mh_event(mail_info):
 
 def get_mail_info(sqs_message, aws_region, policy_bucket_name):
     if sqs_message.message_context:
-        if 'mh_mail_info' in sqs_message.message_context:
-            return sqs_message.message_context['mh_mail_info']
+        if 'mail_info' in sqs_message.message_context:
+            mail_info = sqs_message.message_context['mail_info']
+            json = { 'mail_info' : sqs_message.message_context['mail_info'] }
+            return json, can_generate_mh_event(mail_info)
         elif 'mail_info_s3_path' in sqs_message.message_context:
             try:
-                return load_mail_info_file_from_S3(
+                mail_info_s3 = load_mail_info_file_from_S3(
                     aws_region,
                     policy_bucket_name,
                     sqs_message.message_context['mail_info_s3_path']
                 )
+                json = { 'mail_info_s3_path' : sqs_message.message_context['mail_info_s3_path'] }
+                return json, can_generate_mh_event(mail_info_s3)
             except Exception as e:
                 logger.warn("Exception [{0}] while reading mh_mail_info from S3 [{1}]".format(
                     e, sqs_message.message_context['mail_info_s3_path']))
-                return None
+                return None, False
         else:
-            return None
+            return None, False
     else:
-        return None
+        return None, False
 
 
 def load_mail_info_file_from_S3(aws_region, policy_bucket_name, file_name):
@@ -74,21 +78,19 @@ def load_mail_info_file_from_S3(aws_region, policy_bucket_name, file_name):
             "Mail info file [{0}] does not exist or failed to read".format(file_name))
 
 
-def add_header(mh_mail_info_path, existing_headers):
-    header_name = 'X-Sophos-MH-Mail-Info-Path'
-    existing_headers[header_name] = mh_mail_info_path
+def add_header(mh_mail_info_filename, existing_headers):
+    header_name = 'X-Sophos-MH-Mail-Info-FileName'
+    existing_headers[header_name] = mh_mail_info_filename
 
 
-def write_mh_mail_info(mh_mail_info, directory):
+def write_mh_mail_info(json_to_write, directory):
     """
     Writes the mh_mail_info to the provided directory. The filename is a newly created UUID.
     """
-    filename = uuid.uuid4()
+    filename = str(uuid.uuid4())
     full_path = '{0}/{1}'.format(directory, filename)
 
-    json_to_write = {}
-    json_to_write['mail_info'] = mh_mail_info
     with io.open(full_path, 'w', encoding='utf8') as json_file:
         data = json.dumps(json_to_write, encoding='utf8')
         json_file.write(unicode(data))
-    return full_path
+    return filename
