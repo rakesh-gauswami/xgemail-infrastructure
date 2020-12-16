@@ -1,0 +1,22 @@
+# Xgemail Delivery Jilter Application Properties
+application.name=xgemail-jilter-delivery
+
+POLICY_STORAGE_ROOT=s3://<%= @policy_bucket %>
+MAILBOX_POLICY_FILE_PATH=config/policies/endpoints/
+MAILBOX_LOCAL_PART_FILE_PATH=config/policies/domains/
+MAILBOX_DLP_POLICY_FILE_PATH=config/policies/dlp/
+
+CUSTOMER_SUBMIT_STORAGE_ROOT=s3://<%= @customer_submit_bucket %>
+INTERNET_SUBMIT_STORAGE_ROOT=s3://no-access
+
+ACCOUNT=<%= @account %>
+
+# Need to explicitly ignore redis auto configuration
+spring.data.redis.repositories.enabled=false
+spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+
+delivery.server.type=<%= @server_type %> 
+delivery.server.ip=<%= @server_ip %> 
+message.history.storage.dir=<%= @mh_mail_info_storage_dir %> 
+MSG_HISTORY_DYNAMODB_TABLE_NAME=<%= @msg_history_dynamodb_table_name %>
+AWS_REGION = "<%= @aws_region %>"

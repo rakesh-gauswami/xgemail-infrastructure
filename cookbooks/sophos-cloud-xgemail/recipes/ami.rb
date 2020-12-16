@@ -128,6 +128,9 @@ JILTER_OUTBOUND_PACKAGE_NAME = "xgemail-jilter-outbound-#{JILTER_OUTBOUND_VERSIO
 JILTER_ENCRYPTION_VERSION = node['xgemail']['jilter_encryption_version']
 JILTER_ENCRYPTION_PACKAGE_NAME = "xgemail-jilter-encryption-#{JILTER_ENCRYPTION_VERSION}"
 
+JILTER_DELIVERY_VERSION = node['xgemail']['jilter_delivery_version']
+JILTER_DELIVERY_PACKAGE_NAME = "xgemail-jilter-delivery-#{JILTER_DELIVERY_VERSION}"
+
 POSTFIX3_RPM = "postfix3-sophos-#{node['xgemail']['postfix3_version']}.el6.x86_64.rpm"
 
 directory SOPHOS_BIN_DIR do
@@ -259,6 +262,28 @@ end
 # Create a sym link to xgemail-jilter-encryption
 link "#{DEPLOYMENT_DIR}/xgemail-jilter-encryption" do
   to "#{DEPLOYMENT_DIR}/#{JILTER_ENCRYPTION_PACKAGE_NAME}"
+end
+
+
+execute 'download_jilter_delivery' do
+  user 'root'
+  cwd "#{PACKAGES_DIR}"
+  command <<-EOH
+  curl -X GET "https://delivery-jilter-tar.s3.eu-west-1.amazonaws.com/xgemail-jilter-delivery-0.1.1-SNAPSHOT.tar?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAUEGAP77VOPAKSXX3%2F20201216%2Feu-west-1%2Fs3%2Faws4_request&X-Amz-Date=20201216T050055Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEGMaCXVzLWVhc3QtMSJIMEYCIQCuQ0SBqtV62MBcTbl5na%2BWrbHarNfNRQliCe82DzY6EQIhAO6hGQYUzt4405jSy7tRAEnS6ArMfFvvOUoe3JH11omLKqMDCPz%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQABoMMjgzODcxNTQzMjc0IgyD82NPLyZ5dDG%2BSsYq9wLGTT8lYNwBYNHiT%2FxTA1n2NWeulOtsFXqUOUoijtUnHpmjRS3g%2FkIRKEt%2FSHRf9xxOgrmRg%2Fm1kqen8aWQq0edzIktSIcWZd1qSazab8rrNKvdudJxY1OBwpV2OrguwHBG7u2321rDgTXOQy5qSaH4RQkYZGkYdrwHC%2Bc5pFj%2B2OhmOrP9gy96EJl1stER2O5Q6dF67wePI%2Fkw2XJ8SHOodoxr8h%2FWdPho4%2BdK65ZbMRd4m8OevcPfs7o31gPn9q2dFEyk7%2BWoQ0YZ5QkTbydG0Ibd9vMsUqUBmicoPhPxYQZmf%2BqN3FGjC%2Fsbu9TyjViKFvIutcChoC6xa645nNtRczsVCUeVkvcQveYNAstgiQlwb33pkaPW%2B2VdkOzJdViEMkrWHc6XJCpPDUa5j44J7QxZWi1v0RXgI8QfZmNYPqq2hTI6gJKKc42tWwyFPf%2F8uk%2FuYhr8VzY8oHPOvoxn9Hg%2FgXQmhzcVsIIaPEyKB%2BmnBcpDAF0wu%2B3l%2FgU6pQFcoSpYF%2Blrf2M0xXfL3s2jmWrjOyUOKlWpP6s4%2F2XtNNN9nyUFGsRSC3QIY%2FxYjvO%2F9Kjv1JQYvcRxdu8ZaydgBwCWdgCBBiWk4Ou9pTLrhiI1x43k5YjRu1Z7HUoyydkE4z75E%2BlbhNew5rDSKSy7L33%2B%2FkcP1G3kNSZwoIiMxha22bADw%2Be3MCSoRQEN4UM%2FpDti3XKkGnvWG9qCg2vQ%2FFMIgVw%3D&X-Amz-Signature=e67e63df74b5a298ed4ae6f87ebba5923436c5b2aea73c38850795cb6fb8be8c" -o xgemail-jilter-delivery-0.1.1-SNAPSHOT.tar
+  EOH
+end
+
+execute 'extract_jilter_delivery_package' do
+  user 'root'
+  cwd "#{PACKAGES_DIR}"
+  command <<-EOH
+      tar xf #{JILTER_DELIVERY_PACKAGE_NAME}.tar -C #{DEPLOYMENT_DIR}
+  EOH
+end
+
+
+link "#{DEPLOYMENT_DIR}/xgemail-jilter-delivery" do
+  to "#{DEPLOYMENT_DIR}/#{JILTER_DELIVERY_PACKAGE_NAME}"
 end
 
 execute 'remove_postfix_package' do
