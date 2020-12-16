@@ -12,7 +12,7 @@
 package 'tar'
 
 NODE_TYPE = node['xgemail']['cluster_type']
-ACCOUNT = node['sophos_cloud']['account']
+ACCOUNT = node['sophos_cloud']['environment']
 
 # Make sure we're on an encryption submit node
 if NODE_TYPE != 'encryption-submit'
@@ -96,6 +96,13 @@ directory MSG_HISTORY_EVENT_DIR do
   owner SERVICE_USER
   group SERVICE_USER
   recursive true
+end
+
+# Give ownership to the jilter service user
+file "#{JILTER_CONF_DIR}/launch_darkly_#{ACCOUNT}.properties" do
+  owner SERVICE_USER
+  group SERVICE_USER
+  action :touch
 end
 
 # Create the Jilter service

@@ -591,15 +591,21 @@ def prepare_message_context(s3_file_path, mail_info):
 #The accepted events written by Jilter needs to be updated with 's3_file_path' and 'decorated_queue_id'
 def update_msghistory_event_and_get_message_context(msghistory_events, s3_file_path, policy_metadata, direction, recipients, sender):
     try:
-      mail_info = None
-      messagehistory.update_msghistory_event(msghistory_events, s3_file_path, policy_metadata, direction, recipients, sender)
-      recipient = recipients[0]
-      if (msghistory_events[recipient] is not None and 
-          'mail_info' in msghistory_events[recipient]):
-        mail_info = msghistory_events[recipient]['mail_info']
-        return prepare_message_context(s3_file_path, mail_info)
+        mail_info = None
+        messagehistory.update_msghistory_event(msghistory_events, s3_file_path, policy_metadata, direction, recipients, sender)
+        mailbox = None
+        if direction == INBOUND_MESSAGE_DIRECTION:
+            mailbox = recipients[0]
+        else:
+            mailbox = sender
+        if (mailbox in msghistory_events and
+            'mail_info' in msghistory_events[mailbox]):
+            mail_info = msghistory_events[mailbox]['mail_info'] 
+            if not upload_msg_history:
+                mail_info['generate_mh_events'] = False
+            return prepare_message_context(s3_file_path, mail_info)
     except Exception as ex:
-      logger.warning("Queue Id [{0}]. Error in processing message history event [{1}]".format(policy_metadata.get_queue_id(), ex))
+        logger.warning("Queue Id [{0}]. Error in processing message history event [{1}]".format(policy_metadata.get_queue_id(), ex))
     
 
 def base_policy_flow(metadata, direction, domain, sender, message, message_attributes = None):
