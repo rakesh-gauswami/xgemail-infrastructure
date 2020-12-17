@@ -28,9 +28,9 @@
       XgemailCustomerSubmitBucketName:          "{{s3.customer_submit_bucket}}"
       DeliveryDirectorDynamodbTableName:        "{{dynamodb.delivery_director_dynamodb}}"
       DeliveryDirectorBucketName:               "{{s3.delivery_director_bucket}}"
-      MsgHistoryStreamName:                     "{{kinesis.firehose.msg_history_stream_name}}"
-      MsgHistoryFailureBucketName:              "{{s3.msg_history_failure_bucket_name}}" 
-      MsgHistoryDynamoDbTableName:              "{{dynamodb.msg_history_dynamodb}}"
+      MsgHistoryV2StreamName:                   "{{kinesis.firehose.msg_history_v2_stream_name}}"
+      MsgHistoryV2BucketName:                   "{{s3.msg_history_v2_bucket_name}}" 
+      MsgHistoryV2DynamoDbTableName:            "{{dynamodb.msg_history_v2_dynamodb}}"
   register: iam_stack
 
 - debug:

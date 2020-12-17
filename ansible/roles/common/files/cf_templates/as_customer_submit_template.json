@@ -124,15 +124,15 @@
     "LoadBalancerName": {
       "Description": "Name for the ELB to attach to the Auto Scaling Group",
       "Type": "String"
-    },
-    "MsgHistoryFailureBucketName" : {
+    },   
+    "MsgHistoryV2BucketName" : {
       "Description" : "Message History s3 bucket name for writing failure records",
       "Type": "String"
-    },     
-    "MsgHistoryStreamName" : {
+    },      
+    "MsgHistoryV2StreamName" : {
       "Description" : "Message History firehose stream name",
       "Type": "String"
-    },     
+    },    
     "PolicyTargetValue": {
       "Description": "The target value for the metric.",
       "Type": "Number",
@@ -685,11 +685,10 @@
                     "    \"cluster_type\"                           : \"{{cluster_type}}\",\n",
                     "    \"lifecycle_topic_arn\"                    : \"{{lifecycle_topic_arn}}\",\n",
                     "    \"msg_history_bucket_name\"                : \"{{msg_history_bucket_name}}\",\n",
-                    "    \"msg_history_failure_bucket_name\"        : \"{{msg_history_failure_bucket_name}}\",\n",
                     "    \"msg_history_ms_bucket_name\"             : \"{{msg_history_ms_bucket_name}}\",\n",
                     "    \"msg_history_queue_url\"                  : \"{{msg_history_queue_url}}\",\n",
-                    "    \"msg_history_stream_name\"                : \"{{msg_history_stream_name}}\",\n",
-                    "    \"policy_efs_file_system_id\"              : \"{{policy_efs_file_system_id}}\",\n",
+                    "    \"msg_history_v2_bucket_name\"             : \"{{msg_history_v2_bucket_name}}\",\n",
+                    "    \"msg_history_v2_stream_name\"             : \"{{msg_history_v2_stream_name}}\",\n",                     "    \"policy_efs_file_system_id\"              : \"{{policy_efs_file_system_id}}\",\n",
                     "    \"station_vpc_id\"                         : \"{{station_vpc_id}}\",\n",
                     "    \"station_vpc_name\"                       : \"{{station_vpc_name}}\",\n",
                     "    \"sxl_dbl\"                                : \"{{sxl_dbl}}\",\n",
@@ -713,10 +712,10 @@
                   "environment":                                    { "Ref": "Environment" },
                   "lifecycle_topic_arn":                            { "Ref": "AutoScalingNotificationTopicARN" },
                   "msg_history_bucket_name":                        { "Ref": "XgemailMsgHistoryBucketName" },
-                  "msg_history_failure_bucket_name":                { "Ref": "MsgHistoryFailureBucketName" },
                   "msg_history_ms_bucket_name":                     { "Ref": "XgemailMsgHistoryMsBucketName" },
                   "msg_history_queue_url":                          { "Ref": "XgemailMsgHistoryQueueUrl" },
-                  "msg_history_stream_name":                        { "Ref": "MsgHistoryStreamName" },
+                  "msg_history_v2_bucket_name":                     { "Ref": "MsgHistoryV2BucketName" },
+                  "msg_history_v2_stream_name":                     { "Ref": "MsgHistoryV2StreamName" },
                   "policy_efs_file_system_id":                      { "Ref": "XgemailPolicyEfsFileSystemId" },
                   "region":                                         { "Ref": "AWS::Region" },
                   "stack":                                          { "Ref": "AWS::StackName" },

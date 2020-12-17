@@ -21,6 +21,18 @@
     "Environment": {
       "Description": "Name of the AWS account. inf, dev, qa, prod",
       "Type": "String"
+    },
+    "MsgHistoryV2BucketName": {
+      "Description": "Name of the Xgemail Message History V2 bucket",
+      "Type": "String"
+    },
+    "MsgHistoryV2DynamoDbTableName": {
+      "Description": "Name of the message history dynamoDB table",
+      "Type": "String"
+    },
+    "MsgHistoryV2StreamName": {
+      "Description": "Name of the message history stream name",
+      "Type": "String" 
     }
   },
 
@@ -193,6 +205,18 @@
               ]
             },
             {
+              "Action" : [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObject",
+                "s3:RestoreObject"
+              ],
+              "Effect" : "Allow",
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }]]}]
+            },
+            {
               "Action": [
                 "s3:DeleteObject",
                 "s3:GetBucketLocation",
@@ -265,6 +289,41 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
+              ]
+            },
+            {
+              "Action": [
+                "dynamodb:BatchWriteItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:BatchGetItem",
+                "dynamodb:Scan",
+                "dynamodb:ListTables",
+                "dynamodb:GetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:DescribeTable",
+                "dynamodb:PutItem",
+                "dynamodb:Query",
+                "dynamodb:UpdateItem",
+                "dynamodb:UpdateTable"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryV2DynamoDbTableName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "firehose:DescribeDeliveryStream",
+                "firehose:PutRecord",
+                "firehose:PutRecordBatch"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
+                }
               ]
             }
           ]
