@@ -179,7 +179,7 @@
                 "InstanceIds": [ "{{getInstanceIds.InstanceIds}}" ],
                 "Parameters": {
                   "commands": [
-                    "sed -i 's/{{SenderAddress}} REJECT//g' /etc/postfix-is/sender_access",
+                    "sed -i '/{{SenderAddress}} REJECT/d' /etc/postfix-is/sender_access",
                     "postmap /etc/postfix-is/sender_access",
                     "postmulti -i postfix-is -x postconf smtpd_sender_restrictions='reject_non_fqdn_sender, check_sender_access hash:/etc/postfix-is/sender_access'",
                     "postmulti -i postfix-is -p reload"
