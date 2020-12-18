@@ -151,6 +151,13 @@
                 "eu-central-1"
               ]
             },
+            "Action": {
+              "type": "String",
+              "description": "Action to block or unblock an address.",
+              "allowedValues": [
+                "block",
+                "unblock"
+            },
             "SenderAddress": {
               "type": "String",
               "description": "The sender address to block in Postfix config."
@@ -200,7 +207,7 @@
                 "InstanceIds": [ "{{getInstanceIds.InstanceIds}}" ],
                 "Parameters": {
                   "commands": [
-                    "python /opt/sophos/xgemail/utils/blocked_sender_api.py --region {{Region}} --env {{Environment}} --block {{SenderAddress}}"
+                    "python /opt/sophos/xgemail/utils/blocked_sender_api.py --region {{Region}} --env {{Environment}} --{{Action}} {{SenderAddress}}"
                   ]
                 }
               },
