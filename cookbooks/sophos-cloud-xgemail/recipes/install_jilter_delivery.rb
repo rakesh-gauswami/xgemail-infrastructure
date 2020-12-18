@@ -12,7 +12,7 @@
 package 'tar'
 
 NODE_TYPE = node['xgemail']['cluster_type']
-ACCOUNT = node['sophos_cloud']['account']
+ACCOUNT = node['sophos_cloud']['environment']
 
 # Make sure we're on an delivery node
 unless NODE_TYPE == 'customer-delivery' or NODE_TYPE == 'internet-delivery' or
@@ -62,6 +62,10 @@ SERVER_IP = node['ipaddress']
 
 MH_MAIL_INFO_STORAGE_DIR  = node['xgemail']['mh_mail_info_storage_dir']
 MSG_HISTORY_DYNAMODB_TABLE_NAME = node['xgemail']['msg_history_dynamodb_table_name']
+MSG_HISTORY_V2_STREAM_NAME = node['xgemail']['msg_history_v2_stream_name']
+MSG_HISTORY_V2_BUCKET_NAME = node['xgemail']['msg_history_v2_bucket_name']
+MSG_HISTORY_V2_DYNAMODB_TABLE_NAME = node['xgemail']['msg_history_v2_dynamodb_table_name']
+
 AWS_REGION = node['sophos_cloud']['region']
 SERVICE_USER = node['xgemail']['jilter_user']
 POLICY_BUCKET_NAME   = node['xgemail']['xgemail_policy_bucket_name']
@@ -138,7 +142,9 @@ template 'xgemail.jilter.properties' do
       :server_type => server_type_map[NODE_TYPE],
       :server_ip => SERVER_IP,
       :mh_mail_info_storage_dir => MH_MAIL_INFO_STORAGE_DIR,
-      :msg_history_dynamodb_table_name =>  MSG_HISTORY_DYNAMODB_TABLE_NAME
+      :msg_history_v2_stream_name => MSG_HISTORY_V2_STREAM_NAME,
+      :msg_history_v2_bucket_name => MSG_HISTORY_V2_BUCKET_NAME,
+      :msg_history_v2_dynamodb_table_name =>  MSG_HISTORY_V2_DYNAMODB_TABLE_NAME
   )
 end
 
