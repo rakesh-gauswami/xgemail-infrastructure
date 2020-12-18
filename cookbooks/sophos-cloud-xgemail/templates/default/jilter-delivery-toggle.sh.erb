@@ -5,8 +5,8 @@
 # All rights reserved - Do Not Redistribute
 # Script to toggle enable/disable jilter in delivery servers
 
-SERVER_NAME="<%= @instance_name %>"
-DELIVERY_JILTER_ENABLED_FILE_PATH = "<%= @delivery_jilter_enabled_file_path %>"
+SERVER_NAME=<%= @instance_name %>
+DELIVERY_JILTER_ENABLED_FILE_PATH=<%= @delivery_jilter_enabled_file_path %>
 
 reload_postfix() {
   service postfix reload
@@ -67,7 +67,7 @@ disable_jilter_postfix_conf() {
 
 force_enable() {
   rm -rf $DELIVERY_JILTER_ENABLED_FILE_PATH
-  echo "fore restarting jilter.."
+  echo "force restarting jilter.."
   force_start_jilter
   echo "updating postfix config to enable jilter.."
   enable_jilter_postfix_conf
