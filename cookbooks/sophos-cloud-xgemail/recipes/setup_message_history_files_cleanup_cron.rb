@@ -32,7 +32,7 @@ if NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' || NODE_
     cron "#{INSTANCE_NAME}-mh-cleanup-cron" do
       hour '*/1'
       user 'root'
-      command "find #{MH_MAIL_INFO_STORAGE_DIR} -type f +6 -delete"
+      command "find #{MH_MAIL_INFO_STORAGE_DIR} -type f -mtime +6 -delete"
     end
 
 end
