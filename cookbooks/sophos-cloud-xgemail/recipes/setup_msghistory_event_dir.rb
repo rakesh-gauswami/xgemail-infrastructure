@@ -20,7 +20,7 @@ raise "Unsupported node type [#{NODE_TYPE}]" if INSTANCE_DATA.nil?
 INSTANCE_NAME = INSTANCE_DATA[:instance_name]
 raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 
-# create mh mail info storage directory in delivery servers
+# create mh mail info storage directory in submit servers
 if NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit' || NODE_TYPE == 'encryption-submit' 
 
     group MSG_HISTORY_GROUP do
