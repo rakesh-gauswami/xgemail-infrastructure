@@ -96,8 +96,7 @@ def write_mh_mail_info(json_to_write, directory):
     with io.open(full_path, 'w', encoding='utf8') as json_file:
         data = json.dumps(json_to_write, encoding='utf8')
         json_file.write(unicode(data))
-<<<<<<< HEAD
-    return full_path
+    return filename
 
 def read_msghistory_accepted_events(queue_id, directory):
     """
@@ -178,6 +177,3 @@ def delete_msghistory_events_file(mail_info, queue_id, directory):
         os.remove(directory + '/' + queue_id)
     except Exception as ex:
         logger.warning("Queue Id:[{0}]. Error deleteing MH accepted events file: [{1}]".format(queue_id, ex))
-=======
-    return filename
->>>>>>> d8b9bc8364ece4f5c90cec9d09c4f74ed17542c1
