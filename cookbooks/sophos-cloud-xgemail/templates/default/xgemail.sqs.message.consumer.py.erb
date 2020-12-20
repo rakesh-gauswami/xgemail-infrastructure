@@ -599,7 +599,7 @@ while True:
                         )
                         logger.debug("written mh mail info file [{0}] for QueueId [{1}]".format(mh_mail_info_filename, queue_id.encode('utf-8')))
                     except Exception as e:
-                        logger.debug("Exception [{0}] while writing mh mail info for QueueId [{1}]".format(e, queue_id.encode('utf-8')))
+                        logger.error("Exception [{0}] while writing mh mail info for QueueId [{1}]".format(e, queue_id.encode('utf-8')))
 
                     # add mh_mail_info_filename to headers
                     if mh_mail_info_filename:
