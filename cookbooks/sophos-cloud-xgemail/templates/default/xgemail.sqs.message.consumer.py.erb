@@ -588,7 +588,7 @@ while True:
             )
 
             if is_delivery_jilter_enabled():
-                mh_mail_info, can_generate_mh_event = messagehistory.get_mail_info(sqs_message, aws_region, MSG_HISTORY_V2_BUCKET)
+                mh_mail_info, can_generate_mh_event = messagehistory.get_mail_info(sqs_message, AWS_REGION, MSG_HISTORY_V2_BUCKET)
                 if can_generate_mh_event:
                     logger.debug("QueueId [{0}] can generate message history event".format(queue_id.encode('utf-8')))
                     mh_mail_info_filename = None
@@ -599,8 +599,8 @@ while True:
                         )
                         logger.debug("written mh mail info file [{0}] for QueueId [{1}]".format(mh_mail_info_filename, queue_id.encode('utf-8')))
                     except Exception as e:
-                        logger.debug("Exception [{0}] while writing mh mail info for QueueId [{1}]".format(e, queue_id.encode('utf-8')))
-                    
+                        logger.error("Exception [{0}] while writing mh mail info for QueueId [{1}]".format(e, queue_id.encode('utf-8')))
+
                     # add mh_mail_info_filename to headers
                     if mh_mail_info_filename:
                         messagehistory.add_header(
