@@ -100,7 +100,6 @@ include_recipe 'sophos-cloud-xgemail::setup_transport_route_config'
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_consumer'
 include_recipe 'sophos-cloud-xgemail::setup_message_history_storage_dir'
 include_recipe 'sophos-cloud-xgemail::setup_message_history_files_cleanup_cron'
-include_recipe 'sophos-cloud-xgemail::setup_dh_params'
 include_recipe 'sophos-cloud-xgemail::install_jilter_delivery'
 include_recipe 'sophos-cloud-xgemail::setup_jilter_delivery_toggle'
 

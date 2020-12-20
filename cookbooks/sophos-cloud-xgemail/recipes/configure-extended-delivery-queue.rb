@@ -208,7 +208,6 @@ end
 # recipes to be run in all x-delivery servers for Mhv2
 include_recipe 'sophos-cloud-xgemail::setup_message_history_storage_dir'
 include_recipe 'sophos-cloud-xgemail::setup_message_history_files_cleanup_cron'
-include_recipe 'sophos-cloud-xgemail::setup_dh_params'
 include_recipe 'sophos-cloud-xgemail::install_jilter_delivery'
 include_recipe 'sophos-cloud-xgemail::setup_jilter_delivery_toggle'
 
