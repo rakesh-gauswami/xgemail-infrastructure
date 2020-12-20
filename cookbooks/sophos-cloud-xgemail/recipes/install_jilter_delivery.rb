@@ -135,10 +135,7 @@ template 'xgemail.jilter.properties' do
   owner SERVICE_USER
   group SERVICE_USER
   variables(
-      :policy_bucket => POLICY_BUCKET_NAME,
       :account => ACCOUNT,
-      :customer_submit_bucket => CUSTOMER_SUBMIT_BUCKET_NAME,
-      :aws_region => AWS_REGION,
       :server_type => server_type_map[NODE_TYPE],
       :server_ip => SERVER_IP,
       :mh_mail_info_storage_dir => MH_MAIL_INFO_STORAGE_DIR,
