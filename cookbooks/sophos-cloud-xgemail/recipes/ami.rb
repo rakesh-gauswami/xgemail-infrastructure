@@ -269,7 +269,7 @@ execute 'download_jilter_delivery' do
   user 'root'
   cwd "#{PACKAGES_DIR}"
   command <<-EOH
-  curl -X GET "https://delivery-jilter-tar.s3.eu-west-1.amazonaws.com/xgemail-jilter-delivery-0.1.1-SNAPSHOT.tar?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAUEGAP77VPZ2XUK5B%2F20201221%2Feu-west-1%2Fs3%2Faws4_request&X-Amz-Date=20201221T040746Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEN3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJHMEUCIQCBI2yKQ%2FOsPkKl%2FpQSk4kQfUg4dIO%2F9374uskU6YtJCAIgIK9fHoTQriOmU%2BksUW8uHuAoRGNFo5nooN2JrNxhZE4qowMIhf%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FARAAGgwyODM4NzE1NDMyNzQiDE7tVmBNn4HCMa9FPSr3Aki1RCOv1LIiBu3XYE%2FMiuej4l6M7ax8sLLja4pooKSuwqbmmBhT0JyHdeY3aqjwoRaIh4Fd7GuE9Z%2FRL7qICkqbCzZczTgEhxQ2O0JOYd6RMDm70Q244PtcdgtZEtFOFBeG48vFmLPHOvvGxoKdfyIf1%2FYvu4hy75AGP%2BjUzACahiWuV5eigOz%2FnGPoNPxpugOdMhWBiBAy%2FwzzCoJ%2BANSVVT9KvPMr426eBxu7YRAVVpSrX54aEX1DZx6O%2BzsHZwaENqfKglZxMZDP0KKBppDJ1CMcG6V0NCsy%2BVIEcZh3J61HSm2YDsOmxuvvzh%2FI%2FzikPwUuV5zOvoE4kR5dsLdfoG71ugsz%2BR8JgjmkhA6pbgjME9ko9FT5H33Gg70JCDjiZ5oEJa4e4ugxEFbKbpXS385uSVQlrBh7%2FQIxzeBEJridfpI1wA1IhqMul6XSGJniVncSBHArhQua03QsSrRJv%2Bvxv1ghy2c%2FXIDqr3pCfUchVrCPdzDmvYD%2FBTqmAQIjYdtW%2BY9wZwrN1IPboL8f7O2ZPswPchXNFCFiPHeB8sh2tNpwr7bpnVf8sa8W4po1h60tkaLI8r%2Bhoa0UHUZlpp1u6AU2OXkxjCFUj56N6ko2agdDG6vG6V10TzD8QoqIUM%2B9fW2L%2FOA8a59hotvqU8dp5Gk%2B9FzoGyepLhCuk%2F8Rgbkq82x%2F9R0zGiDUXh7AuXfbS%2FjvbH3DN1%2FLoNe%2FlrIlsmU%3D&X-Amz-Signature=b9356f0ddbe062b17adc8ae3c36dfca8ac5d8a251b81ca05c476909bb08dcec3" -o xgemail-jilter-delivery-0.1.1-SNAPSHOT.tar
+      aws --region us-west-2 s3 cp s3:#{sophos_thirdparty}/xgemail/#{JILTER_DELIVERY_PACKAGE_NAME}.tar .
   EOH
 end
 
