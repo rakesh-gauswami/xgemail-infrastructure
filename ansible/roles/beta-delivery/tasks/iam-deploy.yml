@@ -12,6 +12,9 @@
       XgemailMsgHistoryBucketName:              "{{s3.msg_history_bucket}}"
       XgemailMsgHistoryMsBucketName:            "{{s3.msg_history_ms_bucket}}"
       XgemailCustomerSubmitBucketName:          "{{s3.customer_submit_bucket}}"
+      MsgHistoryV2StreamName:                   "{{kinesis.firehose.msg_history_v2_stream_name}}"
+      MsgHistoryV2BucketName:                   "{{s3.msg_history_v2_bucket_name}}"
+      MsgHistoryV2DynamoDbTableName:            "{{dynamodb.msg_history_v2_dynamodb}}"
   register: iam_stack_output
 
 - name: "Print {{stack.iam.role.cloud_email_beta_delivery_roles}} CloudFormation Stack Output"

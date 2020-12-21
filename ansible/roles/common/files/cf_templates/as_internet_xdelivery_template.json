@@ -112,6 +112,18 @@
       "Description": "Name for the ELB to attach to the Auto Scaling Group",
       "Type": "List<String>"
     },
+    "MsgHistoryV2BucketName" : {
+      "Description" : "Message History s3 bucket name for writing failure records",
+      "Type": "String"
+    },
+    "MsgHistoryV2DynamoDbTableName": {
+      "Description": "Name of the message history DynamoDB table",
+      "Type": "String"
+    },
+    "MsgHistoryV2StreamName" : {
+      "Description" : "Message History firehose stream name",
+      "Type": "String"
+    },
     "S3CookbookRepositoryURL": {
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
       "Type": "String",
@@ -467,6 +479,9 @@
                       "  \"xgemail\" : {\n",
                       "    \"cluster_type\"                   : \"{{cluster_type}}\",\n",
                       "    \"msg_history_status_sns_arn\"     : \"{{msg_history_delivery_status_sns_arn}}\",\n",
+                      "    \"msg_history_v2_bucket_name\"     : \"{{msg_history_v2_bucket_name}}\",\n",
+                      "    \"msg_history_v2_dynamodb_table_name\" : \"{{msg_history_v2_dynamodb_table_name}}\",\n",
+                      "    \"msg_history_v2_stream_name\"     : \"{{msg_history_v2_stream_name}}\",\n",
                       "    \"msg_notifier_queue_url\"         : \"{{msg_notifier_queue_url}}\",\n",
                       "    \"station_vpc_id\"                 : \"{{station_vpc_id}}\",\n",
                       "    \"station_vpc_name\"               : \"{{station_vpc_name}}\"\n",
@@ -486,6 +501,9 @@
                   "environment":                              { "Ref": "Environment" },
                   "msg_history_delivery_status_sns_arn":      { "Ref": "XgemailMsgHistoryStatusSnsArn"},
                   "msg_notifier_queue_url":                   { "Ref": "XgemailNotifierQueueUrl" },
+                  "msg_history_v2_bucket_name":               { "Ref": "MsgHistoryV2BucketName" },
+                  "msg_history_v2_dynamodb_table_name":       { "Ref": "MsgHistoryV2DynamoDbTableName"},
+                  "msg_history_v2_stream_name":               { "Ref": "MsgHistoryV2StreamName" },
                   "region":                                   { "Ref": "AWS::Region" },
                   "station_vpc_id":                           { "Ref": "StationVpcId" },
                   "stack":                                    { "Ref": "AWS::StackName" },
