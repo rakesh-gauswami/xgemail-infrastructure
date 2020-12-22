@@ -12,7 +12,7 @@
 package 'tar'
 
 NODE_TYPE = node['xgemail']['cluster_type']
-ACCOUNT = node['sophos_cloud']['account']
+ACCOUNT = node['sophos_cloud']['environment']
 
 # Make sure we're on an encryption submit node
 if NODE_TYPE != 'encryption-submit'

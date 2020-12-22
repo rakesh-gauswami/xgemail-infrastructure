@@ -139,7 +139,7 @@ def send_msghistory_events(queue_id, msghistory_events, url):
     Post the list of events to the given url
     """
     try:
-      headers = {'Content-Type': 'application/json' , 'X-QUEUE-ID' : queue_id}
+      headers = {'Content-Type': 'application/json' , 'X-QUEUE-ID' : queue_id, 'Connection' : 'close'}
       r = requests.post(url, data=json.dumps(msghistory_events), headers=headers)
       logger.debug("Received response from MessageHistoryEventProcessor with status [{0}]".format(r.status_code))
       r.close()

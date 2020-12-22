@@ -56,7 +56,10 @@ XGEMAIL_MESSAGE_HISTORY_MS_BUCKET_NAME       = node['xgemail']['msg_history_ms_b
 XGEMAIL_CUSTOMER_SUBMIT_BUCKET_NAME          = node['xgemail']['xgemail_customer_submit_bucket_name']
 XGEMAIL_POLICY_S3_BUCKET_NAME                = node['xgemail']['xgemail_policy_bucket_name']
 XGEMAIL_CUSTOMER_SUBMIT_QUEUE_URL            = node['xgemail']['xgemail_customer_submit_queue_url']
-XGEMAIL_MESSAGE_HISTORY_EVENTS_TOPIC_ARN     = node['xgemail']['xgemail_msg_history_events_topic_arn']
+XGEMAIL_MESSAGE_HISTORY_EVENTS_TOPIC_ARN     = node['xgemail']['xgemail_msg_history_events_topic_arn'],
+MSG_HISTORY_V2_BUCKET                        = node['xgemail']['msg_history_v2_bucket_name']
+MSG_HISTORY_EVENT_DIR                        = node['xgemail']['mh_event_storage_dir']
+MSG_HISTORY_EVENT_PROCESSOR_PORT             = node['xgemail']['mh_event_processor_port']
 
 # Configs use by sqsmsgproducer
 XGEMAIL_SUBMIT_TYPE                          = 'ENCRYPTION'
@@ -84,7 +87,10 @@ template PRODUCER_SCRIPT_PATH do
       :sqs_msg_producer_sqs_url => XGEMAIL_QUEUE_URL,
       :sqs_msg_producer_customer_submit_sqs_url => XGEMAIL_CUSTOMER_SUBMIT_QUEUE_URL,
       :sqs_msg_producer_submit_ip => NODE_IP,
-      :sqs_msg_producer_ttl_in_days => SQS_MESSAGE_PRODUCER_TTL_IN_DAYS
+      :sqs_msg_producer_ttl_in_days => SQS_MESSAGE_PRODUCER_TTL_IN_DAYS,
+      :msg_history_v2_bucket_name => MSG_HISTORY_V2_BUCKET,
+      :msg_history_event_dir => MSG_HISTORY_EVENT_DIR,
+      :msg_history_event_processor_port => MSG_HISTORY_EVENT_PROCESSOR_PORT
   )
 end
 
