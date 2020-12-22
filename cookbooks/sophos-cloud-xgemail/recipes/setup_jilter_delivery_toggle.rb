@@ -18,9 +18,17 @@ raise "Unsupported node type [#{NODE_TYPE}]" if INSTANCE_DATA.nil?
 INSTANCE_NAME = INSTANCE_DATA[:instance_name]
 raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 
-TOGGLE_SCRIPT_PATH = "#{XGEMAIL_FILES_DIR}/jilter-delivery-toggle"
-DELIVERY_JILTER_ENABLED_FILE_PATH = XGEMAIL_FILES_DIR + '/config/delivery.jilter.enabled'
+XGEMAIL_CONFIG_DIR = "#{XGEMAIL_FILES_DIR}/config"
+DELIVERY_JILTER_ENABLED_FILE_PATH = "#{XGEMAIL_CONFIG_DIR}/delivery.jilter.enabled"
 
+TOGGLE_SCRIPT_PATH = "#{XGEMAIL_FILES_DIR}/jilter-delivery-toggle"
+
+directory XGEMAIL_CONFIG_DIR do
+  mode '0755'
+  owner 'root'
+  group 'root'
+  recursive true
+end
 
 directory TOGGLE_SCRIPT_PATH do
   mode '0755'
