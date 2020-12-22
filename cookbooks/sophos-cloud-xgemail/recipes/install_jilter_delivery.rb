@@ -15,38 +15,25 @@ NODE_TYPE = node['xgemail']['cluster_type']
 ACCOUNT = node['sophos_cloud']['environment']
 
 # Make sure we're on an delivery node
-unless NODE_TYPE == 'customer-delivery' or NODE_TYPE == 'internet-delivery' or
-  NODE_TYPE == 'xdelivery' or NODE_TYPE == 'internet-xdelivery' or
-  NODE_TYPE == 'encryption-delivery' or NODE_TYPE == 'risky-delivery' or
-  NODE_TYPE == 'risky-xdelivery' or NODE_TYPE == 'warmup-delivery' or
-  NODE_TYPE == 'warmup-xdelivery' or NODE_TYPE == 'beta-delivery' or
-  NODE_TYPE == 'beta-xdelivery' or NODE_TYPE == 'delta-delivery' or
-  NODE_TYPE == 'delta-xdelivery'
+if NODE_TYPE != 'customer-delivery' && NODE_TYPE != 'xdelivery' &&
+  NODE_TYPE != 'internet-delivery' && NODE_TYPE != 'internet-xdelivery' &&
+  NODE_TYPE != 'risky-delivery' && NODE_TYPE != 'risky-xdelivery' &&
+  NODE_TYPE != 'warmup-delivery' && NODE_TYPE != 'warmup-xdelivery' &&
+  NODE_TYPE != 'beta-delivery' && NODE_TYPE != 'beta-xdelivery' &&
+  NODE_TYPE != 'delta-delivery' && NODE_TYPE != 'delta-xdelivery' &&
+  NODE_TYPE != 'encryption-delivery'
   return
 end
 
-# convert the node-type to NODE_TYPE to make it compatible with ServerType in Java code
-server_type_map = {
-  'customer-delivery'   => 'CUSTOMER_DELIVERY',
-  'xdelivery'           => 'CUSTOMER_XDELIVERY',
-  'internet-delivery'   => 'INTERNET_DELIVERY',
-  'internet-xdelivery'  => 'INTERNET_XDELIVERY',
-  'risky-delivery'      => 'RISKY_DELIVERY',
-  'risky-xdelivery'     => 'RISKY_XDELIVERY',
-  'warmup-delivery'     => 'WARMUP_DELIVERY',
-  'warmup-xdelivery'    => 'WARMUP_XDELIVERY',
-  'beta-delivery'       => 'BETA_DELIVERY',
-  'beta-xdelivery'      => 'BETA_XDELIVERY',
-  'delta-delivery'      => 'DELTA_DELIVERY',
-  'delta-xdelivery'     => 'DELTA_XDELIVERY',
-  'encryption-delivery' => 'ENCRYPTION_DELIVERY'
-}
 
 INSTANCE_DATA = node['xgemail']['postfix_instance_data'][NODE_TYPE]
 raise "Unsupported node type [#{NODE_TYPE}]" if INSTANCE_DATA.nil?
 
 INSTANCE_NAME = INSTANCE_DATA[:instance_name]
 raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
+
+SERVER_TYPE = INSTANCE_DATA[:server_type]
+raise "Invalid server type for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 
 DEPLOYMENT_DIR = node['xgemail']['xgemail_files_dir']
 PACKAGES_DIR = '/opt/sophos/packages'
@@ -136,7 +123,7 @@ template 'xgemail.jilter.properties' do
   group SERVICE_USER
   variables(
       :account => ACCOUNT,
-      :server_type => server_type_map[NODE_TYPE],
+      :server_type => SERVER_TYPE,
       :server_ip => SERVER_IP,
       :mh_mail_info_storage_dir => MH_MAIL_INFO_STORAGE_DIR,
       :msg_history_v2_stream_name => MSG_HISTORY_V2_STREAM_NAME,
