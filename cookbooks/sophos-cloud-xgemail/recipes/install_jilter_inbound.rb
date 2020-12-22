@@ -178,7 +178,6 @@ template 'xgemail.jilter.properties' do
       :internet_submit_bucket => INTERNET_SUBMIT_BUCKET_NAME,
       :jilter_helo_telemetry_stream => JILTER_HELO_TELEMETRY_STREAM_NAME,
       :node_ip => NODE_IP,
-      :msg_history_stream_name => MSG_HISTORY_STREAM_NAME,
       :msg_history_v2_stream_name => MSG_HISTORY_V2_STREAM_NAME,
       :msg_history_v2_bucket_name => MSG_HISTORY_V2_BUCKET_NAME,
       :msg_history_event_dir => MSG_HISTORY_EVENT_DIR,
