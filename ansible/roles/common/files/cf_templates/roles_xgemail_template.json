@@ -54,18 +54,18 @@
       "Description": "Name of the delivery director bucket",
       "Type": "String"
     },
-    "MsgHistoryFailureBucketName": {
+    "MsgHistoryV2BucketName": {
       "Description": "Name of the Xgemail Message History V2 bucket",
       "Type": "String"
     },
-    "MsgHistoryDynamoDbTableName": {
+    "MsgHistoryV2DynamoDbTableName": {
       "Description": "Name of the message history dynamoDB table",
       "Type": "String"
     },
-    "MsgHistoryStreamName": {
+    "MsgHistoryV2StreamName": {
       "Description": "Name of the message history stream name",
-      "Type": "String" 
-    }        
+      "Type": "String"
+    }
   },
 
   "Conditions": {
@@ -954,9 +954,9 @@
                 "s3:RestoreObject"
               ],
               "Effect" : "Allow",
-              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }, "/*"]]},
-                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }]]}]
-            },      
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }]]}]
+            },
             {
               "Action" : [
                 "s3:DeleteObject",
@@ -1105,10 +1105,10 @@
               "Effect" : "Allow",
               "Resource": [
                 {
-                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryStreamName}"
+                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
                 }
               ]
-            },                      
+            },
             {
               "Action": [
                 "dynamodb:BatchWriteItem",
@@ -1127,10 +1127,10 @@
               "Effect": "Allow",
               "Resource": [
                 {
-                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryDynamoDbTableName}"
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryV2DynamoDbTableName}"
                 }
               ]
-            }          
+            }
           ]
         },
         "PolicyName" : "root",
@@ -1307,9 +1307,9 @@
                 "s3:RestoreObject"
               ],
               "Effect" : "Allow",
-              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }, "/*"]]},
-                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }]]}]
-            },                    
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }]]}]
+            },
             {
               "Action" : [
                 "s3:DeleteObject",
@@ -1445,10 +1445,10 @@
               "Effect" : "Allow",
               "Resource": [
                 {
-                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryStreamName}"
+                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
                 }
               ]
-            },                       
+            },
             {
               "Action": [
                 "dynamodb:BatchWriteItem",
@@ -1467,10 +1467,10 @@
               "Effect": "Allow",
               "Resource": [
                 {
-                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryDynamoDbTableName}"
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryV2DynamoDbTableName}"
                 }
               ]
-            }             
+            }
           ]
         },
         "PolicyName" : "root",
@@ -1635,9 +1635,9 @@
                 "s3:RestoreObject"
               ],
               "Effect" : "Allow",
-              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }, "/*"]]},
-                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }]]}]
-            },                    
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }]]}]
+            },
             {
               "Action": [
                 "s3:GetBucketLocation",
@@ -1827,10 +1827,10 @@
               "Effect" : "Allow",
               "Resource": [
                 {
-                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryStreamName}"
+                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
                 }
               ]
-            }                       
+            }
           ]
         },
         "PolicyName": "root",
@@ -1995,9 +1995,9 @@
                 "s3:RestoreObject"
               ],
               "Effect" : "Allow",
-              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }, "/*"]]},
-                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }]]}]
-            },                    
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }]]}]
+            },
             {
               "Action": [
                 "s3:GetBucketLocation",
@@ -2185,10 +2185,10 @@
               "Effect" : "Allow",
               "Resource": [
                 {
-                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryStreamName}"
+                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
                 }
               ]
-            }            
+            }
           ]
         },
         "PolicyName": "root",
@@ -2362,9 +2362,9 @@
                 "s3:RestoreObject"
               ],
               "Effect" : "Allow",
-              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }, "/*"]]},
-                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }]]}]
-            },                    
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }]]}]
+            },
             {
               "Action" : [
                 "s3:DeleteObject",
@@ -2491,7 +2491,7 @@
               "Effect": "Allow",
               "Resource": [
                 {
-                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryDynamoDbTableName}"
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryV2DynamoDbTableName}"
                 }
               ]
             },
@@ -2504,10 +2504,10 @@
               "Effect" : "Allow",
               "Resource": [
                 {
-                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryStreamName}"
+                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
                 }
               ]
-            }                                    
+            }
           ]
         },
         "PolicyName" : "root",
@@ -2681,9 +2681,9 @@
                 "s3:RestoreObject"
               ],
               "Effect" : "Allow",
-              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }, "/*"]]},
-                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }]]}]
-            },                    
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }]]}]
+            },
             {
               "Action" : [
                 "s3:DeleteObject",
@@ -2801,7 +2801,7 @@
               "Effect" : "Allow",
               "Resource": [
                 {
-                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryStreamName}"
+                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
                 }
               ]
             },
@@ -2823,10 +2823,10 @@
               "Effect": "Allow",
               "Resource": [
                 {
-                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryDynamoDbTableName}"
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryV2DynamoDbTableName}"
                 }
               ]
-            }                           
+            }
           ]
         },
         "PolicyName" : "root",
@@ -3057,9 +3057,9 @@
                 "s3:RestoreObject"
               ],
               "Effect" : "Allow",
-              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }, "/*"]]},
-                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }]]}]
-            },          
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }]]}]
+            },
             {
               "Action": [
                 "dynamodb:BatchWriteItem",
@@ -3078,7 +3078,7 @@
               "Effect": "Allow",
               "Resource": [
                 {
-                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryDynamoDbTableName}"
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryV2DynamoDbTableName}"
                 }
               ]
             },
@@ -3091,10 +3091,10 @@
               "Effect" : "Allow",
               "Resource": [
                 {
-                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryStreamName}"
+                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
                 }
               ]
-            }                         
+            }
           ]
         },
         "PolicyName": "root",
@@ -3327,9 +3327,9 @@
                 "s3:RestoreObject"
               ],
               "Effect" : "Allow",
-              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }, "/*"]]},
-                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }]]}]
-            },           
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }]]}]
+            },
             {
               "Action": [
                 "dynamodb:BatchWriteItem",
@@ -3348,7 +3348,7 @@
               "Effect": "Allow",
               "Resource": [
                 {
-                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryDynamoDbTableName}"
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryV2DynamoDbTableName}"
                 }
               ]
             },
@@ -3361,10 +3361,10 @@
               "Effect" : "Allow",
               "Resource": [
                 {
-                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryStreamName}"
+                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
                 }
               ]
-            }                
+            }
           ]
         },
         "PolicyName": "root",
@@ -3599,9 +3599,9 @@
                 "s3:RestoreObject"
               ],
               "Effect" : "Allow",
-              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }, "/*"]]},
-                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }]]}]
-            },                    
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }]]}]
+            },
             {
               "Action": [
                 "s3:DeleteObject",
@@ -3792,7 +3792,7 @@
               ]
             },
             {
-                
+
               "Action": [
                 "dynamodb:BatchWriteItem",
                 "dynamodb:DeleteItem",
@@ -3810,7 +3810,7 @@
               "Effect": "Allow",
               "Resource": [
                 {
-                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryDynamoDbTableName}"
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryV2DynamoDbTableName}"
                 }
               ]
             },
@@ -3823,9 +3823,9 @@
               "Effect" : "Allow",
               "Resource": [
                 {
-                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryStreamName}"
+                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
                 }
-              ]                   
+              ]
             }
           ]
         },
@@ -4111,9 +4111,9 @@
                 "s3:RestoreObject"
               ],
               "Effect" : "Allow",
-              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }, "/*"]]},
-                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }]]}]
-            },        
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }]]}]
+            },
             {
               "Action": [
                 "dynamodb:BatchWriteItem",
@@ -4132,7 +4132,7 @@
               "Effect": "Allow",
               "Resource": [
                 {
-                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryDynamoDbTableName}"
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryV2DynamoDbTableName}"
                 }
               ]
             },
@@ -4145,10 +4145,10 @@
               "Effect" : "Allow",
               "Resource": [
                 {
-                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryStreamName}"
+                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
                 }
               ]
-            }                
+            }
           ]
         },
         "PolicyName": "root",
@@ -4383,9 +4383,9 @@
                 "s3:RestoreObject"
               ],
               "Effect" : "Allow",
-              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }, "/*"]]},
-                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }]]}]
-            },                    
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }]]}]
+            },
             {
               "Action": [
                 "s3:DeleteObject",
@@ -4575,7 +4575,7 @@
               "Effect": "Allow",
               "Resource": [
                 {
-                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryDynamoDbTableName}"
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryV2DynamoDbTableName}"
                 }
               ]
             },
@@ -4588,10 +4588,10 @@
               "Effect" : "Allow",
               "Resource": [
                 {
-                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryStreamName}"
+                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
                 }
               ]
-            }                
+            }
           ]
         },
         "PolicyName": "root",
@@ -4876,9 +4876,9 @@
                 "s3:RestoreObject"
               ],
               "Effect" : "Allow",
-              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }, "/*"]]},
-                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }]]}]
-            },       
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }]]}]
+            },
             {
               "Action": [
                 "dynamodb:BatchWriteItem",
@@ -4897,7 +4897,7 @@
               "Effect": "Allow",
               "Resource": [
                 {
-                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryDynamoDbTableName}"
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryV2DynamoDbTableName}"
                 }
               ]
             },
@@ -4910,10 +4910,10 @@
               "Effect" : "Allow",
               "Resource": [
                 {
-                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryStreamName}"
+                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
                 }
               ]
-            }                
+            }
           ]
         },
         "PolicyName": "root",
@@ -5148,9 +5148,9 @@
                 "s3:RestoreObject"
               ],
               "Effect" : "Allow",
-              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }, "/*"]]},
-                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }]]}]
-            },                    
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }]]}]
+            },
             {
               "Action": [
                 "s3:DeleteObject",
@@ -5340,7 +5340,7 @@
               "Effect": "Allow",
               "Resource": [
                 {
-                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryDynamoDbTableName}"
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryV2DynamoDbTableName}"
                 }
               ]
             },
@@ -5353,10 +5353,10 @@
               "Effect" : "Allow",
               "Resource": [
                 {
-                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryStreamName}"
+                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
                 }
               ]
-            }               
+            }
           ]
         },
         "PolicyName": "root",
@@ -5641,9 +5641,9 @@
                 "s3:RestoreObject"
               ],
               "Effect" : "Allow",
-              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }, "/*"]]},
-                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryFailureBucketName" }]]}]
-            },             
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }]]}]
+            },
             {
               "Action": [
                 "dynamodb:BatchWriteItem",
@@ -5662,7 +5662,7 @@
               "Effect": "Allow",
               "Resource": [
                 {
-                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryDynamoDbTableName}"
+                  "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryV2DynamoDbTableName}"
                 }
               ]
             },
@@ -5675,10 +5675,10 @@
               "Effect" : "Allow",
               "Resource": [
                 {
-                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryStreamName}"
+                  "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
                 }
               ]
-            }                
+            }
           ]
         },
         "PolicyName": "root",
