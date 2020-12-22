@@ -346,3 +346,14 @@ template SYSCTL_FILE do
   )
   notifies :run, "execute[#{LOAD_SYSCTL_PARAMETERS}]", :immediately
 end
+
+yum_package 'postfix-perl-scripts' do
+  action :install
+end
+
+bash 'modify_qshape' do
+  user "root"
+  code <<-EOH
+    sed -i 's+(^|/)\\[A-F0-9\\]{6,}+\\[0-9A-F\\]{6,}\\|\\[0-9a-zA-Z\\]{12,}+' /usr/sbin/qshape
+  EOH
+end
