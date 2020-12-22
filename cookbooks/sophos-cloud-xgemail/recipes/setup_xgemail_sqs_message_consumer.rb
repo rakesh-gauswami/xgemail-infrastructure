@@ -41,7 +41,7 @@ TRANSPORT_CONFIG_PATH                   = XGEMAIL_FILES_DIR + '/config/transport
 E2E_LATENCY_TELEMETRY_DELIVERY_STREAM   =  "tf-e2e-latency-telemetry-#{AWS_REGION}-#{ACCOUNT}-firehose"
 MH_MAIL_INFO_STORAGE_DIR                = node['xgemail']['mh_mail_info_storage_dir']
 DELIVERY_JILTER_ENABLED_FILE_PATH       = XGEMAIL_FILES_DIR + '/config/delivery.jilter.enabled'
-MSG_HISTORY_V2_BUCKET                   = node['xgemail']['msg_history_failure_bucket_name']
+MSG_HISTORY_V2_BUCKET                   = node['xgemail']['msg_history_v2_bucket_name']
 
 if ACCOUNT == 'sandbox'
   XGEMAIL_PIC_FQDN = 'mail-service:8080'
