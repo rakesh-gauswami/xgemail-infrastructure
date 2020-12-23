@@ -15,6 +15,7 @@ import os
 import json
 import logging
 from awshandler import AwsHandler
+import requests
 import mailinfoformatter
 from logging.handlers import SysLogHandler
 from botocore.exceptions import ClientError
@@ -32,6 +33,7 @@ logger.addHandler(syslog_handler)
 INBOUND_MESSAGE_DIRECTION = "INBOUND"
 OUTBOUND_MESSAGE_DIRECTION = "OUTBOUND"
 
+
 def can_generate_mh_event(mail_info):
     if mail_info and 'generate_mh_events' in mail_info:
         return mail_info['generate_mh_events']
@@ -41,18 +43,20 @@ def can_generate_mh_event(mail_info):
 
 def get_mail_info(sqs_message, aws_region, policy_bucket_name):
     if sqs_message.message_context:
-        if 'mail_info' in sqs_message.message_context:
-            mail_info = sqs_message.message_context['mail_info']
-            json = { 'mail_info' : sqs_message.message_context['mail_info'] }
+        if ('mh_meta_data' in sqs_message.message_context and
+            'mail_info' in sqs_message.message_context['mh_meta_data']):
+            mail_info = sqs_message.message_context['mh_meta_data']['mail_info']
+            json = { 'mail_info' : sqs_message.message_context['mh_meta_data']['mail_info'] }
             return json, can_generate_mh_event(mail_info)
-        elif 'mail_info_s3_path' in sqs_message.message_context:
+        elif ('mh_meta_data' in sqs_message.message_context and
+              'mail_info_s3_path' in sqs_message.message_context['mh_meta_data']):
             try:
                 mail_info_s3 = load_mail_info_file_from_S3(
                     aws_region,
                     policy_bucket_name,
-                    sqs_message.message_context['mail_info_s3_path']
+                    sqs_message.message_context['mh_meta_data']['mail_info_s3_path']
                 )
-                json = { 'mail_info_s3_path' : sqs_message.message_context['mail_info_s3_path'] }
+                json = { 'mail_info_s3_path' : sqs_message.message_context['mh_meta_data']['mail_info_s3_path'] }
                 return json, can_generate_mh_event(mail_info_s3)
             except Exception as e:
                 logger.warn("Exception [{0}] while reading mh_mail_info from S3 [{1}]".format(

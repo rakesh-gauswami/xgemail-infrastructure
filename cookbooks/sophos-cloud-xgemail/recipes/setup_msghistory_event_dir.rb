@@ -29,7 +29,7 @@ if NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit' || NODE_TYPE
 
     # Create dir where Jilter writes accepted events temporarily for producers to read.
     directory MSG_HISTORY_EVENT_DIR do
-      mode '0775'
+      mode '0777'
       owner SERVICE_USER
       group MSG_HISTORY_GROUP
       recursive true
