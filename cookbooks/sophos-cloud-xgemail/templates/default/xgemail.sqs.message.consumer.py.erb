@@ -534,7 +534,7 @@ while True:
             try:
                 headers = attempt_to_retrieve_headers(sqs_message.message_path)
             except Exception:
-                logger.warn("failed to retrieve headers at message path {0}".format(sqs_message.message_path))
+                logger.warn("failed to retrieve headers at message path {0}, Exception {1}".format(sqs_message.message_path, e))
 
             try:
                 formatted_message = awshandler.download_message_from_s3(BUCKET_NAME, sqs_message)
