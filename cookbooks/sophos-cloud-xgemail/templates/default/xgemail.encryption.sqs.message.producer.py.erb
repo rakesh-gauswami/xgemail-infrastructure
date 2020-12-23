@@ -572,9 +572,9 @@ def prepare_message_context(s3_file_path, mail_info):
     if len(mail_info_str) > MSG_HISTORY_MAIL_INFO_MAX_BYTES_IN_MSG_CONTEXT:
         mail_info_path = upload_msghistory_mail_info_to_s3(s3_file_path, mail_info)
         if mail_info_path is not None:
-            message_context = {'mh_meta_data' : { 'mail_info_s3_path' :  mail_info_path } }
+            message_context = {'mh_context' : { 'mail_info_s3_path' :  mail_info_path } }
     else:
-        message_context = { 'mh_meta_data' : { 'mail_info' : mail_info } }
+        message_context = { 'mh_context' : { 'mail_info' : mail_info } }
     return message_context
 
 #The accepted events written by Jilter needs to be updated with 's3_file_path' and 'decorated_queue_id'
