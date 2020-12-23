@@ -60,7 +60,7 @@ def get_mail_info(sqs_message, aws_region, policy_bucket_name):
                 return json, can_generate_mh_event(mail_info_s3)
             except Exception as e:
                 logger.warn("Exception [{0}] while reading mh_mail_info from S3 [{1}]".format(
-                    e, sqs_message.message_context['mail_info_s3_path']))
+                    e, sqs_message.message_context['mh_context']['mail_info_s3_path']))
                 return None, False
         else:
             return None, False
