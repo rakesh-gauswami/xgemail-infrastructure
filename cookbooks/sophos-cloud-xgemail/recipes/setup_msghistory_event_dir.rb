@@ -11,7 +11,6 @@
 MSG_HISTORY_EVENT_DIR     = node['xgemail']['mh_event_storage_dir']
 NODE_TYPE                 = node['xgemail']['cluster_type']
 SERVICE_USER              = node['xgemail']['jilter_user']
-MSG_HISTORY_GROUP         = node['xgemail']['mh_group_name']
 MESSAGEPROCESSOR_USER     = node['xgemail']['sqs_message_processor_user']
 
 INSTANCE_DATA = node['xgemail']['postfix_instance_data'][NODE_TYPE]
@@ -23,15 +22,11 @@ raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 # create mh mail info storage directory in submit servers
 if NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit' || NODE_TYPE == 'encryption-submit' 
 
-    group MSG_HISTORY_GROUP do
-      members [SERVICE_USER, MESSAGEPROCESSOR_USER] 
-    end
-
     # Create dir where Jilter writes accepted events temporarily for producers to read.
     directory MSG_HISTORY_EVENT_DIR do
       mode '0777'
       owner SERVICE_USER
-      group MSG_HISTORY_GROUP
+      group SERVICE_USER
       recursive true
     end
        

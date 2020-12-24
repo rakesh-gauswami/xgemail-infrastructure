@@ -102,7 +102,6 @@ default['xgemail']['mh_event_storage_dir'] = '/storage/msg-history/events'
 default['xgemail']['mh_mail_info_storage_dir'] = '/storage/msg-history/mh-mail-info'
 default['xgemail']['mh_event_processor_pool_size'] = 20
 default['xgemail']['mh_event_processor_port'] = 8983
-default['xgemail']['mh_group_name'] = 'msg-history'
 
 ## SAVi SXL Live Protection settings
 default['xgemail']['savdid_sxl_pua_detection'] = 1
