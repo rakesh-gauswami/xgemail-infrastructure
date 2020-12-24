@@ -530,10 +530,10 @@ while True:
 
             logger.debug("Polled SQS message [{0}] from queue [{1}]".format(sqs_message, origin_sqs_queue))
 
-            headers = None
+            headers = {}
             try:
                 headers = attempt_to_retrieve_headers(sqs_message.message_path)
-            except Exception:
+            except Exception as e:
                 logger.warn("failed to retrieve headers at message path {0}, Exception {1}".format(sqs_message.message_path, e))
 
             try:
