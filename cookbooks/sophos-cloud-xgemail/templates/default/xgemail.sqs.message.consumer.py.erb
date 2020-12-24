@@ -51,7 +51,7 @@ SQS_MAX_NUMBER_OF_MESSAGES = <%= @sqs_max_number_of_messages %>
 SNS_SQS_URL = "<%= @sns_sqs_url %>"
 SQS_VISIBILITY_TIMEOUT = <%= @sqs_visibility_timeout %>
 SQS_WAIT_TIME_SECONDS = <%= @sqs_wait_time_seconds %>
-MAX_NUMBER_OF_RETRIES = 3
+MAIL_PIC_HEADERS_API_RESPONSE_TIMEOUT_SECONDS = 5
 MAIL_PIC_RESPONSE_TIMEOUT = <%= @mail_pic_api_response_timeout %>
 MAIL_PIC_API_AUTH = '<%= @mail_pic_api_auth %>'
 CONNECTIONS_BUCKET = '<%= @connections_bucket %>'
@@ -305,14 +305,14 @@ def attempt_to_retrieve_headers(message_path):
             PIC_HEADERS_URL,
             headers=HEADERS,
             params = query_parameters,
-            timeout = MAIL_PIC_RESPONSE_TIMEOUT
+            timeout = MAIL_PIC_HEADERS_API_RESPONSE_TIMEOUT_SECONDS
         )
     else:
         response = requests.get(
             PIC_HEADERS_URL,
             headers=HEADERS,
             params = query_parameters,
-            timeout = MAIL_PIC_RESPONSE_TIMEOUT
+            timeout = MAIL_PIC_HEADERS_API_RESPONSE_TIMEOUT_SECONDS
         )
 
     response.raise_for_status()
@@ -530,23 +530,11 @@ while True:
 
             logger.debug("Polled SQS message [{0}] from queue [{1}]".format(sqs_message, origin_sqs_queue))
 
-            #attempt to retrieve headers. If unsuccessful, continue. Message will stay in queue and this will be
-            #reattempted at a later time
-            no_of_times_received = int(msg["Attributes"]["ApproximateReceiveCount"])
             headers = None
             try:
                 headers = attempt_to_retrieve_headers(sqs_message.message_path)
             except Exception:
-                logger.exception("failed to retrieve headers at message path {0}, retry times: {1}. "
-                                 "Retrying at most {2} times"
-                    .format(
-                    sqs_message.message_path,
-                    no_of_times_received,
-                    MAX_NUMBER_OF_RETRIES
-                ))
-
-                if no_of_times_received <= MAX_NUMBER_OF_RETRIES:
-                    continue
+                logger.warn("failed to retrieve headers at message path {0}, Exception {1}".format(sqs_message.message_path, e))
 
             try:
                 formatted_message = awshandler.download_message_from_s3(BUCKET_NAME, sqs_message)
