@@ -41,7 +41,7 @@ def can_generate_mh_event(mail_info):
         return False
 
 
-def get_mail_info(sqs_message, aws_region, policy_bucket_name):
+def get_mail_info(sqs_message, aws_region, msg_history_v2_bucket):
     if sqs_message.message_context:
         if ('mh_context' in sqs_message.message_context and
             'mail_info' in sqs_message.message_context['mh_context']):
@@ -53,7 +53,7 @@ def get_mail_info(sqs_message, aws_region, policy_bucket_name):
             try:
                 mail_info_s3 = load_mail_info_file_from_S3(
                     aws_region,
-                    policy_bucket_name,
+                    msg_history_v2_bucket,
                     sqs_message.message_context['mh_context']['mail_info_s3_path']
                 )
                 json = { 'mail_info_s3_path' : sqs_message.message_context['mh_context']['mail_info_s3_path'] }
@@ -68,14 +68,14 @@ def get_mail_info(sqs_message, aws_region, policy_bucket_name):
         return None, False
 
 
-def load_mail_info_file_from_S3(aws_region, policy_bucket_name, file_name):
+def load_mail_info_file_from_S3(aws_region, msg_history_v2_bucket, file_name):
     try:
         awshandler = AwsHandler(aws_region)
         s3_data = awshandler.download_data_from_s3(
-            policy_bucket_name, file_name)
+            msg_history_v2_bucket, file_name)
         decompressed_content = mailinfoformatter.get_mh_mail_info(s3_data)
         logger.debug("Successfully retrieved mail info file from S3 bucket [{0}] for file [{1}]".format(
-            policy_bucket_name,
+            msg_history_v2_bucket,
             file_name
         ))
         return json.loads(decompressed_content)
