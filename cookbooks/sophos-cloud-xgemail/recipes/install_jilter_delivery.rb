@@ -59,6 +59,8 @@ POLICY_BUCKET_NAME   = node['xgemail']['xgemail_policy_bucket_name']
 ACTIVE_PROFILE = node['xgemail']['xgemail_active_profile']
 
 CUSTOMER_SUBMIT_BUCKET_NAME = node['xgemail']['xgemail_bucket_name']
+MSG_HISTORY_EVENT_PROCESSOR_POOL_SIZE = node['xgemail']['mh_event_processor_pool_size']
+MSG_HISTORY_EVENT_PROCESSOR_PORT = node['xgemail']['mh_event_processor_port']
 
 include_recipe 'sophos-cloud-xgemail::install_jilter_common'
 
@@ -101,6 +103,13 @@ user SERVICE_USER do
   shell '/sbin/nologin'
 end
 
+# Give ownership to the jilter service user
+file "#{JILTER_CONF_DIR}/launch_darkly_#{ACCOUNT}.properties" do
+  owner SERVICE_USER
+  group SERVICE_USER
+  action :touch
+end
+
 # Create the Jilter service
 template 'xgemail.jilter.service.sh' do
   path JILTER_SCRIPT_PATH
@@ -128,7 +137,9 @@ template 'xgemail.jilter.properties' do
       :mh_mail_info_storage_dir => MH_MAIL_INFO_STORAGE_DIR,
       :msg_history_v2_stream_name => MSG_HISTORY_V2_STREAM_NAME,
       :msg_history_v2_bucket_name => MSG_HISTORY_V2_BUCKET_NAME,
-      :msg_history_v2_dynamodb_table_name =>  MSG_HISTORY_V2_DYNAMODB_TABLE_NAME
+      :msg_history_v2_dynamodb_table_name =>  MSG_HISTORY_V2_DYNAMODB_TABLE_NAME,
+      :msg_history_event_processor_pool_size => MSG_HISTORY_EVENT_PROCESSOR_POOL_SIZE,
+      :msg_history_event_processor_port => MSG_HISTORY_EVENT_PROCESSOR_PORT
   )
 end
 
