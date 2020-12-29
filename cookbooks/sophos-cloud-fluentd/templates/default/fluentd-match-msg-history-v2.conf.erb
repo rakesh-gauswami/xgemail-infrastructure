@@ -1,0 +1,26 @@
+<match raw.postfix.maillog>
+  @type copy
+  <store>
+    @type rewrite_tag_filter
+    <rule>
+      key message
+      pattern ^(?=.*?status=sent)((?!bounce-handler|relay=.*xdelivery).)*$
+      tag mhv2.delivery.succeeded
+    </rule>
+    <rule>
+      key message
+      pattern ^(?=.*?status=(deferred|bounced))((?!bounce-handler).)*$
+      tag mhv2.delivery.failed
+    </rule>
+    <rule>
+      key message
+      pattern ^(?=.*?from=<(.+)>)(?=.*?status=(expired))((?!compute\.internal).)*$
+      tag mhv2.delivery.returned
+    </rule>
+    <rule>
+      key message
+      pattern ^(?=.*?status=sent)(?=.*?relay=.*xdelivery)((?!bounce-handler).)*$
+      tag mhv2.delivery.redirected
+    </rule>
+   </store>
+</match>

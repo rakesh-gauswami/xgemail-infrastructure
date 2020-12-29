@@ -378,6 +378,29 @@ template 'fluentd-match-msg-delivery' do
   }
 end
 
+#  - Start Order: 68 - MHv2
+template 'fluentd-match-msg-history-v2' do
+  path "#{CONF_DIR}/60-match-msg-history-v2.conf"
+  source 'fluentd-match-msg-history-v2.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  only_if {
+    NODE_TYPE == 'customer-delivery' ||
+    NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'internet-delivery' ||
+    NODE_TYPE == 'internet-xdelivery' ||
+    NODE_TYPE == 'risky-delivery' ||
+    NODE_TYPE == 'risky-xdelivery' ||
+    NODE_TYPE == 'warmup-delivery' ||
+    NODE_TYPE == 'warmup-xdelivery' ||
+    NODE_TYPE == 'beta-delivery' ||
+    NODE_TYPE == 'beta-xdelivery' ||
+    NODE_TYPE == 'delta-delivery' ||
+    NODE_TYPE == 'delta-xdelivery'
+  }
+end
+
 #  Start Order: 70
 #  Remove this when we shift completely to SQS type match
 template 'fluentd-filter-msg-delivery' do
@@ -485,6 +508,35 @@ template 'fluentd-filter-transform-sqs-msg' do
   }
 end
 
+
+# Start Order: 78
+template 'fluentd-filter-transform-msg-history-v2' do
+  path "#{CONF_DIR}/78-filter-transform-msg-history-v2.conf"
+  source 'fluentd-filter-transform-msg-history-v2.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :server_type => SERVER_TYPE,
+    :server_ip => SERVER_IP,
+    :non_delivery_dsn => NON_DELIVERY_DSN
+  )
+  only_if {
+    NODE_TYPE == 'customer-delivery' ||
+    NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'internet-delivery' ||
+    NODE_TYPE == 'internet-xdelivery' ||
+    NODE_TYPE == 'risky-delivery' ||
+    NODE_TYPE == 'risky-xdelivery' ||
+    NODE_TYPE == 'warmup-delivery' ||
+    NODE_TYPE == 'warmup-xdelivery'||
+    NODE_TYPE == 'beta-delivery' ||
+    NODE_TYPE == 'beta-xdelivery' ||
+    NODE_TYPE == 'delta-delivery' ||
+    NODE_TYPE == 'delta-xdelivery'
+  }
+end
+
 # Message delivery status on all delivery and x delivery servers
 # Remove this when we shift completely to SQS type match
 template 'fluentd-match-sns-msg-delivery' do
@@ -541,6 +593,31 @@ template 'fluentd-match-sqs-msg-delivery' do
     NODE_TYPE == 'delta-xdelivery'
   }
 end
+
+
+# Start Order: 98 - MHv2
+template 'fluentd-match-http-output-msg-history-v2' do
+  path "#{CONF_DIR}/98-match-http-output-msg-history-v2.conf"
+  source 'fluentd-match-http-output-msg-history-v2.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  only_if {
+    NODE_TYPE == 'customer-delivery' ||
+    NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'internet-delivery' ||
+    NODE_TYPE == 'internet-xdelivery' ||
+    NODE_TYPE == 'risky-delivery' ||
+    NODE_TYPE == 'risky-xdelivery' ||
+    NODE_TYPE == 'warmup-delivery' ||
+    NODE_TYPE == 'warmup-xdelivery'||
+    NODE_TYPE == 'beta-delivery' ||
+    NODE_TYPE == 'beta-xdelivery' ||
+    NODE_TYPE == 'delta-delivery' ||
+    NODE_TYPE == 'delta-xdelivery'
+  }
+end
+
 
 # All instances - Start Order: 99
 template 'fluentd-match-firehose' do
