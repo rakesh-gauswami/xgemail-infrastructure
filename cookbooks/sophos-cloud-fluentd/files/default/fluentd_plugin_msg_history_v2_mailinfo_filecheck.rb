@@ -2,8 +2,8 @@ require 'fluent/plugin/filter'
 
 module Fluent::Plugin
   class MailInfoFileCheckFilter < Filter
-    # Register this filter as "mailinfo_filecheck"
-    Fluent::Plugin.register_filter('mailinfo_filecheck', self)
+    # Register this filter as "mhv2filecheck"
+    Fluent::Plugin.register_filter('mhv2filecheck', self)
 
     config_param :mh_mail_info_storage_dir, :string, :default => '/storage/msg-history/mh-mail-info'
 
