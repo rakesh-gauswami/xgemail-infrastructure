@@ -132,6 +132,13 @@ execute 'install td-agent fluent-plugin-grok-parser' do
   EOH
 end
 
+execute 'install td-agent fluent-plugin-out-http' do
+  user 'root'
+  command <<-EOH
+      td-agent-gem install fluent-plugin-out-http -v 1.3.3
+  EOH
+end
+
 if ACCOUNT != 'sandbox'
   execute 'install td-agent fluent-plugin-kinesis' do
     user 'root'
