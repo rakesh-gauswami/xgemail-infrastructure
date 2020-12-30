@@ -700,7 +700,7 @@ end
 
 # fluentd plugin for mhv2 mail info file check
 cookbook_file 'fluentd_plugin_msg_history_v2_mailinfo_filecheck' do
-  path "#{PLUGIN_DIR}/msg_history_v2_mailinfo_filecheck.rb"
+  path "#{PLUGIN_DIR}/filter_msg_history_v2_mailinfo_filecheck.rb"
   source 'fluentd_plugin_msg_history_v2_mailinfo_filecheck.rb'
   mode '0644'
   owner 'root'

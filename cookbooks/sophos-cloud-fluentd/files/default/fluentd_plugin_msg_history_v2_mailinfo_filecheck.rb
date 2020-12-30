@@ -1,4 +1,4 @@
-equire 'fluent/plugin/filter'
+require 'fluent/plugin/filter'
 
 module Fluent::Plugin
   class MailInfoFileCheckFilter < Filter
