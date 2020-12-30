@@ -4,12 +4,12 @@
     @type rewrite_tag_filter
     <rule>
       key message
-      pattern ^(?=.*?status=sent)((?!bounce-handler|relay=.*xdelivery).)*$
+      pattern ^(?=.*?status=sent)((?!bounce-handler|relay=.*xdelivery|postfix\/smtp).)*$
       tag mhv2.delivery.succeeded
     </rule>
     <rule>
       key message
-      pattern ^(?=.*?status=(deferred|bounced))((?!bounce-handler).)*$
+      pattern ^(?=.*?status=(deferred|bounced))((?!bounce-handler|postfix\/smtp).)*$
       tag mhv2.delivery.failed
     </rule>
     <rule>
@@ -19,7 +19,7 @@
     </rule>
     <rule>
       key message
-      pattern ^(?=.*?status=sent)(?=.*?relay=.*xdelivery)((?!bounce-handler).)*$
+      pattern ^(?=.*?status=sent)(?=.*?relay=.*xdelivery)((?!bounce-handler|postfix\/smtp).)*$
       tag mhv2.delivery.redirected
     </rule>
    </store>

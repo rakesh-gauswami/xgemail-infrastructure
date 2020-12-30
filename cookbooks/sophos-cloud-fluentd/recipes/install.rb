@@ -15,6 +15,7 @@ ACCOUNT = node['sophos_cloud']['account']
 CONF_DIR              = node['fluentd']['conf_dir']
 MAIN_DIR              = node['fluentd']['main_dir']
 PATTERNS_DIR          = node['fluentd']['patterns_dir']
+PLUGIN_DIR            = node['fluentd']['plugin_dir']
 TDAGENT_PACKAGE_VERSION = "#{node['fluentd']['tdagent_version']}"
 TDAGENT_PACKAGE_NAME = "td-agent-#{TDAGENT_PACKAGE_VERSION}"
 
@@ -77,6 +78,13 @@ directory CONF_DIR do
 end
 
 directory PATTERNS_DIR do
+  owner 'root'
+  group 'root'
+  mode '0755'
+  action :create
+end
+
+directory PLUGIN_DIR do
   owner 'root'
   group 'root'
   mode '0755'

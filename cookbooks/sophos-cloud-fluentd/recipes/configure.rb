@@ -15,6 +15,7 @@ INSTANCE_ID                   = node['ec2']['instance_id']
 MAIN_DIR                      = node['fluentd']['main_dir']
 NODE_TYPE                     = node['xgemail']['cluster_type']
 PATTERNS_DIR                  = node['fluentd']['patterns_dir']
+PLUGIN_DIR                    = node['fluentd']['plugin_dir']
 SQS_DELIVERY_DELAY            = node['fluentd']['sqs_delivery_delay']
 REGION                        = node['sophos_cloud']['region']
 MSG_STATS_REJECT_SNS_TOPIC    = node['xgemail']['msg_statistics_rejection_sns_topic']
@@ -23,6 +24,7 @@ DELIVERY_STATUS_SNS_TOPIC     = node['xgemail']['msg_history_status_sns_topic']
 SERVER_IP                     = node['ipaddress']
 MAILLOG_FILTER_PATTERNS       = "(\\.#{REGION}\\.compute\\.internal|:\\sdisconnect\\sfrom\\s|\\swarning:\\shostname\\s|:\\sremoved\\s|table\\shash:|sm-msp-queue|:\\sstatistics:\\s)"
 JILTER_FILTER_PATTERNS        = "(com\\.launchdarkly\\.client\\.LDClient|com\\.launchdarkly\\.client\\.LDUser)"
+MH_MAIL_INFO_STORAGE_DIR      = node['xgemail']['mh_mail_info_storage_dir']
 
 # Configs
 if NODE_TYPE == 'customer-delivery'
@@ -519,7 +521,8 @@ template 'fluentd-filter-transform-msg-history-v2' do
   variables(
     :server_type => SERVER_TYPE,
     :server_ip => SERVER_IP,
-    :non_delivery_dsn => NON_DELIVERY_DSN
+    :non_delivery_dsn => NON_DELIVERY_DSN,
+    :mh_mail_info_storage_dir => MH_MAIL_INFO_STORAGE_DIR
   )
   only_if {
     NODE_TYPE == 'customer-delivery' ||
@@ -689,6 +692,16 @@ end
 cookbook_file 'sns_msg_to_xdelivery_template' do
   path "#{MAIN_DIR}/sns_msg_to_xdelivery_template.erb"
   source 'fluentd_sns_msg_to_xdelivery_template.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  action :create
+end
+
+# fluentd plugin for mhv2 mail info file check
+cookbook_file 'fluentd_plugin_msg_history_v2_mailinfo_filecheck' do
+  path "#{PLUGIN_DIR}/msg_history_v2_mailinfo_filecheck.rb"
+  source 'fluentd_plugin_msg_history_v2_mailinfo_filecheck'
   mode '0644'
   owner 'root'
   group 'root'

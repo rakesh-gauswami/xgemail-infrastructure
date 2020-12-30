@@ -42,6 +42,11 @@
   </parse>
 </filter>
 
+<filter mhv2.**>
+  @type mailinfo_filecheck
+  mh_mail_info_storage_dir <%= @mh_mail_info_storage_dir %>
+</filter>
+
 <filter mhv2.delivery.**>
   @type record_transformer
   enable_ruby
@@ -67,7 +72,7 @@
   enable_ruby
   <record>
     dsn_code ${}
-    next_queue_id record["queue_id_xdelivery"]
+    next_queue_id ${record["queue_id_xdelivery"]}
   </record>
 </filter>
 
