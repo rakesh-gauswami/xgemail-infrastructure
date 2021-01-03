@@ -380,7 +380,6 @@ template 'fluentd-match-msg-delivery' do
   }
 end
 
-
 #  Start Order: 70
 #  Remove this when we shift completely to SQS type match
 template 'fluentd-filter-msg-delivery' do
@@ -488,7 +487,6 @@ template 'fluentd-filter-transform-sqs-msg' do
   }
 end
 
-
 # Start Order: 78
 template 'fluentd-filter-transform-msg-history-v2' do
   path "#{CONF_DIR}/78-filter-transform-msg-history-v2.conf"
@@ -575,7 +573,6 @@ template 'fluentd-match-sqs-msg-delivery' do
   }
 end
 
-
 # Start Order: 98 - MHv2
 template 'fluentd-match-http-output-msg-history-v2' do
   path "#{CONF_DIR}/98-match-http-output-msg-history-v2.conf"
@@ -598,7 +595,6 @@ template 'fluentd-match-http-output-msg-history-v2' do
     NODE_TYPE == 'delta-xdelivery'
   }
 end
-
 
 # All instances - Start Order: 99
 template 'fluentd-match-firehose' do
