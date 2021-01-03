@@ -380,28 +380,6 @@ template 'fluentd-match-msg-delivery' do
   }
 end
 
-#  - Start Order: 68 - MHv2
-template 'fluentd-match-msg-history-v2' do
-  path "#{CONF_DIR}/60-match-msg-history-v2.conf"
-  source 'fluentd-match-msg-history-v2.conf.erb'
-  mode '0644'
-  owner 'root'
-  group 'root'
-  only_if {
-    NODE_TYPE == 'customer-delivery' ||
-    NODE_TYPE == 'xdelivery' ||
-    NODE_TYPE == 'internet-delivery' ||
-    NODE_TYPE == 'internet-xdelivery' ||
-    NODE_TYPE == 'risky-delivery' ||
-    NODE_TYPE == 'risky-xdelivery' ||
-    NODE_TYPE == 'warmup-delivery' ||
-    NODE_TYPE == 'warmup-xdelivery' ||
-    NODE_TYPE == 'beta-delivery' ||
-    NODE_TYPE == 'beta-xdelivery' ||
-    NODE_TYPE == 'delta-delivery' ||
-    NODE_TYPE == 'delta-xdelivery'
-  }
-end
 
 #  Start Order: 70
 #  Remove this when we shift completely to SQS type match

@@ -1,14 +1,14 @@
-<match mhv2.**>
+<match mhv2.delivery.**>
   @type http
-  endpoint http://localhost:8983/delivery_event
-  open_timeout 2
-  json_array true
-  retryable_response_codes [503]
-  <format>
-    @type json
-  </format>
+  endpoint_url http://localhost:8983/delivery_event
+  http_method post
+  serializer json
+  raise_on_error false
+  recoverable_status_codes 503
+  buffered true
+  bulk_request true
   <buffer>
-    @type file_single
+    @type file
     path /var/log/td-agent/out_http_msg_history
     flush_interval 2s                 # flush output interval; this will batch the requests
 
@@ -23,5 +23,5 @@
 
     retry_max_times 5                 # Maximum retry count before giving up.
     retry_forever false               # Set 'true' for infinite retry loops.
-  </buffer>
+ </buffer>
 </match>
