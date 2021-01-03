@@ -58,7 +58,6 @@ SERVICE_USER = node['xgemail']['jilter_user']
 POLICY_BUCKET_NAME   = node['xgemail']['xgemail_policy_bucket_name']
 ACTIVE_PROFILE = node['xgemail']['xgemail_active_profile']
 
-CUSTOMER_SUBMIT_BUCKET_NAME = node['xgemail']['xgemail_bucket_name']
 MSG_HISTORY_EVENT_PROCESSOR_POOL_SIZE = node['xgemail']['mh_event_processor_pool_size']
 MSG_HISTORY_EVENT_PROCESSOR_PORT = node['xgemail']['mh_event_processor_port']
 
@@ -139,7 +138,8 @@ template 'xgemail.jilter.properties' do
       :msg_history_v2_bucket_name => MSG_HISTORY_V2_BUCKET_NAME,
       :msg_history_v2_dynamodb_table_name =>  MSG_HISTORY_V2_DYNAMODB_TABLE_NAME,
       :msg_history_event_processor_pool_size => MSG_HISTORY_EVENT_PROCESSOR_POOL_SIZE,
-      :msg_history_event_processor_port => MSG_HISTORY_EVENT_PROCESSOR_PORT
+      :msg_history_event_processor_port => MSG_HISTORY_EVENT_PROCESSOR_PORT,
+      :policy_bucket => POLICY_BUCKET_NAME
   )
 end
 
