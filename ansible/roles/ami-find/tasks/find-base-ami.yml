@@ -2,9 +2,9 @@
 # http://docs.ansible.com/ansible/latest/ec2_ami_find_module.html
 - name: "Find base AMI in current branch, fallback to alternate branch."
   block:
-    - name: "Find Base Amazon Linux 2 AMI"
+    - name: "Find Base Amazon Linux AMI"
       ec2_ami_find:
-        name: "amzn2-ami-hvm-2.0.20200917.0-x86_64-gp2"
+        name: "amzn-ami-hvm-2018.03.0.20201028.0-x86_64-gp2"
         region: "{{account.region}}"
         owner: amazon
         is_public: yes
