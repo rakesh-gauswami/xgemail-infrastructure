@@ -8,7 +8,7 @@
 # Mar  9 03:59:43 ip-172-20-0-4 postfix-is/smtpd[1237]: NOQUEUE: reject: SOPHOS_UUID_ba19915c-4973-4504-a1c9-aea5d1931d99: RCPT from unknown[192.210.213.76]: 554 5.7.1 Service unavailable; Sender address [badguy@bad-domain.com] blocked using uri.ire1.sophosxl.com; from=<badguy@bad-domain.com> to=<recipient@sophos-email-customer.com> proto=ESMTP helo=<bad-domain.com>
 #
 
-<match raw.postfix.maillog>
+<match raw.maillog.log>
   @type copy
   <store>
     @type rewrite_tag_filter
