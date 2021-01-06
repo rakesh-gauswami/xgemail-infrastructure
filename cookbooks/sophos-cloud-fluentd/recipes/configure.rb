@@ -29,6 +29,7 @@ MESSAGEBOUNCER_FILTER_PATTERNS  = "(?!.*)"
 MULTIPOLICY_FILTER_PATTERNS     = "(?!.*)"
 SQSMSGCONSUMER_FILTER_PATTERNS  = "(?!.*)"
 SQSMSGPRODUCER_FILTER_PATTERNS  = "(?!.*)"
+MH_MAIL_INFO_STORAGE_DIR        = node['xgemail']['mh_mail_info_storage_dir']
 
 # Configs
 if NODE_TYPE == 'customer-delivery'
