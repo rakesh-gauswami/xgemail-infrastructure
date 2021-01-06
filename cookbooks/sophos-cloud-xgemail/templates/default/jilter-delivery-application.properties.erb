@@ -7,6 +7,14 @@ ACCOUNT=<%= @account %>
 spring.data.redis.repositories.enabled=false
 spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
 
+POLICY_STORAGE_ROOT=s3://<%= @policy_bucket %>
+MAILBOX_POLICY_FILE_PATH=config/policies/endpoints/
+MAILBOX_LOCAL_PART_FILE_PATH=config/policies/domains/
+MAILBOX_DLP_POLICY_FILE_PATH=config/policies/dlp/
+
+CUSTOMER_SUBMIT_STORAGE_ROOT=s3://no-access
+INTERNET_SUBMIT_STORAGE_ROOT=s3://no-access
+
 delivery.server.type=<%= @server_type %>
 delivery.server.ip=<%= @server_ip %>
 message.history.storage.dir=<%= @mh_mail_info_storage_dir %>
@@ -15,3 +23,6 @@ MSG_HISTORY_FAILURE_BUCKET_ROOT=s3://<%= @msg_history_v2_bucket_name %>
 MSG_HISTORY_BUCKET_ROOT=s3://<%= @msg_history_v2_bucket_name %>
 MSG_HISTORY_DYNAMODB_TABLE_NAME=<%= @msg_history_v2_dynamodb_table_name %>
 MSG_HISTORY_KINESIS_STREAM_NAME=<%= @msg_history_v2_stream_name %>
+
+MSG_HISTORY_EVENT_PROCESSOR_POOL_SIZE=<%= @msg_history_event_processor_pool_size %>
+MSG_HISTORY_EVENT_PROCESSOR_PORT=<%= @msg_history_event_processor_port %>
