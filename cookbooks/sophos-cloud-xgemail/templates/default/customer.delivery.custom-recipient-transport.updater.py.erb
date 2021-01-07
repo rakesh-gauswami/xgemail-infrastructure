@@ -1,0 +1,98 @@
+#!/usr/bin/env
+
+import sys
+sys.path.append("/opt/sophos/xgemail/utils")
+import argparse
+import boto3
+import json
+import sys
+from datetime import datetime
+from datetime import timedelta
+from awshandler import AwsHandler
+from botocore.exceptions import ClientError
+
+AWS_REGION = "eu-west-1"
+#ACCOUNT =  "<%= @account %>"
+CUSTOM_ROUTE_FILE_NAME = "config/inbound-relay-control/custom-routes/customer_route.json"
+S3_ENCRYPTION_ALGORITHM = 'AES256'
+awshandler = AwsHandler(AWS_REGION)
+
+def argument_parser():
+    parser = argparse.ArgumentParser(description='Customer delivery recipient trasnport updater')
+    parser.add_argument('command', metavar='command', choices=["LIST", "ADD_UPDATE", "DELETE"],help='Type of action/operation')
+    parser.add_argument('--domainOrEmail', metavar='domainOrEmail', help='Domain name or email address ')
+    parser.add_argument('--destination', metavar='destination',help="Destination Host/MX where mail delivered")
+    parser.add_argument("--destination_type", metavar='destination_type', choices=["MX", "Host"],help='Type of Destination MX/Host')
+    parser.add_argument('--port', metavar='port', type = int ,help="port number")
+    parser.add_argument('--customer', metavar='customer',help="customer id for whom mail directed")
+    args = parser.parse_args()
+    portRange = range(1024, 65353)
+    if args.command == "ADD_UPDATE":
+        if args.port not in portRange:
+            parser.error("Warning: Port should be in range(1024-65353) ")
+    return args
+
+if __name__ == "__main__":
+    bucket_name = 'private-cloud-dev-eu-west-1-cloudemail-xgemail-policy'
+    expires = datetime.now() + timedelta(days=2)
+    s3 = boto3.resource('s3')
+    try:
+        s3 = boto3.resource('s3')
+        current_config = s3.Object(bucket_name, CUSTOM_ROUTE_FILE_NAME)
+        current_config_object = json.loads(current_config.get()['Body'].read())
+        record = current_config_object
+    except ClientError as ex:
+        if ex.response['Error']['Code'] == 'NoSuchKey':
+            print("Warning: Existing config file not found")
+        record = {}
+    args = argument_parser()
+    command = args.command
+    domainOrEmail = str(args.domainOrEmail).strip()
+    if command == "ADD_UPDATE":
+        if domainOrEmail is not None and args.destination is not None and args.destination_type is not None and args.port is not None and args.customer is not None:
+            if domainOrEmail is not None and domainOrEmail in record.keys():
+                newObject = {}
+                newObject["destanation"] = args.destination
+                newObject["destination_type"] = args.destination_type
+                newObject["port"] = args.port
+                newObject["customer"] = args.customer
+                print("Old Record:")
+                print(json.dumps(record[domainOrEmail], indent = 4))
+                print("New Record:")
+                print(json.dumps(newObject, indent = 4))
+                query = input("Do you want to Update Record. Enter 'yes' for futher process ? ")
+                if query.lower() == 'yes':
+                    record[domainOrEmail]["delivery_destination"] = newObject
+                    print("Record Updated Successfully")
+            else:
+                record[domainOrEmail] = {}
+                record[domainOrEmail]["delivery_destination"] = {}
+                record[domainOrEmail]["delivery_destination"]["destanation"] = args.destination
+                record[domainOrEmail]["delivery_destination"]["destination_type"] = args.destination_type
+                record[domainOrEmail]["delivery_destination"]["port"] = args.port
+                record[domainOrEmail]["delivery_destination"]["customer"] = args.customer
+                print("Record Added Successfully")
+                print(json.dumps(record[domainOrEmail], indent = 4))
+        else:
+            print("All parameter are require for ADD/UPDATE record")
+    if command == "LIST":
+        print("List Of Records:")
+        print(json.dumps(record, indent = 4))
+    if command == "DELETE":
+        if domainOrEmail is not None and domainOrEmail in record.keys():
+            print(json.dumps(record[domainOrEmail], indent = 4))
+            query = input("Do you realy want to delete Record. Enter 'yes' for futher process ? ")
+            if query.lower() == 'yes':
+                del record[domainOrEmail]
+                print("domainOrEmail {} is deleted".format(domainOrEmail))
+        else:
+            print("domainOrEmail {} is Not Exist".format(domainOrEmail))
+    print(json.dumps(record))
+    recordstr = json.dumps(record)
+    awshandler.upload_data_in_s3(
+        bucket_name,
+        CUSTOM_ROUTE_FILE_NAME,
+        recordstr,
+        expires,
+        S3_ENCRYPTION_ALGORITHM
+        )
