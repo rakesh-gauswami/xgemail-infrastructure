@@ -1,7 +1,7 @@
 #!/usr/bin/env
 
 import sys
-sys.path.append("/opt/sophos/xgemail/utils")
+sys.path.append("<%= @xgemail_utils_path %>")
 import argparse
 import boto3
 import json
@@ -11,9 +11,11 @@ from datetime import timedelta
 from awshandler import AwsHandler
 from botocore.exceptions import ClientError
 
-AWS_REGION = "eu-west-1"
-#ACCOUNT =  "<%= @account %>"
-CUSTOM_ROUTE_FILE_NAME = "config/inbound-relay-control/custom-routes/customer_route.json"
+AWS_REGION = "<%= @aws_region %>"
+ACCOUNT =  "<%= @account %>"
+CUSTOM_ROUTE_FILE_NAME = "<%= @customer_delivery_transport_filename %>"
+
+CUSTOM_ROUTE_TTL_IN_DAYS = 365
 S3_ENCRYPTION_ALGORITHM = 'AES256'
 awshandler = AwsHandler(AWS_REGION)
 
@@ -34,7 +36,7 @@ def argument_parser():
 
 if __name__ == "__main__":
     bucket_name = 'private-cloud-dev-eu-west-1-cloudemail-xgemail-policy'
-    expires = datetime.now() + timedelta(days=2)
+    expires = datetime.now() + timedelta(days=CUSTOM_ROUTE_TTL_IN_DAYS)
     s3 = boto3.resource('s3')
     try:
         s3 = boto3.resource('s3')
@@ -87,7 +89,6 @@ if __name__ == "__main__":
                 print("domainOrEmail {} is deleted".format(domainOrEmail))
         else:
             print("domainOrEmail {} is Not Exist".format(domainOrEmail))
-    print(json.dumps(record))
     recordstr = json.dumps(record)
     awshandler.upload_data_in_s3(
         bucket_name,
