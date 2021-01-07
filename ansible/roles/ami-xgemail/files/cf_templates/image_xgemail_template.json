@@ -5,7 +5,7 @@
 
   "Metadata": {
     "Copyright": [
-      "Copyright 2016, Sophos Limited. All rights reserved.",
+      "Copyright 2020, Sophos Limited. All rights reserved.",
       "",
       "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
       "Sophos Limited and Sophos Group.  All other product and company",
@@ -279,8 +279,14 @@
             "commands": {
               "01_build_base": {
                 "command": {
+                  "Fn::Join": [
+                    "", [
                       "knife node run_list add -z `knife node list -z` \"",
-                      "recipe[sophos-base-ami::base_ami]"
+                      "recipe[sophos-base-ami::base_ami]",
+
+                      "\""
+                    ]
+                  ]
                 },
                 "cwd": "/var/chef/chef-repo",
                 "env": { "HOME": "/var/chef" }
