@@ -15,6 +15,7 @@ ACCOUNT = node['sophos_cloud']['account']
 CONF_DIR              = node['fluentd']['conf_dir']
 MAIN_DIR              = node['fluentd']['main_dir']
 PATTERNS_DIR          = node['fluentd']['patterns_dir']
+PLUGIN_DIR            = node['fluentd']['plugin_dir']
 TDAGENT_PACKAGE_VERSION = "#{node['fluentd']['tdagent_version']}"
 TDAGENT_PACKAGE_NAME = "td-agent-#{TDAGENT_PACKAGE_VERSION}"
 
@@ -83,6 +84,13 @@ directory PATTERNS_DIR do
   action :create
 end
 
+directory PLUGIN_DIR do
+  owner 'root'
+  group 'root'
+  mode '0755'
+  action :create
+end
+
 cookbook_file '/etc/sysconfig/td-agent' do
   path '/etc/sysconfig/td-agent'
   source 'td-agent'
@@ -121,6 +129,13 @@ execute 'install td-agent fluent-plugin-grok-parser' do
   user 'root'
   command <<-EOH
       td-agent-gem install fluent-plugin-grok-parser -v 2.6.0
+  EOH
+end
+
+execute 'install td-agent fluent-plugin-out-http' do
+  user 'root'
+  command <<-EOH
+      td-agent-gem install fluent-plugin-out-http -v 1.3.3
   EOH
 end
 

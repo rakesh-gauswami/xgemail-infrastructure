@@ -45,5 +45,28 @@
       pattern ^(?=.*?status=sent)(?=.*?relay=.*xdelivery)((?!bounce-handler|postfix\/smtp).)*$
       tag sqs.msg.delivery.redirected
     </rule>
-   </store>
+  </store>
+  <store>
+    @type rewrite_tag_filter
+    <rule>
+      key message
+      pattern ^(?=.*?status=sent)((?!bounce-handler|relay=.*xdelivery|postfix\/smtp).)*$
+      tag mhv2.delivery.succeeded
+    </rule>
+    <rule>
+      key message
+      pattern ^(?=.*?status=(deferred|bounced))((?!bounce-handler|postfix\/smtp).)*$
+      tag mhv2.delivery.failed
+    </rule>
+    <rule>
+      key message
+      pattern ^(?=.*?from=<(.+)>)(?=.*?status=(expired))((?!compute\.internal).)*$
+      tag mhv2.delivery.returned
+    </rule>
+    <rule>
+      key message
+      pattern ^(?=.*?status=sent)(?=.*?relay=.*xdelivery)((?!bounce-handler|postfix\/smtp).)*$
+      tag mhv2.delivery.redirected
+    </rule>
+  </store>
 </match>

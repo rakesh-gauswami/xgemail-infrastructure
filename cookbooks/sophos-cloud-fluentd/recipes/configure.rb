@@ -15,6 +15,7 @@ INSTANCE_ID                     = node['ec2']['instance_id']
 MAIN_DIR                        = node['fluentd']['main_dir']
 NODE_TYPE                       = node['xgemail']['cluster_type']
 PATTERNS_DIR                    = node['fluentd']['patterns_dir']
+PLUGIN_DIR                      = node['fluentd']['plugin_dir']
 SQS_DELIVERY_DELAY              = node['fluentd']['sqs_delivery_delay']
 REGION                          = node['sophos_cloud']['region']
 MSG_STATS_REJECT_SNS_TOPIC      = node['xgemail']['msg_statistics_rejection_sns_topic']
@@ -28,6 +29,7 @@ MESSAGEBOUNCER_FILTER_PATTERNS  = "(?!.*)"
 MULTIPOLICY_FILTER_PATTERNS     = "(?!.*)"
 SQSMSGCONSUMER_FILTER_PATTERNS  = "(?!.*)"
 SQSMSGPRODUCER_FILTER_PATTERNS  = "(?!.*)"
+MH_MAIL_INFO_STORAGE_DIR        = node['xgemail']['mh_mail_info_storage_dir']
 
 # Configs
 if NODE_TYPE == 'customer-delivery'
@@ -717,6 +719,35 @@ template 'fluentd-filter-transform-sqs-msg' do
   }
 end
 
+# Start Order: 78
+template 'fluentd-filter-transform-msg-history-v2' do
+  path "#{CONF_DIR}/78-filter-transform-msg-history-v2.conf"
+  source 'fluentd-filter-transform-msg-history-v2.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :server_type => SERVER_TYPE,
+    :server_ip => SERVER_IP,
+    :non_delivery_dsn => NON_DELIVERY_DSN,
+    :mh_mail_info_storage_dir => MH_MAIL_INFO_STORAGE_DIR
+  )
+  only_if {
+    NODE_TYPE == 'customer-delivery' ||
+    NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'internet-delivery' ||
+    NODE_TYPE == 'internet-xdelivery' ||
+    NODE_TYPE == 'risky-delivery' ||
+    NODE_TYPE == 'risky-xdelivery' ||
+    NODE_TYPE == 'warmup-delivery' ||
+    NODE_TYPE == 'warmup-xdelivery'||
+    NODE_TYPE == 'beta-delivery' ||
+    NODE_TYPE == 'beta-xdelivery' ||
+    NODE_TYPE == 'delta-delivery' ||
+    NODE_TYPE == 'delta-xdelivery'
+  }
+end
+
 # Message delivery status on all delivery and x delivery servers
 # Remove this when we shift completely to SQS type match
 template 'fluentd-match-sns-msg-delivery' do
@@ -767,6 +798,29 @@ template 'fluentd-match-sqs-msg-delivery' do
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-delivery' ||
     NODE_TYPE == 'warmup-xdelivery' ||
+    NODE_TYPE == 'beta-delivery' ||
+    NODE_TYPE == 'beta-xdelivery' ||
+    NODE_TYPE == 'delta-delivery' ||
+    NODE_TYPE == 'delta-xdelivery'
+  }
+end
+
+# Start Order: 98 - MHv2
+template 'fluentd-match-http-output-msg-history-v2' do
+  path "#{CONF_DIR}/98-match-http-output-msg-history-v2.conf"
+  source 'fluentd-match-http-output-msg-history-v2.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  only_if {
+    NODE_TYPE == 'customer-delivery' ||
+    NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'internet-delivery' ||
+    NODE_TYPE == 'internet-xdelivery' ||
+    NODE_TYPE == 'risky-delivery' ||
+    NODE_TYPE == 'risky-xdelivery' ||
+    NODE_TYPE == 'warmup-delivery' ||
+    NODE_TYPE == 'warmup-xdelivery'||
     NODE_TYPE == 'beta-delivery' ||
     NODE_TYPE == 'beta-xdelivery' ||
     NODE_TYPE == 'delta-delivery' ||
@@ -889,6 +943,16 @@ end
 cookbook_file 'sns_msg_to_xdelivery_template' do
   path "#{MAIN_DIR}/sns_msg_to_xdelivery_template.erb"
   source 'fluentd_sns_msg_to_xdelivery_template.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  action :create
+end
+
+# fluentd plugin for mhv2 mail info file check
+cookbook_file 'fluentd_plugin_msg_history_v2_mailinfo_filecheck' do
+  path "#{PLUGIN_DIR}/filter_mhv2filecheck.rb"
+  source 'fluentd_plugin_msg_history_v2_mailinfo_filecheck.rb'
   mode '0644'
   owner 'root'
   group 'root'
