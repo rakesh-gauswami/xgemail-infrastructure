@@ -244,8 +244,33 @@
                   "Fn::Join": [
                     "", [
                       "#!/bin/bash\n",
-                      "# Install the base AMI packages\n",
+                      "echo 'Installing base AMI packages'\n",
 
+                      "echo 'Create a directory for the installer'\n",
+                      "/bin/mkdir -p /install.d\n",
+                      "cd /install.d\n",
+
+                      "echo 'Create directory for sophos utilities'\n",
+                      "/bin/mkdir -p /opt/sophos/bin\n",
+
+                      "echo 'Update the common profile'\n",
+                      "cat <<'EOF' >\"/etc/profile.d/sophos.sh\"\n",
+                      "PATH=${PATH}:/opt/sophos/bin\n",
+                      "# Custom login prompt.\n",
+                      "# 1. Show current user.\n",
+                      "# 2. Show EC2 private IP, so we can easily select and copy it.\n",
+                      "# 3. Show service, including particulars like shard and service number.\n",
+                      "# 4. Show current directory basename.\n",
+                      "if [ \"$PS1\" ]; then\n",
+                      "    IPADDR=`/usr/bin/wget -q -O- http://169.254.169.254/latest/meta-data/local-ipv4`\n",
+                      "   if [ -r /opt/sophos/service ]; then\n",
+                      "       SERVICE=`head -1 /opt/sophos/service`\n",
+                      "       PS1=\"[\\u@${IPADDR}:${SERVICE} \\W]\\\\$ \"\n",
+                      "   else\n",
+                      "        PS1=\"[\\u@${IPADDR} \\W]\\\\$ \"\n",
+                      "    fi\n",
+                      "fi\n",
+                      "EOF\n"
                     ]
                   ]
                 },
