@@ -34,13 +34,14 @@ raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 AWS_REGION              = node['sophos_cloud']['region']
 ACCOUNT                 = node['sophos_cloud']['environment']
 
-XGEMAIL_FILES_DIR          = node['xgemail']['xgemail_files_dir']
-CUSTOM_TRANSPORT_FILE_NAME     = 'customer-delivery-custom-recipient-trasnport.json'
-XGEMAIL_UTILS_DIR          = node['xgemail']['xgemail_utils_files_dir']
+XGEMAIL_FILES_DIR               = node['xgemail']['xgemail_files_dir']
+CUSTOM_TRANSPORT_FILE_NAME      = 'config/inbound-relay-control/custom_route/customer-delivery-custom-recipient-trasnport.json'
+XGEMAIL_UTILS_DIR               = node['xgemail']['xgemail_utils_files_dir']
+POLICY_BUCKET                   = node['xgemail']['xgemail_policy_bucket_name']
 
-PACKAGE_DIR                            = "#{XGEMAIL_FILES_DIR}/customer-delivery-custom-transport"
-CUSTOMER_DIRECTORY_CUSTOM_TRANSPORT_SCRIPT               = 'customer.delivery.custom-recipient-transport.updater.py'
-CUSTOMER_DIRECTORY_CUSTOM_TRANSPORT_SCRIPT_PATH          = "#{PACKAGE_DIR}/#{CUSTOMER_DIRECTORY_CUSTOM_TRANSPORT_SCRIPT}"
+PACKAGE_DIR                                     = "#{XGEMAIL_FILES_DIR}/customer-delivery-custom-transport"
+CUSTOMER_DIRECTORY_CUSTOM_TRANSPORT_SCRIPT      = 'customer.delivery.custom-recipient-transport.updater.py'
+CUSTOMER_DIRECTORY_CUSTOM_TRANSPORT_SCRIPT_PATH = "#{PACKAGE_DIR}/#{CUSTOMER_DIRECTORY_CUSTOM_TRANSPORT_SCRIPT}"
 
 
 #directory for customer delivery services
@@ -65,6 +66,7 @@ template CUSTOMER_DIRECTORY_CUSTOM_TRANSPORT_SCRIPT_PATH do
     :aws_region => AWS_REGION,
     :xgemail_utils_path => XGEMAIL_UTILS_DIR,
     :account => ACCOUNT,
+    :policy_bucket => POLICY_BUCKET_NAME,
     :customer_delivery_transport_filename => CUSTOM_TRANSPORT_FILE_NAME
   )
 end

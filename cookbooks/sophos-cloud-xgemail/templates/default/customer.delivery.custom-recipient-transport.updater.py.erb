@@ -14,7 +14,7 @@ from botocore.exceptions import ClientError
 AWS_REGION = "<%= @aws_region %>"
 ACCOUNT =  "<%= @account %>"
 CUSTOM_ROUTE_FILE_NAME = "<%= @customer_delivery_transport_filename %>"
-
+POLICY_BUCKET_NAME = "<%= @policy_bucket %>"
 CUSTOM_ROUTE_TTL_IN_DAYS = 365
 S3_ENCRYPTION_ALGORITHM = 'AES256'
 awshandler = AwsHandler(AWS_REGION)
@@ -35,7 +35,8 @@ def argument_parser():
     return args
 
 if __name__ == "__main__":
-    bucket_name = 'private-cloud-dev-eu-west-1-cloudemail-xgemail-policy'
+    #bucket_name = 'private-cloud-dev-eu-west-1-cloudemail-xgemail-policy'
+    bucket_name = POLICY_BUCKET_NAME
     expires = datetime.now() + timedelta(days=CUSTOM_ROUTE_TTL_IN_DAYS)
     s3 = boto3.resource('s3')
     try:
