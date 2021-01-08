@@ -62,12 +62,12 @@ logger.addHandler(syslog_handler)
 DOMAIN_NAME_REGEX_PATTERN = "[a-zA-Z0-9][-a-zA-Z0-9]*(\\.[-a-zA-Z0-9]+)*\\.[a-zA-Z]{2,}"
 EMAIL_ADDRESS_REGEX_PATTERN = "(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))";
 
-
 POLICY_BUCKET_NAME = 'private-cloud-{}-{}-cloudemail-xgemail-policy'
 INBOUND_BLOCK_CONFIG_PATH = 'config/inbound-relay-control/block-list/'
 INBOUND_BLOCK_CONFIG_FILE_NAME = 'inbound_block_list.CONFIG'
 INBOUND_BLOCK_CONFIG_FILE_PATH = INBOUND_BLOCK_CONFIG_PATH + 'inbound_block_list.CONFIG'
-INBOUND_BLOCK_CONFIG_AUDIT_LOGS = '/audit-logs/'
+INBOUND_BLOCK_CONFIG_EMAIL_AUDIT_LOGS_PATH = INBOUND_BLOCK_CONFIG_PATH + 'audit-logs/email_address/{}_{}.json'
+INBOUND_BLOCK_CONFIG_DOMAIN_AUDIT_LOGS_PATH = INBOUND_BLOCK_CONFIG_PATH + 'audit-logs/domain/{}_{}.json'
 
 MAGIC_NUMBER = b'\0SOPHCONFIG'
 SCHEMA_VERSION = 20210107
@@ -78,12 +78,8 @@ NONCE_LENGTH = 0
 
 DEFAULT_INBOUND_BLOCK_LIST_TEMPLATE = {
     "inbound_block_list": {
-        "email_addresses" : {
-
-        },
-        "domains": {
-
-        }
+        "email_addresses": {},
+        "domains": {}
     }
 }
 
@@ -249,7 +245,7 @@ def upload_config_data(bucket_name, config_object):
 
 
 
-def update_block_type_list(current_types, args):
+def merge_block_type_list(current_types, args):
     if args.event_type == 'BLOCK_ENVELOPE_SENDER' and 'BLOCK_ENVELOPE_SENDER' not in current_types:
         current_types.append('BLOCK_ENVELOPE_SENDER')
     if args.event_type == 'BLOCK_SENDER' and 'BLOCK_SENDER' not in current_types:
@@ -266,7 +262,7 @@ def update_block_details(bucket_name, args):
         if config_data['inbound_block_list']['email_addresses'].has_key(args.email_address):
             email_config = config_data['inbound_block_list']['email_addresses'].get(args.email_address)
             config_data['inbound_block_list']['email_addresses'][args.email_address] = {
-                "types": update_block_type_list(email_config["types"],args),
+                "types": merge_block_type_list(email_config["types"],args),
                 "timestamp": int(time.time())
             }
         else:
@@ -274,12 +270,15 @@ def update_block_details(bucket_name, args):
                 "types": [args.event_type],
                 "timestamp": int(time.time())
             }
+        insert_audit_log_for_email(
+            bucket_name, args.email_address, config_data['inbound_block_list']['email_addresses'][args.email_address]
+        )
 
     if args.domain_name is not None:
         if config_data['inbound_block_list']["domains"].has_key(args.domain_name):
             domain_config = config_data['inbound_block_list']["domains"][args.domain_name]
             config_data['inbound_block_list']["domains"][args.domain_name] = {
-                "types": update_block_type_list(domain_config["types"],args),
+                "types": merge_block_type_list(domain_config["types"],args),
                 "timestamp": int(time.time())
             }
         else:
@@ -288,12 +287,14 @@ def update_block_details(bucket_name, args):
                 "types": [args.event_type],
                 "timestamp": int(time.time())
             }
+        insert_audit_log_for_domain(
+            bucket_name, args.domain_name, config_data['inbound_block_list']["domains"][args.domain_name]
+        )
     return config_data
 
 
 def update_unblock_details(bucket_name, args):
     config_data = read_config_data(bucket_name)
-    print ("Bharat final Config data: ", config_data)
 
     if args.email_address is not None \
        and config_data['inbound_block_list']['email_addresses'].has_key(args.email_address):
@@ -305,6 +306,9 @@ def update_unblock_details(bucket_name, args):
             "types": types,
             "timestamp": int(time.time())
         }
+        insert_audit_log_for_email(
+            bucket_name, args.email_address, config_data['inbound_block_list']['email_addresses'][args.email_address]
+        )
 
     if args.domain_name is not None \
        and config_data['inbound_block_list']["domains"].has_key(args.domain_name):
@@ -316,8 +320,31 @@ def update_unblock_details(bucket_name, args):
             "types": types,
             "timestamp": int(time.time())
         }
+        insert_audit_log_for_domain(
+            bucket_name, args.domain_name, config_data['inbound_block_list']["domains"][args.domain_name]
+        )
 
     return config_data
+
+
+def insert_audit_log_for_email(bucket_name, email_address, data):
+    audit_path = INBOUND_BLOCK_CONFIG_EMAIL_AUDIT_LOGS_PATH.format(base64.b64encode(email_address),data['timestamp'])
+    awshandler.upload_data_in_s3_without_expiration(
+        bucket_name,
+        audit_path,
+        json.dumps(data),
+        S3_ENCRYPTION_ALGORITHM
+    )
+
+
+def insert_audit_log_for_domain(bucket_name, domain_name, data):
+    audit_path = INBOUND_BLOCK_CONFIG_DOMAIN_AUDIT_LOGS_PATH.format(base64.b64encode(domain_name),data['timestamp'])
+    awshandler.upload_data_in_s3_without_expiration(
+        bucket_name,
+        audit_path,
+        json.dumps(data),
+        S3_ENCRYPTION_ALGORITHM
+    )
 
 
 if __name__ == '__main__':

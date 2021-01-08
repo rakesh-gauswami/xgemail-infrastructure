@@ -179,8 +179,6 @@ class AwsHandler(object):
         return False
 
     def s3_key_exists(self, bucket_name, key_name):
-        print("bucket_name is " + bucket_name)
-        print("key: " + key_name)
         try:
             response = self.s3_client.head_object(Bucket=bucket_name, Key=key_name)
             return response['ResponseMetadata']['HTTPStatusCode'] == 200
