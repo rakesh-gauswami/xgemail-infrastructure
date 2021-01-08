@@ -10,30 +10,45 @@
 # This script can be used to retrieve existing blocked/blacklisted entries,
 # block new addresses or unblock existing entries.
 #
-# Run this script on a internet-submit (e.g. CloudEmail:internet-submit). Make
-# sure you are in the appropriate AWS environment.
+# Run this script on a internet-submit instance. Make sure you are in the appropriate AWS environment.
+# Refer: https://wiki.sophos.net/display/MSG/Inbound+Sender+or+Domain+Block
+#
+# Examples.
+# To block an email address at MAIL FROM event:
+# sudo python /opt/sophos/xgemail/utils/inbound_sender_and_recipient_block_api.py --region eu-west-1 --env DEV
+#   --event-type BLOCK_ENVELOPE_SENDER --block --email-address sender@example.com
+#
+# To block a domain name for all recipient addresses at RCPT TO event:
+# sudo python /opt/sophos/xgemail/utils/inbound_sender_and_recipient_block_api.py --region eu-west-1 --env DEV
+#   --event-type BLOCK_RECIPIENT --block --domain example.com
+#
+# To Unblock a domain name for all recipient addresses at RCPT TO event:
+# sudo python /opt/sophos/xgemail/utils/inbound_sender_and_recipient_block_api.py --region eu-west-1 --env DEV
+#   --event-type BLOCK_RECIPIENT --unblock --domain example.com
+#
+# To get configuration for an email address:
+# sudo python /opt/sophos/xgemail/utils/inbound_sender_and_recipient_block_api.py --region eu-west-1 --env DEV
+#    --get-email  test@example.com
+
+# To get configuration for a domain name:
+# sudo python /opt/sophos/xgemail/utils/inbound_sender_and_recipient_block_api.py --region eu-west-1 --env DEV
+#    --get-domain gmail.com
 
 import sys
 sys.path.append("/opt/sophos/xgemail/utils")
 
-import base64
-import boto3
+import logging
+import argparse
 import json
-import requests
-import sys
-import urllib3
-import os
+import formatterutils
+import base64
 import re
 import pip
 import gziputils
 import string
 import time
 
-import argparse
-import json
-import logging
 from logging.handlers import SysLogHandler
-from email.utils import parseaddr
 from awshandler import AwsHandler
 from botocore.exceptions import ClientError
 
@@ -43,9 +58,6 @@ except ImportError:
     pip.main(['install', 'PrettyTable'])
     from prettytable import PrettyTable
 
-import argparse
-import pip
-import formatterutils
 
 # logging to syslog setup
 logging.getLogger("botocore").setLevel(logging.WARNING)
@@ -101,7 +113,7 @@ def get_parsed_args(parser):
     parser.add_argument(
         '--event-type',
         dest = 'event_type',
-        required = True,
+        default=None,
         choices=['BLOCK_ENVELOPE_SENDER', 'BLOCK_SENDER', 'BLOCK_RECIPIENT'],
         help = 'smtp transaction event at which validation is required'
     )
@@ -115,15 +127,21 @@ def get_parsed_args(parser):
     )
     parser.add_argument(
         '--domain',
-        dest = 'domain_name',
-        default = None,
-        help = 'domain name to be blocked/unblocked'
+        dest='domain_name',
+        default=None,
+        help='domain name to be blocked/unblocked'
     )
     parser.add_argument(
-        '--get-all',
-        dest = 'get_all',
-        action='store_true',
-        help = 'retrieve list of currently blacklisted entries'
+        '--get-email',
+        dest = 'get_email',
+        default=None,
+        help = 'Get config details for given email address'
+    )
+    parser.add_argument(
+        '--get-domain',
+        dest='get_domain',
+        default=None,
+        help='Get config details for given domain name'
     )
 
     return parser.parse_args()
@@ -145,6 +163,8 @@ def validate_domain(domain_address):
 
 
 def validate_args(args):
+    if args.event_type is None:
+        parser.error("--event-type argument is required for updating config")
     if args.block is False and args.unblock is False:
         parser.error("Any one of the arguments [--block, --unblock] is required")
 
@@ -183,7 +203,6 @@ def get_binary(formatted_file):
     return formatterutils.get_decompressed_object_bytes(
         formatted_file[nonce_length_end_idx:len(formatted_file)]
     )
-
 
 
 def read_config_data(bucket_name):
@@ -255,9 +274,7 @@ def merge_block_type_list(current_types, args):
     return current_types
 
 
-def update_block_details(bucket_name, args):
-    config_data = read_config_data(bucket_name)
-
+def update_block_details(bucket_name, args, config_data):
     if args.email_address is not None:
         if config_data['inbound_block_list']['email_addresses'].has_key(args.email_address):
             email_config = config_data['inbound_block_list']['email_addresses'].get(args.email_address)
@@ -293,9 +310,7 @@ def update_block_details(bucket_name, args):
     return config_data
 
 
-def update_unblock_details(bucket_name, args):
-    config_data = read_config_data(bucket_name)
-
+def update_unblock_details(bucket_name, args, config_data):
     if args.email_address is not None \
        and config_data['inbound_block_list']['email_addresses'].has_key(args.email_address):
 
@@ -350,15 +365,24 @@ def insert_audit_log_for_domain(bucket_name, domain_name, data):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description = 'Block/unblock senders/recipient email address or domain for inbound mail flow')
     args = get_parsed_args(parser)
-    validate_args(args)
 
     awshandler = AwsHandler(args.region)
-
     bucket_name = POLICY_BUCKET_NAME.format(string.lower(args.env), args.region)
-    config_data = {}
-    if args.block is True:
-        config_data = update_block_details(bucket_name, args)
-    if args.unblock is True:
-        config_data = update_unblock_details(bucket_name, args)
+    config_data = read_config_data(bucket_name)
 
-    upload_config_data(bucket_name, config_data)
+    if args.get_email is not None:
+        if config_data['inbound_block_list']['email_addresses'].has_key(args.get_email):
+            print(config_data['inbound_block_list']["email_addresses"][args.get_email])
+    elif args.get_domain is not None:
+        if config_data['inbound_block_list']['domains'].has_key(args.get_domain):
+            print(config_data['inbound_block_list']["domains"][args.get_domain])
+    else:
+        # Validate args required for updating config
+        validate_args(args)
+        config_data = {}
+        if args.block is True:
+            config_data = update_block_details(bucket_name, args, config_data)
+        if args.unblock is True:
+            config_data = update_unblock_details(bucket_name, args, config_data)
+
+        upload_config_data(bucket_name, config_data)
