@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: sophos-cloud-xgemail
-# Recipe:: setup_xgemail_deliver_director_config_updater.rb
+# Recipe:: setup_customer_delivery_custom_recipient_transport_updater
 #
 # Copyright 2020, Sophos
 #
@@ -19,7 +19,7 @@ require 'json'
 
 NODE_TYPE = node['xgemail']['cluster_type']
 
-# Only continue when it's customer-submit
+# Only continue when it's customer-delivery
 if NODE_TYPE != 'customer-delivery'
     return
 end
@@ -55,7 +55,7 @@ execute CUSTOMER_DIRECTORY_CUSTOM_TRANSPORT_SCRIPT_PATH do
   action :nothing
 end
 
-# Write delivery director script to customer submit instance
+# Write custom recipient transport script to customer delivery instance
 template CUSTOMER_DIRECTORY_CUSTOM_TRANSPORT_SCRIPT_PATH do
   source "#{CUSTOMER_DIRECTORY_CUSTOM_TRANSPORT_SCRIPT}.erb"
   mode '0750'
