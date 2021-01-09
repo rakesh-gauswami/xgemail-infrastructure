@@ -140,7 +140,7 @@ template 'fluentd-source-jilter' do
     NODE_TYPE == 'warmup-delivery' ||
     NODE_TYPE == 'beta-delivery' ||
     NODE_TYPE == 'delta-delivery' ||
-    NODE_TYPE == 'customer-xdelivery' ||
+    NODE_TYPE == 'xdelivery' ||
     NODE_TYPE == 'internet-xdelivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-xdelivery' ||
@@ -302,7 +302,7 @@ template 'fluentd-match-jilter' do
     NODE_TYPE == 'warmup-delivery' ||
     NODE_TYPE == 'beta-delivery' ||
     NODE_TYPE == 'delta-delivery' ||
-    NODE_TYPE == 'customer-xdelivery' ||
+    NODE_TYPE == 'xdelivery' ||
     NODE_TYPE == 'internet-xdelivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-xdelivery' ||
@@ -394,7 +394,7 @@ template 'fluentd-match-sqsmsgproducer' do
     NODE_TYPE == 'warmup-delivery' ||
     NODE_TYPE == 'beta-delivery' ||
     NODE_TYPE == 'delta-delivery' ||
-    NODE_TYPE == 'customer-xdelivery' ||
+    NODE_TYPE == 'xdelivery' ||
     NODE_TYPE == 'internet-xdelivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-xdelivery' ||
