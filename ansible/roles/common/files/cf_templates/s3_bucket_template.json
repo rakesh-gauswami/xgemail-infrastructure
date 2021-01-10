@@ -38,7 +38,12 @@
             "Type": "String",
             "Default": "NO VALUE"
         },
-
+        "EnableSSES3Encryption": {
+            "Description": "Should we enable SSE-S3 encryption by default at bucket level",
+            "Type": "String",
+            "AllowedValues": [ "true", "false" ],
+            "Default": "false"
+        },
         "CloudBillingTagValue": {
             "Description": "CloudBilling Tag Value for the Resource",
             "Type": "String",
@@ -81,7 +86,6 @@
             "AllowedValues": [ "kms", "sse-s3", "none" ],
             "Default": "none"
         },
-
         "S3BucketName": {
             "Description": "Name of the S3 bucket",
             "Type": "String",
@@ -260,6 +264,9 @@
         "EnableElbAccessLogs": {
             "Fn::Equals" : [ { "Ref" : "AllowElbAccessLogs" }, "true" ]
         },
+        "HasSSES3Encryption": {
+            "Fn::Equals" : [ { "Ref" : "EnableSSES3Encryption" }, "true" ]
+        },
         "EnableExpiration": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "S3LifeCycleDelete"},"0"]}]},
         "EnableVersioningExpiration": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "S3LifeCycleDeleteVersioning"},"0"]}]},
         "EnableMultipartUploadExpiration": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "S3LifeCycleDeleteMultipartUpload"},"0"]}]},
@@ -303,7 +310,21 @@
                                 }
                             ]
                         },
-                        { "Ref" : "AWS::NoValue" }
+                        {
+                            "Fn::If": [
+                                "HasSSES3Encryption",
+                                 {
+                                     ServerSideEncryptionConfiguration": [
+                                         {
+                                             "ServerSideEncryptionByDefault": {
+                                                  "SSEAlgorithm" : "AES256"
+                                              }    
+                                         }
+                                     ]
+                                 },
+                                 { "Ref" : "AWS::NoValue" }
+                            ]
+                        }
                     ]
                 },
                 "LifecycleConfiguration" : {
@@ -509,7 +530,21 @@
                                 }
                             ]
                         },
-                        { "Ref" : "AWS::NoValue" }
+                        {
+                            "Fn::If": [
+                                "HasSSES3Encryption",
+                                 {
+                                     ServerSideEncryptionConfiguration": [
+                                         {
+                                             "ServerSideEncryptionByDefault": {
+                                                  "SSEAlgorithm" : "AES256"
+                                              }    
+                                         }
+                                     ]
+                                 },
+                                 { "Ref" : "AWS::NoValue" }
+                            ]
+                        }
                     ]
                 },
                 "LifecycleConfiguration" : {
