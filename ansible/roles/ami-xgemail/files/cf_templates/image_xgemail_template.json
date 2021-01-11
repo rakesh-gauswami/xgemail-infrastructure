@@ -316,7 +316,7 @@
                       "EOF\n",
                       "/bin/chmod 0444 /var/chef/chef-repo/.chef/client.rb\n",
                       "echo 'Install chef client cookbook'\n",
-                      "chef-client -z --no-color -c /var/chef/chef-repo/.chef/client.rb -l debug -L /var/log/sophos/chef-%Y%m%d.%H%M%S.base_ami.install_chef.log\n",
+                      "chef-client -z --no-color -c /var/chef/chef-repo/.chef/client.rb -l debug -L /var/log/sophos/chef-$(date +\"%Y%m%d.%H%M%S\").base_ami.install_chef.log\n",
                       "echo 'Install cookbooks'\n",
                       "cd /var/chef/chef-repo\n",
                       "/bin/tar xzvf \"/install.d/cookbooks.tgz\"\n",
