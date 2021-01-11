@@ -335,7 +335,7 @@
             },
             "commands": {
               "01_run_script": { "command": "bash /mnt/build_base.sh > /var/log/build_base.log 2>&1" },
-              "02_build_base": {
+              "02_configure_base_runlist": {
                 "command": {
                   "Fn::Join": [
                     "", [
@@ -343,6 +343,20 @@
                       "recipe[sophos-base-ami::base_ami]",
 
                       "\""
+                    ]
+                  ]
+                },
+                "cwd": "/var/chef/chef-repo",
+                "env": { "HOME": "/var/chef" }
+              },
+              "03_run_chef_client": {
+                "command": {
+                  "Fn::Join": [
+                    " ", [
+                      "chef-client --no-color -z",
+                      "-c /var/chef/chef-repo/.chef/client.rb",
+                      "-j /var/sophos/cookbooks/attributes.json",
+                      "-l debug -L /var/log/chef-client.base_ami.install.log"
                     ]
                   ]
                 },
