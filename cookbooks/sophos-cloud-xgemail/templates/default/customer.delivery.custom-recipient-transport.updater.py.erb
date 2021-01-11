@@ -14,9 +14,11 @@ from botocore.exceptions import ClientError
 AWS_REGION = "<%= @aws_region %>"
 ACCOUNT =  "<%= @account %>"
 CUSTOM_ROUTE_FILE_NAME = "<%= @customer_delivery_transport_filename %>"
+CUSTOM_ROUTE_RECIPIENT_FILE_PATH = "config/inbound-relay-control/custom-routes/domain/"
 POLICY_BUCKET_NAME = "<%= @policy_bucket %>"
 CUSTOM_ROUTE_TTL_IN_DAYS = 365
 S3_ENCRYPTION_ALGORITHM = 'AES256'
+expires = datetime.now() + timedelta(days=CUSTOM_ROUTE_TTL_IN_DAYS)
 awshandler = AwsHandler(AWS_REGION)
 
 def argument_parser():
@@ -34,20 +36,27 @@ def argument_parser():
             parser.error("Warning: Port should be in range(1024-65353) ")
     return args
 
+def upload_to_s3(fileName,dataStr):
+    awshandler.upload_data_in_s3(
+        POLICY_BUCKET_NAME,
+        fileName,
+        dataStr,
+        expires,
+        S3_ENCRYPTION_ALGORITHM
+        )
+
+
 if __name__ == "__main__":
-    #bucket_name = 'private-cloud-dev-eu-west-1-cloudemail-xgemail-policy'
     bucket_name = POLICY_BUCKET_NAME
-    expires = datetime.now() + timedelta(days=CUSTOM_ROUTE_TTL_IN_DAYS)
     s3 = boto3.resource('s3')
     try:
-        s3 = boto3.resource('s3')
         current_config = s3.Object(bucket_name, CUSTOM_ROUTE_FILE_NAME)
         current_config_object = json.loads(current_config.get()['Body'].read())
         record = current_config_object
     except ClientError as ex:
         if ex.response['Error']['Code'] == 'NoSuchKey':
             print("Warning: Existing config file not found")
-        record = {}
+            record = {}
     args = argument_parser()
     command = args.command
     domainOrEmail = str(args.domainOrEmail).strip()
@@ -55,17 +64,18 @@ if __name__ == "__main__":
         if domainOrEmail is not None and args.destination is not None and args.destination_type is not None and args.port is not None and args.customer is not None:
             if domainOrEmail is not None and domainOrEmail in record.keys():
                 newObject = {}
-                newObject["destanation"] = args.destination
-                newObject["destination_type"] = args.destination_type
-                newObject["port"] = args.port
-                newObject["customer"] = args.customer
+                newObject["delivery_destination"] = {}
+                newObject["delivery_destination"]["destanation"] = args.destination
+                newObject["delivery_destination"]["destination_type"] = args.destination_type
+                newObject["delivery_destination"]["port"] = args.port
+                newObject["delivery_destination"]["customer"] = args.customer
                 print("Old Record:")
                 print(json.dumps(record[domainOrEmail], indent = 4))
                 print("New Record:")
                 print(json.dumps(newObject, indent = 4))
                 query = input("Do you want to Update Record. Enter 'y' to proceed futher ? ")
                 if query.lower() == 'y':
-                    record[domainOrEmail]["delivery_destination"] = newObject
+                    record[domainOrEmail] = newObject
                     print("Record Updated Successfully")
             else:
                 record[domainOrEmail] = {}
@@ -76,6 +86,7 @@ if __name__ == "__main__":
                 record[domainOrEmail]["delivery_destination"]["customer"] = args.customer
                 print("Record Added Successfully")
                 print(json.dumps(record[domainOrEmail], indent = 4))
+                upload_to_s3(CUSTOM_ROUTE_RECIPIENT_FILE_PATH + domainOrEmail.encode('utf-8').hex(),'')
         else:
             print("All parameter are require for ADD/UPDATE record")
     if command == "LIST":
@@ -87,14 +98,17 @@ if __name__ == "__main__":
             query = input("Do you realy want to delete Record. Enter 'y' to proceed futher ? ")
             if query.lower() == 'y':
                 del record[domainOrEmail]
+                new_s3_file_path = CUSTOM_ROUTE_RECIPIENT_FILE_PATH + domainOrEmail.encode('utf-8').hex()
+                does_exist_in_s3 = awshandler.key_exists(
+                    bucket_name,
+                    new_s3_file_path,
+                    CUSTOM_ROUTE_RECIPIENT_FILE_PATH
+                    )
+                if does_exist_in_s3:
+                    obj = s3.Object(bucket_name,new_s3_file_path)
+                    obj.delete()
                 print("domainOrEmail {} is deleted".format(domainOrEmail))
         else:
             print("domainOrEmail {} is Not Exist".format(domainOrEmail))
     recordstr = json.dumps(record)
-    awshandler.upload_data_in_s3(
-        bucket_name,
-        CUSTOM_ROUTE_FILE_NAME,
-        recordstr,
-        expires,
-        S3_ENCRYPTION_ALGORITHM
-        )
+    upload_to_s3(CUSTOM_ROUTE_FILE_NAME,recordstr)
