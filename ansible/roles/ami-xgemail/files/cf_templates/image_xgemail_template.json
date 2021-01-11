@@ -317,6 +317,7 @@
                       "/bin/chmod 0444 /var/chef/chef-repo/.chef/client.rb\n",
                       "echo 'Install chef client cookbook'\n",
                       "CHEF_BASE_INSTALL_LOG=chef-$(date +\"%Y%m%d.%H%M%S\").base_ami.install_chef.log\n",
+                      "/bin/mkdir -p /var/log/sophos\n",
                       "/bin/touch /var/log/sophos/$CHEF_BASE_INSTALL_LOG\n",
                       "chef-client -z --no-color -c /var/chef/chef-repo/.chef/client.rb -l debug -L /var/log/sophos/$CHEF_BASE_INSTALL_LOG\n",
                       "echo 'Install cookbooks'\n",
