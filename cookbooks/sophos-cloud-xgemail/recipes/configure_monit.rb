@@ -55,6 +55,14 @@ template '/etc/monit.d/delivery.conf' do
   only_if { NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'encryption-delivery' || NODE_TYPE == 'risky-delivery' || NODE_TYPE == 'warmup-delivery' || NODE_TYPE == 'beta-delivery' || NODE_TYPE == 'delta-delivery' }
 end
 
+template '/etc/monit.d/xdelivery.conf' do
+  source 'monit-xdelivery.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  only_if { NODE_TYPE == 'xdelivery' || NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery' || NODE_TYPE == 'warmup-xdelivery' || NODE_TYPE == 'beta-xdelivery' || NODE_TYPE == 'delta-xdelivery' }
+end
+
 # Restart rsyslog service
 service 'rsyslog' do
     action :restart
