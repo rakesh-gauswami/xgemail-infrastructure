@@ -178,6 +178,8 @@ class AwsHandler(object):
 
         return False
 
+    # safely check's key exists in s3 or not.
+    # Doesn't throw exception if key doesn't exist, returns boolean value.
     def s3_key_exists(self, bucket_name, key_name):
         try:
             response = self.s3_client.head_object(Bucket=bucket_name, Key=key_name)

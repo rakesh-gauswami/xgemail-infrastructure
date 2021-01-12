@@ -89,10 +89,8 @@ S3_ENCRYPTION_ALGORITHM = 'AES256'
 NONCE_LENGTH = 0
 
 DEFAULT_INBOUND_BLOCK_LIST_TEMPLATE = {
-    "inbound_block_list": {
-        "email_addresses": {},
-        "domains": {}
-    }
+    "email_addresses": {},
+    "domains": {}
 }
 
 def get_parsed_args(parser):
@@ -276,67 +274,67 @@ def merge_block_type_list(current_types, args):
 
 def update_block_details(bucket_name, args, config_data):
     if args.email_address is not None:
-        if config_data['inbound_block_list']['email_addresses'].has_key(args.email_address):
-            email_config = config_data['inbound_block_list']['email_addresses'].get(args.email_address)
-            config_data['inbound_block_list']['email_addresses'][args.email_address] = {
+        if config_data['email_addresses'].has_key(args.email_address):
+            email_config = config_data['email_addresses'].get(args.email_address)
+            config_data['email_addresses'][args.email_address] = {
                 "types": merge_block_type_list(email_config["types"],args),
                 "timestamp": int(time.time())
             }
         else:
-            config_data['inbound_block_list']['email_addresses'][args.email_address] = {
+            config_data['email_addresses'][args.email_address] = {
                 "types": [args.event_type],
                 "timestamp": int(time.time())
             }
         insert_audit_log_for_email(
-            bucket_name, args.email_address, config_data['inbound_block_list']['email_addresses'][args.email_address]
+            bucket_name, args.email_address, config_data['email_addresses'][args.email_address]
         )
 
     if args.domain_name is not None:
-        if config_data['inbound_block_list']["domains"].has_key(args.domain_name):
-            domain_config = config_data['inbound_block_list']["domains"][args.domain_name]
-            config_data['inbound_block_list']["domains"][args.domain_name] = {
+        if config_data["domains"].has_key(args.domain_name):
+            domain_config = config_data["domains"][args.domain_name]
+            config_data["domains"][args.domain_name] = {
                 "types": merge_block_type_list(domain_config["types"],args),
                 "timestamp": int(time.time())
             }
         else:
             # Create new config object under domains parent key
-            config_data['inbound_block_list']["domains"][args.domain_name] = {
+            config_data["domains"][args.domain_name] = {
                 "types": [args.event_type],
                 "timestamp": int(time.time())
             }
         insert_audit_log_for_domain(
-            bucket_name, args.domain_name, config_data['inbound_block_list']["domains"][args.domain_name]
+            bucket_name, args.domain_name, config_data["domains"][args.domain_name]
         )
     return config_data
 
 
 def update_unblock_details(bucket_name, args, config_data):
     if args.email_address is not None \
-       and config_data['inbound_block_list']['email_addresses'].has_key(args.email_address):
+       and config_data['email_addresses'].has_key(args.email_address):
 
-        types = config_data['inbound_block_list']['email_addresses'][args.email_address]["types"]
+        types = config_data['email_addresses'][args.email_address]["types"]
         if args.event_type in types:
             types.remove(args.event_type)
-        config_data['inbound_block_list']['email_addresses'][args.email_address] = {
+        config_data['email_addresses'][args.email_address] = {
             "types": types,
             "timestamp": int(time.time())
         }
         insert_audit_log_for_email(
-            bucket_name, args.email_address, config_data['inbound_block_list']['email_addresses'][args.email_address]
+            bucket_name, args.email_address, config_data['email_addresses'][args.email_address]
         )
 
     if args.domain_name is not None \
-       and config_data['inbound_block_list']["domains"].has_key(args.domain_name):
+       and config_data["domains"].has_key(args.domain_name):
 
-        types = config_data['inbound_block_list']["domains"][args.domain_name]["types"]
+        types = config_data["domains"][args.domain_name]["types"]
         if args.event_type in types:
             types.remove(args.event_type)
-        config_data['inbound_block_list']["domains"][args.domain_name] = {
+        config_data["domains"][args.domain_name] = {
             "types": types,
             "timestamp": int(time.time())
         }
         insert_audit_log_for_domain(
-            bucket_name, args.domain_name, config_data['inbound_block_list']["domains"][args.domain_name]
+            bucket_name, args.domain_name, config_data["domains"][args.domain_name]
         )
 
     return config_data
@@ -371,15 +369,14 @@ if __name__ == '__main__':
     config_data = read_config_data(bucket_name)
 
     if args.get_email is not None:
-        if config_data['inbound_block_list']['email_addresses'].has_key(args.get_email):
-            print(config_data['inbound_block_list']["email_addresses"][args.get_email])
+        if config_data['email_addresses'].has_key(args.get_email):
+            print(config_data["email_addresses"][args.get_email])
     elif args.get_domain is not None:
-        if config_data['inbound_block_list']['domains'].has_key(args.get_domain):
-            print(config_data['inbound_block_list']["domains"][args.get_domain])
+        if config_data['domains'].has_key(args.get_domain):
+            print(config_data["domains"][args.get_domain])
     else:
         # Validate args required for updating config
         validate_args(args)
-        config_data = {}
         if args.block is True:
             config_data = update_block_details(bucket_name, args, config_data)
         if args.unblock is True:
