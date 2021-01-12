@@ -258,6 +258,7 @@
 
                       "/bin/mkdir -p /install.d\n",
                       "cd /install.d\n",
+                      "ls -la\n"
                       "# Create directory for sophos utilities\n",
                       "/bin/mkdir -p /opt/sophos/bin\n",
 
@@ -324,14 +325,14 @@
                       "EOF\n",
                       "/bin/chmod 0444 /var/chef/chef-repo/.chef/client.rb\n",
 
-                      "pwd\n",
+                      "pwd&ls -la\n",
                       "CHEF_BASE_INSTALL_LOG=chef-$(date +\"%Y%m%d.%H%M%S\").base_ami.install_chef.log\n",
                       "/bin/touch /var/log/$CHEF_BASE_INSTALL_LOG\n",
                       "chef-client -z --no-color -c /var/chef/chef-repo/.chef/client.rb -l debug -L /var/log/$CHEF_BASE_INSTALL_LOG\n",
-                      "pwd\n",
+                      "pwd&&ls -la\n",
 
                       "cd /var/chef/chef-repo\n",
-                      "pwd\n",
+                      "pwd&&ls -la\n",
                       "/bin/tar xzvf \"cookbooks.tgz\"\n",
                       "/bin/chown -R root:root cookbooks\n",
 
