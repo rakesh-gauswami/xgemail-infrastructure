@@ -258,6 +258,8 @@
 
                       "# Create directory for sophos utilities\n",
                       "/bin/mkdir -p /opt/sophos/bin\n",
+                      "/bin/cp -r \"/tools/common/*\" \"/opt/sophos/bin\"\n",
+                      "ls -la /opt/sophos/bin\n",
 
                       "# Update the common profile\n",
                       "cat <<'EOF' >\"/etc/profile.d/sophos.sh\"\n",
@@ -299,8 +301,6 @@
                       "CHEF_REPO_TGZ=chef-chef-repo-${CHEF_REPO_HASH}.tar.gz\n",
                       "/usr/bin/aws --region us-west-2 s3 cp s3://cloud-applications-3rdparty/chef/${CHEF_REPO_TGZ} ${CHEF_REPO_TGZ}\n",
                       "/bin/tar xzvf ${CHEF_REPO_TGZ}\n",
-                      "pwd\n",
-                      "ls -la\n",
                       "/bin/mkdir -p /var/chef/chef-repo/.chef\n",
                       "/bin/cp -r chef-chef-repo-${CHEF_REPO_HASH}/* /var/chef/chef-repo\n",
                       "/bin/rm -rf chef-chef-repo-${CHEF_REPO_HASH}\n",
