@@ -16,23 +16,23 @@
 #
 # Examples.
 # To block an email address at MAIL FROM event:
-# sudo python /opt/sophos/xgemail/utils/inbound_sender_and_recipient_block_api.py --region eu-west-1 --env DEV
+# sudo python /opt/sophos/xgemail/utils/inbound_sender_and_recipient_block_api.py
 #   --event-type BLOCK_ENVELOPE_SENDER --block --email-address sender@example.com
 #
 # To block a domain name for all recipient addresses at RCPT TO event:
-# sudo python /opt/sophos/xgemail/utils/inbound_sender_and_recipient_block_api.py --region eu-west-1 --env DEV
+# sudo python /opt/sophos/xgemail/utils/inbound_sender_and_recipient_block_api.py
 #   --event-type BLOCK_RECIPIENT --block --domain example.com
 #
 # To Unblock a domain name for all recipient addresses at RCPT TO event:
-# sudo python /opt/sophos/xgemail/utils/inbound_sender_and_recipient_block_api.py --region eu-west-1 --env DEV
+# sudo python /opt/sophos/xgemail/utils/inbound_sender_and_recipient_block_api.py
 #   --event-type BLOCK_RECIPIENT --unblock --domain example.com
 #
 # To get configuration for an email address:
-# sudo python /opt/sophos/xgemail/utils/inbound_sender_and_recipient_block_api.py --region eu-west-1 --env DEV
+# sudo python /opt/sophos/xgemail/utils/inbound_sender_and_recipient_block_api.py
 #    --get-email  test@example.com
 
 # To get configuration for a domain name:
-# sudo python /opt/sophos/xgemail/utils/inbound_sender_and_recipient_block_api.py --region eu-west-1 --env DEV
+# sudo python /opt/sophos/xgemail/utils/inbound_sender_and_recipient_block_api.py
 #    --get-domain gmail.com
 
 import sys
@@ -74,8 +74,9 @@ syslog_handler.formatter = formatter
 logger.addHandler(syslog_handler)
 
 #Constants
-DOMAIN_NAME_REGEX_PATTERN = "[a-zA-Z0-9][-a-zA-Z0-9]*(\\.[-a-zA-Z0-9]+)*\\.[a-zA-Z]{2,}"
-EMAIL_ADDRESS_REGEX_PATTERN = "(([^<>()\[\]\\.,;:\s@\"]+(\.[^<>()\[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))";
+# We will not have rfc complaint regex match, we will look for only `.` and `@` for domain and email validation
+DOMAIN_NAME_REGEX_PATTERN = "\\."
+EMAIL_ADDRESS_REGEX_PATTERN = ".*@.*";
 
 POLICY_BUCKET_NAME = 'private-cloud-{}-{}-cloudemail-xgemail-policy'
 
@@ -96,20 +97,6 @@ DEFAULT_BLOCK_LIST_TEMPLATE = {
 }
 
 def get_parsed_args(parser):
-  parser.add_argument(
-    '--region',
-    dest = 'region',
-    default = AWS_REGION,
-    choices=['eu-central-1', 'eu-west-1', 'us-west-2', 'us-east-2'],
-    help = 'the AWS region'
-  )
-  parser.add_argument(
-    '--env',
-    dest = 'env',
-    default = string.lower(ACCOUNT),
-    choices=['dev', 'dev3', 'qa', 'prod','inf'],
-    help = 'The AWS environment'
-  )
   parser.add_argument(
     '--direction',
     dest = 'direction',
@@ -149,6 +136,12 @@ def get_parsed_args(parser):
     dest='get_domain',
     default=None,
     help='Get config details for given domain name'
+  )
+  parser.add_argument(
+    '--get-all',
+    dest='get_all',
+    default=None,
+    help='Get all config details for email addresses and domain names both'
   )
 
   return parser.parse_args()
@@ -361,8 +354,8 @@ if __name__ == '__main__':
   parser = argparse.ArgumentParser(description = 'Block/unblock senders/recipient email address or domain for inbound mail flow')
   args = get_parsed_args(parser)
 
-  awshandler = AwsHandler(args.region)
-  bucket_name = POLICY_BUCKET_NAME.format(string.lower(args.env), args.region)
+  awshandler = AwsHandler(AWS_REGION)
+  bucket_name = POLICY_BUCKET_NAME.format(string.lower(ACCOUNT), AWS_REGION)
   config_data = read_config_data(bucket_name, args.direction)
 
   if args.get_email is not None:
@@ -371,6 +364,12 @@ if __name__ == '__main__':
   elif args.get_domain is not None:
     if config_data['domains'].has_key(args.get_domain):
       print(config_data["domains"][args.get_domain])
+  elif args.get_all is not None:
+    print('Domains config:')
+    print(config_data["domains"])
+
+    print('Email addresses config:')
+    print(config_data["email_addresses"])
   else:
     # Validate args required for updating config
     validate_args(args)
