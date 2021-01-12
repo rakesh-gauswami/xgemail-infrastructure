@@ -250,17 +250,18 @@
                       "set -o nounset  # Treat unset variables as an error when substituting.\n",
                       "set -o pipefail # Pipeline status comes from last error, not last command.\n",
 
-                      "echo 'Installing base AMI packages'\n",
-                      "echo 'Create a directory for the installer'\n",
+                      "# Installing base AMI packages\n",
+                      "# Create a directory for the installer\n",
 
                       "pwd\n",
+                      "ls -la\n",
 
                       "/bin/mkdir -p /install.d\n",
                       "cd /install.d\n",
-                      "echo 'Create directory for sophos utilities'\n",
+                      "# Create directory for sophos utilities\n",
                       "/bin/mkdir -p /opt/sophos/bin\n",
 
-                      "echo 'Update the common profile'\n",
+                      "# Update the common profile\n",
                       "cat <<'EOF' >\"/etc/profile.d/sophos.sh\"\n",
                       "PATH=${PATH}:/opt/sophos/bin\n",
                       "# Custom login prompt.\n",
@@ -300,6 +301,8 @@
                       "CHEF_REPO_TGZ=chef-chef-repo-${CHEF_REPO_HASH}.tar.gz\n",
                       "/usr/bin/aws --region us-west-2 s3 cp s3://cloud-applications-3rdparty/chef/${CHEF_REPO_TGZ} ${CHEF_REPO_TGZ}\n",
                       "/bin/tar xzvf ${CHEF_REPO_TGZ}\n",
+                      "pwd\n",
+                      "ls -la\n",
                       "/bin/mkdir -p /var/chef/chef-repo/.chef\n",
                       "/bin/cp -r chef-chef-repo-${CHEF_REPO_HASH}/* /var/chef/chef-repo\n",
                       "/bin/rm -rf chef-chef-repo-${CHEF_REPO_HASH}\n",
@@ -321,9 +324,11 @@
                       "EOF\n",
                       "/bin/chmod 0444 /var/chef/chef-repo/.chef/client.rb\n",
 
+                      "pwd\n",
                       "CHEF_BASE_INSTALL_LOG=chef-$(date +\"%Y%m%d.%H%M%S\").base_ami.install_chef.log\n",
                       "/bin/touch /var/log/$CHEF_BASE_INSTALL_LOG\n",
                       "chef-client -z --no-color -c /var/chef/chef-repo/.chef/client.rb -l debug -L /var/log/$CHEF_BASE_INSTALL_LOG\n",
+                      "pwd\n",
 
                       "cd /var/chef/chef-repo\n",
                       "pwd\n",
