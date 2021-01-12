@@ -253,12 +253,9 @@
                       "# Installing base AMI packages\n",
                       "# Create a directory for the installer\n",
 
-                      "pwd\n",
-                      "ls -la\n",
-
                       "/bin/mkdir -p /install.d\n",
                       "cd /install.d\n",
-                      "ls -la\n",
+
                       "# Create directory for sophos utilities\n",
                       "/bin/mkdir -p /opt/sophos/bin\n",
 
@@ -325,20 +322,9 @@
                       "EOF\n",
                       "/bin/chmod 0444 /var/chef/chef-repo/.chef/client.rb\n",
 
-                      "pwd&ls -la\n",
-                      "cat /var/chef/chef-repo/.chef/client.rb\n",
                       "CHEF_BASE_INSTALL_LOG=chef-$(date +\"%Y%m%d.%H%M%S\").base_ami.install_chef.log\n",
                       "/bin/touch /var/log/$CHEF_BASE_INSTALL_LOG\n",
-                      "chef-client -z --no-color -c /var/chef/chef-repo/.chef/client.rb -l debug -L /var/log/$CHEF_BASE_INSTALL_LOG\n",
-                      "pwd&&ls -la\n",
-
-                      "cd /var/chef/chef-repo\n",
-                      "pwd&&ls -la\n",
-                      "/bin/tar xzvf \"cookbooks.tgz\"\n",
-                      "/bin/chown -R root:root cookbooks\n",
-
-                      "/bin/mkdir -p /etc/chef/ohai/hints\n",
-                      "/bin/touch /etc/chef/ohai/hints/ec2.json\n"
+                      "chef-client -z --no-color -c /var/chef/chef-repo/.chef/client.rb -l debug -L /var/log/$CHEF_BASE_INSTALL_LOG\n"
 
                     ]
                   ]
@@ -348,34 +334,7 @@
               }
             },
             "commands": {
-              "01_run_script": { "command": "bash /mnt/build_base.sh > /var/log/build_base.log 2>&1" },
-              "02_configure_base_runlist": {
-                "command": {
-                  "Fn::Join": [
-                    "", [
-                      "knife node run_list add -z `knife node list -z` \"",
-                      "recipe[sophos-base-ami::base_ami]",
-
-                      "\""
-                    ]
-                  ]
-                },
-                "cwd": "/var/chef/chef-repo",
-                "env": { "HOME": "/var/chef" }
-              },
-              "03_run_chef_client": {
-                "command": {
-                  "Fn::Join": [
-                    " ", [
-                      "chef-client --no-color -z",
-                      "-c /var/chef/chef-repo/.chef/client.rb",
-                      "-l debug -L /var/log/chef-client.base_ami.install.log"
-                    ]
-                  ]
-                },
-                "cwd": "/var/chef/chef-repo",
-                "env": { "HOME": "/var/chef" }
-              }
+              "01_run_script": { "command": "bash /mnt/build_base.sh > /var/log/build_base.log 2>&1" }
             }
           },
 
@@ -589,6 +548,7 @@
                   "Fn::Join": [
                     "", [
                       "knife node run_list add -z `knife node list -z` \"",
+                      "recipe[sophos-base-ami::base_ami],",
                       "recipe[sophos-cloud-fluentd::install],",
                       "recipe[sophos-cloud-xgemail::install_monit_service],",
                       "recipe[sophos-cloud-xgemail::download_libspf2],",
