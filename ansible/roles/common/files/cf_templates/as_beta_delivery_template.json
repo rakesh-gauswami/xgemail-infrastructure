@@ -231,6 +231,11 @@
       "Type" : "String",
       "Default": ""
     },
+    "XgemailPolicyBucketName" : {
+      "Description" : "Name of the S3 Bucket where XGEMAIL policy docs are stored",
+      "Type" : "String",
+      "Default": ""
+    },
     "XgemailSnsSqsQueue": {
       "Description": "The SNS-SQS Queue where XGEMAIL messages are sent",
       "Type": "String",
@@ -704,6 +709,7 @@
                     "    \"sxl_dbl\"                                : \"{{sxl_dbl}}\",\n",
                     "    \"sxl_rbl\"                                : \"{{sxl_rbl}}\",\n",
                     "    \"xgemail_bucket_name\"                    : \"{{xgemail_bucket_name}}\",\n",
+                    "    \"xgemail_policy_bucket_name\"             : \"{{xgemail_policy_bucket_name}}\",\n",
                     "    \"xgemail_sns_sqs_url\"                    : \"{{xgemail_sns_sqs_url}}\"\n",
                     "  }\n",
                     "}\n"
@@ -731,6 +737,7 @@
                   "vpc_id":                                         { "Ref": "Vpc" },
                   "vpc_name":                                       { "Ref": "VpcName" },
                   "xgemail_bucket_name":                            { "Ref": "XgemailBucketName" },
+                  "xgemail_policy_bucket_name":                     { "Ref": "XgemailPolicyBucketName" },
                   "xgemail_sns_sqs_url":                            { "Ref": "XgemailSnsSqsQueueUrl" }
                 },
                 "mode": "000444",
