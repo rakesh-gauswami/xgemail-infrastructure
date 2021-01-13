@@ -821,20 +821,6 @@ aws:
         QueueName:                                                "{{sqs.outbound_malware_protection_unblock_sender_queue}}"
         DelaySeconds:                                             "900"
         TagApplication:                                           "xgemail-omp"
-    o365_disconnect_queue:
-      stack_name:                                                 "{{stack.sqs.o365_disconnect_queue}}"
-      state:                                                      present
-      template:                                                   "{{template.sqs.sqs_simple_template}}"
-      template_parameters:
-        QueueName:                                                "{{sqs.o365_disconnect_queue}}"
-        TagApplication:                                           "xgemail-mail"
-    o365_domainsync_queue:
-      stack_name:                                                 "{{stack.sqs.o365_domainsync_queue}}"
-      state:                                                      present
-      template:                                                   "{{template.sqs.sqs_simple_template}}"
-      template_parameters:
-        QueueName:                                                "{{sqs.o365_domainsync_queue}}"
-        TagApplication:                                           "xgemail-mail"
     policy_refresh_event_sqs_queue_sns_listener:
       stack_name:                                                 "{{stack.sqs.policy_refresh_event_sqs_queue_sns_listener}}"
       state:                                                      present
