@@ -245,7 +245,8 @@
                   "Fn::Join": [
                     "", [
                       "mkdir -p /opt/sophos/bin",
-                      "aws s3 cp s3://cloud-applications/", { "Ref": "Branch" }, "/xgemail-infrastructure/common_utils.enc /opt/sophos/bin/common_utils.enc"
+                      "aws s3 cp s3://cloud-applications/", { "Ref": "Branch" }, "/xgemail-infrastructure/common_utils.enc /opt/sophos/bin/common_utils.enc",
+                      "ls -la /opt/sophos/bin"
                     ]
                   ]
                 }
@@ -254,7 +255,7 @@
                 "command": {
                   "Fn::Join": [
                     "",
-                    [ "openssl enc -aes-256-cbc -d -in common_utils.enc -out common_utils.tar.gz -pass pass:", { "Ref": "AesDecryptionKey" } ]
+                    [ "ls -la", "openssl enc -aes-256-cbc -d -in ./common_utils.enc -out ./common_utils.tar.gz -pass pass:", { "Ref": "AesDecryptionKey" },ls -la ]
                   ]
                 },
                 "cwd": "/opt/sophos/bin"
