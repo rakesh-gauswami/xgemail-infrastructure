@@ -71,14 +71,6 @@
       "Description": "Office 365 Account Number",
       "Type": "String"
     },
-    "O365DisconnectQueue": {
-      "Description": "Office 365 Disconnect SQS Queue",
-      "Type": "String"
-    },
-    "O365DomainSyncQueue": {
-      "Description": "Office 365 DomainSync SQS Queue",
-      "Type": "String"
-    },
     "O365DisconnectEventTopicArn":{
       "Description": "Topic Arn of office 365 disconnect Events SNS",
       "Type": "String"
@@ -263,31 +255,41 @@
         ]
       }
     },
-    "O365DisconnectQueuePolicy": {
-      "Type": "AWS::SQS::QueuePolicy",
+    "O365DisconnectTopicPolicy": {
+      "Type": "AWS::SNS::TopicPolicy",
       "Properties": {
         "PolicyDocument": {
           "Version": "2012-10-17",
-          "Id": "O365DisconnectQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Id": "O365DisconnectTopicPolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
           "Statement": [
             {
               "Sid": "Allow-O365DisconnectEventTopicArn",
               "Effect": "Allow",
               "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
+              "Action": [
+                "SNS:GetTopicAttributes",
+                "SNS:SetTopicAttributes",
+                "SNS:AddPermission",
+                "SNS:RemovePermission",
+                "SNS:DeleteTopic",
+                "SNS:Subscribe",
+                "SNS:ListSubscriptionsByTopic",
+                "SNS:Publish",
+                "SNS:Receive"
+              ],
+              "Resource": {"Ref": "O365DisconnectEventTopicArn"},
               "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "O365DisconnectEventTopicArn"}
+                "StringEquals": {
+                  "AWS:SourceOwner": { "Ref" : "AWS::AccountId" }
                 }
               }
             },
             {
-              "Sid": "Allow-O365DisconnectEventTopicArnSubscription",
+              "Sid": "Allow-O365DisconnectEventQueueArnSubscription",
               "Effect": "Allow",
               "Principal": {
                 "AWS": {
-                  "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:root"
+                  "Fn::Sub": "arn:aws:iam::${O365AccountNumber}:root"
                 }
               },
               "Action": ["sns:Subscribe"],
@@ -295,34 +297,44 @@
             }
           ]
         },
-        "Queues": [{"Fn::Sub": "https://sqs.${AWS::Region}.amazonaws.com/${O365AccountNumber}/${O365DisconnectQueue}"}]
+        "Topics": [{"Ref": "O365DisconnectEventTopicArn"}]
       }
     },
-    "O365DomainSyncQueuePolicy": {
-      "Type": "AWS::SQS::QueuePolicy",
+    "O365DomainSyncTopicPolicy": {
+      "Type": "AWS::SNS::TopicPolicy",
       "Properties": {
         "PolicyDocument": {
           "Version": "2012-10-17",
-          "Id": "O365DomainSyncQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Id": "O365DomainSyncTopicPolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
           "Statement": [
             {
               "Sid": "Allow-O365DomainSyncEventTopicArn",
               "Effect": "Allow",
               "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
+              "Action": [
+                "SNS:GetTopicAttributes",
+                "SNS:SetTopicAttributes",
+                "SNS:AddPermission",
+                "SNS:RemovePermission",
+                "SNS:DeleteTopic",
+                "SNS:Subscribe",
+                "SNS:ListSubscriptionsByTopic",
+                "SNS:Publish",
+                "SNS:Receive"
+              ],
+              "Resource": {"Ref": "O365DomainSyncEventTopicArn"},
               "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "O365DomainSyncEventTopicArn"}
+                "StringEquals": {
+                  "AWS:SourceOwner": { "Ref" : "AWS::AccountId" }
                 }
               }
             },
             {
-              "Sid": "Allow-O365DomainSyncEventTopicArnSubscription",
+              "Sid": "Allow-O365DomainSyncEventQueueArnSubscription",
               "Effect": "Allow",
               "Principal": {
                 "AWS": {
-                  "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:root"
+                  "Fn::Sub": "arn:aws:iam::${O365AccountNumber}:root"
                 }
               },
               "Action": ["sns:Subscribe"],
@@ -330,7 +342,7 @@
             }
           ]
         },
-        "Queues": [{"Fn::Sub": "https://sqs.${AWS::Region}.amazonaws.com/${O365AccountNumber}/${O365DomainSyncQueue}"}]
+        "Topics": [{"Ref": "O365DomainSyncEventTopicArn"}]
       }
     }
   }

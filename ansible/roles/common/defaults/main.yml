@@ -118,8 +118,6 @@ sqs:
   notifier_request_sqs_queue:                           "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Notifier_Request"
   outbound_malware_protection_queue_sns_listener:       "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Outbound_Malware_Protection_SNS_Listener"
   outbound_malware_protection_unblock_sender_queue:     "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Outbound_Malware_Protection_Unblock_Sender"
-  o365_disconnect_queue:                                "tf-o365-xgemail-infra-disconnect-{{account.region}}-sqs"
-  o365_domainsync_queue:                                "tf-o365-xgemail-infra-domain_sync_event-{{account.region}}-sqs"
   policy_refresh_event_sqs_queue_sns_listener:          "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Policy_Refresh_Event_SNS_Listener"
   quarantine_sqs_queue:                                 "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Quarantine_Delivery"
   quarantine_sqs_queue_sns_listener:                    "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Quarantine_Delivery_SNS_Listener"
