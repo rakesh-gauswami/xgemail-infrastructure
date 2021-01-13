@@ -12,6 +12,7 @@
 
 import boto3
 import json
+from botocore.exceptions import ClientError
 
 
 class AwsHandler(object):
@@ -176,6 +177,16 @@ class AwsHandler(object):
                         return True
 
         return False
+
+    # safely check's key exists in s3 or not.
+    # Doesn't throw exception if key doesn't exist, returns boolean value.
+    def s3_key_exists(self, bucket_name, key_name):
+        try:
+            response = self.s3_client.head_object(Bucket=bucket_name, Key=key_name)
+            return response['ResponseMetadata']['HTTPStatusCode'] == 200
+        except ClientError as ce:
+            # Not found
+            return int(ce.response['Error']['Code']) != 404
 
     def list_filtered_objects(self, bucket, path_prefix, filter):
         s3_list = []
