@@ -253,13 +253,13 @@
                       "# Installing base AMI packages\n",
                       "# Create a directory for the installer\n",
 
-                      "/bin/mkdir -p /install.d\n",
-                      "cd /install.d\n",
+                      "cd \"$(/usr/bin/dirname \"$0\")\"\n",
+                      "INSTALL_DIR=\"$(pwd)\"\n",
+                      "COMMON_DIR=\"${INSTALL_DIR}/../common\"\n",
 
                       "# Create directory for sophos utilities\n",
                       "/bin/mkdir -p /opt/sophos/bin\n",
-                      "/bin/cp -r \"/tools/common/*\" \"/opt/sophos/bin\"\n",
-                      "ls -la /opt/sophos/bin\n",
+                      "/bin/cp -r \"${COMMON_DIR}\"/* \"/opt/sophos/bin\"\n",
 
                       "# Update the common profile\n",
                       "cat <<'EOF' >\"/etc/profile.d/sophos.sh\"\n",
