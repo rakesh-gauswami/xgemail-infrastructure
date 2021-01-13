@@ -167,24 +167,6 @@
         "RawMessageDelivery": "true"
       }
     },
-    "O365DisconnectQueueToO365DisconnectSnsSubscription": {
-      "Type" : "AWS::SNS::Subscription",
-      "Properties": {
-        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "O365DisconnectQueue"}]]},
-        "Protocol": "sqs",
-        "TopicArn": { "Ref": "O365DisconnectEventTopicArn"},
-        "RawMessageDelivery": "true"
-      }
-    },
-    "O365DomainSyncQueueToO365DomainSyncSnsSubscription": {
-      "Type" : "AWS::SNS::Subscription",
-      "Properties": {
-        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "O365DomainSyncQueue"}]]},
-        "Protocol": "sqs",
-        "TopicArn": { "Ref": "O365DomainSyncEventTopicArn"},
-        "RawMessageDelivery": "true"
-      }
-    },
     "BetaDeliveryQueuePolicy": {
       "Type": "AWS::SQS::QueuePolicy",
       "Properties": {
@@ -305,7 +287,7 @@
               "Effect": "Allow",
               "Principal": {
                 "AWS": {
-                  "Fn::Sub": "arn:aws:iam::${O365AccountNumber}:root"
+                  "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:root"
                 }
               },
               "Action": ["sns:Subscribe"],
@@ -313,7 +295,7 @@
             }
           ]
         },
-        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "O365DisconnectQueue" }]]}]
+        "Queues": [{"Fn::Sub": "https://sqs.${AWS::Region}.amazonaws.com/${O365AccountNumber}/${O365DisconnectQueue}"}]
       }
     },
     "O365DomainSyncQueuePolicy": {
@@ -340,7 +322,7 @@
               "Effect": "Allow",
               "Principal": {
                 "AWS": {
-                  "Fn::Sub": "arn:aws:iam::${O365AccountNumber}:root"
+                  "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:root"
                 }
               },
               "Action": ["sns:Subscribe"],
@@ -348,7 +330,7 @@
             }
           ]
         },
-        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "O365DomainSyncQueue" }]]}]
+        "Queues": [{"Fn::Sub": "https://sqs.${AWS::Region}.amazonaws.com/${O365AccountNumber}/${O365DomainSyncQueue}"}]
       }
     }
   }
