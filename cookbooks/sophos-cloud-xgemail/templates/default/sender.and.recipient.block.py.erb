@@ -16,24 +16,22 @@
 #
 # Examples.
 # To block an email address at MAIL FROM event:
-# sudo python /opt/sophos/xgemail/utils/inbound_sender_and_recipient_block_api.py
+# sudo python /opt/sophos/xgemail/utils/sender_and_recipient_block.py
 #   --event-type BLOCK_ENVELOPE_SENDER --block --email-address sender@example.com
 #
 # To block a domain name for all recipient addresses at RCPT TO event:
-# sudo python /opt/sophos/xgemail/utils/inbound_sender_and_recipient_block_api.py
+# sudo python /opt/sophos/xgemail/utils/sender_and_recipient_block.py
 #   --event-type BLOCK_RECIPIENT --block --domain example.com
 #
 # To Unblock a domain name for all recipient addresses at RCPT TO event:
-# sudo python /opt/sophos/xgemail/utils/inbound_sender_and_recipient_block_api.py
+# sudo python /opt/sophos/xgemail/utils/sender_and_recipient_block.py
 #   --event-type BLOCK_RECIPIENT --unblock --domain example.com
 #
 # To get configuration for an email address:
-# sudo python /opt/sophos/xgemail/utils/inbound_sender_and_recipient_block_api.py
-#    --get-email  test@example.com
+# sudo python /opt/sophos/xgemail/utils/sender_and_recipient_block.py --get-email  test@example.com
 
 # To get configuration for a domain name:
-# sudo python /opt/sophos/xgemail/utils/inbound_sender_and_recipient_block_api.py
-#    --get-domain gmail.com
+# sudo python /opt/sophos/xgemail/utils/sender_and_recipient_block.py --get-domain gmail.com
 
 import sys
 sys.path.append("<%= @xgemail_utils_path %>")
@@ -64,7 +62,7 @@ ACCOUNT =  "<%= @account %>"
 
 # logging to syslog setup
 logging.getLogger("botocore").setLevel(logging.WARNING)
-logger = logging.getLogger('inbound_sender_and_recipient_block_api')
+logger = logging.getLogger('sender_and_recipient_block')
 logger.setLevel(logging.DEBUG)
 syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
 formatter = logging.Formatter(
