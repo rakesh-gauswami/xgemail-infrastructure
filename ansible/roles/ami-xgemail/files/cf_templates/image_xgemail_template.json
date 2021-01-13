@@ -254,8 +254,11 @@
               "02_decrypt_common_utils": {
                 "command": {
                   "Fn::Join": [
-                    "",
-                    [ "ls -la\n", "openssl enc -aes-256-cbc -d -in ./common_utils.enc -out ./common_utils.tar.gz -pass pass:", { "Ref": "AesDecryptionKey" }"\n", "ls -la\n" ]
+                    "", [
+                      "ls -la\n",
+                      "openssl enc -aes-256-cbc -d -in ./common_utils.enc -out ./common_utils.tar.gz -pass pass:", { "Ref": "AesDecryptionKey" }, "\n",
+                      "ls -la\n"
+                    ]
                   ]
                 },
                 "cwd": "/opt/sophos/bin"
