@@ -67,6 +67,10 @@
       "Description": "Endpoint for message statistics SQS queue",
       "Type": "String"
     },
+    "O365AccountNumber": {
+      "Description": "Office 365 Account Number",
+      "Type": "String"
+    },
     "O365DisconnectQueue": {
       "Description": "Office 365 Disconnect SQS Queue",
       "Type": "String"
@@ -295,6 +299,17 @@
                   "aws:SourceArn": {"Ref": "O365DisconnectEventTopicArn"}
                 }
               }
+            },
+            {
+              "Sid": "Allow-O365DisconnectEventTopicArnSubscription",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::Sub": "arn:aws:iam::${O365AccountNumber}:root"
+                }
+              },
+              "Action": ["sns:Subscribe"],
+              "Resource": {"Ref": "O365DisconnectEventTopicArn"}
             }
           ]
         },
@@ -319,6 +334,17 @@
                   "aws:SourceArn": {"Ref": "O365DomainSyncEventTopicArn"}
                 }
               }
+            },
+            {
+              "Sid": "Allow-O365DomainSyncEventTopicArnSubscription",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::Sub": "arn:aws:iam::${O365AccountNumber}:root"
+                }
+              },
+              "Action": ["sns:Subscribe"],
+              "Resource": {"Ref": "O365DomainSyncEventTopicArn"}
             }
           ]
         },
