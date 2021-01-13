@@ -66,7 +66,7 @@ template CUSTOMER_DIRECTORY_CUSTOM_TRANSPORT_SCRIPT_PATH do
     :aws_region => AWS_REGION,
     :xgemail_utils_path => XGEMAIL_UTILS_DIR,
     :account => ACCOUNT,
-    :policy_bucket => POLICY_BUCKET_NAME,
+    :policy_bucket => POLICY_BUCKET,
     :customer_delivery_transport_filename => CUSTOM_TRANSPORT_FILE_NAME
   )
 end
