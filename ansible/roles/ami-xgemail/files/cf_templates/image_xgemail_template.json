@@ -228,6 +228,7 @@
         "AWS::CloudFormation::Init": {
           "configSets": {
             "svcapi_install": [
+              "install_common_utils",
               "build_base",
               "install_volumes",
               "install_cfn",
@@ -237,9 +238,44 @@
             ]
           },
 
+          "install_common_utils": {
+            "commands": {
+              "01_get_common_utils": {
+                "command": {
+                  "Fn::Join": [
+                    "", [
+                      "mkdir -p /opt/sophos/bin\n",
+                      "aws s3 cp s3://cloud-applications/", { "Ref": "Branch" }, "/xgemail-infrastructure/common_utils.enc /opt/sophos/bin/common_utils.enc"
+                    ]
+                  ]
+                },
+                "cwd": "/opt/sophos/bin",
+                "env": {
+                  "HOME": "/opt/sophos/bin"
+                }
+              },
+              "02_decrypt_common_utils": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [ "openssl enc -aes-256-cbc -d -in /opt/sophos/bin/common_utils.enc -out /opt/sophos/bin/common_utils.tar.gz -pass pass:", { "Ref": "AesDecryptionKey" } ]
+                  ]
+                },
+                "cwd": "/opt/sophos/bin",
+                "env": {
+                  "HOME": "/opt/sophos/bin"
+                }
+              },
+              "03_unpack_common_utils": {
+                "command": "tar xvf /opt/sophos/bin/common_utils.tar.gz",
+                "cwd": "/opt/sophos/bin"
+              }
+            }
+          },
+
           "build_base": {
             "files": {
-              "/mnt/build_base.sh": {
+              "/tmp/build_base.sh": {
                 "content": {
                   "Fn::Join": [
                     "", [
@@ -251,14 +287,6 @@
                       "set -o pipefail # Pipeline status comes from last error, not last command.\n",
 
                       "# Installing base AMI packages\n",
-
-                      "cd \"$(/usr/bin/dirname \"$0\")\"\n",
-                      "INSTALL_DIR=\"$(pwd)\"\n",
-                      "COMMON_DIR=\"${INSTALL_DIR}/../common\"\n",
-
-                      "# Create directory for sophos utilities\n",
-                      "/bin/mkdir -p /opt/sophos/bin\n",
-                      "/bin/cp -r \"${COMMON_DIR}\"/* \"/opt/sophos/bin\"\n",
 
                       "# Update the common profile\n",
                       "cat <<'EOF' >\"/etc/profile.d/sophos.sh\"\n",
@@ -278,17 +306,6 @@
                       "    fi\n",
                       "fi\n",
                       "EOF\n",
-
-                      "# Install latest kernel\n",
-                      "/usr/bin/yum update -y -t -v kernel\n",
-                      "# Install all security updates\n",
-                      "/usr/bin/yum update -y -t --security\n",
-                      "# Install CloudFormation support\n",
-                      "/usr/bin/yum update -y -t aws-cfn-bootstrap\n",
-                      "# Install awslogs for mirroring log files to AWS CloudWatch\n",
-                      "/usr/bin/yum install -y -t awslogs\n",
-                      "# Configure S3 to enable KMS/SSE requests\n",
-                      "/usr/bin/aws configure set default.s3.signature_version s3v4\n",
 
                       "CHEFDK_VERSION=0.2.0-2.el6\n",
                       "CHEFDK_RPM=chefdk-${CHEFDK_VERSION}.x86_64.rpm\n",
@@ -333,7 +350,7 @@
               }
             },
             "commands": {
-              "01_run_script": { "command": "bash /mnt/build_base.sh > /var/log/build_base.log 2>&1" }
+              "01_run_script": { "command": "bash /tmp/build_base.sh > /var/log/build_base.log 2>&1" }
             }
           },
 
@@ -699,9 +716,13 @@
 
                 "# Install all security and aws updates.\n",
 
+                "yum update -y -t -v kernel\n",
                 "yum update -y -t --security\n",
                 "yum update -y -t aws-amitools-ec2\n",
                 "yum update -y -t aws-cfn-bootstrap\n",
+
+                "# Install awslogs for mirroring log files to AWS CloudWatch.\n",
+                "yum install -y -t awslogs\n",
 
                 "# Read metadata and configure system accordingly.\n",
 
