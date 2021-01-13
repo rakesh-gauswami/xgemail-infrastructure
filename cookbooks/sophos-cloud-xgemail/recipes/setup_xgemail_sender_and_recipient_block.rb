@@ -37,7 +37,7 @@ ACCOUNT                 = node['sophos_cloud']['environment']
 XGEMAIL_FILES_DIR       = node['xgemail']['xgemail_files_dir']
 XGEMAIL_UTILS_DIR       = node['xgemail']['xgemail_utils_files_dir']
 
-SENDER_AND_RECIPIENT_BLOCK_SCRIPT      = "sender.and.recipient.block.py"
+SENDER_AND_RECIPIENT_BLOCK_SCRIPT      = "sender-and-recipient-block.py"
 SENDER_AND_RECIPIENT_BLOCK_SCRIPT_PATH = "#{XGEMAIL_UTILS_DIR}/#{SENDER_AND_RECIPIENT_BLOCK_SCRIPT}"
 
 #directory for block list script
