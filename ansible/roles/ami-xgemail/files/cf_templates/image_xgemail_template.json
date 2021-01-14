@@ -285,6 +285,8 @@
 
                       "# Installing base AMI packages\n",
 
+                      "mkdir -p /var/log/sophos\n",
+
                       "# Update the common profile\n",
                       "cat <<'EOF' >\"/etc/profile.d/sophos.sh\"\n",
                       "PATH=${PATH}:/opt/sophos/bin\n",
@@ -337,7 +339,8 @@
 
                       "CHEF_BASE_INSTALL_LOG=chef-$(date +\"%Y%m%d.%H%M%S\").base_ami.install_chef.log\n",
                       "/bin/touch /var/log/$CHEF_BASE_INSTALL_LOG\n",
-                      "chef-client -z --no-color -c /var/chef/chef-repo/.chef/client.rb -l debug -L /var/log/$CHEF_BASE_INSTALL_LOG\n"
+                      "chef-client -z --no-color -c /var/chef/chef-repo/.chef/client.rb -l debug -L /var/log/$CHEF_BASE_INSTALL_LOG\n",
+                      "touch /var/log/sophos/chef-reset_chef.log\n"
 
                     ]
                   ]
@@ -463,7 +466,6 @@
                   "Fn::Join": [
                     "", [
                       "set -o xtrace   # Print commands and their arguments as they are executed.\n",
-                      "touch /var/log/sophos/chef-reset_chef.log\n",
                       "/opt/sophos/bin/reset_chef.sh\n"
                     ]
                   ]
