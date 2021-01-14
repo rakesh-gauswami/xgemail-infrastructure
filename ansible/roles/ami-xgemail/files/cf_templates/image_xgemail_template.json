@@ -459,7 +459,15 @@
           "reset_chef": {
             "commands": {
               "01_reset_chef": {
-                "command": "/opt/sophos/bin/reset_chef.sh"
+                "command": {
+                  "Fn::Join": [
+                    "", [
+                      "set -o xtrace   # Print commands and their arguments as they are executed.\n",
+                      "ls -la /opt/sophos/bin/\n",
+                      "/opt/sophos/bin/reset_chef.sh\n"
+                    ]
+                  ]
+                }
               }
             }
           },
