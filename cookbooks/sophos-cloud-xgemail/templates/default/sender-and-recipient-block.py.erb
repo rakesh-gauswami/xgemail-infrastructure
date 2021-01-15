@@ -354,16 +354,16 @@ if __name__ == '__main__':
 
   if args.get_email is not None:
     if config_data['email_addresses'].has_key(args.get_email):
-      print(config_data["email_addresses"][args.get_email])
+      print(json.dumps(config_data["email_addresses"][args.get_email]))
   elif args.get_domain is not None:
     if config_data['domains'].has_key(args.get_domain):
-      print(config_data["domains"][args.get_domain])
+      print(json.dumps(config_data["domains"][args.get_domain]))
   elif args.get_all is True:
     print('Domains config:')
-    print(config_data["domains"])
+    print(json.dumps(config_data["domains"]))
 
     print('Email addresses config:')
-    print(config_data["email_addresses"])
+    print(json.dumps(config_data["email_addresses"]))
   else:
     # Validate args required for updating config
     validate_args(args)
