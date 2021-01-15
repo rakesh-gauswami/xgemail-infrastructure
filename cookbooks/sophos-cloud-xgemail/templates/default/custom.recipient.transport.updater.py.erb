@@ -40,12 +40,11 @@ def argument_parser():
     parser.add_argument('--customer_id', metavar='customer_id',help="Customer id for which custom mail routing config is added.")
     args = parser.parse_args()
     portRange = range(1024, 65353)
-    domainOrEmail = str(args.domainOrEmail).strip()
     if args.command == "DELETE":
-        if domainOrEmail is None:
+        if args.domainOrEmail is None:
             parser.error("domainOrEmail is required attribute with command Delete")
     if args.command == "ADD_UPDATE":
-        if domainOrEmail is None or args.destination is None or args.destination_type is None or args.port is None or args.customer_id is None:
+        if args.domainOrEmail is None or args.destination is None or args.destination_type is None or args.port is None or args.customer_id is None:
             parser.error("All parameter are require for ADD/UPDATE record")
         if args.port not in portRange:
             parser.error("Warning: Port should be in range(1024-65353) ")
@@ -64,7 +63,7 @@ if __name__ == "__main__":
             record = {}
     args = argument_parser()
     command = args.command
-    domainOrEmail = str(args.domainOrEmail).strip()
+    domainOrEmail = args.domainOrEmail
     if command == "ADD_UPDATE":
         if domainOrEmail is not None and domainOrEmail in record.keys():
             newObject = {}
