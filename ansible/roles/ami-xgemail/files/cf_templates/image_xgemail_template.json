@@ -345,9 +345,11 @@
                       "chmod 0444 /var/chef/chef-repo/.chef/client.rb\n",
                       "cat /var/chef/chef-repo/.chef/client.rb\n",
 
-                      "touch /var/log/chef-client.base_ami.install.service.log\n",
+                      "CHEF_BASE_INSTALL_LOG=chef-$(date +\"%Y%m%d.%H%M%S\").base_ami.install_chef.log\n",
+                      "touch /var/log/$CHEF_BASE_INSTALL_LOG\n",
                       "touch /var/log/sophos/chef-reset_chef.log\n",
-                      "touch /var/log/sophos/reset_cookbooks.output\n"
+                      "touch /var/log/sophos/reset_cookbooks.output\n",
+                      "chef-client -z --no-color -c /var/chef/chef-repo/.chef/client.rb -l debug -L /var/log/$CHEF_BASE_INSTALL_LOG\n"
 
                     ]
                   ]
@@ -357,37 +359,7 @@
               }
             },
             "commands": {
-              "01_run_script": { "command": "bash /tmp/build_base.sh > /var/log/build_base.log 2>&1" },
-              "02_configure_node_run_list": {
-                "command": {
-                  "Fn::Join": [
-                    "", [
-                      "knife node run_list add -z `knife node list -z` \"",
-                      "recipe[sophos-base-ami::base_ami]",
-
-                      "\""
-                    ]
-                  ]
-                },
-                "cwd": "/var/chef/chef-repo",
-                "env": { "HOME": "/var/chef" }
-              },
-              "03_run_chef_client": {
-                "command": {
-                  "Fn::Join": [
-                    " ", [
-                      "chef-client --no-color -z",
-                      "-c /var/chef/chef-repo/.chef/client.rb",
-                      "-j /var/sophos/cookbooks/attributes.json",
-                      "-l debug -L /var/log/chef-client.base_ami.install.service.log"
-
-                    ]
-                  ]
-                },
-                "cwd": "/var/chef/chef-repo",
-                "env": { "HOME": "/var/chef" }
-              }
-
+              "01_run_script": { "command": "bash /tmp/build_base.sh > /var/log/build_base.log 2>&1" }
             }
           },
 
@@ -400,7 +372,7 @@
                       "#!/bin/bash\n",
                       "# Install the additional volumes\n",
                       "echo '/dev/xvdf  /data           ext4    defaults      0   0' >> /etc/fstab\n",
-                      "#echo '/dev/xvdg  /var            ext4    defaults      0   0' >> /etc/fstab\n",
+                      "echo '/dev/xvdg  /var            ext4    defaults      0   0' >> /etc/fstab\n",
                       "echo '/dev/xvdh  /tmp            ext4    defaults,noexec,nosuid      0   0' >> /etc/fstab\n",
                       "echo 'updated /etc/fstab'\n",
                       "mkfs -t ext4 /dev/xvdf\n",
