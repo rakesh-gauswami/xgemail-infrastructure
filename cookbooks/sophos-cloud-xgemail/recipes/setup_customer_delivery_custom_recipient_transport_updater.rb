@@ -40,7 +40,7 @@ XGEMAIL_UTILS_DIR               = node['xgemail']['xgemail_utils_files_dir']
 POLICY_BUCKET                   = node['xgemail']['xgemail_policy_bucket_name']
 
 PACKAGE_DIR                                     = "#{XGEMAIL_FILES_DIR}/customer-delivery-custom-transport"
-CUSTOMER_DIRECTORY_CUSTOM_TRANSPORT_SCRIPT      = 'customer.delivery.custom-recipient-transport.updater.py'
+CUSTOMER_DIRECTORY_CUSTOM_TRANSPORT_SCRIPT      = 'custom.recipient.transport.updater.py'
 CUSTOMER_DIRECTORY_CUSTOM_TRANSPORT_SCRIPT_PATH = "#{PACKAGE_DIR}/#{CUSTOMER_DIRECTORY_CUSTOM_TRANSPORT_SCRIPT}"
 
 
