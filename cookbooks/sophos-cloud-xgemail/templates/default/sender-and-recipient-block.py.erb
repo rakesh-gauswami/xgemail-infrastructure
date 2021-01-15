@@ -16,22 +16,22 @@
 #
 # Examples.
 # To block an email address at MAIL FROM event:
-# sudo python /opt/sophos/xgemail/utils/sender-and-recipient-block.py
+# sudo python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --direction outbound
 #   --event-type BLOCK_ENVELOPE_SENDER --block --email-address sender@example.com
 #
 # To block a domain name for all recipient addresses at RCPT TO event:
-# sudo python /opt/sophos/xgemail/utils/sender-and-recipient-block.py
+# sudo python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --direction inbound
 #   --event-type BLOCK_RECIPIENT --block --domain example.com
 #
 # To Unblock a domain name for all recipient addresses at RCPT TO event:
-# sudo python /opt/sophos/xgemail/utils/sender-and-recipient-block.py
+# sudo python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --direction inbound
 #   --event-type BLOCK_RECIPIENT --unblock --domain example.com
 #
 # To get configuration for an email address:
-# sudo python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --get-email  test@example.com
+# sudo python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --direction inbound --get-email  test@example.com
 
 # To get configuration for a domain name:
-# sudo python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --get-domain gmail.com
+# sudo python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --direction inbound --get-domain gmail.com
 
 import sys
 sys.path.append("<%= @xgemail_utils_path %>")
@@ -139,7 +139,7 @@ def get_parsed_args(parser):
   parser.add_argument(
     '--get-all',
     dest='get_all',
-    default=None,
+    action = 'store_true',
     help='Get all config details for email addresses and domain names both'
   )
 
@@ -358,7 +358,7 @@ if __name__ == '__main__':
   elif args.get_domain is not None:
     if config_data['domains'].has_key(args.get_domain):
       print(config_data["domains"][args.get_domain])
-  elif args.get_all is not None:
+  elif args.get_all is True:
     print('Domains config:')
     print(config_data["domains"])
 
