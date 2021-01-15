@@ -289,7 +289,7 @@
 
                       "# Update the common profile\n",
 
-                      "cat <<EOF >/etc/profile.d/sophos.sh\n",
+                      "cat <<EOF > /etc/profile.d/sophos.sh\n",
                       "PATH=${PATH}:/opt/sophos/bin\n",
                       "# Custom login prompt.\n",
                       "# 1. Show current user.\n",
@@ -300,11 +300,11 @@
                       "    IPADDR=`/usr/bin/wget -q -O- http://169.254.169.254/latest/meta-data/local-ipv4`\n",
                       "    if [ -r /opt/sophos/service ]; then\n",
                       "        SERVICE=`head -1 /opt/sophos/service`\n",
-                      "        PS1=\"[\\u@${IPADDR}:${SERVICE} \\W]\\\\$ \"\n",
+                      "        PS1=\"[\u@${IPADDR}:${SERVICE} \W]\\$ \"\n",
                       "    else\n",
                       "        PS1=\"[\\u@${IPADDR} \\W]\\\\$ \"\n",
                       "    fi\n",
-                      "fi\n",
+                      "fi,\n",
                       "EOF\n",
                       "cat /etc/profile.d/sophos.sh\n",
 
@@ -331,7 +331,7 @@
                       ")\n",
                       "pwd\n",
 
-                      "cat <<EOF >/var/chef/chef-repo/.chef/knife.rb\n",
+                      "cat <<EOF > /var/chef/chef-repo/.chef/knife.rb\n",
                       "cookbook_path %w[/var/chef/chef-repo/cookbooks]\n",
                       "node_path     %w[/var/chef/chef-repo/nodes]\n",
                       "EOF\n",
