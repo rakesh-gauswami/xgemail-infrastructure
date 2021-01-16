@@ -33,6 +33,9 @@
       KeyName:                              "public-{{account.region}}"
       LifecycleHookLaunching:               "{{aws.asg.dx.lifecycle_hook_launching}}"
       LoadBalancerName:                     "{{elb_stack_output.stack_outputs.LoadBalancerId}}"
+      MsgHistoryV2BucketName:               "{{s3.msg_history_v2_bucket_name}}"
+      MsgHistoryV2DynamoDbTableName:        "{{dynamodb.msg_history_v2_dynamodb}}"
+      MsgHistoryV2StreamName:               "{{kinesis.firehose.msg_history_v2_stream_name}}"
       S3CookbookRepositoryURL:              "//cloud-{{account.name}}-templates/{{build.branch}}/xgemail-infrastructure/cookbooks.enc"
       ScaleDownOnWeekends:                  "{{weekend_scale_down}}"
       SecurityGroups:                       "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.XgemailDeltaXdeliverySecurityGroup}},{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.SecurityGroupBase}}"
@@ -48,6 +51,7 @@
       XgemailMsgHistoryStatusQueueUrl:      "{{sqs.url_prefix}}{{sqs.msg_history_status_sqs_queue_sns_listener}}"
       XgemailMsgHistoryStatusSnsArn:        "{{sns.arn_prefix}}{{sns.msg_history_status_sns_topic}}"
       XgemailNotifierQueueUrl:              "{{sqs.url_prefix}}{{sqs.notifier_request_sqs_queue}}"
+      XgemailPolicyBucketName:              "{{s3.policy_bucket}}"
       XgemailServiceType:                   "delta-xdelivery"
   with_together:
     - "{{aws.asg.dx.stack_number}}"

@@ -45,8 +45,8 @@ LIBOPENDKIM_VERSION = node['xgemail']['libopendkim_version']
 LIBOPENDKIM_PACKAGE_NAME = "libopendkim-#{LIBOPENDKIM_VERSION}"
 
 NODE_IP = node['ipaddress']
-MSG_HISTORY_STREAM_NAME = node['xgemail']['msg_history_stream_name']
-MSG_HISTORY_FAILURE_BUCKET_NAME = node['xgemail']['msg_history_failure_bucket_name']
+MSG_HISTORY_V2_STREAM_NAME = node['xgemail']['msg_history_v2_stream_name']
+MSG_HISTORY_V2_BUCKET_NAME = node['xgemail']['msg_history_v2_bucket_name']
 MSG_HISTORY_EVENT_DIR = node['xgemail']['mh_event_storage_dir']
 MSG_HISTORY_EVENT_PROCESSOR_POOL_SIZE = node['xgemail']['mh_event_processor_pool_size']
 MSG_HISTORY_EVENT_PROCESSOR_PORT = node['xgemail']['mh_event_processor_port']
@@ -178,8 +178,8 @@ template 'xgemail.jilter.properties' do
       :internet_submit_bucket => INTERNET_SUBMIT_BUCKET_NAME,
       :jilter_helo_telemetry_stream => JILTER_HELO_TELEMETRY_STREAM_NAME,
       :node_ip => NODE_IP,
-      :msg_history_stream_name => MSG_HISTORY_STREAM_NAME,
-      :msg_history_failure_bucket_name => MSG_HISTORY_FAILURE_BUCKET_NAME,
+      :msg_history_v2_stream_name => MSG_HISTORY_V2_STREAM_NAME,
+      :msg_history_v2_bucket_name => MSG_HISTORY_V2_BUCKET_NAME,
       :msg_history_event_dir => MSG_HISTORY_EVENT_DIR,
       :msg_history_event_processor_pool_size => MSG_HISTORY_EVENT_PROCESSOR_POOL_SIZE,
       :msg_history_event_processor_port => MSG_HISTORY_EVENT_PROCESSOR_PORT

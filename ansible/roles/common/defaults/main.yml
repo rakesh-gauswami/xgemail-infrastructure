@@ -46,7 +46,7 @@ kinesis:
     arn_prefix:                                         "arn:aws:firehose:{{account.region}}:{{aws_account_id}}:deliverystream/"
     firehose_log_shipper_stream:                        "firehose-log-shipper-stream-{{account.region}}-{{vpc.cloud_email.name}}"
     jilter_helo_telemetry_stream:                       "tf-jilter-helo-telemetry-{{account.region}}-{{account.name}}-firehose"
-    msg_history_stream_name:                            "tf-xgemail-msghistory-{{account.region}}-{{account.name}}-firehose"
+    msg_history_v2_stream_name:                         "tf-xgemail-msghistory-{{account.region}}-{{account.name}}-firehose"
 kms:
   key:
     alias:                                              "cloud-{{account.name}}-storage"
@@ -73,7 +73,7 @@ s3:
   delivery_director_bucket:                             "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-deliverydir"
   lambda_bucket:                                        "cloud-{{account.name}}-{{account.region}}-lambda"
   logs_bucket:                                          "logs-sophos-msg-{{account.name}}-{{account.region}}"
-  msg_history_failure_bucket_name:                      "tf-xgemail-msghistory-v2-{{account.region}}-{{account.name}}-bucket"
+  msg_history_v2_bucket_name:                           "private-cloud-{{account.name}}-{{account.region}}-{{vpc.cloud_email.name|lower}}-xgemail-msg-hist-ms"
 # CloudEmail SQS Queue Names.
 sqs:
   arn_prefix:                                           "arn:aws:sqs:{{account.region}}:{{aws_account_id}}:"
@@ -118,8 +118,6 @@ sqs:
   notifier_request_sqs_queue:                           "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Notifier_Request"
   outbound_malware_protection_queue_sns_listener:       "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Outbound_Malware_Protection_SNS_Listener"
   outbound_malware_protection_unblock_sender_queue:     "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Outbound_Malware_Protection_Unblock_Sender"
-  o365_disconnect_queue:                                "{{account.name}}-Xgemail-O365_Disconnect_Queue"
-  o365_domainsync_queue:                                "{{account.name}}-Xgemail-O365_DomainSync_Queue"
   policy_refresh_event_sqs_queue_sns_listener:          "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Policy_Refresh_Event_SNS_Listener"
   quarantine_sqs_queue:                                 "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Quarantine_Delivery"
   quarantine_sqs_queue_sns_listener:                    "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Quarantine_Delivery_SNS_Listener"
@@ -177,7 +175,7 @@ sdb:
   volume_tracker_sdb:                                   "{{volume_tracker_sdb_output.ansible_facts.cloudformation[stack.sdb.volume_tracker_sdb].stack_outputs.SimpleDbDomain}}"
 dynamodb:
   delivery_director_dynamodb:                           "tf-delivery-director"
-  msg_history_dynamodb:                                 "tf-msghistory"
+  msg_history_v2_dynamodb:                              "tf-msghistory"
 
 # CloudEmail Stack Names
 stack:
@@ -330,8 +328,6 @@ stack:
     notifier_request_sqs_queue:                         "{{vpc.cloud_email.name}}-XGEMAIL-notifier-request-SQS"
     outbound_malware_protection_queue_sns_listener:     "{{vpc.cloud_email.name}}-XGEMAIL-outbound-malware-protection-SQS-SNS-listener"
     outbound_malware_protection_unblock_sender_queue:   "{{vpc.cloud_email.name}}-XGEMAIL-outbound-malware-protection-unblock-sender"
-    o365_disconnect_queue:                              "{{vpc.cloud_email.name}}-XGEMAIL-o365-disconnect-SQS"
-    o365_domainsync_queue:                              "{{vpc.cloud_email.name}}-XGEMAIL-o365-domainSync-SQS"
     policy_refresh_event_sqs_queue_sns_listener:        "{{vpc.cloud_email.name}}-XGEMAIL-policy-refresh-event-SQS-SNS-listener"
     quarantine_sqs_queue:                               "{{vpc.cloud_email.name}}-XGEMAIL-quarantine-SQS"
     quarantine_sqs_queue_sns_listener:                  "{{vpc.cloud_email.name}}-XGEMAIL-quarantine-SQS-SNS-listener"

@@ -21,14 +21,18 @@ raise "Unsupported node type [#{NODE_TYPE}]" if INSTANCE_DATA.nil?
 INSTANCE_NAME = INSTANCE_DATA[:instance_name]
 raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 
-if NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'encryption-delivery' || 
-    NODE_TYPE == 'risky-delivery' || NODE_TYPE == 'warmup-delivery' || NODE_TYPE == 'beta-delivery' || NODE_TYPE == 'delta-delivery'
-
-    # cron job delete files older than 1 day (1440 hours) every 1 hour
+# add the cron job in all 13 delivery servers
+if NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'risky-delivery' ||
+    NODE_TYPE == 'warmup-delivery' || NODE_TYPE == 'beta-delivery' || NODE_TYPE == 'delta-delivery' ||
+    NODE_TYPE == 'xdelivery' || NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery' ||
+    NODE_TYPE == 'warmup-xdelivery' || NODE_TYPE == 'beta-xdelivery' || NODE_TYPE == 'delta-xdelivery'||
+    NODE_TYPE == 'encryption-delivery'
+    # this is a housekeeping job only. the files in the dir will be deleted by the delivery event processor within minutes.
+    # cron job deletes files older than 6 days;  based on default maximal_queue_lifetime postfix conf of 5 days
     cron "#{INSTANCE_NAME}-mh-cleanup-cron" do
       hour '*/1'
       user 'root'
-      command "find #{MH_MAIL_INFO_STORAGE_DIR} -type f -mmin +1440 -delete"
+      command "find #{MH_MAIL_INFO_STORAGE_DIR} -type f -mtime +6 -delete"
     end
-  
+
 end

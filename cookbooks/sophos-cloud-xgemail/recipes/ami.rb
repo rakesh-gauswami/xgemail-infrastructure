@@ -128,6 +128,9 @@ JILTER_OUTBOUND_PACKAGE_NAME = "xgemail-jilter-outbound-#{JILTER_OUTBOUND_VERSIO
 JILTER_ENCRYPTION_VERSION = node['xgemail']['jilter_encryption_version']
 JILTER_ENCRYPTION_PACKAGE_NAME = "xgemail-jilter-encryption-#{JILTER_ENCRYPTION_VERSION}"
 
+JILTER_DELIVERY_VERSION = node['xgemail']['jilter_delivery_version']
+JILTER_DELIVERY_PACKAGE_NAME = "xgemail-jilter-delivery-#{JILTER_DELIVERY_VERSION}"
+
 POSTFIX3_RPM = "postfix3-sophos-#{node['xgemail']['postfix3_version']}.el6.x86_64.rpm"
 
 directory SOPHOS_BIN_DIR do
@@ -219,6 +222,30 @@ execute 'extract_jilter_encryption_package' do
   EOH
 end
 
+# Create a sym link to xgemail-jilter-encryption
+link "#{DEPLOYMENT_DIR}/xgemail-jilter-encryption" do
+  to "#{DEPLOYMENT_DIR}/#{JILTER_ENCRYPTION_PACKAGE_NAME}"
+end
+
+execute 'download_jilter_delivery' do
+  user 'root'
+  cwd "#{PACKAGES_DIR}"
+  command <<-EOH
+      aws --region us-west-2 s3 cp s3:#{sophos_thirdparty}/xgemail/#{JILTER_DELIVERY_PACKAGE_NAME}.tar .
+  EOH
+end
+
+execute 'extract_jilter_delivery_package' do
+  user 'root'
+  cwd "#{PACKAGES_DIR}"
+  command <<-EOH
+      tar xf #{JILTER_DELIVERY_PACKAGE_NAME}.tar -C #{DEPLOYMENT_DIR}
+  EOH
+end
+
+link "#{DEPLOYMENT_DIR}/xgemail-jilter-delivery" do
+  to "#{DEPLOYMENT_DIR}/#{JILTER_DELIVERY_PACKAGE_NAME}"
+end
 
 # Create a sym link to xgemail-jilter-encryption
 link "#{DEPLOYMENT_DIR}/xgemail-jilter-encryption" do
@@ -241,6 +268,13 @@ directory "#{DEPLOYMENT_DIR}/#{JILTER_OUTBOUND_PACKAGE_NAME}/conf" do
 end
 
 directory "#{DEPLOYMENT_DIR}/#{JILTER_ENCRYPTION_PACKAGE_NAME}/conf" do
+  mode '0755'
+  owner 'root'
+  group 'root'
+  recursive true
+end
+
+directory "#{DEPLOYMENT_DIR}/#{JILTER_DELIVERY_PACKAGE_NAME}/conf" do
   mode '0755'
   owner 'root'
   group 'root'
@@ -270,6 +304,15 @@ end
 
   template "launch_darkly_#{cur}.properties" do
     path "#{DEPLOYMENT_DIR}/#{JILTER_ENCRYPTION_PACKAGE_NAME}/conf/launch_darkly_#{cur}.properties"
+    source 'jilter-launch-darkly.properties.erb'
+    mode '0700'
+    variables(
+        :launch_darkly_key => node['xgemail']["launch_darkly_#{cur}"]
+    )
+  end
+
+  template "launch_darkly_#{cur}.properties" do
+    path "#{DEPLOYMENT_DIR}/#{JILTER_DELIVERY_PACKAGE_NAME}/conf/launch_darkly_#{cur}.properties"
     source 'jilter-launch-darkly.properties.erb'
     mode '0700'
     variables(
@@ -362,4 +405,15 @@ template SYSCTL_FILE do
     :SYSCTL_TCP_WINDOW_SCALING => node['xgemail']['sysctl_tcp_window_scaling']
   )
   notifies :run, "execute[#{LOAD_SYSCTL_PARAMETERS}]", :immediately
+end
+
+yum_package 'postfix-perl-scripts' do
+  action :install
+end
+
+bash 'modify_qshape' do
+  user "root"
+  code <<-EOH
+    sed -i 's+(^|/)\\[A-F0-9\\]{6,}+\\[0-9A-F\\]{6,}\\|\\[0-9a-zA-Z\\]{12,}+' /usr/sbin/qshape
+  EOH
 end

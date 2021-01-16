@@ -49,7 +49,7 @@ XGEMAIL_POLICY_S3_BUCKET_NAME                 = node['xgemail']['xgemail_policy_
 POLICY_STORAGE_PATH                           = node['xgemail']['policy_efs_mount_dir']
 XGEMAIL_SCAN_EVENTS_TOPIC_ARN                 = node['xgemail']['xgemail_scan_events_topic_arn']
 XGEMAIL_MESSAGE_HISTORY_EVENTS_TOPIC_ARN      = node['xgemail']['xgemail_msg_history_events_topic_arn']
-MSG_HISTORY_V2_BUCKET                         = node['xgemail']['msg_history_failure_bucket_name']
+MSG_HISTORY_V2_BUCKET                         = node['xgemail']['msg_history_v2_bucket_name']
 MSG_HISTORY_EVENT_DIR                         = node['xgemail']['mh_event_storage_dir']
 MSG_HISTORY_EVENT_PROCESSOR_PORT              = node['xgemail']['mh_event_processor_port']
 
