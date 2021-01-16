@@ -165,8 +165,7 @@ execute 'download_jilter_inbound' do
   user 'root'
   cwd "#{PACKAGES_DIR}"
   command <<-EOH
-      #aws --region us-west-2 s3 cp s3:#{sophos_thirdparty}/xgemail/#{JILTER_INBOUND_PACKAGE_NAME}.tar .
-      curl -XGET https://s3.amazonaws.com/tf-xgemail-msghistory-v2-eu-west-1-inf-bucket.s3-eu-west-1.amazonaws.com/xgemail-jilter-inbound-0.9.47-SNAPSHOT.tar?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=7200&X-Amz-Date=20201221T123228Z&X-Amz-SignedHeaders=host&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEOX%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCWV1LXdlc3QtMSJIMEYCIQD3MXSg6uixQ41H1K3tBSXDsa99jzgq9kwvbjJf%2BCBmiAIhAKQSsA4N36IVOPyeM42LD%2BEc0YvRQFMLX7J58CO7FybhKr0DCI3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQABoMMjgzODcxNTQzMjc0IgyMbTL%2B%2Bf5XbsGAJf8qkQNpk0Pv1%2FKiFjjjGwCcTQCHA5v1IEQachp85DUBhBzP6rNvKcmSHEJfE9OXAZJTkVyxe%2FPiR%2BdYyS34T%2F4Z8QDuoeDrqYRqKbwXHSF3%2BQ5WGqIEu5MEji9KFKeH9e0BTqRTS9cVAUN%2FEFryvx5BoFCAZJQQ%2Fb4Kgm01OI56cxo6xy%2FQlA5%2FIWhSETiu7XnDrM9w4UQF2yTC2A6bY1ZoNsPwqUJ9WBrB3UoKsSK0xfYgZ6ebGT8cTaoe%2BVs2bRwSJ3c4DWs8ws%2FuPTQn5jMnA1ZCJqYcRhNYzA5X%2FDmiURPm9rQto5Me1EMht0rqbJjM11XgsMU%2F32pOaqJScjr5N4IWOuzo6gLRpRlfjafHOYPGMS4TqDuhxAH4XPPxYNZwp23hp8vYH5rmaEDiYCj6eDM81rMTwFcLvtMdcbfCaRTbtZCxw%2FEa4Ict3eryr3FSFuQ0PptWAWcsFJtXwC1DnaAD8qQbyfdgAxo%2B4rEBU43bp1dzY8USL%2FwsXll4%2BvV98RZhskg25x1CMltvlBPV30NRKDDApoL%2FBTrqAQ8yvqPZDQ6NUWnW%2Bsj9aKVzXAGGueHdslKmO8rsxVkupMNteQP3hLLOs1nQrj8HtpjKb7YKO%2BRdN4MBm6xXoYjDtBJrG3%2FlromPSrU4xUm60puPChxTO4XPcHTATe85ExtOxG0a4y73JT5hyphCa5Ai13cp7OZuqszb8dMYaBY3Yyt342J2zAhyowcWK%2B24r36bBqQusEeZB8wjrPDFA9qSqT5s8QAfwsupuRrtBZI%2F2GFahCmGP%2BPwtasKc6prXBxBM3So%2BN%2BhohwGyxb%2Br%2FCUiuusqAnCTlvzSGnT83iZlP4hSlMpkVt0Fg%3D%3D&X-Amz-Credential=ASIAUEGAP77VHSXORFXZ%2F20201221%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=b6d2fa6407c14d97b29c154574c8be193f810d8cbdebab71e28b572a49622494
+      aws --region us-west-2 s3 cp s3:#{sophos_thirdparty}/xgemail/#{JILTER_INBOUND_PACKAGE_NAME}.tar .
   EOH
 end
 
@@ -187,8 +186,7 @@ execute 'download_jilter_outbound' do
   user 'root'
   cwd "#{PACKAGES_DIR}"
   command <<-EOH
-      #aws --region us-west-2 s3 cp s3:#{sophos_thirdparty}/xgemail/#{JILTER_OUTBOUND_PACKAGE_NAME}.tar .
-      curl -XGET https://s3.amazonaws.com/tf-xgemail-msghistory-v2-eu-west-1-inf-bucket.s3-eu-west-1.amazonaws.com/xgemail-jilter-outbound-0.8.47-SNAPSHOT.tar?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=7200&X-Amz-Date=20201221T123328Z&X-Amz-SignedHeaders=host&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEOX%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCWV1LXdlc3QtMSJIMEYCIQD3MXSg6uixQ41H1K3tBSXDsa99jzgq9kwvbjJf%2BCBmiAIhAKQSsA4N36IVOPyeM42LD%2BEc0YvRQFMLX7J58CO7FybhKr0DCI3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQABoMMjgzODcxNTQzMjc0IgyMbTL%2B%2Bf5XbsGAJf8qkQNpk0Pv1%2FKiFjjjGwCcTQCHA5v1IEQachp85DUBhBzP6rNvKcmSHEJfE9OXAZJTkVyxe%2FPiR%2BdYyS34T%2F4Z8QDuoeDrqYRqKbwXHSF3%2BQ5WGqIEu5MEji9KFKeH9e0BTqRTS9cVAUN%2FEFryvx5BoFCAZJQQ%2Fb4Kgm01OI56cxo6xy%2FQlA5%2FIWhSETiu7XnDrM9w4UQF2yTC2A6bY1ZoNsPwqUJ9WBrB3UoKsSK0xfYgZ6ebGT8cTaoe%2BVs2bRwSJ3c4DWs8ws%2FuPTQn5jMnA1ZCJqYcRhNYzA5X%2FDmiURPm9rQto5Me1EMht0rqbJjM11XgsMU%2F32pOaqJScjr5N4IWOuzo6gLRpRlfjafHOYPGMS4TqDuhxAH4XPPxYNZwp23hp8vYH5rmaEDiYCj6eDM81rMTwFcLvtMdcbfCaRTbtZCxw%2FEa4Ict3eryr3FSFuQ0PptWAWcsFJtXwC1DnaAD8qQbyfdgAxo%2B4rEBU43bp1dzY8USL%2FwsXll4%2BvV98RZhskg25x1CMltvlBPV30NRKDDApoL%2FBTrqAQ8yvqPZDQ6NUWnW%2Bsj9aKVzXAGGueHdslKmO8rsxVkupMNteQP3hLLOs1nQrj8HtpjKb7YKO%2BRdN4MBm6xXoYjDtBJrG3%2FlromPSrU4xUm60puPChxTO4XPcHTATe85ExtOxG0a4y73JT5hyphCa5Ai13cp7OZuqszb8dMYaBY3Yyt342J2zAhyowcWK%2B24r36bBqQusEeZB8wjrPDFA9qSqT5s8QAfwsupuRrtBZI%2F2GFahCmGP%2BPwtasKc6prXBxBM3So%2BN%2BhohwGyxb%2Br%2FCUiuusqAnCTlvzSGnT83iZlP4hSlMpkVt0Fg%3D%3D&X-Amz-Credential=ASIAUEGAP77VHSXORFXZ%2F20201221%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=836bf4ec075dea6b07319f4679ea5979f289989e89282d21d4546f8d71357f35
+      aws --region us-west-2 s3 cp s3:#{sophos_thirdparty}/xgemail/#{JILTER_OUTBOUND_PACKAGE_NAME}.tar .
   EOH
 end
 
@@ -209,8 +207,7 @@ execute 'download_jilter_encryption' do
   user 'root'
   cwd "#{PACKAGES_DIR}"
   command <<-EOH
-      #aws --region us-west-2 s3 cp s3:#{sophos_thirdparty}/xgemail/#{JILTER_ENCRYPTION_PACKAGE_NAME}.tar .
-      curl -XGET https://s3.amazonaws.com/tf-xgemail-msghistory-v2-eu-west-1-inf-bucket.s3-eu-west-1.amazonaws.com/xgemail-jilter-encryption-0.3.0-SNAPSHOT.tar?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=7200&X-Amz-Date=20201221T123039Z&X-Amz-SignedHeaders=host&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEOX%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCWV1LXdlc3QtMSJIMEYCIQD3MXSg6uixQ41H1K3tBSXDsa99jzgq9kwvbjJf%2BCBmiAIhAKQSsA4N36IVOPyeM42LD%2BEc0YvRQFMLX7J58CO7FybhKr0DCI3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQABoMMjgzODcxNTQzMjc0IgyMbTL%2B%2Bf5XbsGAJf8qkQNpk0Pv1%2FKiFjjjGwCcTQCHA5v1IEQachp85DUBhBzP6rNvKcmSHEJfE9OXAZJTkVyxe%2FPiR%2BdYyS34T%2F4Z8QDuoeDrqYRqKbwXHSF3%2BQ5WGqIEu5MEji9KFKeH9e0BTqRTS9cVAUN%2FEFryvx5BoFCAZJQQ%2Fb4Kgm01OI56cxo6xy%2FQlA5%2FIWhSETiu7XnDrM9w4UQF2yTC2A6bY1ZoNsPwqUJ9WBrB3UoKsSK0xfYgZ6ebGT8cTaoe%2BVs2bRwSJ3c4DWs8ws%2FuPTQn5jMnA1ZCJqYcRhNYzA5X%2FDmiURPm9rQto5Me1EMht0rqbJjM11XgsMU%2F32pOaqJScjr5N4IWOuzo6gLRpRlfjafHOYPGMS4TqDuhxAH4XPPxYNZwp23hp8vYH5rmaEDiYCj6eDM81rMTwFcLvtMdcbfCaRTbtZCxw%2FEa4Ict3eryr3FSFuQ0PptWAWcsFJtXwC1DnaAD8qQbyfdgAxo%2B4rEBU43bp1dzY8USL%2FwsXll4%2BvV98RZhskg25x1CMltvlBPV30NRKDDApoL%2FBTrqAQ8yvqPZDQ6NUWnW%2Bsj9aKVzXAGGueHdslKmO8rsxVkupMNteQP3hLLOs1nQrj8HtpjKb7YKO%2BRdN4MBm6xXoYjDtBJrG3%2FlromPSrU4xUm60puPChxTO4XPcHTATe85ExtOxG0a4y73JT5hyphCa5Ai13cp7OZuqszb8dMYaBY3Yyt342J2zAhyowcWK%2B24r36bBqQusEeZB8wjrPDFA9qSqT5s8QAfwsupuRrtBZI%2F2GFahCmGP%2BPwtasKc6prXBxBM3So%2BN%2BhohwGyxb%2Br%2FCUiuusqAnCTlvzSGnT83iZlP4hSlMpkVt0Fg%3D%3D&X-Amz-Credential=ASIAUEGAP77VHSXORFXZ%2F20201221%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=97e7a68328dc5d0027f7c18746d2dddf9834473a0e4867589f66982ac8421b8c
+      aws --region us-west-2 s3 cp s3:#{sophos_thirdparty}/xgemail/#{JILTER_ENCRYPTION_PACKAGE_NAME}.tar .
   EOH
 end
 
@@ -245,11 +242,6 @@ end
 
 link "#{DEPLOYMENT_DIR}/xgemail-jilter-delivery" do
   to "#{DEPLOYMENT_DIR}/#{JILTER_DELIVERY_PACKAGE_NAME}"
-end
-
-# Create a sym link to xgemail-jilter-encryption
-link "#{DEPLOYMENT_DIR}/xgemail-jilter-encryption" do
-  to "#{DEPLOYMENT_DIR}/#{JILTER_ENCRYPTION_PACKAGE_NAME}"
 end
 
 # Create conf directories
