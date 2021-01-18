@@ -6,6 +6,7 @@ import argparse
 import boto3
 import json
 import sys
+import traceback
 from datetime import datetime
 from datetime import timedelta
 from awshandler import AwsHandler
@@ -14,7 +15,7 @@ from botocore.exceptions import ClientError
 AWS_REGION = "<%= @aws_region %>"
 ACCOUNT =  "<%= @account %>"
 CUSTOM_ROUTE_FILE_NAME = "<%= @customer_delivery_transport_filename %>"
-CUSTOM_ROUTE_RECIPIENT_FILE_PATH = "config/inbound-relay-control/custom-routes/domain/"
+CUSTOM_ROUTE_RECIPIENT_FILE_PATH = "config/inbound-relay-control/custom_route/domain/"
 POLICY_BUCKET_NAME = "<%= @policy_bucket %>"
 CUSTOM_ROUTE_TTL_IN_DAYS = 365
 S3_ENCRYPTION_ALGORITHM = 'AES256'
@@ -110,7 +111,7 @@ if __name__ == "__main__":
                     obj.delete()
                 except ClientError as e:
                     trace = traceback.format_exc()
-                    logger.warning("Exception occurred while deleting recipient file" + trace)
+                    print("Exception occurred while deleting recipient file" + trace)
                 print("domainOrEmail {} is deleted".format(domainOrEmail))
         else:
             print("domainOrEmail {} is Not Exist".format(domainOrEmail))
