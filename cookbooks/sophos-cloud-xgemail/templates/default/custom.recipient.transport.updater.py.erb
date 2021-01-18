@@ -80,6 +80,9 @@ if __name__ == "__main__":
             query = raw_input("Do you want to Update Record. Enter 'y' to proceed futher ? ")
             if query.lower() == 'y':
                 record[domainOrEmail] = newObject
+                recordstr = json.dumps(record)
+                # Save custom route record in file
+                upload_to_s3(CUSTOM_ROUTE_FILE_NAME,recordstr)
                 print("Record Updated Successfully")
         else:
             record[domainOrEmail] = {}
@@ -89,8 +92,11 @@ if __name__ == "__main__":
             record[domainOrEmail]["delivery_destination"]["port"] = args.port
             record[domainOrEmail]["delivery_destination"]["customer_id"] = args.customer_id
             upload_to_s3(CUSTOM_ROUTE_RECIPIENT_FILE_PATH + domainOrEmail.encode('utf-8').encode("hex"),'')
-            print("Record Added Successfully")
             print(json.dumps(record[domainOrEmail], indent = 4))
+            recordstr = json.dumps(record)
+            # Save custom route record in file
+            upload_to_s3(CUSTOM_ROUTE_FILE_NAME,recordstr)
+            print("Record Added Successfully")
     if command == "LIST":
         print("List of custom transport routes.")
         print(json.dumps(record, indent = 4))
@@ -112,9 +118,10 @@ if __name__ == "__main__":
                 except ClientError as e:
                     trace = traceback.format_exc()
                     print("Exception occurred while deleting recipient file" + trace)
+                    sys.exit(1)
+                recordstr = json.dumps(record)
+                # Save custom route record in file
+                upload_to_s3(CUSTOM_ROUTE_FILE_NAME,recordstr)
                 print("domainOrEmail {} is deleted".format(domainOrEmail))
         else:
             print("domainOrEmail {} is Not Exist".format(domainOrEmail))
-    recordstr = json.dumps(record)
-    # Save custom route record in file
-    upload_to_s3(CUSTOM_ROUTE_FILE_NAME,recordstr)
