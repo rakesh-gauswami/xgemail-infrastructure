@@ -114,6 +114,7 @@ def main():
                         subject = arg.split(':', 1)[1].strip()
                         try:
                             subject, encoding = decode_header(subject)[0]
+                            subject.encode("utf-8")
                         except email.errors.HeaderParseError:
                             logger.warn("Failed to decode subject = {0}".format(subject) )
                             subject = arg.split(':', 1)[1].strip()
