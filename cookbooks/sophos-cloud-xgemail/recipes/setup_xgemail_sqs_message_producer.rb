@@ -26,29 +26,32 @@ raise "Invalid smtpd port for node type [#{NODE_TYPE}]" if SMTPD_PORT.nil?
 
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_processors_structure'
 
-AWS_REGION                                   = node['sophos_cloud']['region']
-MESSAGEPROCESSOR_USER                        = node['xgemail']['sqs_message_processor_user']
-NODE_IP                                      = node['ipaddress']
-PRODUCER_SCRIPT                              = 'xgemail.sqs.message.producer.py'
-S3_ENCRYPTION_ALGORITHM                      = node['xgemail']['s3_encryption_algorithm']
-SQS_MESSAGE_PRODUCER_BUFFER_SIZE             = node['xgemail']['sqs_message_producer_buffer_size']
-SQS_MESSAGE_PROCESSOR_DIR                    = node['xgemail']['sqs_message_processor_dir']
-SQS_MESSAGE_PRODUCER_EMAIL_ROOT_DIR          = node['xgemail']['sqs_message_producer_email_root_dir']
-SQS_MESSAGE_PRODUCER_TEMP_FAILURE_CODE       = node['xgemail']['temp_failure_code']
-SQS_MESSAGE_PRODUCER_PROCESS_TIMEOUT_SECONDS = node['xgemail']['sqs_message_producer_process_timeout_seconds']
-SQS_MESSAGE_PRODUCER_TTL_IN_DAYS             = node['xgemail']['sqs_message_producer_ttl_in_days']
-SUBMIT_DESTINATION_CONCUR_LIMIT              = node['xgemail']['submit_destination_concurrency_limit']
-XGEMAIL_UTILS_DIR                            = node['xgemail']['xgemail_utils_files_dir']
-PRODUCER_SCRIPT_PATH                         = "#{SQS_MESSAGE_PROCESSOR_DIR}/#{PRODUCER_SCRIPT}"
-XGEMAIL_BUCKET_NAME                          = node['xgemail']['xgemail_bucket_name']
-XGEMAIL_QUEUE_URL                            = node['xgemail']['xgemail_queue_url']
-XGEMAIL_SERVICE_QUEUE_URL                    = node['xgemail']['xgemail_service_queue_url']
-XGEMAIL_MESSAGE_HISTORY_BUCKET_NAME          = node['xgemail']['msg_history_bucket_name']
-XGEMAIL_MESSAGE_HISTORY_MS_BUCKET_NAME       = node['xgemail']['msg_history_ms_bucket_name']
-XGEMAIL_POLICY_S3_BUCKET_NAME                = node['xgemail']['xgemail_policy_bucket_name']
-POLICY_STORAGE_PATH                          = node['xgemail']['policy_efs_mount_dir']
-XGEMAIL_SCAN_EVENTS_TOPIC_ARN                = node['xgemail']['xgemail_scan_events_topic_arn']
-XGEMAIL_MESSAGE_HISTORY_EVENTS_TOPIC_ARN     = node['xgemail']['xgemail_msg_history_events_topic_arn']
+AWS_REGION                                    = node['sophos_cloud']['region']
+MESSAGEPROCESSOR_USER                         = node['xgemail']['sqs_message_processor_user']
+NODE_IP                                       = node['ipaddress']
+PRODUCER_SCRIPT                               = 'xgemail.sqs.message.producer.py'
+S3_ENCRYPTION_ALGORITHM                       = node['xgemail']['s3_encryption_algorithm']
+SQS_MESSAGE_PRODUCER_BUFFER_SIZE              = node['xgemail']['sqs_message_producer_buffer_size']
+SQS_MESSAGE_PROCESSOR_DIR                     = node['xgemail']['sqs_message_processor_dir']
+SQS_MESSAGE_PRODUCER_EMAIL_ROOT_DIR           = node['xgemail']['sqs_message_producer_email_root_dir']
+SQS_MESSAGE_PRODUCER_TEMP_FAILURE_CODE        = node['xgemail']['temp_failure_code']
+SQS_MESSAGE_PRODUCER_PROCESS_TIMEOUT_SECONDS  = node['xgemail']['sqs_message_producer_process_timeout_seconds']
+SQS_MESSAGE_PRODUCER_TTL_IN_DAYS              = node['xgemail']['sqs_message_producer_ttl_in_days']
+SUBMIT_DESTINATION_CONCUR_LIMIT               = node['xgemail']['submit_destination_concurrency_limit']
+XGEMAIL_UTILS_DIR                             = node['xgemail']['xgemail_utils_files_dir']
+PRODUCER_SCRIPT_PATH                          = "#{SQS_MESSAGE_PROCESSOR_DIR}/#{PRODUCER_SCRIPT}"
+XGEMAIL_BUCKET_NAME                           = node['xgemail']['xgemail_bucket_name']
+XGEMAIL_QUEUE_URL                             = node['xgemail']['xgemail_queue_url']
+XGEMAIL_SERVICE_QUEUE_URL                     = node['xgemail']['xgemail_service_queue_url']
+XGEMAIL_MESSAGE_HISTORY_BUCKET_NAME           = node['xgemail']['msg_history_bucket_name']
+XGEMAIL_MESSAGE_HISTORY_MS_BUCKET_NAME        = node['xgemail']['msg_history_ms_bucket_name']
+XGEMAIL_POLICY_S3_BUCKET_NAME                 = node['xgemail']['xgemail_policy_bucket_name']
+POLICY_STORAGE_PATH                           = node['xgemail']['policy_efs_mount_dir']
+XGEMAIL_SCAN_EVENTS_TOPIC_ARN                 = node['xgemail']['xgemail_scan_events_topic_arn']
+XGEMAIL_MESSAGE_HISTORY_EVENTS_TOPIC_ARN      = node['xgemail']['xgemail_msg_history_events_topic_arn']
+MSG_HISTORY_V2_BUCKET                         = node['xgemail']['msg_history_v2_bucket_name']
+MSG_HISTORY_EVENT_DIR                         = node['xgemail']['mh_event_storage_dir']
+MSG_HISTORY_EVENT_PROCESSOR_PORT              = node['xgemail']['mh_event_processor_port']
 
 # TODO Once we retire the old submit instances this logic needs to be removed
 #constants to use
@@ -89,7 +92,10 @@ template PRODUCER_SCRIPT_PATH do
       :sqs_msg_producer_sqs_url => XGEMAIL_QUEUE_URL,
       :sqs_msg_producer_submit_ip => NODE_IP,
       :sqs_msg_producer_ttl_in_days => SQS_MESSAGE_PRODUCER_TTL_IN_DAYS,
-      :policy_storage_path => POLICY_STORAGE_PATH
+      :policy_storage_path => POLICY_STORAGE_PATH,
+      :msg_history_v2_bucket_name => MSG_HISTORY_V2_BUCKET,
+      :msg_history_event_dir => MSG_HISTORY_EVENT_DIR,
+      :msg_history_event_processor_port => MSG_HISTORY_EVENT_PROCESSOR_PORT
   )
 end
 

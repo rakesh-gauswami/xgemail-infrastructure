@@ -51,6 +51,7 @@
       XgemailMsgHistoryStatusQueueUrl:      "{{sqs.url_prefix}}{{sqs.msg_history_status_sqs_queue_sns_listener}}"
       XgemailMsgHistoryStatusSnsArn:        "{{sns.arn_prefix}}{{sns.msg_history_status_sns_topic}}"
       XgemailNotifierQueueUrl:              "{{sqs.url_prefix}}{{sqs.notifier_request_sqs_queue}}"
+      XgemailPolicyBucketName:              "{{s3.policy_bucket}}"
       XgemailServiceType:                   "warmup-xdelivery"
   with_together:
     - "{{aws.asg.wx.stack_number}}"

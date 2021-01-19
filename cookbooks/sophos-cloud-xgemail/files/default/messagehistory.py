@@ -11,9 +11,11 @@
 
 import uuid
 import io
+import os
 import json
 import logging
 from awshandler import AwsHandler
+import requests
 import mailinfoformatter
 from logging.handlers import SysLogHandler
 from botocore.exceptions import ClientError
@@ -28,6 +30,9 @@ formatter = logging.Formatter(
 syslog_handler.formatter = formatter
 logger.addHandler(syslog_handler)
 
+INBOUND_MESSAGE_DIRECTION = "INBOUND"
+OUTBOUND_MESSAGE_DIRECTION = "OUTBOUND"
+
 
 def can_generate_mh_event(mail_info):
     if mail_info and 'generate_mh_events' in mail_info:
@@ -36,24 +41,26 @@ def can_generate_mh_event(mail_info):
         return False
 
 
-def get_mail_info(sqs_message, aws_region, policy_bucket_name):
+def get_mail_info(sqs_message, aws_region, msg_history_v2_bucket):
     if sqs_message.message_context:
-        if 'mail_info' in sqs_message.message_context:
-            mail_info = sqs_message.message_context['mail_info']
-            json = { 'mail_info' : sqs_message.message_context['mail_info'] }
+        if ('mh_context' in sqs_message.message_context and
+            'mail_info' in sqs_message.message_context['mh_context']):
+            mail_info = sqs_message.message_context['mh_context']['mail_info']
+            json = { 'mail_info' : sqs_message.message_context['mh_context']['mail_info'] }
             return json, can_generate_mh_event(mail_info)
-        elif 'mail_info_s3_path' in sqs_message.message_context:
+        elif ('mh_context' in sqs_message.message_context and
+              'mail_info_s3_path' in sqs_message.message_context['mh_context']):
             try:
                 mail_info_s3 = load_mail_info_file_from_S3(
                     aws_region,
-                    policy_bucket_name,
-                    sqs_message.message_context['mail_info_s3_path']
+                    msg_history_v2_bucket,
+                    sqs_message.message_context['mh_context']['mail_info_s3_path']
                 )
-                json = { 'mail_info_s3_path' : sqs_message.message_context['mail_info_s3_path'] }
+                json = { 'mail_info_s3_path' : sqs_message.message_context['mh_context']['mail_info_s3_path'] }
                 return json, can_generate_mh_event(mail_info_s3)
             except Exception as e:
                 logger.warn("Exception [{0}] while reading mh_mail_info from S3 [{1}]".format(
-                    e, sqs_message.message_context['mail_info_s3_path']))
+                    e, sqs_message.message_context['mh_context']['mail_info_s3_path']))
                 return None, False
         else:
             return None, False
@@ -61,14 +68,14 @@ def get_mail_info(sqs_message, aws_region, policy_bucket_name):
         return None, False
 
 
-def load_mail_info_file_from_S3(aws_region, policy_bucket_name, file_name):
+def load_mail_info_file_from_S3(aws_region, msg_history_v2_bucket, file_name):
     try:
         awshandler = AwsHandler(aws_region)
         s3_data = awshandler.download_data_from_s3(
-            policy_bucket_name, file_name)
+            msg_history_v2_bucket, file_name)
         decompressed_content = mailinfoformatter.get_mh_mail_info(s3_data)
         logger.debug("Successfully retrieved mail info file from S3 bucket [{0}] for file [{1}]".format(
-            policy_bucket_name,
+            msg_history_v2_bucket,
             file_name
         ))
         return json.loads(decompressed_content)
@@ -94,3 +101,83 @@ def write_mh_mail_info(json_to_write, directory):
         data = json.dumps(json_to_write, encoding='utf8')
         json_file.write(unicode(data))
     return filename
+
+def read_msghistory_accepted_events(queue_id, directory):
+    """
+    Reads the accepted events information written by the Jilters.
+    """
+
+    msghistory_events = None
+
+    try:
+      with io.open(directory + '/' + queue_id, encoding='utf8') as f:
+        msghistory_events = json.load(f)
+        return msghistory_events
+    except Exception as ex:
+      logger.debug("Queue Id:[{0}]. Error reading accepted events: [{1}]".format(queue_id, ex))
+
+def update_msghistory_event_inbound(msghistory_events, s3_file_path, policy_metadata, recipients):
+    for recipient in recipients:
+      if recipient in msghistory_events:
+        if msghistory_events[recipient]['mail_info']['queue_id'] != policy_metadata.get_queue_id():
+            msghistory_events[recipient]['mail_info']['decorated_queue_id'] = policy_metadata.get_queue_id()
+        msghistory_events[recipient]['mail_info']['s3_resource_id'] = s3_file_path
+
+def update_msghistory_event_outbound(msghistory_events, s3_file_path, policy_metadata, sender):
+    if sender in msghistory_events:
+        if msghistory_events[sender]['mail_info']['queue_id'] != policy_metadata.get_queue_id():
+            msghistory_events[sender]['mail_info']['decorated_queue_id'] = policy_metadata.get_queue_id()
+        msghistory_events[sender]['mail_info']['s3_resource_id'] = s3_file_path
+
+def update_msghistory_event(msghistory_events, s3_file_path, policy_metadata, direction , recipients, sender):
+    """
+    Updates the accepted events of the given recipients with the S3 file path and decorated_queue_id. 
+    """
+    if direction == INBOUND_MESSAGE_DIRECTION:
+        update_msghistory_event_inbound(msghistory_events, s3_file_path, policy_metadata, recipients)
+    else:
+        update_msghistory_event_outbound(msghistory_events, s3_file_path, policy_metadata, sender)
+
+def send_msghistory_events(queue_id, msghistory_events, url):
+    """
+    Post the list of events to the given url
+    """
+    try:
+      headers = {'Content-Type': 'application/json' , 'X-QUEUE-ID' : queue_id, 'Connection' : 'close'}
+      r = requests.post(url, data=json.dumps(msghistory_events), headers=headers)
+      logger.debug("Received response from MessageHistoryEventProcessor with status [{0}]".format(r.status_code))
+      r.close()
+    except Exception as ex:
+      logger.warning("Queue Id:[{0}]. Error sending MH events: [{1}]".format(queue_id, ex))
+
+def handle_msghistory_events(queue_id, msghistory_events, url, event_dir):
+    """
+    Post the list of events which has 's3_resource_id' to the given url
+    """    
+    try:
+      #We could have read events for more recipients from the file than the list of recipients for which this producer script was called by postfix.
+      events_list = []
+      for event in msghistory_events.values():
+        if  's3_resource_id' in event['mail_info']:
+            events_list.append(event)
+     
+      send_msghistory_events(queue_id, events_list, url)
+
+      #We can send any mail_info to 'delete_msghistory_events_file' . All are same.
+      delete_msghistory_events_file(msghistory_events.values()[0]['mail_info'], queue_id, event_dir)
+    except Exception as ex:
+      logger.warning("Queue Id [{0}]. Error in sending message history event [{1}]".format(queue_id, ex))
+
+def delete_msghistory_events_file(mail_info, queue_id, directory):
+    """
+    Deletes the accepted events file written by Jilter. This is done only if
+    number of envelope recipients is equal to 1.
+    """
+
+    try:
+      if (mail_info['env_recipient_list']  is not None  and
+             len(mail_info['env_recipient_list']) == 1):
+        #Delete the file written by jilter.
+        os.remove(directory + '/' + queue_id)
+    except Exception as ex:
+        logger.warning("Queue Id:[{0}]. Error deleteing MH accepted events file: [{1}]".format(queue_id, ex))

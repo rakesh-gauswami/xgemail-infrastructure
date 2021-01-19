@@ -1,0 +1,83 @@
+<filter mhv2.delivery.succeeded>
+  @type parser
+  key_name message
+  reserve_data true
+  reserve_time true
+  <parse>
+    @type regexp
+    expression /^(?<host>[^ ]+) (?<process>[^ ]+): (?<queue_id>[^ ]+): to=<(?<recipient_address>[\S ]+)>, relay=(?<relay>[^ ]+),.*dsn=(?<dsn_code>[^ ]+), status=sent (?<smtp_text>[\S ]+)/
+  </parse>
+</filter>
+
+<filter mhv2.delivery.failed>
+  @type parser
+  key_name message
+  reserve_data true
+  reserve_time true
+  <parse>
+    @type regexp
+    expression /^(?<host>[^ ]+) (?<process>[^ ]+): (?<queue_id>[^ ]+): to=<(?<recipient_address>[\S ]+)>, relay=(?<relay>[^ ]+),.*dsn=(?<dsn_code>[^ ]+), status=(?<status>[(deferred|bounced)]+) (?<smtp_text>[\S ]+)/
+  </parse>
+</filter>
+
+<filter mhv2.delivery.returned>
+  @type parser
+  key_name message
+  reserve_data true
+  reserve_time true
+  <parse>
+    @type regexp
+    expression /(?<host>[^ ]+) (?<process>[^ ]+): (?<queue_id>[^ ]+): from=<(?<sender_address>[\S ]+)>, status=expired.+/
+  </parse>
+</filter>
+
+<filter mhv2.delivery.redirected>
+  @type parser
+  key_name message
+  reserve_data true
+  reserve_time true
+  <parse>
+    @type regexp
+    expression /^(?<host>[^ ]+) (?<process>[^ ]+): (?<queue_id>[^ ]+): to=<(?<recipient_address>[\S ]+)>, relay=(?<relay>[^ ]+)\[(?<server_ip_xdelivery>[^ ]+)\]:(?<port>[^ ]+),.*dsn=(?<dsn_code>[^ ]+), status=sent(?<sent>[\S ]+queued as (?<queue_id_xdelivery>[^ ]+)[)])/
+  </parse>
+</filter>
+
+<filter mhv2.delivery.**>
+  @type mhv2filecheck
+  mh_mail_info_storage_dir <%= @mh_mail_info_storage_dir %>
+</filter>
+
+<filter mhv2.delivery.**>
+  @type record_transformer
+  enable_ruby
+  <record>
+    schema_version 20201222
+    server_type <%= @server_type %>
+    server_ip <%= @server_ip %>
+    timestamp ${time.strftime("%Y-%m-%dT%H:%M:%S%z")}
+  </record>
+</filter>
+
+<filter mhv2.delivery.returned>
+  @type record_transformer
+  enable_ruby
+  <record>
+    dsn_code <%= @non_delivery_dsn %>
+    recipient_address null
+  </record>
+</filter>
+
+<filter mhv2.delivery.redirected>
+  @type record_transformer
+  enable_ruby
+  <record>
+    dsn_code ${}
+    next_queue_id ${record["queue_id_xdelivery"]}
+  </record>
+</filter>
+
+<filter mhv2.delivery.**>
+  @type record_transformer
+  renew_record true
+  keep_keys schema_version, server_type, server_ip, timestamp, queue_id, recipient_address, dsn_code, smtp_text, next_queue_id
+</filter>
