@@ -134,11 +134,6 @@ def main():
             logger.debug("Hostname = {0}".format(hostname))
             logger.debug("Failure Reason = {0}".format(failure_reason))
 
-        try:
-            subject.decode('utf-8')
-        except UnicodeDecodeError as e:
-            subject.decode('ISO-8859-1')
-
         submit_notification_info_to_sqs(
             original_sender,
             recipient,
