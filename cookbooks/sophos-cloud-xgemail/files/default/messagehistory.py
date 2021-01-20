@@ -44,12 +44,14 @@ def can_generate_mh_event(mail_info):
 def get_mail_info(sqs_message, aws_region, msg_history_v2_bucket):
     if sqs_message.message_context:
         if ('mh_context' in sqs_message.message_context and
-            'mail_info' in sqs_message.message_context['mh_context']):
+            'mail_info' in sqs_message.message_context['mh_context'] and
+            sqs_message.message_context['mh_context']['mail_info'] != None):
             mail_info = sqs_message.message_context['mh_context']['mail_info']
             json = { 'mail_info' : sqs_message.message_context['mh_context']['mail_info'] }
             return json, can_generate_mh_event(mail_info)
         elif ('mh_context' in sqs_message.message_context and
-              'mail_info_s3_path' in sqs_message.message_context['mh_context']):
+              'mail_info_s3_path' in sqs_message.message_context['mh_context'] and
+              sqs_message.message_context['mh_context']['mail_info_s3_path'] != None):
             try:
                 mail_info_s3 = load_mail_info_file_from_S3(
                     aws_region,
