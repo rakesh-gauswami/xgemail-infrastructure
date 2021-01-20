@@ -17,6 +17,7 @@ import subprocess
 import logging
 import sys
 from logging.handlers import SysLogHandler
+from botocore.exceptions import ClientError
 
 # Constants
 PIC_FQDN = '<%= @xgemail_pic_fqdn %>'
@@ -30,6 +31,8 @@ ENC_CONFIG_KEY = '<%= @enc_config_key %>'
 INBOUND_TLS_CONFIG_KEY = '<%= @inbound_tls_config_key %>'
 TLS_SMTP_TRANSPORT_TAG = ' smtp_encrypt:'
 DEFAULT_SMTP_TRANSPORT_TAG = ' smtp:'
+CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME = 'config/inbound-relay-control/custom_route/customer-delivery-custom-recipient' \
+                                       '-trasnport.json'
 
 # logging to syslog setup
 logging.getLogger("botocore").setLevel(logging.WARNING)
@@ -143,7 +146,7 @@ def encryption_config_exists(s3_client, domain_name):
 #     "port": 8080,
 #     "customer_id": "<customer-uuid>"
 #   }
-def parse_domain_response(domain_name, destinations_json, s3_client) :
+def parse_domain_response(domain_name, destinations_json, s3_client,is_custom) :
   destination_json = destinations_json['delivery_destination']
   route = destination_json['destination']
   port = destination_json['port']
@@ -153,11 +156,14 @@ def parse_domain_response(domain_name, destinations_json, s3_client) :
   if 'customer_id' in destination_json:
     customer_id = destination_json['customer_id']
 
-  smtp_transport_tag = get_smtp_transport_tag(
-    s3_client,
-    domain_name,
-    customer_id
-  )
+  if not is_custom:
+      smtp_transport_tag = get_smtp_transport_tag(
+          s3_client,
+          domain_name,
+          customer_id
+      )
+  else:
+      smtp_transport_tag = TLS_SMTP_TRANSPORT_TAG
 
   ret_val = domain_name + smtp_transport_tag
 
@@ -186,21 +192,34 @@ TRANSPORT_FILE_TMP = TRANSPORT_FILE + '.tmp'
 
 with open(TRANSPORT_FILE_TMP, 'w') as f:
 
-  s3 = boto3.client('s3')
+    s3 = boto3.client('s3')
+    record = {}
+    try:
+        current_config = s3.get_object(Bucket=POLICY_BUCKET,Key= CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
+        record = json.loads(current_config['Body'].read())
+    except ClientError as ex:
+        if ex.response['Error']['Code'] == 'NoSuchKey':
+            print("Error [%s] File not exist ", CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
+            record = {}
+    print(json.dumps(record, indent = 4))
+    for domain_or_email in record :
+        transport_line = parse_domain_response(domain_or_email,record[domain_or_email] , s3, True)
+        print(transport_line)
+        f.write('{0}\n'.format(transport_line))
 
-  for domain in response.json()['domains'] :
-    domain_response = requests.post(
-        PIC_DESTINATION_URL,
-        headers=HEADERS,
-        data=json.dumps({'domain':domain}),
-        timeout=MAIL_PIC_RESPONSE_TIMEOUT
-      )
-    domain_response.raise_for_status()
-    transport_line = parse_domain_response(domain, domain_response.json(), s3)
-    f.write('{0}\n'.format(transport_line))
+    for domain in response.json()['domains'] :
+        domain_response = requests.post(
+            PIC_DESTINATION_URL,
+            headers=HEADERS,
+            data=json.dumps({'domain':domain}),
+            timeout=MAIL_PIC_RESPONSE_TIMEOUT
+          )
+        domain_response.raise_for_status()
+        transport_line = parse_domain_response(domain, domain_response.json(), s3,False)
+        f.write('{0}\n'.format(transport_line))
 
-  # Add catch-all to retry any unknown domain
-  f.write('* retry: domain is unknown\n')
+    # Add catch-all to retry any unknown domain
+    f.write('* retry: domain is unknown\n')
 
 subprocess.call(['postmap', 'hash:{0}'.format(TRANSPORT_FILE_TMP)])
 os.rename(TRANSPORT_FILE_TMP, TRANSPORT_FILE);

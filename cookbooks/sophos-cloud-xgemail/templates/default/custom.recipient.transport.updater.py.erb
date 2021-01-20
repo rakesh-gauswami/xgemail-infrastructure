@@ -70,7 +70,7 @@ if __name__ == "__main__":
             newObject = {}
             newObject["delivery_destination"] = {}
             newObject["delivery_destination"]["destination"] = args.destination
-            newObject["delivery_destination"]["destination_type"] = args.destination_type
+            newObject["delivery_destination"]["type"] = args.destination_type
             newObject["delivery_destination"]["port"] = args.port
             newObject["delivery_destination"]["customer_id"] = args.customer_id
             print("Old Record:")
@@ -88,7 +88,7 @@ if __name__ == "__main__":
             record[domainOrEmail] = {}
             record[domainOrEmail]["delivery_destination"] = {}
             record[domainOrEmail]["delivery_destination"]["destination"] = args.destination
-            record[domainOrEmail]["delivery_destination"]["destination_type"] = args.destination_type
+            record[domainOrEmail]["delivery_destination"]["type"] = args.destination_type
             record[domainOrEmail]["delivery_destination"]["port"] = args.port
             record[domainOrEmail]["delivery_destination"]["customer_id"] = args.customer_id
             upload_to_s3(CUSTOM_ROUTE_RECIPIENT_FILE_PATH + domainOrEmail.encode('utf-8').encode("hex"),'')
