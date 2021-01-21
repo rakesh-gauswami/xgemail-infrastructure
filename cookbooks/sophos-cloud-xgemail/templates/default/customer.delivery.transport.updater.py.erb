@@ -31,7 +31,7 @@ ENC_CONFIG_KEY = '<%= @enc_config_key %>'
 INBOUND_TLS_CONFIG_KEY = '<%= @inbound_tls_config_key %>'
 TLS_SMTP_TRANSPORT_TAG = ' smtp_encrypt:'
 DEFAULT_SMTP_TRANSPORT_TAG = ' smtp:'
-CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME = 'config/inbound-relay-control/custom_route/customer-delivery-custom-recipient' \
+CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME = 'config/inbound-relay-control/custom-route/customer-delivery-custom-recipient' \
                                        '-trasnport.json'
 
 # logging to syslog setup
@@ -84,6 +84,17 @@ def get_smtp_transport_tag(s3, domain_name, customer_id):
 
   return DEFAULT_SMTP_TRANSPORT_TAG
 
+# sort custom record so that email will prior to it domain
+def sort_record_key(unsorted_dict):
+    sorted_keys = unsorted_dict.keys()
+    list_of_email=[]
+    list_of_domain=[]
+    for key in sorted_keys:
+        if '@' in key:
+            list_of_email.append(key)
+        else:
+            list_of_domain.append(key)
+    return list_of_email + list_of_domain
 
 # Checks for the existence of at least one TLS configuration belonging to the customer with given id
 def tls_config_exists_in_api_response(customer_id):
@@ -199,12 +210,11 @@ with open(TRANSPORT_FILE_TMP, 'w') as f:
         record = json.loads(current_config['Body'].read())
     except ClientError as ex:
         if ex.response['Error']['Code'] == 'NoSuchKey':
-            print("Error [%s] File not exist ", CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
+            logger.info("Error [%s] File not exist ", CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
             record = {}
-    print(json.dumps(record, indent = 4))
-    for domain_or_email in record :
+    sorted_record_keys=sort_record_key(record)
+    for domain_or_email in sorted_record_keys :
         transport_line = parse_domain_response(domain_or_email,record[domain_or_email] , s3, True)
-        print(transport_line)
         f.write('{0}\n'.format(transport_line))
 
     for domain in response.json()['domains'] :

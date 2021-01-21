@@ -35,7 +35,7 @@ AWS_REGION              = node['sophos_cloud']['region']
 ACCOUNT                 = node['sophos_cloud']['environment']
 
 XGEMAIL_FILES_DIR               = node['xgemail']['xgemail_files_dir']
-CUSTOM_TRANSPORT_FILE_NAME      = 'config/inbound-relay-control/custom_route/customer-delivery-custom-recipient-trasnport.json'
+CUSTOM_TRANSPORT_FILE_NAME      = 'config/inbound-relay-control/custom-route/customer-delivery-custom-recipient-trasnport.json'
 XGEMAIL_UTILS_DIR               = node['xgemail']['xgemail_utils_files_dir']
 POLICY_BUCKET                   = node['xgemail']['xgemail_policy_bucket_name']
 
