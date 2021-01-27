@@ -206,7 +206,7 @@ with open(TRANSPORT_FILE_TMP, 'w') as f:
     s3 = boto3.client('s3')
     record = {}
     try:
-        s3.head_object(Bucket=bucket_name,Key=s3_file_path)
+        s3.head_object(Bucket=POLICY_BUCKET,Key=CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
         current_config = s3.get_object(Bucket=POLICY_BUCKET,Key= CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
         record = json.loads(current_config['Body'].read())
     except ClientError as ex:
