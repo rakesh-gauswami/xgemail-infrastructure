@@ -104,7 +104,7 @@ template CRON_SCRIPT_PATH do
     :mail_pic_api_auth => MAIL_PIC_API_AUTH,
     :connections_bucket => CONNECTIONS_BUCKET,
     :policy_bucket => POLICY_BUCKET,
-    :custom_route_trasnport_path => CUSTOM_ROUTE_TRASNPORT_PATH
+    :custom_route_trasnport_path => CUSTOM_ROUTE_TRASNPORT_PATH,
     :enc_config_key => ENC_CONFIG_KEY,
     :inbound_tls_config_key => INBOUND_TLS_CONFIG_KEY
   )
