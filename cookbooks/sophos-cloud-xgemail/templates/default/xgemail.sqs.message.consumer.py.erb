@@ -51,7 +51,7 @@ SQS_MAX_NUMBER_OF_MESSAGES = <%= @sqs_max_number_of_messages %>
 SNS_SQS_URL = "<%= @sns_sqs_url %>"
 SQS_VISIBILITY_TIMEOUT = <%= @sqs_visibility_timeout %>
 SQS_WAIT_TIME_SECONDS = <%= @sqs_wait_time_seconds %>
-MAX_NUMBER_OF_RETRIES = 3
+MAIL_PIC_HEADERS_API_RESPONSE_TIMEOUT_SECONDS = 5
 MAIL_PIC_RESPONSE_TIMEOUT = <%= @mail_pic_api_response_timeout %>
 MAIL_PIC_API_AUTH = '<%= @mail_pic_api_auth %>'
 CONNECTIONS_BUCKET = '<%= @connections_bucket %>'
@@ -65,6 +65,7 @@ POLICY_BUCKET_NAME = "<%= @policy_bucket %>"
 TRANSPORT_CONFIG_PATH = "<%= @transport_config_path %>"
 MH_MAIL_INFO_STORAGE_DIR = "<%= @mh_mail_info_storage_dir %>"
 DELIVERY_JILTER_ENABLED_FILE_PATH = "<%= @delivery_jilter_enabled_file_path %>"
+MSG_HISTORY_V2_BUCKET = "<%= @msg_history_v2_bucket_name %>"
 
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
@@ -304,14 +305,14 @@ def attempt_to_retrieve_headers(message_path):
             PIC_HEADERS_URL,
             headers=HEADERS,
             params = query_parameters,
-            timeout = MAIL_PIC_RESPONSE_TIMEOUT
+            timeout = MAIL_PIC_HEADERS_API_RESPONSE_TIMEOUT_SECONDS
         )
     else:
         response = requests.get(
             PIC_HEADERS_URL,
             headers=HEADERS,
             params = query_parameters,
-            timeout = MAIL_PIC_RESPONSE_TIMEOUT
+            timeout = MAIL_PIC_HEADERS_API_RESPONSE_TIMEOUT_SECONDS
         )
 
     response.raise_for_status()
@@ -529,23 +530,11 @@ while True:
 
             logger.debug("Polled SQS message [{0}] from queue [{1}]".format(sqs_message, origin_sqs_queue))
 
-            #attempt to retrieve headers. If unsuccessful, continue. Message will stay in queue and this will be
-            #reattempted at a later time
-            no_of_times_received = int(msg["Attributes"]["ApproximateReceiveCount"])
-            headers = None
+            headers = {}
             try:
                 headers = attempt_to_retrieve_headers(sqs_message.message_path)
-            except Exception:
-                logger.exception("failed to retrieve headers at message path {0}, retry times: {1}. "
-                                 "Retrying at most {2} times"
-                    .format(
-                    sqs_message.message_path,
-                    no_of_times_received,
-                    MAX_NUMBER_OF_RETRIES
-                ))
-
-                if no_of_times_received <= MAX_NUMBER_OF_RETRIES:
-                    continue
+            except Exception as e:
+                logger.warn("failed to retrieve headers at message path {0}, Exception {1}".format(sqs_message.message_path, e))
 
             try:
                 formatted_message = awshandler.download_message_from_s3(BUCKET_NAME, sqs_message)
@@ -586,23 +575,23 @@ while True:
                 )
             )
 
-            if is_delivery_jilter_enabled() and messagehistory.can_generate_mh_event(sqs_message):
+            mh_mail_info, can_generate_mh_event = messagehistory.get_mail_info(sqs_message, AWS_REGION, MSG_HISTORY_V2_BUCKET)
+            if can_generate_mh_event:
                 logger.debug("QueueId [{0}] can generate message history event".format(queue_id.encode('utf-8')))
-                mh_mail_info = sqs_message.message_context['mh_mail_info']
-                mh_mail_info_path = None
+                mh_mail_info_filename = None
                 try:
-                    mh_mail_info_path = messagehistory.write_mh_mail_info(
+                    mh_mail_info_filename = messagehistory.write_mh_mail_info(
                         mh_mail_info,
                         MH_MAIL_INFO_STORAGE_DIR
                     )
-                    logger.debug("mh_mail_info_path [{0}] written for QueueId [{1}]".format(mh_mail_info_path, queue_id.encode('utf-8')))
+                    logger.debug("written mh mail info file [{0}] for QueueId [{1}]".format(mh_mail_info_filename, queue_id.encode('utf-8')))
                 except Exception as e:
-                    logger.debug("Exception [{0}] while writing mh_mail_info_path for QueueId [{1}]".format(e, queue_id.encode('utf-8')))
-                
-                # add mh_mail_info_path to headers
-                if mh_mail_info_path:
+                    logger.error("Exception [{0}] while writing mh mail info for QueueId [{1}]".format(e, queue_id.encode('utf-8')))
+
+                # add mh_mail_info_filename to headers
+                if mh_mail_info_filename:
                     messagehistory.add_header(
-                        mh_mail_info_path,
+                        mh_mail_info_filename,
                         headers
                     )
 

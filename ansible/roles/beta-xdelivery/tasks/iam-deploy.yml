@@ -9,6 +9,9 @@
     template:                                   "{{template.iam.role.roles_beta_xdelivery_template}}"
     template_parameters:
       Environment:                              "{{account.name}}"
+      MsgHistoryV2StreamName:                   "{{kinesis.firehose.msg_history_v2_stream_name}}"
+      MsgHistoryV2BucketName:                   "{{s3.msg_history_v2_bucket_name}}"
+      MsgHistoryV2DynamoDbTableName:            "{{dynamodb.msg_history_v2_dynamodb}}"
   register: iam_stack_output
 
 - name: "Print {{stack.iam.role.cloud_email_beta_xdelivery_roles}} CloudFormation Stack Output"

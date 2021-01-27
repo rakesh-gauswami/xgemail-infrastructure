@@ -28,6 +28,8 @@ import re
 import signal
 import email
 import uuidutils
+import messagehistory
+import mailinfoformatter
 import rfxrecoveryutils
 from email.parser import HeaderParser
 from awshandler import AwsHandler
@@ -59,6 +61,11 @@ SUBMIT_SQS_URL = "<%= @sqs_msg_producer_sqs_url %>"
 CUSTOMER_SUBMIT_SQS_URL = "<%= @sqs_msg_producer_customer_submit_sqs_url %>"
 
 TTL_IN_DAYS = <%= @sqs_msg_producer_ttl_in_days %>
+
+MSG_HISTORY_V2_BUCKET = "<%= @msg_history_v2_bucket_name %>"
+MSG_HISTORY_MAIL_INFO_MAX_BYTES_IN_MSG_CONTEXT = 20 * 1024
+MSG_HISTORY_EVENT_DIR = "<%= @msg_history_event_dir %>"
+MSG_HISTORY_EVENT_PROCESSOR_URL = "http://127.0.0.1:<%= @msg_history_event_processor_port %>/accept_event"
 
 # Exit codes from sysexits
 EX_TEMPFAIL = <%= @sqs_msg_producer_ex_temp_failure_code %>
@@ -525,8 +532,74 @@ def get_submit_message_type_for_encryption(direction):
     else:
         return SQS_MESSAGE_SUBMIT_TYPE_INBOUND
 
+def upload_msghistory_mail_info_to_s3(s3_file_path, msghistory_mail_info):
+    try:
+        msghistory_mail_info_path = mailinfoformatter.get_mail_info_path(
+            s3_file_path
+        )
+        logger.debug("Processing message history [{0}]".format(msghistory_mail_info_path))
 
-def base_policy_flow(metadata, direction, is_reply, domain, sender, message, rfx_submit):
+        formatted_mail_info = mailinfoformatter.get_formatted_mail_info(
+            gziputils.gzip_data(
+                json.dumps(msghistory_mail_info)
+            ),
+            msghistory_mail_info['schema_version']
+        )
+    
+        # prepared expiration date based on ttl_in_days
+        expires = datetime.now() + timedelta(days=TTL_IN_DAYS)
+
+        # upload msg history to message history bucket
+        upload_to_s3(
+            MSG_HISTORY_V2_BUCKET,
+            msghistory_mail_info_path,
+            formatted_mail_info,
+            expires
+        )
+
+        logger.debug("Uploaded mail info to S3 [{0}]".format(msghistory_mail_info_path))
+        return msghistory_mail_info_path
+    except Exception as e:
+        logger.warning("S3 File Path [{0}]. Failed in uploading mail info to S3 [{1}]".format(s3_file_path, e))
+    
+def prepare_message_context(s3_file_path, mail_info):
+
+    message_context = None
+
+    #convert mail_info to str
+    mail_info_str = json.dumps(mail_info)
+
+    if len(mail_info_str) > MSG_HISTORY_MAIL_INFO_MAX_BYTES_IN_MSG_CONTEXT:
+        mail_info_path = upload_msghistory_mail_info_to_s3(s3_file_path, mail_info)
+        if mail_info_path is not None:
+            message_context = {'mh_context' : { 'mail_info_s3_path' :  mail_info_path } }
+    else:
+        message_context = { 'mh_context' : { 'mail_info' : mail_info } }
+    return message_context
+
+#The accepted events written by Jilter needs to be updated with 's3_file_path' and 'decorated_queue_id'
+def update_msghistory_event_and_get_message_context(msghistory_events, s3_file_path, policy_metadata, direction, recipients, sender, upload_msg_history, is_mh_parent):
+    try:
+        mail_info = None
+        messagehistory.update_msghistory_event(msghistory_events, s3_file_path, policy_metadata, direction, recipients, sender)
+        mailbox = None
+        if direction == INBOUND_MESSAGE_DIRECTION:
+            mailbox = recipients[0]
+        else:
+            mailbox = sender
+        if (mailbox in msghistory_events and
+            'mail_info' in msghistory_events[mailbox]):
+            mail_info = msghistory_events[mailbox]['mail_info']
+            #if 'is_mh_parent' is present, it is the actual encrypted mail
+            #coming from echoworkz. We need to generate delivery events.
+            #so not setting 'generate_mh_events' to failse if 'is_mh_parent' is true.
+            if not upload_msg_history and not is_mh_parent:
+                mail_info['generate_mh_events'] = False
+            return prepare_message_context(s3_file_path, mail_info)
+    except Exception as ex:
+        logger.warning("Queue Id [{0}]. Error in processing message history event [{1}]".format(policy_metadata.get_queue_id(), ex))
+
+def base_policy_flow(metadata, direction, is_reply, domain, sender, message, rfx_submit, is_mh_parent):
     queue_id = metadata.get_queue_id()
 
     tmp_file_path = formatterutils.get_s3_path(
@@ -545,6 +618,15 @@ def base_policy_flow(metadata, direction, is_reply, domain, sender, message, rfx
 
     sqs_message_submit_type = get_submit_message_type_for_encryption(direction)
 
+    upload_msg_history = should_upload_msg_history(direction, rfx_submit)
+
+    #A dict where key is mailbox address and value is the 'accepted' event record. 
+    msghistory_events = messagehistory.read_msghistory_accepted_events(queue_id, MSG_HISTORY_EVENT_DIR)
+    message_context = None
+    if msghistory_events is not None:
+      message_context = update_msghistory_event_and_get_message_context(msghistory_events, s3_file_path, metadata, direction, metadata.get_recipients(), sender, upload_msg_history, is_mh_parent)
+
+
     # create a sqs object
     sqs_message = SqsMessage(
         messageformatter.SCHEMA_VERSION,
@@ -554,7 +636,10 @@ def base_policy_flow(metadata, direction, is_reply, domain, sender, message, rfx
         AKM_KEY,
         NONCE.encode('base64','strict'),
         MESSAGE_KEY.encode('base64','strict'),
-        sqs_message_submit_type
+        sqs_message_submit_type,
+        None,
+        None,
+        message_context
     )
 
     upload_documents(
@@ -570,7 +655,7 @@ def base_policy_flow(metadata, direction, is_reply, domain, sender, message, rfx
         direction
     )
 
-    if should_upload_msg_history(direction, rfx_submit):
+    if upload_msg_history:
 
         history_event = prepare_msg_history_event(
             s3_file_path,
@@ -583,6 +668,9 @@ def base_policy_flow(metadata, direction, is_reply, domain, sender, message, rfx
         publish_msg_history_event(
             history_event.get_sqs_json()
         )
+
+        if msghistory_events is not None:
+            messagehistory.handle_msghistory_events(queue_id, msghistory_events, MSG_HISTORY_EVENT_PROCESSOR_URL, MSG_HISTORY_EVENT_DIR)
 
 
 def get_direction(message):
@@ -604,7 +692,7 @@ def get_direction(message):
     if is_reply == True and is_mh_parent == True:
         is_reply = False
 
-    return (direction, is_reply)
+    return (direction, is_reply, is_mh_parent)
 
 def get_message_headers(message):
     return Parser().parsestr(message, headersonly=True)
@@ -629,9 +717,10 @@ def main():
                     metadata.get_sender_ip()))
             direction = rfxrecoveryutils.get_direction_for_reflexion_mail(message_headers)
             is_reply = False # Setting it false to avoid -ENCR append on path on reflexion mails
+            is_mh_parent = False
         else:
             rfx_submit = False
-            direction, is_reply = get_direction(plaintext_message)
+            direction, is_reply, is_mh_parent = get_direction(plaintext_message)
 
         sender = metadata.get_sender_address()
         if direction == OUTBOUND_MESSAGE_DIRECTION:
@@ -643,7 +732,7 @@ def main():
         # required logging for XgemailTestBase automation test
         logger.info("Metadata json info [{0}]".format(metadata))
 
-        base_policy_flow(metadata, direction, is_reply, domain, sender, plaintext_message, rfx_submit)
+        base_policy_flow(metadata, direction, is_reply, domain, sender, plaintext_message, rfx_submit, is_mh_parent)
 
     except BaseException as e:
         logger.exception("Failed in processing email [{0}]".format(e))

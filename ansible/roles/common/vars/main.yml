@@ -237,11 +237,11 @@ aws:
       template:                                                   "{{template.s3.s3_bucket_template}}"
       template_parameters:
         Environment:                                              "{{account.name}}"
-        RequireEncryptionForUploads:                              "sse-s3"
         S3BucketName:                                             "{{s3.msg_history_ms_bucket}}"
         S3LifeCycleDelete:                                        "30"
         S3PolicyCreate:                                           "true"
         S3PolicyPrincipalList:                                    "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
+        EnableSSES3Encryption:                                    "true"
         TagApplication:                                           "message-history"
     msg_stats_bucket:
       stack_name:                                                 "{{stack.s3.msg_stats_bucket}}"
@@ -821,20 +821,6 @@ aws:
         QueueName:                                                "{{sqs.outbound_malware_protection_unblock_sender_queue}}"
         DelaySeconds:                                             "900"
         TagApplication:                                           "xgemail-omp"
-    o365_disconnect_queue:
-      stack_name:                                                 "{{stack.sqs.o365_disconnect_queue}}"
-      state:                                                      present
-      template:                                                   "{{template.sqs.sqs_simple_template}}"
-      template_parameters:
-        QueueName:                                                "{{sqs.o365_disconnect_queue}}"
-        TagApplication:                                           "xgemail-mail"
-    o365_domainsync_queue:
-      stack_name:                                                 "{{stack.sqs.o365_domainsync_queue}}"
-      state:                                                      present
-      template:                                                   "{{template.sqs.sqs_simple_template}}"
-      template_parameters:
-        QueueName:                                                "{{sqs.o365_domainsync_queue}}"
-        TagApplication:                                           "xgemail-mail"
     policy_refresh_event_sqs_queue_sns_listener:
       stack_name:                                                 "{{stack.sqs.policy_refresh_event_sqs_queue_sns_listener}}"
       state:                                                      present

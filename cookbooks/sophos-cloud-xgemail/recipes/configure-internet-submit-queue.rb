@@ -288,6 +288,8 @@ if ACCOUNT != 'sandbox'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_multi_policy_service'
   include_recipe 'sophos-cloud-xgemail::setup_push_policy_submit_toggle'
+  include_recipe 'sophos-cloud-xgemail::setup_msghistory_event_dir'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_sender_and_recipient_block'
 
 else
   [

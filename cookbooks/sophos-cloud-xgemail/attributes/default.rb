@@ -100,6 +100,8 @@ default['xgemail']['policy_efs_mount_dir'] = '/policy-storage'
 #Message History
 default['xgemail']['mh_event_storage_dir'] = '/storage/msg-history/events'
 default['xgemail']['mh_mail_info_storage_dir'] = '/storage/msg-history/mh-mail-info'
+default['xgemail']['mh_event_processor_pool_size'] = 20
+default['xgemail']['mh_event_processor_port'] = 8983
 
 ## SAVi SXL Live Protection settings
 default['xgemail']['savdid_sxl_pua_detection'] = 1
@@ -277,14 +279,16 @@ default['xgemail']['postfix_instance_data'] = {
     :instance_name => 'is',
     :port => 25,
     :msg_size_limit => SUBMIT_MESSAGE_SIZE_LIMIT_BYTES,
-    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+    :server_type => 'INTERNET_SUBMIT'
   },
   # customer-submit
   'customer-submit' => {
     :instance_name => 'cs',
     :port => 25,
     :msg_size_limit => SUBMIT_MESSAGE_SIZE_LIMIT_BYTES,
-    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+    :server_type => 'CUSTOMER_SUBMIT'
   },
   # customer-delivery
   'customer-delivery' => {
@@ -292,7 +296,8 @@ default['xgemail']['postfix_instance_data'] = {
     :port => 25,
     # Give delivery queues extra padding because extra content may be created during processing
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800 + 5242880),
-    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+    :server_type => 'CUSTOMER_DELIVERY'
   },
   # internet-delivery
   'internet-delivery' => {
@@ -300,7 +305,8 @@ default['xgemail']['postfix_instance_data'] = {
     :port => 25,
     # Give delivery queues extra padding because extra content may be created during processing
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800 + 5242880),
-    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+    :server_type => 'INTERNET_DELIVERY'
   },
   # extended-delivery
   'xdelivery' => {
@@ -308,7 +314,8 @@ default['xgemail']['postfix_instance_data'] = {
     :port => 8025,
     # Give delivery queues extra padding because extra content may be created during processing
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600 + 5242880),
-    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+    :server_type => 'CUSTOMER_XDELIVERY'
   },
   # internet-extended-delivery
   'internet-xdelivery' => {
@@ -316,7 +323,8 @@ default['xgemail']['postfix_instance_data'] = {
     :port => 8025,
     # Give delivery queues extra padding because extra content may be created during processing
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600 + 5242880),
-    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+    :server_type => 'INTERNET_XDELIVERY'
   },
   # encryption-delivery
   'encryption-delivery' => {
@@ -324,7 +332,8 @@ default['xgemail']['postfix_instance_data'] = {
     :port => 25,
     # Give delivery queues extra padding because extra content may be created during processing
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800),
-    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+    :server_type => 'ENCRYPTION_DELIVERY'
   },
   # encryption-submit
   'encryption-submit' => {
@@ -332,7 +341,8 @@ default['xgemail']['postfix_instance_data'] = {
     :port => 25,
     # Give delivery queues extra padding because extra content may be created during processing
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800 + 5242880),
-    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+    :server_type => 'ENCRYPTION_SUBMIT'
   },
   # risky-delivery
   'risky-delivery' => {
@@ -340,7 +350,8 @@ default['xgemail']['postfix_instance_data'] = {
     :port => 25,
     # Give delivery queues extra padding because extra content may be created during processing
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800 + 5242880),
-    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+    :server_type => 'RISKY_DELIVERY'
   },
   # risky-extended-delivery
   'risky-xdelivery' => {
@@ -348,7 +359,8 @@ default['xgemail']['postfix_instance_data'] = {
     :port => 8025,
     # Give delivery queues extra padding because extra content may be created during processing
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600 + 5242880),
-    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+    :server_type => 'RISKY_XDELIVERY'
   },
   # warmup-delivery
   'warmup-delivery' => {
@@ -356,7 +368,8 @@ default['xgemail']['postfix_instance_data'] = {
     :port => 25,
     # Give delivery queues extra padding because extra content may be created during processing
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800 + 5242880),
-    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+    :server_type => 'WARMUP_DELIVERY'
   },
   # warmup-extended-delivery
   'warmup-xdelivery' => {
@@ -364,7 +377,8 @@ default['xgemail']['postfix_instance_data'] = {
     :port => 8025,
     # Give delivery queues extra padding because extra content may be created during processing
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600 + 5242880),
-    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+    :server_type => 'WARMUP_XDELIVERY'
   },
   # beta-delivery
   'beta-delivery' => {
@@ -372,7 +386,8 @@ default['xgemail']['postfix_instance_data'] = {
     :port => 25,
     # Give delivery queues extra padding because extra content may be created during processing
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800 + 5242880),
-    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+    :server_type => 'BETA_DELIVERY'
   },
   # beta-extended-delivery
   'beta-xdelivery' => {
@@ -380,7 +395,8 @@ default['xgemail']['postfix_instance_data'] = {
     :port => 8025,
     # Give delivery queues extra padding because extra content may be created during processing
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600 + 5242880),
-    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+    :server_type => 'BETA_XDELIVERY'
   },
   # delta-delivery
   'delta-delivery' => {
@@ -388,7 +404,8 @@ default['xgemail']['postfix_instance_data'] = {
     :port => 25,
     # Give delivery queues extra padding because extra content may be created during processing
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800 + 5242880),
-    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+    :server_type => 'DELTA_DELIVERY'
   },
   # delta-extended-delivery
   'delta-xdelivery' => {
@@ -396,7 +413,8 @@ default['xgemail']['postfix_instance_data'] = {
     :port => 8025,
     # Give delivery queues extra padding because extra content may be created during processing
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600 + 5242880),
-    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST
+    :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+    :server_type => 'DELTA_XDELIVERY'
   },
 }
 

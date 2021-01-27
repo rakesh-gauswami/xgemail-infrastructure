@@ -1,0 +1,12 @@
+<filter sophos.xgemail.<%= @application_name %>.<%= @log_name %>.>
+  @type parser
+  key_name message
+  reserve_data <%= @reserve_data %>
+  reserve_time true
+  <parse>
+    @type grok
+    custom_pattern_path <%= @patterns_dir %>/<%= @log_name %>
+    grok_pattern %{<%= @grok_pattern %>}
+    grok_failure_key grokfailure
+  </parse>
+</filter>

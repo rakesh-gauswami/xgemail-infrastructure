@@ -12,7 +12,7 @@
 package 'tar'
 
 NODE_TYPE = node['xgemail']['cluster_type']
-ACCOUNT = node['sophos_cloud']['account']
+ACCOUNT = node['sophos_cloud']['environment']
 
 # Make sure we're on an encryption submit node
 if NODE_TYPE != 'encryption-submit'
@@ -36,10 +36,12 @@ JILTER_CONF_DIR = "#{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}/conf"
 JILTER_APPLICATION_PROPERTIES_PATH = "#{JILTER_CONF_DIR}/jilter-application.properties"
 
 NODE_IP = node['ipaddress']
-MSG_HISTORY_STREAM_NAME = node['xgemail']['msg_history_stream_name']
-MSG_HISTORY_FAILURE_BUCKET_NAME = node['xgemail']['msg_history_failure_bucket_name']
+MSG_HISTORY_V2_STREAM_NAME = node['xgemail']['msg_history_v2_stream_name']
+MSG_HISTORY_V2_BUCKET_NAME = node['xgemail']['msg_history_v2_bucket_name']
 MSG_HISTORY_EVENT_DIR = node['xgemail']['mh_event_storage_dir']
-MSG_HISTORY_DYNAMODB_TABLE_NAME = node['xgemail']['msg_history_dynamodb_table_name']
+MSG_HISTORY_EVENT_PROCESSOR_POOL_SIZE = node['xgemail']['mh_event_processor_pool_size']
+MSG_HISTORY_EVENT_PROCESSOR_PORT = node['xgemail']['mh_event_processor_port']
+MSG_HISTORY_V2_DYNAMODB_TABLE_NAME = node['xgemail']['msg_history_v2_dynamodb_table_name']
 
 SERVICE_USER = node['xgemail']['jilter_user']
 POLICY_BUCKET_NAME   = node['xgemail']['xgemail_policy_bucket_name']
@@ -96,6 +98,13 @@ directory MSG_HISTORY_EVENT_DIR do
   recursive true
 end
 
+# Give ownership to the jilter service user
+file "#{JILTER_CONF_DIR}/launch_darkly_#{ACCOUNT}.properties" do
+  owner SERVICE_USER
+  group SERVICE_USER
+  action :touch
+end
+
 # Create the Jilter service
 template 'xgemail.jilter.service.sh' do
   path JILTER_SCRIPT_PATH
@@ -121,10 +130,12 @@ template 'xgemail.jilter.properties' do
       :account => ACCOUNT,
       :customer_submit_bucket => CUSTOMER_SUBMIT_BUCKET_NAME,
       :node_ip => NODE_IP,
-      :msg_history_stream_name => MSG_HISTORY_STREAM_NAME,
-      :msg_history_failure_bucket_name => MSG_HISTORY_FAILURE_BUCKET_NAME,
+      :msg_history_v2_stream_name => MSG_HISTORY_V2_STREAM_NAME,
+      :msg_history_v2_bucket_name => MSG_HISTORY_V2_BUCKET_NAME,
+      :msg_history_v2_dynamodb_table_name =>  MSG_HISTORY_V2_DYNAMODB_TABLE_NAME,
       :msg_history_event_dir => MSG_HISTORY_EVENT_DIR,
-      :msg_history_dynamodb_table_name =>  MSG_HISTORY_DYNAMODB_TABLE_NAME        
+      :msg_history_event_processor_pool_size => MSG_HISTORY_EVENT_PROCESSOR_POOL_SIZE,
+      :msg_history_event_processor_port => MSG_HISTORY_EVENT_PROCESSOR_PORT
   )
 end
 
