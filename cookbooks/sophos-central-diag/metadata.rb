@@ -1,0 +1,5 @@
+name             'sophos-central-diag'
+maintainer       'Sophos'
+license          'All rights reserved'
+description      'Installs/configures framework for server-specific diagnostics'
+version          '1.0.0'

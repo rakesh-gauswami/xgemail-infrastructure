@@ -5,7 +5,7 @@
 
   "Metadata": {
     "Copyright": [
-      "Copyright 2016, Sophos Limited. All rights reserved.",
+      "Copyright 2020, Sophos Limited. All rights reserved.",
       "",
       "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
       "Sophos Limited and Sophos Group.  All other product and company",
@@ -228,12 +228,141 @@
         "AWS::CloudFormation::Init": {
           "configSets": {
             "svcapi_install": [
+              "install_common_utils",
+              "build_base",
               "install_volumes",
               "install_cfn",
               "reset_chef",
               "reset_cookbooks",
               "create_image"
             ]
+          },
+
+          "install_common_utils": {
+            "commands": {
+              "01_get_common_utils": {
+                "command": {
+                  "Fn::Join": [
+                    "", [
+                      "mkdir -p /opt/sophos/bin\n",
+                      "aws s3 cp s3://cloud-applications/", { "Ref": "Branch" }, "/xgemail-infrastructure/common_utils.enc /opt/sophos/bin/common_utils.enc\n",
+                      "ls -la /opt/sophos/bin\n"
+                    ]
+                  ]
+                }
+              },
+              "02_decrypt_common_utils": {
+                "command": {
+                  "Fn::Join": [
+                    "", [
+                      "ls -la\n",
+                      "openssl enc -aes-256-cbc -d -in ./common_utils.enc -out ./common_utils.tar.gz -pass pass:", { "Ref": "AesDecryptionKey" }, "\n",
+                      "ls -la\n"
+                    ]
+                  ]
+                },
+                "cwd": "/opt/sophos/bin"
+              },
+              "03_unpack_common_utils": {
+                "command": "tar xvf common_utils.tar.gz",
+                "cwd": "/opt/sophos/bin"
+              }
+            }
+          },
+
+          "build_base": {
+            "files": {
+              "/tmp/build_base.sh": {
+                "content": {
+                  "Fn::Join": [
+                    "", [
+                      "#!/bin/bash\n",
+
+                      "set -o xtrace   # Print commands and their arguments as they are executed.\n",
+                      "set -o errexit  # Exit immediately if a command exits with a non-zero status.\n",
+                      "set -o nounset  # Treat unset variables as an error when substituting.\n",
+                      "set -o pipefail # Pipeline status comes from last error, not last command.\n",
+
+                      "# Installing base AMI packages\n",
+
+                      "mkdir -p /var/log/sophos\n",
+
+                      "# Update the common profile\n",
+
+                      "cat <<'EOF' > /etc/profile.d/sophos.sh\n",
+                      "PATH=${PATH}:/opt/sophos/bin\n",
+                      "# Custom login prompt.\n",
+                      "# 1. Show current user.\n",
+                      "# 2. Show EC2 private IP, so we can easily select and copy it.\n",
+                      "# 3. Show service, including particulars like shard and service number.\n",
+                      "# 4. Show current directory basename.\n",
+                      "if [ \"$PS1\" ]; then\n",
+                      "    IPADDR=`/usr/bin/wget -q -O- http://169.254.169.254/latest/meta-data/local-ipv4`\n",
+                      "    if [ -r /opt/sophos/service ]; then\n",
+                      "        SERVICE=`head -1 /opt/sophos/service`\n",
+                      "        PS1=\"[\\u@${IPADDR}:${SERVICE} \\W]\\\\$ \"\n",
+                      "    else\n",
+                      "        PS1=\"[\\u@${IPADDR} \\W]\\\\$ \"\n",
+                      "    fi\n",
+                      "fi\n",
+                      "EOF\n",
+                      "cat /etc/profile.d/sophos.sh\n",
+
+                      "CHEFDK_VERSION=0.2.0-2.el6\n",
+                      "CHEFDK_RPM=chefdk-${CHEFDK_VERSION}.x86_64.rpm\n",
+                      "aws --region us-west-2 s3 cp s3://cloud-applications-3rdparty/chef/${CHEFDK_RPM} ${CHEFDK_RPM}\n",
+                      "rpm -i ${CHEFDK_RPM}\n",
+                      "rm -f ${CHEFDK_RPM}\n",
+                      "CHEF_REPO_HASH=605eeda\n",
+                      "CHEF_REPO_TGZ=chef-chef-repo-${CHEF_REPO_HASH}.tar.gz\n",
+                      "aws --region us-west-2 s3 cp s3://cloud-applications-3rdparty/chef/${CHEF_REPO_TGZ} ${CHEF_REPO_TGZ}\n",
+                      "tar xzvf ${CHEF_REPO_TGZ}\n",
+                      "mkdir -p /var/chef/chef-repo/.chef\n",
+                      "cp -r chef-chef-repo-${CHEF_REPO_HASH}/* /var/chef/chef-repo\n",
+                      "rm -rf chef-chef-repo-${CHEF_REPO_HASH}\n",
+                      "chmod +rx /var/chef\n",
+
+                      "pwd\n",
+                      "(\n",
+                      "    export CHEF_VERSION=12.3\n",
+                      "    cd /var/chef\n",
+                      "    /usr/bin/wget -O install.sh https://www.opscode.com/chef/install.sh\n",
+                      "    /bin/bash ./install.sh -v ${CHEF_VERSION}\n",
+                      ")\n",
+                      "pwd\n",
+
+                      "cat <<EOF > /var/chef/chef-repo/.chef/knife.rb\n",
+                      "cookbook_path %w[/var/chef/chef-repo/cookbooks]\n",
+                      "node_path     %w[/var/chef/chef-repo/nodes]\n",
+                      "EOF\n",
+                      "chmod 0444 /var/chef/chef-repo/.chef/knife.rb\n",
+                      "cat /var/chef/chef-repo/.chef/knife.rb\n",
+
+                      "cat <<EOF >/var/chef/chef-repo/.chef/client.rb\n",
+                      "cookbook_path %w[/var/chef/chef-repo/cookbooks]\n",
+                      "node_path     %w[/var/chef/chef-repo/nodes]\n",
+                      "EOF\n",
+                      "chmod 0444 /var/chef/chef-repo/.chef/client.rb\n",
+                      "cat /var/chef/chef-repo/.chef/client.rb\n",
+
+                      "CHEF_BASE_INSTALL_LOG=chef-$(date +\"%Y%m%d.%H%M%S\").base_ami.install_chef.log\n",
+                      "touch /var/log/$CHEF_BASE_INSTALL_LOG\n",
+                      "touch /var/log/sophos/chef-reset_chef.log\n",
+                      "touch /var/log/sophos/reset_cookbooks.output\n",
+                      "mkdir -p /etc/chef/ohai/hints\n",
+                      "touch /etc/chef/ohai/hints/ec2.json\n",
+                      "#chef-client -z --no-color -c /var/chef/chef-repo/.chef/client.rb -l debug -L /var/log/$CHEF_BASE_INSTALL_LOG\n"
+
+                    ]
+                  ]
+                },
+                "mode": "000554",
+                "owner": "root"
+              }
+            },
+            "commands": {
+              "01_run_script": { "command": "bash /tmp/build_base.sh > /var/log/build_base.log 2>&1" }
+            }
           },
 
           "install_volumes": {
@@ -344,7 +473,14 @@
           "reset_chef": {
             "commands": {
               "01_reset_chef": {
-                "command": "/opt/sophos/bin/reset_chef.sh"
+                "command": {
+                  "Fn::Join": [
+                    "", [
+                      "set -o xtrace   # Print commands and their arguments as they are executed.\n",
+                      "/opt/sophos/bin/reset_chef.sh\n"
+                    ]
+                  ]
+                }
               }
             }
           },
@@ -446,6 +582,7 @@
                   "Fn::Join": [
                     "", [
                       "knife node run_list add -z `knife node list -z` \"",
+                      "recipe[sophos-base-ami::base_ami],",
                       "recipe[sophos-cloud-fluentd::install],",
                       "recipe[sophos-cloud-xgemail::install_monit_service],",
                       "recipe[sophos-cloud-xgemail::download_libspf2],",
@@ -547,15 +684,17 @@
                 "  done\n",
                 "",
                 "  cd /tmp\n",
+                "  echo 'Zipping all logs for bamboo build artifact'\n",
                 "  zip -r ${LOG_DIR}.zip $(basename ${LOG_DIR})\n",
                 "",
                 "  n=0\n",
-                "  until [ $n -ge 5 ]\n",
+                "  echo 'Copying log zip to S3 bucket for bamboo artifact'\n",
+                "  until [ $n -ge 10 ]\n",
                 "  do\n",
                 "    aws s3 cp --debug --region us-west-2 ${LOG_DIR}.zip s3://", { "Ref": "AmiBucket" }, "/", { "Ref": "Branch" }, "/build-", { "Ref": "Build" }, "/ && break\n",
                 "      ",
                 "    n=$[$n+1]\n",
-                "    sleep 5\n",
+                "    sleep 6\n",
                 "   done\n",
                 "",
                 "  # Now we can safely emit the signal.\n",
@@ -595,9 +734,14 @@
 
                 "# Install all security and aws updates.\n",
 
+                "yum update -y -t -v kernel\n",
                 "yum update -y -t --security\n",
                 "yum update -y -t aws-amitools-ec2\n",
                 "yum update -y -t aws-cfn-bootstrap\n",
+
+                "# Install awslogs for mirroring log files to AWS CloudWatch.\n",
+                "yum install -y -t awslogs\n",
+                "pip install boto3==1.14.63\n",
 
                 "# Read metadata and configure system accordingly.\n",
 
