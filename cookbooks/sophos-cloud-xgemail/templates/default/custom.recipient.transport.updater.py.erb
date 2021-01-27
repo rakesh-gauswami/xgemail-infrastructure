@@ -14,8 +14,10 @@ from botocore.exceptions import ClientError
 
 AWS_REGION = "<%= @aws_region %>"
 ACCOUNT =  "<%= @account %>"
-CUSTOM_ROUTE_FILE_NAME = "<%= @customer_delivery_transport_filename %>"
-CUSTOM_ROUTE_RECIPIENT_FILE_PATH = "config/inbound-relay-control/custom-routes/domain/"
+CUSTOM_ROUTE_TRASNPORT_PATH = "<%= @custom_route_trasnport_path %>"
+CUSTOM_ROUTE_RECIPIENT_FILE_PATH = "#{CUSTOM_ROUTE_TRASNPORT_PATH}/domain/"
+CUSTOM_ROUTE_FILE_NAME       = "#{CUSTOM_ROUTE_TRASNPORT_PATH}/customer-delivery-custom-recipient-trasnport.json"
+
 POLICY_BUCKET_NAME = "<%= @policy_bucket %>"
 CUSTOM_ROUTE_TTL_IN_DAYS = 365
 S3_ENCRYPTION_ALGORITHM = 'AES256'

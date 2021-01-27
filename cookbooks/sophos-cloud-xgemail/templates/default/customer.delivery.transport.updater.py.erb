@@ -31,8 +31,8 @@ ENC_CONFIG_KEY = '<%= @enc_config_key %>'
 INBOUND_TLS_CONFIG_KEY = '<%= @inbound_tls_config_key %>'
 TLS_SMTP_TRANSPORT_TAG = ' smtp_encrypt:'
 DEFAULT_SMTP_TRANSPORT_TAG = ' smtp:'
-CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME = 'config/inbound-relay-control/custom-routes/customer-delivery-custom-recipient' \
-                                       '-trasnport.json'
+CUSTOM_ROUTE_TRASNPORT_PATH = "<%= @custom_route_trasnport_path %>"
+CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME = "#{CUSTOM_ROUTE_TRASNPORT_PATH}/customer-delivery-custom-recipient-trasnport.json"
 
 # logging to syslog setup
 logging.getLogger("botocore").setLevel(logging.WARNING)
@@ -206,11 +206,12 @@ with open(TRANSPORT_FILE_TMP, 'w') as f:
     s3 = boto3.client('s3')
     record = {}
     try:
+        s3.head_object(Bucket=bucket_name,Key=s3_file_path)
         current_config = s3.get_object(Bucket=POLICY_BUCKET,Key= CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
         record = json.loads(current_config['Body'].read())
     except ClientError as ex:
         if ex.response['Error']['Code'] == 'NoSuchKey':
-            logger.info("Error [%s] File not exist ", CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
+            logger.debug("Error [%s] File not exist ", CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
             record = {}
     sorted_record_keys=sort_record_key(record)
     for domain_or_email in sorted_record_keys :
