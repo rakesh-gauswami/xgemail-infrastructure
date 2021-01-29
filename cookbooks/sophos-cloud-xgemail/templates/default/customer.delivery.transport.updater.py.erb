@@ -18,7 +18,7 @@ import logging
 import traceback
 import sys
 from logging.handlers import SysLogHandler
-from botocore.exceptions import ClientError
+
 
 # Constants
 PIC_FQDN = '<%= @xgemail_pic_fqdn %>'
@@ -227,7 +227,7 @@ with open(TRANSPORT_FILE_TMP, 'w') as f:
         except Exception as e:
             trace = traceback.format_exc()
             for line in trace.splitlines():
-                logger.debug("Error loading custom Transport ", line)
+                logger.debug("Error loading custom Transport " + line)
 
     for domain in response.json()['domains'] :
         domain_response = requests.post(
