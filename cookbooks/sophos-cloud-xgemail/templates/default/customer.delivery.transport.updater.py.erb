@@ -15,6 +15,7 @@ import os
 import requests
 import subprocess
 import logging
+import traceback
 import sys
 from logging.handlers import SysLogHandler
 from botocore.exceptions import ClientError
@@ -191,6 +192,17 @@ def parse_domain_response(domain_name, destinations_json, s3_client,is_custom) :
 
   return ret_val
 
+def custom_route_file_exist():
+    s3 = boto3.client('s3')
+    try:
+        s3.head_object(Bucket=POLICY_BUCKET,Key=CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
+        # custom route file found return true
+        return True
+    except botocore.exceptions.ClientError as e:
+        trace = traceback.format_exc()
+        logger.debug("Custom route file not Exist." + trace)
+        return False
+
 POSTFIX_CONFIG_DIR = subprocess.check_output(
     [
       'postmulti', '-i', POSTFIX_INSTANCE_NAME, '-x',
@@ -204,19 +216,18 @@ TRANSPORT_FILE_TMP = TRANSPORT_FILE + '.tmp'
 with open(TRANSPORT_FILE_TMP, 'w') as f:
 
     s3 = boto3.client('s3')
-    record = {}
-    try:
-        s3.head_object(Bucket=POLICY_BUCKET,Key=CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
-        current_config = s3.get_object(Bucket=POLICY_BUCKET,Key= CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
-        record = json.loads(current_config['Body'].read())
-    except ClientError as ex:
-        if ex.response['Error']['Code'] == 'NoSuchKey':
-            logger.debug("Error [%s] File not exist ", CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
-            record = {}
-    sorted_record_keys=sort_record_key(record)
-    for domain_or_email in sorted_record_keys :
-        transport_line = parse_domain_response(domain_or_email,record[domain_or_email] , s3, True)
-        f.write('{0}\n'.format(transport_line))
+    if custom_route_file_exist():
+        try:
+            current_config = s3.get_object(Bucket=POLICY_BUCKET,Key= CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
+            record = json.loads(current_config['Body'].read())
+            sorted_record_keys=sort_record_key(record)
+            for domain_or_email in sorted_record_keys :
+                transport_line = parse_domain_response(domain_or_email,record[domain_or_email] , s3, True)
+                f.write('{0}\n'.format(transport_line))
+        except Exception as e:
+            trace = traceback.format_exc()
+            for line in trace.splitlines():
+                logger.debug("Error loading custom Transport ", line)
 
     for domain in response.json()['domains'] :
         domain_response = requests.post(
