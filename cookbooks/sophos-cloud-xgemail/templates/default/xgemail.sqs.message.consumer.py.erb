@@ -78,7 +78,7 @@ logger = logging.getLogger('sqsmsgconsumer')
 logger.setLevel(logging.INFO)
 handler = logging.handlers.SysLogHandler('/dev/log')
 formatter = logging.Formatter(
-    '[%(name)s] %(process)d %(levelname)s %(message)s'
+    '[%(name)s] %(process)d %(threadName)s %(levelname)s %(message)s'
 )
 handler.formatter = formatter
 logger.addHandler(handler)
@@ -507,7 +507,7 @@ def is_multi_threaded():
         if awshandler.s3_key_exists(POLICY_BUCKET_NAME, GLOBAL_MULTITHREAD_ENABLED_KEY):
             return True
         #Check local flag.
-        if os.path.isfile(DELIVERY_MULTITHREAD_ENABLED_FILE_PATH):
+        if os.path.isfile(LOCAL_MULTITHREAD_ENABLED_FILE_PATH):
             return True
     except Exception as e:
         logger.exception("Error in checking multi_thread config.[{0}]".format(e))
@@ -680,10 +680,11 @@ USE_MULTI_THREAD = is_multi_threaded()
 
 if USE_MULTI_THREAD:
     # Start consumers
+    logger.info("Multi thread is enabled.")
     i = 0;
     while i < NO_OF_THREADS:
         t = threading.Thread(target=deliver_messages)
         t.start()
-        i++
+        ++i
 else:
     deliver_messages()
