@@ -15,6 +15,7 @@ INSTANCE_NAME = INSTANCE_DATA[:instance_name]
 raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 
 XGEMAIL_FILES_DIR    = node['xgemail']['xgemail_files_dir']
+AWS_REGION           = node['sophos_cloud']['region']
 POLICY_BUCKET_NAME   = node['xgemail']['xgemail_policy_bucket_name']
 
 DELIVERY_JITLER_ENABLED_S3_PATH   = node['xgemail']['delivery_jilter_enabled_s3_path']

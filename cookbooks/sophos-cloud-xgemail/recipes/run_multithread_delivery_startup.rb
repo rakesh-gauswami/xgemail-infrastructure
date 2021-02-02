@@ -11,7 +11,7 @@
 
 XGEMAIL_FILES_DIR    = node['xgemail']['xgemail_files_dir']
 POLICY_BUCKET_NAME   = node['xgemail']['xgemail_policy_bucket_name']
-
+AWS_REGION           = node['sophos_cloud']['region']
 DELIVERY_MULTITHREAD_ENABLED_FILE_PATH = node['xgemail']['delivery_multithread_enabled_file_path']
 DELIVERY_MULTITHREAD_ENABLED_S3_PATH   = node['xgemail']['delivery_multithread_enabled_s3_path']
 
