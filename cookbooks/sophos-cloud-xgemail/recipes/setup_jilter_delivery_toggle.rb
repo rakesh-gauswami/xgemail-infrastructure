@@ -19,7 +19,7 @@ INSTANCE_NAME = INSTANCE_DATA[:instance_name]
 raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 
 XGEMAIL_CONFIG_DIR = "#{XGEMAIL_FILES_DIR}/config"
-DELIVERY_JILTER_ENABLED_FILE_PATH = "#{XGEMAIL_CONFIG_DIR}/delivery.jilter.enabled"
+DELIVERY_JILTER_ENABLED_S3_PATH = node['xgemail']['delivery_jilter_enabled_s3_path']
 
 TOGGLE_SCRIPT_PATH = "#{XGEMAIL_FILES_DIR}/jilter-delivery-toggle"
 
@@ -43,7 +43,9 @@ template "#{TOGGLE_SCRIPT_PATH}/jilter-delivery-toggle.sh" do
   owner 'root'
   group 'root'
   variables(
+    :aws_region => AWS_REGION,
+    :delivery_jilter_enabled_s3_path => DELIVERY_JILTER_ENABLED_S3_PATH,
     :instance_name => INSTANCE_NAME,
-    :delivery_jilter_enabled_file_path => DELIVERY_JILTER_ENABLED_FILE_PATH
+    :policy_bucket => POLICY_BUCKET_NAME
   )
 end
