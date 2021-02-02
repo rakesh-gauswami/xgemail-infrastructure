@@ -43,6 +43,8 @@ MH_MAIL_INFO_STORAGE_DIR                = node['xgemail']['mh_mail_info_storage_
 DELIVERY_JILTER_ENABLED_FILE_PATH       = XGEMAIL_FILES_DIR + '/config/delivery.jilter.enabled'
 MSG_HISTORY_V2_BUCKET                   = node['xgemail']['msg_history_v2_bucket_name']
 NUMBER_OF_CONSUMER_THREADS              = node['xgemail']['number_of_consumer_threads']
+DELIVERY_MULTITHREAD_ENABLED_FILE_PATH  = node['xgemail']['delivery_multithread_enabled_file_path']
+DELIVERY_MULTITHREAD_ENABLED_S3_PATH    = node['xgemail']['delivery_multithread_enabled_s3_path']
 
 if ACCOUNT == 'sandbox'
   XGEMAIL_PIC_FQDN = 'mail-service:8080'
@@ -103,7 +105,9 @@ template CONSUMER_SCRIPT_PATH do
     :mh_mail_info_storage_dir => MH_MAIL_INFO_STORAGE_DIR,
     :delivery_jilter_enabled_file_path => DELIVERY_JILTER_ENABLED_FILE_PATH,
     :msg_history_v2_bucket_name => MSG_HISTORY_V2_BUCKET,
-    :number_of_consumer_threads => NUMBER_OF_CONSUMER_THREADS
+    :number_of_consumer_threads => NUMBER_OF_CONSUMER_THREADS,
+    :delivery_multithread_enabled_file_path => DELIVERY_MULTITHREAD_ENABLED_FILE_PATH,
+    :delivery_multithread_enabled_s3_path => DELIVERY_MULTITHREAD_ENABLED_S3_PATH
   )
 end
 
