@@ -8,6 +8,7 @@
 #
 # configure and run jilter-delivery-startup script to start jilter on startup based on s3 flag
 
+NODE_TYPE     = node['xgemail']['cluster_type']
 INSTANCE_DATA = node['xgemail']['postfix_instance_data'][NODE_TYPE]
 raise "Unsupported node type [#{NODE_TYPE}]" if INSTANCE_DATA.nil?
 
