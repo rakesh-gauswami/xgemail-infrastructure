@@ -8,7 +8,7 @@
 SERVER_NAME=<%= @instance_name %>
 AWS_REGION="<%= @aws_region %>"
 BUCKET_NAME="<%= @policy_bucket %>"
-DELIVERY_JITLER_ENABLED_S3_PATH="<%= @delivery_jilter_enabled_s3_path %>"
+DELIVERY_JILTER_ENABLED_S3_PATH="<%= @delivery_jilter_enabled_s3_path %>"
 
 enable_jilter_postfix_conf() {
   declare -a jilter_enable_configs=("smtpd_milters = inet:localhost:9876"
@@ -24,8 +24,8 @@ enable_jilter_postfix_conf() {
 # run the python script to check the flag
 function is_jilter_enabled()
 {
-  flag_value=`python /opt/sophos/xgemail/utils/toggle_flag_s3.py --region $AWS_REGION --bucket $BUCKET_NAME --get $DELIVERY_JITLER_ENABLED_S3_PATH`
-  echo "[$DELIVERY_JITLER_ENABLED_S3_PATH] [$flag_value]"
+  flag_value=`python /opt/sophos/xgemail/utils/toggle_flag_s3.py --region $AWS_REGION --bucket $BUCKET_NAME --get $DELIVERY_JILTER_ENABLED_S3_PATH`
+  echo "[$DELIVERY_JILTER_ENABLED_S3_PATH] [$flag_value]"
   if [[ $flag_value =~ "True" ]]; then
     return 0
   else

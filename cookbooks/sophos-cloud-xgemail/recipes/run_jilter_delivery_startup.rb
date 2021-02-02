@@ -19,7 +19,7 @@ XGEMAIL_FILES_DIR    = node['xgemail']['xgemail_files_dir']
 AWS_REGION           = node['sophos_cloud']['region']
 POLICY_BUCKET_NAME   = node['xgemail']['xgemail_policy_bucket_name']
 
-DELIVERY_JITLER_ENABLED_S3_PATH   = node['xgemail']['delivery_jilter_enabled_s3_path']
+DELIVERY_JILTER_ENABLED_S3_PATH   = node['xgemail']['delivery_jilter_enabled_s3_path']
 
 STARTUP_SCRIPT_PATH = "#{XGEMAIL_FILES_DIR}/startup"
 
