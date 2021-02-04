@@ -212,7 +212,7 @@ def add_transport_route_header(recipients_addresses, existing_headers):
                 # SQS.
                 logger.exception(
                     'Route for recipients [{0}] cannot be retrieved from S3 or destinations API. S3 exception: {1}'.format(
-                        recipients,
+                        recipients_addresses,
                         route_exception
                     )
                 )
@@ -224,7 +224,7 @@ def add_transport_route_header(recipients_addresses, existing_headers):
         # push the data to S3 to prevent subsequent issues.
         logger.warn(
             'Unable to create transport route header for recipients [{0}], using fallback: {1}'.format(
-                recipients,
+                recipients_addresses,
                 fallback_header_value
             )
         )
