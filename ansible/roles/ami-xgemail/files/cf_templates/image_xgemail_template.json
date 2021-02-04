@@ -245,7 +245,7 @@
                   "Fn::Join": [
                     "", [
                       "mkdir -p /opt/sophos/bin\n",
-                      "aws s3 cp s3://cloud-applications/", { "Ref": "Branch" }, "/xgemail-infrastructure/common_utils.enc /opt/sophos/bin/common_utils.enc\n"
+                      "aws s3 cp s3:", { "Ref": "S3SophosAppRepositoryUrl" }, "/", { "Ref": "Branch" }, "/xgemail-infrastructure/common_utils.enc /opt/sophos/bin/common_utils.enc\n"
                     ]
                   ]
                 }
@@ -306,12 +306,12 @@
 
                       "CHEFDK_VERSION=0.2.0-2.el6\n",
                       "CHEFDK_RPM=chefdk-${CHEFDK_VERSION}.x86_64.rpm\n",
-                      "aws --region us-west-2 s3 cp s3://", { "Ref": "S3Sophos3rdPartyRepositoryUrl" }, "/chef/${CHEFDK_RPM} ${CHEFDK_RPM}\n",
+                      "aws --region us-west-2 s3 cp s3:", { "Ref": "S3Sophos3rdPartyRepositoryUrl" }, "/chef/${CHEFDK_RPM} ${CHEFDK_RPM}\n",
                       "rpm -i ${CHEFDK_RPM}\n",
                       "rm -f ${CHEFDK_RPM}\n",
                       "CHEF_REPO_HASH=605eeda\n",
                       "CHEF_REPO_TGZ=chef-chef-repo-${CHEF_REPO_HASH}.tar.gz\n",
-                      "aws --region us-west-2 s3 cp s3://", { "Ref": "S3Sophos3rdPartyRepositoryUrl" }, "/chef/${CHEF_REPO_TGZ} ${CHEF_REPO_TGZ}\n",
+                      "aws --region us-west-2 s3 cp s3:", { "Ref": "S3Sophos3rdPartyRepositoryUrl" }, "/chef/${CHEF_REPO_TGZ} ${CHEF_REPO_TGZ}\n",
                       "tar xzvf ${CHEF_REPO_TGZ}\n",
                       "mkdir -p /var/chef/chef-repo/.chef\n",
                       "cp -r chef-chef-repo-${CHEF_REPO_HASH}/* /var/chef/chef-repo\n",
@@ -342,7 +342,7 @@
                       "touch /var/log/sophos/chef-reset_chef.log\n",
                       "touch /var/log/sophos/reset_cookbooks.output\n",
                       "mkdir -p /etc/chef/ohai/hints\n",
-                      "touch /etc/chef/ohai/hints/ec2.json\n",
+                      "touch /etc/chef/ohai/hints/ec2.json\n"
 
                     ]
                   ]
