@@ -35,7 +35,7 @@ AWS_REGION              = node['sophos_cloud']['region']
 ACCOUNT                 = node['sophos_cloud']['environment']
 
 XGEMAIL_FILES_DIR               = node['xgemail']['xgemail_files_dir']
-CUSTOM_ROUTE_TRASNPORT_PATH     = node['xgemail']['custom_route_trasnport_path']
+CUSTOM_ROUTE_TRANSPORT_PATH     = node['xgemail']['custom_route_transport_path']
 XGEMAIL_UTILS_DIR               = node['xgemail']['xgemail_utils_files_dir']
 POLICY_BUCKET                   = node['xgemail']['xgemail_policy_bucket_name']
 
@@ -67,6 +67,6 @@ template CUSTOMER_DIRECTORY_CUSTOM_TRANSPORT_SCRIPT_PATH do
     :xgemail_utils_path => XGEMAIL_UTILS_DIR,
     :account => ACCOUNT,
     :policy_bucket => POLICY_BUCKET,
-    :custom_route_trasnport_path => CUSTOM_ROUTE_TRASNPORT_PATH
+    :custom_route_transport_path => CUSTOM_ROUTE_TRANSPORT_PATH
   )
 end
