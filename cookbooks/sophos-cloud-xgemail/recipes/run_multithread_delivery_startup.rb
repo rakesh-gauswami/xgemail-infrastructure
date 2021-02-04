@@ -10,6 +10,7 @@
 # configure and run multithread-delivery-startup script to enable mulithreading in sqs consumer on startup based on s3 flag
 
 XGEMAIL_FILES_DIR    = node['xgemail']['xgemail_files_dir']
+XGEMAIL_UTILS_DIR    = node['xgemail']['xgemail_utils_files_dir']
 POLICY_BUCKET_NAME   = node['xgemail']['xgemail_policy_bucket_name']
 AWS_REGION           = node['sophos_cloud']['region']
 DELIVERY_MULTITHREAD_ENABLED_FILE_PATH = node['xgemail']['delivery_multithread_enabled_file_path']
@@ -33,7 +34,8 @@ template "#{STARTUP_SCRIPT_PATH}/multithread-delivery-startup.sh" do
     :aws_region => AWS_REGION,
     :policy_bucket => POLICY_BUCKET_NAME,
     :delivery_multithread_enabled_s3_path => DELIVERY_MULTITHREAD_ENABLED_S3_PATH,
-    :delivery_multithread_enabled_file_path => DELIVERY_MULTITHREAD_ENABLED_FILE_PATH
+    :delivery_multithread_enabled_file_path => DELIVERY_MULTITHREAD_ENABLED_FILE_PATH,
+    :xgemail_utils_dir => XGEMAIL_UTILS_DIR
   )
 end
 

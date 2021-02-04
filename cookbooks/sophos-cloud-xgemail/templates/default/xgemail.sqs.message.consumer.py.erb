@@ -66,10 +66,11 @@ POLICY_BUCKET_NAME = "<%= @policy_bucket %>"
 TRANSPORT_CONFIG_PATH = "<%= @transport_config_path %>"
 MH_MAIL_INFO_STORAGE_DIR = "<%= @mh_mail_info_storage_dir %>"
 MSG_HISTORY_V2_BUCKET = "<%= @msg_history_v2_bucket_name %>"
-NO_OF_THREADS = <%= @number_of_consumer_threads %>
+DEFAULT_NO_OF_THREADS = <%= @default_number_of_consumer_threads %>
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 GLOBAL_MULTITHREAD_ENABLED_KEY = "<%= @delivery_multithread_enabled_s3_path %>"
+THREAD_COUNT_CONFIG_KEY = "<%= @consumer_thread_count_key %>"
 LOCAL_MULTITHREAD_ENABLED_FILE_PATH = "<%= @delivery_multithread_enabled_file_path %>"
 X_SOPHOS_PROCESSING_START_TIME_HEADER = 'X-Sophos-Processing-Start-Time'
 # logging to syslog setup
@@ -511,9 +512,18 @@ def is_multi_threaded():
             return True
     except Exception as e:
         logger.exception("Error in checking multi_thread config.[{0}]".format(e))
-
+    # disabled by default.
     return False
-   
+
+def get_thread_count():
+    try:
+        if awshandler.s3_key_exists(POLICY_BUCKET_NAME, THREAD_COUNT_CONFIG_KEY):
+            return int(awshandler.download_data_from_s3(POLICY_BUCKET_NAME, THREAD_COUNT_CONFIG_KEY))
+    except Exception as e:
+        logger.exception("Error in check thread count.[{0}]".format(e))
+    # return default config.
+    return DEFAULT_NO_OF_THREADS;
+
 def deliver_messages():
     while True:
         try:
@@ -680,11 +690,13 @@ USE_MULTI_THREAD = is_multi_threaded()
 
 if USE_MULTI_THREAD:
     # Start consumers
-    logger.info("Multi thread is enabled.")
     i = 0;
-    while i < NO_OF_THREADS:
+    thread_count = get_thread_count();
+    logger.info("Multi thread is enabled with thread count [{0}].".format(thread_count))
+    while i < thread_count:
         t = threading.Thread(target=deliver_messages)
         t.start()
         ++i
 else:
+    logger.info("Multi thread is  disabled")
     deliver_messages()

@@ -11,6 +11,7 @@
 
 NODE_TYPE           = node['xgemail']['cluster_type']
 XGEMAIL_FILES_DIR   = node['xgemail']['xgemail_files_dir']
+XGEMAIL_UTILS_DIR   = node['xgemail']['xgemail_utils_files_dir']
 
 INSTANCE_DATA = node['xgemail']['postfix_instance_data'][NODE_TYPE]
 raise "Unsupported node type [#{NODE_TYPE}]" if INSTANCE_DATA.nil?
@@ -48,6 +49,7 @@ template "#{TOGGLE_SCRIPT_PATH}/jilter-delivery-toggle.sh" do
     :aws_region => AWS_REGION,
     :delivery_jilter_enabled_s3_path => DELIVERY_JILTER_ENABLED_S3_PATH,
     :instance_name => INSTANCE_NAME,
-    :policy_bucket => POLICY_BUCKET_NAME
+    :policy_bucket => POLICY_BUCKET_NAME,
+    :xgemail_utils_dir => XGEMAIL_UTILS_DIR
   )
 end

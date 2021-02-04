@@ -267,7 +267,6 @@ default['xgemail']['sysctl_tcp_window_scaling'] = 1
 
 default['xgemail']['delivery_multithread_enabled_s3_path'] = 'config/delivery/multi.thread.enabled.GLOBAL'
 default['xgemail']['delivery_multithread_enabled_file_path'] = '/opt/sophos/xgemail/config/delivery.multithread.enabled'
-default['xgemail']['number_of_consumer_threads'] = 2
 default['xgemail']['delivery_jilter_enabled_s3_path'] = 'config/delivery/jilter.enabled.GLOBAL'
 
 ## Postfix configuration

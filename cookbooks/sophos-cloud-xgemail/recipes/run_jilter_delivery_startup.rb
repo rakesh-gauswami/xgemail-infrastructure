@@ -16,6 +16,7 @@ INSTANCE_NAME = INSTANCE_DATA[:instance_name]
 raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 
 XGEMAIL_FILES_DIR    = node['xgemail']['xgemail_files_dir']
+XGEMAIL_UTILS_DIR    = node['xgemail']['xgemail_utils_files_dir']
 AWS_REGION           = node['sophos_cloud']['region']
 POLICY_BUCKET_NAME   = node['xgemail']['xgemail_policy_bucket_name']
 
@@ -39,7 +40,8 @@ template "#{STARTUP_SCRIPT_PATH}/jilter-delivery-startup.sh" do
     :aws_region => AWS_REGION,
     :instance_name => INSTANCE_NAME,
     :policy_bucket => POLICY_BUCKET_NAME,
-    :delivery_jilter_enabled_s3_path => DELIVERY_JILTER_ENABLED_S3_PATH
+    :delivery_jilter_enabled_s3_path => DELIVERY_JILTER_ENABLED_S3_PATH,
+    :xgemail_utils_dir => XGEMAIL_UTILS_DIR
   )
 end
 

@@ -9,6 +9,7 @@ AWS_REGION="<%= @aws_region %>"
 BUCKET_NAME="<%= @policy_bucket %>"
 DELIVERY_MULTITHREAD_ENABLED_S3_PATH="<%= @delivery_multithread_enabled_s3_path %>"
 DELIVERY_MULTITHREAD_ENABLED_FILE_PATH="<%= @delivery_multithread_enabled_file_path %>"
+XGEMAIL_UTILS_DIR="<%= xgemail_utils_dir %>"
 
 restart_consumer() {
     echo "restarting xgemail-sqs-consumer"
@@ -31,13 +32,13 @@ local_enable() {
 global_disable() {
   echo "disabling global xgemail-sqs-consumer multithreading.."
   # set s3 flag
-  python /opt/sophos/xgemail/utils/toggle_flag_s3.py --region $AWS_REGION --bucket $BUCKET_NAME --unset $DELIVERY_MULTITHREAD_ENABLED_S3_PATH
+  python $XGEMAIL_UTILS_DIR/toggle_flag_s3.py --region $AWS_REGION --bucket $BUCKET_NAME --unset $DELIVERY_MULTITHREAD_ENABLED_S3_PATH
 }
 
 global_enable() {
   echo "enabling global xgemail-sqs-consumer multithreading.."
   #unset s3 flag
-  python /opt/sophos/xgemail/utils/toggle_flag_s3.py --region $AWS_REGION --bucket $BUCKET_NAME --set $DELIVERY_MULTITHREAD_ENABLED_S3_PATH
+  python $XGEMAIL_UTILS_DIR/toggle_flag_s3.py --region $AWS_REGION --bucket $BUCKET_NAME --set $DELIVERY_MULTITHREAD_ENABLED_S3_PATH
 }
 
 case "$1" in
