@@ -1,0 +1,474 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Template containing a collection of Xgemail SSM Postfix Documents",
+
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2020, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ],
+
+    "Comments": [
+      "Creates SSM Postfix Documents to automate control of various functions on CloudEmail infrastructure."
+    ]
+  },
+
+  "Parameters": {
+    "Environment": {
+      "Description": "(inf, dev, qa, prod)",
+      "Type": "String"
+    }
+  },
+
+  "Resources": {
+    "PostfixCommandBlockSender": {
+      "Type": "AWS::SSM::Document",
+      "Properties": {
+        "DocumentType": "Automation",
+        "Content": {
+          "schemaVersion": "0.3",
+          "assumeRole": { "Fn::GetAtt": [ "PostfixAutomationRole", "Arn" ] },
+          "description": "Blocked Sender address in all internet-submit Postfix instances.",
+          "parameters": {
+            "SenderAddress": {
+              "type": "String",
+              "description": "The sender address to block in Postfix config."
+            }
+          },
+          "mainSteps": [
+            {
+              "name": "getInstanceIds",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": 3,
+              "onFailure": "Abort",
+              "inputs": {
+                "Service": "ec2",
+                "Api": "DescribeInstances",
+                "Filters": [
+                  {
+                    "Name": "tag:Application",
+                    "Values": [
+                      "internet-submit"
+                    ]
+                  },
+                  {
+                    "Name": "instance-state-name",
+                    "Values": [
+                      "running"
+                    ]
+                  }
+                ]
+              },
+              "outputs": [
+                {
+                  "Name": "InstanceIds",
+                  "Selector": "$.Reservations..Instances..InstanceId",
+                  "Type": "StringList"
+                }
+              ],
+              "isCritical": "true",
+              "nextStep": "PostfixConfig"
+            },
+            {
+              "name": "PostfixConfig",
+              "action": "aws:runCommand",
+              "maxAttempts": 3,
+              "timeoutSeconds": 3600,
+              "inputs": {
+                "DocumentName": "AWS-RunShellScript",
+                "InstanceIds": [ "{{getInstanceIds.InstanceIds}}" ],
+                "Parameters": {
+                  "commands": [
+                    "echo {{SenderAddress}} REJECT >> /etc/postfix-is/sender_access",
+                    "postmap /etc/postfix-is/sender_access",
+                    "postmulti -i postfix-is -x postconf smtpd_sender_restrictions='reject_non_fqdn_sender, check_sender_access hash:/etc/postfix-is/sender_access'",
+                    "postmulti -i postfix-is -p reload"
+                  ]
+                }
+              },
+              "isCritical": "true",
+              "isEnd": "true"
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref": "AWS::StackName" }, "PostfixCommandBlockSender" ] ] }
+          },
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
+      }
+    },
+
+    "PostfixCommandUnBlockSender": {
+      "Type": "AWS::SSM::Document",
+      "Properties": {
+        "DocumentType": "Automation",
+        "Content": {
+          "schemaVersion": "0.3",
+          "assumeRole": { "Fn::GetAtt": [ "PostfixAutomationRole", "Arn" ] },
+          "description": "Unblock Sender address in all internet-submit Postfix instances.",
+          "parameters": {
+            "SenderAddress": {
+              "type": "String",
+              "description": "The sender address to unblock in Postfix config."
+            }
+          },
+          "mainSteps": [
+            {
+              "name": "getInstanceIds",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": 3,
+              "onFailure": "Abort",
+              "inputs": {
+                "Service": "ec2",
+                "Api": "DescribeInstances",
+                "Filters": [
+                  {
+                    "Name": "tag:Application",
+                    "Values": [
+                      "internet-submit"
+                    ]
+                  },
+                  {
+                    "Name": "instance-state-name",
+                    "Values": [
+                      "running"
+                    ]
+                  }
+                ]
+              },
+              "outputs": [
+                {
+                  "Name": "InstanceIds",
+                  "Selector": "$.Reservations..Instances..InstanceId",
+                  "Type": "StringList"
+                }
+              ],
+              "isCritical": "true",
+              "nextStep": "PostfixConfig"
+            },
+            {
+              "name": "PostfixConfig",
+              "action": "aws:runCommand",
+              "maxAttempts": 3,
+              "timeoutSeconds": 3600,
+              "inputs": {
+                "DocumentName": "AWS-RunShellScript",
+                "InstanceIds": [ "{{getInstanceIds.InstanceIds}}" ],
+                "Parameters": {
+                  "commands": [
+                    "sed -i '/{{SenderAddress}} REJECT/d' /etc/postfix-is/sender_access",
+                    "postmap /etc/postfix-is/sender_access",
+                    "postmulti -i postfix-is -x postconf smtpd_sender_restrictions='reject_non_fqdn_sender, check_sender_access hash:/etc/postfix-is/sender_access'",
+                    "postmulti -i postfix-is -p reload"
+                  ]
+                }
+              },
+              "isCritical": "true",
+              "isEnd": "true"
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref": "AWS::StackName" }, "PostfixCommandUnBlockSender" ] ] }
+          },
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
+      }
+    },
+
+    "PythonCommandBlockUnblockCustomer": {
+      "Type": "AWS::SSM::Document",
+      "Properties": {
+        "DocumentType": "Automation",
+        "Content": {
+          "schemaVersion": "0.3",
+          "assumeRole": { "Fn::GetAtt": [ "PostfixAutomationRole", "Arn" ] },
+          "description": "Blocked Sender address in all internet-submit Postfix instances.",
+          "parameters": {
+            "Action": {
+              "type": "String",
+              "description": "Action to block or unblock an address.",
+              "allowedValues": [
+                "block",
+                "unblock"
+              ]
+            },
+            "Environment": {
+              "type":"String",
+              "description":"The account environment.",
+              "allowedValues": [
+                "INF",
+                "DEV",
+                "QA",
+                "PROD"
+              ],
+              "default": "PROD"
+            },
+            "Region": {
+              "type":"String",
+              "description":"The AWS Region.",
+              "allowedValues": [
+                "us-east-2",
+                "us-west-2",
+                "eu-west-1",
+                "eu-central-1"
+              ]
+            },
+            "SenderAddress": {
+              "type": "String",
+              "description": "The sender address to block in Postfix config."
+            }
+          },
+          "mainSteps": [
+            {
+              "name": "getInstanceIds",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": 3,
+              "onFailure": "Abort",
+              "inputs": {
+                "Service": "ec2",
+                "Api": "DescribeInstances",
+                "Filters": [
+                  {
+                    "Name": "tag:Application",
+                    "Values": [
+                      "customer-submit"
+                    ]
+                  },
+                  {
+                    "Name": "instance-state-name",
+                    "Values": [
+                      "running"
+                    ]
+                  }
+                ]
+              },
+              "outputs": [
+                {
+                  "Name": "InstanceIds",
+                  "Selector": "$.Reservations[0].Instances[0].InstanceId",
+                  "Type": "String"
+                }
+              ],
+              "isCritical": "true",
+              "nextStep": "PostfixConfig"
+            },
+            {
+              "name": "PostfixConfig",
+              "action": "aws:runCommand",
+              "maxAttempts": 3,
+              "timeoutSeconds": 3600,
+              "inputs": {
+                "DocumentName": "AWS-RunShellScript",
+                "InstanceIds": [ "{{getInstanceIds.InstanceIds}}" ],
+                "Parameters": {
+                  "commands": [
+                    "python /opt/sophos/xgemail/utils/blocked_sender_api.py --region {{Region}} --env {{Environment}} --{{Action}} {{SenderAddress}}"
+                  ]
+                }
+              },
+              "isCritical": "true",
+              "isEnd": "true"
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref": "AWS::StackName" }, "PythonCommandBlockUnblockCustomer" ] ] }
+          },
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
+      }
+    },
+
+    "PostfixAutomationRole" : {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [
+                "ec2.amazonaws.com",
+                "ssm.amazonaws.com"
+              ]
+            },
+            "Action": [ "sts:AssumeRole" ]
+          }]
+        },
+        "Path": "/",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "PostfixAutomationRole" ] ] }
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
+      }
+    },
+    "PostfixAutomationRolePolicies": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "iam:PassRole"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "ec2:CreateTags",
+                "ec2:DescribeInstances",
+                "ec2:DescribeTags"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:logs:*:*:*"
+              ]
+            },
+            {
+              "Action": [
+                "ssm:DescribeAutomationExecutions",
+                "ssm:DescribeAutomationStepExecutions",
+                "ssm:DescribeDocument",
+                "ssm:DescribeInstanceInformation",
+                "ssm:GetAutomationExecution",
+                "ssm:GetCommandInvocation",
+                "ssm:GetConnectionStatus",
+                "ssm:GetDocument",
+                "ssm:ListCommandInvocations",
+                "ssm:ListCommands",
+                "ssm:ListInstanceAssociations",
+                "ssm:ListDocuments",
+                "ssm:ListDocumentVersions",
+                "ssm:SendCommand",
+                "ssm:StartAutomationExecution"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ]
+        },
+        "PolicyName": "root",
+        "Roles": [
+          {
+            "Ref": "PostfixAutomationRole"
+          }
+        ]
+      },
+      "Type": "AWS::IAM::Policy"
+    }
+  },
+
+  "Outputs" : {
+    "PostfixCommandBlockSender" : {
+      "Description" : "SSM Postfix Command Block Sender document name",
+      "Value" : { "Ref" : "PostfixCommandBlockSender" }
+    },
+    "PostfixCommandUnBlockSender" : {
+      "Description" : "SSM Postfix Command Block Sender document name",
+      "Value" : { "Ref" : "PostfixCommandUnBlockSender" }
+    },
+    "PythonCommandBlockUnblockCustomer" : {
+      "Description" : "SSM Python Command to Block or Unblock Customer document name",
+      "Value" : { "Ref" : "PythonCommandBlockUnblockCustomer" }
+    },
+    "PostfixAutomationRole": {
+      "Description": "Postfix Automation role",
+      "Value": { "Ref": "PostfixAutomationRole" }
+    },
+    "PostfixAutomationRoleArn": {
+      "Description": "Postfix Automation role ARN",
+      "Value": { "Fn::GetAtt" : [ "PostfixAutomationRole", "Arn" ] }
+    }
+  }
+}
