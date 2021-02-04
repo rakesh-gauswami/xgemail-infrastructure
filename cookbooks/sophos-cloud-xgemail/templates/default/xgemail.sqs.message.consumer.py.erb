@@ -694,9 +694,10 @@ if USE_MULTI_THREAD:
     thread_count = get_thread_count();
     logger.info("Multi thread is enabled with thread count [{0}].".format(thread_count))
     while i < thread_count:
+        logger.info("Starting thread [{0}]".format(i))
         t = threading.Thread(target=deliver_messages)
         t.start()
-        ++i
+        i = i + 1
 else:
     logger.info("Multi thread is  disabled")
     deliver_messages()
