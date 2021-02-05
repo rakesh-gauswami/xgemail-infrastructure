@@ -25,7 +25,7 @@ enable_jilter_postfix_conf() {
 # run the python script to check the flag
 function is_jilter_enabled()
 {
-  flag_value=`python $XGEMAIL_UTILS_DIR/utils/toggle_flag_s3.py --region $AWS_REGION --bucket $BUCKET_NAME --get $DELIVERY_JILTER_ENABLED_S3_PATH`
+  flag_value=`python $XGEMAIL_UTILS_DIR/toggle_flag_s3.py --region $AWS_REGION --bucket $BUCKET_NAME --get $DELIVERY_JILTER_ENABLED_S3_PATH`
   echo "[$DELIVERY_JILTER_ENABLED_S3_PATH] [$flag_value]"
   if [[ $flag_value =~ "True" ]]; then
     return 0
