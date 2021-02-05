@@ -47,7 +47,7 @@ if NODE_TYPE == 'customer-delivery' ||  NODE_TYPE == 'internet-delivery'
   DEFAULT_NUMBER_OF_CONSUMER_THREADS = 5
 else
   #c5a.large 2vCPU /4 GB.
-  DEFAULT_NUMBER_OF_CONSUMER_THREADS = 2
+  DEFAULT_NUMBER_OF_CONSUMER_THREADS = 5
 end
 
 DELIVERY_MULTITHREAD_ENABLED_FILE_PATH  = node['xgemail']['delivery_multithread_enabled_file_path']
