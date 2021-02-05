@@ -43,10 +43,10 @@ MH_MAIL_INFO_STORAGE_DIR                = node['xgemail']['mh_mail_info_storage_
 DELIVERY_JILTER_ENABLED_FILE_PATH       = XGEMAIL_FILES_DIR + '/config/delivery.jilter.enabled'
 MSG_HISTORY_V2_BUCKET                   = node['xgemail']['msg_history_v2_bucket_name']
 if NODE_TYPE == 'customer-delivery' ||  NODE_TYPE == 'internet-delivery'
-  #m5a.large 2vCPU / 8 GB. Actual thread count to be updated.
-  DEFAULT_NUMBER_OF_CONSUMER_THREADS = 4
+  #m5a.large 2vCPU / 8 GB.
+  DEFAULT_NUMBER_OF_CONSUMER_THREADS = 5
 else
-  #c5a.large 2vCPU /4 GB. Actual thread count to be updated.
+  #c5a.large 2vCPU /4 GB.
   DEFAULT_NUMBER_OF_CONSUMER_THREADS = 2
 end
 
