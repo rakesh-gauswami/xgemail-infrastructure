@@ -1,0 +1,31 @@
+#!/bin/sh
+#
+# Copyright 2020, Sophos
+#
+# All rights reserved - Do Not Redistribute
+# Script to startup sqs consumer mulithreading during startup.
+
+AWS_REGION="<%= @aws_region %>"
+BUCKET_NAME="<%= @policy_bucket %>"
+DELIVERY_MULTITHREAD_ENABLED_S3_PATH="<%= @delivery_multithread_enabled_s3_path %>"
+DELIVERY_MULTITHREAD_ENABLED_FILE_PATH="<%= @delivery_multithread_enabled_file_path %>"
+XGEMAIL_UTILS_DIR="<%= @xgemail_utils_dir %>"
+
+function is_multithread_enabled()
+{
+  # run the python script to check the flag
+  flag_value=`python $XGEMAIL_UTILS_DIR/toggle_flag_s3.py --region $AWS_REGION --bucket $BUCKET_NAME --get $DELIVERY_MULTITHREAD_ENABLED_S3_PATH`
+  echo "[$DELIVERY_MULTITHREAD_ENABLED_S3_PATH] [$flag_value]"
+  if [[ $flag_value =~ "True" ]]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+if is_multithread_enabled; then
+  echo "delivery mulithreading is globally enabled. touching $DELIVERY_MULTITHREAD_ENABLED_FILE_PATH"
+  touch $DELIVERY_MULTITHREAD_ENABLED_FILE_PATH
+else
+  echo "delivery mulithreading is globally disabled."
+fi
