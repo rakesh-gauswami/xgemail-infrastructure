@@ -265,6 +265,10 @@ default['xgemail']['sysctl_tcp_slow_start_after_idle'] = 0
 default['xgemail']['sysctl_tcp_tw_reuse'] = 1
 default['xgemail']['sysctl_tcp_window_scaling'] = 1
 
+default['xgemail']['delivery_multithread_enabled_s3_path'] = 'config/delivery/multi.thread.enabled.GLOBAL'
+default['xgemail']['delivery_multithread_enabled_file_path'] = "#{XGEMAIL_FILES_DIR}/config/delivery.multithread.enabled"
+default['xgemail']['delivery_jilter_enabled_s3_path'] = 'config/delivery/jilter.enabled.GLOBAL'
+
 ## Postfix configuration
 SUBMIT_MESSAGE_SIZE_LIMIT_BYTES = 52428800
 default['xgemail']['postfix3_version'] = '3.2.4.2-1'
