@@ -73,6 +73,7 @@ DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 GLOBAL_MULTITHREAD_ENABLED_KEY = "<%= @delivery_multithread_enabled_s3_path %>"
 THREAD_COUNT_CONFIG_KEY = "<%= @consumer_thread_count_key %>"
 LOCAL_MULTITHREAD_ENABLED_FILE_PATH = "<%= @delivery_multithread_enabled_file_path %>"
+DELIVERY_JILTER_ENABLED_FILE_PATH = "<%= @delivery_jilter_enabled_file_path %>"
 X_SOPHOS_PROCESSING_START_TIME_HEADER = 'X-Sophos-Processing-Start-Time'
 # logging to syslog setup
 logging.getLogger("botocore").setLevel(logging.WARNING)
@@ -688,7 +689,7 @@ def deliver_messages():
             continue
     
 # Wait for jilter to listen on port 9876
-if is_delivery_jilter_enabled:
+if is_delivery_jilter_enabled():
     j = 0
     a_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     a_socket.settimeout(2.0)
