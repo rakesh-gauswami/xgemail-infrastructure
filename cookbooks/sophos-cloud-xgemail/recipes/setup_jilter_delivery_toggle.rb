@@ -48,9 +48,9 @@ template "#{TOGGLE_SCRIPT_PATH}/jilter-delivery-toggle.sh" do
   group 'root'
   variables(
     :aws_region => AWS_REGION,
-    :delivery_jilter_enabled_file_path => DELIVERY_JILTER_ENABLED_FILE_PATH,
     :delivery_jilter_enabled_s3_path => DELIVERY_JILTER_ENABLED_S3_PATH,
     :instance_name => INSTANCE_NAME,
+    :delivery_jilter_enabled_file_path => DELIVERY_JILTER_ENABLED_FILE_PATH,
     :policy_bucket => POLICY_BUCKET_NAME,
     :xgemail_utils_dir => XGEMAIL_UTILS_DIR
   )
