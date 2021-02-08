@@ -28,6 +28,7 @@ import re
 import os.path
 import messagehistory
 import threading
+import socket
 from awshandler import AwsHandler
 from common.sqsmessage import SqsMessage
 from datetime import datetime
@@ -65,6 +66,7 @@ ACCOUNT = '<%= @account %>'
 POLICY_BUCKET_NAME = "<%= @policy_bucket %>"
 TRANSPORT_CONFIG_PATH = "<%= @transport_config_path %>"
 MH_MAIL_INFO_STORAGE_DIR = "<%= @mh_mail_info_storage_dir %>"
+DELIVERY_JILTER_ENABLED_FILE_PATH = "<%= @delivery_jilter_enabled_file_path %>"
 MSG_HISTORY_V2_BUCKET = "<%= @msg_history_v2_bucket_name %>"
 DEFAULT_NO_OF_THREADS = <%= @default_number_of_consumer_threads %>
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
@@ -686,6 +688,27 @@ def deliver_messages():
             logger.exception("Unhandled exception in main loop")
             continue
     
+# Wait for jilter to listen on port 9876
+if is_delivery_jilter_enabled():
+    j = 0
+    a_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    a_socket.settimeout(2.0)
+    jilter_url = ("127.0.0.1", 9876)
+    MAX_WAIT_SECONDS = 120
+    while j < MAX_WAIT_SECONDS: # wait for 120s
+        logger.info("[{}] Waiting for jilter to listen on port 9876".format(j))
+        jilter_check = a_socket.connect_ex(jilter_url)
+        if jilter_check == 0:
+            logger.info("jilter process found on port 9876")
+            break
+        time.sleep(1)
+        j = j + 1
+    a_socket.close()
+
+    if j == MAX_WAIT_SECONDS:
+        logger.error("jilter process not found on port 9876. Exiting")
+        exit(1)
+
 USE_MULTI_THREAD = is_multi_threaded()
 
 if USE_MULTI_THREAD:
