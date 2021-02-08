@@ -14,8 +14,10 @@ from botocore.exceptions import ClientError
 
 AWS_REGION = "<%= @aws_region %>"
 ACCOUNT =  "<%= @account %>"
-CUSTOM_ROUTE_FILE_NAME = "<%= @customer_delivery_transport_filename %>"
-CUSTOM_ROUTE_RECIPIENT_FILE_PATH = "config/inbound-relay-control/custom_route/domain/"
+CUSTOM_ROUTE_TRANSPORT_PATH = "<%= @custom_route_transport_path %>"
+CUSTOM_ROUTE_RECIPIENT_FILE_PATH = CUSTOM_ROUTE_TRANSPORT_PATH + "domain/"
+CUSTOM_ROUTE_FILE_NAME       =  CUSTOM_ROUTE_TRANSPORT_PATH + "customer-delivery-custom-recipient-transport.json"
+
 POLICY_BUCKET_NAME = "<%= @policy_bucket %>"
 CUSTOM_ROUTE_TTL_IN_DAYS = 365
 S3_ENCRYPTION_ALGORITHM = 'AES256'
@@ -32,7 +34,7 @@ def upload_to_s3(fileName,dataStr):
         )
 
 def argument_parser():
-    parser = argparse.ArgumentParser(description='Customer delivery recipient trasnport updater')
+    parser = argparse.ArgumentParser(description='Customer delivery recipient transport updater')
     parser.add_argument('command', metavar='command', choices=["LIST", "ADD_UPDATE", "DELETE"],help='Type of action/operation')
     parser.add_argument('--domainOrEmail', metavar='domainOrEmail', help='Domain name or email address ')
     parser.add_argument('--destination', metavar='destination',help="Destination Host/MX where mail delivered")
@@ -40,7 +42,7 @@ def argument_parser():
     parser.add_argument('--port', metavar='port', type = int ,help="port number")
     parser.add_argument('--customer_id', metavar='customer_id',help="Customer id for which custom mail routing config is added.")
     args = parser.parse_args()
-    portRange = range(1024, 65353)
+    portRange = range(1, 65353)
     if args.command == "DELETE":
         if args.domainOrEmail is None:
             parser.error("domainOrEmail is required attribute with command Delete")
@@ -48,7 +50,7 @@ def argument_parser():
         if args.domainOrEmail is None or args.destination is None or args.destination_type is None or args.port is None or args.customer_id is None:
             parser.error("All parameter are require for ADD/UPDATE record")
         if args.port not in portRange:
-            parser.error("Warning: Port should be in range(1024-65353) ")
+            parser.error("Warning: Port should be in range(1-65353) ")
     return args
 
 if __name__ == "__main__":
@@ -70,7 +72,7 @@ if __name__ == "__main__":
             newObject = {}
             newObject["delivery_destination"] = {}
             newObject["delivery_destination"]["destination"] = args.destination
-            newObject["delivery_destination"]["destination_type"] = args.destination_type
+            newObject["delivery_destination"]["type"] = args.destination_type
             newObject["delivery_destination"]["port"] = args.port
             newObject["delivery_destination"]["customer_id"] = args.customer_id
             print("Old Record:")
@@ -88,7 +90,7 @@ if __name__ == "__main__":
             record[domainOrEmail] = {}
             record[domainOrEmail]["delivery_destination"] = {}
             record[domainOrEmail]["delivery_destination"]["destination"] = args.destination
-            record[domainOrEmail]["delivery_destination"]["destination_type"] = args.destination_type
+            record[domainOrEmail]["delivery_destination"]["type"] = args.destination_type
             record[domainOrEmail]["delivery_destination"]["port"] = args.port
             record[domainOrEmail]["delivery_destination"]["customer_id"] = args.customer_id
             upload_to_s3(CUSTOM_ROUTE_RECIPIENT_FILE_PATH + domainOrEmail.encode('utf-8').encode("hex"),'')
