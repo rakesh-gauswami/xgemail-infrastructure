@@ -221,3 +221,11 @@ class AwsHandler(object):
             }
         )
         return put_response
+
+    # deletes key in S3 bucket
+    def delete_object_in_s3(self, bucket, key):
+        params = {
+            'Bucket': bucket,
+            'Key': key
+        }
+        return self.s3_client.delete_object(**params)

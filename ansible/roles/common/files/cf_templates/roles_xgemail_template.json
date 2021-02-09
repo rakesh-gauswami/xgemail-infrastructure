@@ -971,6 +971,20 @@
                 { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailQuarantineBucketName" }]]}]
             },
             {
+              "Action": [
+                "s3:DeleteObject",
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObject"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailPolicyBucketName" }, "/*" ] ] },
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailPolicyBucketName" } ] ] }
+              ]
+            },
+            {
               "Action" : [
                 "s3:DeleteObject",
                 "s3:GetBucketLocation",

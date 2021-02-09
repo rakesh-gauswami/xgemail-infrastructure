@@ -170,6 +170,7 @@ default['xgemail']['xgemail_utils_files_dir'] = "#{XGEMAIL_FILES_DIR}/utils"
 
 default['xgemail']['enc_config_key'] = 'config/outbound-relay-control/encryption/'
 default['xgemail']['inbound_tls_config_key'] = 'config/inbound-relay-control/tls/'
+default['xgemail']['custom_route_transport_path'] = 'config/inbound-relay-control/custom-routes/'
 
 default['xgemail']['temp_failure_code'] = 75
 
@@ -264,6 +265,10 @@ default['xgemail']['sysctl_tcp_max_tw_buckets'] = 2000000
 default['xgemail']['sysctl_tcp_slow_start_after_idle'] = 0
 default['xgemail']['sysctl_tcp_tw_reuse'] = 1
 default['xgemail']['sysctl_tcp_window_scaling'] = 1
+
+default['xgemail']['delivery_multithread_enabled_s3_path'] = 'config/delivery/multi.thread.enabled.GLOBAL'
+default['xgemail']['delivery_multithread_enabled_file_path'] = "#{XGEMAIL_FILES_DIR}/config/delivery.multithread.enabled"
+default['xgemail']['delivery_jilter_enabled_s3_path'] = 'config/delivery/jilter.enabled.GLOBAL'
 
 ## Postfix configuration
 SUBMIT_MESSAGE_SIZE_LIMIT_BYTES = 52428800

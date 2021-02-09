@@ -61,7 +61,8 @@ end
     'routingmanager.py',
     'scaneventattributes.py',
     'uuidutils.py',
-    'rfxrecoveryutils.py'
+    'rfxrecoveryutils.py',
+    'toggle_flag_s3.py'
 ].each do | cur |
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{cur}" do
     source cur

@@ -5,7 +5,7 @@
 
   "Metadata": {
     "Copyright": [
-      "Copyright 2020, Sophos Limited. All rights reserved.",
+      "Copyright 2021, Sophos Limited. All rights reserved.",
       "",
       "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
       "Sophos Limited and Sophos Group.  All other product and company",
@@ -245,8 +245,7 @@
                   "Fn::Join": [
                     "", [
                       "mkdir -p /opt/sophos/bin\n",
-                      "aws s3 cp s3://cloud-applications/", { "Ref": "Branch" }, "/xgemail-infrastructure/common_utils.enc /opt/sophos/bin/common_utils.enc\n",
-                      "ls -la /opt/sophos/bin\n"
+                      "aws s3 cp s3:", { "Ref": "S3SophosAppRepositoryUrl" }, "/", { "Ref": "Branch" }, "/xgemail-infrastructure/common_utils.enc /opt/sophos/bin/common_utils.enc\n"
                     ]
                   ]
                 }
@@ -255,9 +254,7 @@
                 "command": {
                   "Fn::Join": [
                     "", [
-                      "ls -la\n",
-                      "openssl enc -aes-256-cbc -d -in ./common_utils.enc -out ./common_utils.tar.gz -pass pass:", { "Ref": "AesDecryptionKey" }, "\n",
-                      "ls -la\n"
+                      "openssl enc -aes-256-cbc -d -in ./common_utils.enc -out ./common_utils.tar.gz -pass pass:", { "Ref": "AesDecryptionKey" }, "\n"
                     ]
                   ]
                 },
@@ -306,44 +303,39 @@
                       "    fi\n",
                       "fi\n",
                       "EOF\n",
-                      "cat /etc/profile.d/sophos.sh\n",
 
                       "CHEFDK_VERSION=0.2.0-2.el6\n",
                       "CHEFDK_RPM=chefdk-${CHEFDK_VERSION}.x86_64.rpm\n",
-                      "aws --region us-west-2 s3 cp s3://cloud-applications-3rdparty/chef/${CHEFDK_RPM} ${CHEFDK_RPM}\n",
+                      "aws --region us-west-2 s3 cp s3:", { "Ref": "S3Sophos3rdPartyRepositoryUrl" }, "/chef/${CHEFDK_RPM} ${CHEFDK_RPM}\n",
                       "rpm -i ${CHEFDK_RPM}\n",
                       "rm -f ${CHEFDK_RPM}\n",
                       "CHEF_REPO_HASH=605eeda\n",
                       "CHEF_REPO_TGZ=chef-chef-repo-${CHEF_REPO_HASH}.tar.gz\n",
-                      "aws --region us-west-2 s3 cp s3://cloud-applications-3rdparty/chef/${CHEF_REPO_TGZ} ${CHEF_REPO_TGZ}\n",
+                      "aws --region us-west-2 s3 cp s3:", { "Ref": "S3Sophos3rdPartyRepositoryUrl" }, "/chef/${CHEF_REPO_TGZ} ${CHEF_REPO_TGZ}\n",
                       "tar xzvf ${CHEF_REPO_TGZ}\n",
                       "mkdir -p /var/chef/chef-repo/.chef\n",
                       "cp -r chef-chef-repo-${CHEF_REPO_HASH}/* /var/chef/chef-repo\n",
                       "rm -rf chef-chef-repo-${CHEF_REPO_HASH}\n",
                       "chmod +rx /var/chef\n",
 
-                      "pwd\n",
                       "(\n",
                       "    export CHEF_VERSION=12.3\n",
                       "    cd /var/chef\n",
                       "    /usr/bin/wget -O install.sh https://www.opscode.com/chef/install.sh\n",
                       "    /bin/bash ./install.sh -v ${CHEF_VERSION}\n",
                       ")\n",
-                      "pwd\n",
 
                       "cat <<EOF > /var/chef/chef-repo/.chef/knife.rb\n",
                       "cookbook_path %w[/var/chef/chef-repo/cookbooks]\n",
                       "node_path     %w[/var/chef/chef-repo/nodes]\n",
                       "EOF\n",
                       "chmod 0444 /var/chef/chef-repo/.chef/knife.rb\n",
-                      "cat /var/chef/chef-repo/.chef/knife.rb\n",
 
                       "cat <<EOF >/var/chef/chef-repo/.chef/client.rb\n",
                       "cookbook_path %w[/var/chef/chef-repo/cookbooks]\n",
                       "node_path     %w[/var/chef/chef-repo/nodes]\n",
                       "EOF\n",
                       "chmod 0444 /var/chef/chef-repo/.chef/client.rb\n",
-                      "cat /var/chef/chef-repo/.chef/client.rb\n",
 
                       "CHEF_BASE_INSTALL_LOG=chef-$(date +\"%Y%m%d.%H%M%S\").base_ami.install_chef.log\n",
                       "touch /var/log/$CHEF_BASE_INSTALL_LOG\n",
@@ -351,7 +343,6 @@
                       "touch /var/log/sophos/reset_cookbooks.output\n",
                       "mkdir -p /etc/chef/ohai/hints\n",
                       "touch /etc/chef/ohai/hints/ec2.json\n",
-                      "#chef-client -z --no-color -c /var/chef/chef-repo/.chef/client.rb -l debug -L /var/log/$CHEF_BASE_INSTALL_LOG\n"
 
                     ]
                   ]
@@ -473,14 +464,7 @@
           "reset_chef": {
             "commands": {
               "01_reset_chef": {
-                "command": {
-                  "Fn::Join": [
-                    "", [
-                      "set -o xtrace   # Print commands and their arguments as they are executed.\n",
-                      "/opt/sophos/bin/reset_chef.sh\n"
-                    ]
-                  ]
-                }
+                "command": "/opt/sophos/bin/reset_chef.sh"
               }
             }
           },

@@ -42,6 +42,17 @@ E2E_LATENCY_TELEMETRY_DELIVERY_STREAM   =  "tf-e2e-latency-telemetry-#{AWS_REGIO
 MH_MAIL_INFO_STORAGE_DIR                = node['xgemail']['mh_mail_info_storage_dir']
 DELIVERY_JILTER_ENABLED_FILE_PATH       = XGEMAIL_FILES_DIR + '/config/delivery.jilter.enabled'
 MSG_HISTORY_V2_BUCKET                   = node['xgemail']['msg_history_v2_bucket_name']
+if NODE_TYPE == 'customer-delivery' ||  NODE_TYPE == 'internet-delivery'
+  #m5a.large 2vCPU / 8 GB.
+  DEFAULT_NUMBER_OF_CONSUMER_THREADS = 5
+else
+  #c5a.large 2vCPU /4 GB.
+  DEFAULT_NUMBER_OF_CONSUMER_THREADS = 5
+end
+
+DELIVERY_MULTITHREAD_ENABLED_FILE_PATH  = node['xgemail']['delivery_multithread_enabled_file_path']
+DELIVERY_MULTITHREAD_ENABLED_S3_PATH    = node['xgemail']['delivery_multithread_enabled_s3_path']
+THREAD_COUNT_CONFIG_KEY                 = 'config/delivery/multi.thread.count.' + NODE_TYPE
 
 if ACCOUNT == 'sandbox'
   XGEMAIL_PIC_FQDN = 'mail-service:8080'
@@ -101,7 +112,11 @@ template CONSUMER_SCRIPT_PATH do
     :transport_config_path => TRANSPORT_CONFIG_PATH,
     :mh_mail_info_storage_dir => MH_MAIL_INFO_STORAGE_DIR,
     :delivery_jilter_enabled_file_path => DELIVERY_JILTER_ENABLED_FILE_PATH,
-    :msg_history_v2_bucket_name => MSG_HISTORY_V2_BUCKET
+    :msg_history_v2_bucket_name => MSG_HISTORY_V2_BUCKET,
+    :default_number_of_consumer_threads => DEFAULT_NUMBER_OF_CONSUMER_THREADS,
+    :consumer_thread_count_key => THREAD_COUNT_CONFIG_KEY,
+    :delivery_multithread_enabled_file_path => DELIVERY_MULTITHREAD_ENABLED_FILE_PATH,
+    :delivery_multithread_enabled_s3_path => DELIVERY_MULTITHREAD_ENABLED_S3_PATH
   )
 end
 
