@@ -19,7 +19,6 @@ import subprocess
 import logging
 import traceback
 import configformatter
-from awshandler import AwsHandler
 from logging.handlers import SysLogHandler
 
 
@@ -221,7 +220,8 @@ with open(TRANSPORT_FILE_TMP, 'w') as f:
     s3 = boto3.client('s3')
     if custom_route_file_exist():
         try:
-            raw_config_data = awshandler.download_data_from_s3(POLICY_BUCKET, CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
+            current_config = s3.get_object(Bucket=POLICY_BUCKET,Key= CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
+            raw_config_data= current_config['Body'].read()
             config_data = configformatter.get_config_binary(raw_config_data)
             record = json.loads(config_data)
 
