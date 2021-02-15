@@ -15,7 +15,6 @@ from botocore.exceptions import ClientError
 AWS_REGION = "<%= @aws_region %>"
 ACCOUNT =  "<%= @account %>"
 CUSTOM_ROUTE_TRANSPORT_PATH = "<%= @custom_route_transport_path %>"
-CUSTOM_ROUTE_RECIPIENT_FILE_PATH = CUSTOM_ROUTE_TRANSPORT_PATH + "domain/"
 CUSTOM_ROUTE_FILE_NAME       =  CUSTOM_ROUTE_TRANSPORT_PATH + "customer-delivery-custom-recipient-transport.json"
 
 POLICY_BUCKET_NAME = "<%= @policy_bucket %>"
@@ -93,7 +92,6 @@ if __name__ == "__main__":
             record[domainOrEmail]["delivery_destination"]["type"] = args.destination_type
             record[domainOrEmail]["delivery_destination"]["port"] = args.port
             record[domainOrEmail]["delivery_destination"]["customer_id"] = args.customer_id
-            upload_to_s3(CUSTOM_ROUTE_RECIPIENT_FILE_PATH + domainOrEmail.encode('utf-8').encode("hex"),'')
             print(json.dumps(record[domainOrEmail], indent = 4))
             recordstr = json.dumps(record)
             # Save custom route record in file
@@ -109,18 +107,6 @@ if __name__ == "__main__":
             if query.lower() == 'y':
                 del record[domainOrEmail]
                 s3_client = boto3.client('s3')
-                s3_file_path = CUSTOM_ROUTE_RECIPIENT_FILE_PATH + domainOrEmail.encode('utf-8').encode("hex")
-                try:
-                    s3_client.head_object(
-                        Bucket=bucket_name,
-                        Key=s3_file_path
-                    )
-                    obj = s3.Object(bucket_name,s3_file_path)
-                    obj.delete()
-                except ClientError as e:
-                    trace = traceback.format_exc()
-                    print("Exception occurred while deleting recipient file" + trace)
-                    sys.exit(1)
                 recordstr = json.dumps(record)
                 # Save custom route record in file
                 upload_to_s3(CUSTOM_ROUTE_FILE_NAME,recordstr)
