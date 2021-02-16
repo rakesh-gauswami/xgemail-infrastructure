@@ -91,8 +91,8 @@ directory PLUGIN_DIR do
   action :create
 end
 
-cookbook_file '/etc/systemd/system/td-agent.service' do
-  path '/etc/systemd/system/td-agent.service'
+cookbook_file '/etc/sysconfig/td-agent' do
+  path '/etc/sysconfig/td-agent'
   source 'td-agent'
   mode '0644'
   owner 'root'
