@@ -31,3 +31,9 @@ MSG_HISTORY_EVENT_PROCESSOR_PORT=<%= @msg_history_event_processor_port %>
 
 outbound.relay.config.root=/opt/sophos/xgemail/config/outbound-relay-control/
 bucket.storage.root=s3://<%= @policy_bucket %>/config/outbound-relay-control/
+
+#dynamo db timeouts
+aws.dynamodb.connection.timeout=1000
+aws.dynamodb.request.timeout=2000
+aws.dynamodb.socket.timeout=2000
+aws.dynamodb.clientexecution.timeout=2000
