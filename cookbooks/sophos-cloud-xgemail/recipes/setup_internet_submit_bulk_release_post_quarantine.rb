@@ -6,8 +6,15 @@
 #
 # All rights reserved - Do Not Redistribute
 #
-# This recipe configures the push policy toggle script on internet submit servers
+# This recipe configures the post quarantine bulk release script on internet submit servers
 #
+
+require 'aws-sdk'
+require 'json'
+
+# Include Helper library
+::Chef::Recipe.send(:include, ::SophosCloudXgemail::Helper)
+::Chef::Resource.send(:include, ::SophosCloudXgemail::Helper)
 
 AWS_REGION              = node['sophos_cloud']['region']
 XGEMAIL_FILES_DIR       = node['xgemail']['xgemail_files_dir']
@@ -29,7 +36,7 @@ execute INTERNET_SUBMIT_BULK_RELEASE_SCRIPT_PATH do
   action :nothing
 end
 
-# Write custom recipient transport script to customer delivery instance
+# Write bulk release script to internet submit instance
 template INTERNET_SUBMIT_BULK_RELEASE_SCRIPT_PATH do
   source "#{BULK_RELEASE_SCRIPT}.erb"
   mode '0750'
