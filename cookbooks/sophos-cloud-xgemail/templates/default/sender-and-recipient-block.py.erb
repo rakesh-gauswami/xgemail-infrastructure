@@ -148,14 +148,14 @@ def get_parsed_args(parser):
 
 # Uses the Regex pattern we use in Jilter to match and validate email address
 def validate_email_address(address):
-  match_object = re.search(EMAIL_ADDRESS_REGEX_PATTERN, address)
+  match_object = re.search(EMAIL_ADDRESS_REGEX_PATTERN, address.lower())
   if match_object is None or not match_object:
     raise ValueError("invalid email address [{0}] is provided".format(address))
   return match_object.group()
 
 
 def validate_domain(domain_address):
-  match_object = re.search(DOMAIN_NAME_REGEX_PATTERN, domain_address)
+  match_object = re.search(DOMAIN_NAME_REGEX_PATTERN, domain_address.lower())
   if match_object is None or not match_object:
     raise ValueError("invalid domain name [{0}] is provided".format(domain_address))
   return match_object.group()
@@ -266,66 +266,70 @@ def merge_block_type_list(current_types, args):
 
 def update_block_details(bucket_name, args, config_data):
   if args.email_address is not None:
-    if config_data['email_addresses'].has_key(args.email_address):
-      email_config = config_data['email_addresses'].get(args.email_address)
-      config_data['email_addresses'][args.email_address] = {
+    email_address = args.email_address.lower()
+    if config_data['email_addresses'].has_key(email_address):
+      email_config = config_data['email_addresses'].get(email_address)
+      config_data['email_addresses'][email_address] = {
         "types": merge_block_type_list(email_config["types"],args),
         "timestamp": CURRENT_TIME
       }
     else:
-      config_data['email_addresses'][args.email_address] = {
+      config_data['email_addresses'][email_address] = {
         "types": [args.event_type],
         "timestamp": CURRENT_TIME
       }
-    insert_audit_log_for_email(bucket_name, args, config_data['email_addresses'][args.email_address])
+    insert_audit_log_for_email(bucket_name, args, config_data['email_addresses'][email_address])
 
   if args.domain_name is not None:
-    if config_data["domains"].has_key(args.domain_name):
-      domain_config = config_data["domains"][args.domain_name]
-      config_data["domains"][args.domain_name] = {
+    domain_name = args.domain_name.lower()
+    if config_data["domains"].has_key(domain_name):
+      domain_config = config_data["domains"][domain_name]
+      config_data["domains"][domain_name] = {
         "types": merge_block_type_list(domain_config["types"],args),
         "timestamp": CURRENT_TIME
       }
     else:
       # Create new config object under domains parent key
-      config_data["domains"][args.domain_name] = {
+      config_data["domains"][domain_name] = {
         "types": [args.event_type],
         "timestamp": CURRENT_TIME
       }
     insert_audit_log_for_domain(
-      bucket_name, args, config_data["domains"][args.domain_name]
+      bucket_name, args, config_data["domains"][domain_name]
     )
   return config_data
 
 
 def update_unblock_details(bucket_name, args, config_data):
-  if args.email_address is not None and config_data['email_addresses'].has_key(args.email_address):
-    types = config_data['email_addresses'][args.email_address]["types"]
+  if args.email_address is not None and config_data['email_addresses'].has_key(args.email_address.lower()):
+    email_address = args.email_address.lower()
+    types = config_data['email_addresses'][email_address]["types"]
     if args.event_type in types:
       types.remove(args.event_type)
-    config_data['email_addresses'][args.email_address] = {
+    config_data['email_addresses'][email_address] = {
       "types": types,
       "timestamp": CURRENT_TIME
     }
-    insert_audit_log_for_email( bucket_name, args, config_data['email_addresses'][args.email_address] )
+    insert_audit_log_for_email( bucket_name, args, config_data['email_addresses'][email_address] )
 
   if args.domain_name is not None and config_data["domains"].has_key(args.domain_name):
-    types = config_data["domains"][args.domain_name]["types"]
+    domain_name = args.domain_name.lower()
+    types = config_data["domains"][domain_name]["types"]
     if args.event_type in types:
       types.remove(args.event_type)
-    config_data["domains"][args.domain_name] = {
+    config_data["domains"][domain_name] = {
       "types": types,
       "timestamp": CURRENT_TIME
     }
     insert_audit_log_for_domain(
-      bucket_name, args, config_data["domains"][args.domain_name]
+      bucket_name, args, config_data["domains"][domain_name]
     )
 
   return config_data
 
 
 def insert_audit_log_for_email(bucket_name, args, data):
-  audit_path = BLOCK_CONFIG_EMAIL_AUDIT_LOGS_PATH.format(args.direction, base64.b64encode(args.email_address), CURRENT_TIME)
+  audit_path = BLOCK_CONFIG_EMAIL_AUDIT_LOGS_PATH.format(args.direction, base64.b64encode(args.email_address.lower()), CURRENT_TIME)
   awshandler.upload_data_in_s3_without_expiration(
     bucket_name,
     audit_path,
@@ -335,7 +339,7 @@ def insert_audit_log_for_email(bucket_name, args, data):
 
 
 def insert_audit_log_for_domain(bucket_name, args, data):
-  audit_path = BLOCK_CONFIG_DOMAIN_AUDIT_LOGS_PATH.format(args.direction, base64.b64encode(args.domain_name), CURRENT_TIME)
+  audit_path = BLOCK_CONFIG_DOMAIN_AUDIT_LOGS_PATH.format(args.direction, base64.b64encode(args.domain_name.lower()), CURRENT_TIME)
   awshandler.upload_data_in_s3_without_expiration(
     bucket_name,
     audit_path,
@@ -353,11 +357,11 @@ if __name__ == '__main__':
   config_data = read_config_data(bucket_name, args.direction)
 
   if args.get_email is not None:
-    if config_data['email_addresses'].has_key(args.get_email):
-      print(json.dumps(config_data["email_addresses"][args.get_email]))
+    if config_data['email_addresses'].has_key(args.get_email.lower()):
+      print(json.dumps(config_data["email_addresses"][args.get_email.lower()]))
   elif args.get_domain is not None:
-    if config_data['domains'].has_key(args.get_domain):
-      print(json.dumps(config_data["domains"][args.get_domain]))
+    if config_data['domains'].has_key(args.get_domain.lower()):
+      print(json.dumps(config_data["domains"][args.get_domain.lower()]))
   elif args.get_all is True:
     print('Domains config:')
     print(json.dumps(config_data["domains"]))
