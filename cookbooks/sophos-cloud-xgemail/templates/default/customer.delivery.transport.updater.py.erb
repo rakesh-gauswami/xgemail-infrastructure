@@ -7,6 +7,8 @@
 # Copyright: Copyright (c) 1997-2016. All rights reserved.
 # Company: Sophos Limited or one of its affiliates.
 
+import sys
+sys.path.append("<%= @xgemail_utils_path %>")
 import botocore
 import boto3
 import base64
@@ -16,7 +18,7 @@ import requests
 import subprocess
 import logging
 import traceback
-import sys
+import configformatter
 from logging.handlers import SysLogHandler
 
 
@@ -33,7 +35,7 @@ INBOUND_TLS_CONFIG_KEY = '<%= @inbound_tls_config_key %>'
 TLS_SMTP_TRANSPORT_TAG = ' smtp_encrypt:'
 DEFAULT_SMTP_TRANSPORT_TAG = ' smtp:'
 CUSTOM_ROUTE_TRANSPORT_PATH = "<%= @custom_route_transport_path %>"
-CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME = CUSTOM_ROUTE_TRANSPORT_PATH + "customer-delivery-custom-recipient-transport.json"
+CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME = CUSTOM_ROUTE_TRANSPORT_PATH + "customer-delivery-custom-recipient-transport.CONFIG"
 
 # logging to syslog setup
 logging.getLogger("botocore").setLevel(logging.WARNING)
@@ -219,7 +221,10 @@ with open(TRANSPORT_FILE_TMP, 'w') as f:
     if custom_route_file_exist():
         try:
             current_config = s3.get_object(Bucket=POLICY_BUCKET,Key= CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
-            record = json.loads(current_config['Body'].read())
+            raw_config_data= current_config['Body'].read()
+            config_data = configformatter.get_config_binary(raw_config_data)
+            record = json.loads(config_data)
+
             sorted_record_keys=sort_record_key(record)
             for domain_or_email in sorted_record_keys :
                 transport_line = parse_domain_response(domain_or_email,record[domain_or_email] , s3, True)
