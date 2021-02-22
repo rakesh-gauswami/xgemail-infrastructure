@@ -733,7 +733,8 @@
                 "yum install -y -t nc\n",
 
                 "# Install epel for amzn2.\n",
-                "yum install -y -t https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm\n",
+                "amazon-linux-extras install epel -y\n",
+                "yum-config-manager --enable epel\n",
 
                 "# Install boto3 version.\n",
                 "pip install boto3==1.14.63\n",
