@@ -386,6 +386,7 @@ def associate_address(allocation_id, instance_id):
     try:
         ec2_client.associate_address(
             AllocationId=allocation_id,
+            AllowReassociation=False,
             InstanceId=instance_id
         )
     except Exception as e:
