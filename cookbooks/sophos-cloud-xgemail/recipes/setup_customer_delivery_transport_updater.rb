@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: sophos-cloud-xgemail
-# Recipe:: setup_customer_delivery_transport_updater_cron
+# Recipe:: setup_customer_delivery_transport_updater
 #
 # Copyright 2016, Sophos
 #
@@ -65,10 +65,11 @@ if ACCOUNT == 'sandbox'
 
 end
 
-PACKAGE_DIR           = "#{XGEMAIL_FILES_DIR}/customer-delivery-transport-cron"
-CRON_SCRIPT           = 'customer.delivery.transport.updater.py'
-CRON_SCRIPT_PATH      = "#{PACKAGE_DIR}/#{CRON_SCRIPT}"
-XGEMAIL_PIC_FQDN      = "mail-#{STATION_VPC_NAME.downcase}-#{REGION}.#{ACCOUNT}.hydra.sophos.com"
+PACKAGE_DIR                    = "#{XGEMAIL_FILES_DIR}/customer-delivery-transport-cron"
+CRON_SCRIPT                    = 'customer.delivery.transport.updater.py'
+CRON_SCRIPT_PATH               = "#{PACKAGE_DIR}/#{CRON_SCRIPT}"
+XGEMAIL_PIC_FQDN               = "mail-#{STATION_VPC_NAME.downcase}-#{REGION}.#{ACCOUNT}.hydra.sophos.com"
+TRANSPORT_UPDATER_SERVICE_NAME = node['xgemail']['transport_updater']
 
 directory XGEMAIL_FILES_DIR do
   mode '0755'
@@ -106,15 +107,37 @@ template CRON_SCRIPT_PATH do
     :enc_config_key => ENC_CONFIG_KEY,
     :inbound_tls_config_key => INBOUND_TLS_CONFIG_KEY
   )
-  notifies :run, "execute[#{CRON_SCRIPT_PATH}]", :immediately
+  notifies :run, "execute[#{CRON_SCRIPT_PATH}]", :immediately 
 end
 
 CONFIGURATION_COMMANDS.each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
 end
 
-cron "#{INSTANCE_NAME}-transport-cron" do
-  minute "1-59/#{CRON_MINUTE_FREQUENCY}"
-  user 'root'
-  command "source /etc/profile && timeout #{CRON_JOB_TIMEOUT} flock --nb /var/lock/#{CRON_SCRIPT}.lock -c '#{CRON_SCRIPT_PATH}' >/dev/null 2>&1"
+template 'xgemail-trannsport-updater' do
+  path "/etc/init.d/#{TRANSPORT_UPDATER_SERVICE_NAME}"
+  source 'xgemail.transport.updater.init.erb'
+  mode '0755'
+  owner 'root'
+  group 'root'
+  variables(
+    :service => TRANSPORT_UPDATER_SERVICE_NAME,
+    :script_path => CONSUMER_SCRIPT_PATH,
+    :user => root
+  )
+end
+
+# Add rsyslog config file to redirect sqsmsgconsumer messages to its own log file.
+file '/etc/rsyslog.d/00-xgemail-transportupdater.conf' do
+  content "if $syslogtag == '[cd-transport-updater]' then /var/log/xgemail/transportupdater.log\n& ~"
+  mode '0600'
+  owner 'root'
+  group 'root'
+end
+
+service 'xgemail-trannsport-updater' do
+  service_name TRANSPORT_UPDATER_SERVICE_NAME
+  init_command "/etc/init.d/#{TRANSPORT_UPDATER_SERVICE_NAME}"
+  supports :restart => true, :start => true, :stop => true, :reload => true
+  subscribes :enable, 'template[xgemail-trannsport-updater]', :immediately
 end

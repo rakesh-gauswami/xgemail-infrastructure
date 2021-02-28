@@ -185,7 +185,7 @@ if NODE_TYPE == 'xdelivery'
   end
 
   include_recipe 'sophos-cloud-xgemail::configure-bounce-message-customer-delivery-queue'
-  include_recipe 'sophos-cloud-xgemail::setup_customer_delivery_transport_updater_cron'
+  include_recipe 'sophos-cloud-xgemail::setup_customer_delivery_transport_updater'
   include_recipe 'sophos-cloud-xgemail::setup_push_policy_delivery_toggle'
 else
   if NODE_TYPE == 'internet-xdelivery'

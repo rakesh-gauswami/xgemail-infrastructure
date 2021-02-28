@@ -94,7 +94,7 @@ include_recipe 'sophos-cloud-xgemail::configure-bounce-message-customer-delivery
 # Once we're fully cut over to push policy, remove the call
 # to the setup_customer_delivery_transport_updater_cron recipe below
 #
-include_recipe 'sophos-cloud-xgemail::setup_customer_delivery_transport_updater_cron'
+include_recipe 'sophos-cloud-xgemail::setup_customer_delivery_transport_updater'
 include_recipe 'sophos-cloud-xgemail::setup_customer_delivery_custom_recipient_transport_updater'
 include_recipe 'sophos-cloud-xgemail::setup_transport_route_config'
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_consumer'
