@@ -127,7 +127,7 @@ template 'xgemail-trannsport-updater' do
   variables(
     :service => TRANSPORT_UPDATER_SERVICE_NAME,
     :script_path => TRANSPORT_UPDATER_SCRIPT_PATH,
-    :user => root
+    :user => 'root'
   )
 end
 
