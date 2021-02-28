@@ -1,0 +1,81 @@
+# /etc/audit/auditd.conf:
+#   This file controls the configuration of the audit daemon.
+#   Its format is documented in the auditd.conf man page.
+
+# vim: autoindent expandtab shiftwidth=4 softtabstop=4 tabstop=4 ft=sh
+
+# The settings here should be compliant with the Center for Internet Security's
+# benchmark for Amazon Linux, which is available from
+#
+#   https://benchmarks.cisecurity.org/downloads/show-single/index.cfm?file=amazon2014.101
+#
+# The most recent version of this benchmark is titled:
+#
+#   CIS Amazon Linux 2014.09-2015.03
+#   v1.1.0 - 07-06-2015
+#
+# The settings for this file are covered in chapter 5, Logging and Auditing,
+# section 5.2, Configure System Accounting (auditd).
+
+
+# 5.2.1 Configure Data Retention
+# 5.2.1.1 Configure Audit Log Storage Size
+#   Set maximum audit log file size.
+
+# Maximum audit log file size, in MB.
+max_log_file = 6
+
+
+# 5.2.1.2 Disable System on Audit Log Full
+#   Halt the system when audit logs are full.
+
+# Disk space below which space_left_action will be executed, in MB.
+# This is typically a warning threshold.
+space_left = 75
+
+# What to do when available space falls below the space_left threshold.
+space_left_action = SYSLOG
+
+# Disk space below which admin_space_left_action will be executed, in MB.
+# This is the last chance to handle the condition.
+admin_space_left = 50
+
+# What to do when available space falls below the admin_space_left threshold.
+admin_space_left_action = HALT
+
+# What to do when there is no available space.
+disk_full_action = HALT
+
+# What to do when writing or rotating logs fails.
+disk_error_action = HALT
+
+
+# We ship audit logs, so rotate them
+max_log_file_action = ROTATE
+num_logs = 100
+
+# The following settings are NOT discussed in the CIS Amazon Linux benchmark;
+# their values are taken from the values that come with Amazon Linux 2015.09.
+
+# Audit log files are written in raw format.
+# The only other option is NOLOG, which disables logging.
+log_file = /var/log/audit/audit.log
+log_format = RAW
+log_group = root
+
+# We run auditd with higher-than-usual priority.
+# The default boost is 4.
+priority_boost = 4
+
+# INCREMENTAL tells auditd to make an explicit flush to disk, according
+# to the number of records specified by the freq parameter.
+flush = INCREMENTAL
+freq = 20
+
+# Besides writing to a log file, auditd also writes to a dispatcher
+# process that passes the audit events on to different plugins,
+# e.g. to send audit logs to syslog or logstash or S3.
+# See the audispd man page for details.
+disp_qos = lossy
+dispatcher = /sbin/audispd
+name_format = NONE

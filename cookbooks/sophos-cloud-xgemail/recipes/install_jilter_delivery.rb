@@ -10,6 +10,8 @@
 #
 
 package 'tar'
+REGION = node['sophos_cloud']['region']
+STATION_VPC_ID = node['xgemail']['station_vpc_id']
 
 NODE_TYPE = node['xgemail']['cluster_type']
 ACCOUNT = node['sophos_cloud']['environment']
@@ -139,7 +141,9 @@ template 'xgemail.jilter.properties' do
       :msg_history_v2_dynamodb_table_name =>  MSG_HISTORY_V2_DYNAMODB_TABLE_NAME,
       :msg_history_event_processor_pool_size => MSG_HISTORY_EVENT_PROCESSOR_POOL_SIZE,
       :msg_history_event_processor_port => MSG_HISTORY_EVENT_PROCESSOR_PORT,
-      :policy_bucket => POLICY_BUCKET_NAME
+      :policy_bucket => POLICY_BUCKET_NAME,
+      :region => REGION,
+      :station_vpc_id => STATION_VPC_ID
   )
 end
 

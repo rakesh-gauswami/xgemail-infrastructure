@@ -1,0 +1,81 @@
+#!/usr/bin/env python
+# Copyright 2021, Sophos Limited. All rights reserved.
+#
+# 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
+# Sophos Limited and Sophos Group.  All other product and company
+# names mentioned are trademarks or registered trademarks of their
+# respective owners.
+
+# this script is used for bulk release/delete post quarantine mail based on given criteria
+
+import sys
+sys.path.append("<%= @xgemail_utils_path %>")
+import argparse
+import json
+from awshandler import AwsHandler
+
+AWS_REGION = "<%= @aws_region %>"
+awshandler = AwsHandler(AWS_REGION)
+
+PURGE_REQUEST_QUEUE_NAME= "tf-post-quarantine-purge_request-{}-sqs"
+PURGE_REQUEST_QUEUE_NAME = PURGE_REQUEST_QUEUE_NAME.format(AWS_REGION)
+
+def add_to_sqs(sqs_url, sqs_json):
+    return awshandler.add_to_sqs(
+        sqs_url,
+        json.dumps(sqs_json))
+
+# sends purge request sqs messages to sqs
+def send_purge_request_sqs_message(sqs_url,sqs_message_json):
+    try:
+        print("purge request SQS job [{0}]".format(sqs_message_json))
+        add_to_sqs(sqs_url, sqs_message_json)
+
+    except Exception as e:
+        print("Failed in uploading purge request SQS job [{0}]".format(e))
+        exit(0)
+
+def argument_parser():
+    parser = argparse.ArgumentParser(description='release/delete mails based on query')
+    parser.add_argument('--customer_id', metavar='customer_id', help='Customer id for which we want to release/delete email')
+    parser.add_argument('--recipient', metavar='recipient',help="recipient address for which we want to release/delete email")
+    parser.add_argument('--checksum', metavar='checksum', help='checksum of url/attachment for which we want to release/delete email')
+    parser.add_argument('--url', metavar='url', help="url for which we want to release/delete email")
+    parser.add_argument('--subject', metavar='subject',help="subject of email for which we want to release/delete emaile")
+    parser.add_argument('--request_type', metavar='request_type',choices=["CLAWBACK_RELEASE", "CLAWBACK_DELETE"],
+                        help="request_type on mail CLAWBACK_RELEASE/CLAWBACK_DELETE")
+    args = parser.parse_args()
+    if args.customer_id is None and args.recipient is None and args.checksum is None and args.url is None and args.subject\
+            is None:
+        parser.error("One of the parameter(--customer_id/--recipient/--checksum/--url/--subject is required")
+
+    return args
+
+if __name__ == "__main__":
+    args = argument_parser()
+    if args.request_type is None:
+        args.request_type='CLAWBACK_RELEASE'
+    postQuarantineBulkReleseDeleteRequest = {}
+    postQuarantineBulkReleseDeleteRequest["post_quarantine_bulk_release_delete"] = {}
+    if args.customer_id is not None:
+        postQuarantineBulkReleseDeleteRequest["post_quarantine_bulk_release_delete"]["customer_id"] = args.customer_id
+    if args.recipient is not None:
+        postQuarantineBulkReleseDeleteRequest["post_quarantine_bulk_release_delete"]["recipient"] = args.recipient
+    if args.checksum is not None:
+        postQuarantineBulkReleseDeleteRequest["post_quarantine_bulk_release_delete"]["checksum"] = args.checksum
+    if args.url is not None:
+        postQuarantineBulkReleseDeleteRequest["post_quarantine_bulk_release_delete"]["url"] = args.url
+    if args.subject is not None:
+        postQuarantineBulkReleseDeleteRequest["post_quarantine_bulk_release_delete"]["subject"] = args.subject
+    postQuarantineBulkReleseDeleteRequest["post_quarantine_bulk_release_delete"]["request_type"] = args.request_type
+
+    try:
+        #get purge request sqs url
+        sqs_url = awshandler.get_sqs_url(
+            PURGE_REQUEST_QUEUE_NAME
+        )
+        send_purge_request_sqs_message(sqs_url, postQuarantineBulkReleseDeleteRequest)
+    except Exception as e:
+        print("Unexpected exception during purge request [{0}]".format(e))
+
+

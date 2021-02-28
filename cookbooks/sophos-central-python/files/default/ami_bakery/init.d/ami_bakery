@@ -1,0 +1,113 @@
+#!/bin/sh
+# vim: autoindent expandtab tabstop=4 softtabstop=4 shiftwidth=4 filetype=sh
+
+# Copyright 2016, Sophos Limited. All rights reserved.
+#
+# 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
+# Sophos Limited and Sophos Group.  All other product and company
+# names mentioned are trademarks or registered trademarks of their
+# respective owners.
+
+# chkconfig: 35 90 10
+# description: the AMI bakery service processes AMI build requests read from SQS
+# pidfile: /var/run/ami_bakery/ami_bakery.pid
+
+# NOTE: The AMI Bakery must run as root to use the chroot and mount commands.
+
+SERVICENAME=ami_bakery
+SERVICEUSER=root
+SERVICEGROUP=root
+SERVICEPROG="/usr/bin/${SERVICENAME} --daemon"
+
+# PIDFILE must match the pidfile comment above that is read by chkconfig.
+PIDFILE=/var/run/${SERVICENAME}/${SERVICENAME}.pid
+PIDDIR=`dirname ${PIDFILE}`
+
+source /etc/rc.d/init.d/functions
+
+msg() {
+    logger -t "${SERVICENAME}" "$@"
+    echo "${SERVICENAME}:" "$@"
+}
+
+getpid() {
+    local pid=`cat ${PIDFILE} 2>/dev/null`
+    if [ -n "${pid}" -a -d "/proc/${pid}/" ]; then
+        echo "${pid}"
+    fi
+}
+
+getuid() {
+    echo "${UID}"
+}
+
+status() {
+    pid=`getpid`
+    if [ -n "${pid}" ]; then
+        msg "running with pid ${pid}"
+    else
+        msg "stopped"
+    fi
+}
+
+start() {
+    uid=`getuid`
+    if [ "${uid}" != 0 ]; then
+        msg "this command must be run as root"
+        exit 1
+    fi
+
+    if [ ! -d "${PIDDIR}" ]; then
+        msg "installing directory ${PIDDIR}"
+        install -d -m 0755 -o "${SERVICEUSER}" -g "${SERVICEGROUP}" "${PIDDIR}"
+    fi
+
+    pid=`getpid`
+    if [ -n "${pid}" ]; then
+        msg "already running with pid ${pid}"
+        exit 1
+    else
+        msg "starting ..."
+        ${SERVICEPROG}
+        sleep 2
+        status
+    fi
+}
+
+stop() {
+    uid=`getuid`
+    if [ "${uid}" != 0 ]; then
+        msg "this command must be run as root"
+        exit 1
+    fi
+
+    pid=`getpid`
+    if [ -n "${pid}" ]; then
+        msg "stopping ..."
+        kill "${pid}"
+        sleep 2
+        status
+    else
+        msg "already stopped"
+        exit 1
+    fi
+}
+
+case "$1" in
+    status)
+        status
+        ;;
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart)
+        stop
+        start
+        ;;
+    *)
+        echo "usage: ${0} status|start|stop|restart" 1>&2
+        exit 2
+esac
