@@ -68,8 +68,8 @@ if ACCOUNT == 'sandbox'
 end
 
 PACKAGE_DIR                    = "#{XGEMAIL_FILES_DIR}/customer-delivery-transport-cron"
-CRON_SCRIPT                    = 'customer.delivery.transport.updater.py'
-CRON_SCRIPT_PATH               = "#{PACKAGE_DIR}/#{CRON_SCRIPT}"
+TRANSPORT_UPDATER_SCRIPT       = 'customer.delivery.transport.updater.py'
+TRANSPORT_UPDATER_SCRIPT_PATH  = "#{PACKAGE_DIR}/#{TRANSPORT_UPDATER_SCRIPT}"
 XGEMAIL_PIC_FQDN               = "mail-#{STATION_VPC_NAME.downcase}-#{REGION}.#{ACCOUNT}.hydra.sophos.com"
 TRANSPORT_UPDATER_SERVICE_NAME = node['xgemail']['transport_updater']
 
@@ -87,14 +87,14 @@ directory PACKAGE_DIR do
 end
 
 # Setup cron script execution
-execute CRON_SCRIPT_PATH do
+execute TRANSPORT_UPDATER_SCRIPT_PATH do
   ignore_failure true
   user 'root'
   action :nothing
 end
 
-template CRON_SCRIPT_PATH do
-  source "#{CRON_SCRIPT}.erb"
+template TRANSPORT_UPDATER_SCRIPT_PATH do
+  source "#{TRANSPORT_UPDATER_SCRIPT}.erb"
   mode '0750'
   owner 'root'
   group 'root'
@@ -111,7 +111,7 @@ template CRON_SCRIPT_PATH do
     :enc_config_key => ENC_CONFIG_KEY,
     :inbound_tls_config_key => INBOUND_TLS_CONFIG_KEY
   )
-  notifies :run, "execute[#{CRON_SCRIPT_PATH}]", :immediately 
+  notifies :run, "execute[#{TRANSPORT_UPDATER_SCRIPT_PATH}]", :immediately
 end
 
 CONFIGURATION_COMMANDS.each do | cur |
@@ -126,7 +126,7 @@ template 'xgemail-trannsport-updater' do
   group 'root'
   variables(
     :service => TRANSPORT_UPDATER_SERVICE_NAME,
-    :script_path => CONSUMER_SCRIPT_PATH,
+    :script_path => TRANSPORT_UPDATER_SCRIPT_PATH,
     :user => root
   )
 end
