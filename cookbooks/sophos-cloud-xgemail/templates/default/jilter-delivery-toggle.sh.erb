@@ -9,6 +9,7 @@ SERVER_NAME=<%= @instance_name %>
 AWS_REGION="<%= @aws_region %>"
 BUCKET_NAME="<%= @policy_bucket %>"
 DELIVERY_JILTER_ENABLED_S3_PATH="<%= @delivery_jilter_enabled_s3_path %>"
+DELIVERY_JILTER_ENABLED_FILE_PATH="<%= @delivery_jilter_enabled_file_path %>"
 XGEMAIL_UTILS_DIR="<%= @xgemail_utils_dir %>"
 
 reload_postfix() {
@@ -69,6 +70,7 @@ disable_jilter_postfix_conf() {
 }
 
 force_enable() {
+  rm -rf $DELIVERY_JILTER_ENABLED_FILE_PATH
   echo "force restarting jilter.."
   force_start_jilter
   echo "updating postfix config to enable jilter.."
@@ -83,12 +85,14 @@ force_enable() {
         echo "revert complete. update aborted!"
         exit 1
     else
+      touch $DELIVERY_JILTER_ENABLED_FILE_PATH
       echo "DONE"
       echo "jilter enabled! To disable, re-run script with the 'disable' parameter"
     fi
 }
 
 local_enable() {
+  rm -rf $DELIVERY_JILTER_ENABLED_FILE_PATH
   echo "starting jilter.."
   start_jilter
   echo "updating postfix config to enable jilter.."
@@ -103,12 +107,14 @@ local_enable() {
         echo "revert complete. update aborted!"
         exit 1
     else
+      touch $DELIVERY_JILTER_ENABLED_FILE_PATH
       echo "DONE"
       echo "jilter enabled! To disable, re-run script with the 'disable' parameter"
     fi
 }
 
 local_disable() {
+  rm -rf $DELIVERY_JILTER_ENABLED_FILE_PATH
   echo "updating postfix config to disable jilter.."
   disable_jilter_postfix_conf
 
@@ -120,6 +126,7 @@ local_disable() {
         echo "postfix reload failed! reverting changes..."
         enable_jilter_postfix_conf
         reload_postfix
+        touch $DELIVERY_JILTER_ENABLED_FILE_PATH
         echo "revert complete. update aborted!"
         exit 1
     else
