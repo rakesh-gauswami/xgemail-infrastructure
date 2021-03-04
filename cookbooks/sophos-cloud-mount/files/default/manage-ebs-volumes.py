@@ -129,7 +129,7 @@ class AWSWrapper(object):
                     AvailabilityZone    = availability_zone,
                     Encrypted           = True,
                     KmsKeyId            = kms_arn,
-                    VolumeType          = "gp2",
+                    VolumeType          = "gp3",
                     Size                = size_gb),
                 "ec2.create_volume()")
 
