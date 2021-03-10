@@ -594,6 +594,30 @@
       }
     },
 
+    "SecurityGroupExternalIpAccessMFRCustomerSubmitSmtp": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Condition": "ClosedToWorld",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailMFRCustomerSubmitSecurityGroupLb" },
+        "SourceSecurityGroupId": { "Ref": "SecurityGroupExternalIpAccess" },
+        "IpProtocol": "tcp",
+        "FromPort": "25",
+        "ToPort": "25"
+      }
+    },
+
+    "SecurityGroupExternalIpAccessMFRCustomerSubmitSmtpTls": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Condition": "ClosedToWorld",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailMFRCustomerSubmitSecurityGroupLb" },
+        "SourceSecurityGroupId": { "Ref": "SecurityGroupExternalIpAccess" },
+        "IpProtocol": "tcp",
+        "FromPort": "587",
+        "ToPort": "587"
+      }
+    },
+
     "SecurityGroupBastion": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
@@ -1657,6 +1681,150 @@
         "VpcId": {
           "Ref": "Vpc"
         }
+      }
+    },
+
+    "XgemailMFRCustomerSubmitSecurityGroupLb": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Controls access to public facing ELBs.",
+        "Tags": [
+          {
+            "Key": "Branch",
+            "Value": { "Ref" : "Branch" }
+
+          },
+          {
+            "Key": "Environment",
+            "Value": { "Ref" : "Environment" }
+          },
+          {
+            "Key": "Role",
+            "Value": "svc-xgemail-customer-submit-elb"
+
+          },
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "Environment"
+                  },
+                  "-",
+                  {
+                    "Ref": "Branch"
+                  },
+                  "-",
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "/sg/xgemail/customer/submit/elb"
+                ]
+              ]
+            }
+          },
+          {
+            "Key": "Application",
+            "Value": "customer-submit"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      }
+    },
+
+    "XgemailMFRCustomerSubmitSecurityGroupLbIngressWorldSmtp": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Condition" : "OpenToWorld",
+      "Description" : "TCP/25 0.0.0.0/0 to customer-submit",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailMFRCustomerSubmitSecurityGroupLb" },
+        "CidrIp": "0.0.0.0/0",
+        "IpProtocol": "tcp",
+        "FromPort": "25",
+        "ToPort": "25"
+      }
+    },
+
+    "XgemailMFRCustomerSubmitSecurityGroupLbIngressWorldSmtpTls": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Condition" : "OpenToWorld",
+      "Description" : "TCP/587 0.0.0.0/0 to customer-submit",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailMFRCustomerSubmitSecurityGroupLb" },
+        "CidrIp": "0.0.0.0/0",
+        "IpProtocol": "tcp",
+        "FromPort": "587",
+        "ToPort": "587"
+      }
+    },
+
+    "XgemailMFRCustomerSubmitSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "XGEMAIL Customer Submit security group.",
+        "Tags": [{
+          "Key": "Name",
+          "Value": {
+            "Fn::Join": [ "", [
+              { "Ref": "Environment" }, "-",
+              { "Ref": "Branch" }, "-",
+              { "Ref": "AWS::StackName" }, "/sg/xgemail/customer/submit"
+            ]]
+          }
+        },
+          {
+            "Key": "Application",
+            "Value": "customer-submit"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "25",
+            "ToPort": "25",
+            "SourceSecurityGroupId": { "Ref": "XgemailMFRCustomerSubmitSecurityGroupLb" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "587",
+            "ToPort": "587",
+            "SourceSecurityGroupId": { "Ref": "XgemailMFRCustomerSubmitSecurityGroupLb" }
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "-1",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "VpcId": { "Ref": "Vpc" }
       }
     },
 
@@ -2908,6 +3076,17 @@
       }
     },
 
+    "XgemailMFRCustomerSubmitSecurityGroupIngressBastionSsh": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailMFRCustomerSubmitSecurityGroup" },
+        "SourceSecurityGroupId": { "Ref": "SecurityGroupBastion" },
+        "IpProtocol": "tcp",
+        "FromPort": "22",
+        "ToPort": "22"
+      }
+    },
+
     "XgemailRiskyXdeliverySecurityGroupIngressBastionSsh": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
@@ -3017,6 +3196,12 @@
             "FromPort": "2049",
             "ToPort": "2049",
             "SourceSecurityGroupId": { "Ref": "XgemailInternetSubmitSecurityGroup" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
+            "SourceSecurityGroupId": { "Ref": "XgemailMFRCustomerSubmitSecurityGroup" }
           }
         ]
       }
@@ -3215,6 +3400,14 @@
     "XgemailEncryptionSubmitSecurityGroup": {
       "Description": "Xgemail Encryption Submit security group",
       "Value": { "Ref": "XgemailEncryptionSubmitSecurityGroup" }
+    },
+    "XgemailMFRCustomerSubmitSecurityGroupLb": {
+      "Description": "Xgemail Customer Submit Load Balancer security group",
+      "Value": { "Ref": "XgemailMFRCustomerSubmitSecurityGroupLb" }
+    },
+    "XgemailMFRCustomerSubmitSecurityGroup": {
+      "Description": "Xgemail Customer Submit security group",
+      "Value": { "Ref": "XgemailMFRCustomerSubmitSecurityGroup" }
     },
     "XgemailPolicyEfsMountTargetSecurityGroup": {
       "Description": "Xgemail EFS mount target security group",
