@@ -1053,16 +1053,14 @@
             "Enabled": { "Fn::If": ["EnableDetailedMonitoring", "true", "false"] }
           },
           "InstanceType": { "Ref": "InstanceType" },
-          "Fn::If": ["UseSpotPrice", {
-            "InstanceMarketOptions": {
+          "InstanceMarketOptions": {
+            "Fn::If": ["UseSpotPrice", {
               "MarketType": "spot",
               "SpotOptions": {
-                "MaxPrice": {
-                  "Ref": "SpotPrice"
-                }
+                "MaxPrice": { "Ref": "SpotPrice" }
               }
-            }
-          }, {"Ref": "AWS::NoValue"}],
+            }, {"Ref": "AWS::NoValue"}]
+          },
           "KeyName": { "Ref": "KeyName" },
           "NetworkInterface": {
             "AssociatePublicIpAddress": "true"
