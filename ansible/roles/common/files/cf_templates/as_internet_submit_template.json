@@ -1047,7 +1047,9 @@
               }
             }
           ],
-          "IamInstanceProfile": { "Ref": "InstanceProfile" },
+          "IamInstanceProfile": {
+            "Name": { "Ref": "InstanceProfile" }
+          },
           "ImageId": { "Ref": "AmiId" },
           "Monitoring": {
             "Enabled": { "Fn::If": ["EnableDetailedMonitoring", "true", "false"] }
