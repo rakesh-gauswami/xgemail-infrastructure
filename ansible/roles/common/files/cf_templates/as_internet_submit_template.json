@@ -1037,7 +1037,6 @@
       },
       "Properties": {
         "LaunchTemplateData": {
-          "AssociatePublicIpAddress": "true",
           "BlockDeviceMappings": [
             {
               "DeviceName": "/dev/xvdi",
@@ -1050,17 +1049,17 @@
           ],
           "IamInstanceProfile": { "Ref": "InstanceProfile" },
           "ImageId": { "Ref": "AmiId" },
-          "InstanceMonitoring": {
+          "Monitoring": {
             "Fn::If": [
               "EnableDetailedMonitoring",
-              "true",
-              "false"
+              {"Enabled": true},
+              {"Enabled": false}
             ]
           },
           "InstanceType": { "Ref": "InstanceType" },
           "KeyName": { "Ref": "KeyName" },
           "SecurityGroups": { "Ref": "SecurityGroups" },
-          "SpotPrice": { "Fn::If": ["UseSpotPrice",  {"Ref": "SpotPrice"}, {"Ref": "AWS::NoValue"} ]},
+
           "UserData": {
             "Fn::Base64": {
               "Fn::Join": [ "", [
