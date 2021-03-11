@@ -478,9 +478,7 @@
           "LaunchTemplateId": {
             "Ref":"XgemailAutoScalingLaunchTemplate"
           },
-          "Version":{
-            "Ref":"myLaunchTemplateVersionNumber"
-          }
+          "Version": {"Fn::GetAtt": ["XgemailAutoScalingLaunchTemplate", "DefaultVersionNumber"]}
         },
         "LifecycleHookSpecificationList" : [
           {
