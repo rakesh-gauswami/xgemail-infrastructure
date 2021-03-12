@@ -112,6 +112,12 @@
       "Type": "String",
       "Default": "PT1H"
     },
+    "EbsVolumeType": {
+      "Description": "Indicates whether to delete the volume when the instance is terminated.",
+      "Type": "String",
+      "Default": "gp3",
+      "AllowedValues": [ "gp2", "gp3", "standard" ]
+    },
     "Environment": {
       "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
       "Type": "String"
@@ -1037,7 +1043,7 @@
             "Ebs": {
               "DeleteOnTermination": "true",
               "VolumeSize": { "Ref": "XgemailMinSizeDataGB" },
-              "VolumeType": "gp3"
+              "VolumeType": { "Ref": "EbsVolumeType" }
             }
           }
         ],
