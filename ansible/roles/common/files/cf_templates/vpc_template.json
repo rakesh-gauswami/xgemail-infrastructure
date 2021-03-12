@@ -5,7 +5,7 @@
 
     "Metadata": {
         "Copyright": [
-            "Copyright 2016, Sophos Limited. All rights reserved.",
+            "Copyright 2021, Sophos Limited. All rights reserved.",
             "",
             "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
             "Sophos Limited and Sophos Group.  All other product and company",
@@ -772,6 +772,23 @@
             "Type" : "AWS::EC2::VPCEndpoint"
         },
 
+        "DynamoDbEndpoint" : {
+            "DependsOn": "NatA",
+            "Properties" : {
+                "RouteTableIds" : [
+                    { "Ref" : "RouteTablePrivateA" },
+                    { "Fn::If" : [
+                        "IsProduction",
+                        { "Ref" : "RouteTablePrivateB" },
+                        { "Ref" : "AWS::NoValue" }
+                    ]}
+                ],
+                "ServiceName" : { "Fn::Join": [ "", [ "com.amazonaws.", { "Ref": "AWS::Region" }, ".dynamodb" ] ] },
+                "VpcId" : {"Ref" : "Vpc"}
+            },
+            "Type" : "AWS::EC2::VPCEndpoint"
+        },
+
         "Vpc": {
             "Properties": {
                 "CidrBlock": { "Fn::FindInMap" : [ "RegionMap", { "Ref": "AWS::Region" }, "VpcCidrBlock" ] },
@@ -927,6 +944,18 @@
             "Description": "ElastiCache Private Subnet Group",
             "Value": {
                 "Ref": "ElastiCachePrivateSubnetGroup"
+            }
+        },
+        "S3Endpoint": {
+            "Description": "S3Endpoint ID",
+            "Value": {
+                "Ref": "S3Endpoint"
+            }
+        },
+        "DynamoDbEndpoint": {
+            "Description": "DynamoDbEndpoint ID",
+            "Value": {
+                "Ref": "DynamoDbEndpoint"
             }
         },
         "Vpc": {
