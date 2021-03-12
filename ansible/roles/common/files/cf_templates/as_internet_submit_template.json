@@ -1064,8 +1064,13 @@
             }, {"Ref": "AWS::NoValue"}]
           },
           "KeyName": { "Ref": "KeyName" },
-          "NetworkInterfaces": [{"AssociatePublicIpAddress": "true","DeviceIndex": "0"}],
-          "SecurityGroups": { "Ref": "SecurityGroups" },
+          "NetworkInterfaces": [
+            {
+              "AssociatePublicIpAddress": "true",
+              "DeviceIndex": "0",
+              "Groups": { "Ref": "SecurityGroups" }
+            }
+          ],
 
           "UserData": {
             "Fn::Base64": {
