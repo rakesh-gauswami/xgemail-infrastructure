@@ -22,6 +22,12 @@
       "MaxValue": "1500",
       "ConstraintDescription": "The minimum and maximum size of an EBS volume depends on the EBS volume type and the instance type to which it is attached."
     },
+    "EbsVolumeType": {
+      "Description": "Indicates the EBS volume type.",
+      "Type": "String",
+      "Default": "gp3",
+      "AllowedValues": [ "gp2", "gp3", "standard" ]
+    },
     "ElasticsearchVersion": {
       "Description": "The version of Elasticsearch to use.",
       "Type": "String"
@@ -164,7 +170,7 @@
         "EBSOptions": {
           "EBSEnabled": "true",
           "VolumeSize": { "Ref": "EbsVolumeSize" },
-          "VolumeType": "gp3"
+          "VolumeType": { "Ref": "EbsVolumeType" }
         },
         "EncryptionAtRestOptions": {
           "Fn::If": [
