@@ -100,9 +100,7 @@ execute "execute_yum_dkim_install" do
   user "root"
   cwd "/tmp"
   command <<-EOH
-      yum-config-manager --enable epel
       yum install -y #{LIBOPENDKIM_PACKAGE_NAME}
-      yum-config-manager --disable epel
   EOH
 end
 
