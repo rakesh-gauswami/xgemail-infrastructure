@@ -5,7 +5,7 @@
 
   "Metadata": {
     "Copyright": [
-      "Copyright 2019, Sophos Limited. All rights reserved.",
+      "Copyright 2021, Sophos Limited. All rights reserved.",
       "",
       "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
       "Sophos Limited and Sophos Group.  All other product and company",
@@ -459,7 +459,12 @@
         "Cooldown": "200",
         "HealthCheckGracePeriod": { "Ref": "HealthCheckGracePeriod" },
         "HealthCheckType": "ELB",
-        "LaunchConfigurationName": { "Ref": "XgemailAutoScalingLaunchConfig" },
+        "LaunchTemplate": {
+          "LaunchTemplateId": {
+            "Ref":"XgemailAutoScalingLaunchTemplate"
+          },
+          "Version": {"Fn::GetAtt": ["XgemailAutoScalingLaunchTemplate", "DefaultVersionNumber"]}
+        },
         "LifecycleHookSpecificationList" : [
           {
             "LifecycleHookName": { "Ref": "LifecycleHookTerminating" },
@@ -689,8 +694,8 @@
       }
     },
 
-    "XgemailAutoScalingLaunchConfig": {
-      "Type": "AWS::AutoScaling::LaunchConfiguration",
+    "XgemailAutoScalingLaunchTemplate": {
+      "Type": "AWS::EC2::LaunchTemplate",
       "Metadata": {
         "AWS::CloudFormation::Init": {
           "configSets": {
@@ -1073,7 +1078,7 @@
 
               "/opt/aws/bin/cfn-init --verbose ",
               " --stack ", { "Ref": "AWS::StackName" },
-              " --resource XgemailAutoScalingLaunchConfig ",
+              " --resource XgemailAutoScalingLaunchTemplate ",
               " --configsets xgemail_install ",
               " --region ", { "Ref": "AWS::Region" }, "\n",
               "\n",
@@ -1127,9 +1132,9 @@
       "Description": "Version of the application from Bamboo",
       "Value": { "Ref": "BuildVersion" }
     },
-    "LaunchConfig": {
-      "Description": "Auto Scaling Launch Configuration Name.",
-      "Value": { "Ref": "XgemailAutoScalingLaunchConfig" }
+    "LaunchTemplate": {
+      "Description": "Auto Scaling Launch Template Name.",
+      "Value": { "Ref": "XgemailAutoScalingLaunchTemplate" }
     },
     "XgemailScaleOutPolicy": {
       "Description": "Auto Scaling Scale Out Policy ARN.",
