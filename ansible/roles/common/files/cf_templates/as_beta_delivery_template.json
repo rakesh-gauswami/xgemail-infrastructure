@@ -5,7 +5,7 @@
 
   "Metadata": {
     "Copyright": [
-      "Copyright 2020, Sophos Limited. All rights reserved.",
+      "Copyright 2021, Sophos Limited. All rights reserved.",
       "",
       "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
       "Sophos Limited and Sophos Group.  All other product and company",
@@ -415,7 +415,12 @@
         "Cooldown": "200",
         "HealthCheckGracePeriod": { "Ref": "HealthCheckGracePeriod" },
         "HealthCheckType": "ELB",
-        "LaunchConfigurationName": { "Ref": "XgemailAutoScalingLaunchConfig" },
+        "LaunchTemplate": {
+          "LaunchTemplateId": {
+            "Ref":"XgemailAutoScalingLaunchTemplate"
+          },
+          "Version": {"Fn::GetAtt": ["XgemailAutoScalingLaunchTemplate", "DefaultVersionNumber"]}
+        },
         "LifecycleHookSpecificationList" : [
           {
             "LifecycleHookName": { "Ref": "LifecycleHookLaunching" },
@@ -628,8 +633,8 @@
       }
     },
 
-    "XgemailAutoScalingLaunchConfig": {
-      "Type": "AWS::AutoScaling::LaunchConfiguration",
+    "XgemailAutoScalingLaunchTemplate": {
+      "Type": "AWS::EC2::LaunchTemplate",
       "Metadata": {
         "AWS::CloudFormation::Init": {
           "configSets": {
@@ -932,20 +937,46 @@
             }
           }
         ],
-        "AssociatePublicIpAddress": "true",
+        "NetworkInterfaces": [
+          {
+            "AssociatePublicIpAddress": "true",
+            "DeviceIndex": "0",
+            "Groups": {
+              "Ref": "SecurityGroups"
+            }
+          }
+        ],
         "ImageId": { "Ref": "AmiId" },
         "InstanceType": { "Ref": "InstanceType" },
-        "KeyName": { "Ref": "KeyName" },
-        "InstanceMonitoring": {
+        "IamInstanceProfile": {
+          "Name": { "Ref": "InstanceProfile" }
+        },
+        "InstanceMarketOptions": {
           "Fn::If": [
-            "EnableDetailedMonitoring",
-            "true",
-            "false"
+            "UseSpotPrice",
+            {
+              "MarketType": "spot",
+              "SpotOptions": {
+                "MaxPrice": {
+                  "Ref": "SpotPrice"
+                }
+              }
+            },
+            {
+              "Ref": "AWS::NoValue"
+            }
           ]
         },
-        "SecurityGroups": { "Ref": "SecurityGroups" },
-        "IamInstanceProfile": { "Ref": "InstanceProfile" },
-        "SpotPrice": { "Fn::If": ["UseSpotPrice",  {"Ref": "SpotPrice"}, {"Ref": "AWS::NoValue"} ]},
+        "KeyName": { "Ref": "KeyName" },
+        "Monitoring": {
+          "Enabled": {
+            "Fn::If": [
+              "EnableDetailedMonitoring",
+              "true",
+              "false"
+            ]
+          }
+        },
         "UserData": {
           "Fn::Base64": {
             "Fn::Join": [ "", [
