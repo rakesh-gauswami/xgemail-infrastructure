@@ -321,7 +321,7 @@
                       "(\n",
                       "    export CHEF_VERSION=12.3\n",
                       "    cd /var/chef\n",
-                      "    /usr/bin/wget -O install.sh https://www.opscode.com/chef/install.sh\n",
+                      "    /usr/bin/wget -O install.sh https://omnitruck.chef.io/install.sh\n",
                       "    /bin/bash ./install.sh -v ${CHEF_VERSION}\n",
                       ")\n",
 
@@ -725,6 +725,18 @@
 
                 "# Install awslogs for mirroring log files to AWS CloudWatch.\n",
                 "yum install -y -t awslogs\n",
+
+                "# Install pip for amzn2.\n",
+                "yum install -y -t python-pip\n",
+
+                "# Install nc for amzn2.\n",
+                "yum install -y -t nc\n",
+
+                "# Install epel for amzn2.\n",
+                "amazon-linux-extras install epel -y\n",
+                "yum-config-manager --enable epel\n",
+
+                "# Install boto3 version.\n",
                 "pip install boto3==1.14.63\n",
 
                 "# Read metadata and configure system accordingly.\n",

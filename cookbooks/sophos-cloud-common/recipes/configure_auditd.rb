@@ -34,7 +34,7 @@ end
 
 ruby_block "enable auditing for processes that start prior to auditd" do
   block do
-    sed = Chef::Util::FileEdit.new("/etc/grub.conf")
+    sed = Chef::Util::FileEdit.new("/etc/default/grub")
     sed.search_file_replace(/^kernel (?!.* audit=1\b).*\S/, "\\0 audit=1")
     sed.write_file
   end
