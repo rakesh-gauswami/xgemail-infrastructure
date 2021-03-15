@@ -1038,7 +1038,7 @@
 
               "/opt/aws/bin/cfn-init --verbose ",
               " --stack ", { "Ref": "AWS::StackName" },
-              " --resource XgemailAutoScalingLaunchConfig ",
+              " --resource XgemailAutoScalingLaunchTemplate ",
               " --configsets xgemail_install ",
               " --region ", { "Ref": "AWS::Region" }, "\n",
               "\n",
@@ -1092,9 +1092,9 @@
       "Description": "Version of the application from Bamboo",
       "Value": { "Ref": "BuildVersion" }
     },
-    "LaunchConfig": {
-      "Description": "Auto Scaling Launch Configuration Name.",
-      "Value": { "Ref": "XgemailAutoScalingLaunchConfig" }
+    "LaunchTemplate": {
+      "Description": "Auto Scaling Launch Template Name.",
+      "Value": { "Ref": "XgemailAutoScalingLaunchTemplate" }
     },
     "XgemailScaleOutPolicy": {
       "Description": "Auto Scaling Scale Out Policy ARN.",
