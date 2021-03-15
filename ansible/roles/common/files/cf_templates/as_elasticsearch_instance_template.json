@@ -456,7 +456,12 @@
             "EC2"
           ]
         },
-        "LaunchConfigurationName": { "Ref": "ElasticSearchAutoScalingLaunchConfig" },
+        "LaunchTemplate": {
+          "LaunchTemplateId": {
+            "Ref":"ElasticSearchAutoScalingLaunchTemplate"
+          },
+          "Version": {"Fn::GetAtt": ["ElasticSearchAutoScalingLaunchTemplate", "DefaultVersionNumber"]}
+        },
         "LoadBalancerNames": {
           "Fn::If": [
             "UseLoadBalancer",
@@ -660,8 +665,8 @@
       }
     },
 
-    "ElasticSearchAutoScalingLaunchConfig": {
-      "Type": "AWS::AutoScaling::LaunchConfiguration",
+    "ElasticSearchAutoScalingLaunchTemplate": {
+      "Type": "AWS::EC2::LaunchTemplate",
       "Metadata": {
         "AWS::CloudFormation::Init": {
           "configSets": {
@@ -964,62 +969,105 @@
         }
       },
       "Properties": {
-        "AssociatePublicIpAddress": { "Ref" : "PublicIpAddressEnabled" },
-        "ImageId": { "Ref" : "AmiId" },
-        "InstanceType": { "Ref": "InstanceType" },
-        "KeyName": { "Ref": "KeyName" },
-        "InstanceMonitoring": {
-            "Fn::If": [
+        "LaunchTemplateData": {
+          "NetworkInterfaces": [
+            {
+              "AssociatePublicIpAddress": {"Ref": "PublicIpAddressEnabled"},
+              "DeviceIndex": "0",
+              "Groups": {
+                "Ref": "SecurityGroups"
+              }
+            }
+          ],
+          "ImageId": {
+            "Ref": "AmiId"
+          },
+          "InstanceType": {
+            "Ref": "InstanceType"
+          },
+          "KeyName": {
+            "Ref": "KeyName"
+          },
+          "Monitoring": {
+            "Enabled": {
+              "Fn::If": [
                 "EnableDetailedMonitoring",
                 "true",
                 "false"
+              ]
+            }
+          },
+          "IamInstanceProfile": {
+            "Name": { "Ref": "InstanceProfile" }
+          },
+          "InstanceMarketOptions": {
+            "Fn::If": [
+              "UseSpotPrice",
+              {
+                "MarketType": "spot",
+                "SpotOptions": {
+                  "MaxPrice": {
+                    "Ref": "SpotPrice"
+                  }
+                }
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
             ]
-        },
-        "SecurityGroups": { "Ref": "SecurityGroups" },
-        "IamInstanceProfile": { "Ref": "IamInstanceProfile" },
-        "SpotPrice": { "Fn::If": ["UseSpotPrice",  {"Ref": "SpotPrice"}, {"Ref": "AWS::NoValue"} ]},
-        "UserData": {
-          "Fn::Base64": {
-            "Fn::Join": [ "", [
-              "#!/bin/bash -xe\n",
-              "# Install the files and packages from the metadata\n",
-
-              "# Make sure we call cfn-signal before exiting, otherwise we have to\n",
-              "# wait for the CreationPolicy timeout to detect failed initialization.\n",
-              "# That's because of using the bash -e option, which makes the script\n",
-              "# exit immediately as soon as any command, e.g. cfn-init, fails.\n",
-
-              "onexit() {\n",
-              "  exit_code=$?\n",
-              "  /opt/aws/bin/cfn-signal -e $exit_code",
-              " --stack ", { "Ref": "AWS::StackName" },
-              " --resource ElasticSearchAutoScalingGroup",
-              " --region ", { "Ref": "AWS::Region" },
-              "\n",
-              "}\n",
-
-              "trap onexit EXIT\n",
-
-              "while [ 1 -eq 1 ]; do\n",
-              "wget -q --tries=10 --timeout=2 http://www.google.com -O /tmp/index.site &> /dev/null\n",
-              "if [ ! -s /tmp/index.site ];then\n",
-              "   echo No connection to internet\n",
-              "else\n",
-              "   echo Connection to internet established\n",
-              "   break\n",
-              "fi\n",
-              "sleep 5\n",
-              "done\n",
-
-              "/opt/aws/bin/cfn-init --verbose ",
-              " --stack ", { "Ref": "AWS::StackName" },
-              " --resource ElasticSearchAutoScalingLaunchConfig ",
-              " --configsets configure ",
-              " --region ", { "Ref": "AWS::Region" }, "\n",
-
-              "# Now the onexit function will get called.\n"
-            ]
-            ]
+          },
+          "UserData": {
+            "Fn::Base64": {
+              "Fn::Join": [
+                "",
+                [
+                  "#!/bin/bash -xe\n",
+                  "# Install the files and packages from the metadata\n",
+                  "# Make sure we call cfn-signal before exiting, otherwise we have to\n",
+                  "# wait for the CreationPolicy timeout to detect failed initialization.\n",
+                  "# That's because of using the bash -e option, which makes the script\n",
+                  "# exit immediately as soon as any command, e.g. cfn-init, fails.\n",
+                  "onexit() {\n",
+                  "  exit_code=$?\n",
+                  "  /opt/aws/bin/cfn-signal -e $exit_code",
+                  " --stack ",
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  " --resource ElasticSearchAutoScalingGroup",
+                  " --region ",
+                  {
+                    "Ref": "AWS::Region"
+                  },
+                  "\n",
+                  "}\n",
+                  "trap onexit EXIT\n",
+                  "while [ 1 -eq 1 ]; do\n",
+                  "wget -q --tries=10 --timeout=2 http://www.google.com -O /tmp/index.site &> /dev/null\n",
+                  "if [ ! -s /tmp/index.site ];then\n",
+                  "   echo No connection to internet\n",
+                  "else\n",
+                  "   echo Connection to internet established\n",
+                  "   break\n",
+                  "fi\n",
+                  "sleep 5\n",
+                  "done\n",
+                  "/opt/aws/bin/cfn-init --verbose ",
+                  " --stack ",
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  " --resource ElasticSearchAutoScalingLaunchConfig ",
+                  " --configsets configure ",
+                  " --region ",
+                  {
+                    "Ref": "AWS::Region"
+                  },
+                  "\n",
+                  "# Now the onexit function will get called.\n"
+                ]
+              ]
+            }
           }
         }
       }
