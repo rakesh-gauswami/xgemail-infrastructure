@@ -190,3 +190,11 @@ file '/lib/systemd/system/td-agent.service' do
   only_if { File.exist? '/lib/systemd/system/td-agent.service' }
 end
 # This file edit allows rsyslog to listen on system socket to coexist with systemd, remove after converting to systemd
+# Modify /etc/rsyslog.conf
+ruby_block 'edit rsyslog.conf' do
+    block do
+      file = Chef::Util::FileEdit.new('/etc/rsyslog.conf')
+      file.search_file_replace_line('$OmitLocalLogging on', '#$OmitLocalLogging on')
+      file.write_file
+   end
+end
