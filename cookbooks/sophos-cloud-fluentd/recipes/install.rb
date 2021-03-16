@@ -172,15 +172,15 @@ end
 
 # Modify /etc/rsyslog.conf
 ruby_block 'edit rsyslog.conf' do
-    block do
-        ['$SystemLogRateLimitInterval 2',
-         '$SystemLogRateLimitBurst 500'
-        ].each do |line|
-            file = Chef::Util::FileEdit.new('/etc/rsyslog.conf')
-            file.insert_line_if_no_match(/#{line}/, line)
-            file.write_file
-        end
+  block do
+    ['$SystemLogRateLimitInterval 2',
+    '$SystemLogRateLimitBurst 500'
+    ].each do |line|
+      file = Chef::Util::FileEdit.new('/etc/rsyslog.conf')
+      file.insert_line_if_no_match(/#{line}/, line)
+      file.write_file
     end
+  end
 end
 
 # TODO : remove following two blocks when replacing all init scripts with systemd unit files
@@ -192,10 +192,10 @@ end
 # This file edit allows rsyslog to listen on system socket to coexist with systemd, remove after converting to systemd
 # Modify /etc/rsyslog.conf
 ruby_block 'edit rsyslog.conf' do
-    block do
-      file = Chef::Util::FileEdit.new('/etc/rsyslog.conf')
-      file.search_file_replace_line(/'$OmitLocalLogging on'/, '#$OmitLocalLogging on')
-      file.write_file
-   end
+  block do
+    file = Chef::Util::FileEdit.new('/Users/ryan.murphy/Sophos/rsyslog.conf')
+    file.search_file_replace_line(/$OmitLocalLogging\s+on/, '#$OmitLocalLogging on')
+    file.write_file
+  end
 end
 # End Todo
