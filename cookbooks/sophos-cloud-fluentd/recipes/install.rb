@@ -182,3 +182,11 @@ ruby_block 'edit rsyslog.conf' do
         end
     end
 end
+
+# TODO : remove following two blocks when replacing all init scripts with systemd unit files
+# This deletion allows the legacy sysvinit script to manage td-agent until we finish converting all sysvinit scripts to systemd
+file '/lib/systemd/system/td-agent.service' do
+  action :delete
+  only_if { File.exist? '/lib/systemd/system/td-agent.service' }
+end
+# This file edit allows rsyslog to listen on system socket to coexist with systemd, remove after converting to systemd
