@@ -194,7 +194,7 @@ end
 ruby_block 'edit rsyslog.conf' do
   block do
     file = Chef::Util::FileEdit.new('/etc/rsyslog.conf')
-    file.search_file_replace_line(/$OmitLocalLogging/, '#$OmitLocalLogging')
+    file.search_file_replace_line(/$OmitLocalLogging on/, '$OmitLocalLogging off')
     file.write_file
   end
 end
