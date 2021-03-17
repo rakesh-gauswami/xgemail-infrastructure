@@ -172,13 +172,32 @@ end
 
 # Modify /etc/rsyslog.conf
 ruby_block 'edit rsyslog.conf' do
-    block do
-        ['$SystemLogRateLimitInterval 2',
-         '$SystemLogRateLimitBurst 500'
-        ].each do |line|
-            file = Chef::Util::FileEdit.new('/etc/rsyslog.conf')
-            file.insert_line_if_no_match(/#{line}/, line)
-            file.write_file
-        end
+  block do
+    ['$SystemLogRateLimitInterval 2',
+    '$SystemLogRateLimitBurst 500'
+    ].each do |line|
+      file = Chef::Util::FileEdit.new('/etc/rsyslog.conf')
+      file.insert_line_if_no_match(/#{line}/, line)
+      file.write_file
     end
+  end
 end
+
+# TODO : remove following two blocks when replacing all init scripts with systemd unit files
+# This deletion allows the legacy sysvinit script to manage td-agent until we finish converting all sysvinit scripts to systemd
+file '/lib/systemd/system/td-agent.service' do
+  action :delete
+  only_if { File.exist? '/lib/systemd/system/td-agent.service' }
+end
+# This file edit allows rsyslog to listen on system socket to coexist with systemd, remove after converting to systemd
+# Modify /etc/rsyslog.conf
+ruby_block 'edit rsyslog.conf' do
+  block do
+    file = Chef::Util::FileEdit.new('/etc/rsyslog.conf')
+    file.search_file_replace_line(
+      '^\$OmitLocalLogging on',
+      '#$OmitLocalLogging on')
+    file.write_file
+  end
+end
+# End Todo
