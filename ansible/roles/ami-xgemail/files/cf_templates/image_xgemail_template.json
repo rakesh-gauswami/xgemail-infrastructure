@@ -570,10 +570,6 @@
                       "recipe[sophos-cloud-xgemail::install_monit_service],",
                       "recipe[sophos-cloud-xgemail::download_libspf2],",
                       "recipe[sophos-cloud-xgemail::ami]",
-
-                      "# Install specific python-daemon module for cfn-hup to work\n",
-                      "pip install \"python-daemon>=1.5.2,<2.0\"\n",
-
                       "\""
                     ]
                   ]
@@ -750,6 +746,9 @@
                 " --configsets svcapi_install",
                 " -v",
                 "\n",
+
+                "# Install specific python-daemon module for cfn-hup to work\n",
+                "pip install \"python-daemon>=1.5.2,<2.0\"\n",
 
                 "# Now the onexit function will get called.\n"
               ]
