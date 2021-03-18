@@ -727,6 +727,19 @@
               "06_delete_cfn_hup_config": {
                 "command": "rm -f /etc/cfn/hooks.d/cfn-auto-reloader.conf.*"
               }
+            },
+
+            "services": {
+              "sysvinit": {
+                "cfn-hup": {
+                  "enabled": "true",
+                  "ensureRunning": "true",
+                  "files": [
+                    "/etc/cfn/cfn-hup.conf",
+                    "/etc/cfn/hooks.d/cfn-auto-reloader.conf"
+                  ]
+                }
+              }
             }
           },
           "tag_volume": {
