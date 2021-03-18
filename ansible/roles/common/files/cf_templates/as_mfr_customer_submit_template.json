@@ -770,6 +770,51 @@
                 "mode": "000500",
                 "owner": "root"
               }
+            },
+            "commands": {
+              "01_delete_run_list_nodes": {
+                "command": "rm -f /var/chef/chef-repo/nodes/*.*"
+              },
+              "02_run_chef_client": {
+                "command": {
+                  "Fn::Join": [ " ", [
+                    "chef-client --no-color -z",
+                    "-c /var/chef/chef-repo/.chef/client.rb",
+                    "-j /var/sophos/cookbooks/attributes.json",
+                    "-l debug -L /var/log/chef-client.instance.install.chef.log"
+                  ]]
+                },
+                "cwd": "/var/chef/chef-repo",
+                "env": {
+                  "HOME": "/var/chef"
+                }
+              },
+              "03_configure_node_run_list": {
+                "command": {
+                  "Fn::Join": ["", [
+                    "knife node run_list set -z `knife node list -z` \"",
+                    "recipe[sophos-cloud-xgemail::setup_xgemail_instance_terminator],",
+                    "recipe[sophos-cloud-xgemail::configure-policy-efs-mount],",
+                    "recipe[sophos-cloud-ntpd::default],",
+                    "recipe[sophos-cloud-fluentd::configure],",
+                    "recipe[sophos-cloud-snmpd::configure],",
+                    "recipe[sophos-cloud-xgemail::deploy_certs],",
+                    "recipe[sophos-cloud-xgemail::setup_xgemail_utils_structure],",
+                    "recipe[sophos-cloud-xgemail::configure-postfix],",
+                    "recipe[sophos-cloud-xgemail::configure_postfix_snmp_logicmonitor],",
+                    "recipe[sophos-cloud-xgemail::configure_monit],",
+                    "recipe[sophos-cloud-xgemail::run_install_cleanup]",
+                    "\""
+                  ]]
+                },
+                "cwd": "/var/chef/chef-repo",
+                "env": {
+                  "HOME": "/var/chef"
+                }
+              },
+              "04_modify_network_config": {
+                "command": "/var/sophos/modify_network_config"
+              }
             }
           },
           "tag_volume": {
