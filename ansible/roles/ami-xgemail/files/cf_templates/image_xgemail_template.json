@@ -342,8 +342,7 @@
                       "touch /var/log/sophos/chef-reset_chef.log\n",
                       "touch /var/log/sophos/reset_cookbooks.output\n",
                       "mkdir -p /etc/chef/ohai/hints\n",
-                      "touch /etc/chef/ohai/hints/ec2.json\n",
-
+                      "touch /etc/chef/ohai/hints/ec2.json\n"
                     ]
                   ]
                 },
@@ -571,7 +570,6 @@
                       "recipe[sophos-cloud-xgemail::install_monit_service],",
                       "recipe[sophos-cloud-xgemail::download_libspf2],",
                       "recipe[sophos-cloud-xgemail::ami]",
-
                       "\""
                     ]
                   ]
@@ -748,6 +746,9 @@
                 " --configsets svcapi_install",
                 " -v",
                 "\n",
+
+                "# Install specific python-daemon module for cfn-hup to work\n",
+                "pip install \"python-daemon>=1.5.2,<2.0\"\n",
 
                 "# Now the onexit function will get called.\n"
               ]
