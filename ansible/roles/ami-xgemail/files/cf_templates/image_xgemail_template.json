@@ -571,6 +571,9 @@
                       "recipe[sophos-cloud-xgemail::download_libspf2],",
                       "recipe[sophos-cloud-xgemail::ami]",
 
+                      "# Install specific python-daemon module for cfn-hup to work\n",
+                      "pip install \"python-daemon>=1.5.2,<2.0\"\n",
+
                       "\""
                     ]
                   ]
@@ -720,6 +723,7 @@
                 "yum update -y -t -v kernel\n",
                 "yum update -y -t --security\n",
                 "yum update -y -t aws-amitools-ec2\n",
+                "yum update -y -t aws-cfn-bootstrap\n",
 
                 "# Install awslogs for mirroring log files to AWS CloudWatch.\n",
                 "yum install -y -t awslogs\n",
@@ -736,9 +740,6 @@
 
                 "# Install boto3 version.\n",
                 "pip install boto3==1.14.63\n",
-
-                "# Install specific aws-cfn with packaged python-daemon module version\n",
-                "pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
 
                 "# Read metadata and configure system accordingly.\n",
 
