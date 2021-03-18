@@ -74,7 +74,12 @@
             "Effect" : "Allow",
             "Principal" : { "AWS": "*" },
             "Action" : "sns:Publish",
-            "Resource" : { "Ref": "SnsTopic" }
+            "Resource" : { "Ref": "SnsTopic" },
+            "Condition": {
+              "StringEquals": {
+                "AWS:SourceOwner": { "Ref" : "AWS::AccountId" }
+              }
+            }
           } ]
         },
         "Topics" : [ { "Ref": "SnsTopic" } ]
