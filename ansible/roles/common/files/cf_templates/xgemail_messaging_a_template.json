@@ -691,7 +691,12 @@
               "Effect": "Allow",
               "Principal": "*",
               "Action": ["sqs:SendMessage"],
-              "Resource": "*"
+              "Resource": "*",
+              "Condition": {
+                "StringEquals": {
+                  "AWS:SourceOwner": { "Ref" : "AWS::AccountId" }
+                }
+              }
             }
           ]
         },
@@ -737,7 +742,12 @@
               "Effect": "Allow",
               "Principal": "*",
               "Action": ["sqs:SendMessage"],
-              "Resource": "*"
+              "Resource": "*",
+              "Condition": {
+                "StringEquals": {
+                  "AWS:SourceOwner": { "Ref" : "AWS::AccountId" }
+                }
+              }
             }
           ]
         },
@@ -755,7 +765,12 @@
               "Effect": "Allow",
               "Principal": "*",
               "Action": ["sqs:SendMessage"],
-              "Resource": "*"
+              "Resource": "*",
+              "Condition": {
+                "StringEquals": {
+                  "AWS:SourceOwner": { "Ref" : "AWS::AccountId" }
+                }
+              }
             }
           ]
         },
@@ -773,7 +788,12 @@
               "Effect": "Allow",
               "Principal": "*",
               "Action": ["sqs:SendMessage"],
-              "Resource": "*"
+              "Resource": "*",
+              "Condition": {
+                "StringEquals": {
+                  "AWS:SourceOwner": { "Ref" : "AWS::AccountId" }
+                }
+              }
             }
           ]
         },
