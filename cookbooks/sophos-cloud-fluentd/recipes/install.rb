@@ -189,7 +189,7 @@ file '/lib/systemd/system/td-agent.service' do
   action :delete
   only_if { File.exist? '/lib/systemd/system/td-agent.service' }
 end
-# This file edit allows rsyslog to listen on system socket to coexist with systemd, remove after converting to systemd
+# This file edit allows rsyslog to listen on system socket to coexist with systemd, also disables journal for now, remove after converting to systemd
 # Modify /etc/rsyslog.conf
 ruby_block 'edit rsyslog.conf' do
   block do
@@ -197,6 +197,9 @@ ruby_block 'edit rsyslog.conf' do
     file.search_file_replace_line(
       '^\$OmitLocalLogging on',
       '#$OmitLocalLogging on')
+    file.search_file_replace_line(
+      '^\$ModLoad imjournal \# provides access to the systemd journal',
+      '#$ModLoad imjournal # provides access to the systemd journal')
     file.write_file
   end
 end
