@@ -72,14 +72,9 @@
           "Statement" : [ {
             "Sid" : "sns-topic-policy-document",
             "Effect" : "Allow",
-            "Principal" : { "AWS": "*" },
+            "Principal": { "AWS": [{ "Ref" : "AWS::AccountId" }] },
             "Action" : "sns:Publish",
-            "Resource" : { "Ref": "SnsTopic" },
-            "Condition": {
-              "StringEquals": {
-                "AWS:SourceOwner": { "Ref" : "AWS::AccountId" }
-              }
-            }
+            "Resource" : { "Ref": "SnsTopic" }
           } ]
         },
         "Topics" : [ { "Ref": "SnsTopic" } ]
