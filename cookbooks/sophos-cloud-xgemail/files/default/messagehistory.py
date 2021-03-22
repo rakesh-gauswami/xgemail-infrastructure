@@ -120,12 +120,14 @@ def read_msghistory_accepted_events(queue_id, directory):
 
 def update_msghistory_event_inbound(msghistory_events, s3_file_path, policy_metadata, recipients):
     for recipient in recipients:
+      recipient = recipient.lower()
       if recipient in msghistory_events:
         if msghistory_events[recipient]['mail_info']['queue_id'] != policy_metadata.get_queue_id():
             msghistory_events[recipient]['mail_info']['decorated_queue_id'] = policy_metadata.get_queue_id()
         msghistory_events[recipient]['mail_info']['s3_resource_id'] = s3_file_path
 
 def update_msghistory_event_outbound(msghistory_events, s3_file_path, policy_metadata, sender):
+    sender = sender.lower()
     if sender in msghistory_events:
         if msghistory_events[sender]['mail_info']['queue_id'] != policy_metadata.get_queue_id():
             msghistory_events[sender]['mail_info']['decorated_queue_id'] = policy_metadata.get_queue_id()

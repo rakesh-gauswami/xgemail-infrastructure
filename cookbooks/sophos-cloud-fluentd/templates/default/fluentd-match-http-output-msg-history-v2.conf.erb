@@ -10,7 +10,9 @@
   <buffer>
     @type file
     path /var/log/td-agent/out_http_msg_history
-    flush_interval 2s                 # flush output interval; this will batch the requests
+    flush_interval immediate
+    chunk_limit_size 2MB
+    chunk_limit_records 40
 
     # the below values apply in case of failure when calling http endpoint
     retry_wait 10s                    # The wait interval for the first retry.
