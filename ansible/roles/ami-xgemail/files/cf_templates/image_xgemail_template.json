@@ -73,6 +73,13 @@
       "Default": "v1"
     },
 
+    "EbsVolumeType": {
+      "Description": "Indicates the EBS volume type.",
+      "Type": "String",
+      "Default": "gp3",
+      "AllowedValues": [ "gp2", "gp3", "standard" ]
+    },
+
     "Environment": {
       "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
       "Type": "String",
@@ -598,9 +605,9 @@
 
       "Properties": {
         "BlockDeviceMappings": [
-          { "DeviceName": "/dev/xvdf", "Ebs": { "DeleteOnTermination": "true", "VolumeSize": { "Ref": "BlockDeviceMappingsXvdf" } } },
-          { "DeviceName": "/dev/xvdg", "Ebs": { "DeleteOnTermination": "true", "VolumeSize": { "Ref": "BlockDeviceMappingsXvdg" } } },
-          { "DeviceName": "/dev/xvdh", "Ebs": { "DeleteOnTermination": "true", "VolumeSize": { "Ref": "BlockDeviceMappingsXvdh" } } }
+          { "DeviceName": "/dev/xvdf", "Ebs": { "DeleteOnTermination": "true", "VolumeType": { "Ref": "EbsVolumeType" }, "VolumeSize": { "Ref": "BlockDeviceMappingsXvdf" } } },
+          { "DeviceName": "/dev/xvdg", "Ebs": { "DeleteOnTermination": "true", "VolumeType": { "Ref": "EbsVolumeType" }, "VolumeSize": { "Ref": "BlockDeviceMappingsXvdg" } } },
+          { "DeviceName": "/dev/xvdh", "Ebs": { "DeleteOnTermination": "true", "VolumeType": { "Ref": "EbsVolumeType" }, "VolumeSize": { "Ref": "BlockDeviceMappingsXvdh" } } }
         ],
         "IamInstanceProfile": { "Ref": "IamProfile" },
         "ImageId": { "Ref": "ImageId" },
