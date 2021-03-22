@@ -433,7 +433,8 @@ default['xgemail']['common_instance_config_params'] = [
   # cannot be resolved, producing mail to 'owner-owner-owner-owner-owner...'
   'owner_request_special = no',
 
-  'enable_long_queue_ids=yes'
+  'enable_long_queue_ids=yes',
+  'allow_min_user = yes'
 ]
 
 default['xgemail']['no_local_delivery_config_params'] = [
