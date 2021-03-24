@@ -56,6 +56,20 @@ remote_file "/etc/ssl/certs/#{CERT_NAME}.crt" do
   mode 0444
 end
 
+remote_file "/etc/ssl/certs/globalsign-cross-certificate.crt" do
+  source "file:///tmp/sophos/certificates/globalsign-cross-certificate.crt"
+  owner 'root'
+  group 'root'
+  mode 0444
+end
+
+remote_file "/etc/ssl/certs/globalsign-rsa-ca.crt" do
+  source "file:///tmp/sophos/certificates/globalsign-rsa-ca.crt"
+  owner 'root'
+  group 'root'
+  mode 0444
+end
+
 # Add xgemail key
 remote_file "/etc/ssl/private/#{CERT_NAME}.key" do
   source "file:///tmp/sophos/certificates/appserver.key"
