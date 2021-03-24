@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: configure-internet-submit-queue
 #
-# Copyright 2019, Sophos
+# Copyright 2021, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -163,7 +163,8 @@ end
 if ACCOUNT != 'sandbox'
   GLOBAL_SIGN_DIR = "#{LOCAL_CERT_PATH}/3rdparty/global-sign"
   GLOBAL_SIGN_INTERMEDIARY = "#{GLOBAL_SIGN_DIR}/global-sign-sha256-intermediary.crt"
-  GLOBAL_SIGN_ROOT = "#{GLOBAL_SIGN_DIR}/global-sign-root.crt"
+  GLOBAL_SIGN_CROSSCERT = "#{LOCAL_CERT_PATH}/globalsign-cross-certificate.crt"
+  GLOBAL_SIGN_ROOT = "#{LOCAL_CERT_PATH}/globalsign-rsa-ca.crt"
 
   # Add xgemail certificate
   # api-mcs-mob-prod.crt currently includes the intermediate CA cert in it so
@@ -185,6 +186,7 @@ if ACCOUNT != 'sandbox'
 
   CREATE_SERVER_PEM_COMMAND = 'cat ' +
     "'#{CERT_FILE}' " +
+    "'#{GLOBAL_SIGN_CROSSCERT}' " +
     "'#{GLOBAL_SIGN_ROOT}' " +
     "> '#{SERVER_PEM_FILE}'"
 
