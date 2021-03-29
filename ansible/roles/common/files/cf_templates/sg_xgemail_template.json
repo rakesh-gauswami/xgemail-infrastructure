@@ -5,7 +5,7 @@
 
   "Metadata": {
     "Copyright": [
-      "Copyright 2019, Sophos Limited. All rights reserved.",
+      "Copyright 2021, Sophos Limited. All rights reserved.",
       "",
       "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
       "Sophos Limited and Sophos Group.  All other product and company",
@@ -594,6 +594,30 @@
       }
     },
 
+    "SecurityGroupExternalIpAccessMfrInternetSubmitSmtp": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Condition": "ClosedToWorld",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailMfrInternetSubmitSecurityGroupLb" },
+        "SourceSecurityGroupId": { "Ref": "SecurityGroupExternalIpAccess" },
+        "IpProtocol": "tcp",
+        "FromPort": "25",
+        "ToPort": "25"
+      }
+    },
+
+    "SecurityGroupExternalIpAccessMfrInternetSubmitSmtpTls": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Condition": "ClosedToWorld",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailMfrInternetSubmitSecurityGroupLb" },
+        "SourceSecurityGroupId": { "Ref": "SecurityGroupExternalIpAccess" },
+        "IpProtocol": "tcp",
+        "FromPort": "587",
+        "ToPort": "587"
+      }
+    },
+
     "SecurityGroupBastion": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
@@ -883,6 +907,150 @@
             "FromPort": "587",
             "ToPort": "587",
             "SourceSecurityGroupId": { "Ref": "XgemailInternetSubmitSecurityGroupLb" }
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "-1",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "VpcId": { "Ref": "Vpc" }
+      }
+    },
+
+    "XgemailMfrInternetSubmitSecurityGroupLb": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Controls access to public facing ELBs.",
+        "Tags": [
+          {
+            "Key": "Branch",
+            "Value": { "Ref" : "Branch" }
+
+          },
+          {
+            "Key": "Environment",
+            "Value": { "Ref" : "Environment" }
+          },
+          {
+            "Key": "Role",
+            "Value": "svc-xgemail-mfr-internet-submit-elb"
+
+          },
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "Environment"
+                  },
+                  "-",
+                  {
+                    "Ref": "Branch"
+                  },
+                  "-",
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "/sg/xgemail/mfr/internet/submit/elb"
+                ]
+              ]
+            }
+          },
+          {
+            "Key": "Application",
+            "Value": "mfr-internet-submit"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      }
+    },
+
+    "XgemailMfrInternetSubmitSecurityGroupLbIngressWorldSmtp": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Condition" : "OpenToWorld",
+      "Description" : "TCP/25 0.0.0.0/0 to mfr-internet-submit",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailMfrInternetSubmitSecurityGroupLb" },
+        "CidrIp": "0.0.0.0/0",
+        "IpProtocol": "tcp",
+        "FromPort": "25",
+        "ToPort": "25"
+      }
+    },
+
+    "XgemailMfrInternetSubmitSecurityGroupLbIngressWorldSmtpTls": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Condition" : "OpenToWorld",
+      "Description" : "TCP/587 0.0.0.0/0 to mfr-internet-submit",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailMfrInternetSubmitSecurityGroupLb" },
+        "CidrIp": "0.0.0.0/0",
+        "IpProtocol": "tcp",
+        "FromPort": "587",
+        "ToPort": "587"
+      }
+    },
+
+    "XgemailMfrInternetSubmitSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "XGEMAIL Mfr Internet Submit security group.",
+        "Tags": [{
+          "Key": "Name",
+          "Value": {
+            "Fn::Join": [ "", [
+              { "Ref": "Environment" }, "-",
+              { "Ref": "Branch" }, "-",
+              { "Ref": "AWS::StackName" }, "/sg/xgemail/mfr/internet/submit"
+            ]]
+          }
+        },
+          {
+            "Key": "Application",
+            "Value": "mfr-internet-submit"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "25",
+            "ToPort": "25",
+            "SourceSecurityGroupId": { "Ref": "XgemailMfrInternetSubmitSecurityGroupLb" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "587",
+            "ToPort": "587",
+            "SourceSecurityGroupId": { "Ref": "XgemailMfrnternetSubmitSecurityGroupLb" }
           }
         ],
         "SecurityGroupEgress": [
@@ -2809,6 +2977,17 @@
       }
     },
 
+    "XgemailMfrInternetSubmitSecurityGroupIngressBastionSsh": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailMfrInternetSubmitSecurityGroup" },
+        "SourceSecurityGroupId": { "Ref": "SecurityGroupBastion" },
+        "IpProtocol": "tcp",
+        "FromPort": "22",
+        "ToPort": "22"
+      }
+    },
+
     "XgemailCustomerSubmitSecurityGroupIngressBastionSsh": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
@@ -3017,6 +3196,12 @@
             "FromPort": "2049",
             "ToPort": "2049",
             "SourceSecurityGroupId": { "Ref": "XgemailInternetSubmitSecurityGroup" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
+            "SourceSecurityGroupId": { "Ref": "XgemailMfrInternetSubmitSecurityGroup" }
           }
         ]
       }
@@ -3207,6 +3392,14 @@
     "XgemailInternetSubmitSecurityGroup": {
       "Description": "Xgemail Internet Submit security group",
       "Value": { "Ref": "XgemailInternetSubmitSecurityGroup" }
+    },
+    "XgemailMfrInternetSubmitSecurityGroupLb": {
+      "Description": "Xgemail Mfr Internet Submit Load Balancer security group",
+      "Value": { "Ref": "XgemailMfrInternetSubmitSecurityGroupLb" }
+    },
+    "XgemailMfrInternetSubmitSecurityGroup": {
+      "Description": "Xgemail Mfr Internet Submit security group",
+      "Value": { "Ref": "XgemailMfrInternetSubmitSecurityGroup" }
     },
     "XgemailEncryptionSubmitSecurityGroupLb": {
       "Description": "Xgemail Encryption Submit Load Balancer security group",
