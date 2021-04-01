@@ -1012,7 +1012,7 @@
     "XgemailMfrInternetSubmitSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "GroupDescription": "XGEMAIL Mfr Internet Submit security group.",
+        "GroupDescription": "XGEMAIL MFR Internet Submit security group.",
         "Tags": [{
           "Key": "Name",
           "Value": {
@@ -1168,6 +1168,123 @@
             "FromPort": "587",
             "ToPort": "587",
             "SourceSecurityGroupId": { "Ref": "XgemailCustomerDeliverySecurityGroupLb" }
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "-1",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "VpcId": { "Ref": "Vpc" }
+      }
+    },
+
+    "XgemailMfrCustomerDeliverySecurityGroupLb": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Controls access to public facing ELBs.",
+        "Tags": [
+          {
+            "Key": "Branch",
+            "Value": { "Ref" : "Branch" }
+
+          },
+          {
+            "Key": "Environment",
+            "Value": { "Ref" : "Environment" }
+          },
+          {
+            "Key": "Role",
+            "Value": "svc-xgemail-mfr-customer-delivery-elb"
+          },
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "Environment"
+                  },
+                  "-",
+                  {
+                    "Ref": "Branch"
+                  },
+                  "-",
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "/sg/xgemail/mfr/customer/delivery/elb"
+                ]
+              ]
+            }
+          },
+          {
+            "Key": "Application",
+            "Value": "mfr-customer-delivery"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      }
+    },
+
+    "XgemailMfrCustomerDeliverySecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Xgemail Submit security group.",
+        "Tags": [{
+          "Key": "Name",
+          "Value": {
+            "Fn::Join": [ "", [
+              { "Ref": "Environment" }, "-",
+              { "Ref": "Branch" }, "-",
+              { "Ref": "AWS::StackName" }, "/sg/xgemail/mfr/customer/delivery"
+            ]]
+          }
+        },
+          {
+            "Key": "Application",
+            "Value": "mfr-customer-delivery"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "25",
+            "ToPort": "25",
+            "SourceSecurityGroupId": { "Ref": "XgemailMfrCustomerDeliverySecurityGroupLb" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "587",
+            "ToPort": "587",
+            "SourceSecurityGroupId": { "Ref": "XgemailMfrCustomerDeliverySecurityGroupLb" }
           }
         ],
         "SecurityGroupEgress": [
@@ -3312,6 +3429,14 @@
     "XgemailCustomerDeliverySecurityGroup": {
       "Description": "Xgemail Customer Delivery security group",
       "Value": { "Ref": "XgemailCustomerDeliverySecurityGroup" }
+    },
+    "XgemailMfrCustomerDeliverySecurityGroupLb": {
+      "Description": "Xgemail MFR Customer Delivery Load Balancer security group",
+      "Value": { "Ref": "XgemailMfrCustomerDeliverySecurityGroupLb" }
+    },
+    "XgemailMfrCustomerDeliverySecurityGroup": {
+      "Description": "Xgemail MFR Customer Delivery security group",
+      "Value": { "Ref": "XgemailMfrCustomerDeliverySecurityGroup" }
     },
     "XgemailXdeliverySecurityGroupLb": {
       "Description": "Xgemail Xdelivery Load Balancer security group",
