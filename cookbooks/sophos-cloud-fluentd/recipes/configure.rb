@@ -972,12 +972,6 @@ cookbook_file 'fluentd_plugin_msg_history_v2_mailinfo_filecheck' do
   action :create
 end
 
-# TODO : remove this when replacing all init scripts with systemd unit files
-file '/lib/systemd/system/td-agent.service' do
-  action :delete
-  only_if { File.exist? '/lib/systemd/system/td-agent.service' }
-end
-
 service 'td-agent' do
   supports :restart => true, :start => true, :stop => true, :reload => true
   action [ :enable, :restart ]
