@@ -20,7 +20,7 @@ TRANSPORT_ROUTE_CLI_SCRIPT_PATH = "#{TRANSPORT_ROUTE_CLI_PACKAGE_DIR}/#{TRANSPOR
 TRANSPORT_CONFIG_DIR = XGEMAIL_FILES_DIR + '/config'
 TRANSPORT_CONFIG_FILE_NAME = "#{TRANSPORT_CONFIG_DIR}/transport-route-config.json"
 
-if NODE_TYPE != 'customer-delivery'
+if NODE_TYPE != 'customer-delivery' && NODE_TYPE != 'mfr-customer-delivery'
   return
 end
 

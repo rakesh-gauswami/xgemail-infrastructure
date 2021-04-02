@@ -42,7 +42,8 @@ E2E_LATENCY_TELEMETRY_DELIVERY_STREAM   =  "tf-e2e-latency-telemetry-#{AWS_REGIO
 MH_MAIL_INFO_STORAGE_DIR                = node['xgemail']['mh_mail_info_storage_dir']
 DELIVERY_JILTER_ENABLED_FILE_PATH       = XGEMAIL_FILES_DIR + '/config/delivery.jilter.enabled'
 MSG_HISTORY_V2_BUCKET                   = node['xgemail']['msg_history_v2_bucket_name']
-if NODE_TYPE == 'customer-delivery' ||  NODE_TYPE == 'internet-delivery'
+
+if NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'mfr-customer-delivery'
   #m5a.large 2vCPU / 8 GB.
   DEFAULT_NUMBER_OF_CONSUMER_THREADS = 5
 else
@@ -69,8 +70,9 @@ CONSUMER_SCRIPT_PATH = "#{SQS_MESSAGE_PROCESSOR_DIR}/#{CONSUMER_SCRIPT}"
 
 SERVICE_USER = node['xgemail']['sqs_message_processor_user']
 
+# TODO : We shouldn't need sqsconsumer on any XDelivery or encryption submit right?
 # Configs use by sqsmsgconsumer
-if NODE_TYPE == 'customer-delivery' or NODE_TYPE == 'xdelivery' or NODE_TYPE == 'encryption-submit'
+if NODE_TYPE == 'customer-delivery' or NODE_TYPE == 'mfr-customer-delivery' or NODE_TYPE == 'xdelivery' or NODE_TYPE == 'encryption-submit'
   MESSAGE_DIRECTION = 'INBOUND'
 elsif NODE_TYPE == 'internet-delivery' or NODE_TYPE == 'internet-xdelivery' or
        NODE_TYPE == 'encryption-delivery' or NODE_TYPE == 'risky-delivery' or
