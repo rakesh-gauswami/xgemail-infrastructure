@@ -106,6 +106,8 @@ module SophosCloudXgemail
       case type
         when 'internet-submit'
           return "mx-01-#{region}.#{account}.hydra.sophos.com"
+        when 'mfr-internet-submit'
+          return "mfr-01-#{region}.#{account}.hydra.sophos.com"
         when 'customer-submit'
           return "relay-#{region}.#{account}.hydra.sophos.com"
         when 'encryption-delivery'

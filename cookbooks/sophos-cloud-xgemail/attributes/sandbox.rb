@@ -42,7 +42,7 @@ if ENVIRONMENT == "sandbox"
   default['xgemail']['launch_darkly_sandbox']      = 'sdk-00000000-0000-0000-0000-000000000000'
   default['xgemail']['station_vpc_name']           = 'pic'
 
-  if INSTANCE_TYPE == "internet-submit" || INSTANCE_TYPE == "customer-delivery"
+  if INSTANCE_TYPE == "internet-submit" || INSTANCE_TYPE == "customer-delivery" || INSTANCE_TYPE == "mfr_internet-submit" || INSTANCE_TYPE == "mfr_customer-delivery"
     default['xgemail']['xgemail_bucket_name']           = 'sandbox-cloudemail-xgemail-submit'
     default['xgemail']['xgemail_scan_events_topic_arn'] = 'arn:aws:sns:us-east-1:000000000000:sandbox-xgemail-scan-events-SNS'
     default['xgemail']['xgemail_queue_url']             = 'http://localstack:4576/queue/sandbox-Xgemail_Internet_Submit'

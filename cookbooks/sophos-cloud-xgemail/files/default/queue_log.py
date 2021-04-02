@@ -13,10 +13,12 @@
 class QueueLog:
     server_type_dictionary = {
         'internet-submit': 'INTERNET_SUBMIT',
+        'mfr-internet-submit': 'MFR_INTERNET_SUBMIT',
         'internet-delivery': 'INTERNET_DELIVERY',
         'internet-xdelivery': 'INTERNET_XDELIVERY',
         'customer-submit': 'CUSTOMER_SUBMIT',
         'customer-delivery': 'CUSTOMER_DELIVERY',
+        'mfr-customer-delivery': 'MFR_CUSTOMER_DELIVERY',
         'customer-xdelivery': 'CUSTOMER_XDELIVERY',
         'risky-delivery': 'RISKY_DELIVERY',
         'risky-xdelivery': 'RISKY_XDELIVERY',

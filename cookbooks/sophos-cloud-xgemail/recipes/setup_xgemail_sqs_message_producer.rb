@@ -57,6 +57,7 @@ MSG_HISTORY_EVENT_PROCESSOR_PORT              = node['xgemail']['mh_event_proces
 #constants to use
 SUBMIT = 'submit'
 INTERNET_SUBMIT = 'internet-submit'
+MFR_INTERNET_SUBMIT = 'mfr-internet-submit'
 CUSTOMER_SUBMIT = 'customer-submit'
 
 # Configs use by sqsmsgproducer
@@ -64,6 +65,8 @@ if NODE_TYPE == INTERNET_SUBMIT
   XGEMAIL_SUBMIT_TYPE                   = 'INTERNET'
 elsif NODE_TYPE == CUSTOMER_SUBMIT
   XGEMAIL_SUBMIT_TYPE                   = 'CUSTOMER'
+elsif NODE_TYPE == MFR_INTERNET_SUBMIT
+  XGEMAIL_SUBMIT_TYPE                   = 'MFR_INTERNET'
 else
   raise "Unsupported node type to setup sqsmsgproducer [#{NODE_TYPE}]"
 end

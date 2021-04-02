@@ -96,7 +96,7 @@ if NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' || NODE_
   'postfix'
 ]
 else
-  if NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit' || NODE_TYPE == 'encryption-submit'
+  if NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit' || NODE_TYPE == 'encryption-submit' || NODE_TYPE == 'mfr-internet-submit'
     if ACCOUNT != 'sandbox'
        MANAGED_SERVICES_IN_START_ORDER = [
           JILTER_SERVICE_NAME,
