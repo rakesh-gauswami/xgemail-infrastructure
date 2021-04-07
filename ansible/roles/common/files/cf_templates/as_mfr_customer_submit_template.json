@@ -886,11 +886,13 @@
             "Ref": "KeyName"
           },
           "Monitoring": {
-            "Fn::If": [
-              "EnableDetailedMonitoring",
-              "true",
-              "false"
-            ]
+            "Enabled": {
+              "Fn::If": [
+                "EnableDetailedMonitoring",
+                "true",
+                "false"
+              ]
+            }
           },
           "IamInstanceProfile": {
             "Ref": "InstanceProfile"
@@ -911,7 +913,7 @@
                   "#!/bin/bash -xe\n",
                   "# Install the files and packages from the metadata\n",
                   "\n",
-                  "# Force replacement of the LaunchConfiguration object by changing this value.\n",
+                  "# Force replacement of the LaunchTemplate object by changing this value.\n",
                   "# ",
                   {
                     "Ref": "BuildVersion"
@@ -983,7 +985,7 @@
                   {
                     "Ref": "AWS::StackName"
                   },
-                  " --resource XgemailAutoScalingLaunchConfig ",
+                  " --resource XgemailAutoScalingLaunchTemplate ",
                   " --configsets xgemail_install ",
                   " --region ",
                   {
@@ -1025,7 +1027,7 @@
       "Value": { "Ref": "BuildVersion" }
     },
     "LaunchTemplate": {
-      "Description": "Auto Scaling Launch Configuration Name.",
+      "Description": "Auto Scaling Launch Template Name.",
       "Value": { "Ref": "XgemailAutoScalingLaunchTemplate" }
     }
   }
