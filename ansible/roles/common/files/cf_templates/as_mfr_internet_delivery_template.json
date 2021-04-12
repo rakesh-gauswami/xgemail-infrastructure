@@ -882,6 +882,20 @@
               },
               "04_modify_network_config": {
                 "command": "/var/sophos/modify_network_config"
+              },
+              "05_run_chef_client": {
+                "command": {
+                  "Fn::Join": [ " ", [
+                    "chef-client --no-color -z",
+                    "-c /var/chef/chef-repo/.chef/client.rb",
+                    "-j /var/sophos/cookbooks/attributes.json",
+                    "-l debug -L /var/log/chef-client.instance.install.service.log"
+                  ]]
+                },
+                "cwd": "/var/chef/chef-repo",
+                "env": {
+                  "HOME": "/var/chef"
+                }
               }
             }
           },
