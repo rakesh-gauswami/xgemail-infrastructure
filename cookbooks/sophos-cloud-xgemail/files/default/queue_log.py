@@ -18,6 +18,8 @@ class QueueLog:
         'customer-submit': 'CUSTOMER_SUBMIT',
         'customer-delivery': 'CUSTOMER_DELIVERY',
         'customer-xdelivery': 'CUSTOMER_XDELIVERY',
+        'mfr-customer-submit': 'MFR_CUSTOMER_SUBMIT',
+        'mfr-internet-delivery': 'MFR_INTERNET_DELIVERY',
         'risky-delivery': 'RISKY_DELIVERY',
         'risky-xdelivery': 'RISKY_XDELIVERY',
         'warmup-delivery': 'WARMUP_DELIVERY',

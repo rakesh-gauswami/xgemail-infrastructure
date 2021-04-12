@@ -211,6 +211,12 @@ default['xgemail']['beta_delivery_message_bouncer_processor_dir'] = XGEMAIL_SQS_
 default['xgemail']['beta_delivery_message_bouncer_common_dir'] = "#{XGEMAIL_SQS_MESSAGE_BOUNCER_DIR}/common"
 default['xgemail']['beta_delivery_bounce_message_processor_user'] = 'bouncer'
 
+## Mfr Internet delivery DSN/NDR settings
+XGEMAIL_SQS_MESSAGE_BOUNCER_DIR ="#{XGEMAIL_FILES_DIR}/message-bouncer"
+default['xgemail']['mfr_internet_delivery_message_bouncer_processor_dir'] = XGEMAIL_SQS_MESSAGE_BOUNCER_DIR
+default['xgemail']['mfr_internet_delivery_message_bouncer_common_dir'] = "#{XGEMAIL_SQS_MESSAGE_BOUNCER_DIR}/common"
+default['xgemail']['mfr_internet_delivery_bounce_message_processor_user'] = 'bouncer'
+
 ## Risky delivery DSN/NDR settings
 default['xgemail']['risky_delivery_message_bouncer_processor_dir'] = XGEMAIL_SQS_MESSAGE_BOUNCER_DIR
 default['xgemail']['risky_delivery_message_bouncer_common_dir'] = "#{XGEMAIL_SQS_MESSAGE_BOUNCER_DIR}/common"
@@ -348,6 +354,23 @@ default['xgemail']['postfix_instance_data'] = {
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800 + 5242880),
     :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
     :server_type => 'ENCRYPTION_SUBMIT'
+  },
+  # mfr-customer-submit
+  'mfr-customer-submit' => {
+      :instance_name => 'mcs',
+      :port => 25,
+      :msg_size_limit => SUBMIT_MESSAGE_SIZE_LIMIT_BYTES,
+      :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+      :server_type => 'MFR_CUSTOMER_SUBMIT'
+  },
+  # mfr-internet-delivery
+  'mfr-internet-delivery' => {
+      :instance_name => 'mid',
+      :port => 25,
+      # Give delivery queues extra padding because extra content may be created during processing
+      :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800 + 5242880),
+      :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+      :server_type => 'MFR_INTERNET_DELIVERY'
   },
   # risky-delivery
   'risky-delivery' => {

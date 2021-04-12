@@ -653,7 +653,8 @@ def deliver_messages():
                         #publish from normal delivery instances and skip from  all x delivery and encryption delivery
                         if timestamp_header is not None and NODE_TYPE in ['internet-delivery', 'customer-delivery',
                                                                           'beta-delivery', 'delta-delivery',
-                                                                          'risky-delivery', 'warmup-delivery']:
+                                                                          'risky-delivery', 'warmup-delivery',
+                                                                          'mfr-internet-delivery']:
                             e2e_telemetry_data = E2ETelemetryData(queue_id,
                                                                   MESSAGE_DIRECTION,
                                                                   float(round(time.time() * 1000)) - float(timestamp_header),

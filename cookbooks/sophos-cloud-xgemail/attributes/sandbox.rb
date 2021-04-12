@@ -58,6 +58,14 @@ if ENVIRONMENT == "sandbox"
     default['xgemail']['msg_notifier_queue_url'] = 'http://localstack:4576/queue/sandbox-Xgemail_Notifier_Request'
   end
 
+  if INSTANCE_TYPE == "mfr-customer-submit" || INSTANCE_TYPE == "mfr-internet-delivery"
+    default['ec2']['instance_id'] = ENV['INSTANCE_ID']
+    default['xgemail']['xgemail_bucket_name']    = 'xgemail-mfr-cust-submit'
+    default['xgemail']['xgemail_queue_url']      = 'http://localstack:4576/queue/sandbox-Xgemail_Mfr_Customer_Submit'
+    default['xgemail']['xgemail_sns_sqs_url']    = 'http://localstack:4576/queue/sandbox-Xgemail_Mfr_Internet_Delivery_SNS_Listener'
+    default['xgemail']['msg_notifier_queue_url'] = 'http://localstack:4576/queue/sandbox-Xgemail_Notifier_Request'
+  end
+
   if INSTANCE_TYPE == "jilter-inbound"
     default['xgemail']['xgemail_bucket_name'] = ""
   elsif INSTANCE_TYPE == "jilter-outbound"

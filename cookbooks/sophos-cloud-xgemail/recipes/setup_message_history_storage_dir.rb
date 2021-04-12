@@ -17,7 +17,7 @@ if NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' || NODE_
     NODE_TYPE == 'warmup-delivery' || NODE_TYPE == 'beta-delivery' || NODE_TYPE == 'delta-delivery' ||
     NODE_TYPE == 'xdelivery' || NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-xdelivery' || NODE_TYPE == 'beta-xdelivery' || NODE_TYPE == 'delta-xdelivery'||
-    NODE_TYPE == 'encryption-delivery'
+    NODE_TYPE == 'encryption-delivery' || NODE_TYPE == 'mfr-customer-submit' || NODE_TYPE == 'mfr-internet-delivery'
 
     directory MH_MAIL_INFO_STORAGE_DIR do
       mode '0777'
