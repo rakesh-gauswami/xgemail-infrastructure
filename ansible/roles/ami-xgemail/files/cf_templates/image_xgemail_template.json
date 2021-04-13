@@ -73,6 +73,13 @@
       "Default": "v1"
     },
 
+    "EbsVolumeType": {
+      "Description": "Indicates the EBS volume type.",
+      "Type": "String",
+      "Default": "gp3",
+      "AllowedValues": [ "gp2", "gp3", "standard" ]
+    },
+
     "Environment": {
       "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
       "Type": "String",
@@ -321,7 +328,7 @@
                       "(\n",
                       "    export CHEF_VERSION=12.3\n",
                       "    cd /var/chef\n",
-                      "    /usr/bin/wget -O install.sh https://www.opscode.com/chef/install.sh\n",
+                      "    /usr/bin/wget -O install.sh https://omnitruck.chef.io/install.sh\n",
                       "    /bin/bash ./install.sh -v ${CHEF_VERSION}\n",
                       ")\n",
 
@@ -342,8 +349,7 @@
                       "touch /var/log/sophos/chef-reset_chef.log\n",
                       "touch /var/log/sophos/reset_cookbooks.output\n",
                       "mkdir -p /etc/chef/ohai/hints\n",
-                      "touch /etc/chef/ohai/hints/ec2.json\n",
-
+                      "touch /etc/chef/ohai/hints/ec2.json\n"
                     ]
                   ]
                 },
@@ -571,7 +577,6 @@
                       "recipe[sophos-cloud-xgemail::install_monit_service],",
                       "recipe[sophos-cloud-xgemail::download_libspf2],",
                       "recipe[sophos-cloud-xgemail::ami]",
-
                       "\""
                     ]
                   ]
@@ -600,9 +605,9 @@
 
       "Properties": {
         "BlockDeviceMappings": [
-          { "DeviceName": "/dev/xvdf", "Ebs": { "DeleteOnTermination": "true", "VolumeSize": { "Ref": "BlockDeviceMappingsXvdf" } } },
-          { "DeviceName": "/dev/xvdg", "Ebs": { "DeleteOnTermination": "true", "VolumeSize": { "Ref": "BlockDeviceMappingsXvdg" } } },
-          { "DeviceName": "/dev/xvdh", "Ebs": { "DeleteOnTermination": "true", "VolumeSize": { "Ref": "BlockDeviceMappingsXvdh" } } }
+          { "DeviceName": "/dev/xvdf", "Ebs": { "DeleteOnTermination": "true", "VolumeType": { "Ref": "EbsVolumeType" }, "VolumeSize": { "Ref": "BlockDeviceMappingsXvdf" } } },
+          { "DeviceName": "/dev/xvdg", "Ebs": { "DeleteOnTermination": "true", "VolumeType": { "Ref": "EbsVolumeType" }, "VolumeSize": { "Ref": "BlockDeviceMappingsXvdg" } } },
+          { "DeviceName": "/dev/xvdh", "Ebs": { "DeleteOnTermination": "true", "VolumeType": { "Ref": "EbsVolumeType" }, "VolumeSize": { "Ref": "BlockDeviceMappingsXvdh" } } }
         ],
         "IamInstanceProfile": { "Ref": "IamProfile" },
         "ImageId": { "Ref": "ImageId" },
@@ -723,8 +728,23 @@
                 "yum update -y -t aws-amitools-ec2\n",
                 "yum update -y -t aws-cfn-bootstrap\n",
 
+                "# Installing iptables startup scripts to use in multi-ip assignment with NAT rules\n",
+                "yum install -y -t iptables-services\n",
+
                 "# Install awslogs for mirroring log files to AWS CloudWatch.\n",
                 "yum install -y -t awslogs\n",
+
+                "# Install pip for amzn2.\n",
+                "yum install -y -t python-pip\n",
+
+                "# Install nc for amzn2.\n",
+                "yum install -y -t nc\n",
+
+                "# Install epel for amzn2.\n",
+                "amazon-linux-extras install epel -y\n",
+                "yum-config-manager --enable epel\n",
+
+                "# Install boto3 version.\n",
                 "pip install boto3==1.14.63\n",
 
                 "# Read metadata and configure system accordingly.\n",
@@ -736,6 +756,9 @@
                 " --configsets svcapi_install",
                 " -v",
                 "\n",
+
+                "# Install specific python-daemon module for cfn-hup to work\n",
+                "pip install \"python-daemon>=1.5.2,<2.0\"\n",
 
                 "# Now the onexit function will get called.\n"
               ]

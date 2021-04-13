@@ -584,9 +584,9 @@ def update_msghistory_event_and_get_message_context(msghistory_events, s3_file_p
         messagehistory.update_msghistory_event(msghistory_events, s3_file_path, policy_metadata, direction, recipients, sender)
         mailbox = None
         if direction == INBOUND_MESSAGE_DIRECTION:
-            mailbox = recipients[0]
+            mailbox = recipients[0].lower()
         else:
-            mailbox = sender
+            mailbox = sender.lower()
         if (mailbox in msghistory_events and
             'mail_info' in msghistory_events[mailbox]):
             mail_info = msghistory_events[mailbox]['mail_info']

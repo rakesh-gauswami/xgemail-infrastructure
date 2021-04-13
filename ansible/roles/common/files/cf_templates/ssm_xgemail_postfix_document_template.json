@@ -223,7 +223,7 @@
         "Content": {
           "schemaVersion": "0.3",
           "assumeRole": { "Fn::GetAtt": [ "PostfixAutomationRole", "Arn" ] },
-          "description": "Blocked Sender address in all internet-submit Postfix instances.",
+          "description": "Blocked Sender address in all customer-submit Postfix instances.",
           "parameters": {
             "Action": {
               "type": "String",
@@ -256,7 +256,7 @@
             },
             "SenderAddress": {
               "type": "String",
-              "description": "The sender address to block in Postfix config."
+              "description": "The customer sender address to block in Postfix config."
             }
           },
           "mainSteps": [

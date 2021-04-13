@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: configure-customer-submit-queue
 #
-# Copyright 2017, Sophos
+# Copyright 2021, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -64,7 +64,8 @@ SXL_RBL_RESPONSE_CODES_A = "127.0.4.[1;5;6;8;13;14;18;21]"
 
 GLOBAL_SIGN_DIR = "#{LOCAL_CERT_PATH}/3rdparty/global-sign"
 GLOBAL_SIGN_INTERMEDIARY = "#{GLOBAL_SIGN_DIR}/global-sign-sha256-intermediary.crt"
-GLOBAL_SIGN_ROOT = "#{GLOBAL_SIGN_DIR}/global-sign-root.crt"
+GLOBAL_SIGN_CROSSCERT = "#{LOCAL_CERT_PATH}/globalsign-cross-certificate.crt"
+GLOBAL_SIGN_ROOT = "#{LOCAL_CERT_PATH}/globalsign-rsa-ca.crt"
 
 HOP_COUNT_SUBMIT_INSTANCE = node['xgemail']['hop_count_submit_instance']
 
@@ -74,6 +75,20 @@ if ACCOUNT != 'sandbox'
   # GLOBAL_SIGN_INTERMEDIARY is removed from CREATE_SERVER_PEM_COMMAND below.
   remote_file "/etc/ssl/certs/#{CERT_NAME}.crt" do
     source "file:///tmp/sophos/certificates/api-mcs-mob-prod.crt"
+    owner 'root'
+    group 'root'
+    mode 0444
+  end
+
+  remote_file "/etc/ssl/certs/globalsign-cross-certificate.crt" do
+    source "file:///tmp/sophos/certificates/globalsign-cross-certificate.crt"
+    owner 'root'
+    group 'root'
+    mode 0444
+  end
+
+  remote_file "/etc/ssl/certs/globalsign-rsa-ca.crt" do
+    source "file:///tmp/sophos/certificates/globalsign-rsa-ca.crt"
     owner 'root'
     group 'root'
     mode 0444
@@ -91,6 +106,7 @@ end
 
 CREATE_SERVER_PEM_COMMAND = 'cat ' +
   "'#{CERT_FILE}' " +
+  "'#{GLOBAL_SIGN_CROSSCERT}' " +
   "'#{GLOBAL_SIGN_ROOT}' " +
   "> '#{SERVER_PEM_FILE}'"
 
