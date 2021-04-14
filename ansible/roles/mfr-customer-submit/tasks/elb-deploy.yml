@@ -15,7 +15,7 @@
       HealthCheckUnhealthyThreshold:  "10"
       HostAlarmTopicARN:              "{{sns.arn_prefix}}{{sns.alarm_sns_topic}}"
       LoadBalancerName:               "{{ec2.elb.mcs}}"
-      SecurityGroupLb:                "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.XgemailCustomerSubmitSecurityGroupLb}}"
+      SecurityGroupLb:                "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.XgemailMfrCustomerSubmitSecurityGroupLb}}"
       Subnets:                        "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.VpcZoneIdentifiersPublic}}"
       TagApplication:                 "mfr-customer-submit"
       Vpc:                            "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.Vpc}}"
