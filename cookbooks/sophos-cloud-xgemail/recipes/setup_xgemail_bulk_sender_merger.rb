@@ -20,7 +20,7 @@ require 'json'
 NODE_TYPE = node['xgemail']['cluster_type']
 
 # Only continue when it's customer-submit
-if NODE_TYPE != 'customer-submit'
+if NODE_TYPE != 'customer-submit' && NODE_TYPE != 'mfr-customer-submit'
     return
 end
 

@@ -92,6 +92,14 @@ aws:
     ix:
       asg_min_size:                             [1,1,1]
       instance_size:                            "c5.large"
+    mcs:
+      alarm_scaling_enabled:                    "false"
+      as_min_size:                              "1"
+      as_max_size:                              "3"
+      as_min_service:                           "1"
+      as_max_batch_size:                        "1"
+      instance_size:                            "t2.small"
+      policy_target_value:                      "90"
     rd:
       as_min_size:                              "3"
       as_max_size:                              "12"

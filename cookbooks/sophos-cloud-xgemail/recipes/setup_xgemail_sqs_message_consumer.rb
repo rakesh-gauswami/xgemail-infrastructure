@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: setup_xgemail_sqs_message_consumer
 #
-# Copyright 2016, Sophos
+# Copyright 2021, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -43,7 +43,7 @@ MH_MAIL_INFO_STORAGE_DIR                = node['xgemail']['mh_mail_info_storage_
 DELIVERY_JILTER_ENABLED_FILE_PATH       = XGEMAIL_FILES_DIR + '/config/delivery.jilter.enabled'
 MSG_HISTORY_V2_BUCKET                   = node['xgemail']['msg_history_v2_bucket_name']
 
-if NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'mfr-customer-delivery'
+if NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'mfr-customer-delivery' ||  NODE_TYPE == 'mfr-internet-delivery'
   #m5a.large 2vCPU / 8 GB.
   DEFAULT_NUMBER_OF_CONSUMER_THREADS = 5
 else
@@ -79,7 +79,7 @@ elsif NODE_TYPE == 'internet-delivery' or NODE_TYPE == 'internet-xdelivery' or
        NODE_TYPE == 'risky-xdelivery' or NODE_TYPE == 'warmup-delivery' or
        NODE_TYPE == 'warmup-xdelivery' or NODE_TYPE == 'beta-delivery' or
        NODE_TYPE == 'beta-xdelivery' or NODE_TYPE == 'delta-delivery' or
-       NODE_TYPE == 'delta-xdelivery'
+       NODE_TYPE == 'delta-xdelivery' or NODE_TYPE == 'mfr-internet-delivery'
   MESSAGE_DIRECTION = 'OUTBOUND'
 else
   raise "Unsupported node type to setup sqsmsgproducer [#{NODE_TYPE}]"

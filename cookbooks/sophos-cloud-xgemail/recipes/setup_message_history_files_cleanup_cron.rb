@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: setup_message_history_files_cleanup_cron
 #
-# Copyright 2020, Sophos
+# Copyright 2021, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -26,7 +26,7 @@ if NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' || NODE_
     NODE_TYPE == 'warmup-delivery' || NODE_TYPE == 'beta-delivery' || NODE_TYPE == 'delta-delivery' ||
     NODE_TYPE == 'xdelivery' || NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-xdelivery' || NODE_TYPE == 'beta-xdelivery' || NODE_TYPE == 'delta-xdelivery'||
-    NODE_TYPE == 'encryption-delivery' || NODE_TYPE == 'mfr-customer-delivery'
+    NODE_TYPE == 'encryption-delivery' || NODE_TYPE == 'mfr-customer-delivery' || NODE_TYPE == 'mfr-internet-delivery'
     # this is a housekeeping job only. the files in the dir will be deleted by the delivery event processor within minutes.
     # cron job deletes files older than 6 days;  based on default maximal_queue_lifetime postfix conf of 5 days
     cron "#{INSTANCE_NAME}-mh-cleanup-cron" do

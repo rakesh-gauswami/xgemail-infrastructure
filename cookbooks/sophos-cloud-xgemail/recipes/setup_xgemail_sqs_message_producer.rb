@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: setup_xgemail_sqs_message_producer
 #
-# Copyright 2018, Sophos
+# Copyright 2021, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -59,6 +59,7 @@ SUBMIT = 'submit'
 INTERNET_SUBMIT = 'internet-submit'
 MFR_INTERNET_SUBMIT = 'mfr-internet-submit'
 CUSTOMER_SUBMIT = 'customer-submit'
+MFR_CUSTOMER_SUBMIT = 'mfr-customer-submit'
 
 # Configs use by sqsmsgproducer
 if NODE_TYPE == INTERNET_SUBMIT
@@ -67,6 +68,8 @@ elsif NODE_TYPE == CUSTOMER_SUBMIT
   XGEMAIL_SUBMIT_TYPE                   = 'CUSTOMER'
 elsif NODE_TYPE == MFR_INTERNET_SUBMIT
   XGEMAIL_SUBMIT_TYPE                   = 'MFR_INTERNET'
+elsif NODE_TYPE == MFR_CUSTOMER_SUBMIT
+  XGEMAIL_SUBMIT_TYPE                   = 'MFR_CUSTOMER'
 else
   raise "Unsupported node type to setup sqsmsgproducer [#{NODE_TYPE}]"
 end
@@ -142,7 +145,7 @@ if NODE_TYPE == INTERNET_SUBMIT || NODE_TYPE == MFR_INTERNET_SUBMIT
     execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
   end
 
-elsif NODE_TYPE == CUSTOMER_SUBMIT
+elsif NODE_TYPE == CUSTOMER_SUBMIT || NODE_TYPE == MFR_CUSTOMER_SUBMIT
   #update master.cf with content filter setting
   [
       # Configure assigned SMTPD port

@@ -1,7 +1,7 @@
 """
 Description here.
 
-Copyright 2020, Sophos Limited. All rights reserved.
+Copyright 2021, Sophos Limited. All rights reserved.
 
 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
 Sophos Limited and Sophos Group.  All other product and company
@@ -172,6 +172,7 @@ def get_instances_by_name():
                 'Name': 'tag:Name',
                 'Values': [
                     'CloudEmail:internet-delivery:*',
+                    'CloudEmail:mfr-internet-delivery:*',
                     'CloudEmail:internet-xdelivery:*',
                     'CloudEmail:risky-delivery:*',
                     'CloudEmail:risky-xdelivery:*',

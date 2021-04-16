@@ -98,7 +98,7 @@ if ACCOUNT == 'sandbox'
         execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
       end
   else
-    if NODE_TYPE == 'customer-submit'
+    if NODE_TYPE == 'customer-submit' || NODE_TYPE == 'mfr-customer-submit'
       [
           'smtpd_milters = inet:jilter-outbound:9876',
           'milter_connect_macros = {client_addr}, {j}',
