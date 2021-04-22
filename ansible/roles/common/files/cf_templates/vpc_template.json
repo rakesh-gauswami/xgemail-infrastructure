@@ -298,6 +298,77 @@
             }
         },
 
+        "NatC" : {
+            "Type" : "AWS::EC2::NatGateway",
+            "Condition": "IsProduction",
+            "Properties" : {
+                "AllocationId" : { "Fn::GetAtt" : ["NatEipC", "AllocationId"]},
+                "SubnetId" : { "Ref" : "PublicSubnetC"},
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/NatC" ] ] }
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": "cloudemail"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com"
+                    }
+                ]
+            }
+        },
+
+        "NatEipC" : {
+            "Type" : "AWS::EC2::EIP",
+            "Condition": "IsProduction",
+            "Properties" : {
+                "Domain" : "vpc",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/NatEipC" ] ] }
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": "cloudemail"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com"
+                    }
+                ]
+            }
+        },
+
+        "NatRouteC" : {
+            "Type" : "AWS::EC2::Route",
+            "Condition": "IsProduction",
+            "Properties" : {
+                "RouteTableId" : { "Ref" : "RouteTablePrivateC" },
+                "DestinationCidrBlock" : "0.0.0.0/0",
+                "NatGatewayId" : { "Ref" : "NatC" }
+            }
+        },
+
         "PrivateSubnetDefaultA": {
             "Properties": {
                 "AvailabilityZone": { "Fn::Select" : [ "0", { "Ref" : "AZs"} ] },
@@ -724,6 +795,38 @@
             "Type": "AWS::EC2::RouteTable"
         },
 
+        "RouteTablePrivateC": {
+            "Condition": "IsProduction",
+            "Properties": {
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/rtb/private/c" ] ] }
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": "cloudemail"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "Vpc"
+                }
+            },
+            "Type": "AWS::EC2::RouteTable"
+        },
+
         "RouteTablePublic": {
             "Properties": {
                 "Tags": [
@@ -762,7 +865,7 @@
                     { "Ref" : "RouteTablePrivateA" },
                     { "Fn::If" : [
                         "IsProduction",
-                        { "Ref" : "RouteTablePrivateB" },
+                        [{ "Ref" : "RouteTablePrivateB" },{ "Ref" : "RouteTablePrivateC" }],
                         { "Ref" : "AWS::NoValue" }
                     ]},
                     { "Ref" : "RouteTablePublic" } ],
@@ -779,7 +882,7 @@
                     { "Ref" : "RouteTablePrivateA" },
                     { "Fn::If" : [
                         "IsProduction",
-                        { "Ref" : "RouteTablePrivateB" },
+                        [{ "Ref" : "RouteTablePrivateB" },{ "Ref" : "RouteTablePrivateC" }],
                         { "Ref" : "AWS::NoValue" }
                     ]}
                 ],
@@ -867,6 +970,15 @@
                 ]
             }
         },
+        "NatEipB": {
+            "Description": "NatEIP",
+            "Value": {
+                "Fn::If" : [ "IsProduction",
+                    { "Ref" : "NatEipC" },
+                    { "Ref" : "NatEipA" }
+                ]
+            }
+        },
         "PrivateSubnetDefaultA": {
             "Description": "PrivateSubnetDefaultA",
             "Value": {
@@ -926,6 +1038,13 @@
             "Condition": "IsProduction",
             "Value": {
                 "Ref": "RouteTablePrivateB"
+            }
+        },
+        "RouteTablePrivateC": {
+            "Description": "RouteTablePrivateC",
+            "Condition": "IsProduction",
+            "Value": {
+                "Ref": "RouteTablePrivateC"
             }
         },
         "RouteTablePublic": {
