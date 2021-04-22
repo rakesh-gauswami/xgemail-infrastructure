@@ -66,11 +66,6 @@
     },
 
     "Conditions": {
-        "IsProduction" : { "Fn::Or": [
-                { "Fn::Equals": [{ "Ref": "Environment" }, "prod" ]},
-                { "Fn::Equals": [{ "Ref": "Environment" }, "qa" ]} ,
-                { "Fn::Equals": [{ "Ref": "Environment" }, "dev5" ]}
-        ]},
         "NotEuCentral1" : { "Fn::Not" : [{ "Fn::Equals" : [{ "Ref" : "AWS::Region" }, "eu-central-1" ]} ] }
     },
 
@@ -229,7 +224,6 @@
 
         "NatB" : {
             "Type" : "AWS::EC2::NatGateway",
-            "Condition": "IsProduction",
             "Properties" : {
                 "AllocationId" : { "Fn::GetAtt" : ["NatEipB", "AllocationId"]},
                 "SubnetId" : { "Ref" : "PublicSubnetB"},
@@ -260,7 +254,6 @@
 
         "NatEipB" : {
             "Type" : "AWS::EC2::EIP",
-            "Condition": "IsProduction",
             "Properties" : {
                 "Domain" : "vpc",
                 "Tags": [
@@ -290,7 +283,6 @@
 
         "NatRouteB" : {
             "Type" : "AWS::EC2::Route",
-            "Condition": "IsProduction",
             "Properties" : {
                 "RouteTableId" : { "Ref" : "RouteTablePrivateB" },
                 "DestinationCidrBlock" : "0.0.0.0/0",
@@ -300,7 +292,6 @@
 
         "NatC" : {
             "Type" : "AWS::EC2::NatGateway",
-            "Condition": "IsProduction",
             "Properties" : {
                 "AllocationId" : { "Fn::GetAtt" : ["NatEipC", "AllocationId"]},
                 "SubnetId" : { "Ref" : "PublicSubnetC"},
@@ -331,7 +322,6 @@
 
         "NatEipC" : {
             "Type" : "AWS::EC2::EIP",
-            "Condition": "IsProduction",
             "Properties" : {
                 "Domain" : "vpc",
                 "Tags": [
@@ -361,7 +351,6 @@
 
         "NatRouteC" : {
             "Type" : "AWS::EC2::Route",
-            "Condition": "IsProduction",
             "Properties" : {
                 "RouteTableId" : { "Ref" : "RouteTablePrivateC" },
                 "DestinationCidrBlock" : "0.0.0.0/0",
@@ -407,7 +396,6 @@
         },
 
         "PrivateSubnetDefaultARoute": {
-            "DependsOn": "NatA",
             "Properties": {
                 "RouteTableId": {
                     "Ref" : "RouteTablePrivateA"
@@ -457,13 +445,10 @@
         },
 
         "PrivateSubnetDefaultBRoute": {
-            "DependsOn": "NatA",
             "Properties": {
-                "RouteTableId": { "Fn::If" : [
-                    "IsProduction",
-                    { "Ref" : "RouteTablePrivateB" },
-                    { "Ref" : "RouteTablePrivateA" }
-                ]},
+                "RouteTableId": {
+                    "Ref" : "RouteTablePrivateB"
+                },
                 "SubnetId": {
                     "Ref": "PrivateSubnetDefaultB"
                 }
@@ -511,7 +496,6 @@
 
         "PrivateSubnetDefaultCRoute": {
             "Condition": "NotEuCentral1",
-            "DependsOn": "NatA",
             "Properties": {
                 "RouteTableId": {
                     "Ref" : "RouteTablePrivateA"
@@ -764,7 +748,6 @@
         },
 
         "RouteTablePrivateB": {
-            "Condition": "IsProduction",
             "Properties": {
                 "Tags": [
                     {
@@ -796,7 +779,6 @@
         },
 
         "RouteTablePrivateC": {
-            "Condition": "IsProduction",
             "Properties": {
                 "Tags": [
                     {
@@ -859,16 +841,13 @@
         },
 
         "S3Endpoint" : {
-            "DependsOn": "NatA",
             "Properties" : {
                 "RouteTableIds" : [
                     { "Ref" : "RouteTablePrivateA" },
-                    { "Fn::If" : [
-                        "IsProduction",
-                        [{ "Ref" : "RouteTablePrivateB" },{ "Ref" : "RouteTablePrivateC" }],
-                        { "Ref" : "AWS::NoValue" }
-                    ]},
-                    { "Ref" : "RouteTablePublic" } ],
+                    { "Ref" : "RouteTablePrivateB" },
+                    { "Ref" : "RouteTablePrivateC" },
+                    { "Ref" : "RouteTablePublic" }
+                ],
                 "ServiceName" : { "Fn::Join": [ "", [ "com.amazonaws.", { "Ref": "AWS::Region" }, ".s3" ] ] },
                 "VpcId" : {"Ref" : "Vpc"}
             },
@@ -876,15 +855,11 @@
         },
 
         "DynamoDbEndpoint" : {
-            "DependsOn": "NatA",
             "Properties" : {
                 "RouteTableIds" : [
                     { "Ref" : "RouteTablePrivateA" },
-                    { "Fn::If" : [
-                        "IsProduction",
-                        [{ "Ref" : "RouteTablePrivateB" },{ "Ref" : "RouteTablePrivateC" }],
-                        { "Ref" : "AWS::NoValue" }
-                    ]}
+                    { "Ref" : "RouteTablePrivateB" },
+                    { "Ref" : "RouteTablePrivateC" }
                 ],
                 "ServiceName" : { "Fn::Join": [ "", [ "com.amazonaws.", { "Ref": "AWS::Region" }, ".dynamodb" ] ] },
                 "VpcId" : {"Ref" : "Vpc"}
@@ -964,19 +939,13 @@
         "NatEipB": {
             "Description": "NatEIP",
             "Value": {
-                "Fn::If" : [ "IsProduction",
-                    { "Ref" : "NatEipB" },
-                    { "Ref" : "NatEipA" }
-                ]
+                "Ref" : "NatEipB"
             }
         },
-        "NatEipB": {
+        "NatEipC": {
             "Description": "NatEIP",
             "Value": {
-                "Fn::If" : [ "IsProduction",
-                    { "Ref" : "NatEipC" },
-                    { "Ref" : "NatEipA" }
-                ]
+                "Ref" : "NatEipC"
             }
         },
         "PrivateSubnetDefaultA": {
@@ -1035,14 +1004,12 @@
         },
         "RouteTablePrivateB": {
             "Description": "RouteTablePrivateB",
-            "Condition": "IsProduction",
             "Value": {
                 "Ref": "RouteTablePrivateB"
             }
         },
         "RouteTablePrivateC": {
             "Description": "RouteTablePrivateC",
-            "Condition": "IsProduction",
             "Value": {
                 "Ref": "RouteTablePrivateC"
             }
