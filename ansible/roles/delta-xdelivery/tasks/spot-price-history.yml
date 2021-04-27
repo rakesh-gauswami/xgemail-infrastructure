@@ -17,7 +17,7 @@
 
 - name: Set Spot Price
   set_fact:
-    spot_price: "0.12"
+    spot_price: "{{spot_price |int+ 0.05}}"
 
 - debug:
     var: spot_price
