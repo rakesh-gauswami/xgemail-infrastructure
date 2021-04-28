@@ -9,7 +9,7 @@ names mentioned are trademarks or registered trademarks of their
 respective owners.
 """
 
-from __future__ import print_function
+
 
 import boto3
 import logging
