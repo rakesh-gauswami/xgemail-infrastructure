@@ -458,8 +458,6 @@
         },
 
         "PrivateSubnetDefaultC": {
-            "Condition": "NotEuCentral1",
-            "DependsOn": "NatA",
             "Properties": {
                 "AvailabilityZone": { "Fn::Select" : [ "2", { "Ref" : "AZs"} ] },
                 "CidrBlock": { "Fn::Select" : [ "2", { "Fn::FindInMap" : [ "RegionMap", { "Ref": "AWS::Region" }, "PrivateSubnetCidrBlocks" ] } ] },
@@ -647,7 +645,6 @@
         },
 
         "PublicSubnetCRoute": {
-            "Condition": "NotEuCentral1",
             "Properties": {
                 "RouteTableId": {
                     "Ref": "RouteTablePublic"

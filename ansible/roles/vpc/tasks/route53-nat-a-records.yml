@@ -31,19 +31,18 @@
     msg: "{{route53_nat_a_stack_output.stack_outputs}}"
     verbosity: 2
 
+---
 - name: "Print NatEipB"
   debug:
     var: cloud_email_vpc_stack.stack_outputs.NatEipB
-  when: account.name == "qa" or account.name == "prod"
 
 - name: "Print NatEipB with dashes"
   debug:
     msg: "{{cloud_email_vpc_stack.stack_outputs.NatEipB | regex_replace('\\.', '-')}}"
-  when: account.name == "qa" or account.name == "prod"
 
-- name: "Deploy {{stack.route53.customer_delivery_a_route53}} to {{account.name}} {{account.region}}"
+- name: "Deploy {{stack.route53.customer_delivery_b_route53}} to {{account.name}} {{account.region}}"
   cloudformation:
-    stack_name:                       "{{stack.route53.customer_delivery_a_route53}}"
+    stack_name:                       "{{stack.route53.customer_delivery_b_route53}}"
     state:                           present
     region:                          "{{account.region}}"
     disable_rollback:                true
@@ -55,32 +54,28 @@
       ResourceRecords:               "{{cloud_email_vpc_stack.stack_outputs.NatEipA}}"
       ServiceName:                   "outbound-{{cloud_email_vpc_stack.stack_outputs.NatEipA | regex_replace('\\.', '-')}}"
   register: route53_nat_a_stack_output
-  when: account.name == "qa" or account.name == "prod"
 
 - debug:
     var: route53_nat_a_stack_output
     verbosity: 3
-  when: account.name == "qa" or account.name == "prod"
 
 - name: "Display Route53 NAT A Stack Output"
   debug:
     msg: "{{route53_nat_a_stack_output.stack_outputs}}"
     verbosity: 2
-  when: account.name == "qa" or account.name == "prod"
 
+---
 - name: "Print NatEipC"
   debug:
     var: cloud_email_vpc_stack.stack_outputs.NatEipC
-  when: account.name == "qa" or account.name == "prod"
 
 - name: "Print NatEipC with dashes"
   debug:
     msg: "{{cloud_email_vpc_stack.stack_outputs.NatEipC | regex_replace('\\.', '-')}}"
-  when: account.name == "qa" or account.name == "prod"
 
-- name: "Deploy {{stack.route53.customer_delivery_a_route53}} to {{account.name}} {{account.region}}"
+- name: "Deploy {{stack.route53.customer_delivery_c_route53}} to {{account.name}} {{account.region}}"
   cloudformation:
-    stack_name:                       "{{stack.route53.customer_delivery_a_route53}}"
+    stack_name:                       "{{stack.route53.customer_delivery_c_route53}}"
     state:                           present
     region:                          "{{account.region}}"
     disable_rollback:                true
@@ -92,15 +87,12 @@
       ResourceRecords:               "{{cloud_email_vpc_stack.stack_outputs.NatEipC}}"
       ServiceName:                   "outbound-{{cloud_email_vpc_stack.stack_outputs.NatEipC | regex_replace('\\.', '-')}}"
   register: route53_nat_c_stack_output
-  when: account.name == "qa" or account.name == "prod"
 
 - debug:
     var: route53_nat_c_stack_output
     verbosity: 3
-  when: account.name == "qa" or account.name == "prod"
 
 - name: "Display Route53 NAT C Stack Output"
   debug:
     msg: "{{route53_nat_c_stack_output.stack_outputs}}"
     verbosity: 2
-  when: account.name == "qa" or account.name == "prod"
