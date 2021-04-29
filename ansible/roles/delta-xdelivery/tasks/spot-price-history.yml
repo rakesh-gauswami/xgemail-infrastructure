@@ -22,7 +22,7 @@
 
 - name: Set Spot Price
   set_fact:
-    spot_price: "{{ ec2_spot_pricing_value }}"
+    spot_price: "{{ ec2_spot_pricing_value.msg }}"
 
 - debug:
     var: spot_price
