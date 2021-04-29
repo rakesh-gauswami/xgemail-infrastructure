@@ -14,10 +14,15 @@
   debug:
     msg: "{{ ec2_spot_pricing_output.ec2_spot_pricing_history|map(attribute='spot_price')|list|max+0.05 }}"
     verbosity: 2
+  register: ec2_spot_pricing_value
+
+- debug:
+    var: ec2_spot_pricing_value
+    verbosity: 3
 
 - name: Set Spot Price
   set_fact:
-    spot_price: msg
+    spot_price: "{{ ec2_spot_pricing_value }}"
 
 - debug:
     var: spot_price
