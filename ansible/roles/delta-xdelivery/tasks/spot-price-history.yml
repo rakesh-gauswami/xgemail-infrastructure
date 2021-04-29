@@ -12,12 +12,12 @@
 
 - name: "Display Spot Instance Prices"
   debug:
-    msg: "{{ ec2_spot_pricing_output.ec2_spot_pricing_history|map(attribute='spot_price')|list|max+0.005 }}"
+    msg: "{{ ec2_spot_pricing_output.ec2_spot_pricing_history|map(attribute='spot_price')|list|max+0.20 }}"
     verbosity: 2
 
 - name: Set Spot Price
   set_fact:
-    spot_price: "0.15"
+    spot_price: "{{ ec2_spot_pricing_output.ec2_spot_pricing_history|map(attribute='spot_price')|list|max+0.20 }}"
 
 - debug:
     var: spot_price
