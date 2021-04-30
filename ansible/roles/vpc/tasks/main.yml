@@ -15,11 +15,6 @@
   tags:
     - vpc
 
-- name: "Include CloudEmail VPC S3 Buckets Creation Task."
-  include_tasks: s3-buckets.yml
-  tags:
-    - vpc
-
 - name: "Include CloudEmail VPC Security Groups Creation Task."
   include_tasks: security-groups.yml
   tags:
@@ -67,6 +62,11 @@
 
 - name: "Include CloudEmail VPC Lambda Functions Creation Task."
   include_tasks: lambda-functions.yml
+  tags:
+    - vpc
+
+- name: "Include CloudEmail VPC S3 Buckets Creation Task."
+  include_tasks: s3-buckets.yml
   tags:
     - vpc
 
