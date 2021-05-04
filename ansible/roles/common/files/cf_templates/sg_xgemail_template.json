@@ -594,11 +594,11 @@
       }
     },
 
-    "SecurityGroupExternalIpAccessMfrInternetSubmitSmtp": {
+    "SecurityGroupExternalIpAccessMfInboundSubmitSmtp": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Condition": "ClosedToWorld",
       "Properties": {
-        "GroupId": { "Ref": "XgemailMfrInternetSubmitSecurityGroupLb" },
+        "GroupId": { "Ref": "XgemailMfInboundSubmitSecurityGroupLb" },
         "SourceSecurityGroupId": { "Ref": "SecurityGroupExternalIpAccess" },
         "IpProtocol": "tcp",
         "FromPort": "25",
@@ -606,11 +606,11 @@
       }
     },
 
-    "SecurityGroupExternalIpAccessMfrCustomerSubmitSmtp": {
+    "SecurityGroupExternalIpAccessMfOutboundSubmitSmtp": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Condition": "ClosedToWorld",
       "Properties": {
-        "GroupId": { "Ref": "XgemailMfrCustomerSubmitSecurityGroupLb" },
+        "GroupId": { "Ref": "XgemailMfOutboundSubmitSecurityGroupLb" },
         "SourceSecurityGroupId": { "Ref": "SecurityGroupExternalIpAccess" },
         "IpProtocol": "tcp",
         "FromPort": "25",
@@ -618,11 +618,11 @@
       }
     },
 
-    "SecurityGroupExternalIpAccessMfrInternetSubmitSmtpTls": {
+    "SecurityGroupExternalIpAccessMfInboundSubmitSmtpTls": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Condition": "ClosedToWorld",
       "Properties": {
-        "GroupId": { "Ref": "XgemailMfrInternetSubmitSecurityGroupLb" },
+        "GroupId": { "Ref": "XgemailMfInboundSubmitSecurityGroupLb" },
         "SourceSecurityGroupId": { "Ref": "SecurityGroupExternalIpAccess" },
         "IpProtocol": "tcp",
         "FromPort": "587",
@@ -630,11 +630,11 @@
       }
     },
 
-    "SecurityGroupExternalIpAccessMfrCustomerSubmitSmtpTls": {
+    "SecurityGroupExternalIpAccessMfOutboundSubmitSmtpTls": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Condition": "ClosedToWorld",
       "Properties": {
-        "GroupId": { "Ref": "XgemailMfrCustomerSubmitSecurityGroupLb" },
+        "GroupId": { "Ref": "XgemailMfOutboundSubmitSecurityGroupLb" },
         "SourceSecurityGroupId": { "Ref": "SecurityGroupExternalIpAccess" },
         "IpProtocol": "tcp",
         "FromPort": "587",
@@ -943,7 +943,7 @@
       }
     },
 
-    "XgemailMfrInternetSubmitSecurityGroupLb": {
+    "XgemailMfInboundSubmitSecurityGroupLb": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
         "GroupDescription": "Controls access to public facing ELBs.",
@@ -959,7 +959,7 @@
           },
           {
             "Key": "Role",
-            "Value": "svc-xgemail-mfr-internet-submit-elb"
+            "Value": "svc-xgemail-mf-inbound-submit-elb"
 
           },
           {
@@ -979,14 +979,14 @@
                   {
                     "Ref": "AWS::StackName"
                   },
-                  "/sg/xgemail/mfr/internet/submit/elb"
+                  "/sg/xgemail/mf/inbound/submit/elb"
                 ]
               ]
             }
           },
           {
             "Key": "Application",
-            "Value": "mfr-internet-submit"
+            "Value": "mf-inbound-submit"
           },
           {
             "Key": "BusinessUnit",
@@ -1007,12 +1007,12 @@
       }
     },
 
-    "XgemailMfrInternetSubmitSecurityGroupLbIngressWorldSmtp": {
+    "XgemailMfInboundSubmitSecurityGroupLbIngressWorldSmtp": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Condition" : "OpenToWorld",
-      "Description" : "TCP/25 0.0.0.0/0 to mfr-internet-submit",
+      "Description" : "TCP/25 0.0.0.0/0 to mf-inbound-submit",
       "Properties": {
-        "GroupId": { "Ref": "XgemailMfrInternetSubmitSecurityGroupLb" },
+        "GroupId": { "Ref": "XgemailMfInboundSubmitSecurityGroupLb" },
         "CidrIp": "0.0.0.0/0",
         "IpProtocol": "tcp",
         "FromPort": "25",
@@ -1020,12 +1020,12 @@
       }
     },
 
-    "XgemailMfrInternetSubmitSecurityGroupLbIngressWorldSmtpTls": {
+    "XgemailMfInboundSubmitSecurityGroupLbIngressWorldSmtpTls": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Condition" : "OpenToWorld",
-      "Description" : "TCP/587 0.0.0.0/0 to mfr-internet-submit",
+      "Description" : "TCP/587 0.0.0.0/0 to mf-inbound-submit",
       "Properties": {
-        "GroupId": { "Ref": "XgemailMfrInternetSubmitSecurityGroupLb" },
+        "GroupId": { "Ref": "XgemailMfInboundSubmitSecurityGroupLb" },
         "CidrIp": "0.0.0.0/0",
         "IpProtocol": "tcp",
         "FromPort": "587",
@@ -1033,23 +1033,23 @@
       }
     },
 
-    "XgemailMfrInternetSubmitSecurityGroup": {
+    "XgemailMfInboundSubmitSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "GroupDescription": "XGEMAIL MFR Internet Submit security group.",
+        "GroupDescription": "XGEMAIL Mf Internet Submit security group.",
         "Tags": [{
           "Key": "Name",
           "Value": {
             "Fn::Join": [ "", [
               { "Ref": "Environment" }, "-",
               { "Ref": "Branch" }, "-",
-              { "Ref": "AWS::StackName" }, "/sg/xgemail/mfr/internet/submit"
+              { "Ref": "AWS::StackName" }, "/sg/xgemail/mf/inbound/submit"
             ]]
           }
         },
           {
             "Key": "Application",
-            "Value": "mfr-internet-submit"
+            "Value": "mf-inbound-submit"
           },
           {
             "Key": "BusinessUnit",
@@ -1068,13 +1068,13 @@
             "IpProtocol": "tcp",
             "FromPort": "25",
             "ToPort": "25",
-            "SourceSecurityGroupId": { "Ref": "XgemailMfrInternetSubmitSecurityGroupLb" }
+            "SourceSecurityGroupId": { "Ref": "XgemailMfInboundSubmitSecurityGroupLb" }
           },
           {
             "IpProtocol": "tcp",
             "FromPort": "587",
             "ToPort": "587",
-            "SourceSecurityGroupId": { "Ref": "XgemailMfrInternetSubmitSecurityGroupLb" }
+            "SourceSecurityGroupId": { "Ref": "XgemailMfInboundSubmitSecurityGroupLb" }
           }
         ],
         "SecurityGroupEgress": [
@@ -1204,7 +1204,7 @@
       }
     },
 
-    "XgemailMfrCustomerDeliverySecurityGroupLb": {
+    "XgemailMfInboundDeliverySecurityGroupLb": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
         "GroupDescription": "Controls access to public facing ELBs.",
@@ -1220,7 +1220,7 @@
           },
           {
             "Key": "Role",
-            "Value": "svc-xgemail-mfr-customer-delivery-elb"
+            "Value": "svc-xgemail-mf-inbound-delivery-elb"
           },
           {
             "Key": "Name",
@@ -1239,14 +1239,14 @@
                   {
                     "Ref": "AWS::StackName"
                   },
-                  "/sg/xgemail/mfr/customer/delivery/elb"
+                  "/sg/xgemail/mf/inbound/delivery/elb"
                 ]
               ]
             }
           },
           {
             "Key": "Application",
-            "Value": "mfr-customer-delivery"
+            "Value": "mf-inbound-delivery"
           },
           {
             "Key": "BusinessUnit",
@@ -1267,7 +1267,7 @@
       }
     },
 
-    "XgemailMfrCustomerDeliverySecurityGroup": {
+    "XgemailMfInboundDeliverySecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
         "GroupDescription": "Xgemail Submit security group.",
@@ -1277,13 +1277,13 @@
             "Fn::Join": [ "", [
               { "Ref": "Environment" }, "-",
               { "Ref": "Branch" }, "-",
-              { "Ref": "AWS::StackName" }, "/sg/xgemail/mfr/customer/delivery"
+              { "Ref": "AWS::StackName" }, "/sg/xgemail/mf/inbound/delivery"
             ]]
           }
         },
           {
             "Key": "Application",
-            "Value": "mfr-customer-delivery"
+            "Value": "mf-inbound-delivery"
           },
           {
             "Key": "BusinessUnit",
@@ -1302,13 +1302,13 @@
             "IpProtocol": "tcp",
             "FromPort": "25",
             "ToPort": "25",
-            "SourceSecurityGroupId": { "Ref": "XgemailMfrCustomerDeliverySecurityGroupLb" }
+            "SourceSecurityGroupId": { "Ref": "XgemailMfInboundDeliverySecurityGroupLb" }
           },
           {
             "IpProtocol": "tcp",
             "FromPort": "587",
             "ToPort": "587",
-            "SourceSecurityGroupId": { "Ref": "XgemailMfrCustomerDeliverySecurityGroupLb" }
+            "SourceSecurityGroupId": { "Ref": "XgemailMfInboundDeliverySecurityGroupLb" }
           }
         ],
         "SecurityGroupEgress": [
@@ -1969,7 +1969,7 @@
       }
     },
 
-    "XgemailMfrCustomerSubmitSecurityGroupLb": {
+    "XgemailMfOutboundSubmitSecurityGroupLb": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
         "GroupDescription": "Controls access to public facing ELBs.",
@@ -1985,7 +1985,7 @@
           },
           {
             "Key": "Role",
-            "Value": "svc-xgemail-mfr-customer-submit-elb"
+            "Value": "svc-xgemail-mf-outbound-submit-elb"
 
           },
           {
@@ -2005,14 +2005,14 @@
                   {
                     "Ref": "AWS::StackName"
                   },
-                  "/sg/xgemail/mfr/customer/submit/elb"
+                  "/sg/xgemail/mf/outbound/submit/elb"
                 ]
               ]
             }
           },
           {
             "Key": "Application",
-            "Value": "mfr-customer-submit"
+            "Value": "mf-outbound-submit"
           },
           {
             "Key": "BusinessUnit",
@@ -2033,12 +2033,12 @@
       }
     },
 
-    "XgemailMfrCustomerSubmitSecurityGroupLbIngressWorldSmtp": {
+    "XgemailMfOutboundSubmitSecurityGroupLbIngressWorldSmtp": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Condition" : "OpenToWorld",
       "Description" : "TCP/25 0.0.0.0/0 to customer-submit",
       "Properties": {
-        "GroupId": { "Ref": "XgemailMfrCustomerSubmitSecurityGroupLb" },
+        "GroupId": { "Ref": "XgemailMfOutboundSubmitSecurityGroupLb" },
         "CidrIp": "0.0.0.0/0",
         "IpProtocol": "tcp",
         "FromPort": "25",
@@ -2046,12 +2046,12 @@
       }
     },
 
-    "XgemailMfrCustomerSubmitSecurityGroupLbIngressWorldSmtpTls": {
+    "XgemailMfOutboundSubmitSecurityGroupLbIngressWorldSmtpTls": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Condition" : "OpenToWorld",
       "Description" : "TCP/587 0.0.0.0/0 to customer-submit",
       "Properties": {
-        "GroupId": { "Ref": "XgemailMfrCustomerSubmitSecurityGroupLb" },
+        "GroupId": { "Ref": "XgemailMfOutboundSubmitSecurityGroupLb" },
         "CidrIp": "0.0.0.0/0",
         "IpProtocol": "tcp",
         "FromPort": "587",
@@ -2059,7 +2059,7 @@
       }
     },
 
-    "XgemailMfrCustomerSubmitSecurityGroup": {
+    "XgemailMfOutboundSubmitSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
         "GroupDescription": "XGEMAIL Customer Submit security group.",
@@ -2069,13 +2069,13 @@
             "Fn::Join": [ "", [
               { "Ref": "Environment" }, "-",
               { "Ref": "Branch" }, "-",
-              { "Ref": "AWS::StackName" }, "/sg/xgemail/mfr/customer/submit"
+              { "Ref": "AWS::StackName" }, "/sg/xgemail/mf/outbound/submit"
             ]]
           }
         },
           {
             "Key": "Application",
-            "Value": "mfr-customer-submit"
+            "Value": "mf-outbound-submit"
           },
           {
             "Key": "BusinessUnit",
@@ -2094,13 +2094,13 @@
             "IpProtocol": "tcp",
             "FromPort": "25",
             "ToPort": "25",
-            "SourceSecurityGroupId": { "Ref": "XgemailMfrCustomerSubmitSecurityGroupLb" }
+            "SourceSecurityGroupId": { "Ref": "XgemailMfOutboundSubmitSecurityGroupLb" }
           },
           {
             "IpProtocol": "tcp",
             "FromPort": "587",
             "ToPort": "587",
-            "SourceSecurityGroupId": { "Ref": "XgemailMfrCustomerSubmitSecurityGroupLb" }
+            "SourceSecurityGroupId": { "Ref": "XgemailMfOutboundSubmitSecurityGroupLb" }
           }
         ],
         "SecurityGroupEgress": [
@@ -2113,7 +2113,7 @@
       }
     },
 
-    "XgemailMfrInternetDeliverySecurityGroupLb": {
+    "XgemailMfOutboundDeliverySecurityGroupLb": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
         "GroupDescription": "Controls access to public facing ELBs.",
@@ -2129,7 +2129,7 @@
           },
           {
             "Key": "Role",
-            "Value": "svc-xgemail-mfr-internet-delivery-elb"
+            "Value": "svc-xgemail-mf-outbound-delivery-elb"
 
           },
           {
@@ -2149,14 +2149,14 @@
                   {
                     "Ref": "AWS::StackName"
                   },
-                  "/sg/xgemail/mfr/internet/delivery/elb"
+                  "/sg/xgemail/mf/outbound/delivery/elb"
                 ]
               ]
             }
           },
           {
             "Key": "Application",
-            "Value": "mfr-internet-delivery"
+            "Value": "mf-outbound-delivery"
           },
           {
             "Key": "BusinessUnit",
@@ -2177,23 +2177,23 @@
       }
     },
 
-    "XgemailMfrInternetDeliverySecurityGroup": {
+    "XgemailMfOutboundDeliverySecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "GroupDescription": "Xgemail Mfr Internet Delivery security group.",
+        "GroupDescription": "Xgemail Mf Internet Delivery security group.",
         "Tags": [{
           "Key": "Name",
           "Value": {
             "Fn::Join": [ "", [
               { "Ref": "Environment" }, "-",
               { "Ref": "Branch" }, "-",
-              { "Ref": "AWS::StackName" }, "/sg/xgemail/mfr/internet/delivery"
+              { "Ref": "AWS::StackName" }, "/sg/xgemail/mf/outbound/delivery"
             ]]
           }
         },
           {
             "Key": "Application",
-            "Value": "mfr-internet-delivery"
+            "Value": "mf-outbound-delivery"
           },
           {
             "Key": "BusinessUnit",
@@ -2212,13 +2212,13 @@
             "IpProtocol": "tcp",
             "FromPort": "25",
             "ToPort": "25",
-            "SourceSecurityGroupId": { "Ref": "XgemailMfrInternetDeliverySecurityGroupLb" }
+            "SourceSecurityGroupId": { "Ref": "XgemailMfOutboundDeliverySecurityGroupLb" }
           },
           {
             "IpProtocol": "tcp",
             "FromPort": "587",
             "ToPort": "587",
-            "SourceSecurityGroupId": { "Ref": "XgemailMfrInternetDeliverySecurityGroupLb" }
+            "SourceSecurityGroupId": { "Ref": "XgemailMfOutboundDeliverySecurityGroupLb" }
           }
         ],
         "SecurityGroupEgress": [
@@ -3380,10 +3380,10 @@
       }
     },
 
-    "XgemailMfrInternetSubmitSecurityGroupIngressBastionSsh": {
+    "XgemailMfInboundSubmitSecurityGroupIngressBastionSsh": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
-        "GroupId": { "Ref": "XgemailMfrInternetSubmitSecurityGroup" },
+        "GroupId": { "Ref": "XgemailMfInboundSubmitSecurityGroup" },
         "SourceSecurityGroupId": { "Ref": "SecurityGroupBastion" },
         "IpProtocol": "tcp",
         "FromPort": "22",
@@ -3490,10 +3490,10 @@
       }
     },
 
-    "XgemailMfrCustomerSubmitSecurityGroupIngressBastionSsh": {
+    "XgemailMfOutboundSubmitSecurityGroupIngressBastionSsh": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
-        "GroupId": { "Ref": "XgemailMfrCustomerSubmitSecurityGroup" },
+        "GroupId": { "Ref": "XgemailMfOutboundSubmitSecurityGroup" },
         "SourceSecurityGroupId": { "Ref": "SecurityGroupBastion" },
         "IpProtocol": "tcp",
         "FromPort": "22",
@@ -3501,10 +3501,10 @@
       }
     },
 
-    "XgemailMfrInternetDeliverySecurityGroupIngressBastionSsh": {
+    "XgemailMfOutboundDeliverySecurityGroupIngressBastionSsh": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
-        "GroupId": { "Ref": "XgemailMfrInternetDeliverySecurityGroup" },
+        "GroupId": { "Ref": "XgemailMfOutboundDeliverySecurityGroup" },
         "SourceSecurityGroupId": { "Ref": "SecurityGroupBastion" },
         "IpProtocol": "tcp",
         "FromPort": "22",
@@ -3626,13 +3626,13 @@
             "IpProtocol": "tcp",
             "FromPort": "2049",
             "ToPort": "2049",
-            "SourceSecurityGroupId": { "Ref": "XgemailMfrInternetSubmitSecurityGroup" }
+            "SourceSecurityGroupId": { "Ref": "XgemailMfInboundSubmitSecurityGroup" }
           },
           {
             "IpProtocol": "tcp",
             "FromPort": "2049",
             "ToPort": "2049",
-            "SourceSecurityGroupId": { "Ref": "XgemailMfrCustomerSubmitSecurityGroup" }
+            "SourceSecurityGroupId": { "Ref": "XgemailMfOutboundSubmitSecurityGroup" }
           }
         ]
       }
@@ -3744,13 +3744,13 @@
       "Description": "Xgemail Customer Delivery security group",
       "Value": { "Ref": "XgemailCustomerDeliverySecurityGroup" }
     },
-    "XgemailMfrCustomerDeliverySecurityGroupLb": {
-      "Description": "Xgemail MFR Customer Delivery Load Balancer security group",
-      "Value": { "Ref": "XgemailMfrCustomerDeliverySecurityGroupLb" }
+    "XgemailMfInboundDeliverySecurityGroupLb": {
+      "Description": "Xgemail Mf Customer Delivery Load Balancer security group",
+      "Value": { "Ref": "XgemailMfInboundDeliverySecurityGroupLb" }
     },
-    "XgemailMfrCustomerDeliverySecurityGroup": {
-      "Description": "Xgemail MFR Customer Delivery security group",
-      "Value": { "Ref": "XgemailMfrCustomerDeliverySecurityGroup" }
+    "XgemailMfInboundDeliverySecurityGroup": {
+      "Description": "Xgemail Mf Customer Delivery security group",
+      "Value": { "Ref": "XgemailMfInboundDeliverySecurityGroup" }
     },
     "XgemailXdeliverySecurityGroupLb": {
       "Description": "Xgemail Xdelivery Load Balancer security group",
@@ -3832,13 +3832,13 @@
       "Description": "Xgemail Internet Submit security group",
       "Value": { "Ref": "XgemailInternetSubmitSecurityGroup" }
     },
-    "XgemailMfrInternetSubmitSecurityGroupLb": {
-      "Description": "Xgemail Mfr Internet Submit Load Balancer security group",
-      "Value": { "Ref": "XgemailMfrInternetSubmitSecurityGroupLb" }
+    "XgemailMfInboundSubmitSecurityGroupLb": {
+      "Description": "Xgemail Mf Internet Submit Load Balancer security group",
+      "Value": { "Ref": "XgemailMfInboundSubmitSecurityGroupLb" }
     },
-    "XgemailMfrInternetSubmitSecurityGroup": {
-      "Description": "Xgemail Mfr Internet Submit security group",
-      "Value": { "Ref": "XgemailMfrInternetSubmitSecurityGroup" }
+    "XgemailMfInboundSubmitSecurityGroup": {
+      "Description": "Xgemail Mf Internet Submit security group",
+      "Value": { "Ref": "XgemailMfInboundSubmitSecurityGroup" }
     },
     "XgemailEncryptionSubmitSecurityGroupLb": {
       "Description": "Xgemail Encryption Submit Load Balancer security group",
@@ -3848,21 +3848,21 @@
       "Description": "Xgemail Encryption Submit security group",
       "Value": { "Ref": "XgemailEncryptionSubmitSecurityGroup" }
     },
-    "XgemailMfrCustomerSubmitSecurityGroupLb": {
-      "Description": "Xgemail Mfr Customer Submit Load Balancer security group",
-      "Value": { "Ref": "XgemailMfrCustomerSubmitSecurityGroupLb" }
+    "XgemailMfOutboundSubmitSecurityGroupLb": {
+      "Description": "Xgemail Mf Customer Submit Load Balancer security group",
+      "Value": { "Ref": "XgemailMfOutboundSubmitSecurityGroupLb" }
     },
-    "XgemailMfrCustomerSubmitSecurityGroup": {
-      "Description": "Xgemail Mfr Customer Submit security group",
-      "Value": { "Ref": "XgemailMfrCustomerSubmitSecurityGroup" }
+    "XgemailMfOutboundSubmitSecurityGroup": {
+      "Description": "Xgemail Mf Customer Submit security group",
+      "Value": { "Ref": "XgemailMfOutboundSubmitSecurityGroup" }
     },
-    "XgemailMfrInternetDeliverySecurityGroupLb": {
-      "Description": "Xgemail Mfr Internet Delivery Load Balancer security group",
-      "Value": { "Ref": "XgemailMfrInternetDeliverySecurityGroupLb" }
+    "XgemailMfOutboundDeliverySecurityGroupLb": {
+      "Description": "Xgemail Mf Internet Delivery Load Balancer security group",
+      "Value": { "Ref": "XgemailMfOutboundDeliverySecurityGroupLb" }
     },
-    "XgemailMfrInternetDeliverySecurityGroup": {
-      "Description": "Xgemail Mfr Internet Delivery security group",
-      "Value": { "Ref": "XgemailMfrInternetDeliverySecurityGroup" }
+    "XgemailMfOutboundDeliverySecurityGroup": {
+      "Description": "Xgemail Mf Internet Delivery security group",
+      "Value": { "Ref": "XgemailMfOutboundDeliverySecurityGroup" }
     },
     "XgemailPolicyEfsMountTargetSecurityGroup": {
       "Description": "Xgemail EFS mount target security group",

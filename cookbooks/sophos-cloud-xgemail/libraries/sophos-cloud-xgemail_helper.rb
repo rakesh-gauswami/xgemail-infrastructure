@@ -106,17 +106,17 @@ module SophosCloudXgemail
       case type
         when 'internet-submit'
           return "mx-01-#{region}.#{account}.hydra.sophos.com"
-        when 'mfr-internet-submit'
-          return "mfr-01-#{region}.#{account}.hydra.sophos.com"
+        when 'mf-inbound-submit'
+          return "mf-inbound-#{region}.#{account}.hydra.sophos.com"
         when 'customer-submit'
           return "relay-#{region}.#{account}.hydra.sophos.com"
-        when 'mfr-customer-submit'
-          return "mfr-relay-#{region}.#{account}.hydra.sophos.com"
+        when 'mf-outbound-submit'
+          return "mf-outbound-#{region}.#{account}.hydra.sophos.com"
         when 'encryption-delivery'
           return "encryption-#{region}.#{account}.hydra.sophos.com"
         when 'encryption-submit'
           return "encryption-#{region}.#{account}.hydra.sophos.com"
-        when 'internet-delivery', 'internet-xdelivery', 'mfr-internet-delivery', 'risky-delivery', 'risky-xdelivery', 'warmup-delivery', 'warmup-xdelivery', 'beta-delivery', 'beta-xdelivery', 'delta-delivery', 'delta-xdelivery'
+        when 'internet-delivery', 'internet-xdelivery', 'mf-outbound-delivery', 'risky-delivery', 'risky-xdelivery', 'warmup-delivery', 'warmup-xdelivery', 'beta-delivery', 'beta-xdelivery', 'delta-delivery', 'delta-xdelivery'
           if account == 'sandbox'
             # Return docker instance fully qualified domain name
             return node['fqdn']

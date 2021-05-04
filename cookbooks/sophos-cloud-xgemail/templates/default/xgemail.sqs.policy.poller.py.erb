@@ -200,7 +200,7 @@ def receive_sqs_messages(policy_sqs_url, policy_dlq_url):
                     message = json.loads(json.loads(msg['Body'])['Message'])
 
                     #FIXME: Generalize Full sync work in XGE-3821
-                    if NODE_TYPE == 'internet-submit' || NODE_TYPE == 'mfr-internet-submit':
+                    if NODE_TYPE == 'internet-submit' || NODE_TYPE == 'mf-inbound-submit':
                         if 'policy_type' in message and message['policy_type'] == 'SENDER_AUTHENTICATION' and 'policy_event' in message:
                             inbound_config = CONFIG_LIST[0]
                             policy_event = message['policy_event']

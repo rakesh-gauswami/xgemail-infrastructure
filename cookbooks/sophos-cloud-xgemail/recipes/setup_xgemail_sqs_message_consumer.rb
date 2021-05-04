@@ -43,7 +43,7 @@ MH_MAIL_INFO_STORAGE_DIR                = node['xgemail']['mh_mail_info_storage_
 DELIVERY_JILTER_ENABLED_FILE_PATH       = XGEMAIL_FILES_DIR + '/config/delivery.jilter.enabled'
 MSG_HISTORY_V2_BUCKET                   = node['xgemail']['msg_history_v2_bucket_name']
 
-if NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'mfr-customer-delivery' ||  NODE_TYPE == 'mfr-internet-delivery'
+if NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'mf-inbound-delivery' ||  NODE_TYPE == 'mf-outbound-delivery'
   #m5a.large 2vCPU / 8 GB.
   DEFAULT_NUMBER_OF_CONSUMER_THREADS = 5
 else
@@ -72,14 +72,14 @@ SERVICE_USER = node['xgemail']['sqs_message_processor_user']
 
 # TODO : We shouldn't need sqsconsumer on any XDelivery or encryption submit right?
 # Configs use by sqsmsgconsumer
-if NODE_TYPE == 'customer-delivery' or NODE_TYPE == 'mfr-customer-delivery' or NODE_TYPE == 'xdelivery' or NODE_TYPE == 'encryption-submit'
+if NODE_TYPE == 'customer-delivery' or NODE_TYPE == 'mf-inbound-delivery' or NODE_TYPE == 'xdelivery' or NODE_TYPE == 'encryption-submit'
   MESSAGE_DIRECTION = 'INBOUND'
 elsif NODE_TYPE == 'internet-delivery' or NODE_TYPE == 'internet-xdelivery' or
        NODE_TYPE == 'encryption-delivery' or NODE_TYPE == 'risky-delivery' or
        NODE_TYPE == 'risky-xdelivery' or NODE_TYPE == 'warmup-delivery' or
        NODE_TYPE == 'warmup-xdelivery' or NODE_TYPE == 'beta-delivery' or
        NODE_TYPE == 'beta-xdelivery' or NODE_TYPE == 'delta-delivery' or
-       NODE_TYPE == 'delta-xdelivery' or NODE_TYPE == 'mfr-internet-delivery'
+       NODE_TYPE == 'delta-xdelivery' or NODE_TYPE == 'mf-outbound-delivery'
   MESSAGE_DIRECTION = 'OUTBOUND'
 else
   raise "Unsupported node type to setup sqsmsgproducer [#{NODE_TYPE}]"

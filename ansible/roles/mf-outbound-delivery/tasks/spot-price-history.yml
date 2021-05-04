@@ -1,7 +1,7 @@
 ---
-- name: "Get Spot Instance price for {{aws.asg.mcd.instance_size}} in {{account.region}}"
+- name: "Get Spot Instance price for {{aws.asg.mfid.instance_size}} in {{account.region}}"
   ec2_spot_pricing_history_facts:
-    instance_types: ["{{aws.asg.mcd.instance_size}}"]
+    instance_types: ["{{aws.asg.mfid.instance_size}}"]
     region: "{{account.region}}"
     product_descriptions: ["Linux/UNIX (Amazon VPC)"]
   register: ec2_spot_pricing_output

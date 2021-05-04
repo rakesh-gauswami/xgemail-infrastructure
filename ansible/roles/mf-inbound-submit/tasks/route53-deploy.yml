@@ -1,8 +1,8 @@
 ---
 
-- name: "Deploy {{stack.route53.mfr_internet_submit_a_route53}} to {{account.name}} {{account.region}}"
+- name: "Deploy {{stack.route53.mf_inbound_submit_a_route53}} to {{account.name}} {{account.region}}"
   cloudformation:
-    stack_name: "{{stack.route53.mfr_internet_submit_a_route53}}"
+    stack_name: "{{stack.route53.mf_inbound_submit_a_route53}}"
     state: present
     region: "{{account.region}}"
     disable_rollback: true
@@ -12,14 +12,14 @@
       RecordType:                    "ALIAS"
       DnsName:                       "{{elb_stack_output.stack_outputs.LoadBalancerDnsName}}"
       HostedZoneId:                  "{{elb_stack_output.stack_outputs.CanonicalHostedZoneNameID}}"
-      ServiceName:                   "mfr-internet-submit"
-  register: mfr_is_route53_stack_output
+      ServiceName:                   "mf-inbound-submit"
+  register: mf_is_route53_stack_output
 
 - debug:
-    var: mfr_is_route53_stack_output
+    var: mf_is_route53_stack_output
     verbosity: 3
 
-- name: "Display mfr-is Route53 Stack Output"
+- name: "Display mf-is Route53 Stack Output"
   debug:
-    msg: "{{mfr_is_route53_stack_output.stack_outputs}}"
+    msg: "{{mf_is_route53_stack_output.stack_outputs}}"
     verbosity: 2

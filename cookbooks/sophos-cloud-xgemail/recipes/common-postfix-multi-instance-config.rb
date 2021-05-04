@@ -89,7 +89,7 @@ if ACCOUNT == 'sandbox'
 
   # Update postfix to call jilter as external service
   # only for submit instances
-  if NODE_TYPE == 'internet-submit' || NODE_TYPE == 'mfr-internet-submit'
+  if NODE_TYPE == 'internet-submit' || NODE_TYPE == 'mf-inbound-submit'
     [
         'smtpd_milters = inet:jilter-inbound:9876',
         'milter_connect_macros = {client_addr}, {j}',
@@ -98,7 +98,7 @@ if ACCOUNT == 'sandbox'
         execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
       end
   else
-    if NODE_TYPE == 'customer-submit' || NODE_TYPE == 'mfr-customer-submit'
+    if NODE_TYPE == 'customer-submit' || NODE_TYPE == 'mf-outbound-submit'
       [
           'smtpd_milters = inet:jilter-outbound:9876',
           'milter_connect_macros = {client_addr}, {j}',
