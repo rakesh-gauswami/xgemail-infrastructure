@@ -824,13 +824,6 @@ aws:
       template_parameters:
         QueueName:                                                "{{sqs.mf_inbound_delivery_sqs_queue_sns_listener}}"
         TagApplication:                                           "mf-inbound-delivery"
-    mf_inbound_submit_sqs_queue:
-      stack_name:                                                 "{{stack.sqs.mf_inbound_submit_sqs_queue}}"
-      state:                                                      present
-      template:                                                   "{{template.sqs.sqs_simple_template}}"
-      template_parameters:
-        QueueName:                                                "{{sqs.mf_inbound_submit_sqs_queue}}"
-        TagApplication:                                           "mf-inbound-submit"
     mf_quarantine_sqs_queue:
       stack_name:                                                 "{{stack.sqs.mf_quarantine_sqs_queue}}"
       state:                                                      absent
@@ -845,13 +838,6 @@ aws:
       template_parameters:
         QueueName:                                                "{{sqs.mf_quarantine_sqs_queue_sns_listener}}"
         TagApplication:                                           "xgemail-mail"
-    mf_outbound_submit_sqs_queue:
-      stack_name:                                                 "{{stack.sqs.mf_outbound_submit_sqs_queue}}"
-      state:                                                      present
-      template:                                                   "{{template.sqs.sqs_simple_template}}"
-      template_parameters:
-        QueueName:                                                "{{sqs.mf_outbound_submit_sqs_queue}}"
-        TagApplication:                                           "mf-outbound-submit"
     mf_outbound_delivery_sqs_queue_sns_listener:
       stack_name:                                                 "{{stack.sqs.mf_outbound_delivery_sqs_queue_sns_listener}}"
       state: present

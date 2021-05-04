@@ -2,15 +2,15 @@
 
 - name: "Create ASG Stack in AWS"
   cloudformation:
-    stack_name: "{{stack.ec2.asg.mid}}"
+    stack_name: "{{stack.ec2.asg.mfid}}"
     state: present
     region:  "{{account.region}}"
     disable_rollback: no
     template: "{{template.ec2.asg.as_mf_inbound_delivery_template}}"
     template_parameters:
       AesDecryptionKey:                     "{{aes_decryption_key}}"
-      AlarmScaleInEnabled:                  "{{aws.asg.mfid.alarm_scale_in_enabled}}"
-      AlarmScaleOutEnabled:                 "{{aws.asg.mfid.alarm_scale_out_enabled}}"
+      AlarmScaleInEnabled:                  "{{aws.asg.alarm_scale_in_enabled}}"
+      AlarmScaleOutEnabled:                 "{{aws.asg.alarm_scale_out_enabled}}"
       AlarmScaleInThreshold:                "{{aws.asg.mfid.alarm_scale_in_threshold}}"
       AlarmScaleOutThreshold:               "{{aws.asg.mfid.alarm_scale_out_threshold}}"
       AlarmTopicArn:                        "{{sns.arn_prefix}}{{sns.alarm_sns_topic}}"
@@ -42,7 +42,7 @@
       ScheduledAsOnHourDesiredCapacity:     "{{aws.asg.mfid.on_hour_desired}}"
       ScaleInAndOutOnWeekdays:              "{{aws.asg.mfid.scale_in_out_weekdays}}"
       ScaleInOnWeekdaysCron:                "{{aws.asg.mfid.cron_scale_in}}"
-      ScaleOutOnWeekdaysCron:               "{{aws.asg.mid.cron_scale_out}}"
+      ScaleOutOnWeekdaysCron:               "{{aws.asg.mfid.cron_scale_out}}"
       SecurityGroups:                       "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.XgemailMfInboundDeliverySecurityGroup}},{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.SecurityGroupBase}}"
       SpotPrice:                            "{{spot_price}}"
       StationVpcId:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}"
