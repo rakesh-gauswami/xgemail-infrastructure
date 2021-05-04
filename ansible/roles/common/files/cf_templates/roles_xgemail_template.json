@@ -46,10 +46,6 @@
       "Description": "Name of the customer submit bucket",
       "Type": "String"
     },
-    "XgemailMfInboundSubmitBucketName": {
-      "Description": "Name of the mf internet submit bucket",
-      "Type": "String"
-    },
     "XgemailMfQuarantineBucketName": {
       "Description": "Name of the mf quarantine bucket",
       "Type": "String"
@@ -60,10 +56,6 @@
     },
     "DeliveryDirectorBucketName": {
       "Description": "Name of the delivery director bucket",
-      "Type": "String"
-    },
-    "XgemailMfOutboundSubmitBucketName": {
-      "Description": "Name of the customer submit bucket",
       "Type": "String"
     },
     "MsgHistoryV2BucketName": {
@@ -1369,8 +1361,8 @@
                 "s3:ListBucket"
               ],
               "Effect" : "Allow",
-              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailMfInboundSubmitBucketName" }, "/*"]]},
-                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailMfInboundSubmitBucketName" }]]}]
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailInboundSubmitBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailInboundSubmitBucketName" }]]}]
             },
             {
               "Action" : [
@@ -2439,8 +2431,8 @@
               ],
               "Effect": "Allow",
               "Resource": [
-                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailQuarantineBucketName" }, "/*" ] ] },
-                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailQuarantineBucketName" } ] ] }
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailMfQuarantineBucketName" }, "/*" ] ] },
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailMfQuarantineBucketName" } ] ] }
               ]
             },
             {
@@ -2451,8 +2443,8 @@
               ],
               "Effect": "Allow",
               "Resource": [
-                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailMfInboundSubmitBucketName" }, "/*" ] ] },
-                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailMfInboundSubmitBucketName" } ] ] }
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailInboundSubmitBucketName" }, "/*" ] ] },
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailInboundSubmitBucketName" } ] ] }
               ]
             },
             {
@@ -4330,8 +4322,8 @@
               ],
               "Effect": "Allow",
               "Resource": [
-                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailMfOutboundSubmitBucketName" }, "/*" ] ] },
-                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailMfOutboundSubmitBucketName" } ] ] }
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailOutboundSubmitBucketName" }, "/*" ] ] },
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailOutboundSubmitBucketName" } ] ] }
               ]
             },
             {
@@ -4661,8 +4653,8 @@
                 "s3:ListBucket"
               ],
               "Effect" : "Allow",
-              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailMfOutboundSubmitBucketName" }, "/*"]]},
-                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailMfOutboundSubmitBucketName" }]]}]
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailOutboundSubmitBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailOutboundSubmitBucketName" }]]}]
             },
             {
               "Action" : [
@@ -7296,15 +7288,15 @@
       "Value": { "Fn::GetAtt" : [ "XgemailCustomerDeliveryInstanceRole", "Arn" ] }
     },
     "XgemailMfInboundDeliveryInstanceProfile": {
-      "Description": "XGEMAIL Mf Customer Delivery instance profile",
+      "Description": "XGEMAIL Mf Inbound Delivery instance profile",
       "Value": { "Ref": "XgemailMfInboundDeliveryInstanceProfile" }
     },
     "XgemailMfInboundDeliveryInstanceRole": {
-      "Description": "XGEMAIL Mf Customer Delivery instance role",
+      "Description": "XGEMAIL Mf Inbound Delivery instance role",
       "Value": { "Ref": "XgemailMfInboundDeliveryInstanceRole" }
     },
     "XgemailMfInboundDeliveryInstanceRoleArn": {
-      "Description": "XGEMAIL Mf Customer Delivery instance role ARN",
+      "Description": "XGEMAIL Mf Inbound Delivery instance role ARN",
       "Value": { "Fn::GetAtt" : [ "XgemailMfInboundDeliveryInstanceRole", "Arn" ] }
     },
     "XgemailXdeliveryInstanceProfile": {
@@ -7404,15 +7396,15 @@
       "Value": { "Fn::GetAtt" : [ "XgemailInternetSubmitInstanceRole", "Arn" ] }
     },
     "XgemailMfInboundSubmitInstanceProfile": {
-      "Description": "XGEMAIL Mf Internet Submit instance profile",
+      "Description": "XGEMAIL Mf Inbound Submit instance profile",
       "Value": { "Ref": "XgemailMfInboundSubmitInstanceProfile" }
     },
     "XgemailMfInboundSubmitInstanceRole": {
-      "Description": "XGEMAIL Mf Internet Submit instance role",
+      "Description": "XGEMAIL Mf Inbound Submit instance role",
       "Value": { "Ref": "XgemailMfInboundSubmitInstanceRole" }
     },
     "XgemailMfInboundSubmitInstanceRoleArn": {
-      "Description": "XGEMAIL Mf Internet Submit instance role ARN",
+      "Description": "XGEMAIL Mf Inbound Submit instance role ARN",
       "Value": { "Fn::GetAtt" : [ "XgemailMfInboundSubmitInstanceRole", "Arn" ] }
     },
     "XgemailEncryptionSubmitInstanceProfile": {
@@ -7428,27 +7420,27 @@
       "Value": { "Fn::GetAtt" : [ "XgemailEncryptionSubmitInstanceRole", "Arn" ] }
     },
     "XgemailMfOutboundSubmitInstanceProfile": {
-      "Description": "XGEMAIL Customer Submit instance profile",
+      "Description": "XGEMAIL Mf Outbound Submit instance profile",
       "Value": { "Ref": "XgemailMfOutboundSubmitInstanceProfile" }
     },
     "XgemailMfOutboundSubmitInstanceRole": {
-      "Description": "XGEMAIL Customer Submit instance role",
+      "Description": "XGEMAIL Mf Outbound Submit instance role",
       "Value": { "Ref": "XgemailMfOutboundSubmitInstanceRole" }
     },
     "XgemailMfOutboundSubmitInstanceRoleArn": {
-      "Description": "XGEMAIL Customer Submit instance role ARN",
+      "Description": "XGEMAIL Mf Outbound Submit instance role ARN",
       "Value": { "Fn::GetAtt" : [ "XgemailMfOutboundSubmitInstanceRole", "Arn" ] }
     },
     "XgemailMfOutboundDeliveryInstanceProfile": {
-      "Description": "XGEMAIL Mf Internet Delivery instance profile",
+      "Description": "XGEMAIL Mf Outbound Delivery instance profile",
       "Value": { "Ref": "XgemailMfOutboundDeliveryInstanceProfile" }
     },
     "XgemailMfOutboundDeliveryInstanceRole": {
-      "Description": "XGEMAIL Mf Internet Delivery instance role",
+      "Description": "XGEMAIL Mf Outbound Delivery instance role",
       "Value": { "Ref": "XgemailMfOutboundDeliveryInstanceRole" }
     },
     "XgemailMfOutboundDeliveryInstanceRoleArn": {
-      "Description": "XGEMAIL Mf Internet Delivery instance role ARN",
+      "Description": "XGEMAIL Mf Outbound Delivery instance role ARN",
       "Value": { "Fn::GetAtt" : [ "XgemailMfOutboundDeliveryInstanceRole", "Arn" ] }
     },
     "XgemailWarmupDeliveryInstanceProfile": {

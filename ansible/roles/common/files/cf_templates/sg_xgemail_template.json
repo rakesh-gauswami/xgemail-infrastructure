@@ -1036,7 +1036,7 @@
     "XgemailMfInboundSubmitSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "GroupDescription": "XGEMAIL Mf Internet Submit security group.",
+        "GroupDescription": "XGEMAIL Mf Inbound Submit security group.",
         "Tags": [{
           "Key": "Name",
           "Value": {
@@ -1270,7 +1270,7 @@
     "XgemailMfInboundDeliverySecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "GroupDescription": "Xgemail Submit security group.",
+        "GroupDescription": "Xgemail Mf Inbound Delivery security group.",
         "Tags": [{
           "Key": "Name",
           "Value": {
@@ -2036,7 +2036,7 @@
     "XgemailMfOutboundSubmitSecurityGroupLbIngressWorldSmtp": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Condition" : "OpenToWorld",
-      "Description" : "TCP/25 0.0.0.0/0 to customer-submit",
+      "Description" : "TCP/25 0.0.0.0/0 to mf-outbound-submit",
       "Properties": {
         "GroupId": { "Ref": "XgemailMfOutboundSubmitSecurityGroupLb" },
         "CidrIp": "0.0.0.0/0",
@@ -2049,7 +2049,7 @@
     "XgemailMfOutboundSubmitSecurityGroupLbIngressWorldSmtpTls": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Condition" : "OpenToWorld",
-      "Description" : "TCP/587 0.0.0.0/0 to customer-submit",
+      "Description" : "TCP/587 0.0.0.0/0 to mf-outbound--submit",
       "Properties": {
         "GroupId": { "Ref": "XgemailMfOutboundSubmitSecurityGroupLb" },
         "CidrIp": "0.0.0.0/0",
@@ -2062,7 +2062,7 @@
     "XgemailMfOutboundSubmitSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "GroupDescription": "XGEMAIL Customer Submit security group.",
+        "GroupDescription": "XGEMAIL Mf Outbound Submit security group.",
         "Tags": [{
           "Key": "Name",
           "Value": {
@@ -2180,7 +2180,7 @@
     "XgemailMfOutboundDeliverySecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "GroupDescription": "Xgemail Mf Internet Delivery security group.",
+        "GroupDescription": "Xgemail Mf Outbound Delivery security group.",
         "Tags": [{
           "Key": "Name",
           "Value": {
@@ -3745,11 +3745,11 @@
       "Value": { "Ref": "XgemailCustomerDeliverySecurityGroup" }
     },
     "XgemailMfInboundDeliverySecurityGroupLb": {
-      "Description": "Xgemail Mf Customer Delivery Load Balancer security group",
+      "Description": "Xgemail Mf Inbound Delivery Load Balancer security group",
       "Value": { "Ref": "XgemailMfInboundDeliverySecurityGroupLb" }
     },
     "XgemailMfInboundDeliverySecurityGroup": {
-      "Description": "Xgemail Mf Customer Delivery security group",
+      "Description": "Xgemail Mf Inbound Delivery security group",
       "Value": { "Ref": "XgemailMfInboundDeliverySecurityGroup" }
     },
     "XgemailXdeliverySecurityGroupLb": {
@@ -3833,11 +3833,11 @@
       "Value": { "Ref": "XgemailInternetSubmitSecurityGroup" }
     },
     "XgemailMfInboundSubmitSecurityGroupLb": {
-      "Description": "Xgemail Mf Internet Submit Load Balancer security group",
+      "Description": "Xgemail Mf Inbound Submit Load Balancer security group",
       "Value": { "Ref": "XgemailMfInboundSubmitSecurityGroupLb" }
     },
     "XgemailMfInboundSubmitSecurityGroup": {
-      "Description": "Xgemail Mf Internet Submit security group",
+      "Description": "Xgemail Mf Inbound Submit security group",
       "Value": { "Ref": "XgemailMfInboundSubmitSecurityGroup" }
     },
     "XgemailEncryptionSubmitSecurityGroupLb": {
@@ -3849,19 +3849,19 @@
       "Value": { "Ref": "XgemailEncryptionSubmitSecurityGroup" }
     },
     "XgemailMfOutboundSubmitSecurityGroupLb": {
-      "Description": "Xgemail Mf Customer Submit Load Balancer security group",
+      "Description": "Xgemail Mf Outbound Submit Load Balancer security group",
       "Value": { "Ref": "XgemailMfOutboundSubmitSecurityGroupLb" }
     },
     "XgemailMfOutboundSubmitSecurityGroup": {
-      "Description": "Xgemail Mf Customer Submit security group",
+      "Description": "Xgemail Mf Outbound Submit security group",
       "Value": { "Ref": "XgemailMfOutboundSubmitSecurityGroup" }
     },
     "XgemailMfOutboundDeliverySecurityGroupLb": {
-      "Description": "Xgemail Mf Internet Delivery Load Balancer security group",
+      "Description": "Xgemail Mf Outbound Delivery Load Balancer security group",
       "Value": { "Ref": "XgemailMfOutboundDeliverySecurityGroupLb" }
     },
     "XgemailMfOutboundDeliverySecurityGroup": {
-      "Description": "Xgemail Mf Internet Delivery security group",
+      "Description": "Xgemail Mf Outbound Delivery security group",
       "Value": { "Ref": "XgemailMfOutboundDeliverySecurityGroup" }
     },
     "XgemailPolicyEfsMountTargetSecurityGroup": {
