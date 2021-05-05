@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Attribute:: default
 #
-# Copyright 2020, Sophos
+# Copyright 2021, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -293,14 +293,6 @@ default['xgemail']['postfix_instance_data'] = {
     :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
     :server_type => 'INTERNET_SUBMIT'
   },
-  # mf-inbound-submit
-  'mf-inbound-submit' => {
-    :instance_name => 'mis',
-    :port => 25,
-    :msg_size_limit => SUBMIT_MESSAGE_SIZE_LIMIT_BYTES,
-    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
-    :server_type => 'MF_INBOUND_SUBMIT'
-  },
   # customer-submit
   'customer-submit' => {
     :instance_name => 'cs',
@@ -317,15 +309,6 @@ default['xgemail']['postfix_instance_data'] = {
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800 + 5242880),
     :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
     :server_type => 'CUSTOMER_DELIVERY'
-  },
-  # mf-inbound-delivery
-  'mf-inbound-delivery' => {
-    :instance_name => 'mcd',
-    :port => 25,
-    # Give delivery queues extra padding because extra content may be created during processing
-    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800 + 5242880),
-    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
-    :server_type => 'MF_INBOUND_DELIVERY'
   },
   # internet-delivery
   'internet-delivery' => {
@@ -372,22 +355,39 @@ default['xgemail']['postfix_instance_data'] = {
     :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
     :server_type => 'ENCRYPTION_SUBMIT'
   },
-  # mf-outbound-submit
-  'mf-outbound-submit' => {
-      :instance_name => 'mcs',
-      :port => 25,
-      :msg_size_limit => SUBMIT_MESSAGE_SIZE_LIMIT_BYTES,
-      :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
-      :server_type => 'MF_OUTBOUND_SUBMIT'
+  # mf-inbound-delivery
+  'mf-inbound-delivery' => {
+    :instance_name => 'mfid',
+    :port => 25,
+    # Give delivery queues extra padding because extra content may be created during processing
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800 + 5242880),
+    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+    :server_type => 'MF_INBOUND_DELIVERY'
+  },
+  # mf-inbound-submit
+  'mf-inbound-submit' => {
+    :instance_name => 'mfis',
+    :port => 25,
+    :msg_size_limit => SUBMIT_MESSAGE_SIZE_LIMIT_BYTES,
+    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+    :server_type => 'MF_INBOUND_SUBMIT'
   },
   # mf-outbound-delivery
   'mf-outbound-delivery' => {
-      :instance_name => 'mid',
+      :instance_name => 'mfod',
       :port => 25,
       # Give delivery queues extra padding because extra content may be created during processing
       :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800 + 5242880),
       :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
       :server_type => 'MF_OUTBOUND_DELIVERY'
+  },
+  # mf-outbound-submit
+  'mf-outbound-submit' => {
+      :instance_name => 'mfos',
+      :port => 25,
+      :msg_size_limit => SUBMIT_MESSAGE_SIZE_LIMIT_BYTES,
+      :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+      :server_type => 'MF_OUTBOUND_SUBMIT'
   },
   # risky-delivery
   'risky-delivery' => {
@@ -460,7 +460,7 @@ default['xgemail']['postfix_instance_data'] = {
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600 + 5242880),
     :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
     :server_type => 'DELTA_XDELIVERY'
-  },
+  }
 }
 
 ## The Postfix instance name for the encryption-delivery node
