@@ -341,17 +341,6 @@ aws:
         S3PolicyCreate:                                           "false"
         S3PolicyPrincipalList:                                    "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
         TagApplication:                                           "cloudemail"
-    mf_quarantine_bucket:
-      stack_name:                                                 "{{stack.s3.mf_quarantine_bucket}}"
-      template:                                                   "{{template.s3.s3_bucket_template}}"
-      template_parameters:
-        Environment:                                              "{{account.name}}"
-        RequireEncryptionForUploads:                              "sse-s3"
-        S3BucketName:                                             "{{s3.mf_quarantine_bucket}}"
-        S3LifeCycleDelete:                                        "30"
-        S3PolicyCreate:                                           "true"
-        S3PolicyPrincipalList:                                    "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
-        TagApplication:                                           "xgemail-mf-quarantine"
     policy_bucket:
       stack_name:                                                 "{{stack.s3.policy_bucket}}"
       template:                                                   "{{template.s3.s3_policy_bucket_template}}"
@@ -465,12 +454,6 @@ aws:
       template_parameters:
         TagApplication:                                           "xgemail-mail"
         TopicName:                                                "{{sns.mf_deleted_events_sns_topic}}"
-    mf_quarantined_events_sns_topic:
-      stack_name:                                                 "{{stack.sns.mf_quarantined_events_sns_topic}}"
-      template:                                                   "{{template.sns.sns_simple_template}}"
-      template_parameters:
-        TagApplication:                                           "xgemail-mail"
-        TopicName:                                                "{{sns.mf_quarantined_events_sns_topic}}"
     mf_success_events_sns_topic:
       stack_name:                                                 "{{stack.sns.mf_success_events_sns_topic}}"
       template:                                                   "{{template.sns.sns_simple_template}}"
@@ -824,20 +807,6 @@ aws:
       template_parameters:
         QueueName:                                                "{{sqs.mf_inbound_delivery_sqs_queue_sns_listener}}"
         TagApplication:                                           "mf-inbound-delivery"
-    mf_quarantine_sqs_queue:
-      stack_name:                                                 "{{stack.sqs.mf_quarantine_sqs_queue}}"
-      state:                                                      absent
-      template:                                                   "{{template.sqs.sqs_simple_template}}"
-      template_parameters:
-        QueueName:                                                "{{sqs.mf_quarantine_sqs_queue}}"
-        TagApplication:                                           "xgemail-mail"
-    mf_quarantine_sqs_queue_sns_listener:
-      stack_name:                                                 "{{stack.sqs.mf_quarantine_sqs_queue_sns_listener}}"
-      state:                                                      present
-      template:                                                   "{{template.sqs.sqs_simple_template}}"
-      template_parameters:
-        QueueName:                                                "{{sqs.mf_quarantine_sqs_queue_sns_listener}}"
-        TagApplication:                                           "xgemail-mail"
     mf_outbound_delivery_sqs_queue_sns_listener:
       stack_name:                                                 "{{stack.sqs.mf_outbound_delivery_sqs_queue_sns_listener}}"
       state: present
