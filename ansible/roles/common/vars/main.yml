@@ -442,24 +442,6 @@ aws:
         SNSTopicEndpointProtocol:                                 "email"
         SNSTopicEndpointValue:                                    "SophosMailOps@sophos.com"
         SNSTopicName:                                             "{{sns.mailops_notification_sns_topic}}"
-    mf_bounce_events_sns_topic:
-      stack_name:                                                 "{{stack.sns.mf_bounce_events_sns_topic}}"
-      template:                                                   "{{template.sns.sns_simple_template}}"
-      template_parameters:
-        TagApplication:                                           "xgemail-mail"
-        TopicName:                                                "{{sns.mf_bounce_events_sns_topic}}"
-    mf_deleted_events_sns_topic:
-      stack_name:                                                 "{{stack.sns.mf_deleted_events_sns_topic}}"
-      template:                                                   "{{template.sns.sns_simple_template}}"
-      template_parameters:
-        TagApplication:                                           "xgemail-mail"
-        TopicName:                                                "{{sns.mf_deleted_events_sns_topic}}"
-    mf_success_events_sns_topic:
-      stack_name:                                                 "{{stack.sns.mf_success_events_sns_topic}}"
-      template:                                                   "{{template.sns.sns_simple_template}}"
-      template_parameters:
-        TagApplication:                                           "mf-inbound-delivery"
-        TopicName:                                                "{{sns.mf_success_events_sns_topic}}"
     mf_outbound_delivery_sns_topic:
       stack_name:                                                 "{{stack.sns.mf_outbound_delivery_sns_topic}}"
       template:                                                   "{{template.sns.sns_simple_template}}"
