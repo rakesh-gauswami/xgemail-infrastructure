@@ -181,7 +181,8 @@ end
 #
 if ACCOUNT != 'sandbox'
 
-  CONFIGURATION_COMMANDS =
+  if NODE_TYPE == 'customer-submit'
+    CONFIGURATION_COMMANDS =
       [
           "hopcount_limit = #{HOP_COUNT_SUBMIT_INSTANCE}",
 
@@ -217,8 +218,38 @@ if ACCOUNT != 'sandbox'
           "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_B_FILENAME}"
       ]
 
-  CONFIGURATION_COMMANDS.each do | cur |
-    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+    CONFIGURATION_COMMANDS.each do | cur |
+      execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+    end
+  else
+    #when node type is mf-outbound-submit
+    CONFIGURATION_COMMANDS =
+      [
+          "hopcount_limit = #{HOP_COUNT_SUBMIT_INSTANCE}",
+
+          'smtpd_upstream_proxy_protocol = haproxy',
+
+          # Server side TLS configuration
+          'smtpd_tls_security_level = encrypt',
+          'smtpd_tls_ciphers = high',
+          'smtpd_tls_mandatory_ciphers = high',
+          'smtpd_tls_loglevel = 1',
+          'smtpd_tls_mandatory_protocols = !SSLv2,!SSLv3,!TLSv1,!TLSv1.1,TLSv1.2',
+          'smtpd_tls_protocols = !SSLv2,!SSLv3,!TLSv1,!TLSv1.1,TLSv1.2',
+          'smtpd_tls_received_header = yes',
+          "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
+          "smtpd_tls_key_file = #{KEY_FILE}",
+
+          'relay_domains = static:ALL',
+
+          # Sender restrictions
+          'smtpd_sender_restrictions = ' +
+              "reject_non_fqdn_sender",
+      ]
+
+    CONFIGURATION_COMMANDS.each do | cur |
+      execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+    end
   end
 
   include_recipe 'sophos-cloud-xgemail::setup_dh_params'
