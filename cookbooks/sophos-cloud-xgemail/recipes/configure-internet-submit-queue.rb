@@ -325,7 +325,6 @@ if ACCOUNT != 'sandbox'
 
          "smtpd_authorized_xclient_hosts = #{SMTPD_AUTHORIZED_XCLIENT_HOSTS}",
          "recipient_bcc_maps=hash:#{RECIPIENT_BCC_MAPS_PATH}",
-         "transport_maps=hash:#{TRANSPORT_MAPS_PATH}"
       ].each do | cur |
         execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
       end
