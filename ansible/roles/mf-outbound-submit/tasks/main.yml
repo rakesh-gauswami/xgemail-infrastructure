@@ -1,0 +1,22 @@
+---
+
+- name: "Include ELB Creation Task."
+  include_tasks: elb-deploy.yml
+  tags:
+    - asg
+
+- name: "Include Route53 Creation Task."
+  include_tasks: route53-deploy.yml
+  tags:
+    - asg
+
+- name: "Include Spot Instance Price History Task."
+  include_tasks: spot-price-history.yml
+  when: account.name != 'prod'
+  tags:
+    - asg
+
+- name: "Include ASG Creation Task."
+  include_tasks: asg-deploy.yml
+  tags:
+    - asg

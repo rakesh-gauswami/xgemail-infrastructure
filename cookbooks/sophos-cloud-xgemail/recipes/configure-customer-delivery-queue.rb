@@ -12,7 +12,7 @@
 NODE_TYPE = node['xgemail']['cluster_type']
 ACCOUNT   =  node['sophos_cloud']['environment']
 
-if NODE_TYPE != 'customer-delivery'
+if NODE_TYPE != 'customer-delivery' && NODE_TYPE != 'mf-inbound-delivery'
   return
 end
 
