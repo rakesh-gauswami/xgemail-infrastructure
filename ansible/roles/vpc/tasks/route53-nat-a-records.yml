@@ -1,4 +1,7 @@
 ---
+
+# NAT A records
+
 - name: "Print NatEipA"
   debug:
     var: cloud_email_vpc_stack.stack_outputs.NatEipA
@@ -31,6 +34,8 @@
     msg: "{{route53_nat_a_stack_output.stack_outputs}}"
     verbosity: 2
 
+# NAT B records
+
 - name: "Print NatEipB"
   debug:
     var: cloud_email_vpc_stack.stack_outputs.NatEipB
@@ -50,18 +55,20 @@
       Environment:                   "{{account.name}}"
       HostedZoneName:                hydra.sophos.com.
       RecordType:                    A
-      ResourceRecords:               "{{cloud_email_vpc_stack.stack_outputs.NatEipA}}"
-      ServiceName:                   "outbound-{{cloud_email_vpc_stack.stack_outputs.NatEipA | regex_replace('\\.', '-')}}"
-  register: route53_nat_a_stack_output
+      ResourceRecords:               "{{cloud_email_vpc_stack.stack_outputs.NatEipB}}"
+      ServiceName:                   "outbound-{{cloud_email_vpc_stack.stack_outputs.NatEipB | regex_replace('\\.', '-')}}"
+  register: route53_nat_b_stack_output
 
 - debug:
-    var: route53_nat_a_stack_output
+    var: route53_nat_b_stack_output
     verbosity: 3
 
-- name: "Display Route53 NAT A Stack Output"
+- name: "Display Route53 NAT B Stack Output"
   debug:
-    msg: "{{route53_nat_a_stack_output.stack_outputs}}"
+    msg: "{{route53_nat_b_stack_output.stack_outputs}}"
     verbosity: 2
+
+# NAT C records
 
 - name: "Print NatEipC"
   debug:
