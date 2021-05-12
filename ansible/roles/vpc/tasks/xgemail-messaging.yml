@@ -113,6 +113,10 @@
       O365DomainSyncEventTopicArn:    "{{sns.arn_prefix}}{{sns.o365_domainsync_events_sns_topic}}"
       SenderCheckRejectQueue:         "{{sqs.sender_check_reject_queue}}"
       SenderCheckRejectTopicArn:      "{{sns.arn_prefix}}{{sns.sender_check_reject_sns_topic}}"
+      MfInboundDeliveryQueue:         "{{sqs.mf_inbound_delivery_sqs_queue_sns_listener}}"
+      MfOutboundDeliveryQueue:        "{{sqs.mf_outbound_delivery_sqs_queue_sns_listener}}"
+      MfOutboundDeliveryTopicArn:     "{{sns.arn_prefix}}{{sns.mf_outbound_delivery_sns_topic}}"
+      MfSuccessEventsTopicArn:        "{{sns.arn_prefix}}{{sns.mf_success_events_sns_topic}}"
       XgemailSuccessEventTopicArn:    "{{sns.arn_prefix}}{{sns.success_events_sns_topic}}"
       EncryptEventsTopicArn:          "{{sns.arn_prefix}}{{sns.encrypt_events_sns_topic}}"
   register: messaging_b_stack
