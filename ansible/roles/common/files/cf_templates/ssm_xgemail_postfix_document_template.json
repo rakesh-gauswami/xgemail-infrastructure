@@ -390,7 +390,25 @@
           },
           "mainSteps": [
             {
-              "name": "getInstanceIds",
+              "name": "ChooseDirection",
+              "action": "aws:branch",
+              "inputs": {
+                "Choices": [
+                  {
+                    "NextStep": "FilterOutbound",
+                    "Variable": "{{Direction}}",
+                    "StringEquals": "outbound"
+                  },
+                  {
+                    "NextStep": "FilterInbound",
+                    "Variable": "{{Direction}}",
+                    "StringEquals": "inbound"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "FilterOutbound",
               "action": "aws:executeAwsApi",
               "maxAttempts": 3,
               "onFailure": "Abort",
@@ -399,16 +417,56 @@
                 "Api": "DescribeInstances",
                 "Filters": [
                   {
-                    "NextStep":"Direction",
-                    "Variable":"{{outbound}}",
                     "Name": "tag:Application",
                     "Values": [
                       "customer-submit"
                     ]
                   },
                   {
-                    "NextStep":"Direction",
-                    "Variable":"{{inbound}}",
+                    "Name": "instance-state-name",
+                    "Values": [
+                      "running"
+                    ]
+                  }
+                ]
+              },
+              "outputs": [
+                {
+                  "Name": "InstanceIds",
+                  "Selector": "$.Reservations[0].Instances[0].InstanceId",
+                  "Type": "String"
+                }
+              ],
+              "isCritical": "true",
+              "nextStep": "PostfixConfigOut"
+            },
+            {
+              "name": "PostfixConfigOut",
+              "action": "aws:runCommand",
+              "maxAttempts": 3,
+              "timeoutSeconds": 3600,
+              "inputs": {
+                "DocumentName": "AWS-RunShellScript",
+                "InstanceIds": [ "{{getInstanceIds.InstanceIds}}" ],
+                "Parameters": {
+                  "commands": [
+                    "python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --region {{Region}} --direction {{Direction}} --event-type {{Event-type}} --{{Action}} {{EmailAddress}}"
+                  ]
+                }
+              },
+              "isCritical": "true",
+              "isEnd": "true"
+            },
+            {
+              "name": "FilterInbound",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": 3,
+              "onFailure": "Abort",
+              "inputs": {
+                "Service": "ec2",
+                "Api": "DescribeInstances",
+                "Filters": [
+                  {
                     "Name": "tag:Application",
                     "Values": [
                       "internet-submit"
@@ -430,10 +488,10 @@
                 }
               ],
               "isCritical": "true",
-              "nextStep": "PostfixConfig"
+              "nextStep": "PostfixConfigIn"
             },
             {
-              "name": "PostfixConfig",
+              "name": "PostfixConfigIn",
               "action": "aws:runCommand",
               "maxAttempts": 3,
               "timeoutSeconds": 3600,
@@ -442,7 +500,7 @@
                 "InstanceIds": [ "{{getInstanceIds.InstanceIds}}" ],
                 "Parameters": {
                   "commands": [
-                    "python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --region {{Region}} --direction {{Direction}} --event-type {{BlockEventType}} --{{Action}} {{EmailAddress}}"
+                    "python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --region {{Region}} --direction {{Direction}} --event-type {{Event-type}} --{{Action}} {{EmailAddress}}"
                   ]
                 }
               },
