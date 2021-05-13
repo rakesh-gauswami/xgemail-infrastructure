@@ -337,7 +337,7 @@
       }
     },
 
-    "PythonSenderRecipientBlockUnblock": {
+    "SenderRecipientBlockUnblock": {
       "Type": "AWS::SSM::Document",
       "Properties": {
         "DocumentType": "Automation",
@@ -447,7 +447,7 @@
               "timeoutSeconds": 3600,
               "inputs": {
                 "DocumentName": "AWS-RunShellScript",
-                "InstanceIds": [ "{{getInstanceIds.InstanceIds}}" ],
+                "InstanceIds": [ "{{FilterOutbound.InstanceIds}}" ],
                 "Parameters": {
                   "commands": [
                     "python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --region {{Region}} --direction {{Direction}} --event-type {{BlockEventType}} --{{Action}} {{EmailAddress}}"
@@ -497,7 +497,7 @@
               "timeoutSeconds": 3600,
               "inputs": {
                 "DocumentName": "AWS-RunShellScript",
-                "InstanceIds": [ "{{getInstanceIds.InstanceIds}}" ],
+                "InstanceIds": [ "{{FilterInbound.InstanceIds}}" ],
                 "Parameters": {
                   "commands": [
                     "python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --region {{Region}} --direction {{Direction}} --event-type {{BlockEventType}} --{{Action}} {{EmailAddress}}"
@@ -512,7 +512,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": { "Fn::Join": [ "-", [ { "Ref": "AWS::StackName" }, "PythonSenderRecipientBlockUnblock" ] ] }
+            "Value": { "Fn::Join": [ "-", [ { "Ref": "AWS::StackName" }, "SenderRecipientBlockUnblock" ] ] }
           },
           {
             "Key": "Application",
@@ -659,9 +659,9 @@
       "Description" : "SSM Python Command to Block or Unblock Customer document name",
       "Value" : { "Ref" : "PythonCommandBlockUnblockCustomer" }
     },
-    "PythonSenderRecipientBlockUnblock" : {
+    "SenderRecipientBlockUnblock" : {
       "Description" : "SSM Python Command to Block or Unblock Sender or Recipient document name",
-      "Value" : { "Ref" : "PythonSenderRecipientBlockUnblock" }
+      "Value" : { "Ref" : "SenderRecipientBlockUnblock" }
     },
     "PostfixAutomationRole": {
       "Description": "Postfix Automation role",
