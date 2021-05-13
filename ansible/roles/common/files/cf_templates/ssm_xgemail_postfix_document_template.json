@@ -381,9 +381,9 @@
                 "BLOCK_RECIPIENT"
               ]
             },
-            "EmailAddress": {
+            "EmailAddressOrDomain": {
               "type": "String",
-              "description": "The sender and recipient address to block in Postfix config."
+              "description": "The sender and recipient address or domain to block in Postfix config."
             }
           },
           "mainSteps": [
@@ -448,7 +448,7 @@
                 "InstanceIds": [ "{{FilterOutbound.InstanceIds}}" ],
                 "Parameters": {
                   "commands": [
-                    "python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --direction {{Direction}} --event-type {{BlockEventType}} --{{Action}} {{ActionOption}} {{EmailAddress}}"
+                    "python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --direction {{Direction}} --event-type {{BlockEventType}} --{{Action}} {{ActionOption}} {{EmailAddressOrDomain}}"
                   ]
                 }
               },
@@ -498,7 +498,7 @@
                 "InstanceIds": [ "{{FilterInbound.InstanceIds}}" ],
                 "Parameters": {
                   "commands": [
-                    "python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --direction {{Direction}} --event-type {{BlockEventType}} --{{Action}} {{ActionOption}} {{EmailAddress}}"
+                    "python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --direction {{Direction}} --event-type {{BlockEventType}} --{{Action}} {{ActionOption}} {{EmailAddressOrDomain}}"
                   ]
                 }
               },
