@@ -1,0 +1,288 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Template containing a collection of Xgemail SSM Elasticsearch Documents",
+
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2021, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ],
+
+    "Comments": [
+      "Creates SSM Elasticsearch Documents to automate control of various functions on CloudStation infrastructure."
+    ]
+  },
+
+  "Parameters": {
+    "Environment": {
+      "Description": "(inf, dev, qa, prod)",
+      "Type": "String"
+    }
+  },
+
+  "Resources": {
+    "ElasticsearchRestart": {
+      "Type": "AWS::SSM::Document",
+      "Properties": {
+        "DocumentType": "Automation",
+        "Content": {
+          "schemaVersion": "0.3",
+          "assumeRole": { "Fn::GetAtt": [ "ElasticsearchAutomationRole", "Arn" ] },
+          "description": "Elasticsearch restart in all data nodes instances.",
+          "mainSteps": [
+            {
+              "name": "getInstanceIds",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": 3,
+              "onFailure": "Abort",
+              "inputs": {
+                "Service": "ec2",
+                "Api": "DescribeInstances",
+                "Filters": [
+                  {
+                    "Name": "tag:Application",
+                    "Values": [
+                      "elasticsearch-data"
+                    ]
+                  },
+                  {
+                    "Name": "instance-state-name",
+                    "Values": [
+                      "running"
+                    ]
+                  }
+                ]
+              },
+              "outputs": [
+                {
+                  "Name": "InstanceIds",
+                  "Selector": "$.Reservations..Instances..InstanceId",
+                  "Type": "StringList"
+                }
+              ],
+              "isCritical": "true",
+              "nextStep": "elasticsearchservice"
+            },
+            {
+              "name": "Elasticsearch",
+              "action": "aws:runCommand",
+              "maxAttempts": 3,
+              "timeoutSeconds": 3600,
+              "inputs": {
+                "DocumentName": "AWS-RunShellScript",
+                "InstanceIds": [ "{{getInstanceIds.InstanceIds}}" ],
+                "Parameters": {
+                  "commands": [
+                  ]
+                }
+              },
+              "isCritical": "true",
+              "isEnd": "true"
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref": "AWS::StackName" }, "ElasticsearchRestart" ] ] }
+          },
+          {
+            "Key": "Application",
+            "Value": "CloudStation"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
+      }
+    },
+
+    "PythonCommandElasticsearchRestart": {
+      "Type": "AWS::SSM::Document",
+      "Properties": {
+        "DocumentType": "Automation",
+        "Content": {
+          "schemaVersion": "0.3",
+          "assumeRole": { "Fn::GetAtt": [ "ElasticsearchAutomationRole", "Arn" ] },
+          "description": "Elasticsearch restart in all data nodes instances.",
+          "parameters": {
+            "Action": {
+              "type": "String",
+              "description": "Action to check elasticsearch service status."
+            },
+            "Environment": {
+              "type":"String",
+              "description":"The account environment.",
+              "allowedValues": [
+                "INF",
+                "DEV",
+                "QA",
+                "PROD"
+              ],
+              "default": "PROD"
+            },
+            "Region": {
+              "type":"String",
+              "description":"The AWS Region.",
+              "allowedValues": [
+                "us-east-2",
+                "us-west-2",
+                "eu-west-1",
+                "eu-central-1"
+              ]
+            }
+          },
+          "mainSteps": [
+            {
+
+            }
+          ]
+        }
+      }
+    },
+
+    "ElasticsearchAutomationRole" : {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [
+                "ec2.amazonaws.com",
+                "ssm.amazonaws.com"
+              ]
+            },
+            "Action": [ "sts:AssumeRole" ]
+          }]
+        },
+        "Path": "/",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "ElasticsearchAutomationRole" ] ] }
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
+      }
+    },
+    "ElasticsearchAutomationRolePolicies": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "iam:PassRole"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "ec2:CreateTags",
+                "ec2:DescribeInstances",
+                "ec2:DescribeTags"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:logs:*:*:*"
+              ]
+            },
+            {
+              "Action": [
+                "ssm:DescribeAutomationExecutions",
+                "ssm:DescribeAutomationStepExecutions",
+                "ssm:DescribeDocument",
+                "ssm:DescribeInstanceInformation",
+                "ssm:GetAutomationExecution",
+                "ssm:GetCommandInvocation",
+                "ssm:GetConnectionStatus",
+                "ssm:GetDocument",
+                "ssm:ListCommandInvocations",
+                "ssm:ListCommands",
+                "ssm:ListInstanceAssociations",
+                "ssm:ListDocuments",
+                "ssm:ListDocumentVersions",
+                "ssm:SendCommand",
+                "ssm:StartAutomationExecution"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ]
+        },
+        "PolicyName": "root",
+        "Roles": [
+          {
+            "Ref": "ElasticsearchAutomationRole"
+          }
+        ]
+      },
+      "Type": "AWS::IAM::Policy"
+    }
+  },
+
+  "Outputs" : {
+    "ElasticsearchRestart" : {
+      "Description" : "SSM Elasticsearch restart in all data nodes instances",
+      "Value" : { "Ref" : "ElasticsearchRestart" }
+    },
+    "Elasticsearch" : {
+      "Description" : "SSM Elasticsearch restart document name",
+      "Value" : { "Ref" : "Elasticsearch" }
+    },
+    "ElasticsearchAutomationRole": {
+      "Description": "Elasticsearch Automation Role",
+      "Value": { "Ref": "ElasticsearchAutomationRole" }
+    },
+    "ElasticsearchAutomationRoleArn": {
+      "Description": "Elasticsearch Automation Role ARN",
+      "Value": { "Fn::GetAtt" : [ "ElasticsearchAutomationRole", "Arn" ] }
+    }
+  }
+}
