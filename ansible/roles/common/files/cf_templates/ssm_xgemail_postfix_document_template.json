@@ -356,6 +356,14 @@
                 "unblock"
               ]
             },
+            "ActionOption": {
+              "type": "String",
+              "description": "Action to list-email or list-domain block or unblock an address.",
+              "allowedValues": [
+                "--email-address",
+                "--domain"
+              ]
+            },
             "Direction": {
               "type":"String",
               "description":"The Email Directions.",
@@ -440,7 +448,7 @@
                 "InstanceIds": [ "{{FilterOutbound.InstanceIds}}" ],
                 "Parameters": {
                   "commands": [
-                    "python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --direction {{Direction}} --event-type {{BlockEventType}} --{{Action}} {{EmailAddress}}"
+                    "python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --direction {{Direction}} --event-type {{BlockEventType}} --{{Action}} {{ActionOption}} {{EmailAddress}}"
                   ]
                 }
               },
@@ -490,7 +498,7 @@
                 "InstanceIds": [ "{{FilterInbound.InstanceIds}}" ],
                 "Parameters": {
                   "commands": [
-                    "python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --direction {{Direction}} --event-type {{BlockEventType}} --{{Action}} {{EmailAddress}}"
+                    "python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --direction {{Direction}} --event-type {{BlockEventType}} --{{Action}} {{ActionOption}} {{EmailAddress}}"
                   ]
                 }
               },
