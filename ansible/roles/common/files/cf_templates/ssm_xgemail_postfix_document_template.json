@@ -356,16 +356,6 @@
                 "unblock"
               ]
             },
-            "Region": {
-              "type":"String",
-              "description":"The AWS Region.",
-              "allowedValues": [
-                "us-east-2",
-                "us-west-2",
-                "eu-west-1",
-                "eu-central-1"
-              ]
-            },
             "Direction": {
               "type":"String",
               "description":"The Email Directions.",
@@ -450,7 +440,7 @@
                 "InstanceIds": [ "{{FilterOutbound.InstanceIds}}" ],
                 "Parameters": {
                   "commands": [
-                    "python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --region {{Region}} --direction {{Direction}} --event-type {{BlockEventType}} --{{Action}} {{EmailAddress}}"
+                    "python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --direction {{Direction}} --event-type {{BlockEventType}} --{{Action}} {{EmailAddress}}"
                   ]
                 }
               },
@@ -500,7 +490,7 @@
                 "InstanceIds": [ "{{FilterInbound.InstanceIds}}" ],
                 "Parameters": {
                   "commands": [
-                    "python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --region {{Region}} --direction {{Direction}} --event-type {{BlockEventType}} --{{Action}} {{EmailAddress}}"
+                    "python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --direction {{Direction}} --event-type {{BlockEventType}} --{{Action}} {{EmailAddress}}"
                   ]
                 }
               },
