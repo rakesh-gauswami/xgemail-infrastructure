@@ -66,11 +66,6 @@
     },
 
     "Conditions": {
-        "IsProduction" : { "Fn::Or": [
-                { "Fn::Equals": [{ "Ref": "Environment" }, "prod" ]},
-                { "Fn::Equals": [{ "Ref": "Environment" }, "qa" ]} ,
-                { "Fn::Equals": [{ "Ref": "Environment" }, "dev5" ]}
-        ]},
         "NotEuCentral1" : { "Fn::Not" : [{ "Fn::Equals" : [{ "Ref" : "AWS::Region" }, "eu-central-1" ]} ] }
     },
 
@@ -167,7 +162,7 @@
                 "Tags": [
                     {
                         "Key": "Name",
-                        "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/NatA" ] ] }
+                        "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/NatGatewayA" ] ] }
                     },
                     {
                         "Key": "Application",
@@ -229,14 +224,13 @@
 
         "NatB" : {
             "Type" : "AWS::EC2::NatGateway",
-            "Condition": "IsProduction",
             "Properties" : {
                 "AllocationId" : { "Fn::GetAtt" : ["NatEipB", "AllocationId"]},
                 "SubnetId" : { "Ref" : "PublicSubnetB"},
                 "Tags": [
                     {
                         "Key": "Name",
-                        "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/NatB" ] ] }
+                        "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/NatGatewayB" ] ] }
                     },
                     {
                         "Key": "Application",
@@ -260,7 +254,6 @@
 
         "NatEipB" : {
             "Type" : "AWS::EC2::EIP",
-            "Condition": "IsProduction",
             "Properties" : {
                 "Domain" : "vpc",
                 "Tags": [
@@ -290,11 +283,78 @@
 
         "NatRouteB" : {
             "Type" : "AWS::EC2::Route",
-            "Condition": "IsProduction",
             "Properties" : {
                 "RouteTableId" : { "Ref" : "RouteTablePrivateB" },
                 "DestinationCidrBlock" : "0.0.0.0/0",
                 "NatGatewayId" : { "Ref" : "NatB" }
+            }
+        },
+
+        "NatC" : {
+            "Type" : "AWS::EC2::NatGateway",
+            "Properties" : {
+                "AllocationId" : { "Fn::GetAtt" : ["NatEipC", "AllocationId"]},
+                "SubnetId" : { "Ref" : "PublicSubnetC"},
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/NatGatewayC" ] ] }
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": "cloudemail"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com"
+                    }
+                ]
+            }
+        },
+
+        "NatEipC" : {
+            "Type" : "AWS::EC2::EIP",
+            "Properties" : {
+                "Domain" : "vpc",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/NatEipC" ] ] }
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": "cloudemail"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com"
+                    }
+                ]
+            }
+        },
+
+        "NatRouteC" : {
+            "Type" : "AWS::EC2::Route",
+            "Properties" : {
+                "RouteTableId" : { "Ref" : "RouteTablePrivateC" },
+                "DestinationCidrBlock" : "0.0.0.0/0",
+                "NatGatewayId" : { "Ref" : "NatC" }
             }
         },
 
@@ -386,13 +446,11 @@
         },
 
         "PrivateSubnetDefaultBRoute": {
-            "DependsOn": "NatA",
+            "DependsOn": "NatB",
             "Properties": {
-                "RouteTableId": { "Fn::If" : [
-                    "IsProduction",
-                    { "Ref" : "RouteTablePrivateB" },
-                    { "Ref" : "RouteTablePrivateA" }
-                ]},
+                "RouteTableId": {
+                    "Ref" : "RouteTablePrivateB"
+                },
                 "SubnetId": {
                     "Ref": "PrivateSubnetDefaultB"
                 }
@@ -401,7 +459,6 @@
         },
 
         "PrivateSubnetDefaultC": {
-            "Condition": "NotEuCentral1",
             "Properties": {
                 "AvailabilityZone": { "Fn::Select" : [ "2", { "Ref" : "AZs"} ] },
                 "CidrBlock": { "Fn::Select" : [ "2", { "Fn::FindInMap" : [ "RegionMap", { "Ref": "AWS::Region" }, "PrivateSubnetCidrBlocks" ] } ] },
@@ -439,7 +496,6 @@
         },
 
         "PrivateSubnetDefaultCRoute": {
-            "Condition": "NotEuCentral1",
             "DependsOn": "NatA",
             "Properties": {
                 "RouteTableId": {
@@ -551,7 +607,6 @@
         },
 
         "PublicSubnetC": {
-            "Condition": "NotEuCentral1",
             "Properties": {
                 "AvailabilityZone": { "Fn::Select" : [ "2", { "Ref" : "AZs"} ] },
                 "CidrBlock": { "Fn::Select" : [ "2", { "Fn::FindInMap" : [ "RegionMap", { "Ref": "AWS::Region" }, "PublicSubnetCidrBlocks" ] } ] },
@@ -589,7 +644,6 @@
         },
 
         "PublicSubnetCRoute": {
-            "Condition": "NotEuCentral1",
             "Properties": {
                 "RouteTableId": {
                     "Ref": "RouteTablePublic"
@@ -693,12 +747,42 @@
         },
 
         "RouteTablePrivateB": {
-            "Condition": "IsProduction",
             "Properties": {
                 "Tags": [
                     {
                         "Key": "Name",
                         "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/rtb/private/b" ] ] }
+                    },
+                    {
+                        "Key": "Application",
+                        "Value": "cloudemail"
+                    },
+                    {
+                        "Key": "BusinessUnit",
+                        "Value": "MSG"
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": "xgemail"
+                    },
+                    {
+                        "Key": "OwnerEmail",
+                        "Value": "sophosmailops@sophos.com"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "Vpc"
+                }
+            },
+            "Type": "AWS::EC2::RouteTable"
+        },
+
+        "RouteTablePrivateC": {
+            "Properties": {
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/rtb/private/c" ] ] }
                     },
                     {
                         "Key": "Application",
@@ -756,16 +840,13 @@
         },
 
         "S3Endpoint" : {
-            "DependsOn": "NatA",
             "Properties" : {
                 "RouteTableIds" : [
                     { "Ref" : "RouteTablePrivateA" },
-                    { "Fn::If" : [
-                        "IsProduction",
-                        { "Ref" : "RouteTablePrivateB" },
-                        { "Ref" : "AWS::NoValue" }
-                    ]},
-                    { "Ref" : "RouteTablePublic" } ],
+                    { "Ref" : "RouteTablePrivateB" },
+                    { "Ref" : "RouteTablePrivateC" },
+                    { "Ref" : "RouteTablePublic" }
+                ],
                 "ServiceName" : { "Fn::Join": [ "", [ "com.amazonaws.", { "Ref": "AWS::Region" }, ".s3" ] ] },
                 "VpcId" : {"Ref" : "Vpc"}
             },
@@ -773,15 +854,11 @@
         },
 
         "DynamoDbEndpoint" : {
-            "DependsOn": "NatA",
             "Properties" : {
                 "RouteTableIds" : [
                     { "Ref" : "RouteTablePrivateA" },
-                    { "Fn::If" : [
-                        "IsProduction",
-                        { "Ref" : "RouteTablePrivateB" },
-                        { "Ref" : "AWS::NoValue" }
-                    ]}
+                    { "Ref" : "RouteTablePrivateB" },
+                    { "Ref" : "RouteTablePrivateC" }
                 ],
                 "ServiceName" : { "Fn::Join": [ "", [ "com.amazonaws.", { "Ref": "AWS::Region" }, ".dynamodb" ] ] },
                 "VpcId" : {"Ref" : "Vpc"}
@@ -861,10 +938,13 @@
         "NatEipB": {
             "Description": "NatEIP",
             "Value": {
-                "Fn::If" : [ "IsProduction",
-                    { "Ref" : "NatEipB" },
-                    { "Ref" : "NatEipA" }
-                ]
+                "Ref" : "NatEipB"
+            }
+        },
+        "NatEipC": {
+            "Description": "NatEIP",
+            "Value": {
+                "Ref" : "NatEipC"
             }
         },
         "PrivateSubnetDefaultA": {
@@ -923,9 +1003,14 @@
         },
         "RouteTablePrivateB": {
             "Description": "RouteTablePrivateB",
-            "Condition": "IsProduction",
             "Value": {
                 "Ref": "RouteTablePrivateB"
+            }
+        },
+        "RouteTablePrivateC": {
+            "Description": "RouteTablePrivateC",
+            "Value": {
+                "Ref": "RouteTablePrivateC"
             }
         },
         "RouteTablePublic": {
