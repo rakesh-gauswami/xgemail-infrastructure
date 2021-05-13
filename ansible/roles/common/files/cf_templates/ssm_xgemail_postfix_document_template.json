@@ -337,7 +337,7 @@
       }
     },
 
-    "PythonCommandSenderAndRecipientBlockAndUnblock": {
+    "PythonSenderRecipientBlockUnblock": {
       "Type": "AWS::SSM::Document",
       "Properties": {
         "DocumentType": "Automation",
@@ -512,7 +512,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": { "Fn::Join": [ "-", [ { "Ref": "AWS::StackName" }, "PythonCommandSenderAndRecipientBlockAndUnblock" ] ] }
+            "Value": { "Fn::Join": [ "-", [ { "Ref": "AWS::StackName" }, "PythonSenderRecipientBlockUnblock" ] ] }
           },
           {
             "Key": "Application",
@@ -659,9 +659,9 @@
       "Description" : "SSM Python Command to Block or Unblock Customer document name",
       "Value" : { "Ref" : "PythonCommandBlockUnblockCustomer" }
     },
-    "PythonCommandSenderAndRecipientBlockAndUnblock" : {
+    "PythonSenderRecipientBlockUnblock" : {
       "Description" : "SSM Python Command to Block or Unblock Sender or Recipient document name",
-      "Value" : { "Ref" : "PythonCommandSenderAndRecipientBlockAndUnblock" }
+      "Value" : { "Ref" : "PythonSenderRecipientBlockUnblock" }
     },
     "PostfixAutomationRole": {
       "Description": "Postfix Automation role",
