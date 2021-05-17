@@ -20,6 +20,8 @@ import tempfile
 import sys
 import io
 import os
+
+from idna import unicode
 from sqsmessage import SqsMessage
 from metadata import Metadata
 
@@ -202,7 +204,6 @@ class MessageHistoryTest(unittest.TestCase):
         self.assertEqual(accept_events[user_1.lower()]['mail_info']['s3_resource_id'], s3_file_path)
         self.assertFalse('s3_resource_id' in accept_events[user_2.lower()]['mail_info'])
         self.assertEqual(accept_events[user_1.lower()]['mail_info'][EMAIL_PRODUCT_TYPE], GATEWAY)
-        self.assertEqual(accept_events[user_2.lower()]['mail_info'][EMAIL_PRODUCT_TYPE], GATEWAY)
 
         #Replace the queue id with decorated queue id. 
         metadata.add_uuid_to_queue_id()
@@ -234,7 +235,7 @@ class MessageHistoryTest(unittest.TestCase):
 
         messagehistory.update_msghistory_event(accept_events, s3_file_path, metadata, 'OUTBOUND', recipients, 'someothersender@senderdomain.com', GATEWAY)
         self.assertFalse('s3_resource_id' in accept_events[sender.lower()]['mail_info']) #Because we used incorrect sender in above line.
-        self.assertEqual(accept_events[sender.lower()]['mail_info'][EMAIL_PRODUCT_TYPE], GATEWAY)
+        self.assertNotEqual(accept_events[sender.lower()]['mail_info'][EMAIL_PRODUCT_TYPE], GATEWAY)
 
         recipients = []
         metadata.add_uuid_to_queue_id()
