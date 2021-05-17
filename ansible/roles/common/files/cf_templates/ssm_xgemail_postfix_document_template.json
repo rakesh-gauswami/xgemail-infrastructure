@@ -401,39 +401,6 @@
               }
             },
             {
-              "name": "FilterOutbound",
-              "action": "aws:executeAwsApi",
-              "maxAttempts": 3,
-              "onFailure": "Abort",
-              "inputs": {
-                "Service": "ec2",
-                "Api": "DescribeInstances",
-                "Filters": [
-                  {
-                    "Name": "tag:Application",
-                    "Values": [
-                      "customer-submit"
-                    ]
-                  },
-                  {
-                    "Name": "instance-state-name",
-                    "Values": [
-                      "running"
-                    ]
-                  }
-                ]
-              },
-              "outputs": [
-                {
-                  "Name": "InstanceIds",
-                  "Selector": "$.Reservations[0].Instances[0].InstanceId",
-                  "Type": "String"
-                }
-              ],
-              "isCritical": "true",
-              "nextStep": "ChooseActionOutbound"
-            },
-            {
               "name": "ChooseActionOutbound",
               "action": "aws:branch",
               "inputs": {
@@ -475,6 +442,82 @@
                   }
                 ]
               }
+            },
+            {
+              "name": "ChooseActionInbound",
+              "action": "aws:branch",
+              "inputs": {
+                "Choices": [
+                  {
+                    "NextStep": "PostfixConfigInBlockEmail",
+                    "Variable": "{{Action}}",
+                    "StringEquals": "block-email"
+                  },
+                  {
+                    "NextStep": "PostfixConfigInBlockDomain",
+                    "Variable": "{{Action}}",
+                    "StringEquals": "block-domain"
+                  },
+                  {
+                    "NextStep": "PostfixConfigInUnblockEmail",
+                    "Variable": "{{Action}}",
+                    "StringEquals": "unblock-email"
+                  },
+                  {
+                    "NextStep": "PostfixConfigInUnblockDomain",
+                    "Variable": "{{Action}}",
+                    "StringEquals": "unblock-domain"
+                  },
+                  {
+                    "NextStep": "PostfixConfigInGetEmail",
+                    "Variable": "{{Action}}",
+                    "StringEquals": "get-email"
+                  },
+                  {
+                    "NextStep": "PostfixConfigInGetDomain",
+                    "Variable": "{{Action}}",
+                    "StringEquals": "get-domain"
+                  },
+                  {
+                    "NextStep": "PostfixConfigInGetAll",
+                    "Variable": "{{Action}}",
+                    "StringEquals": "get-all"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "FilterOutbound",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": 3,
+              "onFailure": "Abort",
+              "inputs": {
+                "Service": "ec2",
+                "Api": "DescribeInstances",
+                "Filters": [
+                  {
+                    "Name": "tag:Application",
+                    "Values": [
+                      "customer-submit"
+                    ]
+                  },
+                  {
+                    "Name": "instance-state-name",
+                    "Values": [
+                      "running"
+                    ]
+                  }
+                ]
+              },
+              "outputs": [
+                {
+                  "Name": "InstanceIds",
+                  "Selector": "$.Reservations[0].Instances[0].InstanceId",
+                  "Type": "String"
+                }
+              ],
+              "isCritical": "true",
+              "nextStep": "ChooseActionOutbound"
             },
             {
               "name": "PostfixConfigOutBlockEmail",
@@ -627,49 +670,6 @@
               ],
               "isCritical": "true",
               "nextStep": "ChooseActionInbound"
-            },
-            {
-              "name": "ChooseActionInbound",
-              "action": "aws:branch",
-              "inputs": {
-                "Choices": [
-                  {
-                    "NextStep": "PostfixConfigInBlockEmail",
-                    "Variable": "{{Action}}",
-                    "StringEquals": "block-email"
-                  },
-                  {
-                    "NextStep": "PostfixConfigInBlockDomain",
-                    "Variable": "{{Action}}",
-                    "StringEquals": "block-domain"
-                  },
-                  {
-                    "NextStep": "PostfixConfigInUnblockEmail",
-                    "Variable": "{{Action}}",
-                    "StringEquals": "unblock-email"
-                  },
-                  {
-                    "NextStep": "PostfixConfigInUnblockDomain",
-                    "Variable": "{{Action}}",
-                    "StringEquals": "unblock-domain"
-                  },
-                  {
-                    "NextStep": "PostfixConfigInGetEmail",
-                    "Variable": "{{Action}}",
-                    "StringEquals": "get-email"
-                  },
-                  {
-                    "NextStep": "PostfixConfigInGetDomain",
-                    "Variable": "{{Action}}",
-                    "StringEquals": "get-domain"
-                  },
-                  {
-                    "NextStep": "PostfixConfigInGetAll",
-                    "Variable": "{{Action}}",
-                    "StringEquals": "get-all"
-                  }
-                ]
-              }
             },
             {
               "name": "PostfixConfigInBlockEmail",
