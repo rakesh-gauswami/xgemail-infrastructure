@@ -79,6 +79,10 @@
       "Description": "Topic Arn of office 365 domain sync Events SNS",
       "Type": "String"
     },
+    "O365MailFlowConnectorTopicArn":{
+      "Description": "Topic Arn of office 365 mail-flow connector SNS",
+      "Type": "String"
+    },
     "SenderCheckRejectTopicArn": {
       "Description": "Endpoint for Sender Check Reject Events arn",
       "Type": "String"
@@ -343,6 +347,51 @@
           ]
         },
         "Topics": [{"Ref": "O365DomainSyncEventTopicArn"}]
+      }
+    },
+    "O365MailFlowConnectorTopicPolicy": {
+      "Type": "AWS::SNS::TopicPolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "O365MailFlowConnectorTopicPolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-O365MailFlowConnectorTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": [
+                "SNS:GetTopicAttributes",
+                "SNS:SetTopicAttributes",
+                "SNS:AddPermission",
+                "SNS:RemovePermission",
+                "SNS:DeleteTopic",
+                "SNS:Subscribe",
+                "SNS:ListSubscriptionsByTopic",
+                "SNS:Publish",
+                "SNS:Receive"
+              ],
+              "Resource": {"Ref": "O365MailFlowConnectorTopicArn"},
+              "Condition": {
+                "StringEquals": {
+                  "AWS:SourceOwner": { "Ref" : "AWS::AccountId" }
+                }
+              }
+            },
+            {
+              "Sid": "Allow-O365MailFlowConnectorQueueArnSubscription",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::Sub": "arn:aws:iam::${O365AccountNumber}:root"
+                }
+              },
+              "Action": ["sns:Subscribe"],
+              "Resource": {"Ref": "O365MailFlowConnectorTopicArn"}
+            }
+          ]
+        },
+        "Topics": [{"Ref": "O365MailFlowConnectorTopicArn"}]
       }
     }
   }
