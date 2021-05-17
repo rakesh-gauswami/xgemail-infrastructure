@@ -111,6 +111,9 @@ DELIVER_INBOUND_VALUE = "true"
 SOPHOS_PARENT_ID_HEADER = "X-Sophos-MH-Parent-Id"
 ECHOWORX_REPLY_HEADER = "x-echoworx-portal"
 
+#EmailProductType
+GATEWAY = "Gateway"
+
 awshandler = AwsHandler(AWS_REGION)
 
 #Strip the dot at the end of sender and/or recipients addresses as rfc:1034 mentions to consider ending dot optional
@@ -581,7 +584,9 @@ def prepare_message_context(s3_file_path, mail_info):
 def update_msghistory_event_and_get_message_context(msghistory_events, s3_file_path, policy_metadata, direction, recipients, sender, upload_msg_history, is_mh_parent):
     try:
         mail_info = None
-        messagehistory.update_msghistory_event(msghistory_events, s3_file_path, policy_metadata, direction, recipients, sender)
+
+        #Todo: XGE-19649 will add proper email product type.
+        messagehistory.update_msghistory_event(msghistory_events, s3_file_path, policy_metadata, direction, recipients, sender, GATEWAY)
         mailbox = None
         if direction == INBOUND_MESSAGE_DIRECTION:
             mailbox = recipients[0].lower()
