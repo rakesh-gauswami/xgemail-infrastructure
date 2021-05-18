@@ -247,7 +247,40 @@ if ACCOUNT != 'sandbox'
     }
   end
 
-  if NODE_TYPE == 'internet-submit'
+  if NODE_TYPE == "mf-inbound-submit"
+    #when node type is mf-inbound-submit
+    [
+        "hopcount_limit = #{HOP_COUNT_SUBMIT_INSTANCE}",
+
+        'smtpd_upstream_proxy_protocol = haproxy',
+
+        # Server side TLS configuration
+        'smtpd_tls_security_level = encrypt',
+        'smtpd_tls_ciphers = high',
+        'smtpd_tls_mandatory_ciphers = high',
+        'smtpd_tls_loglevel = 1',
+        'smtpd_tls_mandatory_protocols = !SSLv2,!SSLv3,!TLSv1,!TLSv1.1,TLSv1.2',
+        'smtpd_tls_protocols = !SSLv2,!SSLv3,!TLSv1,!TLSv1.1,TLSv1.2',
+        'smtpd_tls_received_header = yes',
+        "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
+        "smtpd_tls_key_file = #{KEY_FILE}",
+        "tls_preempt_cipherlist = yes",
+
+        # Sender restrictions
+        'smtpd_sender_restrictions = ' +
+            "reject_non_fqdn_sender",
+
+        'smtpd_relay_restrictions = ' +
+            'permit_auth_destination, ' +
+            "check_sender_access hash:$config_directory/#{SOFT_RETRY_SENDERS_MAP_FILENAME}, " +
+            'reject',
+
+        "smtpd_authorized_xclient_hosts = #{SMTPD_AUTHORIZED_XCLIENT_HOSTS}",
+        "recipient_bcc_maps=hash:#{RECIPIENT_BCC_MAPS_PATH}",
+    ].each do | cur |
+      execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+    end
+  else
      [
         "hopcount_limit = #{HOP_COUNT_SUBMIT_INSTANCE}",
 
@@ -292,39 +325,6 @@ if ACCOUNT != 'sandbox'
          "smtpd_authorized_xclient_hosts = #{SMTPD_AUTHORIZED_XCLIENT_HOSTS}",
          "recipient_bcc_maps=hash:#{RECIPIENT_BCC_MAPS_PATH}",
          "transport_maps=hash:#{TRANSPORT_MAPS_PATH}"
-      ].each do | cur |
-        execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
-      end
-  else
-     #when node type is mf-inbound-submit
-     [
-        "hopcount_limit = #{HOP_COUNT_SUBMIT_INSTANCE}",
-
-        'smtpd_upstream_proxy_protocol = haproxy',
-
-        # Server side TLS configuration
-        'smtpd_tls_security_level = encrypt',
-        'smtpd_tls_ciphers = high',
-        'smtpd_tls_mandatory_ciphers = high',
-        'smtpd_tls_loglevel = 1',
-        'smtpd_tls_mandatory_protocols = !SSLv2,!SSLv3,!TLSv1,!TLSv1.1,TLSv1.2',
-        'smtpd_tls_protocols = !SSLv2,!SSLv3,!TLSv1,!TLSv1.1,TLSv1.2',
-        'smtpd_tls_received_header = yes',
-        "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
-        "smtpd_tls_key_file = #{KEY_FILE}",
-        "tls_preempt_cipherlist = yes",
-
-         # Sender restrictions
-         'smtpd_sender_restrictions = ' +
-            "reject_non_fqdn_sender",
-
-         'smtpd_relay_restrictions = ' +
-            'permit_auth_destination, ' +
-            "check_sender_access hash:$config_directory/#{SOFT_RETRY_SENDERS_MAP_FILENAME}, " +
-            'reject',
-
-         "smtpd_authorized_xclient_hosts = #{SMTPD_AUTHORIZED_XCLIENT_HOSTS}",
-         "recipient_bcc_maps=hash:#{RECIPIENT_BCC_MAPS_PATH}",
       ].each do | cur |
         execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
       end
