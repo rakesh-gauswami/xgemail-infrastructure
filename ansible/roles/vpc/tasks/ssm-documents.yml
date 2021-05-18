@@ -40,3 +40,24 @@
   debug:
     msg: "{{ssm_postfix_stack.stack_outputs}}"
     verbosity: 2
+
+# Create another stack dedicated to Elasticsearch data node restart SSM commands
+- name: "Deploy SSM Elasticsearch Documents {{stack.ssm.ssm_elasticsearch_documents}} to {{account.name}}-{{account.region}}"
+  cloudformation:
+    stack_name:                   "{{stack.ssm.ssm_elasticsearch_documents}}"
+    state:                        present
+    region:                       "{{account.region}}"
+    disable_rollback:             true
+    template:                     "{{template.ssm.ssm_xgemail_elasticsearch_document_template}}"
+    template_parameters:
+      Environment:                "{{account.name}}"
+  register: ssm_elasticsearch_stack
+
+- debug:
+    var: ssm_elasticsearch_stack
+    verbosity: 3
+
+- name: "Display SSM Elasticsearch Documents Stack Output"
+  debug:
+    msg: "{{ssm_elasticsearch_stack.stack_outputs}}"
+    verbosity: 2
