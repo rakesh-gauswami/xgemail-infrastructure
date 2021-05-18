@@ -42,7 +42,7 @@ if ENVIRONMENT == "sandbox"
   default['xgemail']['launch_darkly_sandbox']      = 'sdk-00000000-0000-0000-0000-000000000000'
   default['xgemail']['station_vpc_name']           = 'pic'
 
-  if INSTANCE_TYPE == "internet-submit" || INSTANCE_TYPE == "customer-delivery" || INSTANCE_TYPE == "mf-inbound-submit" || INSTANCE_TYPE == "mf-inbound-delivery"
+  if INSTANCE_TYPE == "internet-submit" || INSTANCE_TYPE == "customer-delivery"
     default['xgemail']['xgemail_bucket_name']           = 'sandbox-cloudemail-xgemail-submit'
     default['xgemail']['xgemail_scan_events_topic_arn'] = 'arn:aws:sns:us-east-1:000000000000:sandbox-xgemail-scan-events-SNS'
     default['xgemail']['xgemail_queue_url']             = 'http://localstack:4576/queue/sandbox-Xgemail_Internet_Submit'
@@ -55,14 +55,6 @@ if ENVIRONMENT == "sandbox"
     default['xgemail']['xgemail_bucket_name']    = 'xgemail-cust-submit'
     default['xgemail']['xgemail_queue_url']      = 'http://localstack:4576/queue/sandbox-Xgemail_Customer_Submit'
     default['xgemail']['xgemail_sns_sqs_url']    = 'http://localstack:4576/queue/sandbox-Xgemail_Internet_Delivery_SNS_Listener'
-    default['xgemail']['msg_notifier_queue_url'] = 'http://localstack:4576/queue/sandbox-Xgemail_Notifier_Request'
-  end
-
-  if INSTANCE_TYPE == "mf-outbound-submit" || INSTANCE_TYPE == "mf-outbound-delivery"
-    default['ec2']['instance_id'] = ENV['INSTANCE_ID']
-    default['xgemail']['xgemail_bucket_name']    = 'xgemail-mf-outbound-submit'
-    default['xgemail']['xgemail_queue_url']      = 'http://localstack:4576/queue/sandbox-Xgemail_Mf_Outbound_Submit'
-    default['xgemail']['xgemail_sns_sqs_url']    = 'http://localstack:4576/queue/sandbox-Xgemail_Mf_Outbound_Delivery_SNS_Listener'
     default['xgemail']['msg_notifier_queue_url'] = 'http://localstack:4576/queue/sandbox-Xgemail_Notifier_Request'
   end
 
