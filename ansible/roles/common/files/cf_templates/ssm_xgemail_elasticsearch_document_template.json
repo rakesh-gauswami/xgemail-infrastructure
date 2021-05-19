@@ -119,50 +119,6 @@
       }
     },
 
-    "ElasticsearchRestartCommand": {
-      "Type": "AWS::SSM::Document",
-      "Properties": {
-        "DocumentType": "Automation",
-        "Content": {
-          "schemaVersion": "0.3",
-          "assumeRole": { "Fn::GetAtt": [ "ElasticsearchAutomationRole", "Arn" ] },
-          "description": "Elasticsearch restart in all data nodes instances.",
-          "parameters": {
-            "Action": {
-              "type": "String",
-              "description": "Action to check elasticsearch service status."
-            },
-            "Environment": {
-              "type":"String",
-              "description":"The account environment.",
-              "allowedValues": [
-                "INF",
-                "DEV",
-                "QA",
-                "PROD"
-              ],
-              "default": "PROD"
-            },
-            "Region": {
-              "type":"String",
-              "description":"The AWS Region.",
-              "allowedValues": [
-                "us-east-2",
-                "us-west-2",
-                "eu-west-1",
-                "eu-central-1"
-              ]
-            }
-          },
-          "mainSteps": [
-            {
-
-            }
-          ]
-        }
-      }
-    },
-
     "ElasticsearchAutomationRole" : {
       "Type": "AWS::IAM::Role",
       "Properties": {
@@ -204,6 +160,7 @@
         ]
       }
     },
+
     "ElasticsearchAutomationRolePolicies": {
       "Properties": {
         "PolicyDocument": {
