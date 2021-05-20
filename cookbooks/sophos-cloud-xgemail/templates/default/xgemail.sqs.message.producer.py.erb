@@ -108,6 +108,10 @@ INBOUND_MESSAGE_DIRECTION = "INBOUND"
 OUTBOUND_MESSAGE_DIRECTION = "OUTBOUND"
 POLICY_ID_PATH_VALUE = "/00/"
 SQS_BATCH_SIZE = 10
+INTERNET = "INTERNET"
+CUSTOMER = "CUSTOMER"
+MF_INBOUND = "MF_INBOUND"
+MF_OUTBOUND = "MF_OUTBOUND"
 awshandler = AwsHandler(AWS_REGION)
 
 routingmanager = RoutingManager(
@@ -118,7 +122,7 @@ routingmanager = RoutingManager(
 
 #get email product type
 def get_email_product_type():
-    if SUBMIT_TYPE == 'MF_INBOUND' or SUBMIT_TYPE == 'MF_OUTBOUND':
+    if SUBMIT_TYPE == MF_INBOUND or SUBMIT_TYPE == MF_OUTBOUND:
         return MAIL_FLOW
     else:
         return GATEWAY
@@ -921,7 +925,7 @@ def main():
         message_headers = get_message_headers(plaintext_message)
         metadata = get_metadata(message_headers)
 
-        if 'INTERNET' == SUBMIT_TYPE:
+        if INTERNET == SUBMIT_TYPE:
             domain = metadata.get_recipient_domain()
             direction = INBOUND_MESSAGE_DIRECTION
             sender = metadata.get_sender_address()
@@ -933,7 +937,7 @@ def main():
             if multipolicyreaderutils.get_multi_policy_enabled():
                 return multi_policy_flow(metadata, direction, domain, sender, plaintext_message, message_attributes)
 
-        elif 'MF_INBOUND' == SUBMIT_TYPE:
+        elif MF_INBOUND == SUBMIT_TYPE:
             domain = metadata.get_recipient_domain()
             direction = INBOUND_MESSAGE_DIRECTION
             sender = metadata.get_sender_address()
@@ -945,7 +949,7 @@ def main():
             if multipolicyreaderutils.get_multi_policy_enabled():
                 return multi_policy_flow(metadata, direction, domain, sender, plaintext_message, message_attributes)
 
-        elif 'CUSTOMER' == SUBMIT_TYPE:
+        elif CUSTOMER == SUBMIT_TYPE:
             direction = OUTBOUND_MESSAGE_DIRECTION
             metadata = get_metadata_for_outbound(metadata, message_headers)
             sender = metadata.get_sender_address()
@@ -957,7 +961,7 @@ def main():
             if outbound_split:
                 return outbound_split_by_recipients(metadata,domain,plaintext_message,direction)
 
-        elif 'MF_OUTBOUND' == SUBMIT_TYPE:
+        elif MF_OUTBOUND == SUBMIT_TYPE:
             direction = OUTBOUND_MESSAGE_DIRECTION
             metadata = get_metadata_for_outbound(metadata, message_headers)
             sender = metadata.get_sender_address()
