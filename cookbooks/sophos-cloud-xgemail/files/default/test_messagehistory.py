@@ -21,7 +21,6 @@ import sys
 import io
 import os
 
-from idna import unicode
 from sqsmessage import SqsMessage
 from metadata import Metadata
 
