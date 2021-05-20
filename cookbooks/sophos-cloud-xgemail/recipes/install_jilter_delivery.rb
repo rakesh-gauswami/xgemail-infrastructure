@@ -16,14 +16,14 @@ STATION_VPC_ID = node['xgemail']['station_vpc_id']
 NODE_TYPE = node['xgemail']['cluster_type']
 ACCOUNT = node['sophos_cloud']['environment']
 
-# Make sure we're on an delivery node
+# Make sure we're on a delivery node
 if NODE_TYPE != 'customer-delivery' && NODE_TYPE != 'xdelivery' &&
-  NODE_TYPE != 'internet-delivery' && NODE_TYPE != 'internet-xdelivery' &&
+  NODE_TYPE != 'internet-delivery' && NODE_TYPE != 'internet-xdelivery' && NODE_TYPE != 'mf-outbound-delivery' &&
   NODE_TYPE != 'risky-delivery' && NODE_TYPE != 'risky-xdelivery' &&
   NODE_TYPE != 'warmup-delivery' && NODE_TYPE != 'warmup-xdelivery' &&
   NODE_TYPE != 'beta-delivery' && NODE_TYPE != 'beta-xdelivery' &&
   NODE_TYPE != 'delta-delivery' && NODE_TYPE != 'delta-xdelivery' &&
-  NODE_TYPE != 'encryption-delivery'
+  NODE_TYPE != 'encryption-delivery' && NODE_TYPE != 'mf-inbound-delivery'
   return
 end
 

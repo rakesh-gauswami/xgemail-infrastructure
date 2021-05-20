@@ -11,7 +11,7 @@
 
 NODE_TYPE = node['xgemail']['cluster_type']
 
-if NODE_TYPE != 'customer-submit'
+if NODE_TYPE != 'customer-submit' && NODE_TYPE != 'mf-outbound-submit'
   return
 end
 

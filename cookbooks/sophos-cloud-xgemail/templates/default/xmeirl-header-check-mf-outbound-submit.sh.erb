@@ -1,0 +1,85 @@
+#!/bin/sh
+#
+# Copyright 2021, Sophos
+#
+# All rights reserved - Do Not Redistribute
+#
+# This script allows for toggling Auto Forward/ XMEIRL header checks on and off on a single
+# customer submit server.
+#
+
+get_post_data() {
+cat << EOF
+{
+"key":"relay.control.xmeirl.check",
+"value":"$1"
+}
+EOF
+}
+
+switch_xmeirl_check() {
+
+ local result=0
+ local _ans=$2
+ if (( $1 == 1 )); then
+    result=$(curl -s -w "\n%{http_code}" -H "Content-Type: application/json"\
+         --data "$(get_post_data true)"\
+         "http://localhost:8080/propertyConfig")
+ else
+    result=$(curl -s -w "\n%{http_code}" -H "Content-Type: application/json"\
+         --data "$(get_post_data false)"\
+         "http://localhost:8080/propertyConfig")
+ fi
+ echo "API response after setting property config..."
+ echo $result
+ eval $_ans="'$result'"
+}
+
+#
+# Enables Auto Forward/XMEIRL header checks on this specific server.
+#
+enable() {
+
+    echo "Updating Auto Forward/ XMEIRL header checks config in jilter to ON..."
+
+    switch_xmeirl_check 1 response
+    switch_xmeirl_check_return_code=$response
+
+    if (( switch_xmeirl_check_return_code != 200 )); then
+      echo "Auto Forward/ XMEIRL header checks config update FAILED! ABORTING!"
+      exit 1
+    fi
+
+    echo "DONE"
+}
+
+#
+# Disables Auto Forward/ XMEIRL header checks on this specific server.
+#
+disable() {
+
+    echo "Updating Auto Forward/ XMEIRL header checks config in ilter to OFF..."
+
+    switch_xmeirl_check 0 response
+    switch_xmeirl_check_return_code=$response
+
+    if (( switch_xmeirl_check_return_code != 200 )); then
+      echo "Auto Forward/ XMEIRL header checks config update FAILED! ABORTING!"
+      exit 1
+    fi
+
+    echo "DONE"
+}
+
+case "$1" in
+    enable)
+        $1
+        ;;
+    disable)
+        $1
+        ;;
+    *)
+        echo $"Usage: $0 {enable|disable}"
+        exit 2
+esac
+exit $?
