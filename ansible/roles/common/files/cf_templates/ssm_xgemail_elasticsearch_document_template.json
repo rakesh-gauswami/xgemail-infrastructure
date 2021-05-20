@@ -78,14 +78,7 @@
                 "InstanceIds": [ "{{getInstanceIds.InstanceIds}}" ],
                 "Parameters": {
                   "commands": [
-                    "echo eu_west_1_client=$(cloud list eu-west-1 | awk \"/elasticsearch-client:/\" | awk '{print $3}' | head -n 1)",
-                    "eu_west_1_status=$(cloud ssh -tq ${eu_west_1_client} \"curl -XGET 'http://localhost:9200/_cluster/health?pretty=true'\" | grep \"status\" | cut -d: -f2 | sed 's/\"//g' | sed 's/,//g')",
-                    "echo -e \"${Green}${eu_west_1_status}${NC}\"'",
-                    "eu_west_1_data=$(cloud list eu-west-1 | awk \"/elasticsearch-data:/\" | awk '{print $3}')\n  for instance in ${eu_west_1_data};do\n    echo -e \"${Green}elasticsearch service will be restarted in ${instance}${NC}\"\n    cloud ssh -tq ${instance} \"sudo service elasticsearch status;sudo service elasticsearch stop;sleep 10;sudo service elasticsearch start;sleep 10;sudo service elasticsearch status\"\n    check_cluster_status\n    while [ ${eu_west_1_status} != \"green\" ]; do\n      echo -e \"${Green}current cluster status is ${eu_west_1_status}${NC}\"\n      sleep 2m\n      check_cluster_status\n    done\n  done",
-                    "if [ ${eu_west_1_status} != \"green\" ];then\n  echo -e \"${Red}cluster status is not green...${NC}\"",
-                    "echo \"Please check as cluster status is not green.\" | mail -s \"Elasticsearch:EU-WEST-1\"debi.sethy@sophos.com",
-                    "echo -e \"${Green}cluster status is green...${NC}\"\n  echo \"elasticsearch service restart activity has been started in eu-west-1 region and cluster status is ${eu_west_1_status}\" | mail -s \"Elasticsearch:EU-WEST-1\" Debi.Sethy@Sophos.com,Abhijit.Sharma@Sophos.com",
-                    "echo -e \"${Green}Proceeding with restart of data nodes...${NC}\"\n  service_restart\n  echo \"elasticsearch service restart activity has been completed successfully and cluster status is ${eu_west_1_status}\" | mail -s \"Elasticsearch:EU-WEST-1\"Debi.Sethy@Sophos.com,Abhijit.Sharma@Sophos.com\nfi"
+                    "mkdir /opt/debi-test"
                   ]
                 }
               },
