@@ -69,14 +69,10 @@ aws:
       as_max_size:                                                "3"
       as_min_service:                                             "1"
       as_max_batch_size:                                          "1"
-      cron_scale_in:                                              "00 02 * * 1-5"
-      cron_scale_out:                                             "30 14 * * 1-5"
       health_check_grace_period:                                  "2400"
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-customer-submit-Terminating-LifeCycleHook"
       policy_target_value:                                        "90"
-      on_hour_desired:                                            "2"
-      scale_in_out_weekdays:                                      "false"
     dd:
       alarm_scaling_enabled:                                      "false"
       alarm_scale_in_threshold:                                   "10"
@@ -115,6 +111,40 @@ aws:
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-internet-xdelivery-Launching-LifeCycleHook"
       stack_number:                                               [1,2,3]
       zone_index:                                                 [0,1,2]
+    mfid:
+      alarm_scale_in_enabled:                                     "false"
+      alarm_scale_out_enabled:                                    "true"
+      alarm_scaling_enabled:                                      "false"
+      alarm_scale_in_threshold:                                   "10"
+      alarm_scale_out_threshold:                                  "50"
+      as_min_size:                                                "1"
+      as_max_size:                                                "6"
+      as_min_service:                                             "1"
+      as_max_batch_size:                                          "1"
+      cron_scale_in:                                              "00 02 * * 1-5"
+      cron_scale_out:                                             "30 14 * * 1-5"
+      health_check_grace_period:                                  "900"
+      instance_size:                                              "t2.small"
+      lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-mf-inbound-delivery-Terminating-LifeCycleHook"
+      on_hour_desired:                                            "2"
+      scale_in_out_weekdays:                                      "false"
+    mfis:
+      alarm_scale_in_enabled:                                     "false"
+      alarm_scale_out_enabled:                                    "true"
+      alarm_scale_in_threshold:                                   "100"
+      alarm_scale_out_threshold:                                  "500"
+      as_min_size:                                                "1"
+      as_max_size:                                                "3"
+      as_min_service:                                             "1"
+      as_max_batch_size:                                          "1"
+      cron_scale_in:                                              "00 02 * * 1-5"
+      cron_scale_out:                                             "30 14 * * 1-5"
+      health_check_grace_period:                                  "1800"
+      instance_size:                                              "t2.small"
+      lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-mf-inbound-submit-Terminating-LifeCycleHook"
+      policy_target_value:                                        "85"
+      on_hour_desired:                                            "2"
+      scale_in_out_weekdays:                                      "false"
     es:
       as_min_size:                                                "1"
       as_max_size:                                                "3"
@@ -133,6 +163,28 @@ aws:
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-encryption-delivery-Terminating-LifeCycleHook"
       policy_target_value:                                        "80"
+    mfos:
+      alarm_scaling_enabled:                                      "false"
+      as_min_size:                                                "1"
+      as_max_size:                                                "3"
+      as_min_service:                                             "1"
+      as_max_batch_size:                                          "1"
+      health_check_grace_period:                                  "2400"
+      instance_size:                                              "t2.small"
+      lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-mf-outbound-submit-Terminating-LifeCycleHook"
+      policy_target_value:                                        "90"
+    mfod:
+      alarm_scaling_enabled:                                      "false"
+      alarm_scale_in_threshold:                                   "10"
+      alarm_scale_out_threshold:                                  "50"
+      as_min_size:                                                "1"
+      as_max_size:                                                "6"
+      as_min_service:                                             "1"
+      as_max_batch_size:                                          "1"
+      health_check_grace_period:                                  "600"
+      instance_size:                                              "t2.small"
+      lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-mf-outbound-delivery-Launching-LifeCycleHook"
+      lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-mf-outbound-delivery-Terminating-LifeCycleHook"
     rd:
       as_min_size:                                                "1"
       as_max_size:                                                "6"
@@ -390,6 +442,18 @@ aws:
         SNSTopicEndpointProtocol:                                 "email"
         SNSTopicEndpointValue:                                    "SophosMailOps@sophos.com"
         SNSTopicName:                                             "{{sns.mailops_notification_sns_topic}}"
+    mf_outbound_delivery_sns_topic:
+      stack_name:                                                 "{{stack.sns.mf_outbound_delivery_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TagApplication:                                           "mf-outbound-delivery"
+        TopicName:                                                "{{sns.mf_outbound_delivery_sns_topic}}"
+    mf_success_events_sns_topic:
+      stack_name:                                                 "{{stack.sns.mf_success_events_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TagApplication:                                           "customer-delivery"
+        TopicName:                                                "{{sns.mf_success_events_sns_topic}}"
     msg_history_events_sns_topic:
       stack_name:                                                 "{{stack.sns.msg_history_events_sns_topic}}"
       template:                                                   "{{template.sns.sns_simple_template}}"
@@ -723,6 +787,34 @@ aws:
         Branch:                                                   "{{build.branch}}"
         Environment:                                              "{{account.name}}"
         SubscriptionName:                                         "xgemail-lifecycle"
+    mf_inbound_delivery_sqs_queue:
+      stack_name:                                                 "{{stack.sqs.mf_inbound_delivery_sqs_queue}}"
+      state:                                                      absent
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.mf_inbound_delivery_sqs_queue}}"
+        TagApplication:                                           "mf-inbound-delivery"
+    mf_inbound_delivery_sqs_queue_sns_listener:
+      stack_name:                                                 "{{stack.sqs.mf_inbound_delivery_sqs_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.mf_inbound_delivery_sqs_queue_sns_listener}}"
+        TagApplication:                                           "mf-inbound-delivery"
+    mf_outbound_delivery_sqs_queue_sns_listener:
+      stack_name:                                                 "{{stack.sqs.mf_outbound_delivery_sqs_queue_sns_listener}}"
+      state: present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.mf_outbound_delivery_sqs_queue_sns_listener}}"
+        TagApplication:                                           "mf-outbound-delivery"
+    mf_outbound_delivery_sqs_queue:
+      stack_name:                                                 "{{stack.sqs.mf_outbound_delivery_sqs_queue}}"
+      state: absent
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.mf_outbound_delivery_sqs_queue}}"
+        TagApplication:                                           "mf-outbound-delivery"
     msg_history_status_sqs_queue:
       stack_name:                                                 "{{stack.sqs.msg_history_status_sqs_queue}}"
       state:                                                      present

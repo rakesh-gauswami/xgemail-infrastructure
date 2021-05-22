@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Attribute:: default
 #
-# Copyright 2020, Sophos
+# Copyright 2021, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -211,6 +211,12 @@ default['xgemail']['beta_delivery_message_bouncer_processor_dir'] = XGEMAIL_SQS_
 default['xgemail']['beta_delivery_message_bouncer_common_dir'] = "#{XGEMAIL_SQS_MESSAGE_BOUNCER_DIR}/common"
 default['xgemail']['beta_delivery_bounce_message_processor_user'] = 'bouncer'
 
+## Mf Internet delivery DSN/NDR settings
+XGEMAIL_SQS_MESSAGE_BOUNCER_DIR ="#{XGEMAIL_FILES_DIR}/message-bouncer"
+default['xgemail']['mf_outbound_delivery_message_bouncer_processor_dir'] = XGEMAIL_SQS_MESSAGE_BOUNCER_DIR
+default['xgemail']['mf_outbound_delivery_message_bouncer_common_dir'] = "#{XGEMAIL_SQS_MESSAGE_BOUNCER_DIR}/common"
+default['xgemail']['mf_outbound_delivery_bounce_message_processor_user'] = 'bouncer'
+
 ## Risky delivery DSN/NDR settings
 default['xgemail']['risky_delivery_message_bouncer_processor_dir'] = XGEMAIL_SQS_MESSAGE_BOUNCER_DIR
 default['xgemail']['risky_delivery_message_bouncer_common_dir'] = "#{XGEMAIL_SQS_MESSAGE_BOUNCER_DIR}/common"
@@ -349,6 +355,40 @@ default['xgemail']['postfix_instance_data'] = {
     :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
     :server_type => 'ENCRYPTION_SUBMIT'
   },
+  # mf-inbound-delivery
+  'mf-inbound-delivery' => {
+    :instance_name => 'mfid',
+    :port => 25,
+    # Give delivery queues extra padding because extra content may be created during processing
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800 + 5242880),
+    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+    :server_type => 'MF_INBOUND_DELIVERY'
+  },
+  # mf-inbound-submit
+  'mf-inbound-submit' => {
+    :instance_name => 'mfis',
+    :port => 25,
+    :msg_size_limit => SUBMIT_MESSAGE_SIZE_LIMIT_BYTES,
+    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+    :server_type => 'MF_INBOUND_SUBMIT'
+  },
+  # mf-outbound-delivery
+  'mf-outbound-delivery' => {
+      :instance_name => 'mfod',
+      :port => 25,
+      # Give delivery queues extra padding because extra content may be created during processing
+      :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800 + 5242880),
+      :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+      :server_type => 'MF_OUTBOUND_DELIVERY'
+  },
+  # mf-outbound-submit
+  'mf-outbound-submit' => {
+      :instance_name => 'mfos',
+      :port => 25,
+      :msg_size_limit => SUBMIT_MESSAGE_SIZE_LIMIT_BYTES,
+      :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+      :server_type => 'MF_OUTBOUND_SUBMIT'
+  },
   # risky-delivery
   'risky-delivery' => {
     :instance_name => 'rd',
@@ -420,7 +460,7 @@ default['xgemail']['postfix_instance_data'] = {
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600 + 5242880),
     :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
     :server_type => 'DELTA_XDELIVERY'
-  },
+  }
 }
 
 ## The Postfix instance name for the encryption-delivery node

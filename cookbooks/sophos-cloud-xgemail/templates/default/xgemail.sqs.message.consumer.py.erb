@@ -651,9 +651,10 @@ def deliver_messages():
                                      .format(sqs_message.message_path, timestamp_header))
     
                         #publish from normal delivery instances and skip from  all x delivery and encryption delivery
-                        if timestamp_header is not None and NODE_TYPE in ['internet-delivery', 'customer-delivery',
+                        if timestamp_header is not None and NODE_TYPE in ['internet-delivery', 'customer-delivery', 'mf-inbound-delivery',
                                                                           'beta-delivery', 'delta-delivery',
-                                                                          'risky-delivery', 'warmup-delivery']:
+                                                                          'risky-delivery', 'warmup-delivery',
+                                                                          'mf-outbound-delivery']:
                             e2e_telemetry_data = E2ETelemetryData(queue_id,
                                                                   MESSAGE_DIRECTION,
                                                                   float(round(time.time() * 1000)) - float(timestamp_header),

@@ -37,7 +37,7 @@ else
   MULTI_POLICY_QUEUE_NAME               = "#{STATION_VPC_ID}-Xgemail_multi_policy"
 end
 
-if NODE_TYPE == 'internet-submit'
+if NODE_TYPE == 'internet-submit' || NODE_TYPE == 'mf-inbound-submit'
   POLICY_DIR                  = "config/policies/endpoints/"
   DOMAINS_DIR                 = "config/policies/domains/"
 

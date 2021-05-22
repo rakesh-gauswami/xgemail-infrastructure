@@ -91,12 +91,12 @@ MANAGED_SERVICES_IN_START_ORDER =
 
 NODE_TYPE = node['xgemail']['cluster_type']
 
-if NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'encryption-delivery' || NODE_TYPE == 'risky-delivery' || NODE_TYPE == 'warmup-delivery' || NODE_TYPE == 'beta-delivery' || NODE_TYPE == 'delta-delivery'
+if NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'mf-inbound-delivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'encryption-delivery' || NODE_TYPE == 'risky-delivery' || NODE_TYPE == 'warmup-delivery' || NODE_TYPE == 'beta-delivery' || NODE_TYPE == 'delta-delivery'
   MANAGED_SERVICES_IN_START_ORDER = [
   'postfix'
 ]
 else
-  if NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit' || NODE_TYPE == 'encryption-submit'
+  if NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit' || NODE_TYPE == 'encryption-submit' || NODE_TYPE == 'mf-inbound-submit'
     if ACCOUNT != 'sandbox'
        MANAGED_SERVICES_IN_START_ORDER = [
           JILTER_SERVICE_NAME,
