@@ -510,6 +510,12 @@ aws:
       template_parameters:
         TagApplication:                                           "xgemail-mail"
         TopicName:                                                "{{sns.o365_domainsync_events_sns_topic}}"
+    o365_mailflow_connector_sns_topic:
+      stack_name:                                                 "{{stack.sns.o365_mailflow_connector_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TagApplication:                                           "xgemail-mail"
+        TopicName:                                                "{{sns.o365_mailflow_connector_sns_topic}}"
     policy_sns_topic:
       stack_name:                                                 "{{stack.sns.policy_sns_topic}}"
       template:                                                   "{{template.sns.sns_topic_policy_s3_template}}"

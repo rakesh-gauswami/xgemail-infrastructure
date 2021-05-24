@@ -5,7 +5,7 @@
 
   "Metadata": {
     "Copyright": [
-      "Copyright 2020, Sophos Limited. All rights reserved.",
+      "Copyright 2021, Sophos Limited. All rights reserved.",
       "",
       "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
       "Sophos Limited and Sophos Group.  All other product and company",
@@ -337,6 +337,489 @@
       }
     },
 
+    "PythonSenderRecipientBlockUnblock": {
+      "Type": "AWS::SSM::Document",
+      "Properties": {
+        "DocumentType": "Automation",
+        "Content": {
+          "schemaVersion": "0.3",
+          "assumeRole": { "Fn::GetAtt": [ "PostfixAutomationRole", "Arn" ] },
+          "description": "Blocked Inbound and Outbound Sender and recipient address in all customer-submit and internet-submit Postfix instances.",
+          "parameters": {
+            "Action": {
+              "type": "String",
+              "description": "Action to list-email or list-domain block or unblock an address.",
+              "allowedValues": [
+                "block-email",
+                "block-domain",
+                "unblock-email",
+                "unblock-domain",
+                "get-email",
+                "get-domain",
+                "get-all"
+              ]
+            },
+            "Direction": {
+              "type":"String",
+              "description":"The Email Directions.",
+              "allowedValues": [
+                "outbound",
+                "inbound"
+              ]
+            },
+            "BlockEventType": {
+              "type":"String",
+              "description":"The Block Event Type.",
+              "allowedValues": [
+                "BLOCK_SENDER",
+                "BLOCK_ENVELOPE_SENDER",
+                "BLOCK_RECIPIENT"
+              ]
+            },
+            "EmailAddressOrDomain": {
+              "type": "String",
+              "description": "The sender and recipient address or domain to block in Postfix config."
+            }
+          },
+          "mainSteps": [
+            {
+              "name": "ChooseDirection",
+              "action": "aws:branch",
+              "inputs": {
+                "Choices": [
+                  {
+                    "NextStep": "FilterOutbound",
+                    "Variable": "{{Direction}}",
+                    "StringEquals": "outbound"
+                  },
+                  {
+                    "NextStep": "FilterInbound",
+                    "Variable": "{{Direction}}",
+                    "StringEquals": "inbound"
+                  }
+                ]
+              },
+              "isCritical": "true"
+            },
+            {
+              "name": "FilterOutbound",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": 3,
+              "onFailure": "Abort",
+              "inputs": {
+                "Service": "ec2",
+                "Api": "DescribeInstances",
+                "Filters": [
+                  {
+                    "Name": "tag:Application",
+                    "Values": [
+                      "customer-submit"
+                    ]
+                  },
+                  {
+                    "Name": "instance-state-name",
+                    "Values": [
+                      "running"
+                    ]
+                  }
+                ]
+              },
+              "outputs": [
+                {
+                  "Name": "InstanceIds",
+                  "Selector": "$.Reservations[0].Instances[0].InstanceId",
+                  "Type": "String"
+                }
+              ],
+              "isCritical": "true",
+              "nextStep": "ChooseActionOut"
+            },
+            {
+              "name": "ChooseActionOut",
+              "action": "aws:branch",
+              "inputs": {
+                "Choices": [
+                  {
+                    "NextStep": "PostfixConfigOutBlockEmail",
+                    "Variable": "{{Action}}",
+                    "StringEquals": "block-email"
+                  },
+                  {
+                    "NextStep": "PostfixConfigOutBlockDomain",
+                    "Variable": "{{Action}}",
+                    "StringEquals": "block-domain"
+                  },
+                  {
+                    "NextStep": "PostfixConfigOutUnblockEmail",
+                    "Variable": "{{Action}}",
+                    "StringEquals": "unblock-email"
+                  },
+                  {
+                    "NextStep": "PostfixConfigOutUnblockDomain",
+                    "Variable": "{{Action}}",
+                    "StringEquals": "unblock-domain"
+                  },
+                  {
+                    "NextStep": "PostfixConfigOutGetEmail",
+                    "Variable": "{{Action}}",
+                    "StringEquals": "get-email"
+                  },
+                  {
+                    "NextStep": "PostfixConfigOutGetDomain",
+                    "Variable": "{{Action}}",
+                    "StringEquals": "get-domain"
+                  },
+                  {
+                    "NextStep": "PostfixConfigOutGetAll",
+                    "Variable": "{{Action}}",
+                    "StringEquals": "get-all"
+                  }
+                ]
+              },
+              "isCritical": "true"
+            },
+            {
+              "name": "PostfixConfigOutBlockEmail",
+              "action": "aws:runCommand",
+              "maxAttempts": 3,
+              "timeoutSeconds": 3600,
+              "inputs": {
+                "DocumentName": "AWS-RunShellScript",
+                "InstanceIds": [ "{{FilterOutbound.InstanceIds}}" ],
+                "Parameters": {
+                  "commands": [
+                    "python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --direction {{Direction}} --event-type {{BlockEventType}} --block --email-address {{EmailAddressOrDomain}}"
+                  ]
+                }
+              },
+              "isCritical": "true",
+              "isEnd": "true"
+            },
+            {
+              "name": "PostfixConfigOutBlockDomain",
+              "action": "aws:runCommand",
+              "maxAttempts": 3,
+              "timeoutSeconds": 3600,
+              "inputs": {
+                "DocumentName": "AWS-RunShellScript",
+                "InstanceIds": [ "{{FilterOutbound.InstanceIds}}" ],
+                "Parameters": {
+                  "commands": [
+                    "python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --direction {{Direction}} --event-type {{BlockEventType}} --block --domain {{EmailAddressOrDomain}}"
+                  ]
+                }
+              },
+              "isCritical": "true",
+              "isEnd": "true"
+            },
+            {
+              "name": "PostfixConfigOutUnblockEmail",
+              "action": "aws:runCommand",
+              "maxAttempts": 3,
+              "timeoutSeconds": 3600,
+              "inputs": {
+                "DocumentName": "AWS-RunShellScript",
+                "InstanceIds": [ "{{FilterOutbound.InstanceIds}}" ],
+                "Parameters": {
+                  "commands": [
+                    "python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --direction {{Direction}} --event-type {{BlockEventType}} --unblock --email-address {{EmailAddressOrDomain}}"
+                  ]
+                }
+              },
+              "isCritical": "true",
+              "isEnd": "true"
+            },
+            {
+              "name": "PostfixConfigOutUnblockDomain",
+              "action": "aws:runCommand",
+              "maxAttempts": 3,
+              "timeoutSeconds": 3600,
+              "inputs": {
+                "DocumentName": "AWS-RunShellScript",
+                "InstanceIds": [ "{{FilterOutbound.InstanceIds}}" ],
+                "Parameters": {
+                  "commands": [
+                    "python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --direction {{Direction}} --event-type {{BlockEventType}} --unblock --domain {{EmailAddressOrDomain}}"
+                  ]
+                }
+              },
+              "isCritical": "true",
+              "isEnd": "true"
+            },
+            {
+              "name": "PostfixConfigOutGetEmail",
+              "action": "aws:runCommand",
+              "maxAttempts": 3,
+              "timeoutSeconds": 3600,
+              "inputs": {
+                "DocumentName": "AWS-RunShellScript",
+                "InstanceIds": [ "{{FilterOutbound.InstanceIds}}" ],
+                "Parameters": {
+                  "commands": [
+                    "python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --direction {{Direction}} --get-email {{EmailAddressOrDomain}}"
+                  ]
+                }
+              },
+              "isCritical": "true",
+              "isEnd": "true"
+            },
+            {
+              "name": "PostfixConfigOutGetDomain",
+              "action": "aws:runCommand",
+              "maxAttempts": 3,
+              "timeoutSeconds": 3600,
+              "inputs": {
+                "DocumentName": "AWS-RunShellScript",
+                "InstanceIds": [ "{{FilterOutbound.InstanceIds}}" ],
+                "Parameters": {
+                  "commands": [
+                    "python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --direction {{Direction}} --get-domain {{EmailAddressOrDomain}}"
+                  ]
+                }
+              },
+              "isCritical": "true",
+              "isEnd": "true"
+            },
+            {
+              "name": "PostfixConfigOutGetAll",
+              "action": "aws:runCommand",
+              "maxAttempts": 3,
+              "timeoutSeconds": 3600,
+              "inputs": {
+                "DocumentName": "AWS-RunShellScript",
+                "InstanceIds": [ "{{FilterOutbound.InstanceIds}}" ],
+                "Parameters": {
+                  "commands": [
+                    "python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --direction {{Direction}} --get-all"
+                  ]
+                }
+              },
+              "isCritical": "true",
+              "isEnd": "true"
+            },
+            {
+              "name": "FilterInbound",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": 3,
+              "onFailure": "Abort",
+              "inputs": {
+                "Service": "ec2",
+                "Api": "DescribeInstances",
+                "Filters": [
+                  {
+                    "Name": "tag:Application",
+                    "Values": [
+                      "internet-submit"
+                    ]
+                  },
+                  {
+                    "Name": "instance-state-name",
+                    "Values": [
+                      "running"
+                    ]
+                  }
+                ]
+              },
+              "outputs": [
+                {
+                  "Name": "InstanceIds",
+                  "Selector": "$.Reservations[0].Instances[0].InstanceId",
+                  "Type": "String"
+                }
+              ],
+              "isCritical": "true",
+              "nextStep": "ChooseActionIn"
+            },
+            {
+              "name": "ChooseActionIn",
+              "action": "aws:branch",
+              "inputs": {
+                "Choices": [
+                  {
+                    "NextStep": "PostfixConfigInBlockEmail",
+                    "Variable": "{{Action}}",
+                    "StringEquals": "block-email"
+                  },
+                  {
+                    "NextStep": "PostfixConfigInBlockDomain",
+                    "Variable": "{{Action}}",
+                    "StringEquals": "block-domain"
+                  },
+                  {
+                    "NextStep": "PostfixConfigInUnblockEmail",
+                    "Variable": "{{Action}}",
+                    "StringEquals": "unblock-email"
+                  },
+                  {
+                    "NextStep": "PostfixConfigInUnblockDomain",
+                    "Variable": "{{Action}}",
+                    "StringEquals": "unblock-domain"
+                  },
+                  {
+                    "NextStep": "PostfixConfigInGetEmail",
+                    "Variable": "{{Action}}",
+                    "StringEquals": "get-email"
+                  },
+                  {
+                    "NextStep": "PostfixConfigInGetDomain",
+                    "Variable": "{{Action}}",
+                    "StringEquals": "get-domain"
+                  },
+                  {
+                    "NextStep": "PostfixConfigInGetAll",
+                    "Variable": "{{Action}}",
+                    "StringEquals": "get-all"
+                  }
+                ]
+              },
+              "isCritical": "true"
+            },
+            {
+              "name": "PostfixConfigInBlockEmail",
+              "action": "aws:runCommand",
+              "maxAttempts": 3,
+              "timeoutSeconds": 3600,
+              "inputs": {
+                "DocumentName": "AWS-RunShellScript",
+                "InstanceIds": [ "{{FilterInbound.InstanceIds}}" ],
+                "Parameters": {
+                  "commands": [
+                    "python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --direction {{Direction}} --event-type {{BlockEventType}} --block --email-address {{EmailAddressOrDomain}}"
+                  ]
+                }
+              },
+              "isCritical": "true",
+              "isEnd": "true"
+            },
+            {
+              "name": "PostfixConfigInBlockDomain",
+              "action": "aws:runCommand",
+              "maxAttempts": 3,
+              "timeoutSeconds": 3600,
+              "inputs": {
+                "DocumentName": "AWS-RunShellScript",
+                "InstanceIds": [ "{{FilterInbound.InstanceIds}}" ],
+                "Parameters": {
+                  "commands": [
+                    "python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --direction {{Direction}} --event-type {{BlockEventType}} --block --domain {{EmailAddressOrDomain}}"
+                  ]
+                }
+              },
+              "isCritical": "true",
+              "isEnd": "true"
+            },
+            {
+              "name": "PostfixConfigInUnblockEmail",
+              "action": "aws:runCommand",
+              "maxAttempts": 3,
+              "timeoutSeconds": 3600,
+              "inputs": {
+                "DocumentName": "AWS-RunShellScript",
+                "InstanceIds": [ "{{FilterInbound.InstanceIds}}" ],
+                "Parameters": {
+                  "commands": [
+                    "python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --direction {{Direction}} --event-type {{BlockEventType}} --unblock --email-address {{EmailAddressOrDomain}}"
+                  ]
+                }
+              },
+              "isCritical": "true",
+              "isEnd": "true"
+            },
+            {
+              "name": "PostfixConfigInUnblockDomain",
+              "action": "aws:runCommand",
+              "maxAttempts": 3,
+              "timeoutSeconds": 3600,
+              "inputs": {
+                "DocumentName": "AWS-RunShellScript",
+                "InstanceIds": [ "{{FilterInbound.InstanceIds}}" ],
+                "Parameters": {
+                  "commands": [
+                    "python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --direction {{Direction}} --event-type {{BlockEventType}} --unblock --domain {{EmailAddressOrDomain}}"
+                  ]
+                }
+              },
+              "isCritical": "true",
+              "isEnd": "true"
+            },
+            {
+              "name": "PostfixConfigInGetEmail",
+              "action": "aws:runCommand",
+              "maxAttempts": 3,
+              "timeoutSeconds": 3600,
+              "inputs": {
+                "DocumentName": "AWS-RunShellScript",
+                "InstanceIds": [ "{{FilterInbound.InstanceIds}}" ],
+                "Parameters": {
+                  "commands": [
+                    "python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --direction {{Direction}} --get-email {{EmailAddressOrDomain}}"
+                  ]
+                }
+              },
+              "isCritical": "true",
+              "isEnd": "true"
+            },
+            {
+              "name": "PostfixConfigInGetDomain",
+              "action": "aws:runCommand",
+              "maxAttempts": 3,
+              "timeoutSeconds": 3600,
+              "inputs": {
+                "DocumentName": "AWS-RunShellScript",
+                "InstanceIds": [ "{{FilterInbound.InstanceIds}}" ],
+                "Parameters": {
+                  "commands": [
+                    "python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --direction {{Direction}} --get-domain {{EmailAddressOrDomain}}"
+                  ]
+                }
+              },
+              "isCritical": "true",
+              "isEnd": "true"
+            },
+            {
+              "name": "PostfixConfigInGetAll",
+              "action": "aws:runCommand",
+              "maxAttempts": 3,
+              "timeoutSeconds": 3600,
+              "inputs": {
+                "DocumentName": "AWS-RunShellScript",
+                "InstanceIds": [ "{{FilterInbound.InstanceIds}}" ],
+                "Parameters": {
+                  "commands": [
+                    "python /opt/sophos/xgemail/utils/sender-and-recipient-block.py --direction {{Direction}} --get-all"
+                  ]
+                }
+              },
+              "isCritical": "true",
+              "isEnd": "true"
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref": "AWS::StackName" }, "PythonSenderRecipientBlockUnblock" ] ] }
+          },
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
+      }
+    },
+
     "PostfixAutomationRole" : {
       "Type": "AWS::IAM::Role",
       "Properties": {
@@ -461,6 +944,10 @@
     "PythonCommandBlockUnblockCustomer" : {
       "Description" : "SSM Python Command to Block or Unblock Customer document name",
       "Value" : { "Ref" : "PythonCommandBlockUnblockCustomer" }
+    },
+    "PythonSenderRecipientBlockUnblock" : {
+      "Description" : "SSM Python Command to Block or Unblock Sender or Recipient document name",
+      "Value" : { "Ref" : "PythonSenderRecipientBlockUnblock" }
     },
     "PostfixAutomationRole": {
       "Description": "Postfix Automation role",
