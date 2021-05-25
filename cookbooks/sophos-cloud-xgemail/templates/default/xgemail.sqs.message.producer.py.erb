@@ -78,8 +78,8 @@ MAIL_FLOW_ROOT_DIR = ROOT_DIR + "/mailflow"
 TIMESTAMP_FORMAT = "%Y/%m/%d/%H/%M"
 
 #EmailProductType
-GATEWAY = "Gateway"
-MAIL_FLOW = "MailFlow"
+GATEWAY = "GATEWAY"
+MAILFLOW = "MAILFLOW"
 
 # logging to syslog setup
 logging.getLogger("botocore").setLevel(logging.WARNING)
@@ -123,7 +123,7 @@ routingmanager = RoutingManager(
 #get email product type
 def get_email_product_type():
     if SUBMIT_TYPE == MF_INBOUND or SUBMIT_TYPE == MF_OUTBOUND:
-        return MAIL_FLOW
+        return MAILFLOW
     else:
         return GATEWAY
 
@@ -639,7 +639,7 @@ def update_msghistory_event_and_get_message_context(msghistory_events, s3_file_p
 
 def get_s3_path(queue_id, domain):
     root_dir = None
-    if get_email_product_type() == MAIL_FLOW:
+    if get_email_product_type() == MAILFLOW:
         root_dir = MAIL_FLOW_ROOT_DIR
     else:
         root_dir = ROOT_DIR
