@@ -256,6 +256,7 @@
         "RawMessageDelivery": "true"
       }
     },
+
     "BetaDeliveryQueuePolicy": {
       "Type": "AWS::SQS::QueuePolicy",
       "Properties": {
@@ -350,6 +351,54 @@
         },
         "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "SenderCheckRejectQueue" }]]}
         ]
+      }
+    },
+    "MfInboundDeliveryQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "MfInboundDeliveryQueuePolicy",
+          "Statement": [
+            {
+              "Sid": "Allow-MfSuccessEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "MfSuccessEventsTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "MfInboundDeliveryQueue" }]]}]
+      }
+    },
+    "MfOutboundDeliveryQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "MfOutboundDeliveryQueuePolicy",
+          "Statement": [
+            {
+              "Sid": "Allow-MfOutboundDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "MfOutboundDeliveryTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "MfOutboundDeliveryQueue" }]]}]
       }
     },
     "O365DisconnectTopicPolicy": {
