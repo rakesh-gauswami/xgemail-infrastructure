@@ -59,7 +59,8 @@ class MetadataTest(unittest.TestCase):
             "queue_id": "42c6b66mZYz1V", 
             "sender_ip": "1.2.3.4",
             "x_sophos_email_id":"e6592dab-ae0e-466c-86b1-c891eda752d8",
-            "is_microservice_request": False
+            "is_microservice_request": False,
+            "email_product_type": "GATEWAY"
         }
         self.assertEquals(
             json.dumps(self.metadata.get_metadata_json(), sort_keys=True), 
@@ -87,7 +88,8 @@ class MetadataTest(unittest.TestCase):
             "queue_id": "42c6b66mZYz1V",
             "sender_ip": "1.2.3.4",
             "x_sophos_email_id": None,
-            "is_microservice_request": False
+            "is_microservice_request": False,
+            "email_product_type": "GATEWAY"
         }
         self.assertEquals(
             json.dumps(metadata.get_metadata_json(), sort_keys=True),

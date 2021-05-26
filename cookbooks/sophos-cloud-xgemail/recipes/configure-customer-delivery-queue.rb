@@ -61,25 +61,46 @@ file "#{HEADER_CHECKS_PATH}" do
   group 'root'
 end
 
-CONFIGURATION_COMMANDS =
-  [
-    'bounce_queue_lifetime=0',
-    "hopcount_limit = #{HOP_COUNT_DELIVERY_INSTANCE}",
-    "smtp_fallback_relay = #{SMTP_FALLBACK_RELAY}",
-    'smtp_tls_security_level=may',
-    'smtp_tls_ciphers=high',
-    'smtp_tls_mandatory_ciphers=high',
-    'smtp_tls_mandatory_protocols = TLSv1.2',
-    'smtp_tls_loglevel=1',
-    'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache'
+if NODE_TYPE == 'mf-inbound-delivery'
+  #when node type is mf-inbound-delivery
+  CONFIGURATION_COMMANDS =
+      [
+          'bounce_queue_lifetime=0',
+          "hopcount_limit = #{HOP_COUNT_DELIVERY_INSTANCE}",
+          "smtp_fallback_relay = #{SMTP_FALLBACK_RELAY}",
+          'smtp_tls_security_level = encrypt',
+          'smtp_tls_ciphers=high',
+          'smtp_tls_mandatory_ciphers = high',
+          'smtp_tls_mandatory_protocols = !SSLv2,!SSLv3,!TLSv1,!TLSv1.1,TLSv1.2',
+          'smtp_tls_protocols = !SSLv2,!SSLv3,!TLSv1,!TLSv1.1,TLSv1.2',
+          'smtp_tls_loglevel=1',
+          'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache'
+      ]
 
-    # TODO XGE-8891
-    # Once we're fully cut over to push policy, uncomment the header_checks line below
-    # "header_checks=regexp:#{HEADER_CHECKS_PATH}"
-  ]
+  CONFIGURATION_COMMANDS.each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+  end
+else
+  CONFIGURATION_COMMANDS =
+      [
+          'bounce_queue_lifetime=0',
+          "hopcount_limit = #{HOP_COUNT_DELIVERY_INSTANCE}",
+          "smtp_fallback_relay = #{SMTP_FALLBACK_RELAY}",
+          'smtp_tls_security_level=may',
+          'smtp_tls_ciphers=high',
+          'smtp_tls_mandatory_ciphers=high',
+          'smtp_tls_mandatory_protocols = TLSv1.2',
+          'smtp_tls_loglevel=1',
+          'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache'
 
-CONFIGURATION_COMMANDS.each do | cur |
-  execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+      # TODO XGE-8891
+      # Once we're fully cut over to push policy, uncomment the header_checks line below
+      # "header_checks=regexp:#{HEADER_CHECKS_PATH}"
+      ]
+
+  CONFIGURATION_COMMANDS.each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+  end
 end
 
 
