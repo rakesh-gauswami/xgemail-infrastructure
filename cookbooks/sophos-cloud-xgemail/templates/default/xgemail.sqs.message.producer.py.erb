@@ -817,7 +817,7 @@ def get_message_headers(message):
     return Parser().parsestr(message, headersonly=True)
 
 
-def outbound_split_by_recipients(metadata, domain, message, direction, message_attributes=None):
+def outbound_split_by_recipients(metadata, sender, domain, message, direction, message_attributes=None):
 
     # required logging for XgemailTestBase automation test
     logger.info("Metadata json info [{0}]".format(metadata))
@@ -959,7 +959,7 @@ def main():
             logger.debug("Outbound split flag is set to {0} for metadata {1} ".format(outbound_split,metadata));
 
             if outbound_split:
-                return outbound_split_by_recipients(metadata,domain,plaintext_message,direction)
+                return outbound_split_by_recipients(metadata,sender,domain,plaintext_message,direction)
 
         elif MF_OUTBOUND == SUBMIT_TYPE:
             direction = OUTBOUND_MESSAGE_DIRECTION
