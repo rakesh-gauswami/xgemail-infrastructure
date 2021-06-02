@@ -27,7 +27,7 @@ class Metadata:
                  recipients,
                  x_sophos_email_id = None,
                  is_microservice_request=False,
-                 email_product_type="GATEWAY"):
+                 email_product_type="Gateway"):
         self.schema_version = schema_version
         self.sender_ip = sender_ip
         self.sender_address = sender_address
