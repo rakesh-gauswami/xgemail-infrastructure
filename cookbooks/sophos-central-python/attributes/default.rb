@@ -14,7 +14,7 @@
 
 # JSON data encoder and decoder.
 # Can handle decoding JSON strings with unquoted keys, e.g. { a: 1 }.
-default["pip3"]["demjson"]["version"] = "2.2.4"
+default["pip"]["demjson"]["version"] = "2.2.4"
 
 # DNS client library.
 # Used by pymongo to support SRV records for client seeding.
