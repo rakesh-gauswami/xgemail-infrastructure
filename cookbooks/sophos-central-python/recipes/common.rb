@@ -30,9 +30,9 @@ directory common_cookbook_install_dir do
 end
 
 # Useful packages from pip.
-node["pip3"].each_key do |package|
+node["pip"].each_key do |package|
   python_package package do
-    version = node["pip3"][package]["version"]
+    version = node["pip"][package]["version"]
   end
 end
 
