@@ -78,8 +78,8 @@ MAIL_FLOW_ROOT_DIR = ROOT_DIR + "/mailflow"
 TIMESTAMP_FORMAT = "%Y/%m/%d/%H/%M"
 
 #EmailProductType
-GATEWAY = "GATEWAY"
-MAILFLOW = "MAILFLOW"
+GATEWAY = "Gateway"
+MAILFLOW = "Mailflow"
 
 # logging to syslog setup
 logging.getLogger("botocore").setLevel(logging.WARNING)
@@ -374,7 +374,7 @@ def get_metadata_for_outbound(metadata, headers):
         metadata.get_recipient_domain(),
         metadata.get_recipients(),
         metadata.get_x_sophos_email_id(),
-        metadata.is_microservice_request(),
+        metadata.is_microservice_request,
         metadata.get_email_product_type()
     )
 

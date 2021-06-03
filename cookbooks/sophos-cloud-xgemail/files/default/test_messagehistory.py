@@ -26,8 +26,8 @@ from metadata import Metadata
 
 #EmailProductType
 EMAIL_PRODUCT_TYPE = "email_product_type"
-GATEWAY = "GATEWAY"
-MAILFLOW = "MAILFLOW"
+GATEWAY = "Gateway"
+MAILFLOW = "Mailflow"
 
 class MessageHistoryTest(unittest.TestCase):
 
