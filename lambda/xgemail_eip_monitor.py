@@ -41,7 +41,7 @@ class HetrixToolsApi(object):
         self.api_key = s3.get_object(
             Bucket='cloud-' + account + '-connections',
             Key='xgemail-hetrixtools-apikey'
-        )['Body'].read().rstrip('\n')
+        )['Body'].read().decode("utf-8").rstrip('\n')
         self.base_url = 'https://api.hetrixtools.com/v2/' + self.api_key + '/'
 
     def blacklist_check(self, ip):
