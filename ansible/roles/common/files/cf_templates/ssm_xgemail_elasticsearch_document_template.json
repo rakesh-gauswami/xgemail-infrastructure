@@ -33,7 +33,7 @@
         "Content": {
           "schemaVersion": "0.3",
           "assumeRole": { "Fn::GetAtt": [ "ElasticsearchAutomationRole", "Arn" ] },
-          "description": "Elasticsearch restart in all data nodes instances.",
+          "description": "Elasticsearch client node health check and data-node service restart and elasticsearch instance reboot.",
           "mainSteps": [
             {
               "name": "getInstanceIds",
@@ -45,7 +45,7 @@
                 "Api": "DescribeInstances",
                 "Filters": [
                   {
-                    "Name": "tag:Application",
+                    "Name": "tag:Name",
                     "Values": [
                       "elasticsearch-data"
                     ]
@@ -66,10 +66,31 @@
                 }
               ],
               "isCritical": "true",
-              "nextStep": "Elasticsearchconfig"
+              "nextStep": "ChooseActionOut"
             },
             {
-              "name": "Elasticsearchconfig",
+              "name": "ChooseActionOut",
+              "action": "aws:branch",
+              "inputs": {
+                "Choices": [
+                  {
+                    "NextStep": "Elasticsearch-health-status",
+                    "Variable": "{{Action}}"
+                  },
+                  {
+                    "NextStep": "Elasticsearch-service-restart",
+                    "Variable": "{{Action}}"
+                  },
+                  {
+                    "NextStep": "Elasticsearch-instance-restart",
+                    "Variable": "{{Action}}"
+                  }
+                ]
+              },
+              "isCritical": "true"
+            },
+            {
+              "name": "Elasticsearch-health-status",
               "action": "aws:runCommand",
               "maxAttempts": 3,
               "timeoutSeconds": 3600,
@@ -78,7 +99,45 @@
                 "InstanceIds": [ "{{getInstanceIds.InstanceIds}}" ],
                 "Parameters": {
                   "commands": [
-                    "mkdir /opt/debi-test"
+                    "curl -XGET 'http://localhost:9200/_cluster/health?pretty=true';curl -XGET 'http://localhost:9200/_cat/nodes?v&h=name,node.role,master,heap.percent'"
+                  ]
+                }
+              },
+              "isCritical": "true",
+              "isEnd": "true"
+            },
+            {
+              "name": "Elasticsearch-health-status",
+              "action": "aws:runCommand",
+              "maxAttempts": 3,
+              "timeoutSeconds": 3600,
+              "inputs": {
+                "DocumentName": "AWS-RunShellScript",
+                "InstanceIds": [
+                  "{{getInstanceIds.InstanceIds}}"
+                ],
+                "Parameters": {
+                  "commands": [
+                    "service elasticsearch status;service elasticsearch stop;sleep 10;service elasticsearch start;sleep 10;service elasticsearch status"
+                  ]
+                }
+              },
+              "isCritical": "true",
+              "isEnd": "true"
+            },
+            {
+              "name": "Elasticsearch-instance-restart",
+              "action": "aws:runCommand",
+              "maxAttempts": 3,
+              "timeoutSeconds": 3600,
+              "inputs": {
+                "DocumentName": "AWS-RunShellScript",
+                "InstanceIds": [
+                  "{{getInstanceIds.InstanceIds}}"
+                ],
+                "Parameters": {
+                  "commands": [
+                    "service elasticsearch status;service elasticsearch stop;sleep 10;/sbin/reboot;sleep 20;uptime;service elasticsearch status"
                   ]
                 }
               },
@@ -227,7 +286,7 @@
 
   "Outputs" : {
     "ElasticsearchRestart" : {
-      "Description" : "SSM Elasticsearch restart in all data nodes instances",
+      "Description" : "SSM Elasticsearch client node health check and data-node service restart and elasticsearch instance reboot",
       "Value" : { "Ref" : "ElasticsearchRestart" }
     },
     "ElasticsearchAutomationRole": {
