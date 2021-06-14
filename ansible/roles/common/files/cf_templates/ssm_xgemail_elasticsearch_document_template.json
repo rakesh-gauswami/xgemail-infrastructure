@@ -47,7 +47,7 @@
                   {
                     "Name": "tag:Name",
                     "Values": [
-                      "elasticsearch-data"
+                      "elasticsearch-client"
                     ]
                   },
                   {
@@ -66,31 +66,7 @@
                 }
               ],
               "isCritical": "true",
-              "nextStep": "ChooseActionOut"
-            },
-            {
-              "name": "ChooseActionOut",
-              "action": "aws:branch",
-              "inputs": {
-                "Choices": [
-                  {
-                    "NextStep": "Elasticsearch-health-status",
-                    "Variable": "{{Action}}",
-                    "StringEquals": "health-status"
-                  },
-                  {
-                    "NextStep": "Elasticsearch-service-restart",
-                    "Variable": "{{Action}}",
-                    "StringEquals": "service-restart"
-                  },
-                  {
-                    "NextStep": "Elasticsearch-instance-restart",
-                    "Variable": "{{Action}}",
-                    "StringEquals": "instance-restart"
-                  }
-                ]
-              },
-              "isCritical": "true"
+              "NextStep": "Elasticsearch-health-status"
             },
             {
               "name": "Elasticsearch-health-status",
