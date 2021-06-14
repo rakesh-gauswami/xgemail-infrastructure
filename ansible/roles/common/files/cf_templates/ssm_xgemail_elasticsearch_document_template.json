@@ -65,14 +65,9 @@
                   "Type": "StringList"
                 }
               ],
-              "isCritical": "true",
-              "nextStep": "ChooseActionOut"
+              "isCritical": "true"
             },
-            {
-              "name": "ChooseActionOut",
-              "action": "aws:branch",
-              "inputs": {
-                "Choices": [
+              [
                   {
                     "NextStep": "Elasticsearch-health-status",
                     "Variable": "{{Action}}"
@@ -85,11 +80,9 @@
                     "NextStep": "Elasticsearch-instance-restart",
                     "Variable": "{{Action}}"
                   }
-                ]
-              },
-              "isCritical": "true"
-            },
-            {
+                      ],
+
+              {
               "name": "Elasticsearch-health-status",
               "action": "aws:runCommand",
               "maxAttempts": 3,
