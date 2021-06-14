@@ -66,7 +66,7 @@
                 }
               ],
               "isCritical": "true",
-              "NextStep": "Elasticsearch-health-status"
+              "nextstep": "Elasticsearch-health-status"
             },
             {
               "name": "Elasticsearch-health-status",
@@ -86,42 +86,6 @@
               "isEnd": "true"
             },
             {
-              "name": "Elasticsearch-service-restart",
-              "action": "aws:runCommand",
-              "maxAttempts": 3,
-              "timeoutSeconds": 3600,
-              "inputs": {
-                "DocumentName": "AWS-RunShellScript",
-                "InstanceIds": [
-                  "{{getInstanceIds.InstanceIds}}"
-                ],
-                "Parameters": {
-                  "commands": [
-                    "service elasticsearch status;service elasticsearch stop;sleep 10;service elasticsearch start;sleep 10;service elasticsearch status"
-                  ]
-                }
-              },
-              "isCritical": "true",
-              "isEnd": "true"
-            },
-            {
-              "name": "Elasticsearch-instance-restart",
-              "action": "aws:runCommand",
-              "maxAttempts": 3,
-              "timeoutSeconds": 3600,
-              "inputs": {
-                "DocumentName": "AWS-RunShellScript",
-                "InstanceIds": [
-                  "{{getInstanceIds.InstanceIds}}"
-                ],
-                "Parameters": {
-                  "commands": [
-                    "service elasticsearch status;service elasticsearch stop;sleep 10;/sbin/reboot;sleep 20;uptime;service elasticsearch status"
-                  ]
-                }
-              },
-              "isCritical": "true",
-              "isEnd": "true"
             }
           ]
         },
