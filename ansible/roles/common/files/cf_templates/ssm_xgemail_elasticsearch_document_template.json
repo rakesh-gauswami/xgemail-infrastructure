@@ -26,7 +26,7 @@
   },
 
   "Resources": {
-    "ES-Cluster-Health-Check": {
+    "ESClusterHealthCheck": {
       "Type": "AWS::SSM::Document",
       "Properties": {
         "DocumentType": "Automation",
@@ -97,7 +97,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": { "Fn::Join": [ "-", [ { "Ref": "AWS::StackName" }, "ES-Cluster-Health-Check" ] ] }
+            "Value": { "Fn::Join": [ "-", [ { "Ref": "AWS::StackName" }, "ESClusterHealthCheck" ] ] }
           },
           {
             "Key": "Application",
@@ -233,9 +233,9 @@
   },
 
   "Outputs" : {
-    "ES-Cluster-Health-Check" : {
+    "ESClusterHealthCheck" : {
       "Description" : "SSM Elasticsearch client node health check and data-node service restart and elasticsearch instance reboot",
-      "Value" : { "Ref" : "ES-Cluster-Health-Check" }
+      "Value" : { "Ref" : "ESClusterHealthCheck" }
     },
     "ElasticsearchAutomationRole": {
       "Description": "Elasticsearch Automation Role",
