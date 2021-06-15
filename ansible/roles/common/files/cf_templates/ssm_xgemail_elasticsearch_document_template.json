@@ -26,7 +26,7 @@
   },
 
   "Resources": {
-    "ElasticsearchRestart": {
+    "ES-Cluster-Health-Check": {
       "Type": "AWS::SSM::Document",
       "Properties": {
         "DocumentType": "Automation",
@@ -34,6 +34,13 @@
           "schemaVersion": "0.3",
           "assumeRole": { "Fn::GetAtt": [ "ElasticsearchAutomationRole", "Arn" ] },
           "description": "Elasticsearch client node health check and data-node service restart and elasticsearch instance reboot.",
+          "parameters": {
+            "Message": {
+              "type": "String",
+              "description": "elasticsearch-client",
+              "default": "to check elasticsearch-client health & cpu status"
+            }
+          },
           "mainSteps": [
             {
               "name": "getInstanceIds",
@@ -66,10 +73,10 @@
                 }
               ],
               "isCritical": "true",
-              "nextStep": "Elasticsearch-health-status"
+              "nextStep": "ES-health-check"
             },
             {
-              "name": "Elasticsearch-health-status",
+              "name": "ES-health-check",
               "action": "aws:runCommand",
               "maxAttempts": 3,
               "timeoutSeconds": 3600,
@@ -90,7 +97,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": { "Fn::Join": [ "-", [ { "Ref": "AWS::StackName" }, "ElasticsearchRestart" ] ] }
+            "Value": { "Fn::Join": [ "-", [ { "Ref": "AWS::StackName" }, "ES-Cluster-Health-Check" ] ] }
           },
           {
             "Key": "Application",
@@ -226,9 +233,9 @@
   },
 
   "Outputs" : {
-    "ElasticsearchRestart" : {
+    "ES-Cluster-Health-Check" : {
       "Description" : "SSM Elasticsearch client node health check and data-node service restart and elasticsearch instance reboot",
-      "Value" : { "Ref" : "ElasticsearchRestart" }
+      "Value" : { "Ref" : "ES-Cluster-Health-Check" }
     },
     "ElasticsearchAutomationRole": {
       "Description": "Elasticsearch Automation Role",
