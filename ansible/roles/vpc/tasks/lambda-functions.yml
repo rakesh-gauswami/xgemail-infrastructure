@@ -107,7 +107,7 @@
     src:                "{{tmp_artifacts_dir}}/xgemail_mf_elb_o365_ip_sync.zip"
     overwrite:          always
 
-- name: "Deploy EIP Rotation Lambda Function {{stack.lambda.mf_elb_o365_ip_sync_lambda_function}} to {{account.name}}-{{account.region}}"
+- name: "Deploy MF ELB Office365 IP Sync Lambda Function {{stack.lambda.mf_elb_o365_ip_sync_lambda_function}} to {{account.name}}-{{account.region}}"
   cloudformation:
     stack_name:                             "{{stack.lambda.mf_elb_o365_ip_sync_lambda_function}}"
     state:                                  present
@@ -117,7 +117,7 @@
     template_parameters:
       Environment:                          "{{account.name}}"
       FunctionName:                         "{{lambda.mf_elb_o365_ip_sync_lambda_function}}"
-      HandlerName:                          xgemail_mf_elb_o365_ip_sync.eip_rotation_handler
+      HandlerName:                          xgemail_mf_elb_o365_ip_sync.lambda_handler
       IAMRoleArn:                           "{{iam_stack.stack_outputs.MfElbO365IpSyncLambdaExecutionRoleArn}}"
       S3Bucket:                             "{{s3.lambda_bucket}}"
       S3Key:                                "lambda/{{build.number}}/xgemail_mf_elb_o365_ip_sync.zip"
