@@ -121,9 +121,7 @@
       IAMRoleArn:                           "{{iam_stack.stack_outputs.MfElbO365IpSyncLambdaExecutionRoleArn}}"
       S3Bucket:                             "{{s3.lambda_bucket}}"
       S3Key:                                "lambda/{{build.number}}/xgemail_mf_elb_o365_ip_sync.zip"
-      ScheduleExpression:                   rate(60 minutes)
-      SsmPostfixService:                    "{{ssm_stack.stack_outputs.PostfixService}}"
-      SsmUpdateHostname:                    "{{ssm_stack.stack_outputs.UpdateHostname}}"
+      ScheduleExpression:                   rate(5 minutes)
   register: mf_elb_o365_ip_sync_stack
 
 - debug:

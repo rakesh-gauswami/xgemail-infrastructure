@@ -77,21 +77,11 @@
     "ScheduleState": {
       "Description": "The state of the scheduled event. ENABLED or DISABLED",
       "Type": "String",
-      "Default": "DISABLED",
+      "Default": "ENABLED",
       "AllowedValues": [
         "ENABLED",
         "DISABLED"
       ]
-    },
-
-    "SsmPostfixService": {
-      "Description": "The SSM Document to Start or Stop Postfix.",
-      "Type": "String"
-    },
-
-    "SsmUpdateHostname": {
-      "Description": "The SSM Document to Update the Hostname.",
-      "Type": "String"
     },
 
     "Timeout": {
@@ -123,9 +113,7 @@
         "Description": { "Ref": "FunctionDescription" },
         "Environment": {
           "Variables": {
-            "ACCOUNT": { "Ref": "Environment" },
-            "SSM_POSTFIX_SERVICE": { "Ref": "SsmPostfixService" },
-            "SSM_UPDATE_HOSTNAME": { "Ref": "SsmUpdateHostname" }
+            "ACCOUNT": { "Ref": "Environment" }
           }
         },
         "FunctionName": {
