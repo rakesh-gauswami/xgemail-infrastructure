@@ -1007,32 +1007,6 @@
       }
     },
 
-    "XgemailMfInboundSubmitSecurityGroupLbIngressWorldSmtp": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Condition" : "OpenToWorld",
-      "Description" : "TCP/25 0.0.0.0/0 to mf-inbound-submit",
-      "Properties": {
-        "GroupId": { "Ref": "XgemailMfInboundSubmitSecurityGroupLb" },
-        "CidrIp": "0.0.0.0/0",
-        "IpProtocol": "tcp",
-        "FromPort": "25",
-        "ToPort": "25"
-      }
-    },
-
-    "XgemailMfInboundSubmitSecurityGroupLbIngressWorldSmtpTls": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Condition" : "OpenToWorld",
-      "Description" : "TCP/587 0.0.0.0/0 to mf-inbound-submit",
-      "Properties": {
-        "GroupId": { "Ref": "XgemailMfInboundSubmitSecurityGroupLb" },
-        "CidrIp": "0.0.0.0/0",
-        "IpProtocol": "tcp",
-        "FromPort": "587",
-        "ToPort": "587"
-      }
-    },
-
     "XgemailMfInboundSubmitSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
@@ -2030,32 +2004,6 @@
         "VpcId": {
           "Ref": "Vpc"
         }
-      }
-    },
-
-    "XgemailMfOutboundSubmitSecurityGroupLbIngressWorldSmtp": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Condition" : "OpenToWorld",
-      "Description" : "TCP/25 0.0.0.0/0 to mf-outbound-submit",
-      "Properties": {
-        "GroupId": { "Ref": "XgemailMfOutboundSubmitSecurityGroupLb" },
-        "CidrIp": "0.0.0.0/0",
-        "IpProtocol": "tcp",
-        "FromPort": "25",
-        "ToPort": "25"
-      }
-    },
-
-    "XgemailMfOutboundSubmitSecurityGroupLbIngressWorldSmtpTls": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Condition" : "OpenToWorld",
-      "Description" : "TCP/587 0.0.0.0/0 to mf-outbound--submit",
-      "Properties": {
-        "GroupId": { "Ref": "XgemailMfOutboundSubmitSecurityGroupLb" },
-        "CidrIp": "0.0.0.0/0",
-        "IpProtocol": "tcp",
-        "FromPort": "587",
-        "ToPort": "587"
       }
     },
 

@@ -22,12 +22,13 @@ logger.setLevel(logging.INFO)
 
 region = os.environ['AWS_REGION']
 account = os.environ['ACCOUNT']
+security_group = os.environ['SECURITYGROUP']
 
 def lambda_handler(event, context):
     ec2 = boto3.client('ec2')
     try:
         data = ec2.authorize_security_group_ingress(
-            GroupId='sg-0f9ec72cb03a3cdd8',
+            GroupId=security_group,
             IpPermissions=[
                 {'IpProtocol': 'tcp',
                  'FromPort': 25,

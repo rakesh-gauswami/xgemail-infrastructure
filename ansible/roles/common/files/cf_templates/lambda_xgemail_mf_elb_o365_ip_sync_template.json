@@ -20,6 +20,11 @@
   },
 
   "Parameters": {
+    "ElbSecurityGroup":{
+      "Description": "The Security Group ID of the MF Inbound Submit ELB SG.",
+      "Type": "String",
+      "Default": ""
+    },
     "Environment": {
       "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
       "Type": "String"
@@ -113,7 +118,8 @@
         "Description": { "Ref": "FunctionDescription" },
         "Environment": {
           "Variables": {
-            "ACCOUNT": { "Ref": "Environment" }
+            "ACCOUNT": { "Ref": "Environment" },
+            "SECURITYGROUP": { "Ref": "ElbSecurityGroup" }
           }
         },
         "FunctionName": {
