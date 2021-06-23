@@ -11,13 +11,13 @@ respective owners.
 
 
 
-import httplib
 import uuid
 import sys
 import boto3
 import logging
 import json
 import re
+import requests
 import os
 from botocore.exceptions import ClientError
 
@@ -42,13 +42,10 @@ def o365_api_call():
 
     # Microsoft Web Service URLs
     o365_ips = []
-    url_ms_o365_endpoints = "endpoints.office.com"
-    uri_ms_o365_endpoints = "/endpoints/Worldwide?ServiceAreas=Exchange&ClientRequestId="
+    url_ms_o365_endpoints = "https://endpoints.office.com/endpoints/Worldwide?ServiceAreas=Exchange&ClientRequestId="
     guid = str(uuid.uuid4())
-    request_string = uri_ms_o365_endpoints + guid
-    conn = httplib.HTTPSConnection(url_ms_o365_endpoints)
-    conn.request('GET', request_string)
-    res = conn.getresponse()
+    url = url_ms_o365_endpoints + guid
+    res = requests.get(url=url)
 
     if not res.status == 200:
         log(1, "ENDPOINTS request to MS web service failed. Aborting operation.")

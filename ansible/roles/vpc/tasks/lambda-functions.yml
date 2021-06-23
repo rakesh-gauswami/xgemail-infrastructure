@@ -94,7 +94,9 @@
 # MailFlow Submit ELB Security Group Sync Office365 IP Lambda Function
 - name: "Create a zip archive of MF O365 IP sync lambda function"
   archive:
-    path: /work/lambda/xgemail_mf_elb_o365_ip_sync.py
+    path:
+    - /work/lambda/xgemail_mf_elb_o365_ip_sync.py
+    - /work/lambda/requests
     dest: "{{tmp_artifacts_dir}}/xgemail_mf_elb_o365_ip_sync.zip"
     format: zip
 
