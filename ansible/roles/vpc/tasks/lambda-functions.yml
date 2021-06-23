@@ -119,7 +119,8 @@
       FunctionName:                         "{{lambda.mf_elb_o365_ip_sync_lambda_function}}"
       HandlerName:                          xgemail_mf_elb_o365_ip_sync.lambda_handler
       IAMRoleArn:                           "{{iam_stack.stack_outputs.MfElbO365IpSyncLambdaExecutionRoleArn}}"
-      ElbSecurityGroup:                     "{{sg_stack.stack_outputs.XgemailMfInboundSubmitSecurityGroupLb}}"
+      MfIsElbSecurityGroup:                 "{{sg_stack.stack_outputs.XgemailMfInboundSubmitSecurityGroupLb}}"
+      MfOsElbSecurityGroup:                 "{{sg_stack.stack_outputs.XgemailMfOutboundSubmitSecurityGroupLb}}"
       S3Bucket:                             "{{s3.lambda_bucket}}"
       S3Key:                                "lambda/{{build.number}}/xgemail_mf_elb_o365_ip_sync.zip"
       ScheduleExpression:                   rate(30 minutes)

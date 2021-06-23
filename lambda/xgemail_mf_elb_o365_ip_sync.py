@@ -22,13 +22,15 @@ logger.setLevel(logging.INFO)
 
 region = os.environ['AWS_REGION']
 account = os.environ['ACCOUNT']
-security_group = os.environ['SECURITYGROUP']
+mf_is_security_group = os.environ['MFISSECURITYGROUP']
+mf_os_security_group = os.environ['MFOSSECURITYGROUP']
 
 def lambda_handler(event, context):
     ec2 = boto3.client('ec2')
+
     try:
         data = ec2.authorize_security_group_ingress(
-            GroupId=security_group,
+            GroupId=mf_is_security_groupf,
             IpPermissions=[
                 {'IpProtocol': 'tcp',
                  'FromPort': 25,
@@ -39,6 +41,23 @@ def lambda_handler(event, context):
                  'ToPort': 587,
                  'IpRanges': [{'CidrIp': '73.38.163.251/32'}]}
             ])
-        print('Ingress Successfully Set %s' % data)
+        print('MF IS Ingress Successfully Set %s' % data)
+    except ClientError as e:
+        print(e)
+
+    try:
+        data = ec2.authorize_security_group_ingress(
+            GroupId=mf_os_security_group,
+            IpPermissions=[
+                {'IpProtocol': 'tcp',
+                 'FromPort': 25,
+                 'ToPort': 25,
+                 'IpRanges': [{'CidrIp': '73.38.163.251/32'}]},
+                {'IpProtocol': 'tcp',
+                 'FromPort': 587,
+                 'ToPort': 587,
+                 'IpRanges': [{'CidrIp': '73.38.163.251/32'}]}
+            ])
+        print('MF OS Ingress Successfully Set %s' % data)
     except ClientError as e:
         print(e)

@@ -20,15 +20,12 @@
   },
 
   "Parameters": {
-    "ElbSecurityGroup":{
-      "Description": "The Security Group ID of the MF Inbound Submit ELB SG.",
-      "Type": "String",
-      "Default": ""
-    },
+
     "Environment": {
       "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
       "Type": "String"
     },
+
     "FunctionDescription": {
       "Description": "Description for this function.",
       "Type": "String",
@@ -55,6 +52,18 @@
       "Description": "The amount of memory to allocate for this lambda function (128-1536)",
       "Type": "Number",
       "Default": "256"
+    },
+
+    "MfIsElbSecurityGroup":{
+      "Description": "The Security Group ID of the MF Inbound Submit ELB SG.",
+      "Type": "String",
+      "Default": ""
+    },
+
+    "MfOsElbSecurityGroup":{
+      "Description": "The Security Group ID of the MF Outbound Submit ELB SG.",
+      "Type": "String",
+      "Default": ""
     },
 
     "Runtime": {
