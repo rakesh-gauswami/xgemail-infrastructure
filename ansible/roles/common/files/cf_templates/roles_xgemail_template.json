@@ -629,18 +629,6 @@
           "Statement": [
             {
               "Action": [
-                "autoscaling:CompleteLifecycleAction",
-                "autoscaling:DescribeAutoScalingInstances",
-                "autoscaling:RecordLifecycleActionHeartbeat",
-                "autoscaling:UpdateAutoScalingGroup"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
-            },
-            {
-              "Action": [
                 "lambda:*"
               ],
               "Effect": "Allow",
@@ -661,25 +649,8 @@
             },
             {
               "Action": [
-                "ec2:AssociateAddress",
-                "ec2:CreateTags",
-                "ec2:DescribeAddresses",
-                "ec2:DescribeInstances",
-                "ec2:DescribeInstanceStatus",
-                "ec2:DisassociateAddress"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
-            },
-            {
-              "Action": [
-                "ssm:DescribeDocument",
-                "ssm:GetCommandInvocation",
-                "ssm:ListInstanceAssociations",
-                "ssm:ListCommands",
-                "ssm:SendCommand"
+                "ec2:AuthorizeSecurityGroupIngress",
+                "ec2:RevokeSecurityGroupIngress"
               ],
               "Effect": "Allow",
               "Resource": [
