@@ -44,10 +44,10 @@ MSG_HISTORY_V2_BUCKET                   = node['xgemail']['msg_history_v2_bucket
 
 if NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'mf-inbound-delivery' ||  NODE_TYPE == 'mf-outbound-delivery'
   #m5a.large 2vCPU / 8 GB.
-  DEFAULT_NUMBER_OF_CONSUMER_THREADS = 5
+  DEFAULT_NUMBER_OF_CONSUMER_THREADS = 3
 else
   #c5a.large 2vCPU /4 GB.
-  DEFAULT_NUMBER_OF_CONSUMER_THREADS = 5
+  DEFAULT_NUMBER_OF_CONSUMER_THREADS = 3
 end
 
 THREAD_COUNT_CONFIG_KEY                 = 'config/delivery/multi.thread.count.' + NODE_TYPE
