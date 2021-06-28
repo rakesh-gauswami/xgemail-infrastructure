@@ -35,6 +35,10 @@
           "assumeRole": { "Fn::GetAtt": [ "ElasticsearchAutomationRole", "Arn" ] },
           "description": "Elasticsearch client node health check and data-node service restart and elasticsearch instance reboot.",
           "parameters": {
+            "InstanceId": {
+              "type": "String",
+              "description": "Enter elasticsearch-client instanceID where the healthcheck commands to be executed"
+            },
             "Message": {
               "type": "String",
               "description": "elasticsearch-client",
@@ -52,9 +56,9 @@
                 "Api": "DescribeInstances",
                 "Filters": [
                   {
-                    "Name": "tag:Name",
+                    "Name": "EC2InstanceId",
                     "Values": [
-                      "elasticsearch-client"
+                      "{{InstanceId}}"
                     ]
                   },
                   {
