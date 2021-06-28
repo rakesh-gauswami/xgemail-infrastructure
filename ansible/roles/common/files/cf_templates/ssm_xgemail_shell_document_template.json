@@ -27,12 +27,7 @@
         "DocumentType": "Automation",
         "Content": {
           "schemaVersion": "0.3",
-          "assumeRole": {
-            "Fn::GetAtt": [
-              "ShellAutomationRole",
-              "Arn"
-            ]
-          },
+          "assumeRole": { "Fn::GetAtt": [ "ShellAutomationRole", "Arn" ] },
           "description": "Execute Day to da Linux Commands in Linux Instances",
           "parameters": {
             "InstancesName": {
@@ -157,6 +152,47 @@
         ]
       }
     },
+    "ShellAutomationRole" : {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [
+                "ec2.amazonaws.com",
+                "ssm.amazonaws.com"
+              ]
+            },
+            "Action": [ "sts:AssumeRole" ]
+          }]
+        },
+        "Path": "/",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "ShellAutomationRole" ] ] }
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
+      }
+    },
     "ShellAutomationRolePolicies": {
       "Properties": {
         "PolicyDocument": {
@@ -232,8 +268,15 @@
      "RunLinuxCommand": {
       "Description": "SSM Document to run linux shell commands in for MailOperations activities",
       "Value": {
-        "Ref": "RunLinuxCommand"
-      }
+        "Ref": "RunLinuxCommand" }
+    },
+    "ShellAutomationRole": {
+      "Description": "Shell Automation role",
+      "Value": { "Ref": "ShellAutomationRole" }
+    },
+    "ShellAutomationRoleArn": {
+      "Description": "Shell Automation role ARN",
+      "Value": { "Fn::GetAtt" : [ "ShellAutomationRole", "Arn" ] }
     }
   }
 }
