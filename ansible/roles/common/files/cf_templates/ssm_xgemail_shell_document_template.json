@@ -208,7 +208,6 @@
             },
             {
               "Action": [
-                "ec2:CreateTags",
                 "ec2:DescribeInstances",
                 "ec2:DescribeTags"
               ],
@@ -254,11 +253,7 @@
           ]
         },
         "PolicyName": "root",
-        "Roles": [
-          {
-            "Ref": "ShellAutomationRole"
-          }
-        ]
+        "Roles": [ { "Ref": "ShellAutomationRole" } ]
       },
       "Type": "AWS::IAM::Policy"
     }
@@ -267,8 +262,7 @@
   "Outputs" : {
      "RunShellCommands": {
       "Description": "SSM Document to run linux shell commands in for MailOperations activities",
-      "Value": {
-        "Ref": "RunShellCommands" }
+      "Value": { "Ref": "RunShellCommands" }
     },
     "ShellAutomationRole": {
       "Description": "Shell Automation role",
