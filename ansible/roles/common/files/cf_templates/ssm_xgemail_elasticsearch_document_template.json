@@ -122,7 +122,189 @@
         ]
       }
     },
+    "ESRestartOnDataNode": {
+      "Type": "AWS::SSM::Document",
+      "Properties": {
+        "DocumentType": "Automation",
+        "Content": {
+          "schemaVersion": "0.3",
+          "assumeRole": { "Fn::GetAtt": [ "ElasticsearchAutomationRole", "Arn" ] },
+          "description": "Elasticsearch service restart on data nodes",
+          "parameters": {
+            "InstanceId": {
+              "type": "String",
+              "description": "Enter Elasticsearch-data instanceID where the Elasticsearch service restart commands to be executed"
+            }
+          },
+          "mainSteps": [
+            {
+              "name": "getInstanceIds",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": 3,
+              "onFailure": "Abort",
+              "inputs": {
+                "Service": "ec2",
+                "Api": "DescribeInstances",
+                "Filters": [
+                  {
+                    "Name": "instance-id",
+                    "Values": [
+                      "{{InstanceId}}"
+                    ]
+                  },
+                  {
+                    "Name": "instance-state-name",
+                    "Values": [
+                      "running"
+                    ]
+                  }
+                ]
+              },
+              "outputs": [
+                {
+                  "Name": "InstanceIds",
+                  "Selector": "$.Reservations..Instances..InstanceId",
+                  "Type": "StringList"
+                }
+              ],
+              "isCritical": "true",
+              "nextStep": "ESRestart"
+            },
+            {
+              "name": "ESRestart",
+              "action": "aws:runCommand",
+              "maxAttempts": 3,
+              "timeoutSeconds": 3600,
+              "inputs": {
+                "DocumentName": "AWS-RunShellScript",
+                "InstanceIds": [ "{{getInstanceIds.InstanceIds}}" ],
+                "Parameters": {
+                  "commands": [
+                    "service elasticsearch status;service elasticsearch stop;sleep 10;service elasticsearch start;sleep 10;service elasticsearch status"
+                  ]
+                }
+              },
+              "isCritical": "true",
+              "isEnd": "true"
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref": "AWS::StackName" }, "ESRestart" ] ] }
+          },
+          {
+            "Key": "Application",
+            "Value": "CloudStation"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
+      }
+    },
 
+    "ESInstanceReboot": {
+      "Type": "AWS::SSM::Document",
+      "Properties": {
+        "DocumentType": "Automation",
+        "Content": {
+          "schemaVersion": "0.3",
+          "assumeRole": { "Fn::GetAtt": [ "ElasticsearchAutomationRole", "Arn" ] },
+          "description": "Elasticsearch instance  reboot on master/data/client nodes",
+          "parameters": {
+            "InstanceId": {
+              "type": "String",
+              "description": "Enter Elasticsearch instanceID (master/data/client nodes) where the instance reboot commands to be executed"
+            }
+          },
+          "mainSteps": [
+            {
+              "name": "getInstanceIds",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": 3,
+              "onFailure": "Abort",
+              "inputs": {
+                "Service": "ec2",
+                "Api": "DescribeInstances",
+                "Filters": [
+                  {
+                    "Name": "instance-id",
+                    "Values": [
+                      "{{InstanceId}}"
+                    ]
+                  },
+                  {
+                    "Name": "instance-state-name",
+                    "Values": [
+                      "running"
+                    ]
+                  }
+                ]
+              },
+              "outputs": [
+                {
+                  "Name": "InstanceIds",
+                  "Selector": "$.Reservations..Instances..InstanceId",
+                  "Type": "StringList"
+                }
+              ],
+              "isCritical": "true",
+              "nextStep": "ESInstance"
+            },
+            {
+              "name": "ESInstance",
+              "action": "aws:runCommand",
+              "maxAttempts": 3,
+              "timeoutSeconds": 3600,
+              "inputs": {
+                "DocumentName": "AWS-RunShellScript",
+                "InstanceIds": [ "{{getInstanceIds.InstanceIds}}" ],
+                "Parameters": {
+                  "commands": [
+                    "service elasticsearch status;service elasticsearch stop;sleep 10;/sbin/reboot"
+                  ]
+                }
+              },
+              "isCritical": "true",
+              "isEnd": "true"
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref": "AWS::StackName" }, "ESInstance" ] ] }
+          },
+          {
+            "Key": "Application",
+            "Value": "CloudStation"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
+      }
+    },
     "ElasticsearchAutomationRole" : {
       "Type": "AWS::IAM::Role",
       "Properties": {
