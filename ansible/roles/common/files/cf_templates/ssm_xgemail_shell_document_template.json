@@ -1,0 +1,239 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Template containing a collection of Xgemail Linux Shell execution Documents",
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2021, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ],
+    "Comments": [
+      "Creates SSM Linux Shell Documents to automate control of various functions on CloudEmail and CloudStation infrastructure."
+    ]
+  },
+  "Parameters": {
+    "Environment": {
+      "Description": "(inf, dev, qa, prod)",
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "RunShellCommands": {
+      "Type": "AWS::SSM::Document",
+      "Properties": {
+        "DocumentType": "Automation",
+        "Content": {
+          "schemaVersion": "0.3",
+          "assumeRole": {
+            "Fn::GetAtt": [
+              "PostfixAutomationRole",
+              "Arn"
+            ]
+          },
+          "description": "Execute Day to da Linux Commands in Postfix Instances",
+          "parameters": {
+            "InstancesName": {
+              "type": "String",
+              "description": " Please select the instance where the Commands you need to run",
+              "allowedValues": [
+                "customer-submit",
+                "internet-submit",
+                "customer-delivery",
+                "customer-xdelivery",
+                "internet-delivery",
+                "internet-xdelivery",
+                "delta-delivery",
+                "delta-xdelivery",
+                "risky-delivery",
+                "risky-xdelivery",
+                "warmup-delivery",
+                "warmup-xdelivery"
+              ]
+            },
+            "Region": {
+              "type": "String",
+              "description": "Select The AWS Region.",
+              "allowedValues": [
+                "us-east-2",
+                "us-west-2",
+                "eu-west-1",
+                "eu-central-1"
+              ]
+            },
+            "LinuxCommand": {
+              "type": "String",
+              "description": "The linux command that needs to be run in selected instances."
+            }
+          },
+          "mainSteps": [
+            {
+              "name": "getInstanceIds",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": 3,
+              "onFailure": "Abort",
+              "inputs": {
+                "Service": "ec2",
+                "Api": "DescribeInstances",
+                "Filters": [
+                  {
+                    "Name": "tag:Application",
+                    "Values": [
+                      "{{InstancesName}}"
+                    ]
+                  },
+                  {
+                    "Name": "instance-state-name",
+                    "Values": [
+                      "running"
+                    ]
+                  }
+                ]
+              },
+              "outputs": [
+                {
+                  "Name": "InstanceIds",
+                  "Selector": "$.Reservations[0].Instances[0].InstanceId",
+                  "Type": "String"
+                }
+              ],
+              "isCritical": "true",
+              "nextStep": "ExecuteLinuxCommand"
+            },
+            {
+              "name": "ExecuteLinuxCommand",
+              "action": "aws:runCommand",
+              "maxAttempts": 3,
+              "timeoutSeconds": 3600,
+              "inputs": {
+                "DocumentName": "AWS-RunShellScript",
+                "InstanceIds": [
+                  "{{getInstanceIds.InstanceIds}}"
+                ],
+                "Parameters": {
+                  "commands": [
+                    "{{LinuxCommand}}"
+                  ]
+                }
+              },
+              "isCritical": "true",
+              "isEnd": "true"
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "RunShellCommands"
+                ]
+              ]
+            }
+          },
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
+      }
+    },
+    "ShellAutomationRolePolicies": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "iam:PassRole"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "ec2:CreateTags",
+                "ec2:DescribeInstances",
+                "ec2:DescribeTags"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:logs:*:*:*"
+              ]
+            },
+            {
+              "Action": [
+                "ssm:DescribeAutomationExecutions",
+                "ssm:DescribeAutomationStepExecutions",
+                "ssm:DescribeDocument",
+                "ssm:DescribeInstanceInformation",
+                "ssm:GetAutomationExecution",
+                "ssm:GetCommandInvocation",
+                "ssm:GetConnectionStatus",
+                "ssm:GetDocument",
+                "ssm:ListCommandInvocations",
+                "ssm:ListCommands",
+                "ssm:ListInstanceAssociations",
+                "ssm:ListDocuments",
+                "ssm:ListDocumentVersions",
+                "ssm:SendCommand",
+                "ssm:StartAutomationExecution"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ]
+        },
+        "PolicyName": "root",
+        "Roles": [
+          {
+            "Ref": "PostfixAutomationRole"
+          }
+        ]
+      },
+      "Type": "AWS::IAM::Policy"
+    }
+  },
+
+  "Outputs" : {
+     "RunLinuxCommand": {
+      "Description": "SSM Document to run linux shell commands in for MailOperations activities",
+      "Value": {
+        "Ref": "RunLinuxCommand"
+      }
+    }
+  }
+}
