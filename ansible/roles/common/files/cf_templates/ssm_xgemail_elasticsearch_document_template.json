@@ -33,7 +33,7 @@
         "Content": {
           "schemaVersion": "0.3",
           "assumeRole": { "Fn::GetAtt": [ "ElasticsearchAutomationRole", "Arn" ] },
-          "description": "Elasticsearch client node health check and data-node service restart and elasticsearch instance reboot.",
+          "description": "Elasticsearch data node health checks and cpu usage check in client node and data-node service restart and elasticsearch instance reboot",
           "parameters": {
             "InstanceId": {
               "type": "String",
@@ -42,7 +42,7 @@
             "Message": {
               "type": "String",
               "description": "elasticsearch-client",
-              "default": "to check elasticsearch-client health & cpu status"
+              "default": "to check elasticsearch-data node health & cpu status"
             }
           },
           "mainSteps": [
@@ -221,7 +221,7 @@
         "Content": {
           "schemaVersion": "0.3",
           "assumeRole": { "Fn::GetAtt": [ "ElasticsearchAutomationRole", "Arn" ] },
-          "description": "Elasticsearch instance  reboot on master/data/client nodes",
+          "description": "Elasticsearch instance reboot on master/data/client nodes",
           "parameters": {
             "InstanceId": {
               "type": "String",
@@ -362,7 +362,6 @@
             },
             {
               "Action": [
-                "ec2:CreateTags",
                 "ec2:DescribeInstances",
                 "ec2:DescribeTags"
               ],
@@ -420,8 +419,16 @@
 
   "Outputs" : {
     "ESClusterHealthCheck" : {
-      "Description" : "SSM Elasticsearch client node health check and data-node service restart and elasticsearch instance reboot",
+      "Description" : "Elasticsearch data node health checks and cpu usage check in client node and data-node service restart and elasticsearch instance reboot",
       "Value" : { "Ref" : "ESClusterHealthCheck" }
+    },
+    "ESRestartOnDataNode" : {
+      "Description" : "SSM Elasticsearch service restart on data nodes",
+      "Value" : { "Ref" : "ESRestartOnDataNode" }
+    },
+    "ESInstanceReboot" : {
+      "Description" : "SSM Elasticsearch instance  reboot on master/data/client nodes",
+      "Value" : { "Ref" : "ESInstanceReboot" }
     },
     "ElasticsearchAutomationRole": {
       "Description": "Elasticsearch Automation Role",
