@@ -11,13 +11,13 @@ respective owners.
 
 
 
+import http.client
 import uuid
 import sys
 import boto3
 import logging
 import json
 import re
-import requests
 import os
 from botocore.exceptions import ClientError
 
@@ -42,21 +42,24 @@ def o365_api_call():
 
     # Microsoft Web Service URLs
     o365_ips = []
-    url_ms_o365_endpoints = "https://endpoints.office.com/endpoints/Worldwide?ServiceAreas=Exchange&ClientRequestId="
+    url_ms_o365_endpoints = "endpoints.office.com"
+    uri_ms_o365_endpoints = "/endpoints/Worldwide?ServiceAreas=Exchange&ClientRequestId="
     guid = str(uuid.uuid4())
-    url = url_ms_o365_endpoints + guid
-    res = requests.get(url=url)
+    request_string = uri_ms_o365_endpoints + guid
+    conn = http.client.HTTPSConnection(url_ms_o365_endpoints)
+    conn.request('GET', request_string)
+    res = conn.getresponse()
 
     if not res.status == 200:
-        log(1, "ENDPOINTS request to MS web service failed. Aborting operation.")
+        logger.info(1, "ENDPOINTS request to MS web service failed. Aborting operation.")
         sys.exit(0)
     else:
-        log(2, "ENDPOINTS request to MS web service was successful.")
+        logger.info(2, "ENDPOINTS request to MS web service was successful.")
         dict_o365_all = json.loads(res.read())
 
     # Process for each record(id) of the endpoint JSON data
     for dict_o365_record in dict_o365_all:
-        if dict_o365_record.has_key('ips'):
+        if 'ips' in dict_o365_record:
             list_ips = list(dict_o365_record['ips'])
             for ip in list_ips:
                 if not re.match('^.+:', ip):
@@ -85,7 +88,7 @@ def set_ingress_rules(ip):
                  'ToPort': 587,
                  'IpRanges': [{'CidrIp': ip}]}
             ])
-        print('MF IS Ingress Successfully Set %s' % data)
+        print(('MF IS Ingress Successfully Set %s' % data))
     except ClientError as e:
         print(e)
 
@@ -102,7 +105,7 @@ def set_ingress_rules(ip):
                  'ToPort': 587,
                  'IpRanges': [{'CidrIp': ip}]}
             ])
-        print('MF OS Ingress Successfully Set %s' % data)
+        print(('MF OS Ingress Successfully Set %s' % data))
     except ClientError as e:
         print(e)
 
