@@ -29,11 +29,11 @@
           "schemaVersion": "0.3",
           "assumeRole": {
             "Fn::GetAtt": [
-              "PostfixAutomationRole",
+              "ShellAutomationRole",
               "Arn"
             ]
           },
-          "description": "Execute Day to da Linux Commands in Postfix Instances",
+          "description": "Execute Day to da Linux Commands in Linux Instances",
           "parameters": {
             "InstancesName": {
               "type": "String",
@@ -220,7 +220,7 @@
         "PolicyName": "root",
         "Roles": [
           {
-            "Ref": "PostfixAutomationRole"
+            "Ref": "ShellAutomationRole"
           }
         ]
       },
