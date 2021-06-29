@@ -135,6 +135,8 @@ def main():
                     failure_reason, encoding = decode_header(failure_reason)[0]
                     if encoding is not None:
                         failure_reason = failure_reason.decode(encoding).encode("utf-8")
+                    else:
+                        failure_reason = failure_reason.encode()
                 except email.errors.HeaderParseError:
                     logger.warn("Failed to decode failure reason = {0}".format(failure_reason))
                 except BaseException as e:
