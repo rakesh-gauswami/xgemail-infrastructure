@@ -66,14 +66,11 @@ ACCOUNT = '<%= @account %>'
 POLICY_BUCKET_NAME = "<%= @policy_bucket %>"
 TRANSPORT_CONFIG_PATH = "<%= @transport_config_path %>"
 MH_MAIL_INFO_STORAGE_DIR = "<%= @mh_mail_info_storage_dir %>"
-DELIVERY_JILTER_ENABLED_FILE_PATH = "<%= @delivery_jilter_enabled_file_path %>"
 MSG_HISTORY_V2_BUCKET = "<%= @msg_history_v2_bucket_name %>"
 DEFAULT_NO_OF_THREADS = <%= @default_number_of_consumer_threads %>
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
-GLOBAL_MULTITHREAD_ENABLED_KEY = "<%= @delivery_multithread_enabled_s3_path %>"
 THREAD_COUNT_CONFIG_KEY = "<%= @consumer_thread_count_key %>"
-LOCAL_MULTITHREAD_ENABLED_FILE_PATH = "<%= @delivery_multithread_enabled_file_path %>"
 X_SOPHOS_PROCESSING_START_TIME_HEADER = 'X-Sophos-Processing-Start-Time'
 # logging to syslog setup
 logging.getLogger("botocore").setLevel(logging.WARNING)
@@ -501,9 +498,6 @@ def create_and_publish_message_history_delivery_status_sns_job(sqs_message, post
         logger.exception("Failed to publish event <{0}> to message history delivery status sqs queue"
                      .format(sns_message_history_delivery_status_job))
 
-def is_delivery_jilter_enabled():
-    return os.path.isfile(DELIVERY_JILTER_ENABLED_FILE_PATH)
-
 def is_multi_threaded():
     try:   
         #Check global flag.
@@ -525,6 +519,26 @@ def get_thread_count():
         logger.exception("Error in check thread count.[{0}]".format(e))
     # return default config.
     return DEFAULT_NO_OF_THREADS;
+
+def wait_for_jilter():
+    j = 0
+    a_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    a_socket.settimeout(2.0)
+    jilter_url = ("127.0.0.1", 9876)
+    MAX_WAIT_SECONDS = 120
+    while j < MAX_WAIT_SECONDS: # wait for 120s
+        logger.info("[{}] Waiting for jilter to listen on port 9876".format(j))
+        jilter_check = a_socket.connect_ex(jilter_url)
+        if jilter_check == 0:
+            logger.info("jilter process found on port 9876")
+            break
+        time.sleep(1)
+        j = j + 1
+    a_socket.close()
+
+    if j == MAX_WAIT_SECONDS:
+        logger.error("jilter process not found on port 9876. Exiting")
+        exit(1)
 
 def deliver_messages():
     while True:
@@ -690,38 +704,16 @@ def deliver_messages():
             continue
     
 # Wait for jilter to listen on port 9876
-if is_delivery_jilter_enabled():
-    j = 0
-    a_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    a_socket.settimeout(2.0)
-    jilter_url = ("127.0.0.1", 9876)
-    MAX_WAIT_SECONDS = 120
-    while j < MAX_WAIT_SECONDS: # wait for 120s
-        logger.info("[{}] Waiting for jilter to listen on port 9876".format(j))
-        jilter_check = a_socket.connect_ex(jilter_url)
-        if jilter_check == 0:
-            logger.info("jilter process found on port 9876")
-            break
-        time.sleep(1)
-        j = j + 1
-    a_socket.close()
+wait_for_jilter()
 
-    if j == MAX_WAIT_SECONDS:
-        logger.error("jilter process not found on port 9876. Exiting")
-        exit(1)
 
-USE_MULTI_THREAD = is_multi_threaded()
 
-if USE_MULTI_THREAD:
-    # Start consumers
-    i = 0;
-    thread_count = get_thread_count();
-    logger.info("Multi thread is enabled with thread count [{0}].".format(thread_count))
-    while i < thread_count:
-        logger.info("Starting thread [{0}]".format(i))
-        t = threading.Thread(target=deliver_messages)
-        t.start()
-        i = i + 1
-else:
-    logger.info("Multi thread is  disabled")
-    deliver_messages()
+# Start consumers
+i = 0;
+thread_count = get_thread_count();
+logger.info("Multi thread is enabled with thread count [{0}].".format(thread_count))
+while i < thread_count:
+    logger.info("Starting thread [{0}]".format(i))
+    t = threading.Thread(target=deliver_messages)
+    t.start()
+    i = i + 1

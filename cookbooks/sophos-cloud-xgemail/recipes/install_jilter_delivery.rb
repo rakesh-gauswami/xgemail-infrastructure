@@ -167,11 +167,11 @@ service 'xgemail-jilter-service' do
   subscribes :enable, 'template[xgemail-jilter-service]', :immediately
 end
 
-# # Update postfix to call jilter
-# [
-#   'smtpd_milters = inet:localhost:9876',
-#   'milter_connect_macros = {client_addr}, {j}',
-#   'milter_end_of_data_macros = {i}'
-# ].each do | cur |
-#   execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
-# end
+# Update postfix to call jilter
+[
+  'smtpd_milters = inet:localhost:9876',
+  'milter_connect_macros = {client_addr}, {j}',
+  'milter_end_of_data_macros = {i}'
+].each do | cur |
+  execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+end
