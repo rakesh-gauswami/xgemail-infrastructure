@@ -118,10 +118,10 @@ def main():
                                 subject = subject.decode(encoding).encode("utf-8")
                         except email.errors.HeaderParseError:
                             logger.warn("Failed to decode subject = {0}".format(subject) )
-                            subject = arg.split(':', 1)[1].strip()
+                            subject = ''
                         except BaseException as e:
                             logger.exception("Failed to encode subject = {0}. {1}".format(subject, e))
-                            subject = arg.split(':', 1)[1].strip()
+                            subject = ''
 
                     if header_key.startswith('return-path'):
                         original_sender = format_sender(arg.split(':', 1)[1].strip())
