@@ -101,6 +101,9 @@ if ACCOUNT != 'sandbox'
       execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
     end
   end
+  if NODE_TYPE == 'mf-outbound-delivery'
+    include_recipe 'sophos-cloud-xgemail::setup_mf_outbound_delivery_transport_updater_cron'
+  end
 include_recipe 'sophos-cloud-xgemail::configure-bounce-message-internet-delivery-queue'
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_consumer'
 include_recipe 'sophos-cloud-xgemail::setup_message_history_storage_dir'
