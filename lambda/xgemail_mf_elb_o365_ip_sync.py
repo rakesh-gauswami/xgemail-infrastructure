@@ -58,10 +58,12 @@ def o365_api_call():
             list_ips = list(dict_o365_record['ips'])
             for ip in list_ips:
                 if not re.match('^.+:', ip):
-                    o365_ips.append(ip)
+                    if ip not in o365_ips:
+                        o365_ips.append(ip)
+    o365_ips.sort()
     num_o365_ips = len(o365_ips)
     logger.info("Number of Office365 IPs to import : IPv4 host/net:" + str(num_o365_ips))
-    return o365_ips.sort()
+    return o365_ips
 
 
 def retrieve_existing_ingress_rules(sg):
@@ -76,16 +78,22 @@ def retrieve_existing_ingress_rules(sg):
         )
     except ClientError as e:
         print(e)
-    if data:
+    try:
         existing_ip_ranges = list(data['SecurityGroups'][0]['IpPermissions'][0]['IpRanges'])
+    except:
+        logger.info("No existing ingress rules for ELB Security Group: " + sg)
+        return
+    else:
         existing_ip_list = [i['CidrIp'] for i in existing_ip_ranges]
         return existing_ip_list.sort()
-    else:
-        return None
+
 
 def update_ingress_rules(sg, o365_ips, existing_ip_list):
-    remove_ingress_rule(sg=sg, ip_list=list(set(existing_ip_list) - set(o365_ips)))
-    add_ingress_rules(sg=sg, ip_list=list(set(o365_ips) - set(existing_ip_list)))
+    if existing_ip_list:
+        remove_ingress_rule(sg=sg, ip_list=list(set(existing_ip_list) - set(o365_ips)))
+        add_ingress_rules(sg=sg, ip_list=list(set(o365_ips) - set(existing_ip_list)))
+    else:
+        add_ingress_rules(sg=sg, ip_list=o365_ips)
 
 
 def remove_ingress_rule(sg, ip_list):
@@ -102,7 +110,7 @@ def add_ingress_rules(sg, ip_list):
     """
     Set ingress rules on both MF-IS and MF-OS ELB SGs to allow all O365 published IPs to connect.
     """
-    logger.info("Setting ingress rules for ELB Security Groups: " + sg)
+    logger.info("Setting ingress rules for ELB Security Group: " + sg)
     for ip in ip_list:
         try:
             ec2.authorize_security_group_ingress(
@@ -131,9 +139,11 @@ def mf_elb_o365_ip_sync_handler(event, context):
     logger.info("Mem. limits(MB): {0}".format(context.memory_limit_in_mb))
 
     o365_ips = o365_api_call()
-
+    print(o365_ips)
     for sg in mf_security_groups:
         existing_ip_list = retrieve_existing_ingress_rules(sg=sg)
+        print(o365_ips)
+        print(existing_ip_list)
         if o365_ips == existing_ip_list:
             logger.info("No changes detected between O365 IPs and Ingress Rules for SG: " + sg)
         else:
