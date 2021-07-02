@@ -63,7 +63,7 @@ def o365_api_call(sg):
 
     num_o365_ips = len(o365_ips)
     logger.info("Number of ENDPOINTS to import : IPv4 host/net:" + str(num_o365_ips))
-    clear_ingress_rules(sg)
+    clear_ingress_rules(sg=sg)
 
     return o365_ips
 
@@ -72,19 +72,20 @@ def clear_ingress_rules(sg):
     Remove all existing ingress rules from security group to avoid abandoned ipranges or duplicate errors
     """
     logger.info("Clearing all ingress rules for Security Groups before importing...")
+    ip_list=[]
     try:
         data = ec2.describe_security_groups(
             GroupIds=[sg]
         )
-        clear_ip_list = data['SecurityGroups'][0]['IpPermissions']
-        print(clear_ip_list)
+        ip_list = data['SecurityGroups'][0]['IpPermissions']
+        print(ip_list)
     except ClientError as e:
         print(e)
 
     try:
         data = ec2.revoke_security_group_ingress(
             GroupId=sg,
-            IpPermissions=clear_ip_list)
+            IpPermissions=ip_list)
         print('MF Ingress Successfully REVOKED for {}'.format(sg))
     except ClientError as e:
         print(e)
