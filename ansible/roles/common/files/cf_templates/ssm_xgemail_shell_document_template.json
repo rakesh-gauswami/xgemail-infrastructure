@@ -14,25 +14,19 @@
       "Creates SSM Linux Shell Documents to automate control of various functions on CloudEmail and CloudStation infrastructure."
     ]
   },
-  "Parameters": {
-    "Environment": {
-      "Description": "(inf, dev, qa, prod)",
-      "Type": "String"
-    }
-  },
   "Resources": {
-    "RunShellCommands": {
+    "ShellAutomation": {
       "Type": "AWS::SSM::Document",
       "Properties": {
         "DocumentType": "Automation",
         "Content": {
           "schemaVersion": "0.3",
           "assumeRole": { "Fn::GetAtt": [ "ShellAutomationRole", "Arn" ] },
-          "description": "Execute Day to da Linux Commands in Linux Instances",
+          "description": "This SSM Shell Automation will execute linux shell commands for MailOperations activities",
           "parameters": {
-            "InstancesName": {
+            "InstanceType": {
               "type": "String",
-              "description": " Please select the instance where the Commands you need to run",
+              "description": " Select the InstanceType to execute the commands",
               "allowedValues": [
                 "customer-submit",
                 "internet-submit",
@@ -46,16 +40,6 @@
                 "risky-xdelivery",
                 "warmup-delivery",
                 "warmup-xdelivery"
-              ]
-            },
-            "Region": {
-              "type": "String",
-              "description": "Select The AWS Region.",
-              "allowedValues": [
-                "us-east-2",
-                "us-west-2",
-                "eu-west-1",
-                "eu-central-1"
               ]
             },
             "LinuxCommand": {
@@ -76,7 +60,7 @@
                   {
                     "Name": "tag:Application",
                     "Values": [
-                      "{{InstancesName}}"
+                      "{{InstanceType}}"
                     ]
                   },
                   {
@@ -90,8 +74,8 @@
               "outputs": [
                 {
                   "Name": "InstanceIds",
-                  "Selector": "$.Reservations[0].Instances[0].InstanceId",
-                  "Type": "String"
+                  "Selector": "$.Reservations..Instances..InstanceId",
+                  "Type": "StringList"
                 }
               ],
               "isCritical": "true",
@@ -128,7 +112,7 @@
                   {
                     "Ref": "AWS::StackName"
                   },
-                  "RunShellCommands"
+                  "ShellAutomation"
                 ]
               ]
             }
@@ -260,9 +244,9 @@
   },
 
   "Outputs" : {
-     "RunShellCommands": {
-      "Description": "SSM Document to run linux shell commands in for MailOperations activities",
-      "Value": { "Ref": "RunShellCommands" }
+     "ShellAutomation": {
+      "Description": "SSM Shell Automation helps to execute linux shell commands for MailOperations activities",
+      "Value": { "Ref": "ShellAutomation" }
     },
     "ShellAutomationRole": {
       "Description": "Shell Automation role",
