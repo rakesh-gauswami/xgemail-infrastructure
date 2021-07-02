@@ -28,7 +28,6 @@ region = os.environ['AWS_REGION']
 account = os.environ['ACCOUNT']
 mf_security_groups = [os.environ['MFISSECURITYGROUP'], os.environ['MFOSSECURITYGROUP']]
 ec2 = boto3.client('ec2')
-global o365_ips
 
 
 def o365_api_call():
@@ -52,7 +51,7 @@ def o365_api_call():
     else:
         logger.info("ENDPOINTS request to MS web service was successful.")
         dict_o365_all = json.loads(res.read())
-
+    o365_ips=[]
     # Process for each record(id) of the endpoint JSON data
     for dict_o365_record in dict_o365_all:
         if 'ips' in dict_o365_record:
@@ -60,15 +59,16 @@ def o365_api_call():
             for ip in list_ips:
                 if not re.match('^.+:', ip):
                     o365_ips.append(ip)
-    o365_ips.sort()
     num_o365_ips = len(o365_ips)
     logger.info("Number of Office365 IPs to import : IPv4 host/net:" + str(num_o365_ips))
+    return o365_ips.sort()
 
 
 def retrieve_existing_ingress_rules(sg):
     """
     Retrieve all existing ingress rules from security group to compare against current O365 list
     """
+    data=[]
     logger.info("Getting all existing ingress rules from Security Group to compare...")
     try:
         data = ec2.describe_security_groups(
@@ -81,14 +81,14 @@ def retrieve_existing_ingress_rules(sg):
     return existing_ip_list.sort()
 
 
-def update_ingress_rules(sg, existing_ip_list):
+def update_ingress_rules(sg, o365_ips, existing_ip_list):
     remove_ingress_rule(sg=sg, ip_list=list(set(existing_ip_list) - set(o365_ips)))
     add_ingress_rules(sg=sg, ip_list=list(set(o365_ips) - set(existing_ip_list)))
 
 
 def remove_ingress_rule(sg, ip_list):
     try:
-        data = ec2.revoke_security_group_ingress(
+        ec2.revoke_security_group_ingress(
             GroupId=sg,
             IpPermissions=ip_list)
         print('MF Ingress Successfully REVOKED for {}'.format(sg))
@@ -103,7 +103,7 @@ def add_ingress_rules(sg, ip_list):
     logger.info("Setting ingress rules for MF-IS and MF-OS ELB Security Groups.")
     for ip in ip_list:
         try:
-            data = ec2.authorize_security_group_ingress(
+            ec2.authorize_security_group_ingress(
                 GroupId=sg,
                 IpPermissions=[
                     {'IpProtocol': 'tcp',
@@ -128,13 +128,13 @@ def mf_elb_o365_ip_sync_handler(event, context):
     logger.info("Request ID: {0}".format(context.aws_request_id))
     logger.info("Mem. limits(MB): {0}".format(context.memory_limit_in_mb))
 
-    o365_api_call()
+    o365_ips = o365_api_call()
 
     for sg in mf_security_groups:
         existing_ip_list = retrieve_existing_ingress_rules(sg=sg)
         if o365_ips == existing_ip_list:
             logger.info("No changes detected between O365 IP ranges and Ingress Rules.")
         else:
-            update_ingress_rules(sg=sg, existing_ip_list=existing_ip_list)
+            update_ingress_rules(sg=sg, o365_ips=o365_ips, existing_ip_list=existing_ip_list)
 
     logger.info("===FINISHED=== MF ELB O365 IP Sync.")
