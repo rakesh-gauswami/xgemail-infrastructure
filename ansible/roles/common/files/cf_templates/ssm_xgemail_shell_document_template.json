@@ -22,11 +22,11 @@
         "Content": {
           "schemaVersion": "0.3",
           "assumeRole": { "Fn::GetAtt": [ "ShellAutomationRole", "Arn" ] },
-          "description": "This SSM Shell Automation will execute linux shell commands for MailOperations activities",
+          "description": "This SSM Shell Automation will allow executing of linux shell commands for MailOps activities",
           "parameters": {
             "InstanceType": {
               "type": "String",
-              "description": " Select the InstanceType to execute the commands",
+              "description": " Select an InstanceType to execute commands",
               "allowedValues": [
                 "customer-submit",
                 "internet-submit",
@@ -44,7 +44,7 @@
             },
             "LinuxCommand": {
               "type": "String",
-              "description": "The linux command that needs to be run in selected instances."
+              "description": "Enter the linux commands that you want to be executed in selected instances."
             }
           },
           "mainSteps": [
