@@ -26,7 +26,7 @@ logger.setLevel(logging.INFO)
 
 region = os.environ['AWS_REGION']
 account = os.environ['ACCOUNT']
-mf_security_groups = [os.environ['MFISSECURITYGROUP'],os.environ['MFOSSECURITYGROUP']]
+mf_security_groups = [os.environ['MFISSECURITYGROUP'], os.environ['MFOSSECURITYGROUP']]
 
 ec2 = boto3.client('ec2')
 
