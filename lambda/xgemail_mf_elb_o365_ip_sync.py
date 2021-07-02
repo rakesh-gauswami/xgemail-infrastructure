@@ -69,17 +69,19 @@ def retrieve_existing_ingress_rules(sg):
     Retrieve all existing ingress rules from security group to compare against current O365 list
     """
     data=[]
-    logger.info("Getting all existing ingress rules from Security Group to compare...")
+    logger.info("Getting existing ingress rules from Security Group: " + sg)
     try:
         data = ec2.describe_security_groups(
             GroupIds=[sg]
         )
     except ClientError as e:
         print(e)
-    existing_ip_ranges = list(data['SecurityGroups'][0]['IpPermissions'][0]['IpRanges'])
-    existing_ip_list = [i['CidrIp'] for i in existing_ip_ranges]
-    return existing_ip_list.sort()
-
+    if data:
+        existing_ip_ranges = list(data['SecurityGroups'][0]['IpPermissions'][0]['IpRanges'])
+        existing_ip_list = [i['CidrIp'] for i in existing_ip_ranges]
+        return existing_ip_list.sort()
+    else:
+        return None
 
 def update_ingress_rules(sg, o365_ips, existing_ip_list):
     remove_ingress_rule(sg=sg, ip_list=list(set(existing_ip_list) - set(o365_ips)))
@@ -100,7 +102,7 @@ def add_ingress_rules(sg, ip_list):
     """
     Set ingress rules on both MF-IS and MF-OS ELB SGs to allow all O365 published IPs to connect.
     """
-    logger.info("Setting ingress rules for MF-IS and MF-OS ELB Security Groups.")
+    logger.info("Setting ingress rules for ELB Security Groups: " + sg)
     for ip in ip_list:
         try:
             ec2.authorize_security_group_ingress(
@@ -133,7 +135,7 @@ def mf_elb_o365_ip_sync_handler(event, context):
     for sg in mf_security_groups:
         existing_ip_list = retrieve_existing_ingress_rules(sg=sg)
         if o365_ips == existing_ip_list:
-            logger.info("No changes detected between O365 IP ranges and Ingress Rules.")
+            logger.info("No changes detected between O365 IPs and Ingress Rules for SG: " + sg)
         else:
             update_ingress_rules(sg=sg, o365_ips=o365_ips, existing_ip_list=existing_ip_list)
 
