@@ -125,7 +125,8 @@
       MfOsElbSecurityGroup:                 "{{sg_stack.stack_outputs.XgemailMfOutboundSubmitSecurityGroupLb}}"
       S3Bucket:                             "{{s3.lambda_bucket}}"
       S3Key:                                "lambda/{{build.number}}/xgemail_mf_elb_o365_ip_sync.zip"
-      ScheduleExpression:                   rate(30 minutes)
+      ScheduleExpression:                   cron(0 10 * * ? *)
+      ScheduleState:                        "ENABLED"
   register: mf_elb_o365_ip_sync_stack
 
 - debug:
