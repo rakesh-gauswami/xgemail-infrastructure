@@ -9,8 +9,6 @@ names mentioned are trademarks or registered trademarks of their
 respective owners.
 """
 
-
-
 import http.client
 import uuid
 import sys
@@ -21,7 +19,6 @@ import re
 import os
 from botocore.exceptions import ClientError
 
-
 print('Loading MF ELB O365 IP Sync function')
 
 logger = logging.getLogger()
@@ -29,12 +26,11 @@ logger.setLevel(logging.INFO)
 
 region = os.environ['AWS_REGION']
 account = os.environ['ACCOUNT']
-mf_is_security_group = os.environ['MFISSECURITYGROUP']
-mf_os_security_group = os.environ['MFOSSECURITYGROUP']
+mf_security_groups = [os.environ['MFISSECURITYGROUP'],os.environ['MFOSSECURITYGROUP']]
 
 ec2 = boto3.client('ec2')
 
-def o365_api_call():
+def o365_api_call(sg):
     """
     Query the Office 365 IP Address web service to retrieve all IP addresses used by Microsoft for sending email.
     """
@@ -51,10 +47,10 @@ def o365_api_call():
     res = conn.getresponse()
 
     if not res.status == 200:
-        logger.info(1, "ENDPOINTS request to MS web service failed. Aborting operation.")
+        logger.info("ENDPOINTS request to MS web service failed. Aborting operation.")
         sys.exit(0)
     else:
-        logger.info(2, "ENDPOINTS request to MS web service was successful.")
+        logger.info("ENDPOINTS request to MS web service was successful.")
         dict_o365_all = json.loads(res.read())
 
     # Process for each record(id) of the endpoint JSON data
@@ -66,18 +62,41 @@ def o365_api_call():
                     o365_ips.append(ip)
 
     num_o365_ips = len(o365_ips)
-    logger.info(1, "Number of ENDPOINTS to import : IPv4 host/net:" + str(num_o365_ips))
+    logger.info("Number of ENDPOINTS to import : IPv4 host/net:" + str(num_o365_ips))
+    clear_ingress_rules(sg)
 
     return o365_ips
 
-def set_ingress_rules(ip):
+def clear_ingress_rules(sg):
+    """
+    Remove all existing ingress rules from security group to avoid abandoned ipranges or duplicate errors
+    """
+    logger.info("Clearing all ingress rules for Security Groups before importing...")
+    try:
+        data = ec2.describe_security_groups(
+            GroupIds=[sg]
+        )
+        clear_ip_list = data['SecurityGroups'][0]['IpPermissions']
+        print(clear_ip_list)
+    except ClientError as e:
+        print(e)
+
+    try:
+        data = ec2.revoke_security_group_ingress(
+            GroupId=sg,
+            IpPermissions=clear_ip_list)
+        print('MF Ingress Successfully REVOKED for {}'.format(sg))
+    except ClientError as e:
+        print(e)
+
+def set_ingress_rules(ip, sg):
     """
     Set ingress rules on both MF-IS and MF-OS ELB SGs to allow all O365 published IPs to connect.
     """
     logger.info("Setting ingress rules for MF-IS and MF-OS ELB Security Groups.")
     try:
         data = ec2.authorize_security_group_ingress(
-            GroupId=mf_is_security_group,
+            GroupId=sg,
             IpPermissions=[
                 {'IpProtocol': 'tcp',
                  'FromPort': 25,
@@ -88,37 +107,20 @@ def set_ingress_rules(ip):
                  'ToPort': 587,
                  'IpRanges': [{'CidrIp': ip}]}
             ])
-        print(('MF IS Ingress Successfully Set %s' % data))
+        print('MF Ingress Rules Successfully Set for {}'.format(sg))
     except ClientError as e:
         print(e)
-
-    try:
-        data = ec2.authorize_security_group_ingress(
-            GroupId=mf_os_security_group,
-            IpPermissions=[
-                {'IpProtocol': 'tcp',
-                 'FromPort': 25,
-                 'ToPort': 25,
-                 'IpRanges': [{'CidrIp': ip}]},
-                {'IpProtocol': 'tcp',
-                 'FromPort': 587,
-                 'ToPort': 587,
-                 'IpRanges': [{'CidrIp': ip}]}
-            ])
-        print(('MF OS Ingress Successfully Set %s' % data))
-    except ClientError as e:
-        print(e)
-
 
 def mf_elb_o365_ip_sync_handler(event, context):
-    logger.info("got event {}".format(event))
-    logger.info("Received event: {}".format(json.dumps(event)))
-    logger.info("Log stream name: {}".format(context.log_stream_name))
-    logger.info("Log group name: {}".format(context.log_group_name))
-    logger.info("Request ID: {}".format(context.aws_request_id))
-    logger.info("Mem. limits(MB): {}".format(context.memory_limit_in_mb))
+    logger.info("got event {0}".format(event))
+    logger.info("Received event: {0}".format(json.dumps(event)))
+    logger.info("Log stream name: {0}".format(context.log_stream_name))
+    logger.info("Log group name: {0}".format(context.log_group_name))
+    logger.info("Request ID: {0}".format(context.aws_request_id))
+    logger.info("Mem. limits(MB): {0}".format(context.memory_limit_in_mb))
 
-    for ip in o365_api_call():
-        set_ingress_rules(ip=ip)
+    for sg in mf_security_groups:
+        for ip in o365_api_call(sg=sg):
+            set_ingress_rules(ip=ip, sg=sg)
 
     logger.info("===FINISHED=== MF ELB O365 IP Sync.")
