@@ -72,7 +72,7 @@ def clear_ingress_rules(sg):
     Remove all existing ingress rules from security group to avoid abandoned ipranges or duplicate errors
     """
     logger.info("Clearing all ingress rules for Security Groups before importing...")
-    ip_list=[]
+    ip_list = []
     try:
         data = ec2.describe_security_groups(
             GroupIds=[sg]
