@@ -19,8 +19,6 @@ import re
 import os
 from botocore.exceptions import ClientError
 
-print('Loading MF ELB O365 IP Sync function')
-
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -28,6 +26,8 @@ region = os.environ['AWS_REGION']
 account = os.environ['ACCOUNT']
 mf_security_groups = [os.environ['MFISSECURITYGROUP'], os.environ['MFOSSECURITYGROUP']]
 ec2 = boto3.client('ec2')
+
+logger.info("Starting MF ELB O365 IP Sync function")
 
 
 def o365_api_call():
@@ -85,7 +85,8 @@ def retrieve_existing_ingress_rules(sg):
         return
     else:
         existing_ip_list = [i['CidrIp'] for i in existing_ip_ranges]
-        return existing_ip_list.sort()
+        existing_ip_list.sort()
+        return existing_ip_list
 
 
 def update_ingress_rules(sg, o365_ips, existing_ip_list):
@@ -97,13 +98,19 @@ def update_ingress_rules(sg, o365_ips, existing_ip_list):
 
 
 def remove_ingress_rule(sg, ip_list):
-    try:
-        ec2.revoke_security_group_ingress(
-            GroupId=sg,
-            IpPermissions=ip_list)
-        print('MF Ingress Successfully REVOKED for {}'.format(sg))
-    except ClientError as e:
-        print(e)
+    logger.info("Attempting to revoke rules: " + str(ip_list))
+    for ip in ip_list:
+        for port in (25, 587):
+            try:
+                ec2.revoke_security_group_ingress(
+                    GroupId=sg,
+                    IpProtocol='tcp',
+                    FromPort=port,
+                    ToPort=port,
+                    CidrIp=ip)
+                logger.info("MF Ingress Successfully REVOKED " + str(ip) + ":" + str(port) + " for SG: " + sg)
+            except ClientError as e:
+                print(e)
 
 
 def add_ingress_rules(sg, ip_list):
@@ -125,7 +132,7 @@ def add_ingress_rules(sg, ip_list):
                      'ToPort': 587,
                      'IpRanges': [{'CidrIp': ip}]}
                 ])
-            print('Ingress Rule Successfully Set for {}'.format(sg))
+            logger.info("Ingress Rule " + str(ip) + " Successfully Set for SG: " + sg)
         except ClientError as e:
             print(e)
 
@@ -139,11 +146,10 @@ def mf_elb_o365_ip_sync_handler(event, context):
     logger.info("Mem. limits(MB): {0}".format(context.memory_limit_in_mb))
 
     o365_ips = o365_api_call()
-    print(o365_ips)
     for sg in mf_security_groups:
         existing_ip_list = retrieve_existing_ingress_rules(sg=sg)
-        print(o365_ips)
-        print(existing_ip_list)
+        logger.info("O365 IPs: " + str(o365_ips))
+        logger.info("SG IPs: " + str(existing_ip_list))
         if o365_ips == existing_ip_list:
             logger.info("No changes detected between O365 IPs and Ingress Rules for SG: " + sg)
         else:
