@@ -23,12 +23,10 @@ from logging.handlers import SysLogHandler
 # Constants
 PIC_FQDN = '<%= @xgemail_pic_fqdn %>'
 POSTFIX_INSTANCE_NAME = '<%= @postfix_instance_name %>'
-TRANSPORT_FILENAME = '<%= @transport_filename %>'
 SENDER_BY_RELAY_FILENAME = '<%= @relay_by_sender_filename %>'
 MAIL_PIC_RESPONSE_TIMEOUT = <%= @mail_pic_api_response_timeout %>
 MAIL_PIC_API_AUTH = '<%= @mail_pic_api_auth %>'
 CONNECTIONS_BUCKET = '<%= @connections_bucket %>'
-TLS_SMTP_TRANSPORT_TAG = ' smtp_encrypt:'
 
 # logging to syslog setup
 logging.getLogger("botocore").setLevel(logging.WARNING)
@@ -43,7 +41,6 @@ logger.addHandler(handler)
 
 PIC_XGEMAIL_API_URL = 'https://%s/mail/api/xgemail' % (PIC_FQDN)
 PIC_DOMAINS_URL = PIC_XGEMAIL_API_URL + '/domains'
-PIC_TLS_DOMAINS_URL = PIC_XGEMAIL_API_URL +'/tls-domain-exists/'
 
 logger.info('mf outbound delivery transport cron - pic url [%s]', PIC_XGEMAIL_API_URL)
 
@@ -86,9 +83,7 @@ def parse_domain_response(domain_name, destinations_json, s3_client) :
   if 'customer_id' in destination_json:
     customer_id = destination_json['customer_id']
 
-  smtp_transport_tag = TLS_SMTP_TRANSPORT_TAG
-
-  ret_val = domain_name + smtp_transport_tag
+  ret_val = '@' + domain_name + ' '
 
   if type != 'MX':
     ret_val += '['

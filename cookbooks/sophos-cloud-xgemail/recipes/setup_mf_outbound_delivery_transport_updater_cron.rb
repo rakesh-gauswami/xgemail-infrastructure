@@ -30,7 +30,6 @@ CRON_JOB_TIMEOUT      = node['xgemail']['cron_job_timeout']
 CRON_MINUTE_FREQUENCY = node['xgemail']['customer_delivery_transport_cron_minute_frequency']
 STATION_VPC_NAME      = node['xgemail']['station_vpc_name']
 XGEMAIL_FILES_DIR     = node['xgemail']['xgemail_files_dir']
-TRANSPORT_FILENAME    = 'transport'
 RELAY_BY_SENDER_FILENAME = 'relay_by_sender'
 MAIL_PIC_API_RESPONSE_TIMEOUT = node['xgemail']['mail_pic_apis_response_timeout_seconds']
 MAIL_PIC_API_AUTH     = node['xgemail']['mail_pic_api_auth']
