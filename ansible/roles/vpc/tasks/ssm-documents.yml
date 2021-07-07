@@ -40,3 +40,24 @@
   debug:
     msg: "{{ssm_postfix_stack.stack_outputs}}"
     verbosity: 2
+
+# Create another stack dedicated to Multi IP Management SSM
+- name: "Deploy SSM Multi IP Management Document {{stack.ssm.ssm_multi_ip_document}} to {{account.name}}-{{account.region}}"
+  cloudformation:
+    stack_name:                   "{{stack.ssm.ssm_multi_ip_document}}"
+    state:                        present
+    region:                       "{{account.region}}"
+    disable_rollback:             true
+    template:                     "{{template.ssm.ssm_xgemail_multi_ip_document_template}}"
+    template_parameters:
+      Environment:                "{{account.name}}"
+  register: ssm_multi_ip_stack
+
+- debug:
+    var: ssm_multi_ip_stack
+    verbosity: 3
+
+- name: "Display SSM Multi IP Management Document Stack Output"
+  debug:
+    msg: "{{ssm_multi_ip_stack.stack_outputs}}"
+    verbosity: 2
