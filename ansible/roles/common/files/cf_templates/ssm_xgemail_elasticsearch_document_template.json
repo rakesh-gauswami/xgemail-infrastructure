@@ -16,33 +16,23 @@
     "Comments": [
       "Creates SSM Elasticsearch Documents to automate control of various functions on CloudStation infrastructure."
     ]
-  },
 
-  "Parameters": {
-    "Environment": {
-      "Description": "(inf, dev, qa, prod)",
-      "Type": "String"
-    }
   },
 
   "Resources": {
-    "ESClusterHealthCheck": {
+    "EsClusterHealthCheck": {
       "Type": "AWS::SSM::Document",
       "Properties": {
         "DocumentType": "Automation",
         "Content": {
           "schemaVersion": "0.3",
           "assumeRole": { "Fn::GetAtt": [ "ElasticsearchAutomationRole", "Arn" ] },
-          "description": "Elasticsearch data node health checks and cpu usage check in client node and data-node service restart and elasticsearch instance reboot",
+          "description": "This SSM Document helps to get ElasticSearch Cluster health status as well as cpu and heap usage of data-nodes",
           "parameters": {
             "InstanceId": {
               "type": "String",
               "description": "Enter elasticsearch-client instanceID where the healthcheck commands to be executed"
-            },
-            "Message": {
-              "type": "String",
-              "description": "elasticsearch-client",
-              "default": "to check elasticsearch-data node health & cpu status"
+
             }
           },
           "mainSteps": [
@@ -77,10 +67,10 @@
                 }
               ],
               "isCritical": "true",
-              "nextStep": "EShealthcheck"
+              "nextStep": "esHealthCheck"
             },
             {
-              "name": "EShealthcheck",
+              "name": "esHealthCheck",
               "action": "aws:runCommand",
               "maxAttempts": 3,
               "timeoutSeconds": 3600,
@@ -101,7 +91,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": { "Fn::Join": [ "-", [ { "Ref": "AWS::StackName" }, "ESClusterHealthCheck" ] ] }
+            "Value": { "Fn::Join": [ "-", [ { "Ref": "AWS::StackName" }, "EsClusterHealthCheck" ] ] }
           },
           {
             "Key": "Application",
@@ -122,7 +112,7 @@
         ]
       }
     },
-    "ESRestartOnDataNode": {
+    "EsRestartOnDataNode": {
       "Type": "AWS::SSM::Document",
       "Properties": {
         "DocumentType": "Automation",
@@ -168,10 +158,10 @@
                 }
               ],
               "isCritical": "true",
-              "nextStep": "ESRestart"
+              "nextStep": "esRestart"
             },
             {
-              "name": "ESRestart",
+              "name": "esRestart",
               "action": "aws:runCommand",
               "maxAttempts": 3,
               "timeoutSeconds": 3600,
@@ -192,7 +182,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": { "Fn::Join": [ "-", [ { "Ref": "AWS::StackName" }, "ESRestart" ] ] }
+            "Value": { "Fn::Join": [ "-", [ { "Ref": "AWS::StackName" }, "EsRestartOnDataNode" ] ] }
           },
           {
             "Key": "Application",
@@ -214,7 +204,7 @@
       }
     },
 
-    "ESInstanceReboot": {
+    "EsInstanceReboot": {
       "Type": "AWS::SSM::Document",
       "Properties": {
         "DocumentType": "Automation",
@@ -260,10 +250,10 @@
                 }
               ],
               "isCritical": "true",
-              "nextStep": "ESInstance"
+              "nextStep": "ElasticsearchDataNodeInstance"
             },
             {
-              "name": "ESInstance",
+              "name": "ElasticsearchDataNodeInstance",
               "action": "aws:runCommand",
               "maxAttempts": 3,
               "timeoutSeconds": 3600,
@@ -284,7 +274,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": { "Fn::Join": [ "-", [ { "Ref": "AWS::StackName" }, "ESInstance" ] ] }
+            "Value": { "Fn::Join": [ "-", [ { "Ref": "AWS::StackName" }, "EsInstanceReboot" ] ] }
           },
           {
             "Key": "Application",
@@ -418,17 +408,17 @@
   },
 
   "Outputs" : {
-    "ESClusterHealthCheck" : {
+    "EsClusterHealthCheck" : {
       "Description" : "Elasticsearch data node health checks and cpu usage check in client node and data-node service restart and elasticsearch instance reboot",
-      "Value" : { "Ref" : "ESClusterHealthCheck" }
+      "Value" : { "Ref" : "EsClusterHealthCheck" }
     },
-    "ESRestartOnDataNode" : {
+    "EsRestartOnDataNode" : {
       "Description" : "SSM Elasticsearch service restart on data nodes",
-      "Value" : { "Ref" : "ESRestartOnDataNode" }
+      "Value" : { "Ref" : "EsRestartOnDataNode" }
     },
-    "ESInstanceReboot" : {
+    "EsInstanceReboot" : {
       "Description" : "SSM Elasticsearch instance  reboot on master/data/client nodes",
-      "Value" : { "Ref" : "ESInstanceReboot" }
+      "Value" : { "Ref" : "EsInstanceReboot" }
     },
     "ElasticsearchAutomationRole": {
       "Description": "Elasticsearch Automation Role",
