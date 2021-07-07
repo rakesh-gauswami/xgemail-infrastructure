@@ -12,13 +12,10 @@
       "names mentioned are trademarks or registered trademarks of their",
       "respective owners."
     ],
-
     "Comments": [
       "Creates SSM Elasticsearch Documents to automate control of various functions on CloudStation infrastructure."
     ]
-
   },
-
   "Resources": {
     "EsClusterHealthCheck": {
       "Type": "AWS::SSM::Document",
@@ -32,7 +29,6 @@
             "InstanceId": {
               "type": "String",
               "description": "Enter elasticsearch-client instanceID where the healthcheck commands to be executed"
-
             }
           },
           "mainSteps": [
@@ -203,7 +199,6 @@
         ]
       }
     },
-
     "EsInstanceReboot": {
       "Type": "AWS::SSM::Document",
       "Properties": {
@@ -336,7 +331,6 @@
         ]
       }
     },
-
     "ElasticsearchAutomationRolePolicies": {
       "Properties": {
         "PolicyDocument": {
@@ -406,7 +400,6 @@
       "Type": "AWS::IAM::Policy"
     }
   },
-
   "Outputs" : {
     "EsClusterHealthCheck" : {
       "Description" : "Elasticsearch data node health checks and cpu usage check in client node and data-node service restart and elasticsearch instance reboot",
