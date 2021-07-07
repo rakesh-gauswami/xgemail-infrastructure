@@ -26,8 +26,8 @@ LOCAL_CERT_PATH       = node['sophos_cloud']['local_cert_path']
 REGION                = node['sophos_cloud']['region']
 CONNECTIONS_BUCKET    = node['sophos_cloud']['connections']
 
-CRON_JOB_TIMEOUT      = node['xgemail']['cron_job_timeout']
-CRON_MINUTE_FREQUENCY = node['xgemail']['customer_delivery_transport_cron_minute_frequency']
+CRON_JOB_TIMEOUT      = node['xgemail']['mail_flow_cron_job_timeout']
+CRON_MINUTE_FREQUENCY = node['xgemail']['mail_flow_sender_by_relay_cron_minute_frequency']
 STATION_VPC_NAME      = node['xgemail']['station_vpc_name']
 XGEMAIL_FILES_DIR     = node['xgemail']['xgemail_files_dir']
 RELAY_BY_SENDER_FILENAME = 'relay_by_sender'

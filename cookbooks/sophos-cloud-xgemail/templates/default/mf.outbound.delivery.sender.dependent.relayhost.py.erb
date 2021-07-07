@@ -44,28 +44,6 @@ PIC_DOMAINS_URL = PIC_XGEMAIL_API_URL + '/domains'
 
 logger.info('mf outbound delivery transport cron - pic url [%s]', PIC_XGEMAIL_API_URL)
 
-def get_passphrase():
-  s3 = boto3.client('s3')
-  passphrase = s3.get_object(Bucket=CONNECTIONS_BUCKET, Key=MAIL_PIC_API_AUTH)
-  return base64.b64encode('mail:' + passphrase['Body'].read())
-
-auth = get_passphrase()
-
-HEADERS = {
-  'Content-type': 'application/json',
-  'Authorization': 'Basic ' + auth
-}
-
-PIC_DESTINATION_URL = PIC_XGEMAIL_API_URL + '/destination'
-
-response = requests.get(
-  PIC_DOMAINS_URL,
-  headers=HEADERS,
-  timeout=MAIL_PIC_RESPONSE_TIMEOUT
-)
-response.raise_for_status()
-
-
 # Expecting JSON in this form
 #   {
 #     "destination": "10.11.12.13",
@@ -73,7 +51,7 @@ response.raise_for_status()
 #     "port": 8080,
 #     "customer_id": "<customer-uuid>"
 #   }
-def parse_domain_response(domain_name, destinations_json, s3_client) :
+def parse_domain_response(domain_name, destinations_json) :
   destination_json = destinations_json['delivery_destination']
   route = destination_json['destination']
   port = destination_json['port']
@@ -98,6 +76,28 @@ def parse_domain_response(domain_name, destinations_json, s3_client) :
 
   return ret_val
 
+
+def get_passphrase():
+  s3 = boto3.client('s3')
+  passphrase = s3.get_object(Bucket=CONNECTIONS_BUCKET, Key=MAIL_PIC_API_AUTH)
+  return base64.b64encode('mail:' + passphrase['Body'].read())
+
+auth = get_passphrase()
+
+HEADERS = {
+  'Content-type': 'application/json',
+  'Authorization': 'Basic ' + auth
+}
+
+PIC_DESTINATION_URL = PIC_XGEMAIL_API_URL + '/destination'
+
+response = requests.get(
+  PIC_DOMAINS_URL,
+  headers=HEADERS,
+  timeout=MAIL_PIC_RESPONSE_TIMEOUT
+)
+response.raise_for_status()
+
 POSTFIX_CONFIG_DIR = subprocess.check_output(
   [
     'postmulti', '-i', POSTFIX_INSTANCE_NAME, '-x',
@@ -110,8 +110,6 @@ SENDER_BY_RELAY_FILE_TMP = SENDER_BY_RELAY_FILE + '.tmp'
 
 with open(SENDER_BY_RELAY_FILE_TMP, 'w') as f:
 
-  s3 = boto3.client('s3')
-
   for domain in response.json()['domains'] :
     domain_response = requests.post(
       PIC_DESTINATION_URL,
@@ -120,7 +118,7 @@ with open(SENDER_BY_RELAY_FILE_TMP, 'w') as f:
       timeout=MAIL_PIC_RESPONSE_TIMEOUT
     )
     domain_response.raise_for_status()
-    transport_line = parse_domain_response(domain, domain_response.json(), s3)
+    transport_line = parse_domain_response(domain, domain_response.json())
     f.write('{0}\n'.format(transport_line))
 
   # Add catch-all to retry any unknown domain
