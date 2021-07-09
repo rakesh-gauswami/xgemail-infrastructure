@@ -108,6 +108,9 @@ if ACCOUNT == 'sandbox'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_utils_structure'
 end
 
+if NODE_TYPE == 'mf-inbound-delivery'
+    include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_customer_delivery_transport_updater_cron'
+end
 
 include_recipe 'sophos-cloud-xgemail::configure-bounce-message-customer-delivery-queue'
 
