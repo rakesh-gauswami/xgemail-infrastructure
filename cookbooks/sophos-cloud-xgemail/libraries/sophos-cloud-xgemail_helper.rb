@@ -139,7 +139,7 @@ module SophosCloudXgemail
       else
         if account == 'sandbox'
           localip = node['ipaddress'].split(".")
-          return "outbound-#{localip.reverse.join("-")}-#{region}.#{account}.hydra.sophos.com"
+          return "inbound-#{localip.reverse.join("-")}-#{region}.#{account}.hydra.sophos.com"
         else
           mac = node['macaddress'].downcase
           subnet_id = node['ec2']['network_interfaces_macs'][mac]['subnet_id']
@@ -153,7 +153,7 @@ module SophosCloudXgemail
             })
             resp.route_tables[0].routes.each do |r|
               if destination_cidr_block == r.destination_cidr_block
-                return "outbound-#{ec2.describe_nat_gateways({
+                return "inbound-#{ec2.describe_nat_gateways({
                     nat_gateway_ids: [r.nat_gateway_id],
                 }).nat_gateways[0].nat_gateway_addresses[0].public_ip.gsub('.','-')}-#{region}.#{account}.hydra.sophos.com"
               end
