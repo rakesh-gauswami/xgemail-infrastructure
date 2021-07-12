@@ -101,11 +101,12 @@ if ACCOUNT != 'sandbox'
       execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
     end
   end
-include_recipe 'sophos-cloud-xgemail::configure-bounce-message-internet-delivery-queue'
-include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_consumer'
-include_recipe 'sophos-cloud-xgemail::setup_message_history_storage_dir'
-include_recipe 'sophos-cloud-xgemail::setup_message_history_files_cleanup_cron'
-include_recipe 'sophos-cloud-xgemail::install_jilter_delivery'
+  include_recipe 'sophos-cloud-xgemail::configure-bounce-message-internet-delivery-queue'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_consumer'
+  include_recipe 'sophos-cloud-xgemail::setup_message_history_storage_dir'
+  include_recipe 'sophos-cloud-xgemail::setup_message_history_files_cleanup_cron'
+  include_recipe 'sophos-cloud-xgemail::setup_iptables_nat_rules'
+  include_recipe 'sophos-cloud-xgemail::install_jilter_delivery'
 else
   include_recipe 'sophos-cloud-xgemail::configure-bounce-message-internet-delivery-queue'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_consumer'
