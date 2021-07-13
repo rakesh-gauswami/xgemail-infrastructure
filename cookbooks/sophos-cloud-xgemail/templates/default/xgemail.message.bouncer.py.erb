@@ -118,7 +118,11 @@ def main():
                                 subject = subject.decode(encoding).encode("utf-8")
                         except email.errors.HeaderParseError:
                             logger.warn("Failed to decode subject = {0}".format(subject) )
-                            subject = arg.split(':', 1)[1].strip()
+                            subject = ''
+                        except BaseException as e:
+                            logger.exception("Failed to encode subject = {0}. {1}".format(subject, e))
+                            subject = ''
+
                     if header_key.startswith('return-path'):
                         original_sender = format_sender(arg.split(':', 1)[1].strip())
                         original_sender.encode("utf-8")
@@ -127,8 +131,16 @@ def main():
             if part.get_content_type() == 'text/plain' and len(payload_text) > 1:
                 recipient = get_recipients(payload_text,original_sender)
                 failure_reason = part.get_payload().replace('\n', ' ')
-                # Remove non-word characters.
-                failure_reason.encode()
+                try:
+                    failure_reason, encoding = decode_header(failure_reason)[0]
+                    if encoding is not None:
+                        failure_reason = failure_reason.decode(encoding).encode("utf-8")
+                    else:
+                        failure_reason = failure_reason.encode()
+                except email.errors.HeaderParseError:
+                    logger.warn("Failed to decode failure reason = {0}".format(failure_reason))
+                except BaseException as e:
+                    logger.exception("Failed to encode failure reason = {0}. {1}".format(failure_reason, e))
             logger.debug("Sender = {0}".format(original_sender))
             logger.debug("Recipient = {0}".format(recipient))
             logger.debug("Subject = {0}".format(subject))
