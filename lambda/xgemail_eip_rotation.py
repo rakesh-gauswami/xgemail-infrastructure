@@ -24,13 +24,17 @@ from botocore.waiter import create_waiter_with_client
 
 print('Loading function')
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-
-region = os.environ['AWS_REGION']
 account = os.environ['ACCOUNT']
+region = os.environ['AWS_REGION']
 ssm_postfix_service = os.environ['SSM_POSTFIX_SERVICE']
 ssm_update_hostname = os.environ['SSM_UPDATE_HOSTNAME']
+
+logger = logging.getLogger()
+
+if os.environ.get('LOG_LEVEL') is None:
+    logger.setLevel('INFO')
+else:
+    logger.setLevel(logging.getLevelName(os.environ.get('LOG_LEVEL').strip()))
 
 session = boto3.session.Session(region_name=region)
 ec2 = session.resource('ec2')
