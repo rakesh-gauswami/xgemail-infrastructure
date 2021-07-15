@@ -12,15 +12,12 @@
 import sys
 sys.path.append("<%= @xgemail_utils_path %>")
 
-import copy
 import formatterutils
-import gzip
 import gziputils
 import io
 import json
 import logging
 import messageformatter
-import messagehistoryformatter
 import metadataformatter
 import multipolicyreaderutils
 import os
@@ -35,7 +32,6 @@ from email.parser import HeaderParser
 from awshandler import AwsHandler
 from common.metadata import Metadata
 from common.sqsmessage import SqsMessage
-from common.messagehistoryevent import MessageHistoryEvent
 from datetime import datetime
 from datetime import timedelta
 from email.parser import Parser
@@ -147,6 +143,8 @@ def get_metadata(message_headers):
             sender_address = None
 
         x_sophos_header = uuidutils.get_x_sophos_email_id(message_headers['X-Sophos-Email-ID'], queue_id)
+        x_sophos_email_product_type = uuidutils.get_x_sophos_email_id(message_headers['X-Sophos-Xgemail-Product-Type'],
+                                                                      queue_id)
 
         metadata = Metadata(metadataformatter.SCHEMA_VERSION,
                             sender_ip,
@@ -156,7 +154,8 @@ def get_metadata(message_headers):
                             date_recorded,
                             recipient_domain,
                             recipient_list,
-                            x_sophos_header)
+                            x_sophos_header,
+                            x_sophos_email_product_type)
 
         # required logging for EncryptionServiceTest automation test
         logger.info("Input email metadata info [{0}]".format(metadata))
@@ -334,7 +333,8 @@ def get_metadata_for_outbound(metadata, message_headers):
         metadata.get_date_recorded(),
         metadata.get_recipient_domain(),
         metadata.get_recipients(),
-        metadata.get_x_sophos_email_id()
+        metadata.get_x_sophos_email_id(),
+        metadata.get_email_product_type()
     )
 
 # if get_metadata_for_outbound method finds x-sophos-effective-sender then this method returns the metadata
@@ -353,7 +353,8 @@ def get_metadata_for_outbound_effective_sender(metadata, header, header_value):
             metadata.get_date_recorded(),
             metadata.get_recipient_domain(),
             metadata.get_recipients(),
-            metadata.get_x_sophos_email_id()
+            metadata.get_x_sophos_email_id(),
+            metadata.get_email_product_type()
         )
 
     raise Exception(
@@ -465,7 +466,7 @@ def upload_msghistory_mail_info_to_s3(s3_file_path, msghistory_mail_info):
             ),
             msghistory_mail_info['schema_version']
         )
-    
+
         # prepared expiration date based on ttl_in_days
         expires = datetime.now() + timedelta(days=TTL_IN_DAYS)
 
@@ -481,7 +482,7 @@ def upload_msghistory_mail_info_to_s3(s3_file_path, msghistory_mail_info):
         return msghistory_mail_info_path
     except Exception as e:
         logger.warning("S3 File Path [{0}]. Failed in uploading mail info to S3 [{1}]".format(s3_file_path, e))
-    
+
 def prepare_message_context(s3_file_path, mail_info):
 
     message_context = None
@@ -498,12 +499,13 @@ def prepare_message_context(s3_file_path, mail_info):
     return message_context
 
 #The accepted events written by Jilter needs to be updated with 's3_file_path' and 'decorated_queue_id'
-def update_msghistory_event_and_get_message_context(msghistory_events, s3_file_path, policy_metadata, direction, recipients, sender, upload_msg_history, is_mh_parent):
+def update_msghistory_event_and_get_message_context(msghistory_events, s3_file_path, policy_metadata, direction,
+                                                    recipients, sender, upload_msg_history, is_mh_parent):
     try:
         mail_info = None
 
-        #Todo: XGE-19649 will add proper email product type.
-        messagehistory.update_msghistory_event(msghistory_events, s3_file_path, policy_metadata, direction, recipients, sender, GATEWAY)
+        messagehistory.update_msghistory_event(msghistory_events, s3_file_path, policy_metadata, direction, recipients,
+                                               sender, policy_metadata.get_email_product_type())
         mailbox = None
         if direction == INBOUND_MESSAGE_DIRECTION:
             mailbox = recipients[0].lower()
@@ -542,7 +544,7 @@ def base_policy_flow(metadata, direction, is_reply, domain, sender, message, rfx
 
     upload_msg_history = should_upload_msg_history(direction, rfx_submit)
 
-    #A dict where key is mailbox address and value is the 'accepted' event record. 
+    #A dict where key is mailbox address and value is the 'accepted' event record.
     msghistory_events = messagehistory.read_msghistory_accepted_events(queue_id, MSG_HISTORY_EVENT_DIR)
     message_context = None
     if msghistory_events is not None:
