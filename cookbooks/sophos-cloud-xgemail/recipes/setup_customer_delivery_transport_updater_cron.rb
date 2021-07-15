@@ -21,7 +21,7 @@ raise "Unsupported node type [#{NODE_TYPE}]" if INSTANCE_DATA.nil?
 INSTANCE_NAME = INSTANCE_DATA[:instance_name]
 raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 
-ACCOUNT               = node['sophos_cloud']['context']
+ACCOUNT               = node['sophos_cloud']['environment']
 LOCAL_CERT_PATH       = node['sophos_cloud']['local_cert_path']
 REGION                = node['sophos_cloud']['region']
 CONNECTIONS_BUCKET    = node['sophos_cloud']['connections']
