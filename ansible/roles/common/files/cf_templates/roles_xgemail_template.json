@@ -585,6 +585,91 @@
       "Type": "AWS::IAM::Policy"
     },
 
+    "MfElbO365IpSyncLambdaExecutionRole" : {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [ "lambda.amazonaws.com" ]
+            },
+            "Action": [ "sts:AssumeRole" ]
+          }]
+        },
+        "Path": "/",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "MfElbO365IpSyncLambdaExecutionRole" ] ] }
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
+      }
+    },
+    "MfElbO365IpSyncLambdaExecutionRolePolicies": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "lambda:*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:logs:*:*:*"
+              ]
+            },
+            {
+              "Action": [
+                "ec2:AuthorizeSecurityGroupIngress",
+                "ec2:DescribeSecurityGroups",
+                "ec2:RevokeSecurityGroupIngress"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ]
+        },
+        "PolicyName": "root",
+        "Roles": [
+          {
+            "Ref": "MfElbO365IpSyncLambdaExecutionRole"
+          }
+        ]
+      },
+      "Type": "AWS::IAM::Policy"
+    },
+
     "FirehoseTransformationLambdaExecutionRole" : {
       "Type": "AWS::IAM::Role",
       "Properties": {
@@ -7256,6 +7341,14 @@
     "EipRotationLambdaExecutionRoleArn": {
       "Description": "Eip Rotation Lambda Execution role ARN",
       "Value": { "Fn::GetAtt" : [ "EipRotationLambdaExecutionRole", "Arn" ] }
+    },
+    "MfElbO365IpSyncLambdaExecutionRole": {
+      "Description": "Mf Elb O365 Ip Sync Lambda Execution role",
+      "Value": { "Ref": "MfElbO365IpSyncLambdaExecutionRole" }
+    },
+    "MfElbO365IpSyncLambdaExecutionRoleArn": {
+      "Description": "Mf Elb O365 Ip Sync Lambda Execution role ARN",
+      "Value": { "Fn::GetAtt" : [ "MfElbO365IpSyncLambdaExecutionRole", "Arn" ] }
     },
     "FirehoseTransformationLambdaExecutionRole": {
       "Description": "Firehose Transformation Lambda Execution role",
