@@ -143,8 +143,7 @@ def get_metadata(message_headers):
             sender_address = None
 
         x_sophos_header = uuidutils.get_x_sophos_email_id(message_headers['X-Sophos-Email-ID'], queue_id)
-        x_sophos_email_product_type = uuidutils.get_x_sophos_email_id(message_headers['X-Sophos-Xgemail-Product-Type'],
-                                                                      queue_id)
+        x_sophos_email_product_type = message_headers['X-Sophos-Xgemail-Product-Type']
 
         metadata = Metadata(metadataformatter.SCHEMA_VERSION,
                             sender_ip,
