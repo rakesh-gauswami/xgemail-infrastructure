@@ -46,17 +46,17 @@ class MultiEip:
         self.instance = self.ec2.Instance(instance_id)
         self.eni, self.attachment_id  = self.get_eni()
         self.eip_count = self.get_eip_count()
-        self.assign_private_ips()
-        self.private_ips = self.fetch_private_ips()
-        self.public_ips = self.assign_multi_eips()
-        self.associate_eip_private_ip()
+        self.private_ips = self.assign_private_ips()
+        self.public_ips = self.associate_multi_eips()
 
 
     def get_eip_count(self):
         for tag in self.instance.tags:
             if 'eip_count' in tag['Key']:
+                logger.debug("Found eip_count: {}.".format(tag['Value']))
                 return tag['Value']
             else:
+                logger.warning("Could not find eip_count.")
                 return 1
 
 
@@ -65,16 +65,18 @@ class MultiEip:
 
 
     def assign_private_ips(self):
+        logger.debug("Assigning {} Private IP(s) on Interface: {}.".format(self.eip_count, self.eni))
         result = self.ec2_client.assign_private_ip_addresses(NetworkInterfaceId=self.eni, SecondaryPrivateIpAddressCount=self.eip_count)
-        return result['AssignedPrivateIpAddresses']
+        logger.debug("Assigned Private IP Addresses: {}.".format(result['AssignedPrivateIpAddresses']))
+        return [private_ip['PrivateIpAddress'] for private_ip in result['AssignedPrivateIpAddresses']]
 
 
-    def assign_multi_eips(self):
+    def associate_multi_eips(self):
         for private_ip in self.private_ips:
             eip = self.get_clean_eip()
             if eip is not None:
                 if self.associate_address(allocation_id=eip['AllocationId'], instance_id=self.instance.id, private_ip=private_ip):
-                    logger.info("Associating EIP {} to Private IP {} on Instance: {}.".format(eip['PublicIp'], private_ip, self.instance.id))
+                    logger.debug("Associating EIP {} to Private IP {} on Instance: {}.".format(eip['PublicIp'], private_ip, self.instance.id))
                     return True
                 else:
                     logger.error("Unable to associate EIP {} to Private IP {} on Instance: {}.".format(eip['PublicIp'], private_ip, self.instance.id))
