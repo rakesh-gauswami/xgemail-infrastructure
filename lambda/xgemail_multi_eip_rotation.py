@@ -24,6 +24,7 @@ from botocore.waiter import create_waiter_with_client
 
 print('Loading function')
 
+logging.getLogger("botocore").setLevel(logging.WARNING)
 logger = logging.getLogger()
 
 if os.environ.get('LOG_LEVEL') is None:
@@ -46,7 +47,8 @@ class MultiEip:
         self.instance = self.ec2.Instance(instance_id)
         self.eni, self.attachment_id  = self.get_eni()
         self.eip_count = self.get_eip_count()
-        self.private_ips = self.assign_private_ips()
+        self.assign_private_ips()
+        self.private_ips = self.fetch_private_ips()
         self.public_ips = self.associate_multi_eips()
 
 
@@ -65,7 +67,7 @@ class MultiEip:
 
 
     def assign_private_ips(self):
-        logger.debug("Assigning {} Private IP(s) on Interface: {}.".format(self.eip_count, self.eni))
+        logger.info("Assigning {} Private IP(s) on Interface: {}.".format(self.eip_count, self.eni))
         result = self.ec2_client.assign_private_ip_addresses(NetworkInterfaceId=self.eni, SecondaryPrivateIpAddressCount=self.eip_count)
         logger.debug("Assigned Private IP Addresses: {}.".format(result['AssignedPrivateIpAddresses']))
         return [private_ip['PrivateIpAddress'] for private_ip in result['AssignedPrivateIpAddresses']]
@@ -75,8 +77,8 @@ class MultiEip:
         for private_ip in self.private_ips:
             eip = self.get_clean_eip()
             if eip is not None:
-                if self.associate_address(allocation_id=eip['AllocationId'], instance_id=self.instance.id, private_ip=private_ip):
-                    logger.debug("Associating EIP {} to Private IP {} on Instance: {}.".format(eip['PublicIp'], private_ip, self.instance.id))
+                if self.associate_address(eip=eip, instance_id=self.instance.id, private_ip=private_ip):
+                    logger.info("Associating EIP {} to Private IP {} on Instance: {}.".format(eip['PublicIp'], private_ip, self.instance.id))
                     return True
                 else:
                     logger.error("Unable to associate EIP {} to Private IP {} on Instance: {}.".format(eip['PublicIp'], private_ip, self.instance.id))
@@ -88,6 +90,7 @@ class MultiEip:
 
     def fetch_private_ips(self):
         nic = self.ec2_client.describe_network_interfaces(NetworkInterfaceIds=[self.eni])
+        logger.debug("Fetch private ips: {}".format([private_ip['PrivateIpAddress'] for private_ip in nic['NetworkInterfaces'][0]['PrivateIpAddresses']]))
         return [private_ip['PrivateIpAddress'] for private_ip in nic['NetworkInterfaces'][0]['PrivateIpAddresses']]
 
 
@@ -155,20 +158,48 @@ class MultiEip:
             return None
 
 
-    def associate_address(self, allocation_id, instance_id, private_ip):
+    def associate_address(self, eip, instance_id, private_ip):
         """
         Associate an EIP to an EC2 Instance.
         """
-        logger.info("Associating Private IP {} with EIP Allocation Id:{} on Instance: {}".format(private_ip, allocation_id, instance_id))
+        logger.info("Associating Private IP {} with EIP Allocation Id:{} on Instance: {}".format(private_ip, eip['AllocationId'], instance_id))
         try:
             self.ec2_client.associate_address(
-                AllocationId=allocation_id,
+                AllocationId=eip['AllocationId'],
                 AllowReassociation=False,
                 InstanceId=instance_id,
                 PrivateIpAddress=private_ip
             )
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'Resource.AlreadyAssociated':
+                logger.debug("Unable to associate elastic IP {}".format(e))
+                self.disassociate_address(eip)
+            else:
+                logger.exception("Unable to associate elastic IP {}".format(e))
+        else:
+            return True
+
+
+    def disassociate_address(self, eip):
+        """
+        Get EIP Info from describe_address. Disassociate the EIP from the EC2 Instance then tag the EIP with the time it was detached.
+        """
+        logger.info("Disassociating and Tagging EIP {}".format(eip['PublicIp']))
+        try:
+            self.ec2_client.disassociate_address(
+                AssociationId=eip['AssociationId']
+            )
+            self.ec2_client.create_tags(
+                Resources=[eip['AllocationId']],
+                Tags=[
+                    {
+                        'Key': 'detached',
+                        'Value': datetime.now().strftime('%Y%m%d%H%M%S')
+                    }
+                ]
+            )
         except Exception as e:
-            logger.error("Unable to associate elastic IP {}".format(e))
+            logger.exception("Unable to disassociate elastic IP {}".format(e))
             return False
         else:
             return True
