@@ -54,11 +54,11 @@ class MultiEip:
 
     def get_eip_count(self):
         for tag in self.instance.tags:
-            if 'eip_count' in tag['Key']:
-                logger.debug("Found eip_count: {}.".format(tag['Value']))
+            if 'EipCount' in tag['Key']:
+                logger.debug("Found EipCount: {}.".format(tag['Value']))
                 return tag['Value']
             else:
-                logger.warning("Could not find eip_count.")
+                logger.warning("Could not find EipCount.")
                 return 1
 
 
