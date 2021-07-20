@@ -79,7 +79,6 @@ class MultiEip:
             if eip is not None:
                 if self.associate_address(eip=eip, instance_id=self.instance.id, private_ip=private_ip):
                     logger.info("Associating EIP {} to Private IP {} on Instance: {}.".format(eip['PublicIp'], private_ip, self.instance.id))
-                    return True
                 else:
                     logger.error("Unable to associate EIP {} to Private IP {} on Instance: {}.".format(eip['PublicIp'], private_ip, self.instance.id))
                     return False
