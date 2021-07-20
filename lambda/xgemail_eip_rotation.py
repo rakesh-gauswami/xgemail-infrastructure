@@ -29,6 +29,7 @@ region = os.environ['AWS_REGION']
 ssm_postfix_service = os.environ['SSM_POSTFIX_SERVICE']
 ssm_update_hostname = os.environ['SSM_UPDATE_HOSTNAME']
 
+logging.getLogger("botocore").setLevel(logging.WARNING)
 logger = logging.getLogger()
 
 if os.environ.get('LOG_LEVEL') is None:
@@ -179,8 +180,6 @@ def get_instances_by_name():
                     'CloudEmail:internet-xdelivery:*',
                     'CloudEmail:risky-delivery:*',
                     'CloudEmail:risky-xdelivery:*',
-                    'CloudEmail:warmup-delivery:*',
-                    'CloudEmail:warmup-xdelivery:*',
                     'CloudEmail:beta-delivery:*',
                     'CloudEmail:beta-xdelivery:*',
                     'CloudEmail:delta-delivery:*',
