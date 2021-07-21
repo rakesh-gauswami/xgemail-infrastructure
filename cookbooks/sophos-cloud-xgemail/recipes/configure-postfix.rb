@@ -69,6 +69,7 @@ ruby_block 'cleanup_config_files' do
   end
 end
 
+include_recipe 'sophos-cloud-xgemail::setup_iptables_nat_rules'
 include_recipe 'sophos-cloud-xgemail::configure-internet-submit-queue'
 include_recipe 'sophos-cloud-xgemail::configure-customer-submit-queue'
 include_recipe 'sophos-cloud-xgemail::configure-customer-delivery-queue'
