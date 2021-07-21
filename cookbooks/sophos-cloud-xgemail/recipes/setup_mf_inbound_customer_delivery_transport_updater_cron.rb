@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: sophos-cloud-xgemail
-# Recipe:: setup_customer_delivery_transport_updater_cron
+# Recipe:: setup_mf_inbound_customer_delivery_transport_updater_cron
 #
 # Copyright 2016, Sophos
 #
@@ -26,18 +26,15 @@ LOCAL_CERT_PATH       = node['sophos_cloud']['local_cert_path']
 REGION                = node['sophos_cloud']['region']
 CONNECTIONS_BUCKET    = node['sophos_cloud']['connections']
 
-CRON_JOB_TIMEOUT      = node['xgemail']['cron_job_timeout']
-CRON_MINUTE_FREQUENCY = node['xgemail']['customer_delivery_transport_cron_minute_frequency']
+CRON_JOB_TIMEOUT      = node['xgemail']['mail_flow_cron_job_timeout']
+CRON_MINUTE_FREQUENCY = node['xgemail']['mail_flow_sender_by_relay_cron_minute_frequency']
 STATION_VPC_NAME      = node['xgemail']['station_vpc_name']
 XGEMAIL_FILES_DIR     = node['xgemail']['xgemail_files_dir']
 TRANSPORT_FILENAME    = 'transport'
 MAIL_PIC_API_RESPONSE_TIMEOUT = node['xgemail']['mail_pic_apis_response_timeout_seconds']
 MAIL_PIC_API_AUTH     = node['xgemail']['mail_pic_api_auth']
 POLICY_BUCKET         = node['xgemail']['xgemail_policy_bucket_name']
-ENC_CONFIG_KEY        = node['xgemail']['enc_config_key']
-INBOUND_TLS_CONFIG_KEY = node['xgemail']['inbound_tls_config_key']
 XGEMAIL_UTILS_DIR      = node['xgemail']['xgemail_utils_files_dir']
-CUSTOM_ROUTE_TRANSPORT_PATH  = node['xgemail']['custom_route_transport_path']
 
 CONFIGURATION_COMMANDS =
   [
@@ -68,7 +65,7 @@ if ACCOUNT == 'sandbox'
 end
 
 PACKAGE_DIR           = "#{XGEMAIL_FILES_DIR}/customer-delivery-transport-cron"
-CRON_SCRIPT           = 'customer.delivery.transport.updater.py'
+CRON_SCRIPT           = 'mf.inbound.customer.delivery.transport.updater.py'
 CRON_SCRIPT_PATH      = "#{PACKAGE_DIR}/#{CRON_SCRIPT}"
 XGEMAIL_PIC_FQDN      = "mail-#{STATION_VPC_NAME.downcase}-#{REGION}.#{ACCOUNT}.hydra.sophos.com"
 
@@ -106,9 +103,6 @@ template CRON_SCRIPT_PATH do
     :connections_bucket => CONNECTIONS_BUCKET,
     :policy_bucket => POLICY_BUCKET,
     :xgemail_utils_path => XGEMAIL_UTILS_DIR,
-    :custom_route_transport_path => CUSTOM_ROUTE_TRANSPORT_PATH,
-    :enc_config_key => ENC_CONFIG_KEY,
-    :inbound_tls_config_key => INBOUND_TLS_CONFIG_KEY
   )
   notifies :run, "execute[#{CRON_SCRIPT_PATH}]", :immediately
 end
