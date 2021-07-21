@@ -56,9 +56,10 @@ class MultiEip:
         for tag in self.instance.tags:
             if 'EipCount' in tag['Key']:
                 logger.debug("Found EipCount: {}.".format(tag['Value']))
-                return tag['Value']
+                return int(tag['Value'])
+
         logger.warning("Could not find EipCount.")
-        return 1
+        return int(1)
 
 
     def get_eni(self):
