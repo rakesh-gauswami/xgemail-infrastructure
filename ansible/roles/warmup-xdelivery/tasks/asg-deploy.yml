@@ -27,6 +27,7 @@
       BundleVersion:                        "{{ami_build}}"
       EbsMinIops:                           "{{xgemail_iops_data_gb}}"
       Environment:                          "{{account.name}}"
+      EipCount:                             "{{aws.asg.wx.eip_count}}"
       HealthCheckGracePeriod:               "{{aws.asg.wx.health_check_grace_period}}"
       InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.XgemailWarmupXdeliveryInstanceProfile}}"
       InstanceType:                         "{{aws.asg.wx.instance_size}}"

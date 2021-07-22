@@ -258,6 +258,10 @@ PYTHON_FILES += ./utils/xgemail_send_eml.py
 PYTHON_FILES += ./utils/xgemail_terminate_instance.py
 PYTHON_FILES += ./lambda/xgemail_eip_monitor.py
 PYTHON_FILES += ./lambda/xgemail_eip_rotation.py
+PYTHON_FILES += ./lambda/xgemail_multi_eip_rotation.py
+PYTHON_FILES += ./lambda/xgemail_mf_elb_o365_ip_sync.py
+PYTHON_FILES += ./lambda/xgemail_instance_terminator.py
+PYTHON_FILES += ./lambda/xgemail_firehose_transformation.py
 
 NUM_PYTHON_FILES=$(shell echo $(PYTHON_FILES) | wc -w)
 
