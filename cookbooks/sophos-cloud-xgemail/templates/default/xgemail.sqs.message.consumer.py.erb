@@ -647,7 +647,7 @@ def deliver_messages():
                     )
     
                 # Add unique uuid header to the existing headers if it's an mailflow OUTBOUND message
-                if MESSAGE_DIRECTION == 'OUTBOUND' and mh_mail_info['email_product_type'] == 'Mailflow' and headers[X_SOPHOS_MAILFLOW_PROCESSING_ID] is None:
+                if MESSAGE_DIRECTION == 'OUTBOUND' and mh_mail_info['email_product_type'] is not None and mh_mail_info['email_product_type'] == 'Mailflow' and headers[X_SOPHOS_MAILFLOW_PROCESSING_ID] is None:
                     headers[X_SOPHOS_MAILFLOW_PROCESSING_ID] = str(uuid.uuid4()).replace('-','')
 
                 # attempt to add any existing headers to the message
