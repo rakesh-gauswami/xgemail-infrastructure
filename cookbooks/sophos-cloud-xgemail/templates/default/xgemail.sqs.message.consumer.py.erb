@@ -24,6 +24,7 @@ import configformatter
 import requests
 import smtplib
 import urllib
+import uuid
 import re
 import os.path
 import messagehistory
@@ -72,6 +73,7 @@ DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 THREAD_COUNT_CONFIG_KEY = "<%= @consumer_thread_count_key %>"
 X_SOPHOS_PROCESSING_START_TIME_HEADER = 'X-Sophos-Processing-Start-Time'
+X_SOPHOS_MAILFLOW_PROCESSING_ID = 'X-Sophos-Mailflow-Processing-Id'
 # logging to syslog setup
 logging.getLogger("botocore").setLevel(logging.WARNING)
 logger = logging.getLogger('sqsmsgconsumer')
@@ -643,6 +645,10 @@ def deliver_messages():
                         recipients,
                         headers
                     )
+
+                mailflow_processing_id = headers[X_SOPHOS_MAILFLOW_PROCESSING_ID]
+                if MESSAGE_DIRECTION == 'OUTBOUND' and not (mailflow_processing_id and mailflow_processing_id.strip()):
+                    headers[X_SOPHOS_MAILFLOW_PROCESSING_ID] = str(uuid.uuid4()).replace('-','')
 
                 # attempt to add any existing headers to the message
                 message_binary_with_headers, timestamp_header  = add_headers(
