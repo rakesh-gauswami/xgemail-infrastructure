@@ -7359,6 +7359,53 @@
         ]
       }
     },
+    "XgemailProdMsgFilterRole" : {
+      "Type": "AWS::IAM::Role",
+      "Condition": "isProd",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": [
+                  "arn:aws:iam::872445321290:role/MSG-Filter-Role",
+                  "arn:aws:iam::872445321290:role/MSG-Filter-CFT-Role",
+                  "arn:aws:sts::872445321290:assumed-role/MSG-Filter-CFT-Role/AWSCloudFormation"
+                ]
+              }
+            }
+          ]
+        },
+        "Path": "/",
+        "RoleName": "MSG-Filter-Role",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "msg-filter-role"
+          },
+          {
+            "Key": "Name",
+            "Value": "msg-filter-role"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
+      }
+    },
     "XgemailProdMsgFilterRolePolicies": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
@@ -7441,53 +7488,6 @@
         "Roles": [
           {
             "Ref": "XgemailProdMsgFilterRole"
-          }
-        ]
-      }
-    },
-    "XgemailProdMsgFilterRole" : {
-      "Type": "AWS::IAM::Role",
-      "Condition": "isProd",
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Action": [
-                "sts:AssumeRole"
-              ],
-              "Effect": "Allow",
-              "Principal": {
-                "AWS": [
-                  "arn:aws:iam::872445321290:role/MSG-Filter-Role",
-                  "arn:aws:iam::872445321290:role/MSG-Filter-CFT-Role",
-                  "arn:aws:sts::872445321290:assumed-role/MSG-Filter-CFT-Role/AWSCloudFormation"
-                ]
-              }
-            }
-          ]
-        },
-        "Path": "/",
-        "RoleName": "MSG-Filter-Role",
-        "Tags": [
-          {
-            "Key": "Application",
-            "Value": "msg-filter-role"
-          },
-          {
-            "Key": "Name",
-            "Value": "msg-filter-role"
-          },
-          {
-            "Key": "BusinessUnit",
-            "Value": "MSG"
-          },
-          {
-            "Key": "Project",
-            "Value": "xgemail"
-          },
-          {
-            "Key": "OwnerEmail",
-            "Value": "sophosmailops@sophos.com"
           }
         ]
       }
