@@ -150,6 +150,8 @@ template 'fluentd-source-jilter' do
     NODE_TYPE == 'warmup-delivery' ||
     NODE_TYPE == 'beta-delivery' ||
     NODE_TYPE == 'delta-delivery' ||
+    NODE_TYPE == 'mf-inbound-submit' ||
+    NODE_TYPE == 'mf-outbound-submit' ||
     NODE_TYPE == 'mf-inbound-delivery' ||
     NODE_TYPE == 'mf-outbound-delivery' ||
     NODE_TYPE == 'xdelivery' ||
