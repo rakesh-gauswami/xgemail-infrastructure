@@ -126,7 +126,7 @@ def add_ingress_rules(sg, ip_list):
                     {'IpProtocol': 'tcp',
                      'FromPort': 25,
                      'ToPort': 25,
-                     'IpRanges': [{'CidrIp': ip}]},
+                     'IpRanges': [{'CidrIp': ip, 'Description': 'Microsoft Office 365 Endpoint'}]},
                     {'IpProtocol': 'tcp',
                      'FromPort': 587,
                      'ToPort': 587,
