@@ -646,8 +646,9 @@ def deliver_messages():
                         headers
                     )
 
-                mailflow_processing_id = headers[X_SOPHOS_MAILFLOW_PROCESSING_ID]
-                if MESSAGE_DIRECTION == 'OUTBOUND' and mh_mail_info['email_product_type'] == 'Mailflow' and not (mailflow_processing_id and mailflow_processing_id.strip()):
+                mailflow_processing_id = headers.get(X_SOPHOS_MAILFLOW_PROCESSING_ID, None)
+                email_product_type = mh_mail_info.get('mail_info').get('email_product_type', None)
+                if MESSAGE_DIRECTION == 'OUTBOUND' and email_product_type == 'Mailflow' and not (mailflow_processing_id and mailflow_processing_id.strip()):
                     headers[X_SOPHOS_MAILFLOW_PROCESSING_ID] = str(uuid.uuid4()).replace('-','')
 
                 # attempt to add any existing headers to the message
