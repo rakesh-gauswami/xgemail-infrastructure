@@ -64,6 +64,7 @@ lambda:
   firehose_transformation_lambda_function:               "Xgemail-Firehose-Transformation"
   instance_terminator_lambda_function:                   "Xgemail-Instance-Terminator"
   mf_elb_o365_ip_sync_lambda_function:                   "Xgemail-Mf-Elb-O365-Ip-Sync"
+  multi_eip_rotation_lambda_function:                    "Xgemail-Multi-Eip-Rotation"
 # CloudEmail S3 Bucket Names.
 s3:
   arn_prefix:                                           "arn:aws:s3:::"
@@ -132,6 +133,7 @@ sqs:
   quarantine_sqs_queue_sns_listener:                    "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Quarantine_Delivery_SNS_Listener"
   risky_delivery_sqs_queue_sns_listener:                "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Risky_Delivery_SNS_Listener"
   sender_check_reject_queue:                            "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Sender_Check_Reject_Queue"
+  settings_update_queue:                                "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Settings_Update_Queue"
   toc_settings_update_sqs_queue_sns_listener:           "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Toc_Settings_Update_SNS_Listener"
   user_allow_block_action_sqs_queue_sns_listener:       "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_User_Allow_Block_Action_SNS_Listener"
   user_deleted_action_sqs_queue_sns_listener:           "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_User_Deleted_Action_SNS_Listener"
@@ -266,6 +268,7 @@ stack:
     rule:
       lifecycle_automation:                             "{{vpc.cloud_email.name}}-xgemail-lifecycle-termination-events-rule"
       lifecycle_lambda:                                 "{{vpc.cloud_email.name}}-xgemail-lifecycle-launch-events-rule"
+      lifecycle_multi_eip_lambda:                       "{{vpc.cloud_email.name}}-xgemail-lifecycle-launch-multi-eip-events-rule"
       ratelimit_automation:                             "{{vpc.cloud_email.name}}-xgemail-rate-limit-events-rule"
   es:
     toc_elasticsearch_domain:                           "{{vpc.cloud_email.name}}-XGEMAIL-ToC-ES-Domain"
@@ -278,6 +281,7 @@ stack:
     firehose_transformation_lambda_function:            "{{vpc.cloud_email.name}}-Lambda-XgemailFirehoseTransformation"
     instance_terminator_lambda_function:                "{{vpc.cloud_email.name}}-Lambda-XgemailInstanceTerminator"
     mf_elb_o365_ip_sync_lambda_function:                "{{vpc.cloud_email.name}}-Lambda-XgemailMfElbO365IpSync"
+    multi_eip_rotation_lambda_function:                 "{{vpc.cloud_email.name}}-Lambda-XgemailMultiEipRotation"
   route53:
     beta_delivery_route53:                              "{{vpc.cloud_email.name}}-XGEMAIL-beta-delivery-ROUTE53"
     beta_xdelivery_route53:                             "{{vpc.cloud_email.name}}-XGEMAIL-beta-xdelivery-ROUTE53"
@@ -363,6 +367,7 @@ stack:
     quarantine_sqs_queue_sns_listener:                  "{{vpc.cloud_email.name}}-XGEMAIL-quarantine-SQS-SNS-listener"
     risky_delivery_sqs_queue_sns_listener:              "{{vpc.cloud_email.name}}-XGEMAIL-risky-delivery-SQS-SNS-listener"
     sender_check_reject_queue:                          "{{vpc.cloud_email.name}}-Xgemail-Sender-Check-Reject-Queue"
+    settings_update_queue:                              "{{vpc.cloud_email.name}}-XGEMAIL-settings-update-SQS"
     toc_settings_update_sqs_queue_sns_listener:         "{{vpc.cloud_email.name}}-XGEMAIL-Toc-Settings-Update-SNS-Listener"
     user_allow_block_action_sqs_queue_sns_listener:     "{{vpc.cloud_email.name}}-XGEMAIL-User-Allow-Block-Action-SNS-Listener"
     user_deleted_action_sqs_queue_sns_listener:         "{{vpc.cloud_email.name}}-XGEMAIL-User-Deleted-Action-SNS-Listener"
@@ -482,6 +487,7 @@ template:
   lambda:
     lambda_xgemail_eip_monitor_template:                "{{tmp_artifacts_dir}}/lambda_xgemail_eip_monitor_template.json"
     lambda_xgemail_eip_rotation_template:               "{{tmp_artifacts_dir}}/lambda_xgemail_eip_rotation_template.json"
+    lambda_xgemail_multi_eip_rotation_template:         "{{tmp_artifacts_dir}}/lambda_xgemail_multi_eip_rotation_template.json"
     lambda_xgemail_firehose_transformation_template:    "{{tmp_artifacts_dir}}/lambda_xgemail_firehose_transformation_template.json"
     lambda_xgemail_instance_terminator_template:        "{{tmp_artifacts_dir}}/lambda_xgemail_instance_terminator_template.json"
     lambda_xgemail_mf_elb_o365_ip_sync_template:        "{{tmp_artifacts_dir}}/lambda_xgemail_mf_elb_o365_ip_sync_template.json"

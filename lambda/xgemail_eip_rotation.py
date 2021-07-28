@@ -24,13 +24,18 @@ from botocore.waiter import create_waiter_with_client
 
 print('Loading function')
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-
-region = os.environ['AWS_REGION']
 account = os.environ['ACCOUNT']
+region = os.environ['AWS_REGION']
 ssm_postfix_service = os.environ['SSM_POSTFIX_SERVICE']
 ssm_update_hostname = os.environ['SSM_UPDATE_HOSTNAME']
+
+logging.getLogger("botocore").setLevel(logging.WARNING)
+logger = logging.getLogger()
+
+if os.environ.get('LOG_LEVEL') is None:
+    logger.setLevel('INFO')
+else:
+    logger.setLevel(logging.getLevelName(os.environ.get('LOG_LEVEL').strip()))
 
 session = boto3.session.Session(region_name=region)
 ec2 = session.resource('ec2')
@@ -171,12 +176,11 @@ def get_instances_by_name():
                 'Name': 'tag:Name',
                 'Values': [
                     'CloudEmail:internet-delivery:*',
+                    'CloudEmail:mf-inbound-delivery:*',
                     'CloudEmail:mf-outbound-delivery:*',
                     'CloudEmail:internet-xdelivery:*',
                     'CloudEmail:risky-delivery:*',
                     'CloudEmail:risky-xdelivery:*',
-                    'CloudEmail:warmup-delivery:*',
-                    'CloudEmail:warmup-xdelivery:*',
                     'CloudEmail:beta-delivery:*',
                     'CloudEmail:beta-xdelivery:*',
                     'CloudEmail:delta-delivery:*',

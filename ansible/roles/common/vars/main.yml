@@ -129,6 +129,7 @@ aws:
       cron_scale_out:                                             "30 14 * * 1-5"
       health_check_grace_period:                                  "900"
       instance_size:                                              "t2.small"
+      lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-mf-inbound-delivery-Launching-LifeCycleHook"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-mf-inbound-delivery-Terminating-LifeCycleHook"
       on_hour_desired:                                            "2"
       scale_in_out_weekdays:                                      "false"
@@ -214,12 +215,14 @@ aws:
       as_max_size:                                                "6"
       as_min_service:                                             "1"
       as_max_batch_size:                                          "1"
+      eip_count:                                                  "2"
       health_check_grace_period:                                  "600"
       instance_size:                                              "t2.small"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-warmup-delivery-Launching-LifeCycleHook"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-warmup-delivery-Terminating-LifeCycleHook"
     wx:
       asg_min_size:                                               [0,0,1]
+      eip_count:                                                  "2"
       health_check_grace_period:                                  "600"
       instance_size:                                              "t2.small"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-warmup-xdelivery-Launching-LifeCycleHook"
@@ -965,6 +968,13 @@ aws:
       template_parameters:
         QueueName:                                                "{{sqs.toc_settings_update_sqs_queue_sns_listener}}"
         TagApplication:                                           "xgemail-mail"
+    settings_update_queue:
+      stack_name:                                                 "{{stack.sqs.settings_update_queue}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        TagApplication:                                           "xgemail-mail"
+        QueueName:                                                "{{sqs.settings_update_queue}}"
     user_allow_block_action_sqs_queue_sns_listener:
       stack_name:                                                 "{{stack.sqs.user_allow_block_action_sqs_queue_sns_listener}}"
       state:                                                      present

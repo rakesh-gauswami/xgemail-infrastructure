@@ -97,6 +97,16 @@ elsif NODE_TYPE == 'delta-xdelivery'
   SERVER_TYPE_XDELIVERY = 'UNKNOWN'
   DIRECTION             = 'OUTBOUND'
   NON_DELIVERY_DSN      = '5.4.7'
+elsif NODE_TYPE == 'mf-inbound-delivery'
+  SERVER_TYPE           = 'MF_INBOUND_DELIVERY'
+  SERVER_TYPE_XDELIVERY = 'UNKNOWN'
+  DIRECTION             = 'INBOUND'
+  NON_DELIVERY_DSN      = '5.4.7'
+elsif NODE_TYPE == 'mf-outbound-delivery'
+  SERVER_TYPE           = 'MF_OUTBOUND_DELIVERY'
+  SERVER_TYPE_XDELIVERY = 'UNKNOWN'
+  DIRECTION             = 'OUTBOUND'
+  NON_DELIVERY_DSN      = '5.4.7'
 else
   SERVER_TYPE           = 'UNKNOWN'
   SERVER_TYPE_XDELIVERY = 'UNKNOWN'
@@ -140,6 +150,10 @@ template 'fluentd-source-jilter' do
     NODE_TYPE == 'warmup-delivery' ||
     NODE_TYPE == 'beta-delivery' ||
     NODE_TYPE == 'delta-delivery' ||
+    NODE_TYPE == 'mf-inbound-submit' ||
+    NODE_TYPE == 'mf-outbound-submit' ||
+    NODE_TYPE == 'mf-inbound-delivery' ||
+    NODE_TYPE == 'mf-outbound-delivery' ||
     NODE_TYPE == 'xdelivery' ||
     NODE_TYPE == 'internet-xdelivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
@@ -187,6 +201,7 @@ end
      NODE_TYPE == 'risky-delivery' ||
      NODE_TYPE == 'warmup-delivery' ||
      NODE_TYPE == 'beta-delivery'||
+     NODE_TYPE == 'mf-outbound-delivery' ||
      NODE_TYPE == 'delta-delivery'
    }
  end
@@ -203,7 +218,8 @@ template 'fluentd-source-multi-policy' do
     :log_path => '/var/log/xgemail/multi-policy.log'
   )
   only_if {
-    NODE_TYPE == 'internet-submit'
+    NODE_TYPE == 'internet-submit' ||
+    NODE_TYPE == 'mf-inbound-submit'
   }
 end
 
@@ -221,6 +237,8 @@ template 'fluentd-source-sqsmsgconsumer' do
   only_if {
     NODE_TYPE == 'customer-delivery' ||
     NODE_TYPE == 'internet-delivery' ||
+    NODE_TYPE == 'mf-inbound-delivery' ||
+    NODE_TYPE == 'mf-outbound-delivery' ||
     NODE_TYPE == 'encryption-delivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'warmup-delivery' ||
@@ -242,7 +260,9 @@ template 'fluentd-source-sqsmsgproducer' do
   )
   only_if {
     NODE_TYPE == 'internet-submit' ||
-    NODE_TYPE == 'customer-submit'||
+    NODE_TYPE == 'customer-submit' ||
+    NODE_TYPE == 'mf-inbound-submit' ||
+    NODE_TYPE == 'mf-outbound-submit' ||
     NODE_TYPE == 'encryption-submit'
   }
 end
@@ -275,6 +295,7 @@ template 'fluentd-match-maillog' do
   )
   only_if {
     NODE_TYPE == 'customer-submit' ||
+    NODE_TYPE == 'mf-outbound-submit' ||
     NODE_TYPE == 'encryption-submit' ||
     NODE_TYPE == 'encryption-delivery'
   }
@@ -298,6 +319,10 @@ template 'fluentd-match-jilter' do
     NODE_TYPE == 'encryption-submit' ||
     NODE_TYPE == 'customer-delivery' ||
     NODE_TYPE == 'internet-delivery' ||
+    NODE_TYPE == 'mf-inbound-submit' ||
+    NODE_TYPE == 'mf-outbound-submit' ||
+    NODE_TYPE == 'mf-inbound-delivery' ||
+    NODE_TYPE == 'mf-outbound-delivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'warmup-delivery' ||
     NODE_TYPE == 'beta-delivery' ||
@@ -348,6 +373,7 @@ end
   )
    only_if {
      NODE_TYPE == 'internet-delivery' ||
+     NODE_TYPE == 'mf-outbound-delivery' ||
      NODE_TYPE == 'risky-delivery' ||
      NODE_TYPE == 'warmup-delivery' ||
      NODE_TYPE == 'beta-delivery'||
@@ -368,7 +394,8 @@ template 'fluentd-match-multi-policy' do
     :filter_patterns => MULTIPOLICY_FILTER_PATTERNS
   )
   only_if {
-    NODE_TYPE == 'internet-submit'
+    NODE_TYPE == 'internet-submit' ||
+    NODE_TYPE == 'mf-inbound-submit'
   }
 end
 
@@ -390,6 +417,10 @@ template 'fluentd-match-sqsmsgproducer' do
     NODE_TYPE == 'encryption-submit' ||
     NODE_TYPE == 'customer-delivery' ||
     NODE_TYPE == 'internet-delivery' ||
+    NODE_TYPE == 'mf-inbound-submit' ||
+    NODE_TYPE == 'mf-outbound-submit' ||
+    NODE_TYPE == 'mf-inbound-delivery' ||
+    NODE_TYPE == 'mf-outbound-delivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'warmup-delivery' ||
     NODE_TYPE == 'beta-delivery' ||
@@ -419,6 +450,8 @@ template 'fluentd-match-sqsmsgconsumer' do
   only_if {
     NODE_TYPE == 'customer-delivery' ||
     NODE_TYPE == 'internet-delivery' ||
+    NODE_TYPE == 'mf-inbound-delivery' ||
+    NODE_TYPE == 'mf-outbound-delivery' ||
     NODE_TYPE == 'encryption-delivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'warmup-delivery' ||
@@ -462,6 +495,8 @@ template 'fluentd-filter-jilter' do
   only_if {
     NODE_TYPE == 'internet-submit' ||
     NODE_TYPE == 'customer-submit'||
+    NODE_TYPE == 'mf-inbound-submit' ||
+    NODE_TYPE == 'mf-outbound-submit' ||
     NODE_TYPE == 'encryption-submit'
   }
 end
@@ -509,6 +544,8 @@ end
      NODE_TYPE == 'risky-delivery' ||
      NODE_TYPE == 'warmup-delivery' ||
      NODE_TYPE == 'beta-delivery'||
+     NODE_TYPE == 'mf-inbound-delivery' ||
+     NODE_TYPE == 'mf-outbound-delivery' ||
      NODE_TYPE == 'delta-delivery'
    }
  end
@@ -528,7 +565,8 @@ template 'fluentd-filter-multi-policy' do
     :patterns_dir => PATTERNS_DIR
   )
   only_if {
-    NODE_TYPE == 'internet-submit'
+    NODE_TYPE == 'internet-submit' ||
+    NODE_TYPE == 'mf-inbound-submit'
   }
 end
 
@@ -549,6 +587,8 @@ template 'fluentd-filter-sqsmsgproducer' do
   only_if {
     NODE_TYPE == 'internet-submit' ||
     NODE_TYPE == 'customer-submit'||
+    NODE_TYPE == 'mf-inbound-submit' ||
+    NODE_TYPE == 'mf-outbound-submit' ||
     NODE_TYPE == 'encryption-submit'
   }
 end
@@ -574,6 +614,8 @@ template 'fluentd-filter-sqsmsgconsumer' do
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'warmup-delivery' ||
     NODE_TYPE == 'beta-delivery' ||
+    NODE_TYPE == 'mf-inbound-delivery' ||
+    NODE_TYPE == 'mf-outbound-delivery' ||
     NODE_TYPE == 'delta-delivery'
   }
 end
@@ -593,7 +635,8 @@ template 'fluentd-match-msg-stats-reject' do
     :region => REGION
   )
   only_if {
-    NODE_TYPE == 'internet-submit'
+    NODE_TYPE == 'internet-submit' ||
+    NODE_TYPE == 'mf-inbound-submit'
   }
 end
 
@@ -614,6 +657,8 @@ template 'fluentd-match-msg-delivery' do
     NODE_TYPE == 'xdelivery' ||
     NODE_TYPE == 'internet-delivery' ||
     NODE_TYPE == 'internet-xdelivery' ||
+    NODE_TYPE == 'mf-inbound-delivery' ||
+    NODE_TYPE == 'mf-outbound-delivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-delivery' ||
@@ -638,6 +683,8 @@ template 'fluentd-filter-msg-delivery' do
     NODE_TYPE == 'xdelivery' ||
     NODE_TYPE == 'internet-delivery' ||
     NODE_TYPE == 'internet-xdelivery' ||
+    NODE_TYPE == 'mf-inbound-delivery' ||
+    NODE_TYPE == 'mf-outbound-delivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-delivery' ||
@@ -657,7 +704,8 @@ template 'fluentd-filter-msg-stats-reject' do
   owner 'root'
   group 'root'
   only_if {
-    NODE_TYPE == 'internet-submit'
+    NODE_TYPE == 'internet-submit' ||
+    NODE_TYPE == 'mf-inbound-submit'
   }
 end
 
@@ -695,6 +743,8 @@ template 'fluentd-filter-transform-msg-delivery' do
     NODE_TYPE == 'xdelivery' ||
     NODE_TYPE == 'internet-delivery' ||
     NODE_TYPE == 'internet-xdelivery' ||
+    NODE_TYPE == 'mf-inbound-delivery' ||
+    NODE_TYPE == 'mf-outbound-delivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-delivery' ||
@@ -721,6 +771,8 @@ template 'fluentd-filter-transform-sqs-msg' do
     NODE_TYPE == 'xdelivery' ||
     NODE_TYPE == 'internet-delivery' ||
     NODE_TYPE == 'internet-xdelivery' ||
+    NODE_TYPE == 'mf-inbound-delivery' ||
+    NODE_TYPE == 'mf-outbound-delivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-delivery' ||
@@ -750,6 +802,8 @@ template 'fluentd-filter-transform-msg-history-v2' do
     NODE_TYPE == 'xdelivery' ||
     NODE_TYPE == 'internet-delivery' ||
     NODE_TYPE == 'internet-xdelivery' ||
+    NODE_TYPE == 'mf-inbound-delivery' ||
+    NODE_TYPE == 'mf-outbound-delivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-delivery' ||
@@ -779,6 +833,8 @@ template 'fluentd-match-sns-msg-delivery' do
     NODE_TYPE == 'xdelivery' ||
     NODE_TYPE == 'internet-delivery' ||
     NODE_TYPE == 'internet-xdelivery' ||
+    NODE_TYPE == 'mf-inbound-delivery' ||
+    NODE_TYPE == 'mf-outbound-delivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-delivery' ||
@@ -807,6 +863,8 @@ template 'fluentd-match-sqs-msg-delivery' do
     NODE_TYPE == 'xdelivery' ||
     NODE_TYPE == 'internet-delivery' ||
     NODE_TYPE == 'internet-xdelivery' ||
+    NODE_TYPE == 'mf-inbound-delivery' ||
+    NODE_TYPE == 'mf-outbound-delivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-delivery' ||
@@ -830,6 +888,8 @@ template 'fluentd-match-http-output-msg-history-v2' do
     NODE_TYPE == 'xdelivery' ||
     NODE_TYPE == 'internet-delivery' ||
     NODE_TYPE == 'internet-xdelivery' ||
+    NODE_TYPE == 'mf-inbound-delivery' ||
+    NODE_TYPE == 'mf-outbound-delivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-delivery' ||
@@ -866,7 +926,8 @@ template 'fluentd-match-sns-msg-stats-reject' do
     :sns_topic => MSG_STATS_REJECT_SNS_TOPIC
   )
   only_if {
-    NODE_TYPE == 'internet-submit'
+    NODE_TYPE == 'internet-submit' ||
+    NODE_TYPE == 'mf-inbound-submit'
   }
 end
 

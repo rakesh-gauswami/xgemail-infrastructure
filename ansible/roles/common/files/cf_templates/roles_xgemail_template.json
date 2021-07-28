@@ -585,6 +585,107 @@
       "Type": "AWS::IAM::Policy"
     },
 
+    "MultiEipRotationLambdaExecutionRole" : {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [ "lambda.amazonaws.com" ]
+            },
+            "Action": [ "sts:AssumeRole" ]
+          }]
+        },
+        "Path": "/",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "MultiEipRotationLambdaExecutionRole" ] ] }
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
+      }
+    },
+    "MultiEipRotationLambdaExecutionRolePolicies": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "autoscaling:CompleteLifecycleAction",
+                "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:RecordLifecycleActionHeartbeat",
+                "autoscaling:UpdateAutoScalingGroup"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "lambda:*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:logs:*:*:*"
+              ]
+            },
+            {
+              "Action": [
+                "ec2:AssignPrivateIpAddresses",
+                "ec2:AssociateAddress",
+                "ec2:DescribeAddresses",
+                "ec2:DescribeInstances",
+                "ec2:DescribeInstanceStatus",
+                "ec2:DescribeNetworkInterfaces",
+                "ec2:DisassociateAddress"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ]
+        },
+        "PolicyName": "root",
+        "Roles": [
+          {
+            "Ref": "MultiEipRotationLambdaExecutionRole"
+          }
+        ]
+      },
+      "Type": "AWS::IAM::Policy"
+    },
+
     "MfElbO365IpSyncLambdaExecutionRole" : {
       "Type": "AWS::IAM::Role",
       "Properties": {
@@ -7341,6 +7442,14 @@
     "EipRotationLambdaExecutionRoleArn": {
       "Description": "Eip Rotation Lambda Execution role ARN",
       "Value": { "Fn::GetAtt" : [ "EipRotationLambdaExecutionRole", "Arn" ] }
+    },
+    "MultiEipRotationLambdaExecutionRole": {
+      "Description": "Multi Eip Rotation Lambda Execution role",
+      "Value": { "Ref": "MultiEipRotationLambdaExecutionRole" }
+    },
+    "MultiEipRotationLambdaExecutionRoleArn": {
+      "Description": "Multi Eip Rotation Lambda Execution role ARN",
+      "Value": { "Fn::GetAtt" : [ "MultiEipRotationLambdaExecutionRole", "Arn" ] }
     },
     "MfElbO365IpSyncLambdaExecutionRole": {
       "Description": "Mf Elb O365 Ip Sync Lambda Execution role",
