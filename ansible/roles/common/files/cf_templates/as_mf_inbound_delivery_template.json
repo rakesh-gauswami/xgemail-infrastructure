@@ -139,6 +139,10 @@
       "Type": "AWS::EC2::KeyPair::KeyName",
       "Description": "Key pair used to SSH to the instance"
     },
+    "LifecycleHookLaunching": {
+      "Description": "Name of the Launching Lifecycle Hook.",
+      "Type": "String"
+    },
     "LifecycleHookTerminating": {
       "Description": "Name of the Lifecycle Hook.",
       "Type": "String"
@@ -466,6 +470,13 @@
           "Version": {"Fn::GetAtt": ["XgemailAutoScalingLaunchTemplate", "LatestVersionNumber"]}
         },
         "LifecycleHookSpecificationList" : [
+          {
+            "LifecycleHookName": { "Ref": "LifecycleHookLaunching" },
+            "HeartbeatTimeout" : "300",
+            "LifecycleTransition" : "autoscaling:EC2_INSTANCE_LAUNCHING",
+            "NotificationTargetARN" : { "Ref": "AutoScalingNotificationTopicARN" },
+            "RoleARN" : { "Ref": "AutoScalingInstanceRoleArn" }
+          },
           {
             "LifecycleHookName": { "Ref": "LifecycleHookTerminating" },
             "HeartbeatTimeout" : "300",
