@@ -646,8 +646,7 @@ def deliver_messages():
                         headers
                     )
 
-                mailflow_processing_id = headers.get(X_SOPHOS_MAILFLOW_PROCESSING_ID, None)
-                if NODE_TYPE == 'mf-outbound-delivery' and not (mailflow_processing_id and mailflow_processing_id.strip()):
+                if NODE_TYPE == 'mf-outbound-delivery':
                     headers[X_SOPHOS_MAILFLOW_PROCESSING_ID] = str(uuid.uuid4()).replace('-','')
 
                 # attempt to add any existing headers to the message
