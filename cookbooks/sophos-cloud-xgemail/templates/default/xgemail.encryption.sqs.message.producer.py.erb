@@ -154,6 +154,7 @@ def get_metadata(message_headers):
                             recipient_domain,
                             recipient_list,
                             x_sophos_header,
+                            False,
                             x_sophos_email_product_type)
 
         # required logging for EncryptionServiceTest automation test
@@ -333,6 +334,7 @@ def get_metadata_for_outbound(metadata, message_headers):
         metadata.get_recipient_domain(),
         metadata.get_recipients(),
         metadata.get_x_sophos_email_id(),
+        False,
         metadata.get_email_product_type()
     )
 
@@ -353,6 +355,7 @@ def get_metadata_for_outbound_effective_sender(metadata, header, header_value):
             metadata.get_recipient_domain(),
             metadata.get_recipients(),
             metadata.get_x_sophos_email_id(),
+            False,
             metadata.get_email_product_type()
         )
 
