@@ -17,6 +17,7 @@ import boto3
 from awshandler import AwsHandler
 import policyformatter
 from recipientsplitconfig import RecipientSplitConfig
+from get_metadata_from_msghistory import GetMetadataFromMsgHistoryConfig
 import time
 from logging.handlers import SysLogHandler
 from botocore.exceptions import ClientError
@@ -44,6 +45,8 @@ INBOUND_SPLIT_BY_RECIPIENTS_CONFIG_PATH = INBOUND_RELAY_CONTROL_PATH + 'msg_prod
 
 # Outbound split by recipient config file path
 OUTBOUND_SPLIT_BY_RECIPIENTS_CONFIG_PATH = OUTBOUND_RELAY_CONTROL_PATH + 'msg_outbound_split_by_recipients.CONFIG'
+
+OUTBOUND_METADATA_FROM_MESSAGE_HISTORY_CONFIG_PATH = OUTBOUND_RELAY_CONTROL_PATH + 'get_outbound_metadata_from_message_history.CONFIG'
 
 logger = logging.getLogger('multi-policy-reader-utils')
 logger.setLevel(logging.INFO)
@@ -79,7 +82,7 @@ def split_by_recipient(split_config, recipients, aws_region, policy_bucket_name,
         return False
 
 
-def outbound_split_by_recipient_enabled(metadata, aws_region, policy_bucket_name):
+def outbound_split_by_recipient_enabled(metadata, customer_id):
     """
         Determines if the current message must be split by recipients for outbound.
         Returns True if split by recipient required, False otherwise.
@@ -95,16 +98,9 @@ def outbound_split_by_recipient_enabled(metadata, aws_region, policy_bucket_name
     if split_config.is_globally_enabled:
         return True
 
+    if customer_id is None:
+        return False
     try:
-        # For outbound we need to read sender policy to get customer id
-        customer_policy = read_policy(
-            metadata.get_sender_address().lower(),
-            aws_region,
-            policy_bucket_name,
-            get_read_from_s3_enabled()
-        )
-        customer_id = customer_policy['customerId']
-
         return split_config.is_split_by_recipient_enabled(customer_id)
     except Exception:
         logger.warn('Unable to split by recipients For outbound. Proceeding without splitting. Error {0}'.format(traceback.format_exc()))
@@ -381,4 +377,22 @@ def read_toc_config(recipient, endpoint_policy):
         return is_toc_enabled
     except (IOError, KeyError, ValueError), e:
         logger.error("endpoint json parse / read error : {0}".format(e))
+        return False
+
+def get_valid_sender_from_msghistory_enabled(customer_id, server_ip):
+    """
+        Determines if the sender can be determined from MH accepted event instead 
+        of reading policy files from policy bucket.
+    """
+    # Read outbound split config
+    outbound_config = GetMetadataFromMsgHistoryConfig(OUTBOUND_METADATA_FROM_MESSAGE_HISTORY_CONFIG_PATH)
+
+    # No need to read policy to get customerId if globally enabled
+    if outbound_config.is_globally_enabled:
+        return True
+
+    try:
+        return outbound_config.is_get_from_message_history_enabled(customer_id, server_ip)
+    except Exception:
+        logger.warn('Unable to read config file {0} Error {1}'.format(OUTBOUND_METADATA_FROM_MESSAGE_HISTORY_CONFIG_PATH, traceback.format_exc()))
         return False
