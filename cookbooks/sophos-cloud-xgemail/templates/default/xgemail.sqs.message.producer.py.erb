@@ -312,7 +312,7 @@ def get_plaintext_message():
     finally:
         plaintext_email_bytes.close()
 
- def get_customer_id(queue_id, msghistory_events):
+def get_customer_id(queue_id, msghistory_events):
     try:
         if msghistory_events is not None and len(msghistory_events) > 0:
             accepted_event = msghistory_events.itervalues().next()
@@ -337,6 +337,7 @@ def get_metadata_for_outbound(metadata, headers, msghistory_events):
     customer_id = get_customer_id(metadata.get_queue_id(), msghistory_events)
     if multipolicyreaderutils.get_valid_sender_from_msghistory_enabled(customer_id, SUBMIT_HOST_IP) and msghistory_events is not None and len(msghistory_events) > 0:
         # Get validated sender using MH accepted event file.
+        logger.debug("Using message history to get sender for customer {0}".format(customer_id))
         validated_sender = list(msghistory_events.keys())[0]
     else:
         effective_sender_value = headers['x-sophos-effective-sender']

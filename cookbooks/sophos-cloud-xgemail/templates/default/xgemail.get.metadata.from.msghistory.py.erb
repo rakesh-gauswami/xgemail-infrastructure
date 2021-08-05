@@ -63,10 +63,14 @@ def get_config(mail_flow_direction):
             print '{0} get metadata from message history enabled for these {1} customer ids:'.format(mail_flow_direction,len(config_data['customer_ids_enabled']))
             for customer_id in config_data['customer_ids_enabled']:
                 print '\t{0}'.format(customer_id)
+            print '{0} get metadata from message history enabled for these {1} server ips:'.format(mail_flow_direction,len(config_data['submit_servers_enabled']))
+            for server_ip in config_data['submit_servers_enabled']:
+                print '\t{0}'.format(submit_servers_enabled)
     else:
         print '{0} config file does not exist at location {1}'.format(mail_flow_direction,get_metadata_from_message_history_config_file)
         print '[DEFAULT_CONFIG]: get metadata from message history enabled globally: {0}'.format(default_config['is_globally_enabled'])
         print '[DEFAULT_CONFIG]: get metadata from message history enabled for these customer ids: {0}'.format(default_config['customer_ids_enabled'])
+        print '[DEFAULT_CONFIG]: get metadata from message history enabled for these server ips: {0}'.format(default_config['submit_servers_enabled'])
 
 def update_global_config(updated_value, mail_flow_direction):
     '''
