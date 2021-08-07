@@ -47,6 +47,7 @@ INBOUND_SPLIT_BY_RECIPIENTS_CONFIG_PATH = INBOUND_RELAY_CONTROL_PATH + 'msg_prod
 OUTBOUND_SPLIT_BY_RECIPIENTS_CONFIG_PATH = OUTBOUND_RELAY_CONTROL_PATH + 'msg_outbound_split_by_recipients.CONFIG'
 
 OUTBOUND_METADATA_FROM_MESSAGE_HISTORY_CONFIG_PATH = OUTBOUND_RELAY_CONTROL_PATH + 'get_outbound_metadata_from_msghistory.CONFIG'
+INBOUND_METADATA_FROM_MESSAGE_HISTORY_CONFIG_PATH  = INBOUND_RELAY_CONTROL_PATH + 'get_inbound_metadata_from_msghistory.CONFIG'
 
 logger = logging.getLogger('multi-policy-reader-utils')
 logger.setLevel(logging.INFO)
@@ -384,7 +385,7 @@ def get_valid_sender_from_msghistory_enabled(customer_id, server_ip):
         Determines if the sender can be determined from MH accepted event instead 
         of reading policy files from policy bucket.
     """
-    # Read outbound split config
+    # Read config
     outbound_config = GetMetadataFromMsgHistoryConfig(OUTBOUND_METADATA_FROM_MESSAGE_HISTORY_CONFIG_PATH)
 
     # No need to read policy to get customerId if globally enabled
@@ -395,4 +396,22 @@ def get_valid_sender_from_msghistory_enabled(customer_id, server_ip):
         return outbound_config.is_get_from_message_history_enabled(customer_id, server_ip)
     except Exception:
         logger.warn('Unable to read config file {0} Error {1}'.format(OUTBOUND_METADATA_FROM_MESSAGE_HISTORY_CONFIG_PATH, traceback.format_exc()))
+        return False
+
+def build_recipient_map_from_msghistory_enabled(customer_id, server_ip):
+    """
+        Determines if the recipients map can be determined from MH accepted event instead 
+        of reading policy files from policy bucket.
+    """
+    # Read config
+    config = GetMetadataFromMsgHistoryConfig(INBOUND_METADATA_FROM_MESSAGE_HISTORY_CONFIG_PATH)
+
+    # No need to read policy to get customerId if globally enabled
+    if config.is_globally_enabled:
+        return True
+
+    try:
+        return config.is_get_from_message_history_enabled(customer_id, server_ip)
+    except Exception:
+        logger.warn('Unable to read config file {0} Error {1}'.format(INBOUND_METADATA_FROM_MESSAGE_HISTORY_CONFIG_PATH, traceback.format_exc()))
         return False
