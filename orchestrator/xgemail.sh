@@ -3,7 +3,7 @@
 # This script provides convenient functions to start and operate xgemail
 # sandbox
 #
-# Copyright: Copyright (c) 1997-2019. All rights reserved.
+# Copyright: Copyright (c) 1997-2021. All rights reserved.
 # Company: Sophos Limited or one of its affiliates.
 
 : 'Set XGEMAIL_HOME environment variable
@@ -364,6 +364,9 @@ function deploy_jilter()
     jilter_inbound_build_location="${jilter_location}xgemail-jilter-inbound/build/distributions/"
     jilter_inbound_build_name="xgemail-jilter-inbound-${jilter_version}.tar"
 
+    jilter_mf_inbound_build_location="${jilter_location}xgemail-jilter-mf-inbound/build/distributions/"
+    jilter_mf_inbound_build_name="xgemail-jilter-mf-inbound-${jilter_version}.tar"
+
     jilter_outbound_build_location="${jilter_location}xgemail-jilter-outbound/build/distributions/"
     jilter_outbound_build_name="xgemail-jilter-outbound-${jilter_version}.tar"
 
@@ -381,11 +384,22 @@ function deploy_jilter()
 
             provision_jilter jilter-outbound
         ;;
+        mfinbound)
+            check_service_up jilter-mf-inbound
+            deploy_jilter_helper ${sandbox_inbound_jilter_tar_location} ${jilter_mf_inbound_build_location} ${jilter_mf_inbound_build_name}
+
+            provision_jilter jilter-mf-inbound
+        ;;
         all)
             check_service_up jilter-inbound
             deploy_jilter_helper ${sandbox_inbound_jilter_tar_location} ${jilter_inbound_build_location} ${jilter_inbound_build_name}
 
             provision_jilter jilter-inbound
+
+            check_service_up jilter-mf-inbound
+            deploy_jilter_helper ${sandbox_inbound_jilter_tar_location} ${jilter_mf_inbound_build_location} ${jilter_mf_inbound_build_name}
+
+            provision_jilter jilter-mf-inbound
 
             check_service_up jilter-outbound
             deploy_jilter_helper ${sandbox_outbound_jilter_tar_location} ${jilter_outbound_build_location} ${jilter_outbound_build_name}
@@ -808,7 +822,7 @@ help         get usage info
 initialize   setup steps before starting up nova
 deploy       deploy, provision and start containers                                 inbound | outbound | all                                           ui
 hot_deploy   hot deploy artifacts(NOTE: artifacts have to be built first)           mail | mail-inbound | mailoutbound
-                                                                                    jilter-inbound | jilter-outbound
+                                                                                    jilter-inbound | jilter-outbound | jilter-mf-inbound
                                                                                     postfix-is | postfix-cd | postfix-cs | postfix-id |
                                                                                     ui_wars
 
@@ -844,7 +858,9 @@ case "$1" in
             outbound)
                 deploy_outbound
                 ;;
-
+            mfinbound)
+                deploy_inbound
+                ;;
             all)
                 deploy_all
                 ;;
@@ -892,6 +908,10 @@ case "$1" in
               docker-compose -f ${orchestrator_location}${outbound_compose} restart jilter-outbound
               deploy_jilter outbound
               ;;
+            jilter-mf-inbound)
+              docker-compose -f ${orchestrator_location}${inbound_compose} restart jilter-mf-inbound
+              deploy_jilter mfinbound
+              ;;
             postfix-is)
               provision_postfix postfix-is
               ;;
@@ -905,7 +925,7 @@ case "$1" in
               provision_postfix postfix-id
               ;;
             *)
-              echo "Usage: $0 <mail | mail-inbound | mailoutbound | ui_wars | jilter-inbound | jilter-outbound | postfix-is | postfix-cd | postfix-cs | postfix-id>"
+              echo "Usage: $0 <mail | mail-inbound | mailoutbound | ui_wars | jilter-inbound | jilter-outbound | jilter-mf-inbound | postfix-is | postfix-cd | postfix-cs | postfix-id>"
               ;;
         esac
         ;;
