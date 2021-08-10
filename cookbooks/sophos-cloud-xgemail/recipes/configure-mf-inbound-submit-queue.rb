@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: sophos-cloud-xgemail
-# Recipe:: configure-internet-submit-queue
+# Recipe:: configure-mf-inbound-submit-queue
 #
 # Copyright 2021, Sophos
 #

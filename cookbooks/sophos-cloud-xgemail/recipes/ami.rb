@@ -222,7 +222,7 @@ execute 'extract_jilter_mf_inbound_package' do
   EOH
 end
 
-# Create a sym link to xgemail-jilter-inbound
+# Create a sym link to xgemail-jilter-mf-inbound
 link "#{DEPLOYMENT_DIR}/xgemail-jilter-mf-inbound" do
   to "#{DEPLOYMENT_DIR}/#{JILTER_MF_INBOUND_PACKAGE_NAME}"
 end
