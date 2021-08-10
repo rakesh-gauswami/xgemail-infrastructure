@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: ami
 #
-# Copyright 2018, Sophos
+# Copyright 2021, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -123,7 +123,7 @@ JILTER_INBOUND_VERSION = node['xgemail']['jilter_inbound_version']
 JILTER_INBOUND_PACKAGE_NAME = "xgemail-jilter-inbound-#{JILTER_INBOUND_VERSION}"
 
 JILTER_MF_INBOUND_VERSION = node['xgemail']['jilter_mf_inbound_version']
-JILTER_MF_INBOUND_PACKAGE_NAME = "xgemail-jilter-mf-inbound-#{JILTER_INBOUND_VERSION}"
+JILTER_MF_INBOUND_PACKAGE_NAME = "xgemail-jilter-mf-inbound-#{JILTER_MF_INBOUND_VERSION}"
 
 JILTER_OUTBOUND_VERSION = node['xgemail']['jilter_outbound_version']
 JILTER_OUTBOUND_PACKAGE_NAME = "xgemail-jilter-outbound-#{JILTER_OUTBOUND_VERSION}"
