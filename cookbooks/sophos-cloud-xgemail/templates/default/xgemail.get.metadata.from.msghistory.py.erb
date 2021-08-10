@@ -141,7 +141,7 @@ def add_server(server_ip, mail_flow_direction):
 
 def remove_server(server_ip, mail_flow_direction):
     '''
-        Removes the provided server_ip from the list of customers for which we should get metadata from message history.
+        Removes the provided server_ip from the list of servers for which we should get metadata from message history.
         If the server_ip does not exist, this method does nothing.
     '''
     config_location = INBOUND_METADATA_FROM_MESSAGE_HISTORY_CONFIG_PATH if mail_flow_direction == 'INBOUND' else OUTBOUND_METADATA_FROM_MESSAGE_HISTORY_CONFIG_PATH
@@ -184,9 +184,9 @@ def write_config(config, config_location):
     os.rename(temp_file, config_location)
 
 if __name__ == "__main__":
-    get_metadata_from_message_history_parser = argparse.ArgumentParser(description='Used to modify which messages are split by recipients')
+    get_metadata_from_message_history_parser = argparse.ArgumentParser(description='Used to modify for which customers/servers we use message history events to get metadata')
     get_metadata_from_message_history_parser.add_argument('--direction', choices=['INBOUND', 'OUTBOUND'],
-                                   help='Mail flow direction for enabling split', required=True)
+                                   help='Mail flow direction for which to apply configuration', required=True)
     get_metadata_from_message_history_parser.add_argument('--get', action='store_true', help='Get current  configuration')
     get_metadata_from_message_history_parser.add_argument('--enableglobal', action='store_true', help='Enable feature on a global level')
     get_metadata_from_message_history_parser.add_argument('--disableglobal', action='store_true', help='Disable feature on a global level (customer level still applies)')
