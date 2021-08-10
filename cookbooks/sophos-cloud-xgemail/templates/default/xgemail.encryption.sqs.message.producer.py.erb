@@ -144,9 +144,10 @@ def get_metadata(message_headers):
 
         x_sophos_header = uuidutils.get_x_sophos_email_id(message_headers['X-Sophos-Email-ID'], queue_id)
         x_sophos_email_product_type = message_headers['X-Sophos-Xgemail-Product-Type']
+        final_sender_ip = get_sender_ip_from_header(message_headers['X-Sophos-Sender-IP'], sender_ip, queue_id, x_sophos_email_product_type)
 
         metadata = Metadata(metadataformatter.SCHEMA_VERSION,
-                            sender_ip,
+                            final_sender_ip,
                             sender_address,
                             SUBMIT_HOST_IP,
                             queue_id,
@@ -163,6 +164,14 @@ def get_metadata(message_headers):
     except Exception as e:
         logger.exception("Failed in preparing metadata [{0}]".format(e))
         exit(EX_TEMPFAIL)
+
+def get_sender_ip_from_header(ip_from_header, ip_from_postfix, queue_id, x_sophos_email_product_type):
+    if x_sophos_email_product_type == GATEWAY:
+        return ip_from_postfix
+    if ip_from_header is None:
+        logger.warning("Empty X-Sophos-Sender-IP header in message with queue_id: [{0}]".format(queue_id))
+        return ip_from_postfix
+    return ip_from_header
 
 def add_to_sqs(sqs_url, sqs_json):
     return awshandler.add_to_sqs(
