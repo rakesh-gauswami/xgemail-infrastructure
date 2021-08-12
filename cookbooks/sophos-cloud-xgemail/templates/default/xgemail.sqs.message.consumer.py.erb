@@ -335,7 +335,7 @@ def encode_as_utf8(value):
     try:
         # https://docs.python.org/2.7/howto/unicode.html#the-unicode-type
         return value.encode('utf-8')
-    except UnicodeEncodeError as e:
+    except Exception as e:
         # Any exception use original value
         return value
     
@@ -361,6 +361,8 @@ def sendmail_to_postfix(server, from_addr, to_addrs, msg, mail_options=[], rcpt_
     if server.does_esmtp:
         if server.has_extn('size'):
             esmtp_opts.append("size=%d" % len(msg))
+        if server.has_extn('smtputf8'):
+            esmtp_opts.append('smtputf8')
         for option in mail_options:
             esmtp_opts.append(option)
 
