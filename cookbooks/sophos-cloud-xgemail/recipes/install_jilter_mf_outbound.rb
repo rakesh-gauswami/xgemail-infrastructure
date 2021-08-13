@@ -173,7 +173,7 @@ if ACCOUNT != 'sandbox'
   # Create the Jilter service
   template 'xgemail.jilter.service.sh' do
     path JILTER_SCRIPT_PATH
-    source 'xgemail.jilter.mf-outbound.service.sh.erb'
+    source 'xgemail.jilter.mf.outbound.service.sh.erb'
     mode '0700'
     owner SERVICE_USER
     group SERVICE_USER
