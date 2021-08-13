@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: sophos-cloud-xgemail
-# Recipe:: install_jilter_mf_inbound
+# Recipe:: install_jilter_mf_code_sandbox
 #
 # Copyright 2021, Sophos
 #
@@ -50,8 +50,8 @@ else
   command <<-EOH
       tar xf #{JILTER_PACKAGE_NAME}.tar -C #{DEPLOYMENT_DIR}
       mv #{DEPLOYMENT_DIR}/xgemail-jilter-mf-#{DIRECTION}*SNAPSHOT #{DEPLOYMENT_DIR}/#{JILTER_PACKAGE_NAME}
-      tar xf inbound/xgemail-jilter-mf-inbound-#{JILTER_VERSION}.tar -C #{DEPLOYMENT_DIR}
-      mv #{DEPLOYMENT_DIR}/xgemail-jilter-mf-inbound* #{DEPLOYMENT_DIR}/xgemail-jilter-mf-inbound
+      tar xf inbound/xgemail-jilter-mf-outbound-#{JILTER_VERSION}.tar -C #{DEPLOYMENT_DIR}
+      mv #{DEPLOYMENT_DIR}/xgemail-jilter-mf-outbound* #{DEPLOYMENT_DIR}/xgemail-jilter-mf-outbound
   EOH
   end
 
