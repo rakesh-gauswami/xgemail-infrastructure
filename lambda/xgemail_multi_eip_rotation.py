@@ -47,9 +47,7 @@ class MultiEip:
         self.instance = self.ec2.Instance(instance_id)
         self.eni, self.attachment_id  = self.get_eni()
         self.eip_count = self.get_eip_count()
-        self.assign_private_ips()
-        self.private_ips = self.fetch_private_ips()
-        self.public_ips = self.associate_multi_eips()
+        self.private_ips = []
 
 
     def get_eip_count(self):
@@ -68,9 +66,13 @@ class MultiEip:
 
     def assign_private_ips(self):
         logger.info("Assigning {} Private IP(s) on Interface: {}.".format(self.eip_count, self.eni))
-        result = self.ec2_client.assign_private_ip_addresses(NetworkInterfaceId=self.eni, SecondaryPrivateIpAddressCount=self.eip_count)
-        logger.debug("Assigned Private IP Addresses: {}.".format(result['AssignedPrivateIpAddresses']))
-        return [private_ip['PrivateIpAddress'] for private_ip in result['AssignedPrivateIpAddresses']]
+        try:
+            result = self.ec2_client.assign_private_ip_addresses(NetworkInterfaceId=self.eni, SecondaryPrivateIpAddressCount=self.eip_count)
+            logger.debug("Assigned Private IP Addresses: {}.".format(result['AssignedPrivateIpAddresses']))
+            return True
+        except ClientError as e:
+            logger.exception("Unable to assign private ip addresses. {}".format(e))
+            return False
 
 
     def associate_multi_eips(self):
@@ -88,9 +90,14 @@ class MultiEip:
 
 
     def fetch_private_ips(self):
-        nic = self.ec2_client.describe_network_interfaces(NetworkInterfaceIds=[self.eni])
-        logger.debug("Fetch private ips: {}".format([private_ip['PrivateIpAddress'] for private_ip in nic['NetworkInterfaces'][0]['PrivateIpAddresses']]))
-        return [private_ip['PrivateIpAddress'] for private_ip in nic['NetworkInterfaces'][0]['PrivateIpAddresses']]
+        try:
+            nic = self.ec2_client.describe_network_interfaces(NetworkInterfaceIds=[self.eni])
+            logger.debug("Fetch private ips: {}".format([private_ip['PrivateIpAddress'] for private_ip in nic['NetworkInterfaces'][0]['PrivateIpAddresses']]))
+            self.private_ips = [private_ip['PrivateIpAddress'] for private_ip in nic['NetworkInterfaces'][0]['PrivateIpAddresses']]
+            return self.private_ips
+        except ClientError as e:
+            logger.exception("Unable to fetch private ip addresses. {}".format(e))
+            return None
 
 
     def add_tags_dict(self, addresses):
@@ -249,9 +256,12 @@ def multi_eip_rotation_handler(event, context):
         lifecycle_hook_name = event['detail']['LifecycleHookName']
         lifecycle_action_token = event['detail']['LifecycleActionToken']
 
-        if MultiEip(instance_id):
-            logger.info("Completing lifecycle action with CONTINUE")
-            lifecycle_action_result='CONTINUE'
+        multi_eip = MultiEip(instance_id)
+        if multi_eip.assign_private_ips():
+            if multi_eip.fetch_private_ips() is not None:
+                if multi_eip.associate_multi_eips():
+                    logger.info("Completing lifecycle action with CONTINUE")
+                    lifecycle_action_result='CONTINUE'
         else:
             logger.error("Completing lifecycle action with ABANDON")
             lifecycle_action_result='ABANDON'
