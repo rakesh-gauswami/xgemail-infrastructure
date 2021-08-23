@@ -79,14 +79,17 @@ class MultiEip:
         for private_ip in self.private_ips:
             eip = self.get_clean_eip()
             if eip is not None:
-                if self.associate_address(eip=eip, instance_id=self.instance.id, private_ip=private_ip):
+                try:
                     logger.info("Associating EIP {} to Private IP {} on Instance: {}.".format(eip['PublicIp'], private_ip, self.instance.id))
-                else:
-                    logger.error("Unable to associate EIP {} to Private IP {} on Instance: {}.".format(eip['PublicIp'], private_ip, self.instance.id))
+                    self.associate_address(eip=eip, instance_id=self.instance.id, private_ip=private_ip)
+                except ClientError as e:
+                    logger.exception("Unable to associate EIP {} to Private IP {} on Instance: {}. Exception: {}".format(eip['PublicIp'], private_ip, self.instance.id, e))
                     return False
             else:
                 logger.error("Unable to obtain EIP for Instance: {}.".format(self.instance.id))
-        return False
+                return False
+
+        return True
 
 
     def fetch_private_ips(self):
