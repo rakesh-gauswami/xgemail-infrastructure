@@ -131,10 +131,10 @@ function getAccessTokenAndSendMail(client_id, jwtToken, senderAddress, region) {
 // send email to senderAddress using input accessToken
 function sendEmail(senderAddress, accessToken, region) {
     var email_uuid = uuid.v4();
-    var recipient = `${email_uuid}@${US_WEST_2_RECIPIENT_DOMAIN}`;
+    var recipient = `monitor.recipient@${US_WEST_2_RECIPIENT_DOMAIN}`;
     var date = new Date().toISOString();
 
-    var emailSubject = `Sophos ${region} Encryption Outbound RoundTrip Monitoring ${date} with id ${email_uuid}`;
+    var emailSubject = `Sophos ${region} Encryption Outbound RoundTrip Monitoring ${date}`;
     var email = JSON.stringify({
         "message": {
             "subject": emailSubject,
