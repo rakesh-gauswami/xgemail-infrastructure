@@ -258,6 +258,7 @@ def multi_eip_rotation_handler(event, context):
         autoscaling_group_name = event['detail']['AutoScalingGroupName']
         lifecycle_hook_name = event['detail']['LifecycleHookName']
         lifecycle_action_token = event['detail']['LifecycleActionToken']
+        lifecycle_action_result='ABANDON'
 
         multi_eip = MultiEip(instance_id)
         if multi_eip.assign_private_ips():
@@ -267,7 +268,6 @@ def multi_eip_rotation_handler(event, context):
                     lifecycle_action_result='CONTINUE'
         else:
             logger.error("Completing lifecycle action with ABANDON")
-            lifecycle_action_result='ABANDON'
 
         return complete_lifecycle_action(
             autoscaling_group_name,
