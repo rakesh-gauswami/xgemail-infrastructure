@@ -1,7 +1,7 @@
 ---
 
-# Instance Launching Events Rule
-- name: "Deploy Instance Launching Events Rule {{stack.events.rule.lifecycle_lambda}} to {{account.name}}-{{account.region}}"
+# EIP Instance Launching Events Rule
+- name: "Deploy EIP Instance Launching Events Rule {{stack.events.rule.lifecycle_lambda}} to {{account.name}}-{{account.region}}"
   cloudformation:
     stack_name:                             "{{stack.events.rule.lifecycle_lambda}}"
     state:                                  present
@@ -11,7 +11,17 @@
     template_parameters:
       EventDetailType:                       "EC2 Instance-launch Lifecycle Action"
       EventSource:                           "aws.autoscaling"
-      LifecycleHookNames:                    "{{aws.asg.bd.lifecycle_hook_launching}}, {{aws.asg.bx.lifecycle_hook_launching}}, {{aws.asg.id.lifecycle_hook_launching}}, {{aws.asg.ix.lifecycle_hook_launching}}, {{aws.asg.rd.lifecycle_hook_launching}}, {{aws.asg.rx.lifecycle_hook_launching}}, {{aws.asg.wd.lifecycle_hook_launching}}, {{aws.asg.wx.lifecycle_hook_launching}}, {{aws.asg.dd.lifecycle_hook_launching}}, {{aws.asg.dx.lifecycle_hook_launching}}"
+      LifecycleHookNames:                    >
+                                             {{aws.asg.bd.lifecycle_hook_launching}},
+                                             {{aws.asg.bx.lifecycle_hook_launching}},
+                                             {{aws.asg.id.lifecycle_hook_launching}},
+                                             {{aws.asg.ix.lifecycle_hook_launching}},
+                                             {{aws.asg.rd.lifecycle_hook_launching}},
+                                             {{aws.asg.rx.lifecycle_hook_launching}},
+                                             {{aws.asg.dd.lifecycle_hook_launching}},
+                                             {{aws.asg.dx.lifecycle_hook_launching}},
+                                             {{aws.asg.mfid.lifecycle_hook_launching}},
+                                             {{aws.asg.mfod.lifecycle_hook_launching}},
       LifecycleTransition:                   "autoscaling:EC2_INSTANCE_LAUNCHING"
       TargetsArn:                            "{{eip_rotation_stack.stack_outputs.LambdaFunctionArn}}"
       TargetsId:                             "eip_rotation_handler"
@@ -26,6 +36,34 @@
     msg: "{{events_rule_lifecycle_lambda_stack.stack_outputs}}"
     verbosity: 2
 
+# Multi EIP Instance Launching Events Rule
+- name: "Deploy Multi EIP Instance Launching Events Rule {{stack.events.rule.lifecycle_multi_eip_lambda}} to {{account.name}}-{{account.region}}"
+  cloudformation:
+    stack_name:                             "{{stack.events.rule.lifecycle_multi_eip_lambda}}"
+    state:                                  present
+    region:                                 "{{account.region}}"
+    disable_rollback:                       true
+    template:                               "{{template.events.rule.events_rule_lifecycle_lambda}}"
+    template_parameters:
+      EventDetailType:                       "EC2 Instance-launch Lifecycle Action"
+      EventSource:                           "aws.autoscaling"
+      LifecycleHookNames:                    >
+                                             {{aws.asg.wd.lifecycle_hook_launching}},
+                                             {{aws.asg.wx.lifecycle_hook_launching}}
+      LifecycleTransition:                   "autoscaling:EC2_INSTANCE_LAUNCHING"
+      TargetsArn:                            "{{multi_eip_rotation_stack.stack_outputs.LambdaFunctionArn}}"
+      TargetsId:                             "multi_eip_rotation_handler"
+  register: events_rule_lifecycle_multi_eip_lambda_stack
+
+- debug:
+    var: events_rule_lifecycle_multi_eip_lambda_stack
+    verbosity: 3
+
+- name: "Display Multi EIP Instance Launching Events Rule Stack Output"
+  debug:
+    msg: "{{events_rule_lifecycle_multi_eip_lambda_stack.stack_outputs}}"
+    verbosity: 2
+
 # Instance Termination Events Rule
 - name: "Deploy Instance Termination Events Rule {{stack.events.rule.lifecycle_automation}} to {{account.name}}-{{account.region}}"
   cloudformation:
@@ -37,7 +75,21 @@
     template_parameters:
       EventDetailType:                       "EC2 Instance-terminate Lifecycle Action"
       EventSource:                           "aws.autoscaling"
-      LifecycleHookNames:                    "{{aws.asg.bd.lifecycle_hook_terminating}},{{aws.asg.is.lifecycle_hook_terminating}},{{aws.asg.cs.lifecycle_hook_terminating}},{{aws.asg.id.lifecycle_hook_terminating}},{{aws.asg.cd.lifecycle_hook_terminating}},{{aws.asg.es.lifecycle_hook_terminating}},{{aws.asg.ed.lifecycle_hook_terminating}},{{aws.asg.rd.lifecycle_hook_terminating}},{{aws.asg.wd.lifecycle_hook_terminating}},{{aws.asg.dd.lifecycle_hook_terminating}}"
+      LifecycleHookNames:                    >
+                                             {{aws.asg.bd.lifecycle_hook_terminating}},
+                                             {{aws.asg.is.lifecycle_hook_terminating}},
+                                             {{aws.asg.cs.lifecycle_hook_terminating}},
+                                             {{aws.asg.id.lifecycle_hook_terminating}},
+                                             {{aws.asg.cd.lifecycle_hook_terminating}},
+                                             {{aws.asg.es.lifecycle_hook_terminating}},
+                                             {{aws.asg.ed.lifecycle_hook_terminating}},
+                                             {{aws.asg.rd.lifecycle_hook_terminating}},
+                                             {{aws.asg.wd.lifecycle_hook_terminating}},
+                                             {{aws.asg.dd.lifecycle_hook_terminating}},
+                                             {{aws.asg.mfod.lifecycle_hook_terminating}},
+                                             {{aws.asg.mfos.lifecycle_hook_terminating}},
+                                             {{aws.asg.mfid.lifecycle_hook_terminating}},
+                                             {{aws.asg.mfis.lifecycle_hook_terminating}}
       LifecycleTransition:                   "autoscaling:EC2_INSTANCE_TERMINATING"
       TargetsArn:                            "{{ssm_stack.stack_outputs.TerminationAutomation}}"
       TargetsId:                             "termination_automation"

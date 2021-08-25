@@ -5,7 +5,7 @@
 
   "Metadata": {
     "Copyright": [
-      "Copyright 2020, Sophos Limited. All rights reserved.",
+      "Copyright 2021, Sophos Limited. All rights reserved.",
       "",
       "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
       "Sophos Limited and Sophos Group.  All other product and company",
@@ -47,6 +47,10 @@
       "Description": "Endpoint for Delta delivery SQS queue",
       "Type": "String"
     },
+    "EmergencyInboxQueue": {
+      "Description": "Endpoint for emergency inbox SQS queue",
+      "Type": "String"
+    },
     "EncryptEventsTopicArn": {
       "Description": "TopicArn of Encrypt Events SNS",
       "Type": "String"
@@ -67,6 +71,22 @@
       "Description": "Endpoint for message statistics SQS queue",
       "Type": "String"
     },
+    "MfInboundDeliveryQueue": {
+      "Description": "Endpoint for Mf Inbound delivery SQS queue",
+      "Type": "String"
+    },
+    "MfOutboundDeliveryQueue": {
+      "Description": "Endpoint for Mf Outbound delivery SQS queue",
+      "Type": "String"
+    },
+    "MfOutboundDeliveryTopicArn":{
+      "Description": "Topic Arn of Mf Outbound Delivery SNS",
+      "Type": "String"
+    },
+    "MfSuccessEventsTopicArn":{
+      "Description": "Topic Arn of Mf success Events SNS",
+      "Type": "String"
+    },
     "O365AccountNumber": {
       "Description": "Office 365 Account Number",
       "Type": "String"
@@ -77,6 +97,10 @@
     },
     "O365DomainSyncEventTopicArn":{
       "Description": "Topic Arn of office 365 domain sync Events SNS",
+      "Type": "String"
+    },
+    "O365MailFlowConnectorTopicArn":{
+      "Description": "Topic Arn of office 365 mail-flow connector SNS",
       "Type": "String"
     },
     "SenderCheckRejectTopicArn": {
@@ -118,12 +142,37 @@
         "TopicArn": { "Ref": "DeltaDeliveryTopicArn"}
       }
     },
+    "AdditionalActionQueueToMfSuccessSnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "AdditionalActionQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "MfSuccessEventsTopicArn"}
+      }
+    },
+    "AdditionalActionQueueToMfOutboundDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "AdditionalActionQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "MfOutboundDeliveryTopicArn"}
+      }
+    },
     "DeltaDeliveryQueueToDeltaDeliverySnsSubscription": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
         "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "DeltaDeliveryQueue"}]]},
         "Protocol": "sqs",
         "TopicArn": { "Ref": "DeltaDeliveryTopicArn"}
+      }
+    },
+    "EmergencyInboxQueueToMfSuccessSnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "EmergencyInboxQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "MfSuccessEventsTopicArn"},
+        "RawMessageDelivery": "true"
       }
     },
     "MessageHistoryQueueToDeltaDeliverySnsSubscription": {
@@ -150,6 +199,54 @@
         "TopicArn": { "Ref": "DeltaDeliveryTopicArn"}
       }
     },
+    "MessageHistoryQueueToMfSuccessSnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageHistoryQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "MfSuccessEventsTopicArn"}
+      }
+    },
+    "MessageHistoryQueueToMfOutboundDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageHistoryQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "MfOutboundDeliveryTopicArn"}
+      }
+    },
+    "MessageStatisticsQueueToMfSuccessSnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageStatisticsQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "MfSuccessEventsTopicArn"}
+      }
+    },
+    "MessageStatisticsQueueToMfOutboundDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageStatisticsQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "MfOutboundDeliveryTopicArn"}
+      }
+    },
+    "MfInboundDeliveryQueueToMfSuccessEventsSnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MfInboundDeliveryQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "MfSuccessEventsTopicArn"}
+      }
+    },
+    "MfOutboundDeliveryQueueToMfOutboundDeliverySnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MfOutboundDeliveryQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "MfOutboundDeliveryTopicArn"}
+      }
+    },
     "SenderCheckRejectQueueToSenderCheckRejectSnsSubscription": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
@@ -159,6 +256,7 @@
         "RawMessageDelivery": "true"
       }
     },
+
     "BetaDeliveryQueuePolicy": {
       "Type": "AWS::SQS::QueuePolicy",
       "Properties": {
@@ -255,6 +353,54 @@
         ]
       }
     },
+    "MfInboundDeliveryQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "MfInboundDeliveryQueuePolicy",
+          "Statement": [
+            {
+              "Sid": "Allow-MfSuccessEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "MfSuccessEventsTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "MfInboundDeliveryQueue" }]]}]
+      }
+    },
+    "MfOutboundDeliveryQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "MfOutboundDeliveryQueuePolicy",
+          "Statement": [
+            {
+              "Sid": "Allow-MfOutboundDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "MfOutboundDeliveryTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "MfOutboundDeliveryQueue" }]]}]
+      }
+    },
     "O365DisconnectTopicPolicy": {
       "Type": "AWS::SNS::TopicPolicy",
       "Properties": {
@@ -343,6 +489,51 @@
           ]
         },
         "Topics": [{"Ref": "O365DomainSyncEventTopicArn"}]
+      }
+    },
+    "O365MailFlowConnectorTopicPolicy": {
+      "Type": "AWS::SNS::TopicPolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "O365MailFlowConnectorTopicPolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-O365MailFlowConnectorTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": [
+                "SNS:GetTopicAttributes",
+                "SNS:SetTopicAttributes",
+                "SNS:AddPermission",
+                "SNS:RemovePermission",
+                "SNS:DeleteTopic",
+                "SNS:Subscribe",
+                "SNS:ListSubscriptionsByTopic",
+                "SNS:Publish",
+                "SNS:Receive"
+              ],
+              "Resource": {"Ref": "O365MailFlowConnectorTopicArn"},
+              "Condition": {
+                "StringEquals": {
+                  "AWS:SourceOwner": { "Ref" : "AWS::AccountId" }
+                }
+              }
+            },
+            {
+              "Sid": "Allow-O365MailFlowConnectorQueueArnSubscription",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::Sub": "arn:aws:iam::${O365AccountNumber}:root"
+                }
+              },
+              "Action": ["sns:Subscribe"],
+              "Resource": {"Ref": "O365MailFlowConnectorTopicArn"}
+            }
+          ]
+        },
+        "Topics": [{"Ref": "O365MailFlowConnectorTopicArn"}]
       }
     }
   }

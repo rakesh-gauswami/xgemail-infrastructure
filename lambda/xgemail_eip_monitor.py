@@ -1,7 +1,7 @@
 """
 Description here.
 
-Copyright 2018, Sophos Limited. All rights reserved.
+Copyright 2021, Sophos Limited. All rights reserved.
 
 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
 Sophos Limited and Sophos Group.  All other product and company
@@ -9,7 +9,7 @@ names mentioned are trademarks or registered trademarks of their
 respective owners.
 """
 
-from __future__ import print_function
+
 
 import boto3
 import logging
@@ -41,7 +41,7 @@ class HetrixToolsApi(object):
         self.api_key = s3.get_object(
             Bucket='cloud-' + account + '-connections',
             Key='xgemail-hetrixtools-apikey'
-        )['Body'].read().rstrip('\n')
+        )['Body'].read().decode("utf-8").rstrip('\n')
         self.base_url = 'https://api.hetrixtools.com/v2/' + self.api_key + '/'
 
     def blacklist_check(self, ip):

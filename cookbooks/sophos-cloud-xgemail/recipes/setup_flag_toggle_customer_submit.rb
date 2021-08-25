@@ -11,7 +11,7 @@
 
 NODE_TYPE = node['xgemail']['cluster_type']
 
-if NODE_TYPE != 'customer-submit'
+if NODE_TYPE != 'customer-submit' && NODE_TYPE != 'mf-outbound-submit'
   return
 end
 
@@ -35,6 +35,32 @@ end
 
 template GENERAL_USER_BASED_SPLIT_TOGGLE_SCRIPT_PATH do
   source "#{GENERAL_USER_BASED_SPLIT_TOGGLE_SCRIPT_NAME}.erb"
+  mode '0750'
+  owner 'root'
+  group 'root'
+  variables(
+      :policy_storage_path => POLICY_STORAGE_PATH
+  )
+end
+
+
+=begin
+setup script used to specify if metadata can be read from message history accepted events instead of readng policy.
+=end
+
+METADATA_FROM_MSGHISTORY_PACKAGE_DIR = "#{XGEMAIL_FILES_DIR}/metadata-from-msghistory-flag-toggle"
+METADATA_FROM_MSGHISTORY_TOGGLE_SCRIPT_NAME = 'xgemail.get.metadata.from.msghistory.py'
+METADATA_FROM_MSGHISTORY_TOGGLE_SCRIPT_PATH = "#{METADATA_FROM_MSGHISTORY_PACKAGE_DIR}/#{METADATA_FROM_MSGHISTORY_TOGGLE_SCRIPT_NAME}"
+
+directory METADATA_FROM_MSGHISTORY_PACKAGE_DIR do
+  mode '0755'
+  owner 'root'
+  group 'root'
+  recursive true
+end
+
+template METADATA_FROM_MSGHISTORY_TOGGLE_SCRIPT_PATH do
+  source "#{METADATA_FROM_MSGHISTORY_TOGGLE_SCRIPT_NAME}.erb"
   mode '0750'
   owner 'root'
   group 'root'

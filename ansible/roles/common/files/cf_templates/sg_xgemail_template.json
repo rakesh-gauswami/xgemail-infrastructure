@@ -5,7 +5,7 @@
 
   "Metadata": {
     "Copyright": [
-      "Copyright 2019, Sophos Limited. All rights reserved.",
+      "Copyright 2021, Sophos Limited. All rights reserved.",
       "",
       "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
       "Sophos Limited and Sophos Group.  All other product and company",
@@ -594,6 +594,54 @@
       }
     },
 
+    "SecurityGroupExternalIpAccessMfInboundSubmitSmtp": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Condition": "ClosedToWorld",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailMfInboundSubmitSecurityGroupLb" },
+        "SourceSecurityGroupId": { "Ref": "SecurityGroupExternalIpAccess" },
+        "IpProtocol": "tcp",
+        "FromPort": "25",
+        "ToPort": "25"
+      }
+    },
+
+    "SecurityGroupExternalIpAccessMfOutboundSubmitSmtp": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Condition": "ClosedToWorld",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailMfOutboundSubmitSecurityGroupLb" },
+        "SourceSecurityGroupId": { "Ref": "SecurityGroupExternalIpAccess" },
+        "IpProtocol": "tcp",
+        "FromPort": "25",
+        "ToPort": "25"
+      }
+    },
+
+    "SecurityGroupExternalIpAccessMfInboundSubmitSmtpTls": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Condition": "ClosedToWorld",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailMfInboundSubmitSecurityGroupLb" },
+        "SourceSecurityGroupId": { "Ref": "SecurityGroupExternalIpAccess" },
+        "IpProtocol": "tcp",
+        "FromPort": "587",
+        "ToPort": "587"
+      }
+    },
+
+    "SecurityGroupExternalIpAccessMfOutboundSubmitSmtpTls": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Condition": "ClosedToWorld",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailMfOutboundSubmitSecurityGroupLb" },
+        "SourceSecurityGroupId": { "Ref": "SecurityGroupExternalIpAccess" },
+        "IpProtocol": "tcp",
+        "FromPort": "587",
+        "ToPort": "587"
+      }
+    },
+
     "SecurityGroupBastion": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
@@ -895,6 +943,124 @@
       }
     },
 
+    "XgemailMfInboundSubmitSecurityGroupLb": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Controls access to public facing ELBs.",
+        "Tags": [
+          {
+            "Key": "Branch",
+            "Value": { "Ref" : "Branch" }
+
+          },
+          {
+            "Key": "Environment",
+            "Value": { "Ref" : "Environment" }
+          },
+          {
+            "Key": "Role",
+            "Value": "svc-xgemail-mf-inbound-submit-elb"
+
+          },
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "Environment"
+                  },
+                  "-",
+                  {
+                    "Ref": "Branch"
+                  },
+                  "-",
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "/sg/xgemail/mf/inbound/submit/elb"
+                ]
+              ]
+            }
+          },
+          {
+            "Key": "Application",
+            "Value": "mf-inbound-submit"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      }
+    },
+
+    "XgemailMfInboundSubmitSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "XGEMAIL Mf Inbound Submit security group.",
+        "Tags": [{
+          "Key": "Name",
+          "Value": {
+            "Fn::Join": [ "", [
+              { "Ref": "Environment" }, "-",
+              { "Ref": "Branch" }, "-",
+              { "Ref": "AWS::StackName" }, "/sg/xgemail/mf/inbound/submit"
+            ]]
+          }
+        },
+          {
+            "Key": "Application",
+            "Value": "mf-inbound-submit"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "25",
+            "ToPort": "25",
+            "SourceSecurityGroupId": { "Ref": "XgemailMfInboundSubmitSecurityGroupLb" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "587",
+            "ToPort": "587",
+            "SourceSecurityGroupId": { "Ref": "XgemailMfInboundSubmitSecurityGroupLb" }
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "-1",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "VpcId": { "Ref": "Vpc" }
+      }
+    },
+
     "XgemailCustomerDeliverySecurityGroupLb": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
@@ -1000,6 +1166,123 @@
             "FromPort": "587",
             "ToPort": "587",
             "SourceSecurityGroupId": { "Ref": "XgemailCustomerDeliverySecurityGroupLb" }
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "-1",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "VpcId": { "Ref": "Vpc" }
+      }
+    },
+
+    "XgemailMfInboundDeliverySecurityGroupLb": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Controls access to public facing ELBs.",
+        "Tags": [
+          {
+            "Key": "Branch",
+            "Value": { "Ref" : "Branch" }
+
+          },
+          {
+            "Key": "Environment",
+            "Value": { "Ref" : "Environment" }
+          },
+          {
+            "Key": "Role",
+            "Value": "svc-xgemail-mf-inbound-delivery-elb"
+          },
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "Environment"
+                  },
+                  "-",
+                  {
+                    "Ref": "Branch"
+                  },
+                  "-",
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "/sg/xgemail/mf/inbound/delivery/elb"
+                ]
+              ]
+            }
+          },
+          {
+            "Key": "Application",
+            "Value": "mf-inbound-delivery"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      }
+    },
+
+    "XgemailMfInboundDeliverySecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Xgemail Mf Inbound Delivery security group.",
+        "Tags": [{
+          "Key": "Name",
+          "Value": {
+            "Fn::Join": [ "", [
+              { "Ref": "Environment" }, "-",
+              { "Ref": "Branch" }, "-",
+              { "Ref": "AWS::StackName" }, "/sg/xgemail/mf/inbound/delivery"
+            ]]
+          }
+        },
+          {
+            "Key": "Application",
+            "Value": "mf-inbound-delivery"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "25",
+            "ToPort": "25",
+            "SourceSecurityGroupId": { "Ref": "XgemailMfInboundDeliverySecurityGroupLb" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "587",
+            "ToPort": "587",
+            "SourceSecurityGroupId": { "Ref": "XgemailMfInboundDeliverySecurityGroupLb" }
           }
         ],
         "SecurityGroupEgress": [
@@ -1657,6 +1940,242 @@
         "VpcId": {
           "Ref": "Vpc"
         }
+      }
+    },
+
+    "XgemailMfOutboundSubmitSecurityGroupLb": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Controls access to public facing ELBs.",
+        "Tags": [
+          {
+            "Key": "Branch",
+            "Value": { "Ref" : "Branch" }
+
+          },
+          {
+            "Key": "Environment",
+            "Value": { "Ref" : "Environment" }
+          },
+          {
+            "Key": "Role",
+            "Value": "svc-xgemail-mf-outbound-submit-elb"
+
+          },
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "Environment"
+                  },
+                  "-",
+                  {
+                    "Ref": "Branch"
+                  },
+                  "-",
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "/sg/xgemail/mf/outbound/submit/elb"
+                ]
+              ]
+            }
+          },
+          {
+            "Key": "Application",
+            "Value": "mf-outbound-submit"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      }
+    },
+
+    "XgemailMfOutboundSubmitSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "XGEMAIL Mf Outbound Submit security group.",
+        "Tags": [{
+          "Key": "Name",
+          "Value": {
+            "Fn::Join": [ "", [
+              { "Ref": "Environment" }, "-",
+              { "Ref": "Branch" }, "-",
+              { "Ref": "AWS::StackName" }, "/sg/xgemail/mf/outbound/submit"
+            ]]
+          }
+        },
+          {
+            "Key": "Application",
+            "Value": "mf-outbound-submit"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "25",
+            "ToPort": "25",
+            "SourceSecurityGroupId": { "Ref": "XgemailMfOutboundSubmitSecurityGroupLb" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "587",
+            "ToPort": "587",
+            "SourceSecurityGroupId": { "Ref": "XgemailMfOutboundSubmitSecurityGroupLb" }
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "-1",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "VpcId": { "Ref": "Vpc" }
+      }
+    },
+
+    "XgemailMfOutboundDeliverySecurityGroupLb": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Controls access to public facing ELBs.",
+        "Tags": [
+          {
+            "Key": "Branch",
+            "Value": { "Ref" : "Branch" }
+
+          },
+          {
+            "Key": "Environment",
+            "Value": { "Ref" : "Environment" }
+          },
+          {
+            "Key": "Role",
+            "Value": "svc-xgemail-mf-outbound-delivery-elb"
+
+          },
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "Environment"
+                  },
+                  "-",
+                  {
+                    "Ref": "Branch"
+                  },
+                  "-",
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "/sg/xgemail/mf/outbound/delivery/elb"
+                ]
+              ]
+            }
+          },
+          {
+            "Key": "Application",
+            "Value": "mf-outbound-delivery"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      }
+    },
+
+    "XgemailMfOutboundDeliverySecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Xgemail Mf Outbound Delivery security group.",
+        "Tags": [{
+          "Key": "Name",
+          "Value": {
+            "Fn::Join": [ "", [
+              { "Ref": "Environment" }, "-",
+              { "Ref": "Branch" }, "-",
+              { "Ref": "AWS::StackName" }, "/sg/xgemail/mf/outbound/delivery"
+            ]]
+          }
+        },
+          {
+            "Key": "Application",
+            "Value": "mf-outbound-delivery"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "25",
+            "ToPort": "25",
+            "SourceSecurityGroupId": { "Ref": "XgemailMfOutboundDeliverySecurityGroupLb" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "587",
+            "ToPort": "587",
+            "SourceSecurityGroupId": { "Ref": "XgemailMfOutboundDeliverySecurityGroupLb" }
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "-1",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "VpcId": { "Ref": "Vpc" }
       }
     },
 
@@ -2809,6 +3328,28 @@
       }
     },
 
+    "XgemailMfInboundDeliverySecurityGroupIngressBastionSsh": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailMfInboundDeliverySecurityGroup" },
+        "SourceSecurityGroupId": { "Ref": "SecurityGroupBastion" },
+        "IpProtocol": "tcp",
+        "FromPort": "22",
+        "ToPort": "22"
+      }
+    },
+
+    "XgemailMfInboundSubmitSecurityGroupIngressBastionSsh": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailMfInboundSubmitSecurityGroup" },
+        "SourceSecurityGroupId": { "Ref": "SecurityGroupBastion" },
+        "IpProtocol": "tcp",
+        "FromPort": "22",
+        "ToPort": "22"
+      }
+    },
+
     "XgemailCustomerSubmitSecurityGroupIngressBastionSsh": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
@@ -2902,6 +3443,28 @@
       "Properties": {
         "GroupId": {"Ref": "XgemailInternetXdeliverySecurityGroup"},
         "SourceSecurityGroupId": {"Ref": "SecurityGroupBastion"},
+        "IpProtocol": "tcp",
+        "FromPort": "22",
+        "ToPort": "22"
+      }
+    },
+
+    "XgemailMfOutboundSubmitSecurityGroupIngressBastionSsh": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailMfOutboundSubmitSecurityGroup" },
+        "SourceSecurityGroupId": { "Ref": "SecurityGroupBastion" },
+        "IpProtocol": "tcp",
+        "FromPort": "22",
+        "ToPort": "22"
+      }
+    },
+
+    "XgemailMfOutboundDeliverySecurityGroupIngressBastionSsh": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailMfOutboundDeliverySecurityGroup" },
+        "SourceSecurityGroupId": { "Ref": "SecurityGroupBastion" },
         "IpProtocol": "tcp",
         "FromPort": "22",
         "ToPort": "22"
@@ -3017,6 +3580,18 @@
             "FromPort": "2049",
             "ToPort": "2049",
             "SourceSecurityGroupId": { "Ref": "XgemailInternetSubmitSecurityGroup" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
+            "SourceSecurityGroupId": { "Ref": "XgemailMfInboundSubmitSecurityGroup" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
+            "SourceSecurityGroupId": { "Ref": "XgemailMfOutboundSubmitSecurityGroup" }
           }
         ]
       }
@@ -3128,6 +3703,14 @@
       "Description": "Xgemail Customer Delivery security group",
       "Value": { "Ref": "XgemailCustomerDeliverySecurityGroup" }
     },
+    "XgemailMfInboundDeliverySecurityGroupLb": {
+      "Description": "Xgemail Mf Inbound Delivery Load Balancer security group",
+      "Value": { "Ref": "XgemailMfInboundDeliverySecurityGroupLb" }
+    },
+    "XgemailMfInboundDeliverySecurityGroup": {
+      "Description": "Xgemail Mf Inbound Delivery security group",
+      "Value": { "Ref": "XgemailMfInboundDeliverySecurityGroup" }
+    },
     "XgemailXdeliverySecurityGroupLb": {
       "Description": "Xgemail Xdelivery Load Balancer security group",
       "Value": { "Ref": "XgemailXdeliverySecurityGroupLb" }
@@ -3208,6 +3791,14 @@
       "Description": "Xgemail Internet Submit security group",
       "Value": { "Ref": "XgemailInternetSubmitSecurityGroup" }
     },
+    "XgemailMfInboundSubmitSecurityGroupLb": {
+      "Description": "Xgemail Mf Inbound Submit Load Balancer security group",
+      "Value": { "Ref": "XgemailMfInboundSubmitSecurityGroupLb" }
+    },
+    "XgemailMfInboundSubmitSecurityGroup": {
+      "Description": "Xgemail Mf Inbound Submit security group",
+      "Value": { "Ref": "XgemailMfInboundSubmitSecurityGroup" }
+    },
     "XgemailEncryptionSubmitSecurityGroupLb": {
       "Description": "Xgemail Encryption Submit Load Balancer security group",
       "Value": { "Ref": "XgemailEncryptionSubmitSecurityGroupLb" }
@@ -3215,6 +3806,22 @@
     "XgemailEncryptionSubmitSecurityGroup": {
       "Description": "Xgemail Encryption Submit security group",
       "Value": { "Ref": "XgemailEncryptionSubmitSecurityGroup" }
+    },
+    "XgemailMfOutboundSubmitSecurityGroupLb": {
+      "Description": "Xgemail Mf Outbound Submit Load Balancer security group",
+      "Value": { "Ref": "XgemailMfOutboundSubmitSecurityGroupLb" }
+    },
+    "XgemailMfOutboundSubmitSecurityGroup": {
+      "Description": "Xgemail Mf Outbound Submit security group",
+      "Value": { "Ref": "XgemailMfOutboundSubmitSecurityGroup" }
+    },
+    "XgemailMfOutboundDeliverySecurityGroupLb": {
+      "Description": "Xgemail Mf Outbound Delivery Load Balancer security group",
+      "Value": { "Ref": "XgemailMfOutboundDeliverySecurityGroupLb" }
+    },
+    "XgemailMfOutboundDeliverySecurityGroup": {
+      "Description": "Xgemail Mf Outbound Delivery security group",
+      "Value": { "Ref": "XgemailMfOutboundDeliverySecurityGroup" }
     },
     "XgemailPolicyEfsMountTargetSecurityGroup": {
       "Description": "Xgemail EFS mount target security group",

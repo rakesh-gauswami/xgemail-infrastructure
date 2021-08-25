@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: setup_xgemail_sqs_message_consumer
 #
-# Copyright 2016, Sophos
+# Copyright 2021, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -40,18 +40,16 @@ POLICY_BUCKET_NAME                      = node['xgemail']['xgemail_policy_bucket
 TRANSPORT_CONFIG_PATH                   = XGEMAIL_FILES_DIR + '/config/transport-route-config.json'
 E2E_LATENCY_TELEMETRY_DELIVERY_STREAM   =  "tf-e2e-latency-telemetry-#{AWS_REGION}-#{ACCOUNT}-firehose"
 MH_MAIL_INFO_STORAGE_DIR                = node['xgemail']['mh_mail_info_storage_dir']
-DELIVERY_JILTER_ENABLED_FILE_PATH       = XGEMAIL_FILES_DIR + '/config/delivery.jilter.enabled'
 MSG_HISTORY_V2_BUCKET                   = node['xgemail']['msg_history_v2_bucket_name']
-if NODE_TYPE == 'customer-delivery' ||  NODE_TYPE == 'internet-delivery'
+
+if NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'mf-inbound-delivery' ||  NODE_TYPE == 'mf-outbound-delivery'
   #m5a.large 2vCPU / 8 GB.
-  DEFAULT_NUMBER_OF_CONSUMER_THREADS = 5
+  DEFAULT_NUMBER_OF_CONSUMER_THREADS = 3
 else
   #c5a.large 2vCPU /4 GB.
-  DEFAULT_NUMBER_OF_CONSUMER_THREADS = 5
+  DEFAULT_NUMBER_OF_CONSUMER_THREADS = 3
 end
 
-DELIVERY_MULTITHREAD_ENABLED_FILE_PATH  = node['xgemail']['delivery_multithread_enabled_file_path']
-DELIVERY_MULTITHREAD_ENABLED_S3_PATH    = node['xgemail']['delivery_multithread_enabled_s3_path']
 THREAD_COUNT_CONFIG_KEY                 = 'config/delivery/multi.thread.count.' + NODE_TYPE
 
 if ACCOUNT == 'sandbox'
@@ -69,15 +67,16 @@ CONSUMER_SCRIPT_PATH = "#{SQS_MESSAGE_PROCESSOR_DIR}/#{CONSUMER_SCRIPT}"
 
 SERVICE_USER = node['xgemail']['sqs_message_processor_user']
 
+# TODO : We shouldn't need sqsconsumer on any XDelivery or encryption submit right?
 # Configs use by sqsmsgconsumer
-if NODE_TYPE == 'customer-delivery' or NODE_TYPE == 'xdelivery' or NODE_TYPE == 'encryption-submit'
+if NODE_TYPE == 'customer-delivery' or NODE_TYPE == 'mf-inbound-delivery' or NODE_TYPE == 'xdelivery' or NODE_TYPE == 'encryption-submit'
   MESSAGE_DIRECTION = 'INBOUND'
 elsif NODE_TYPE == 'internet-delivery' or NODE_TYPE == 'internet-xdelivery' or
        NODE_TYPE == 'encryption-delivery' or NODE_TYPE == 'risky-delivery' or
        NODE_TYPE == 'risky-xdelivery' or NODE_TYPE == 'warmup-delivery' or
        NODE_TYPE == 'warmup-xdelivery' or NODE_TYPE == 'beta-delivery' or
        NODE_TYPE == 'beta-xdelivery' or NODE_TYPE == 'delta-delivery' or
-       NODE_TYPE == 'delta-xdelivery'
+       NODE_TYPE == 'delta-xdelivery' or NODE_TYPE == 'mf-outbound-delivery'
   MESSAGE_DIRECTION = 'OUTBOUND'
 else
   raise "Unsupported node type to setup sqsmsgproducer [#{NODE_TYPE}]"
@@ -111,12 +110,9 @@ template CONSUMER_SCRIPT_PATH do
     :policy_bucket => POLICY_BUCKET_NAME,
     :transport_config_path => TRANSPORT_CONFIG_PATH,
     :mh_mail_info_storage_dir => MH_MAIL_INFO_STORAGE_DIR,
-    :delivery_jilter_enabled_file_path => DELIVERY_JILTER_ENABLED_FILE_PATH,
     :msg_history_v2_bucket_name => MSG_HISTORY_V2_BUCKET,
     :default_number_of_consumer_threads => DEFAULT_NUMBER_OF_CONSUMER_THREADS,
-    :consumer_thread_count_key => THREAD_COUNT_CONFIG_KEY,
-    :delivery_multithread_enabled_file_path => DELIVERY_MULTITHREAD_ENABLED_FILE_PATH,
-    :delivery_multithread_enabled_s3_path => DELIVERY_MULTITHREAD_ENABLED_S3_PATH
+    :consumer_thread_count_key => THREAD_COUNT_CONFIG_KEY
   )
 end
 

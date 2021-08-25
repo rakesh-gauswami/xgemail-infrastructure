@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Attribute:: default
 #
-# Copyright 2020, Sophos
+# Copyright 2021, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -214,6 +214,12 @@ default['xgemail']['beta_delivery_message_bouncer_processor_dir'] = XGEMAIL_SQS_
 default['xgemail']['beta_delivery_message_bouncer_common_dir'] = "#{XGEMAIL_SQS_MESSAGE_BOUNCER_DIR}/common"
 default['xgemail']['beta_delivery_bounce_message_processor_user'] = 'bouncer'
 
+## Mf Internet delivery DSN/NDR settings
+XGEMAIL_SQS_MESSAGE_BOUNCER_DIR ="#{XGEMAIL_FILES_DIR}/message-bouncer"
+default['xgemail']['mf_outbound_delivery_message_bouncer_processor_dir'] = XGEMAIL_SQS_MESSAGE_BOUNCER_DIR
+default['xgemail']['mf_outbound_delivery_message_bouncer_common_dir'] = "#{XGEMAIL_SQS_MESSAGE_BOUNCER_DIR}/common"
+default['xgemail']['mf_outbound_delivery_bounce_message_processor_user'] = 'bouncer'
+
 ## Risky delivery DSN/NDR settings
 default['xgemail']['risky_delivery_message_bouncer_processor_dir'] = XGEMAIL_SQS_MESSAGE_BOUNCER_DIR
 default['xgemail']['risky_delivery_message_bouncer_common_dir'] = "#{XGEMAIL_SQS_MESSAGE_BOUNCER_DIR}/common"
@@ -231,7 +237,9 @@ default['xgemail']['delta_delivery_bounce_message_processor_user'] = 'bouncer'
 
 ## Cronjob settings
 default['xgemail']['cron_job_timeout'] = '10m'
+default['xgemail']['mail_flow_cron_job_timeout'] = '10m'
 default['xgemail']['customer_delivery_transport_cron_minute_frequency'] = 10
+default['xgemail']['mail_flow_sender_by_relay_cron_minute_frequency'] = 10
 default['xgemail']['savdid_cron_job_timeout_vdl'] = '30m'
 default['xgemail']['savdid_ide_cron_minute_frequency'] = 15
 default['xgemail']['submit_destination_concurrency_limit'] = 10
@@ -268,10 +276,6 @@ default['xgemail']['sysctl_tcp_max_tw_buckets'] = 2000000
 default['xgemail']['sysctl_tcp_slow_start_after_idle'] = 0
 default['xgemail']['sysctl_tcp_tw_reuse'] = 1
 default['xgemail']['sysctl_tcp_window_scaling'] = 1
-
-default['xgemail']['delivery_multithread_enabled_s3_path'] = 'config/delivery/multi.thread.enabled.GLOBAL'
-default['xgemail']['delivery_multithread_enabled_file_path'] = "#{XGEMAIL_FILES_DIR}/config/delivery.multithread.enabled"
-default['xgemail']['delivery_jilter_enabled_s3_path'] = 'config/delivery/jilter.enabled.GLOBAL'
 
 ## Postfix configuration
 SUBMIT_MESSAGE_SIZE_LIMIT_BYTES = 52428800
@@ -352,6 +356,40 @@ default['xgemail']['postfix_instance_data'] = {
     :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
     :server_type => 'ENCRYPTION_SUBMIT'
   },
+  # mf-inbound-delivery
+  'mf-inbound-delivery' => {
+    :instance_name => 'mfid',
+    :port => 25,
+    # Give delivery queues extra padding because extra content may be created during processing
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800 + 5242880),
+    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+    :server_type => 'MF_INBOUND_DELIVERY'
+  },
+  # mf-inbound-submit
+  'mf-inbound-submit' => {
+    :instance_name => 'mfis',
+    :port => 25,
+    :msg_size_limit => SUBMIT_MESSAGE_SIZE_LIMIT_BYTES,
+    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+    :server_type => 'MF_INBOUND_SUBMIT'
+  },
+  # mf-outbound-delivery
+  'mf-outbound-delivery' => {
+      :instance_name => 'mfod',
+      :port => 25,
+      # Give delivery queues extra padding because extra content may be created during processing
+      :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800 + 5242880),
+      :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+      :server_type => 'MF_OUTBOUND_DELIVERY'
+  },
+  # mf-outbound-submit
+  'mf-outbound-submit' => {
+      :instance_name => 'mfos',
+      :port => 25,
+      :msg_size_limit => SUBMIT_MESSAGE_SIZE_LIMIT_BYTES,
+      :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+      :server_type => 'MF_OUTBOUND_SUBMIT'
+  },
   # risky-delivery
   'risky-delivery' => {
     :instance_name => 'rd',
@@ -423,7 +461,7 @@ default['xgemail']['postfix_instance_data'] = {
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600 + 5242880),
     :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
     :server_type => 'DELTA_XDELIVERY'
-  },
+  }
 }
 
 ## The Postfix instance name for the encryption-delivery node
@@ -436,7 +474,8 @@ default['xgemail']['common_instance_config_params'] = [
   # cannot be resolved, producing mail to 'owner-owner-owner-owner-owner...'
   'owner_request_special = no',
 
-  'enable_long_queue_ids=yes'
+  'enable_long_queue_ids=yes',
+  'allow_min_user = yes'
 ]
 
 default['xgemail']['no_local_delivery_config_params'] = [

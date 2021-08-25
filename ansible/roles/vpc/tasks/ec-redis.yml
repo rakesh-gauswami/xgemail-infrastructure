@@ -1,7 +1,7 @@
 - name: "Create ElastiCache Redis cluster Stack in AWS"
   cloudformation:
     stack_name: "{{stack.ec.redis.xgemail_dqs_redis}}"
-    state: present
+    state: absent
     region: "{{account.region}}"
     template: "{{template.ec.redis.ec_redis_template}}"
     template_parameters:
@@ -25,7 +25,7 @@
     var: ec_redis_stack
     verbosity: 3
 
-- name: "Display ElastiCache Redis Stack Output"
-  debug:
-    msg: "{{ec_redis_stack.stack_outputs}}"
-    verbosity: 2
+#- name: "Display ElastiCache Redis Stack Output"
+#  debug:
+#    msg: "{{ec_redis_stack.stack_outputs}}"
+#    verbosity: 2

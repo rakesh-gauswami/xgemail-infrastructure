@@ -90,3 +90,91 @@
   debug:
     msg: "{{eip_rotation_stack.stack_outputs}}"
     verbosity: 2
+
+# Multi EIP Rotation Lambda Function
+- name: "Create a zip archive of multi eip rotation lambda function"
+  archive:
+    path: /work/lambda/xgemail_multi_eip_rotation.py
+    dest: "{{tmp_artifacts_dir}}/xgemail_multi_eip_rotation.zip"
+    format: zip
+
+- name: "Upload the multi eip rotation lambda function for {{stack.lambda.multi_eip_rotation_lambda_function}} to the config bucket {{s3.lambda_bucket}}"
+  s3:
+    mode:               put
+    region:             "{{account.region}}"
+    bucket:             "{{s3.lambda_bucket}}"
+    object:             "lambda/{{build.number}}/xgemail_multi_eip_rotation.zip"
+    src:                "{{tmp_artifacts_dir}}/xgemail_multi_eip_rotation.zip"
+    overwrite:          always
+
+- name: "Deploy Multi EIP Rotation Lambda Function {{stack.lambda.multi_eip_rotation_lambda_function}} to {{account.name}}-{{account.region}}"
+  cloudformation:
+    stack_name:                             "{{stack.lambda.multi_eip_rotation_lambda_function}}"
+    state:                                  present
+    region:                                 "{{account.region}}"
+    disable_rollback:                       true
+    template:                               "{{template.lambda.lambda_xgemail_multi_eip_rotation_template}}"
+    template_parameters:
+      Environment:                          "{{account.name}}"
+      FunctionName:                         "{{lambda.multi_eip_rotation_lambda_function}}"
+      HandlerName:                          xgemail_multi_eip_rotation.multi_eip_rotation_handler
+      IAMRoleArn:                           "{{iam_stack.stack_outputs.MultiEipRotationLambdaExecutionRoleArn}}"
+      S3Bucket:                             "{{s3.lambda_bucket}}"
+      S3Key:                                "lambda/{{build.number}}/xgemail_multi_eip_rotation.zip"
+  register: multi_eip_rotation_stack
+
+- debug:
+    var: multi_eip_rotation_stack
+    verbosity: 3
+
+- name: "Display Multi EIP Rotation Lambda Function Stack Output"
+  debug:
+    msg: "{{multi_eip_rotation_stack.stack_outputs}}"
+    verbosity: 2
+
+# MailFlow Submit ELB Security Group Sync Office365 IP Lambda Function
+- name: "Create a zip archive of MF O365 IP sync lambda function"
+  archive:
+    path:
+    - /work/lambda/xgemail_mf_elb_o365_ip_sync.py
+
+    dest: "{{tmp_artifacts_dir}}/xgemail_mf_elb_o365_ip_sync.zip"
+    format: zip
+
+- name: "Upload the MF O365 IP sync lambda function for {{stack.lambda.mf_elb_o365_ip_sync_lambda_function}} to the config bucket {{s3.lambda_bucket}}"
+  s3:
+    mode:               put
+    region:             "{{account.region}}"
+    bucket:             "{{s3.lambda_bucket}}"
+    object:             "lambda/{{build.number}}/xgemail_mf_elb_o365_ip_sync.zip"
+    src:                "{{tmp_artifacts_dir}}/xgemail_mf_elb_o365_ip_sync.zip"
+    overwrite:          always
+
+- name: "Deploy MF ELB Office365 IP Sync Lambda Function {{stack.lambda.mf_elb_o365_ip_sync_lambda_function}} to {{account.name}}-{{account.region}}"
+  cloudformation:
+    stack_name:                             "{{stack.lambda.mf_elb_o365_ip_sync_lambda_function}}"
+    state:                                  present
+    region:                                 "{{account.region}}"
+    disable_rollback:                       true
+    template:                               "{{template.lambda.lambda_xgemail_mf_elb_o365_ip_sync_template}}"
+    template_parameters:
+      Environment:                          "{{account.name}}"
+      FunctionName:                         "{{lambda.mf_elb_o365_ip_sync_lambda_function}}"
+      HandlerName:                          xgemail_mf_elb_o365_ip_sync.mf_elb_o365_ip_sync_handler
+      IAMRoleArn:                           "{{iam_stack.stack_outputs.MfElbO365IpSyncLambdaExecutionRoleArn}}"
+      MfIsElbSecurityGroup:                 "{{sg_stack.stack_outputs.XgemailMfInboundSubmitSecurityGroupLb}}"
+      MfOsElbSecurityGroup:                 "{{sg_stack.stack_outputs.XgemailMfOutboundSubmitSecurityGroupLb}}"
+      S3Bucket:                             "{{s3.lambda_bucket}}"
+      S3Key:                                "lambda/{{build.number}}/xgemail_mf_elb_o365_ip_sync.zip"
+      ScheduleExpression:                   cron(0 10 * * ? *)
+      ScheduleState:                        "ENABLED"
+  register: mf_elb_o365_ip_sync_stack
+
+- debug:
+    var: mf_elb_o365_ip_sync_stack
+    verbosity: 3
+
+- name: "Display MF ELB O365 IP Sync Lambda Function Stack Output"
+  debug:
+    msg: "{{mf_elb_o365_ip_sync_stack.stack_outputs}}"
+    verbosity: 2

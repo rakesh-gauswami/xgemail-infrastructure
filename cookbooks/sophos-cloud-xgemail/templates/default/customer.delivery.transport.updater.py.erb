@@ -10,6 +10,7 @@
 import sys
 sys.path.append("<%= @xgemail_utils_path %>")
 import botocore
+import time
 import boto3
 import base64
 import json
@@ -157,6 +158,17 @@ def parse_domain_response(domain_name, destinations_json, s3_client,is_custom) :
 
   return ret_val
 
+def custom_route_file_exist():
+  s3 = boto3.client('s3')
+  try:
+      s3.head_object(Bucket=POLICY_BUCKET,Key=CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
+      # custom route file found return true
+      return True
+  except botocore.exceptions.ClientError as e:
+      trace = traceback.format_exc()
+      logger.debug("Custom route file not Exist." + trace)
+      return False
+
 auth = get_passphrase()
 
 HEADERS = {
@@ -193,6 +205,22 @@ while True:
 
     s3 = boto3.client('s3')
 
+    if custom_route_file_exist():
+      try:
+          current_config = s3.get_object(Bucket=POLICY_BUCKET,Key= CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
+          raw_config_data= current_config['Body'].read()
+          config_data = configformatter.get_config_binary(raw_config_data)
+          record = json.loads(config_data)
+
+          sorted_record_keys=sort_record_key(record)
+          for domain_or_email in sorted_record_keys :
+              transport_line = parse_domain_response(domain_or_email,record[domain_or_email] , s3, True)
+              f.write('{0}\n'.format(transport_line))
+      except Exception as e:
+          trace = traceback.format_exc()
+          for line in trace.splitlines():
+              logger.debug("Error loading custom Transport " + line)
+
     for domain in response.json()['domains'] :
       domain_response = requests.post(
           PIC_DESTINATION_URL,
@@ -213,4 +241,4 @@ while True:
   os.rename(TRANSPORT_FILE_TMP, TRANSPORT_FILE);
   os.rename(TRANSPORT_FILE_TMP + '.db', TRANSPORT_FILE + '.db');
 
-  logger.info('transport map file [%s.db] successfully updated. Time taken', TRANSPORT_FILE, float(round(time.time() * 1000)) - float(timestamp_start))
+  logger.info('transport map file [%s.db] successfully updated. Time taken [%s]', TRANSPORT_FILE, float(round(time.time() * 1000)) - float(timestamp_start))

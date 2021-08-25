@@ -18,7 +18,7 @@ NODE_TYPE = node['xgemail']['cluster_type']
 ACCOUNT = node['sophos_cloud']['environment']
 
 # Make sure we're on an customer submit node
-if NODE_TYPE != 'customer-submit' && NODE_TYPE != 'jilter-outbound'
+if NODE_TYPE != 'customer-submit' && NODE_TYPE != 'jilter-outbound' && NODE_TYPE != 'mf-outbound-submit'
   return
 end
 
@@ -100,9 +100,7 @@ execute "execute_yum_dkim_install" do
   user "root"
   cwd "/tmp"
   command <<-EOH
-      yum-config-manager --enable epel
       yum install -y #{LIBOPENDKIM_PACKAGE_NAME}
-      yum-config-manager --disable epel
   EOH
 end
 

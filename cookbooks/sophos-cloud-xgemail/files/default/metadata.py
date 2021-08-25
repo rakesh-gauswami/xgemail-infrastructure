@@ -26,7 +26,8 @@ class Metadata:
                  recipient_domain,
                  recipients,
                  x_sophos_email_id = None,
-                 is_microservice_request=False):
+                 is_microservice_request=False,
+                 email_product_type="Gateway"):
         self.schema_version = schema_version
         self.sender_ip = sender_ip
         self.sender_address = sender_address
@@ -37,6 +38,7 @@ class Metadata:
         self.recipients = recipients
         self.is_microservice_request = is_microservice_request
         self.x_sophos_email_id = x_sophos_email_id
+        self.email_product_type = email_product_type
 
     def __str__(self):
         metadata_json = self.get_metadata_json()
@@ -83,6 +85,9 @@ class Metadata:
 
     def set_microservice_request(self, is_microservice_request):
         self.is_microservice_request = is_microservice_request
+
+    def get_email_product_type(self):
+        return self.email_product_type
 
     def add_uuid_to_queue_id(self):
         """

@@ -5,7 +5,7 @@
 
   "Metadata": {
     "Copyright": [
-      "Copyright 2020, Sophos Limited. All rights reserved.",
+      "Copyright 2021, Sophos Limited. All rights reserved.",
       "",
       "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
       "Sophos Limited and Sophos Group.  All other product and company",
@@ -73,6 +73,14 @@
     },
     "MessageStatisticsRejectionTopicArn": {
       "Description": "Endpoint for message statistics rejection SNS",
+      "Type": "String"
+    },
+    "MfOutboundDeliveryTopicArn":{
+      "Description": "Topic Arn of Mf Outbound Delivery SNS",
+      "Type": "String"
+    },
+    "MfSuccessEventsTopicArn":{
+      "Description": "Topic Arn of Mf success Events SNS",
       "Type": "String"
     },
     "MultiPolicyTopicArn": {
@@ -689,7 +697,7 @@
           "Statement": [
             {
               "Effect": "Allow",
-              "Principal": "*",
+              "Principal": { "AWS": [{ "Ref" : "AWS::AccountId" }] },
               "Action": ["sqs:SendMessage"],
               "Resource": "*"
             }
@@ -735,7 +743,7 @@
           "Statement": [
             {
               "Effect": "Allow",
-              "Principal": "*",
+              "Principal": { "AWS": [{ "Ref" : "AWS::AccountId" }] },
               "Action": ["sqs:SendMessage"],
               "Resource": "*"
             }
@@ -753,7 +761,7 @@
           "Statement": [
             {
               "Effect": "Allow",
-              "Principal": "*",
+              "Principal": { "AWS": [{ "Ref" : "AWS::AccountId" }] },
               "Action": ["sqs:SendMessage"],
               "Resource": "*"
             }
@@ -771,7 +779,7 @@
           "Statement": [
             {
               "Effect": "Allow",
-              "Principal": "*",
+              "Principal": { "AWS": [{ "Ref" : "AWS::AccountId" }] },
               "Action": ["sqs:SendMessage"],
               "Resource": "*"
             }
@@ -844,6 +852,18 @@
               "Condition": {
                 "ArnEquals": {
                   "aws:SourceArn": {"Ref": "SuccessEventsTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-MfSuccessEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "MfSuccessEventsTopicArn"}
                 }
               }
             }
@@ -944,6 +964,18 @@
               }
             },
             {
+              "Sid": "Allow-MfOutboundDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "MfOutboundDeliveryTopicArn"}
+                }
+              }
+            },
+            {
               "Sid": "Allow-QuarantinedEventsTopicArn",
               "Effect": "Allow",
               "Principal": "*",
@@ -964,6 +996,18 @@
               "Condition": {
                 "ArnEquals": {
                   "aws:SourceArn": {"Ref": "SuccessEventsTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-MfSuccessEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "MfSuccessEventsTopicArn"}
                 }
               }
             },
@@ -1148,6 +1192,18 @@
               }
             },
             {
+              "Sid": "Allow-MfOutboundDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "MfOutboundDeliveryTopicArn"}
+                }
+              }
+            },
+            {
               "Sid": "Allow-QuarantinedEventsTopicArn",
               "Effect": "Allow",
               "Principal": "*",
@@ -1168,6 +1224,18 @@
               "Condition": {
                 "ArnEquals": {
                   "aws:SourceArn": {"Ref": "SuccessEventsTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-MfSuccessEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "MfSuccessEventsTopicArn"}
                 }
               }
             },
@@ -1388,6 +1456,18 @@
               }
             },
             {
+              "Sid": "Allow-MfSuccessEventsTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "MfSuccessEventsTopicArn"}
+                }
+              }
+            },
+            {
               "Sid": "Allow-DeletedEventsTopicArn",
               "Effect": "Allow",
               "Principal": "*",
@@ -1420,6 +1500,18 @@
               "Condition": {
                 "ArnEquals": {
                   "aws:SourceArn": {"Ref": "InternetDeliveryTopicArn"}
+                }
+              }
+            },
+            {
+              "Sid": "Allow-MfOutboundDeliveryTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "MfOutboundDeliveryTopicArn"}
                 }
               }
             },

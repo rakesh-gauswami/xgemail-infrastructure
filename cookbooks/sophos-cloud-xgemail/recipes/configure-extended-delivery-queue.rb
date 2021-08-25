@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: configure-extended-delivery-queue.rb
 #
-# Copyright 2019, Sophos
+# Copyright 2021, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -45,11 +45,26 @@ MANAGED_SERVICES_IN_START_ORDER = [
 if ACCOUNT != 'sandbox'
   GLOBAL_SIGN_DIR = "#{LOCAL_CERT_PATH}/3rdparty/global-sign"
   GLOBAL_SIGN_INTERMEDIARY = "#{GLOBAL_SIGN_DIR}/global-sign-sha256-intermediary.crt"
-  GLOBAL_SIGN_ROOT = "#{GLOBAL_SIGN_DIR}/global-sign-root.crt"
+  GLOBAL_SIGN_CROSSCERT = "#{LOCAL_CERT_PATH}/globalsign-cross-certificate.crt"
+  GLOBAL_SIGN_ROOT = "#{LOCAL_CERT_PATH}/globalsign-rsa-ca.crt"
 
   # Add xgemail certificate
   remote_file "/etc/ssl/certs/#{CERT_NAME}.crt" do
     source "file:///tmp/sophos/certificates/api-mcs-mob-prod.crt"
+    owner 'root'
+    group 'root'
+    mode 0444
+  end
+
+  remote_file "/etc/ssl/certs/globalsign-cross-certificate.crt" do
+    source "file:///tmp/sophos/certificates/globalsign-cross-certificate.crt"
+    owner 'root'
+    group 'root'
+    mode 0444
+  end
+
+  remote_file "/etc/ssl/certs/globalsign-rsa-ca.crt" do
+    source "file:///tmp/sophos/certificates/globalsign-rsa-ca.crt"
     owner 'root'
     group 'root'
     mode 0444
@@ -65,7 +80,7 @@ if ACCOUNT != 'sandbox'
 
   CREATE_SERVER_PEM_COMMAND = 'cat ' +
     "'#{CERT_FILE}' " +
-    "'#{GLOBAL_SIGN_INTERMEDIARY}' " +
+    "'#{GLOBAL_SIGN_CROSSCERT}' " +
     "'#{GLOBAL_SIGN_ROOT}' " +
     "> '#{SERVER_PEM_FILE}'"
 
@@ -209,9 +224,6 @@ end
 include_recipe 'sophos-cloud-xgemail::setup_message_history_storage_dir'
 include_recipe 'sophos-cloud-xgemail::setup_message_history_files_cleanup_cron'
 include_recipe 'sophos-cloud-xgemail::install_jilter_delivery'
-include_recipe 'sophos-cloud-xgemail::setup_jilter_delivery_toggle'
-include_recipe 'sophos-cloud-xgemail::run_jilter_delivery_startup'
-
 if ACCOUNT == 'sandbox'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_utils_structure'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_processors_structure'

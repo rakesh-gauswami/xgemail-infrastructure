@@ -32,6 +32,7 @@ logger.addHandler(syslog_handler)
 
 INBOUND_MESSAGE_DIRECTION = "INBOUND"
 OUTBOUND_MESSAGE_DIRECTION = "OUTBOUND"
+EMAIL_PRODUCT_TYPE = "email_product_type"
 
 
 def can_generate_mh_event(mail_info):
@@ -118,27 +119,32 @@ def read_msghistory_accepted_events(queue_id, directory):
     except Exception as ex:
       logger.debug("Queue Id:[{0}]. Error reading accepted events: [{1}]".format(queue_id, ex))
 
-def update_msghistory_event_inbound(msghistory_events, s3_file_path, policy_metadata, recipients):
+def update_msghistory_event_inbound(msghistory_events, s3_file_path, policy_metadata, recipients, email_product_type):
     for recipient in recipients:
+      recipient = recipient.lower()
       if recipient in msghistory_events:
         if msghistory_events[recipient]['mail_info']['queue_id'] != policy_metadata.get_queue_id():
             msghistory_events[recipient]['mail_info']['decorated_queue_id'] = policy_metadata.get_queue_id()
         msghistory_events[recipient]['mail_info']['s3_resource_id'] = s3_file_path
+        msghistory_events[recipient]['mail_info'][EMAIL_PRODUCT_TYPE] = email_product_type
 
-def update_msghistory_event_outbound(msghistory_events, s3_file_path, policy_metadata, sender):
+def update_msghistory_event_outbound(msghistory_events, s3_file_path, policy_metadata, sender, email_product_type):
+    sender = sender.lower()
     if sender in msghistory_events:
         if msghistory_events[sender]['mail_info']['queue_id'] != policy_metadata.get_queue_id():
             msghistory_events[sender]['mail_info']['decorated_queue_id'] = policy_metadata.get_queue_id()
         msghistory_events[sender]['mail_info']['s3_resource_id'] = s3_file_path
+        msghistory_events[sender]['mail_info'][EMAIL_PRODUCT_TYPE] = email_product_type
 
-def update_msghistory_event(msghistory_events, s3_file_path, policy_metadata, direction , recipients, sender):
+
+def update_msghistory_event(msghistory_events, s3_file_path, policy_metadata, direction, recipients, sender, email_product_type):
     """
     Updates the accepted events of the given recipients with the S3 file path and decorated_queue_id. 
     """
     if direction == INBOUND_MESSAGE_DIRECTION:
-        update_msghistory_event_inbound(msghistory_events, s3_file_path, policy_metadata, recipients)
+        update_msghistory_event_inbound(msghistory_events, s3_file_path, policy_metadata, recipients, email_product_type)
     else:
-        update_msghistory_event_outbound(msghistory_events, s3_file_path, policy_metadata, sender)
+        update_msghistory_event_outbound(msghistory_events, s3_file_path, policy_metadata, sender, email_product_type)
 
 def send_msghistory_events(queue_id, msghistory_events, url):
     """

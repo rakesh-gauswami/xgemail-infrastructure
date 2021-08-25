@@ -50,7 +50,7 @@
 - name: Upload Self Singed Certs to bucket cloud-inf-connections
   aws_s3:
     bucket: "cloud-{{ account.name }}-connections"
-    object: "{{ item }}._sha1.txt"
+    object: "{{ item }}_sha1.txt"
     region: "us-west-2"
     src: "{{ msg_output_work_dir.path }}/msg-certificates/{{ item }}_sha1.txt"
     mode: put

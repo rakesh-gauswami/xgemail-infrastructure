@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: configure-customer-submit-queue
 #
-# Copyright 2017, Sophos
+# Copyright 2021, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -12,7 +12,7 @@
 NODE_TYPE = node['xgemail']['cluster_type']
 ACCOUNT =  node['sophos_cloud']['environment']
 
-if NODE_TYPE != 'customer-submit'
+if NODE_TYPE != 'customer-submit' && NODE_TYPE != 'mf-outbound-submit'
   return
 end
 
@@ -64,7 +64,8 @@ SXL_RBL_RESPONSE_CODES_A = "127.0.4.[1;5;6;8;13;14;18;21]"
 
 GLOBAL_SIGN_DIR = "#{LOCAL_CERT_PATH}/3rdparty/global-sign"
 GLOBAL_SIGN_INTERMEDIARY = "#{GLOBAL_SIGN_DIR}/global-sign-sha256-intermediary.crt"
-GLOBAL_SIGN_ROOT = "#{GLOBAL_SIGN_DIR}/global-sign-root.crt"
+GLOBAL_SIGN_CROSSCERT = "#{LOCAL_CERT_PATH}/globalsign-cross-certificate.crt"
+GLOBAL_SIGN_ROOT = "#{LOCAL_CERT_PATH}/globalsign-rsa-ca.crt"
 
 HOP_COUNT_SUBMIT_INSTANCE = node['xgemail']['hop_count_submit_instance']
 
@@ -74,6 +75,20 @@ if ACCOUNT != 'sandbox'
   # GLOBAL_SIGN_INTERMEDIARY is removed from CREATE_SERVER_PEM_COMMAND below.
   remote_file "/etc/ssl/certs/#{CERT_NAME}.crt" do
     source "file:///tmp/sophos/certificates/api-mcs-mob-prod.crt"
+    owner 'root'
+    group 'root'
+    mode 0444
+  end
+
+  remote_file "/etc/ssl/certs/globalsign-cross-certificate.crt" do
+    source "file:///tmp/sophos/certificates/globalsign-cross-certificate.crt"
+    owner 'root'
+    group 'root'
+    mode 0444
+  end
+
+  remote_file "/etc/ssl/certs/globalsign-rsa-ca.crt" do
+    source "file:///tmp/sophos/certificates/globalsign-rsa-ca.crt"
     owner 'root'
     group 'root'
     mode 0444
@@ -91,6 +106,7 @@ end
 
 CREATE_SERVER_PEM_COMMAND = 'cat ' +
   "'#{CERT_FILE}' " +
+  "'#{GLOBAL_SIGN_CROSSCERT}' " +
   "'#{GLOBAL_SIGN_ROOT}' " +
   "> '#{SERVER_PEM_FILE}'"
 
@@ -165,44 +181,75 @@ end
 #
 if ACCOUNT != 'sandbox'
 
-  CONFIGURATION_COMMANDS =
-      [
-          "hopcount_limit = #{HOP_COUNT_SUBMIT_INSTANCE}",
+  if NODE_TYPE == 'mf-outbound-submit'
+    #when node type is mf-outbound-submit
+    CONFIGURATION_COMMANDS =
+        [
+            "hopcount_limit = #{HOP_COUNT_SUBMIT_INSTANCE}",
 
-          'smtpd_upstream_proxy_protocol = haproxy',
+            'smtpd_upstream_proxy_protocol = haproxy',
 
-          # Server side TLS configuration
-          'smtpd_tls_security_level = may',
-          'smtpd_tls_ciphers = high',
-          'smtpd_tls_mandatory_ciphers = high',
-          'smtpd_tls_loglevel = 1',
-          'smtpd_tls_received_header = yes',
-          "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
-          "smtpd_tls_key_file = #{KEY_FILE}",
+            # Server side TLS configuration
+            'smtpd_tls_security_level = encrypt',
+            'smtpd_tls_ciphers = high',
+            'smtpd_tls_mandatory_ciphers = high',
+            'smtpd_tls_loglevel = 1',
+            'smtpd_tls_mandatory_protocols = !SSLv2,!SSLv3,!TLSv1,!TLSv1.1,TLSv1.2',
+            'smtpd_tls_protocols = !SSLv2,!SSLv3,!TLSv1,!TLSv1.1,TLSv1.2',
+            'smtpd_tls_received_header = yes',
+            "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
+            "smtpd_tls_key_file = #{KEY_FILE}",
 
-          # Recipient restrictions
-          "reject_rbl_client_a = #{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES_A}",
-          "reject_rbl_client_b = #{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES_B}",
-          'reject_rbl_client = $reject_rbl_client_b',
-          'smtpd_recipient_restrictions = ' +
-              "reject_rhsbl_reverse_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
-              "reject_rhsbl_sender #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
-              "reject_rhsbl_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
-              'reject_rbl_client $reject_rbl_client, ' +
-              'permit',
+            'relay_domains = static:ALL',
 
-          'relay_domains = static:ALL',
+            # Sender restrictions
+            'smtpd_sender_restrictions = ' +
+                "reject_non_fqdn_sender",
+        ]
 
-          # Sender restrictions
-          'smtpd_sender_restrictions = ' +
-              "reject_non_fqdn_sender",
+    CONFIGURATION_COMMANDS.each do | cur |
+      execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+    end
+  else
+    CONFIGURATION_COMMANDS =
+        [
+            "hopcount_limit = #{HOP_COUNT_SUBMIT_INSTANCE}",
 
-          # RBL response configuration
-          "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_B_FILENAME}"
-      ]
+            'smtpd_upstream_proxy_protocol = haproxy',
 
-  CONFIGURATION_COMMANDS.each do | cur |
-    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+            # Server side TLS configuration
+            'smtpd_tls_security_level = may',
+            'smtpd_tls_ciphers = high',
+            'smtpd_tls_mandatory_ciphers = high',
+            'smtpd_tls_loglevel = 1',
+            'smtpd_tls_received_header = yes',
+            "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
+            "smtpd_tls_key_file = #{KEY_FILE}",
+
+            # Recipient restrictions
+            "reject_rbl_client_a = #{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES_A}",
+            "reject_rbl_client_b = #{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES_B}",
+            'reject_rbl_client = $reject_rbl_client_b',
+            'smtpd_recipient_restrictions = ' +
+                "reject_rhsbl_reverse_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
+                "reject_rhsbl_sender #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
+                "reject_rhsbl_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
+                'reject_rbl_client $reject_rbl_client, ' +
+                'permit',
+
+            'relay_domains = static:ALL',
+
+            # Sender restrictions
+            'smtpd_sender_restrictions = ' +
+                "reject_non_fqdn_sender",
+
+            # RBL response configuration
+            "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_B_FILENAME}"
+        ]
+
+    CONFIGURATION_COMMANDS.each do | cur |
+      execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+    end
   end
 
   include_recipe 'sophos-cloud-xgemail::setup_dh_params'

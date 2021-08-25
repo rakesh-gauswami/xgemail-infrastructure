@@ -106,13 +106,17 @@ module SophosCloudXgemail
       case type
         when 'internet-submit'
           return "mx-01-#{region}.#{account}.hydra.sophos.com"
+        when 'mf-inbound-submit'
+          return "mf-inbound-#{region}.#{account}.hydra.sophos.com"
         when 'customer-submit'
           return "relay-#{region}.#{account}.hydra.sophos.com"
+        when 'mf-outbound-submit'
+          return "mf-outbound-#{region}.#{account}.hydra.sophos.com"
         when 'encryption-delivery'
           return "encryption-#{region}.#{account}.hydra.sophos.com"
         when 'encryption-submit'
           return "encryption-#{region}.#{account}.hydra.sophos.com"
-        when 'internet-delivery', 'internet-xdelivery', 'risky-delivery', 'risky-xdelivery', 'warmup-delivery', 'warmup-xdelivery', 'beta-delivery', 'beta-xdelivery', 'delta-delivery', 'delta-xdelivery'
+        when 'internet-delivery', 'internet-xdelivery', 'mf-outbound-delivery', 'mf-inbound-delivery', 'risky-delivery', 'risky-xdelivery', 'warmup-delivery', 'warmup-xdelivery', 'beta-delivery', 'beta-xdelivery', 'delta-delivery', 'delta-xdelivery'
           if account == 'sandbox'
             # Return docker instance fully qualified domain name
             return node['fqdn']
@@ -135,7 +139,7 @@ module SophosCloudXgemail
       else
         if account == 'sandbox'
           localip = node['ipaddress'].split(".")
-          return "outbound-#{localip.reverse.join("-")}-#{region}.#{account}.hydra.sophos.com"
+          return "inbound-#{localip.reverse.join("-")}-#{region}.#{account}.hydra.sophos.com"
         else
           mac = node['macaddress'].downcase
           subnet_id = node['ec2']['network_interfaces_macs'][mac]['subnet_id']
@@ -149,7 +153,7 @@ module SophosCloudXgemail
             })
             resp.route_tables[0].routes.each do |r|
               if destination_cidr_block == r.destination_cidr_block
-                return "outbound-#{ec2.describe_nat_gateways({
+                return "inbound-#{ec2.describe_nat_gateways({
                     nat_gateway_ids: [r.nat_gateway_id],
                 }).nat_gateways[0].nat_gateway_addresses[0].public_ip.gsub('.','-')}-#{region}.#{account}.hydra.sophos.com"
               end

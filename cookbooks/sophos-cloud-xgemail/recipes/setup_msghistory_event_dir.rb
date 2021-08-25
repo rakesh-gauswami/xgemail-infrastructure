@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: setup_msghistory_event_dir
 #
-# Copyright 2020, Sophos
+# Copyright 2021, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -20,7 +20,7 @@ INSTANCE_NAME = INSTANCE_DATA[:instance_name]
 raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 
 # create mh mail info storage directory in submit servers
-if NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit' || NODE_TYPE == 'encryption-submit' 
+if NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit' || NODE_TYPE == 'encryption-submit' || NODE_TYPE == 'mf-inbound-submit' || NODE_TYPE == 'mf-outbound-submit'
 
     # Create dir where Jilter writes accepted events temporarily for producers to read.
     directory MSG_HISTORY_EVENT_DIR do

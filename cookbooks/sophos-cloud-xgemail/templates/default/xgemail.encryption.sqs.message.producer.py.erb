@@ -12,15 +12,12 @@
 import sys
 sys.path.append("<%= @xgemail_utils_path %>")
 
-import copy
 import formatterutils
-import gzip
 import gziputils
 import io
 import json
 import logging
 import messageformatter
-import messagehistoryformatter
 import metadataformatter
 import multipolicyreaderutils
 import os
@@ -35,7 +32,6 @@ from email.parser import HeaderParser
 from awshandler import AwsHandler
 from common.metadata import Metadata
 from common.sqsmessage import SqsMessage
-from common.messagehistoryevent import MessageHistoryEvent
 from datetime import datetime
 from datetime import timedelta
 from email.parser import Parser
@@ -111,6 +107,9 @@ DELIVER_INBOUND_VALUE = "true"
 SOPHOS_PARENT_ID_HEADER = "X-Sophos-MH-Parent-Id"
 ECHOWORX_REPLY_HEADER = "x-echoworx-portal"
 
+#EmailProductType
+GATEWAY = "Gateway"
+
 awshandler = AwsHandler(AWS_REGION)
 
 #Strip the dot at the end of sender and/or recipients addresses as rfc:1034 mentions to consider ending dot optional
@@ -144,6 +143,7 @@ def get_metadata(message_headers):
             sender_address = None
 
         x_sophos_header = uuidutils.get_x_sophos_email_id(message_headers['X-Sophos-Email-ID'], queue_id)
+        x_sophos_email_product_type = message_headers['X-Sophos-Xgemail-Product-Type']
 
         metadata = Metadata(metadataformatter.SCHEMA_VERSION,
                             sender_ip,
@@ -153,7 +153,9 @@ def get_metadata(message_headers):
                             date_recorded,
                             recipient_domain,
                             recipient_list,
-                            x_sophos_header)
+                            x_sophos_header,
+                            False,
+                            x_sophos_email_product_type)
 
         # required logging for EncryptionServiceTest automation test
         logger.info("Input email metadata info [{0}]".format(metadata))
@@ -249,84 +251,6 @@ def get_submit_bucket_name(direction):
     else:
       return SUBMIT_BUCKET_NAME
 
-# uploads message history parent file to message history bucket
-def upload_msg_history_to_s3(s3_file_path, expires, metadata):
-    try:
-        msg_history_file_path = messagehistoryformatter.get_s3_msg_history_path(
-            s3_file_path
-        )
-        logger.debug("Processing message history [{0}]".format(msg_history_file_path))
-
-        #TODO: Encrypt msg history object after V1
-
-        # metadata_magic_bytes, schema_version, nonce_length, gzip_metadata_json):
-        formatted_msg_history = messagehistoryformatter.get_formatted_msg_history(
-            gziputils.gzip_data(
-                json.dumps(metadata.get_metadata_json())
-            )
-        )
-
-        # upload msg history to message history bucket
-        upload_to_s3(
-            MSG_HISTORY_BUCKET_NAME,
-            msg_history_file_path,
-            formatted_msg_history,
-            expires
-        )
-
-        # upload msg history to message history ms bucket
-        upload_to_s3(
-            MSG_HISTORY_MS_BUCKET_NAME,
-            msg_history_file_path,
-            formatted_msg_history,
-            expires
-        )
-
-        logger.debug("Uploaded message history to S3 [{0}]".format(msg_history_file_path))
-
-    except Exception as e:
-        logger.exception("Failed in uploading message history to S3 [{0}]".format(e))
-        exit(EX_TEMPFAIL)
-
-
-# Send an accepted message history event to msg history SQS
-def prepare_msg_history_event(s3_file_path, metadata, sqs_message, direction, sender):
-    try:
-        # create a message history event object
-        msg_history_event = MessageHistoryEvent(
-            messagehistoryformatter.SCHEMA_VERSION,
-            s3_file_path,
-            metadata.accepting_server_ip,
-            metadata.queue_id,
-            sqs_message.akm_key,
-            sqs_message.nonce,
-            sqs_message.message_key,
-            datetime.utcnow().strftime(DATETIME_FORMAT),
-            MESSAGE_HISTORY_ACCEPTED_EVENT,
-            MESSAGE_HISTORY_UNKNOWN_DESIGNATION,
-            None,
-            metadata.recipients,
-            False,
-            direction,
-            sender
-        )
-
-        return msg_history_event
-
-    except Exception as e:
-        logger.exception("Failed in uploading message history event to SQS [{0}]".format(e))
-        exit(EX_TEMPFAIL)
-
-def publish_msg_history_event(history_json):
-    try:
-        logger.debug("Processing message history event SNS job [{0}]".format(history_json))
-        awshandler.publish_to_sns_topic(
-            MSG_HISTORY_EVENTS_TOPIC_ARN,
-            json.dumps(history_json)
-        )
-    except Exception as e:
-        logger.exception("Failed in submit message history event to SNS [{0}]".format(e))
-        exit(EX_TEMPFAIL)
 
 # sends msg processing sqs messages to sqs
 def send_msg_processing_sqs_message(sqs_message_json, direction, customer_id = None):
@@ -374,12 +298,12 @@ def get_plaintext_message():
     finally:
         plaintext_email_bytes.close()
 
-def get_metadata_for_outbound(metadata, message_headers):
+def get_metadata_for_outbound(metadata, message_headers, msghistory_events):
     effective_sender_value = message_headers['x-sophos-effective-sender']
     effective_sender_header = 'x-sophos-effective-sender'
 
     if effective_sender_value is not None:
-        return get_metadata_for_outbound_effective_sender(metadata, effective_sender_header, effective_sender_value)
+        return get_metadata_for_outbound_effective_sender(metadata, effective_sender_header, effective_sender_value, msghistory_events)
 
     from_header = message_headers['from']
     if from_header is None:
@@ -409,14 +333,29 @@ def get_metadata_for_outbound(metadata, message_headers):
         metadata.get_date_recorded(),
         metadata.get_recipient_domain(),
         metadata.get_recipients(),
-        metadata.get_x_sophos_email_id()
+        metadata.get_x_sophos_email_id(),
+        False,
+        metadata.get_email_product_type()
     )
 
+def get_customer_id(queue_id, msghistory_events):
+    try:
+        if msghistory_events is not None and len(msghistory_events) > 0:
+            accepted_event = msghistory_events.itervalues().next()
+            return accepted_event['mail_info']['customer_id']
+    except Exception as ex:
+        logger.warning("Queue Id [{0}]. Error in getting customer id [{1}]".format(queue_id, ex))
+
 # if get_metadata_for_outbound method finds x-sophos-effective-sender then this method returns the metadata
-def get_metadata_for_outbound_effective_sender(metadata, header, header_value):
+def get_metadata_for_outbound_effective_sender(metadata, header, header_value, msghistory_events):
 
     header_sender = get_address_from_header(header_value)
-    is_valid_sender = is_valid_outbound_sender(header_sender, header)
+    customer_id = get_customer_id(metadata.get_queue_id(), msghistory_events)
+    is_valid_sender = False
+    if multipolicyreaderutils.get_valid_sender_from_msghistory_enabled(customer_id, SUBMIT_HOST_IP) and msghistory_events is not None and len(msghistory_events) > 0:
+        is_valid_sender = (header_value == list(msghistory_events.keys())[0])
+    else:
+        is_valid_sender = is_valid_outbound_sender(header_sender, header)
 
     if is_valid_sender:
         return Metadata(
@@ -428,7 +367,9 @@ def get_metadata_for_outbound_effective_sender(metadata, header, header_value):
             metadata.get_date_recorded(),
             metadata.get_recipient_domain(),
             metadata.get_recipients(),
-            metadata.get_x_sophos_email_id()
+            metadata.get_x_sophos_email_id(),
+            False,
+            metadata.get_email_product_type()
         )
 
     raise Exception(
@@ -508,12 +449,7 @@ def upload_documents(metadata, compressed_message, s3_file_path, direction, rfx_
         direction
     )
 
-    if should_upload_msg_history(direction, rfx_recovered):
-        upload_msg_history_to_s3(
-            s3_file_path,
-            expires,
-            metadata
-        )
+
 
 
 def should_upload_msg_history(direction, rfx_recovered):
@@ -545,7 +481,7 @@ def upload_msghistory_mail_info_to_s3(s3_file_path, msghistory_mail_info):
             ),
             msghistory_mail_info['schema_version']
         )
-    
+
         # prepared expiration date based on ttl_in_days
         expires = datetime.now() + timedelta(days=TTL_IN_DAYS)
 
@@ -561,7 +497,7 @@ def upload_msghistory_mail_info_to_s3(s3_file_path, msghistory_mail_info):
         return msghistory_mail_info_path
     except Exception as e:
         logger.warning("S3 File Path [{0}]. Failed in uploading mail info to S3 [{1}]".format(s3_file_path, e))
-    
+
 def prepare_message_context(s3_file_path, mail_info):
 
     message_context = None
@@ -578,15 +514,18 @@ def prepare_message_context(s3_file_path, mail_info):
     return message_context
 
 #The accepted events written by Jilter needs to be updated with 's3_file_path' and 'decorated_queue_id'
-def update_msghistory_event_and_get_message_context(msghistory_events, s3_file_path, policy_metadata, direction, recipients, sender, upload_msg_history, is_mh_parent):
+def update_msghistory_event_and_get_message_context(msghistory_events, s3_file_path, policy_metadata, direction,
+                                                    recipients, sender, upload_msg_history, is_mh_parent):
     try:
         mail_info = None
-        messagehistory.update_msghistory_event(msghistory_events, s3_file_path, policy_metadata, direction, recipients, sender)
+
+        messagehistory.update_msghistory_event(msghistory_events, s3_file_path, policy_metadata, direction, recipients,
+                                               sender, policy_metadata.get_email_product_type())
         mailbox = None
         if direction == INBOUND_MESSAGE_DIRECTION:
-            mailbox = recipients[0]
+            mailbox = recipients[0].lower()
         else:
-            mailbox = sender
+            mailbox = sender.lower()
         if (mailbox in msghistory_events and
             'mail_info' in msghistory_events[mailbox]):
             mail_info = msghistory_events[mailbox]['mail_info']
@@ -599,7 +538,7 @@ def update_msghistory_event_and_get_message_context(msghistory_events, s3_file_p
     except Exception as ex:
         logger.warning("Queue Id [{0}]. Error in processing message history event [{1}]".format(policy_metadata.get_queue_id(), ex))
 
-def base_policy_flow(metadata, direction, is_reply, domain, sender, message, rfx_submit, is_mh_parent):
+def base_policy_flow(metadata, direction, is_reply, domain, sender, message, rfx_submit, is_mh_parent, msghistory_events):
     queue_id = metadata.get_queue_id()
 
     tmp_file_path = formatterutils.get_s3_path(
@@ -620,8 +559,6 @@ def base_policy_flow(metadata, direction, is_reply, domain, sender, message, rfx
 
     upload_msg_history = should_upload_msg_history(direction, rfx_submit)
 
-    #A dict where key is mailbox address and value is the 'accepted' event record. 
-    msghistory_events = messagehistory.read_msghistory_accepted_events(queue_id, MSG_HISTORY_EVENT_DIR)
     message_context = None
     if msghistory_events is not None:
       message_context = update_msghistory_event_and_get_message_context(msghistory_events, s3_file_path, metadata, direction, metadata.get_recipients(), sender, upload_msg_history, is_mh_parent)
@@ -656,19 +593,6 @@ def base_policy_flow(metadata, direction, is_reply, domain, sender, message, rfx
     )
 
     if upload_msg_history:
-
-        history_event = prepare_msg_history_event(
-            s3_file_path,
-            metadata,
-            sqs_message,
-            direction,
-            sender
-        )
-
-        publish_msg_history_event(
-            history_event.get_sqs_json()
-        )
-
         if msghistory_events is not None:
             messagehistory.handle_msghistory_events(queue_id, msghistory_events, MSG_HISTORY_EVENT_PROCESSOR_URL, MSG_HISTORY_EVENT_DIR)
 
@@ -709,6 +633,9 @@ def main():
         plaintext_message = get_plaintext_message()
         message_headers = get_message_headers(plaintext_message)
         metadata = get_metadata(message_headers)
+        queue_id = metadata.get_queue_id()
+        #A dict where key is mailbox address and value is the 'accepted' event record.
+        msghistory_events = messagehistory.read_msghistory_accepted_events(queue_id, MSG_HISTORY_EVENT_DIR)
 
         if rfxrecoveryutils.is_reflexion_ip(metadata.get_sender_ip()):
             rfx_submit = True
@@ -724,7 +651,7 @@ def main():
 
         sender = metadata.get_sender_address()
         if direction == OUTBOUND_MESSAGE_DIRECTION:
-          metadata = get_metadata_for_outbound(metadata, message_headers)
+          metadata = get_metadata_for_outbound(metadata, message_headers, msghistory_events)
           domain = get_from_sender_domain(metadata)
         else:
           domain = metadata.get_recipient_domain()
@@ -732,7 +659,7 @@ def main():
         # required logging for XgemailTestBase automation test
         logger.info("Metadata json info [{0}]".format(metadata))
 
-        base_policy_flow(metadata, direction, is_reply, domain, sender, plaintext_message, rfx_submit, is_mh_parent)
+        base_policy_flow(metadata, direction, is_reply, domain, sender, plaintext_message, rfx_submit, is_mh_parent, msghistory_events)
 
     except BaseException as e:
         logger.exception("Failed in processing email [{0}]".format(e))
