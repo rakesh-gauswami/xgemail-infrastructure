@@ -648,12 +648,12 @@ def build_recipient_map_from_msghistory_enabled(queue_id, recipients, msghistory
     for recipient in recipients:
         recipient = recipient.lower()
         if recipient in msghistory_events:
-          recipient_map[msghistory_events[recipient]['mail_info']['mailbox_id']] = recipient
+          recipient_map[msghistory_events[recipient]['mail_info']['mailbox_id']] = [recipient]
         else:
           # This should never happen
-          logger.info("Queue Id [{0}] Accepted event not found for recipent [{1}".format(queue_id, recipient))
+          logger.info("Queue Id [{0}] Accepted event not found for recipent [{1}]".format(queue_id, recipient))
           return None
-     return recipient_map
+    return recipient_map
 
 # Mail flow goes through multi_policy_flow if multi-policy flag is enabled
 # but if there are error conditions such as file read error etc, the mail
@@ -661,10 +661,11 @@ def build_recipient_map_from_msghistory_enabled(queue_id, recipients, msghistory
 def multi_policy_flow(metadata, direction, domain, sender, message, msghistory_events, message_attributes = None):
     recipients = metadata.get_recipients()
     customer_id = get_customer_id(metadata.get_queue_id(), msghistory_events)
+    policy_list = None
     if customer_id is not None and multipolicyreaderutils.build_recipient_map_from_msghistory_enabled(customer_id, SUBMIT_HOST_IP) and msghistory_events is not None and len(msghistory_events) > 0:
-        policy_list = build_recipient_map_from_msghistory_enabled(msghistory_events)
+        policy_list = build_recipient_map_from_msghistory_enabled(metadata.get_queue_id(), recipients, msghistory_events)
 
-    if customer_id is None or policy_id is None:
+    if customer_id is None or policy_list is None:
         logger.debug("Queue Id [{0}] Reading customer id from policy bucket".format(metadata.get_queue_id()))
         (policy_list, customer_id) = multipolicyreaderutils.build_policy_map(recipients, AWS_REGION, POLICY_S3_BUCKET_NAME)
 
