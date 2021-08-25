@@ -78,8 +78,8 @@
       S3Bucket:                             "{{s3.lambda_bucket}}"
       S3Key:                                "lambda/{{build.number}}/xgemail_eip_rotation.zip"
       ScheduleExpression:                   rate(45 minutes)
+      ScheduleState:                        DISABLED
       SsmPostfixService:                    "{{ssm_stack.stack_outputs.PostfixService}}"
-      SsmUpdateHostname:                    "{{ssm_stack.stack_outputs.UpdateHostname}}"
   register: eip_rotation_stack
 
 - debug:
@@ -121,6 +121,9 @@
       IAMRoleArn:                           "{{iam_stack.stack_outputs.MultiEipRotationLambdaExecutionRoleArn}}"
       S3Bucket:                             "{{s3.lambda_bucket}}"
       S3Key:                                "lambda/{{build.number}}/xgemail_multi_eip_rotation.zip"
+      ScheduleExpression:                   rate(45 minutes)
+      SsmPostfixService:                    "{{ssm_stack.stack_outputs.PostfixService}}"
+      SsmUpdateHostname:                    "{{ssm_stack.stack_outputs.UpdateHostname}}"
   register: multi_eip_rotation_stack
 
 - debug:
