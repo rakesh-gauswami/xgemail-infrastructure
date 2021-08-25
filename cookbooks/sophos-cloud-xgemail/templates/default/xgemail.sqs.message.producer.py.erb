@@ -640,12 +640,33 @@ def base_policy_flow(metadata, direction, domain, sender, message, msghistory_ev
     if msghistory_events is not None:
         messagehistory.handle_msghistory_events(queue_id, msghistory_events, MSG_HISTORY_EVENT_PROCESSOR_URL, MSG_HISTORY_EVENT_DIR)
 
+def build_recipient_map_from_msghistory_enabled(queue_id, recipients, msghistory_events):
+    """
+        This method returns a map with <mailbox_id> as key and recipient address as value.
+    """
+    recipient_map = {}
+    for recipient in recipients:
+        recipient = recipient.lower()
+        if recipient in msghistory_events:
+          recipient_map[msghistory_events[recipient]['mail_info']['mailbox_id']] = recipient
+        else:
+          # This should never happen
+          logger.info("Queue Id [{0}] Accepted event not found for recipent [{1}".format(queue_id, recipient))
+          return None
+     return recipient_map
+
 # Mail flow goes through multi_policy_flow if multi-policy flag is enabled
 # but if there are error conditions such as file read error etc, the mail
 # fall back to base_policy_flow.
 def multi_policy_flow(metadata, direction, domain, sender, message, msghistory_events, message_attributes = None):
     recipients = metadata.get_recipients()
-    (policy_list, customer_id) = multipolicyreaderutils.build_policy_map(recipients, AWS_REGION, POLICY_S3_BUCKET_NAME)
+    customer_id = get_customer_id(metadata.get_queue_id(), msghistory_events)
+    if customer_id is not None and multipolicyreaderutils.build_recipient_map_from_msghistory_enabled(customer_id, SUBMIT_HOST_IP) and msghistory_events is not None and len(msghistory_events) > 0:
+        policy_list = build_recipient_map_from_msghistory_enabled(msghistory_events)
+
+    if customer_id is None or policy_id is None:
+        logger.debug("Queue Id [{0}] Reading customer id from policy bucket".format(metadata.get_queue_id()))
+        (policy_list, customer_id) = multipolicyreaderutils.build_policy_map(recipients, AWS_REGION, POLICY_S3_BUCKET_NAME)
 
     # Message routing information in metadata pertaining to micro-service
     metadata.set_microservice_request(routingmanager.perform_routing(customer_id))
