@@ -12,7 +12,7 @@
 NODE_TYPE = node['xgemail']['cluster_type']
 ACCOUNT =  node['sophos_cloud']['environment']
 
-if NODE_TYPE != 'customer-submit' && NODE_TYPE != 'mf-outbound-submit'
+if NODE_TYPE != 'customer-submit'
   return
 end
 
@@ -181,10 +181,8 @@ end
 #
 if ACCOUNT != 'sandbox'
 
-  if NODE_TYPE == 'mf-outbound-submit'
-    #when node type is mf-outbound-submit
-    CONFIGURATION_COMMANDS =
-        [
+  CONFIGURATION_COMMANDS =
+    [
             "hopcount_limit = #{HOP_COUNT_SUBMIT_INSTANCE}",
 
             'smtpd_upstream_proxy_protocol = haproxy',
@@ -207,49 +205,8 @@ if ACCOUNT != 'sandbox'
                 "reject_non_fqdn_sender",
         ]
 
-    CONFIGURATION_COMMANDS.each do | cur |
-      execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
-    end
-  else
-    CONFIGURATION_COMMANDS =
-        [
-            "hopcount_limit = #{HOP_COUNT_SUBMIT_INSTANCE}",
-
-            'smtpd_upstream_proxy_protocol = haproxy',
-
-            # Server side TLS configuration
-            'smtpd_tls_security_level = may',
-            'smtpd_tls_ciphers = high',
-            'smtpd_tls_mandatory_ciphers = high',
-            'smtpd_tls_loglevel = 1',
-            'smtpd_tls_received_header = yes',
-            "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
-            "smtpd_tls_key_file = #{KEY_FILE}",
-
-            # Recipient restrictions
-            "reject_rbl_client_a = #{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES_A}",
-            "reject_rbl_client_b = #{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES_B}",
-            'reject_rbl_client = $reject_rbl_client_b',
-            'smtpd_recipient_restrictions = ' +
-                "reject_rhsbl_reverse_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
-                "reject_rhsbl_sender #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
-                "reject_rhsbl_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
-                'reject_rbl_client $reject_rbl_client, ' +
-                'permit',
-
-            'relay_domains = static:ALL',
-
-            # Sender restrictions
-            'smtpd_sender_restrictions = ' +
-                "reject_non_fqdn_sender",
-
-            # RBL response configuration
-            "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_B_FILENAME}"
-        ]
-
-    CONFIGURATION_COMMANDS.each do | cur |
-      execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
-    end
+  CONFIGURATION_COMMANDS.each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
   end
 
   include_recipe 'sophos-cloud-xgemail::setup_dh_params'
