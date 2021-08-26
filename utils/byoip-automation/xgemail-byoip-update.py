@@ -5,34 +5,30 @@ from botocore.exceptions import ClientError
 import json
 import sys
 import ipaddress
+import argparse
 
-# HostedZoneIDs for A records:
-inf = 'ZN9712Y506MUM'
-dev = 'ZBKEJ4BMWTGLP'
-qa = 'Z3PNQYIZM8851A'
-prod = 'Z1LGZDUSPJAUO4'
-
-regions = ["us-east-2", "us-west-2", "eu-central-1", "eu-west-1"]
-region = 'test'
+# TTL value to apply to all A and PTR Route53 records
 ttl = 60
-res = ""
-azoneid = inf
-test = True
 
-# HostedZoneIDs for PTR records:
-ptrzoneid={
-    "us-east-2": 'Z082430616C3R7N712JOG',
-    "us-west-2": 'Z05672293M9YCC10NXQZ5',
-    "eu-central-1": 'Z0601549389CMBAMATPSJ',
-    "eu-west-1": 'Z0901709WN6V809KXTJ4',
-    "test": 'Z078753720OPOKCR4XUET'
+# HostedZoneIDs for A records based on account name
+azoneid = {
+    "inf": 'ZN9712Y506MUM',
+    "dev": 'ZBKEJ4BMWTGLP',
+    "qa": 'Z3PNQYIZM8851A',
+    "prod": 'Z1LGZDUSPJAUO4',
+    "ap-s2-fsc": 'Z04757282YOTSCLF8L9GW',
+    "ap-n1-fsc": 'Z07508741CVLNIIET1065',
+    "ca-c1-fsc": 'Z00800781RZ26AD1QM60Z',
+    "us-west-2-fsc": 'Z00382154IYYFLZVB78D'
 }
 
-# HostedZoneIDs for FSC PTR records:
-# ap-s2-fsc-hostedzoneid = 'Z04757282YOTSCLF8L9GW'
-# ap-n1-fsc-hostedzoneid = 'Z07508741CVLNIIET1065'
-# ca-c1-fsc-hostedzoneid = 'Z00800781RZ26AD1QM60Z'
-# us-west-2-fsc-hostedzoneid = 'Z00382154IYYFLZVB78D'
+# HostedZoneIDs for PTR records based on region
+ptrzoneid = {
+    "prod-us-east-2": 'Z082430616C3R7N712JOG',
+    "prod-us-west-2": 'Z05672293M9YCC10NXQZ5',
+    "prod-eu-central-1": 'Z0601549389CMBAMATPSJ',
+    "prod-eu-west-1": 'Z0901709WN6V809KXTJ4'
+}
 
 
 def update_byoip_a_record(ip, dnsrecord):
@@ -40,7 +36,7 @@ def update_byoip_a_record(ip, dnsrecord):
     try:
         print("Creating A record: " + dnsrecord + " for IP: " + ip)
         response = route53_client.change_resource_record_sets(
-            HostedZoneId=azoneid,
+            HostedZoneId=azoneid.get(account, "A HostedZoneId not found for account provided."),
             ChangeBatch={
                 'Changes': [
                     {
@@ -70,7 +66,7 @@ def update_byoip_ptr_record(ip, dnsrecord):
     try:
         print("Creating PTR record: " + dnsrecord + " for IP: " + ip)
         response = route53_client.change_resource_record_sets(
-            HostedZoneId=ptrzoneid.get(region, "Invalid region."),
+            HostedZoneId=ptrzoneid.get(account+'-'+region, "PTR HostedZoneId not found for region provided."),
             ChangeBatch={
                 'Changes': [
                     {
@@ -124,45 +120,41 @@ def update_byoip_tag(ip, eipname):
     return response
 
 
-if test:
-    session = boto3.Session(profile_name='inf', region_name='eu-west-1')
-    route53_client = session.client('route53')
-    eip_client = session.client('ec2')
+parser = argparse.ArgumentParser(description='BYOIP automation of Route53 records and EIP tags.')
+parser.add_argument('account', choices=['inf', 'dev', 'qa', 'prod'],
+                    help='Account/Environment to run automation.')
+parser.add_argument('region', choices=['eu-west-1', 'eu-central-1', 'us-west-2', 'us-east-2'],
+                    help='Region to run automation.')
+args = parser.parse_args()
+account = args.account
+region = args.region
+session = boto3.Session(profile_name=account, region_name=region)
+route53_client = session.client('route53')
+eip_client = session.client('ec2')
 
-    with open('test.json', 'r') as f:
+try:
+    with open('xgemail-byoip-address-config-{0}-{1}.json'.format(account, region), 'r') as f:
         records_dict = json.load(f)
 
-    for byoip in records_dict:
-        print(byoip['IpAddress'])
-        res = update_byoip_a_record(ip=byoip['IpAddress'], dnsrecord=byoip['DnsRecord'])
-        print("Finished attempting DNS A record creation")
-        print(res)
-        res = update_byoip_ptr_record(ip=byoip['IpAddress'], dnsrecord=byoip['DnsRecord'])
-        print("Finished attempting DNS PTR record creation")
-        print(res)
-        res = update_byoip_tag(ip=byoip['IpAddress'], eipname=byoip['EipName'])
-        print("Finished attempting EIP tagging")
-        print(res)
+except IOError:
+    print("Could not read json file:", f)
 
-    sys.exit("Test run performed in INF account.")
+for byoip in records_dict:
+    print(byoip['IpAddress'])
 
-for region in regions:
-    session = boto3.Session(profile_name='inf', region_name=region)
-    route53_client = session.client('route53')
-    eip_client = session.client('ec2')
+    print("Attempting DNS A record creation")
+    res = update_byoip_a_record(ip=byoip['IpAddress'], dnsrecord=byoip['DnsRecord'])
+    print(res)
+    print("Finished attempting DNS A record creation")
 
-    with open('xgemail-byoip-address-config-{0}.json'.format(region), 'r') as f:
-        records_dict = json.load(f)
+    print("Attempting DNS PTR record creation")
+    res = update_byoip_ptr_record(ip=byoip['IpAddress'], dnsrecord=byoip['DnsRecord'])
+    print(res)
+    print("Finished attempting DNS PTR record creation")
 
-    for byoip in records_dict:
-        print(byoip['IpAddress'])
-        res = update_byoip_a_record(ip=byoip['IpAddress'], dnsrecord=byoip['DnsRecord'])
-        print("Finished attempting DNS A record creation")
-        print(res)
-        res = update_byoip_ptr_record(ip=byoip['IpAddress'], dnsrecord=byoip['DnsRecord'])
-        print("Finished attempting DNS PTR record creation")
-        print(res)
-        res = update_byoip_tag(ip=byoip['IpAddress'], eipname=byoip['EipName'])
-        print("Finished attempting EIP tagging")
-        print(res)
-        sys.exit("BYOIP automation completed.")
+    print("Attempting EIP tagging")
+    res = update_byoip_tag(ip=byoip['IpAddress'], eipname=byoip['EipName'])
+    print(res)
+    print("Finished attempting EIP tagging")
+
+sys.exit("BYOIP automation complete.")
