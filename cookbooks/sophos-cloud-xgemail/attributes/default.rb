@@ -242,6 +242,8 @@ default['xgemail']['savdid_ide_cron_minute_frequency'] = 15
 default['xgemail']['submit_destination_concurrency_limit'] = 10
 default['xgemail']['internet_submit_domain_cron_minute_frequency'] = 10
 default['xgemail']['internet_submit_recipient_cron_minute_frequency'] = 10
+default['xgemail']['mf_inbound_submit_domain_cron_minute_frequency'] = 10
+default['xgemail']['mf_inbound_submit_recipient_cron_minute_frequency'] = 10
 default['xgemail']['xgemail_sqs_lifecycle_poller_cron_minute_frequency'] = 1
 
 default['xgemail']['recipient_access_filename'] = 'recipient_access'
