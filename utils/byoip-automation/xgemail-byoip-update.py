@@ -33,24 +33,35 @@ ptrzoneid = {
 
 def update_byoip_a_record(ip, dnsrecord):
     response = ""
+    print("Creating A record: " + dnsrecord + " for IP: " + ip)
+    ip = "{{\"Value\": \"{}\"}}".format(ip)
+    new_value = json.loads(ip)
     try:
-        print("Creating A record: " + dnsrecord + " for IP: " + ip)
+        existing_records = route53_client.list_resource_record_sets(
+            HostedZoneId=azoneid.get(account, "A HostedZoneId not found for account provided."),
+            StartRecordName=dnsrecord,
+            StartRecordType='A',
+            MaxItems='1'
+        )
+        existing_values = existing_records["ResourceRecordSets"][0]["ResourceRecords"]
+        if existing_values:
+            if new_value not in existing_values:
+                existing_values.append(new_value)
+            values = existing_values
+        else:
+            values = new_value
         response = route53_client.change_resource_record_sets(
             HostedZoneId=azoneid.get(account, "A HostedZoneId not found for account provided."),
             ChangeBatch={
                 'Changes': [
                     {
-                        'Action': 'CREATE',
+                        'Action': 'UPSERT',
                         'ResourceRecordSet': {
                             'Name': dnsrecord,
                             'Type': 'A',
                             'TTL': ttl,
-                            'ResourceRecords': [
-                                {
-                                    'Value': ip
-                                }
-                            ]
-                        }
+                            'ResourceRecords': values
+                            }
                     }
                 ]
             }
@@ -140,6 +151,8 @@ except IOError:
     print("Could not read json file:", f)
 
 for byoip in records_dict:
+    if not byoip['DnsRecord'] or not byoip['EipName']:
+        continue
     print(byoip['IpAddress'])
 
     print("Attempting DNS A record creation")
