@@ -86,6 +86,12 @@ template CRON_SCRIPT_PATH do
   notifies :run, "execute[#{CRON_SCRIPT_PATH}]", :immediately
 end
 
+if NODE_TYPE != 'encryption-submit'
+  CONFIGURATION_COMMANDS.each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+  end
+end
+
 cron "#{INSTANCE_NAME}-domain-cron" do
   minute "*/#{CRON_MINUTE_FREQUENCY}"
   user 'root'
