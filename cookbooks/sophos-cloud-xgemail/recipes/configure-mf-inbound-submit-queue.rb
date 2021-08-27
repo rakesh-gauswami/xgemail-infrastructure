@@ -288,16 +288,16 @@ if ACCOUNT != 'sandbox'
 
   include_recipe 'sophos-cloud-xgemail::setup_dh_params'
   include_recipe 'sophos-cloud-xgemail::install_jilter_mf_inbound'
-  include_recipe 'sophos-cloud-xgemail::setup_flag_toggle_internet_submit'
-  include_recipe 'sophos-cloud-xgemail::setup_routing_managers'
-  include_recipe 'sophos-cloud-xgemail::setup_internet_submit_domain_updater_cron'
-  include_recipe 'sophos-cloud-xgemail::setup_internet_submit_recipient_updater_cron'
+  include_recipe 'sophos-cloud-xgemail::setup_flag_toggle_mf_inbound_submit'
+  include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_routing_managers'
+  include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_submit_domain_updater_cron'
+  include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_submit_recipient_updater_cron'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_multi_policy_service'
   include_recipe 'sophos-cloud-xgemail::setup_push_policy_submit_toggle'
   include_recipe 'sophos-cloud-xgemail::setup_msghistory_event_dir'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_sender_and_recipient_block'
-  include_recipe 'sophos-cloud-xgemail::setup_internet_submit_bulk_release_post_quarantine'
+  include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_submit_bulk_release_post_quarantine'
 
 else
   [
@@ -307,13 +307,13 @@ else
     execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
   end
 
-  include_recipe 'sophos-cloud-xgemail::setup_flag_toggle_internet_submit'
-  include_recipe 'sophos-cloud-xgemail::setup_routing_managers'
-  include_recipe 'sophos-cloud-xgemail::setup_internet_submit_domain_updater_cron'
-  include_recipe 'sophos-cloud-xgemail::setup_internet_submit_recipient_updater_cron'
+  include_recipe 'sophos-cloud-xgemail::setup_flag_toggle_mf_inbound_submit'
+  include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_routing_managers'
+  include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_submit_domain_updater_cron'
+  include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_submit_recipient_updater_cron'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_utils_structure'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_processors_structure'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_multi_policy_service'
-  include_recipe 'sophos-cloud-xgemail::setup_internet_submit_bulk_release_post_quarantine'
+  include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_submit_bulk_release_post_quarantine'
 end
