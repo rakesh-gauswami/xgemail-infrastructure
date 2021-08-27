@@ -40,7 +40,7 @@ def update_byoip_a_record(ip, dnsrecord):
             ChangeBatch={
                 'Changes': [
                     {
-                        'Action': 'UPSERT',
+                        'Action': 'CREATE',
                         'ResourceRecordSet': {
                             'Name': dnsrecord,
                             'Type': 'A',
