@@ -7326,7 +7326,8 @@
               "Principal": {
                 "AWS": [
                   "arn:aws:iam::792368871298:role/MSG-Filter-Role",
-                  "arn:aws:iam::792368871298:role/MSG-Filter-CFT-Role"
+                  "arn:aws:iam::792368871298:role/MSG-Filter-CFT-Role",
+                  "arn:aws:sts::792368871298:assumed-role/MSG-Filter-CFT-Role/AWSCloudFormation"
                 ]
               }
             }
@@ -7358,6 +7359,30 @@
         ]
       }
     },
+    "XgemailDevMsgFilterRolePolicies": {
+      "Type": "AWS::IAM::Policy",
+      "Condition": "isPreProd",
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:List*",
+                "s3:Get*"
+              ],
+              "Effect": "Allow",
+              "Resource": "arn:aws:s3:::telemetry-dev-eu-west-1-cloudstation"
+            }
+          ]
+        },
+        "PolicyName": "telemetry-dev-s3-ro-access",
+        "Roles": [
+          {
+            "Ref": "XgemailDevMsgFilterRole"
+          }
+        ]
+      }
+    },
     "XgemailProdMsgFilterRole" : {
       "Type": "AWS::IAM::Role",
       "Condition": "isProd",
@@ -7372,7 +7397,9 @@
               "Principal": {
                 "AWS": [
                   "arn:aws:iam::872445321290:role/MSG-Filter-Role",
-                  "arn:aws:iam::872445321290:role/MSG-Filter-CFT-Role"
+                  "arn:aws:iam::872445321290:role/MSG-Filter-CFT-Role",
+                  "arn:aws:iam::792368871298:role/MSG-Filter-CFT-Role",
+                  "arn:aws:sts::872445321290:assumed-role/MSG-Filter-CFT-Role/AWSCloudFormation"
                 ]
               }
             }
@@ -7400,6 +7427,32 @@
           {
             "Key": "OwnerEmail",
             "Value": "sophosmailops@sophos.com"
+          }
+        ]
+      }
+    },
+    "XgemailProdMsgFilterRolePolicies": {
+      "Type": "AWS::IAM::Policy",
+      "Condition": "isProd",
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:List*",
+                "s3:Get*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:s3:::telemetry-prod-*"
+              ]
+            }
+          ]
+        },
+        "PolicyName": "telemetry-prod-s3-ro-access",
+        "Roles": [
+          {
+            "Ref": "XgemailProdMsgFilterRole"
           }
         ]
       }
