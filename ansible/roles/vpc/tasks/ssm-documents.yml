@@ -9,6 +9,7 @@
     template_parameters:
       AlarmTopicArn:              "{{sns.arn_prefix}}{{sns.alarm_sns_topic}}"
       EipRotationLambdaFunction:  "{{lambda.eip_rotation_lambda_function}}"
+      MultiEipRotationLambdaFunction: "{{lambda.multi_eip_rotation_lambda_function}}"
   register: ssm_stack
 
 - debug:
