@@ -67,7 +67,7 @@ if ACCOUNT == 'sandbox'
 
 end
 
-PACKAGE_DIR                    = "#{XGEMAIL_FILES_DIR}/customer-delivery-transport-cron"
+PACKAGE_DIR                    = "#{XGEMAIL_FILES_DIR}/customer-delivery-transport"
 TRANSPORT_UPDATER_SCRIPT       = 'customer.delivery.transport.updater.py'
 TRANSPORT_UPDATER_SCRIPT_PATH  = "#{PACKAGE_DIR}/#{TRANSPORT_UPDATER_SCRIPT}"
 XGEMAIL_PIC_FQDN               = "mail-#{STATION_VPC_NAME.downcase}-#{REGION}.#{ACCOUNT}.hydra.sophos.com"
@@ -86,12 +86,7 @@ directory PACKAGE_DIR do
   group 'root'
 end
 
-# Setup cron script execution
-execute TRANSPORT_UPDATER_SCRIPT_PATH do
-  ignore_failure true
-  user 'root'
-  action :nothing
-end
+
 
 template TRANSPORT_UPDATER_SCRIPT_PATH do
   source "#{TRANSPORT_UPDATER_SCRIPT}.erb"
@@ -116,6 +111,13 @@ end
 
 CONFIGURATION_COMMANDS.each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+end
+
+# Run once manually
+execute TRANSPORT_UPDATER_SCRIPT_PATH do
+  ignore_failure true
+  user 'root'
+  action :nothing
 end
 
 template 'xgemail-trannsport-updater' do

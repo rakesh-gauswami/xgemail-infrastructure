@@ -25,6 +25,7 @@ exec_path=<%= @script_path %>
 lockfile=/var/lock/subsys/${prog}
 pidfile=/var/run/${prog}.pid
 user=<%= @user %>
+args="--daemon True"
 
 start() {
     [ "$EUID" != "0" ] && exit 4
@@ -35,7 +36,7 @@ start() {
 
     # Start Daemon
     echo -n $"Starting ${prog}: "
-    daemon --user=${user} --pidfile=${pidfile} "{ ${exec_path} & } ; echo \$! >| ${pidfile} "
+    daemon --user=${user} --pidfile=${pidfile} "{ ${exec_path} ${args} & } ; echo \$! >| ${pidfile} "
     retval=$?
     echo
     [ ${retval} -eq 0 ] && touch ${lockfile}
