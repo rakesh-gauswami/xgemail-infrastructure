@@ -95,7 +95,6 @@ NODE_TYPE = node['xgemail']['cluster_type']
 if NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'mf-inbound-delivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'encryption-delivery' || NODE_TYPE == 'risky-delivery' || NODE_TYPE == 'warmup-delivery' || NODE_TYPE == 'beta-delivery' || NODE_TYPE == 'delta-delivery'
     if NODE_TYPE == 'customer-delivery'
       MANAGED_SERVICES_IN_START_ORDER = [
-        TRANSPORT_UPDATER_SERVICE_NAME,
         'postfix'
       ]
     else

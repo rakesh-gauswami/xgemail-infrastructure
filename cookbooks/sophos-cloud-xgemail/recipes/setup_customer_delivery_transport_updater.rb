@@ -147,3 +147,7 @@ service 'xgemail-trannsport-updater' do
   supports :restart => true, :start => true, :stop => true, :reload => true
   subscribes :enable, 'template[xgemail-trannsport-updater]', :immediately
 end
+
+log "starting service #{TRANSPORT_UPDATER_SERVICE_NAME}" do
+  notifies :start, "service[#{TRANSPORT_UPDATER_SERVICE_NAME}]", :immediately
+end
