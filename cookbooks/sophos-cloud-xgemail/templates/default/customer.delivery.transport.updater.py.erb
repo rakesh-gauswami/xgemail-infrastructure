@@ -177,18 +177,14 @@ transport_updater_parser_args = transport_updater_parser.parse_args()
 if transport_updater_parser_args.daemon == 'True':
   logger.info('daemon argument is true')
 
-HEADERS = {
-    'Content-type': 'application/json',
-    'Authorization': 'Basic ' + auth
-}
 
 PIC_DESTINATION_URL = PIC_XGEMAIL_API_URL + '/destination'
 
 while True:
 
   timestamp_start=time.time() * 1000
-  
-  logger.info('transport map file [%s.db] successfully updated. Time taken [%s]', TRANSPORT_FILE, float(round(time.time() * 1000)) - float(timestamp_start))
+
+  logger.info('transport map file [%s.db] successfully updated. Time taken [%s]', TRANSPORT_FILENAME, float(round(time.time() * 1000)) - float(timestamp_start))
 
   if transport_updater_parser_args.daemon == 'False':
     logger.info('daemon argument is false')
