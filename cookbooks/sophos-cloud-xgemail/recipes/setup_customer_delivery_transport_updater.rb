@@ -141,13 +141,10 @@ file '/etc/rsyslog.d/00-xgemail-transportupdater.conf' do
   group 'root'
 end
 
-service 'xgemail-trannsport-updater' do
+service 'xgemail-transport-updater' do
   service_name TRANSPORT_UPDATER_SERVICE_NAME
   init_command "/etc/init.d/#{TRANSPORT_UPDATER_SERVICE_NAME}"
   supports :restart => true, :start => true, :stop => true, :reload => true
-  subscribes :enable, 'template[xgemail-trannsport-updater]', :immediately
-end
-
-log "starting service #{TRANSPORT_UPDATER_SERVICE_NAME}" do
-  notifies :start, "service[#{TRANSPORT_UPDATER_SERVICE_NAME}]", :immediately
+  subscribes :enable, 'template[xgemail-transport-updater]', :immediately
+  action :start
 end

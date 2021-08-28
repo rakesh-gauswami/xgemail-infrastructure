@@ -119,7 +119,6 @@ end
 
 if NODE_TYPE == 'xdelivery'
   MANAGED_SERVICES_IN_START_ORDER = [
-      TRANSPORT_UPDATER_SERVICE_NAME,
       'postfix'
   ]
 end
