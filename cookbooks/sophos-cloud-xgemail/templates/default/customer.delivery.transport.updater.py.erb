@@ -237,7 +237,7 @@ while True:
           timeout=MAIL_PIC_RESPONSE_TIMEOUT
         )
       domain_response.raise_for_status()
-      transport_line = parse_domain_response(domain, domain_response.json(), s3)
+      transport_line = parse_domain_response(domain, domain_response.json(), s3, False)
       f.write('{0}\n'.format(transport_line))
       if (float(round(time.time() * 1000)) - float(timestamp_start)) > 15 * 60 * 1000:
         logger.info('transport map file updater taken more than 15 mins')
