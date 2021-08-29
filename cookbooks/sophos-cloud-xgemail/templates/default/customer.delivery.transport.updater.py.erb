@@ -54,7 +54,7 @@ PIC_XGEMAIL_API_URL = 'https://%s/mail/api/xgemail' % (PIC_FQDN)
 PIC_DOMAINS_URL = PIC_XGEMAIL_API_URL + '/domains'
 PIC_TLS_DOMAINS_URL = PIC_XGEMAIL_API_URL +'/tls-domain-exists/'
 
-logger.info('customer delivery transport cron - pic url [%s]', PIC_XGEMAIL_API_URL)
+logger.info('customer delivery transport updater - pic url [%s]', PIC_XGEMAIL_API_URL)
 
 def get_passphrase():
     s3 = boto3.client('s3')
@@ -177,6 +177,12 @@ transport_updater_parser_args = transport_updater_parser.parse_args()
 if transport_updater_parser_args.daemon == 'True':
   logger.info('daemon argument is true')
 
+auth = get_passphrase()
+
+HEADERS = {
+    'Content-type': 'application/json',
+    'Authorization': 'Basic ' + auth
+}
 
 PIC_DESTINATION_URL = PIC_XGEMAIL_API_URL + '/destination'
 
@@ -184,7 +190,66 @@ while True:
 
   timestamp_start=time.time() * 1000
 
-  logger.info('transport map file [%s.db] successfully updated. Time taken [%s]', TRANSPORT_FILENAME, float(round(time.time() * 1000)) - float(timestamp_start))
+  POSTFIX_CONFIG_DIR = subprocess.check_output(
+      [
+        'postmulti', '-i', POSTFIX_INSTANCE_NAME, '-x',
+        'postconf','-h','config_directory'
+      ]
+    ).rstrip()
+
+  TRANSPORT_FILE = POSTFIX_CONFIG_DIR + '/' + TRANSPORT_FILENAME
+  TRANSPORT_FILE_TMP = TRANSPORT_FILE + '.tmp'
+
+  logger.info('staring to update transport map file [%s.db]', TRANSPORT_FILE)
+
+  response = requests.get(
+      PIC_DOMAINS_URL,
+      headers=HEADERS,
+      timeout=MAIL_PIC_RESPONSE_TIMEOUT
+  )
+  response.raise_for_status()
+
+  with open(TRANSPORT_FILE_TMP, 'w') as f:
+
+    s3 = boto3.client('s3')
+
+    if custom_route_file_exist():
+      try:
+          current_config = s3.get_object(Bucket=POLICY_BUCKET,Key= CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
+          raw_config_data= current_config['Body'].read()
+          config_data = configformatter.get_config_binary(raw_config_data)
+          record = json.loads(config_data)
+
+          sorted_record_keys=sort_record_key(record)
+          for domain_or_email in sorted_record_keys :
+              transport_line = parse_domain_response(domain_or_email,record[domain_or_email] , s3, True)
+              f.write('{0}\n'.format(transport_line))
+      except Exception as e:
+          trace = traceback.format_exc()
+          for line in trace.splitlines():
+              logger.debug("Error loading custom Transport " + line)
+
+    for domain in response.json()['domains'] :
+      domain_response = requests.post(
+          PIC_DESTINATION_URL,
+          headers=HEADERS,
+          data=json.dumps({'domain':domain}),
+          timeout=MAIL_PIC_RESPONSE_TIMEOUT
+        )
+      domain_response.raise_for_status()
+      transport_line = parse_domain_response(domain, domain_response.json(), s3)
+      f.write('{0}\n'.format(transport_line))
+      if (float(round(time.time() * 1000)) - float(timestamp_start)) > 15 * 60 * 1000:
+        logger.info('transport map file updater taken more than 15 mins')
+
+    # Add catch-all to retry any unknown domain
+    f.write('* retry: domain is unknown\n')
+
+  subprocess.call(['postmap', 'hash:{0}'.format(TRANSPORT_FILE_TMP)])
+  os.rename(TRANSPORT_FILE_TMP, TRANSPORT_FILE);
+  os.rename(TRANSPORT_FILE_TMP + '.db', TRANSPORT_FILE + '.db');
+
+  logger.info('transport map file [%s.db] successfully updated. Time taken [%s]', TRANSPORT_FILE, float(round(time.time() * 1000)) - float(timestamp_start))
 
   if transport_updater_parser_args.daemon == 'False':
     logger.info('daemon argument is false')
