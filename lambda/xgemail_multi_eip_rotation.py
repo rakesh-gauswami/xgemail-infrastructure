@@ -13,14 +13,9 @@ respective owners.
 import boto3
 import logging
 import json
-import time
 import os
-import socket
-from datetime import datetime, timedelta
-from botocore.exceptions import ClientError, WaiterError
-from botocore.waiter import WaiterModel
-from botocore.waiter import create_waiter_with_client
-
+from datetime import datetime
+from botocore.exceptions import ClientError
 
 print('Loading function')
 
@@ -35,7 +30,6 @@ else:
 
 class MultiEip:
     def __init__(self, instance_id):
-        account = os.environ['ACCOUNT']
         region = os.environ['AWS_REGION']
         self.session = boto3.session.Session(region_name=region)
         self.ec2 = self.session.resource('ec2')
@@ -45,10 +39,9 @@ class MultiEip:
         self.ssm = self.session.client('ssm')
         """:type: pyboto3.ssm """
         self.instance = self.ec2.Instance(instance_id)
-        self.eni, self.attachment_id  = self.get_eni()
+        self.eni, self.attachment_id = self.get_eni()
         self.eip_count = self.get_eip_count()
         self.private_ips = []
-
 
     def get_eip_count(self):
         for tag in self.instance.tags:
@@ -59,10 +52,8 @@ class MultiEip:
         logger.warning("Could not find EipCount.")
         return int(1)
 
-
     def get_eni(self):
-        return (self.instance.network_interfaces_attribute[0]['NetworkInterfaceId'],self.instance.network_interfaces_attribute[0]['Attachment']['AttachmentId'])
-
+        return self.instance.network_interfaces_attribute[0]['NetworkInterfaceId'], self.instance.network_interfaces_attribute[0]['Attachment']['AttachmentId']
 
     def assign_private_ips(self):
         logger.info("Assigning {} Private IP(s) on Interface: {}.".format(self.eip_count, self.eni))
@@ -73,7 +64,6 @@ class MultiEip:
         except ClientError as e:
             logger.exception("Unable to assign private ip addresses. {}".format(e))
             return False
-
 
     def associate_multi_eips(self):
         for private_ip in self.private_ips:
@@ -91,7 +81,6 @@ class MultiEip:
 
         return True
 
-
     def fetch_private_ips(self):
         try:
             nic = self.ec2_client.describe_network_interfaces(NetworkInterfaceIds=[self.eni])
@@ -102,7 +91,6 @@ class MultiEip:
             logger.exception("Unable to fetch private ip addresses. {}".format(e))
             return None
 
-
     def add_tags_dict(self, addresses):
         """
         Add a derived 'TagsDict' entry to each address in the given list.
@@ -112,7 +100,6 @@ class MultiEip:
             for tag_entry in address["Tags"]:
                 tags[tag_entry["Key"]] = tag_entry["Value"]
             address["TagsDict"] = tags
-
 
     def lookup_eip(self, eip):
         """
@@ -130,12 +117,11 @@ class MultiEip:
         else:
             return eip
 
-
     def get_clean_eip(self):
         """
         Find an xgemail-outbound EIP that is NOT listed on any blacklists and is NOT attached to an instance.
         """
-        instance_type = [ t['Value'] for t in self.instance.tags if t['Key'] == 'Application' ][0]
+        instance_type = [t['Value'] for t in self.instance.tags if t['Key'] == 'Application'][0]
         logger.info("Locating a clean {} EIP to use.".format(instance_type))
         try:
             addresses = self.ec2_client.describe_addresses(
@@ -166,7 +152,6 @@ class MultiEip:
         else:
             return None
 
-
     def associate_address(self, eip, instance_id, private_ip):
         """
         Associate an EIP to an EC2 Instance.
@@ -187,7 +172,6 @@ class MultiEip:
                 logger.exception("Unable to associate elastic IP {}".format(e))
         else:
             return True
-
 
     def disassociate_address(self, eip):
         """
@@ -214,63 +198,13 @@ class MultiEip:
             return True
 
 
-def rotate_eip(instance, current_eip, new_eip):
-    hostname = socket.gethostbyaddr(new_eip['PublicIp'])[0]
-    if postfix_service(instance_id=instance.id, cmd='stop'):
-        if disassociate_address(eip=current_eip):
-            if associate_address(allocation_id=new_eip['AllocationId'], instance_id=instance.id):
-                logger.info("Successfully rotated EIP on Instance: {}.".format(instance.id))
-                return True
-            else:
-                logger.error("There was a problem with EIP association for Instance: {}.".format(instance.id))
-                return False
-        else:
-            postfix_service(instance_id=instance.id, cmd='start')
-            logger.error("There was a problem with EIP disassociation for Instance: {}.".format(instance.id))
-            return False
-    else:
-        logger.error("Unable to stop Postfix Service on Instance: {}.".format(instance.id))
-        return False
-
-
-def rotate_all_eips():
-    """
-    If triggered from scheduled event rotate all EIP's.
-    """
-    rotation_complete = True
-
-    for instance in get_instances_by_name():
-        if (datetime.now(instance.launch_time.tzinfo) - instance.launch_time).total_seconds() <= 1800:
-            logger.info("Instance Id: {} was recently deployed. Skipping".format(instance.id))
-            continue
-        current_eip = MultiEip.lookup_eip(eip=instance.public_ip_address)
-        if current_eip is None:
-            continue
-        new_eip = get_clean_eip(instance)
-
-        rotation_complete &= rotate_eip(instance, current_eip, new_eip)
-
-    logger.info("===FINISHED=== Rotating Outbound Delivery EIP's.")
-    return rotation_complete
-
-
-def rotate_multi_eip_instance(instance):
-    """
-    If triggered from SSM rotate all EIPs on a single EC2 Instance.
-    """
-    multi_eip = MultiEip(instance)
-    if multi_eip.fetch_private_ips() is not None:
-        for each privateIP
-        if multi_eip.associate_multi_eips():
-    new_eip = get_clean_eip(instance)
-
-    return rotate_eip(instance, current_eip, new_eip)
-
-
 def get_instances_by_name():
     """
     Get EC2 Instances matching filter.
     """
+    region = os.environ['AWS_REGION']
+    session = boto3.session.Session(region_name=region)
+    ec2 = session.resource('ec2')
     instances = ec2.instances.filter(
         Filters=[
             {
@@ -289,112 +223,20 @@ def get_instances_by_name():
     return instances
 
 
-def command_invocation_waiter(command_id, instance_id):
+def rotate_all_eips():
     """
-    SSM Command Invocation Waiter.
+    If triggered from scheduled event rotate all EIP's.
     """
-    delay = 5
-    max_attempts = 20
-    waiter_name = 'CommandComplete'
 
-    waiter_config = {
-        "version": 2,
-        "waiters": {
-            waiter_name: {
-                "operation": "GetCommandInvocation",
-                "maxAttempts": max_attempts,
-                "delay": delay,
-                "acceptors": [
-                    {
-                        "state": "retry",
-                        "matcher": "path",
-                        "argument": "Status",
-                        "expected": "Pending"
-                    },
-                    {
-                        "state": "retry",
-                        "matcher": "path",
-                        "argument": "Status",
-                        "expected": "InProgress"
-                    },
-                    {
-                        "state": "retry",
-                        "matcher": "path",
-                        "argument": "Status",
-                        "expected": "Delayed"
-                    },
-                    {
-                        "state": "success",
-                        "matcher": "path",
-                        "argument": "Status",
-                        "expected": "Success"
-                    },
-                    {
-                        "state": "failure",
-                        "matcher": "path",
-                        "argument": "Status",
-                        "expected": "Cancelled"
-                    },
-                    {
-                        "state": "failure",
-                        "matcher": "path",
-                        "argument": "Status",
-                        "expected": "TimedOut"
-                    },
-                    {
-                        "state": "failure",
-                        "matcher": "path",
-                        "argument": "Status",
-                        "expected": "Failed"
-                    },
-                    {
-                        "state": "retry",
-                        "matcher": "path",
-                        "argument": "Status",
-                        "expected": "Cancelling"
-                    },
-                    {
-                        "state": "retry",
-                        "matcher": "error",
-                        "expected": "InvocationDoesNotExist"
-                    }
-                ]
-            }
-        }
-    }
+    for instance in get_instances_by_name():
+        if (datetime.now(instance.launch_time.tzinfo) - instance.launch_time).total_seconds() <= 1800:
+            logger.info("Instance Id: {} was recently deployed. Skipping".format(instance.id))
+            continue
+        multi_eip = MultiEip(instance)
+        if multi_eip.fetch_private_ips() is not None:
+            multi_eip.associate_multi_eips()
 
-    waiter_model = WaiterModel(waiter_config)
-    custom_waiter = create_waiter_with_client(waiter_name, waiter_model, ssm)
-
-    try:
-        custom_waiter.wait(CommandId=command_id, InstanceId=instance_id)
-
-    except WaiterError as we:
-        if "Max Attempts Exceeded" in we.message:
-            logger.exception("Timeout")
-        else:
-            logger.exception(we.message)
-        return False
-    else:
-        return True
-
-
-def postfix_service(instance_id, cmd):
-    """
-    Run SSM Command to Start or Stop the Postfix Service.
-    """
-    logger.info("Executing {} Postfix SSM Document, for Instance Id: {}".format(cmd, instance_id))
-    try:
-        ssmresponse = ssm.send_command(
-            InstanceIds=[instance_id],
-            DocumentName=ssm_postfix_service,
-            Parameters={'cmd': [cmd]}
-        )
-    except ClientError as e:
-        logger.exception("Unable to send SSM command. {}".format(e))
-        return False
-    else:
-        return command_invocation_waiter(command_id=ssmresponse['Command']['CommandId'], instance_id=instance_id)
+    logger.info("===FINISHED=== Rotating Delivery Multi EIP's.")
 
 
 def complete_lifecycle_action(autoscaling_group_name, lifecycle_hook_name, lifecycle_action_token, lifecycle_action_result):
@@ -427,8 +269,10 @@ def multi_eip_rotation_handler(event, context):
 
     if 'EC2InstanceId' in event:
         logger.info("Lambda Function triggered from SSM Automation Document.")
-        instance_id = event['EC2InstanceId']
-        return rotate_multi_eip_instance(instance_id)
+        instance = event['EC2InstanceId']
+        multi_eip = MultiEip(instance)
+        if multi_eip.fetch_private_ips() is not None:
+            multi_eip.associate_multi_eips()
 
     elif 'EC2InstanceId' in event['detail']:
         logger.info("Lambda Function triggered from Instance Launching Lifecycle Hook.")
@@ -436,14 +280,14 @@ def multi_eip_rotation_handler(event, context):
         autoscaling_group_name = event['detail']['AutoScalingGroupName']
         lifecycle_hook_name = event['detail']['LifecycleHookName']
         lifecycle_action_token = event['detail']['LifecycleActionToken']
-        lifecycle_action_result='ABANDON'
+        lifecycle_action_result = 'ABANDON'
 
         multi_eip = MultiEip(instance_id)
         if multi_eip.assign_private_ips():
             if multi_eip.fetch_private_ips() is not None:
                 if multi_eip.associate_multi_eips():
                     logger.info("Completing lifecycle action with CONTINUE")
-                    lifecycle_action_result='CONTINUE'
+                    lifecycle_action_result = 'CONTINUE'
         else:
             logger.error("Completing lifecycle action with ABANDON")
 
