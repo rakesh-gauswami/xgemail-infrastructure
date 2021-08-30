@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: sophos-cloud-xgemail
-# Recipe:: setup_xgemail_sender_and_recipient_block.rb
+# Recipe:: setup_xgemail_mf_inbound_sender_and_recipient_block.rb
 #
 # Copyright 2021, Sophos
 #
@@ -19,8 +19,8 @@ require 'json'
 
 NODE_TYPE = node['xgemail']['cluster_type']
 
-# Only continue when it's customer-submit or internet-submit
-if NODE_TYPE != 'customer-submit' and NODE_TYPE != 'internet-submit'
+# Only continue when it's mf-inbound-submit
+if NODE_TYPE != 'mf-inbound-submit'
   return
 end
 
@@ -52,7 +52,7 @@ execute SENDER_AND_RECIPIENT_BLOCK_SCRIPT_PATH do
   action :nothing
 end
 
-# Write block list script to customer-submit and internet-submit
+# Write block list script to mf-inbound-submit instances
 template SENDER_AND_RECIPIENT_BLOCK_SCRIPT_PATH do
   source "#{SENDER_AND_RECIPIENT_BLOCK_SCRIPT}.erb"
   mode '0750'

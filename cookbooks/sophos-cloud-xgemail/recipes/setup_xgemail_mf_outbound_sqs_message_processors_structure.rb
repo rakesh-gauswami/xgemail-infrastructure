@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: sophos-cloud-xgemail
-# Recipe:: setup_xgemail_sqs_message_processors_structure
+# Recipe:: setup_xgemail_mf_inbound_sqs_message_processors_structure
 #
 # Copyright 2021, Sophos
 #

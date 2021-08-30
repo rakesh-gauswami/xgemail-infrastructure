@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: sophos-cloud-xgemail
-# Recipe:: setup_xgemail_sqs_message_producer
+# Recipe:: setup_xgemail_mf_outbound_sqs_message_producer
 #
 # Copyright 2021, Sophos
 #
@@ -24,7 +24,7 @@ raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 SMTPD_PORT = INSTANCE_DATA[:port]
 raise "Invalid smtpd port for node type [#{NODE_TYPE}]" if SMTPD_PORT.nil?
 
-include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_processors_structure'
+include_recipe 'sophos-cloud-xgemail::setup_xgemail_mf_outbound_sqs_message_processors_structure'
 
 AWS_REGION                                    = node['sophos_cloud']['region']
 MESSAGEPROCESSOR_USER                         = node['xgemail']['sqs_message_processor_user']
@@ -56,14 +56,11 @@ MSG_HISTORY_EVENT_PROCESSOR_PORT              = node['xgemail']['mh_event_proces
 # TODO Once we retire the old submit instances this logic needs to be removed
 #constants to use
 SUBMIT = 'submit'
-INTERNET_SUBMIT = 'internet-submit'
-CUSTOMER_SUBMIT = 'customer-submit'
+MF_OUTBOUND_SUBMIT = 'mf-outbound-submit'
 
 # Configs use by sqsmsgproducer
-if NODE_TYPE == INTERNET_SUBMIT
-  XGEMAIL_SUBMIT_TYPE                   = 'INTERNET'
-elsif NODE_TYPE == CUSTOMER_SUBMIT
-  XGEMAIL_SUBMIT_TYPE                   = 'CUSTOMER'
+if NODE_TYPE == MF_OUTBOUND_SUBMIT
+  XGEMAIL_SUBMIT_TYPE = 'MF_OUTBOUND'
 else
   raise "Unsupported node type to setup sqsmsgproducer [#{NODE_TYPE}]"
 end
@@ -128,18 +125,7 @@ PIPE_COMMAND='pipe ' +
 end
 
 # Activate new service by postfix configs
-if NODE_TYPE == INTERNET_SUBMIT
-  # Update transports to use new pipe service
-  [
-      "default_transport = #{SERVICE_NAME}",
-      "relay_transport = #{SERVICE_NAME}",
-      "#{SERVICE_NAME}_destination_concurrency_limit = #{SUBMIT_DESTINATION_CONCUR_LIMIT}",
-      "#{SERVICE_NAME}_initial_destination_concurrency = #{SUBMIT_DESTINATION_CONCUR_LIMIT}"
-  ].each do | cur |
-    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
-  end
-
-elsif NODE_TYPE == CUSTOMER_SUBMIT
+if NODE_TYPE == MF_OUTBOUND_SUBMIT
   #update master.cf with content filter setting
   [
       # Configure assigned SMTPD port
