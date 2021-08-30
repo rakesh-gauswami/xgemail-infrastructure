@@ -673,18 +673,13 @@
         "DocumentType": "Automation",
         "Content": {
           "schemaVersion": "0.3",
-          "assumeRole": { "Fn::GetAtt" : [ "MultiEipRotationAutomationRole", "Arn" ] },
-          "description": "Rotate EIP on an EC2 instance in an AutoScaling Group",
+          "assumeRole": { "Fn::GetAtt" : [ "EipRotationAutomationRole", "Arn" ] },
+          "description": "Rotate all EIPs on an EC2 instance in an AutoScaling Group",
           "parameters": {
             "InstanceId": {
               "type": "String",
               "description": "(Required) The instance-id for the instance.",
               "allowedPattern": "^i-[a-z0-9]{8,17}$"
-            },
-            "Eip": {
-              "type": "String",
-              "description": "(Optional) The Eip to attach to the instance.",
-              "default": ""
             }
           },
           "mainSteps":[
@@ -698,7 +693,7 @@
                 "InvocationType": "RequestResponse",
                 "LogType": "Tail",
                 "FunctionName":{ "Ref": "MultiEipRotationLambdaFunction" },
-                "Payload":"{\"EC2InstanceId\":\"{{InstanceId}}\", \"Eip\":\"{{Eip}}\"}"
+                "Payload":"{\"EC2InstanceId\":\"{{InstanceId}}\"}"
               }
             }
           ],

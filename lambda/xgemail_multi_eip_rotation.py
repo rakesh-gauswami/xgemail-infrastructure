@@ -214,6 +214,189 @@ class MultiEip:
             return True
 
 
+def rotate_eip(instance, current_eip, new_eip):
+    hostname = socket.gethostbyaddr(new_eip['PublicIp'])[0]
+    if postfix_service(instance_id=instance.id, cmd='stop'):
+        if disassociate_address(eip=current_eip):
+            if associate_address(allocation_id=new_eip['AllocationId'], instance_id=instance.id):
+                logger.info("Successfully rotated EIP on Instance: {}.".format(instance.id))
+                return True
+            else:
+                logger.error("There was a problem with EIP association for Instance: {}.".format(instance.id))
+                return False
+        else:
+            postfix_service(instance_id=instance.id, cmd='start')
+            logger.error("There was a problem with EIP disassociation for Instance: {}.".format(instance.id))
+            return False
+    else:
+        logger.error("Unable to stop Postfix Service on Instance: {}.".format(instance.id))
+        return False
+
+
+def rotate_all_eips():
+    """
+    If triggered from scheduled event rotate all EIP's.
+    """
+    rotation_complete = True
+
+    for instance in get_instances_by_name():
+        if (datetime.now(instance.launch_time.tzinfo) - instance.launch_time).total_seconds() <= 1800:
+            logger.info("Instance Id: {} was recently deployed. Skipping".format(instance.id))
+            continue
+        current_eip = MultiEip.lookup_eip(eip=instance.public_ip_address)
+        if current_eip is None:
+            continue
+        new_eip = get_clean_eip(instance)
+
+        rotation_complete &= rotate_eip(instance, current_eip, new_eip)
+
+    logger.info("===FINISHED=== Rotating Outbound Delivery EIP's.")
+    return rotation_complete
+
+
+def rotate_multi_eip_instance(instance):
+    """
+    If triggered from SSM rotate all EIPs on a single EC2 Instance.
+    """
+    multi_eip = MultiEip(instance)
+    if multi_eip.fetch_private_ips() is not None:
+        for each privateIP
+        if multi_eip.associate_multi_eips():
+    new_eip = get_clean_eip(instance)
+
+    return rotate_eip(instance, current_eip, new_eip)
+
+
+def get_instances_by_name():
+    """
+    Get EC2 Instances matching filter.
+    """
+    instances = ec2.instances.filter(
+        Filters=[
+            {
+                'Name': 'instance-state-name',
+                'Values': ['running']
+            },
+            {
+                'Name': 'tag:Name',
+                'Values': [
+                    'CloudEmail:warmup-delivery:*',
+                    'CloudEmail:warmup-xdelivery:*'
+                ]
+            }
+        ]
+    )
+    return instances
+
+
+def command_invocation_waiter(command_id, instance_id):
+    """
+    SSM Command Invocation Waiter.
+    """
+    delay = 5
+    max_attempts = 20
+    waiter_name = 'CommandComplete'
+
+    waiter_config = {
+        "version": 2,
+        "waiters": {
+            waiter_name: {
+                "operation": "GetCommandInvocation",
+                "maxAttempts": max_attempts,
+                "delay": delay,
+                "acceptors": [
+                    {
+                        "state": "retry",
+                        "matcher": "path",
+                        "argument": "Status",
+                        "expected": "Pending"
+                    },
+                    {
+                        "state": "retry",
+                        "matcher": "path",
+                        "argument": "Status",
+                        "expected": "InProgress"
+                    },
+                    {
+                        "state": "retry",
+                        "matcher": "path",
+                        "argument": "Status",
+                        "expected": "Delayed"
+                    },
+                    {
+                        "state": "success",
+                        "matcher": "path",
+                        "argument": "Status",
+                        "expected": "Success"
+                    },
+                    {
+                        "state": "failure",
+                        "matcher": "path",
+                        "argument": "Status",
+                        "expected": "Cancelled"
+                    },
+                    {
+                        "state": "failure",
+                        "matcher": "path",
+                        "argument": "Status",
+                        "expected": "TimedOut"
+                    },
+                    {
+                        "state": "failure",
+                        "matcher": "path",
+                        "argument": "Status",
+                        "expected": "Failed"
+                    },
+                    {
+                        "state": "retry",
+                        "matcher": "path",
+                        "argument": "Status",
+                        "expected": "Cancelling"
+                    },
+                    {
+                        "state": "retry",
+                        "matcher": "error",
+                        "expected": "InvocationDoesNotExist"
+                    }
+                ]
+            }
+        }
+    }
+
+    waiter_model = WaiterModel(waiter_config)
+    custom_waiter = create_waiter_with_client(waiter_name, waiter_model, ssm)
+
+    try:
+        custom_waiter.wait(CommandId=command_id, InstanceId=instance_id)
+
+    except WaiterError as we:
+        if "Max Attempts Exceeded" in we.message:
+            logger.exception("Timeout")
+        else:
+            logger.exception(we.message)
+        return False
+    else:
+        return True
+
+
+def postfix_service(instance_id, cmd):
+    """
+    Run SSM Command to Start or Stop the Postfix Service.
+    """
+    logger.info("Executing {} Postfix SSM Document, for Instance Id: {}".format(cmd, instance_id))
+    try:
+        ssmresponse = ssm.send_command(
+            InstanceIds=[instance_id],
+            DocumentName=ssm_postfix_service,
+            Parameters={'cmd': [cmd]}
+        )
+    except ClientError as e:
+        logger.exception("Unable to send SSM command. {}".format(e))
+        return False
+    else:
+        return command_invocation_waiter(command_id=ssmresponse['Command']['CommandId'], instance_id=instance_id)
+
+
 def complete_lifecycle_action(autoscaling_group_name, lifecycle_hook_name, lifecycle_action_token, lifecycle_action_result):
     """
     Completes the lifecycle action for the specified token or instance with the specified result.
@@ -245,12 +428,7 @@ def multi_eip_rotation_handler(event, context):
     if 'EC2InstanceId' in event:
         logger.info("Lambda Function triggered from SSM Automation Document.")
         instance_id = event['EC2InstanceId']
-        #if event.get('Eip'):
-        #    eip = event['Eip']
-        #else:
-        #    eip = None
-        #return rotate_multi_eips(ec2_instance, eip)
-        pass
+        return rotate_multi_eip_instance(instance_id)
 
     elif 'EC2InstanceId' in event['detail']:
         logger.info("Lambda Function triggered from Instance Launching Lifecycle Hook.")
@@ -276,4 +454,5 @@ def multi_eip_rotation_handler(event, context):
             lifecycle_action_result
         )
     else:
-        return False
+        logger.info("Lambda Function triggered from CloudWatch Scheduled Event for multi-EIP Rotation.")
+        return rotate_all_eips()
