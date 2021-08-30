@@ -286,7 +286,7 @@ if ACCOUNT != 'sandbox'
     execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
   end
 
-  include_recipe 'sophos-cloud-xgemail::setup_dh_params'
+  include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_submit_dh_params.rb'
   include_recipe 'sophos-cloud-xgemail::install_jilter_mf_inbound'
   include_recipe 'sophos-cloud-xgemail::setup_flag_toggle_mf_inbound_submit'
   include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_routing_managers'

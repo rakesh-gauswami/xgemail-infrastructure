@@ -209,11 +209,11 @@ if ACCOUNT != 'sandbox'
     execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
   end
 
-  include_recipe 'sophos-cloud-xgemail::setup_dh_params'
+  include_recipe 'sophos-cloud-xgemail::setup_mf_outbound_submit_params.rb'
   include_recipe 'sophos-cloud-xgemail::install_jilter_mf_outbound'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
   include_recipe 'sophos-cloud-xgemail::setup_xmeirl_header_check_customer_submit_toggle'
-  include_recipe 'sophos-cloud-xgemail::setup_flag_toggle_customer_submit'
+  include_recipe 'sophos-cloud-xgemail::setup_flag_toggle_mf_outbound_submit.rb'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_bulk_sender_merger'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_deliver_director_config_updater'
   include_recipe 'sophos-cloud-xgemail::setup_msghistory_event_dir'
@@ -231,5 +231,5 @@ else
 
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_utils_structure'
-  include_recipe 'sophos-cloud-xgemail::setup_flag_toggle_customer_submit'
+  include_recipe 'sophos-cloud-xgemail::setup_flag_toggle_mf_outbound_submit.rb'
 end

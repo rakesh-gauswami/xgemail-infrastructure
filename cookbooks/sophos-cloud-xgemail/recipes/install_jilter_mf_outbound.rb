@@ -245,7 +245,7 @@ else
   # Create the Jilter service
   template 'xgemail.jilter.service.sh' do
     path JILTER_SCRIPT_PATH
-    source 'xgemail.jilter.sandbox.sh.erb'
+    source 'xgemail.jilter.mf.sandbox.sh.erb'
     mode '0700'
     owner SERVICE_USER
     group SERVICE_USER
