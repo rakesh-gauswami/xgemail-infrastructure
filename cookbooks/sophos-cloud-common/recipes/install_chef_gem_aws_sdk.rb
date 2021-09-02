@@ -9,5 +9,5 @@
 
 chef_gem "aws-sdk" do
 
-  version '2.11.632'
+  version '2.11.393'
 end
