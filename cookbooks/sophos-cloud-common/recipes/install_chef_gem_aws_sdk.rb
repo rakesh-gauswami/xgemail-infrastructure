@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-common
 # Recipe:: install_gem_aws_sdk
 #
-# Copyright 2019, Sophos
+# Copyright 2021, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
