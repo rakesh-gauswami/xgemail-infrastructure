@@ -1443,6 +1443,18 @@
                       { "Ref": "EipRotationLambdaFunction" }
                     ]
                   ]
+                },
+                {
+                  "Fn::Join": [
+                    ":",
+                    [
+                      "arn:aws:lambda",
+                      { "Ref": "AWS::Region" },
+                      { "Ref": "AWS::AccountId" },
+                      "function",
+                      { "Ref": "MultiEipRotationLambdaFunction" }
+                    ]
+                  ]
                 }
               ]
             }
