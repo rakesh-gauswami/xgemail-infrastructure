@@ -160,7 +160,7 @@ class MultiEip:
         try:
             self.ec2_client.associate_address(
                 AllocationId=eip['AllocationId'],
-                AllowReassociation=False,
+                AllowReassociation=True,
                 InstanceId=instance_id,
                 PrivateIpAddress=private_ip
             )
@@ -269,8 +269,8 @@ def multi_eip_rotation_handler(event, context):
 
     if 'EC2InstanceId' in event:
         logger.info("Lambda Function triggered from SSM Automation Document.")
-        instance = event['EC2InstanceId']
-        multi_eip = MultiEip(instance)
+        instance_id = event['EC2InstanceId']
+        multi_eip = MultiEip(instance_id)
         if multi_eip.fetch_private_ips() is not None:
             multi_eip.associate_multi_eips()
 
