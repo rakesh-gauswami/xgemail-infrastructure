@@ -120,7 +120,7 @@ execute TRANSPORT_UPDATER_SCRIPT_PATH do
   action :nothing
 end
 
-template 'xgemail-trannsport-updater' do
+template 'xgemail-transport-updater' do
   path "/etc/init.d/#{TRANSPORT_UPDATER_SERVICE_NAME}"
   source 'xgemail.transport.updater.init.erb'
   mode '0755'
@@ -133,7 +133,7 @@ template 'xgemail-trannsport-updater' do
   )
 end
 
-# Add rsyslog config file to redirect sqsmsgconsumer messages to its own log file.
+# Add rsyslog config file to redirect transportupdater messages to its own log file.
 file '/etc/rsyslog.d/00-xgemail-transportupdater.conf' do
   content "if $syslogtag == '[cd-transport-updater]' then /var/log/xgemail/transportupdater.log\n& ~"
   mode '0600'
