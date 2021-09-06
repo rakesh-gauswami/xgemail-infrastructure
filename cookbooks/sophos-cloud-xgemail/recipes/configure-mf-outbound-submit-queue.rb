@@ -209,7 +209,7 @@ if ACCOUNT != 'sandbox'
     execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
   end
 
-  include_recipe 'sophos-cloud-xgemail::setup_mf_outbound_submit_params'
+  include_recipe 'sophos-cloud-xgemail::setup_dh_params'
   include_recipe 'sophos-cloud-xgemail::install_jilter_mf_outbound'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_mf_outbound_sqs_message_producer'
   include_recipe 'sophos-cloud-xgemail::setup_xmeirl_header_check_mf_outbound_submit_toggle'
