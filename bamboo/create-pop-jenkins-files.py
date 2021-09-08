@@ -19,8 +19,8 @@ NO_CRON = False
 
 PIPELINES = [
     # pipeline_name, pipeline_function
-    ('ansible-ci',                      'executeAnsibleCIPipeline',                  NO_CRON),
-    ('infrastructure',                  'emailDeploymentPipeline',                      CRON),
+    ('xgemail-infrastructure-ci',       'xgemailInfrastructureCIPipeline',           NO_CRON),
+    ('xgemail-infrastructure',          'xgemailInfrastructureDeployPipeline',          CRON),
     ('inbound-submit-deploy',           'inboundSubmitDeployPipeline.groovy',           CRON),
     ('inbound-delivery-deploy',         'inboundDeliveryDeployPipeline.groovy',         CRON),
     ('inbound-xdelivery-deploy',        'inboundXdeliveryDeployPipeline.groovy',        CRON),
