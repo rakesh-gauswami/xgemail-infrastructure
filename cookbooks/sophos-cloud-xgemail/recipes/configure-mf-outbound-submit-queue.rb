@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: sophos-cloud-xgemail
-# Recipe:: configure-customer-submit-queue
+# Recipe:: configure-mf-outbound-submit-queue
 #
 # Copyright 2021, Sophos
 #
@@ -12,7 +12,7 @@
 NODE_TYPE = node['xgemail']['cluster_type']
 ACCOUNT =  node['sophos_cloud']['environment']
 
-if NODE_TYPE != 'customer-submit'
+if NODE_TYPE != 'mf-outbound-submit'
   return
 end
 
@@ -210,14 +210,14 @@ if ACCOUNT != 'sandbox'
   end
 
   include_recipe 'sophos-cloud-xgemail::setup_dh_params'
-  include_recipe 'sophos-cloud-xgemail::install_jilter_outbound'
-  include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
-  include_recipe 'sophos-cloud-xgemail::setup_xmeirl_header_check_customer_submit_toggle'
-  include_recipe 'sophos-cloud-xgemail::setup_flag_toggle_customer_submit'
-  include_recipe 'sophos-cloud-xgemail::setup_xgemail_bulk_sender_merger'
+  include_recipe 'sophos-cloud-xgemail::install_jilter_mf_outbound'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_mf_outbound_sqs_message_producer'
+  include_recipe 'sophos-cloud-xgemail::setup_xmeirl_header_check_mf_outbound_submit_toggle'
+  include_recipe 'sophos-cloud-xgemail::setup_flag_toggle_mf_outbound_submit'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_mf_outbound_bulk_sender_merger'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_deliver_director_config_updater'
-  include_recipe 'sophos-cloud-xgemail::setup_msghistory_event_dir'
-  include_recipe 'sophos-cloud-xgemail::setup_xgemail_sender_and_recipient_block'
+  include_recipe 'sophos-cloud-xgemail::setup_mf_outbound_msghistory_event_dir'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_mf_outbound_sender_and_recipient_block'
 else
 
   [
@@ -229,7 +229,7 @@ else
     execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
   end
 
-  include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
-  include_recipe 'sophos-cloud-xgemail::setup_xgemail_utils_structure'
-  include_recipe 'sophos-cloud-xgemail::setup_flag_toggle_customer_submit'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_mf_outbound_sqs_message_producer'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_mf_outbound_utils_structure'
+  include_recipe 'sophos-cloud-xgemail::setup_flag_toggle_mf_outbound_submit'
 end

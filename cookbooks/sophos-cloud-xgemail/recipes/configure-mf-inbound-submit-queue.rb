@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: sophos-cloud-xgemail
-# Recipe:: configure-internet-submit-queue
+# Recipe:: configure-mf-inbound-submit-queue
 #
 # Copyright 2021, Sophos
 #
@@ -12,7 +12,7 @@
 ACCOUNT =   node['sophos_cloud']['environment']
 NODE_TYPE = node['xgemail']['cluster_type']
 
-if NODE_TYPE != 'internet-submit'
+if NODE_TYPE != 'mf-inbound-submit'
   return
 end
 
@@ -253,24 +253,19 @@ if ACCOUNT != 'sandbox'
     'smtpd_upstream_proxy_protocol = haproxy',
 
     # Server side TLS configuration
-    'smtpd_tls_security_level = may',
+    'smtpd_tls_security_level = encrypt',
     'smtpd_tls_ciphers = high',
     'smtpd_tls_mandatory_ciphers = high',
     'smtpd_tls_loglevel = 1',
+    'smtpd_tls_mandatory_protocols = !SSLv2,!SSLv3,!TLSv1,!TLSv1.1,TLSv1.2',
+    'smtpd_tls_protocols = !SSLv2,!SSLv3,!TLSv1,!TLSv1.1,TLSv1.2',
     'smtpd_tls_received_header = yes',
     "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
     "smtpd_tls_key_file = #{KEY_FILE}",
     "tls_preempt_cipherlist = yes",
 
     # Recipient restrictions
-    "reject_rbl_client_a = #{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES_A}",
-    "reject_rbl_client_b = #{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES_B}",
-    'reject_rbl_client = $reject_rbl_client_b',
     'smtpd_recipient_restrictions = ' +
-      "reject_rhsbl_reverse_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
-      "reject_rhsbl_sender #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
-      "reject_rhsbl_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
-      'reject_rbl_client $reject_rbl_client, ' +
       "check_recipient_access hash:$config_directory/#{RECIPIENT_ACCESS_FILENAME} " +
       "hash:$config_directory/#{RECIPIENT_ACCESS_EXTRA_FILENAME}, " +
       "check_sender_access hash:$config_directory/#{SOFT_RETRY_SENDERS_MAP_FILENAME}, " +
@@ -280,9 +275,6 @@ if ACCOUNT != 'sandbox'
     'smtpd_sender_restrictions = ' +
       "reject_non_fqdn_sender",
 
-    # RBL response configuration
-    "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_B_FILENAME}",
-
     'smtpd_relay_restrictions = ' +
       'permit_auth_destination, ' +
       "check_sender_access hash:$config_directory/#{SOFT_RETRY_SENDERS_MAP_FILENAME}, " +
@@ -290,23 +282,22 @@ if ACCOUNT != 'sandbox'
 
     "smtpd_authorized_xclient_hosts = #{SMTPD_AUTHORIZED_XCLIENT_HOSTS}",
     "recipient_bcc_maps=hash:#{RECIPIENT_BCC_MAPS_PATH}",
-    "transport_maps=hash:#{TRANSPORT_MAPS_PATH}"
   ].each do | cur |
     execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
   end
 
   include_recipe 'sophos-cloud-xgemail::setup_dh_params'
-  include_recipe 'sophos-cloud-xgemail::install_jilter_inbound'
-  include_recipe 'sophos-cloud-xgemail::setup_flag_toggle_internet_submit'
-  include_recipe 'sophos-cloud-xgemail::setup_routing_managers'
-  include_recipe 'sophos-cloud-xgemail::setup_internet_submit_domain_updater_cron'
-  include_recipe 'sophos-cloud-xgemail::setup_internet_submit_recipient_updater_cron'
-  include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
-  include_recipe 'sophos-cloud-xgemail::setup_xgemail_multi_policy_service'
-  include_recipe 'sophos-cloud-xgemail::setup_push_policy_submit_toggle'
-  include_recipe 'sophos-cloud-xgemail::setup_msghistory_event_dir'
-  include_recipe 'sophos-cloud-xgemail::setup_xgemail_sender_and_recipient_block'
-  include_recipe 'sophos-cloud-xgemail::setup_internet_submit_bulk_release_post_quarantine'
+  include_recipe 'sophos-cloud-xgemail::install_jilter_mf_inbound'
+  include_recipe 'sophos-cloud-xgemail::setup_flag_toggle_mf_inbound_submit'
+  include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_routing_managers'
+  include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_submit_domain_updater_cron'
+  include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_submit_recipient_updater_cron'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_mf_inbound_sqs_message_producer'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_mf_inbound_multi_policy_service'
+  include_recipe 'sophos-cloud-xgemail::setup_push_policy_mf_inbound_submit_toggle'
+  include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_msghistory_event_dir'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_mf_inbound_sender_and_recipient_block'
+  include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_submit_bulk_release_post_quarantine'
 
 else
   [
@@ -316,13 +307,13 @@ else
     execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
   end
 
-  include_recipe 'sophos-cloud-xgemail::setup_flag_toggle_internet_submit'
-  include_recipe 'sophos-cloud-xgemail::setup_routing_managers'
-  include_recipe 'sophos-cloud-xgemail::setup_internet_submit_domain_updater_cron'
-  include_recipe 'sophos-cloud-xgemail::setup_internet_submit_recipient_updater_cron'
-  include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_producer'
-  include_recipe 'sophos-cloud-xgemail::setup_xgemail_utils_structure'
-  include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_processors_structure'
-  include_recipe 'sophos-cloud-xgemail::setup_xgemail_multi_policy_service'
-  include_recipe 'sophos-cloud-xgemail::setup_internet_submit_bulk_release_post_quarantine'
+  include_recipe 'sophos-cloud-xgemail::setup_flag_toggle_mf_inbound_submit'
+  include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_routing_managers'
+  include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_submit_domain_updater_cron'
+  include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_submit_recipient_updater_cron'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_mf_inbound_sqs_message_producer'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_mf_inbound_utils_structure'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_mf_inbound_sqs_message_processors_structure'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_mf_inbound_multi_policy_service'
+  include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_submit_bulk_release_post_quarantine'
 end

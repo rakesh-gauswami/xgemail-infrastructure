@@ -1,8 +1,8 @@
 #
 # Cookbook Name:: sophos-cloud-xgemail
-# Recipe:: setup_xgemail_multi_policy_service.rb
+# Recipe:: setup_xgemail_mf_inbound_multi_policy_service
 #
-# Copyright 2021, Sophos
+# Copyright 2019, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -37,7 +37,7 @@ else
   MULTI_POLICY_QUEUE_NAME               = "#{STATION_VPC_ID}-Xgemail_multi_policy"
 end
 
-if NODE_TYPE == 'internet-submit'
+if NODE_TYPE == 'mf-inbound-submit'
   POLICY_DIR                  = "config/policies/endpoints/"
   DOMAINS_DIR                 = "config/policies/domains/"
 

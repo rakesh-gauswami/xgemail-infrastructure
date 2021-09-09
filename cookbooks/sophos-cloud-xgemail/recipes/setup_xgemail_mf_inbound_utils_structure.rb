@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: sophos-cloud-xgemail
-# Recipe:: setup_xgemail_utils_structure
+# Recipe:: setup_xgemail_mf_inbound_utils_structure
 #
 # Copyright 2021, Sophos
 #
@@ -62,8 +62,7 @@ end
     'scaneventattributes.py',
     'uuidutils.py',
     'rfxrecoveryutils.py',
-    'toggle_flag_s3.py',
-    'get_metadata_from_msghistory_config.py'
+    'toggle_flag_s3.py'
 ].each do | cur |
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{cur}" do
     source cur
@@ -73,7 +72,7 @@ end
   end
 end
 
-if NODE_TYPE == 'internet-submit' or NODE_TYPE == 'encryption-submit'
+if NODE_TYPE == 'mf-inbound-submit'
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{POLICY_FORMATTER}" do
     source 'policyformatter.py'
     mode '0644'
@@ -86,41 +85,7 @@ if NODE_TYPE == 'internet-submit' or NODE_TYPE == 'encryption-submit'
     owner 'root'
     group 'root'
   end
-elsif NODE_TYPE == 'customer-submit'
-  cookbook_file "#{XGEMAIL_UTILS_DIR}/#{POLICY_FORMATTER}" do
-    source 'policyformatter.py'
-    mode '0644'
-    owner 'root'
-    group 'root'
-  end
-  cookbook_file "#{XGEMAIL_UTILS_DIR}/#{BLOCKED_SENDER_API}" do
-    source 'blocked_sender_api.py'
-    mode '0644'
-    owner 'root'
-    group 'root'
-  end
-  cookbook_file "#{XGEMAIL_UTILS_DIR}/#{BULKSENDER_FORMATTER}" do
-    source 'bulksenderformatter.py'
-    mode '0644'
-    owner 'root'
-    group 'root'
-  end
-  cookbook_file "#{XGEMAIL_UTILS_DIR}/#{DELIVERY_DIRECTOR_FORMATTER}" do
-    source 'deliverydirectorthreshold.py'
-    mode '0644'
-    owner 'root'
-    group 'root'
-  end
-  cookbook_file "#{XGEMAIL_UTILS_DIR}/#{BULK_SENDER_ACTION}" do
-    source 'bulk_sender_action.py'
-    mode '0644'
-    owner 'root'
-    group 'root'
-  end
-elsif NODE_TYPE == 'customer-delivery' or NODE_TYPE == 'internet-delivery' or
-       NODE_TYPE == 'risky-delivery' or NODE_TYPE == 'encryption-delivery' or
-       NODE_TYPE == 'warmup-delivery' or NODE_TYPE == 'beta-delivery' or
-       NODE_TYPE == 'delta-delivery'
+elsif NODE_TYPE == 'mf-inbound-delivery'
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{TRANSPORT_ROUTE_CONFIG}" do
     source 'transportrouteconfig.py'
     mode '0644'
@@ -137,13 +102,7 @@ else
   #do nothing
 end
 
-if NODE_TYPE == 'customer-delivery' or NODE_TYPE == 'internet-delivery' or
-    NODE_TYPE == 'xdelivery' or NODE_TYPE == 'internet-xdelivery' or
-    NODE_TYPE == 'encryption-delivery' or NODE_TYPE == 'risky-delivery' or
-    NODE_TYPE == 'risky-xdelivery' or NODE_TYPE == 'warmup-delivery' or
-    NODE_TYPE == 'warmup-xdelivery' or NODE_TYPE == 'beta-delivery' or
-    NODE_TYPE == 'beta-xdelivery' or NODE_TYPE == 'delta-delivery' or
-    NODE_TYPE == 'delta-xdelivery'
+if NODE_TYPE == 'mf-inbound-delivery'
   [
       'postfix_injection_response.py',
       'queue_log.py',
