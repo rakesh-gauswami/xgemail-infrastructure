@@ -114,6 +114,13 @@ else
   NON_DELIVERY_DSN      = 'UNKNOWN'
 end
 
+if NODE_TYPE == 'mf-inbound-submit' ||
+NODE_TYPE == 'mf-outbound-delivery'
+  PRODUCT_TYPE = 'mailflow'
+else
+  PRODUCT_TYPE = 'gateway'
+end
+
 ### Fluentd Source Configuration Files ###
 
 # All instances - Start Order: 10
