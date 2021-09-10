@@ -338,7 +338,17 @@ def encode_as_utf8(value):
     except Exception as e:
         # Any exception use original value
         return value
-    
+
+def is_smtputf8_required(from_addr, to_addrs):
+    try:
+        from_addr.encode('ascii')
+        for each in to_addrs:
+            each.encode('ascii')
+    except UnicodeEncodeError:
+        return True
+    except Exception:
+        return False
+
 # A recreation of the sendmail function from smtplib. This function does exactly the same thing
 # as the sendmail function, however it returns a tuple of (failed_recipients, postfix_response) instead
 # of just the failed recipients.
@@ -361,7 +371,7 @@ def sendmail_to_postfix(server, from_addr, to_addrs, msg, mail_options=[], rcpt_
     if server.does_esmtp:
         if server.has_extn('size'):
             esmtp_opts.append("size=%d" % len(msg))
-        if server.has_extn('smtputf8'):
+        if server.has_extn('smtputf8') and is_smtputf8_required(from_addr, to_addrs):
             esmtp_opts.append('smtputf8')
         for option in mail_options:
             esmtp_opts.append(option)
