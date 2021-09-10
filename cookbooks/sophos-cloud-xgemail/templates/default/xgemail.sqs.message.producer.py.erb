@@ -150,9 +150,15 @@ def get_metadata(message_headers):
         recipient_domain = sys.argv[5]
         # TODO: see if we can pipe arrival date from postfix
         date_recorded = datetime.utcnow().strftime(DATETIME_FORMAT)
+        # load rejected recipients based on queue id written by Jilter
+        rejected_recipients = messagehistory.get_rejected_recipients(queue_id, MSG_HISTORY_EVENT_DIR)
         recipient_list = [ ]
         for i in range (6,len(sys.argv)):
-            recipient_list.append(strip_dot_at_end(sys.argv[i]))
+            recipient = strip_dot_at_end(sys.argv[i])
+            if recipient.lower() in rejected_recipients:
+                logger.info("silent dropping recipient [{0}] for queue id [{1}] due to rejection by jilter".format(recipient, queue_id))
+            else:
+                recipient_list.append(recipient)
 
         if (sender_address == null_sender):
             sender_address = None
