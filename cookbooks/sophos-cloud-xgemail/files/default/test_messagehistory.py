@@ -13,11 +13,9 @@ respective owners.
 """
 
 import json
-import re
 import unittest
 import messagehistory
 import tempfile
-import sys
 import io
 import os
 
@@ -259,7 +257,7 @@ class MessageHistoryTest(unittest.TestCase):
 
         messagehistory.delete_msghistory_events_file(accept_events.values()[0]['mail_info'], QUEUE_ID, MH_EVENT_STORAGE_DIR)
 
-        #File should not deleted 
+        #File should not deleted
         self.assertTrue(os.path.exists(file_path))
 
         raw_accept_event_single_recipient =  "{\"user_1@somedomain.com\": {\"mail_info\": {\"effective_message_id\": \"eeb19bed-a4b0-4437-b8c4-1d76acea8c00\", \"client_ip\": \"172.19.102.214\", \"generate_mh_events\": true, \"header_to_list\": [{\"local_address\": \"user_1\", \"domain_address\": \"somedomain.com\", \"name\": \"\", \"whole_address\": \"user_1@somedomain.com\"}], \"env_from\": {\"local_address\": \"admin\", \"domain_address\": \"senderdomain.com\", \"name\": \"\", \"whole_address\": \"admin@senderdomain.com\"}, \"header_cc_list\": [{\"local_address\": \"admin\", \"domain_address\": \"somedomain.com\", \"name\": \"\", \"whole_address\": \"admin@somedomain.com\"}], \"submit_server_ip\": \"172.19.0.124\", \"direction\": \"INBOUND\", \"mailbox_address\": \"user_1@somedomain.com\", \"first_seen_at\": \"2020-12-07T17:20:07.689Z\", \"x_sophos_email_id\": \"eeb19bed-a4b0-4437-b8c4-1d76acea8c00\", \"submit_type\": \"INTERNET\", \"schema_version\": 20201026, \"queue_id\": \"ADE4326878\", \"mailbox_id\": \"5f50cf8e7390760cea68c09d\", \"customer_id\": \"b385bb51-1533-447c-b71a-8084c028421d\", \"env_recipient_list\": [{\"local_address\": \"user_1\", \"domain_address\": \"somedomain.com\", \"name\": \"\", \"whole_address\": \"user_1@somedomain.com\"}], \"subject\": \"Hi\"}, \"schema_version\": 20201026, \"event_info\": {\"server_type\": \"INTERNET_SUBMIT\", \"created_at\": \"2020-12-07T17:20:07.689Z\", \"sequence\": 100, \"schema_version\": 20201026, \"event\": \"ACCEPTED\", \"env_recipient_list\": [\"user_1@somedomain.com\", \"user_2@somedomain.com\"], \"reason_list\": [\"reason1\", \"reason2\"], \"id\": \"b4bb79c9-bd5a-43fc-9da8-266f909fd29a\"}}}"
@@ -288,7 +286,6 @@ class MessageHistoryTest(unittest.TestCase):
         read_rejected_recipients = messagehistory.get_rejected_recipients(QUEUE_ID, MH_EVENT_STORAGE_DIR)
 
         self.assertTrue(len(read_rejected_recipients) == 0)
-
 
     def test_read_rejected_recipients(self):
         MH_EVENT_STORAGE_DIR = tempfile.mkdtemp()
