@@ -838,6 +838,10 @@ def main():
         #A dict where key is mailbox address and value is the 'accepted' event record.
         msghistory_events = messagehistory.read_msghistory_accepted_events(queue_id, MSG_HISTORY_EVENT_DIR)
 
+        if len(metadata.get_recipients()) == 0:
+            logger.info("all recipients rejected by jilter for metadata [{0}]".format(metadata))
+            return
+
         if INTERNET == SUBMIT_TYPE:
             domain = metadata.get_recipient_domain()
             direction = INBOUND_MESSAGE_DIRECTION
