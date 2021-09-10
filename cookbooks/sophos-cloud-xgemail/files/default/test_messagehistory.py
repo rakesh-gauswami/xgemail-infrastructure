@@ -273,5 +273,36 @@ class MessageHistoryTest(unittest.TestCase):
         #File should be deleted  as only one recipient in message
         self.assertFalse(os.path.exists(file_path))
 
+    def test_read_rejected_recipients_file_not_present(self):
+        read_rejected_recipients = messagehistory.get_rejected_recipients('not-exist', '/not/exist/path')
+        self.assertTrue(len(read_rejected_recipients) == 0)
+
+    def test_read_rejected_recipients_empty_file(self):
+        MH_EVENT_STORAGE_DIR = tempfile.mkdtemp()
+        QUEUE_ID = "ADE4326878"
+        file_path = MH_EVENT_STORAGE_DIR + '/' + QUEUE_ID + ".rejected"
+
+        with io.open(file_path, 'w', encoding='utf8') as rejected_file:
+            pass
+
+        read_rejected_recipients = messagehistory.get_rejected_recipients(QUEUE_ID, MH_EVENT_STORAGE_DIR)
+
+        self.assertTrue(len(read_rejected_recipients) == 0)
+
+
+    def test_read_rejected_recipients(self):
+        MH_EVENT_STORAGE_DIR = tempfile.mkdtemp()
+        QUEUE_ID = "ADE4326878"
+        file_path = MH_EVENT_STORAGE_DIR + '/' + QUEUE_ID + ".rejected"
+        rejected_recipients = {u'recipient1@example.com', u'recipient2@example.com', u'யுனிக்கோடு@example.com', u'recipient4@example.com'}
+        with io.open(file_path, 'w', encoding='utf8') as rejected_file:
+            for recipient in rejected_recipients:
+                rejected_file.write("%s\n" % recipient)
+        read_rejected_recipients = messagehistory.get_rejected_recipients(QUEUE_ID, MH_EVENT_STORAGE_DIR)
+
+        self.assertTrue(rejected_recipients == read_rejected_recipients)
+        self.assertTrue(u'யுனிக்கோடு@example.com' in read_rejected_recipients)
+
+
 if __name__ == "__main__":
     unittest.main()
