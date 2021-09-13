@@ -14,7 +14,6 @@ import boto3
 import logging
 import json
 import os
-import socket
 from datetime import datetime
 from botocore.exceptions import ClientError, WaiterError
 from botocore.waiter import WaiterModel
@@ -83,18 +82,26 @@ class MultiEip:
     def associate_multi_eips(self):
         for private_ip in self.private_ips:
             eip = self.get_clean_eip()
-            if eip is not None:
-                try:
-                    logger.info("Associating EIP {} to Private IP {} on Instance: {}.".format(eip['PublicIp'], private_ip, self.instance.id))
-                    self.associate_address(eip=eip, instance_id=self.instance.id, private_ip=private_ip)
-                except ClientError as e:
-                    logger.exception("Unable to associate EIP {} to Private IP {} on Instance: {}. Exception: {}".format(eip['PublicIp'], private_ip, self.instance.id, e))
+        if eip is not None:
+            try:
+                logger.info("Associating EIP {} to Private IP {} on Instance: {}.".format(eip['PublicIp'], private_ip, self.instance.id))
+                if postfix_service(instance_id=self.instance.id, cmd='stop'):
+                    if self.associate_address(eip=eip, instance_id=self.instance.id, private_ip=private_ip):
+                        logger.info("Successfully rotated EIP on Instance: {}.".format(self.instance.id))
+                        return True
+                    else:
+                        postfix_service(instance_id=self.instance.id, cmd='start')
+                        logger.exception("Unable to associate EIP {} to Private IP {} on Instance: {}".format(eip['PublicIp'], private_ip, self.instance.id))
+                        return False
+                else:
+                    logger.error("Unable to stop Postfix Service on Instance: {}.".format(self.instance.id))
                     return False
-            else:
-                logger.error("Unable to obtain EIP for Instance: {}.".format(self.instance.id))
+            except ClientError as e:
+                logger.exception("Unable to associate EIP {} to Private IP {} on Instance: {}. Exception: {}".format(eip['PublicIp'], private_ip, self.instance.id, e))
                 return False
-
-        return True
+        else:
+            logger.error("Unable to obtain EIP for Instance: {}.".format(self.instance.id))
+            return False
 
     def fetch_private_ips(self):
         try:
