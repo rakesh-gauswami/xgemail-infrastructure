@@ -1,5 +1,3 @@
-# XGEMAIL_0001 XGEMAIL_0002 XGEMAIL_0003
-# Mar  9 03:59:43 ip-172-20-0-4 postfix-is/smtpd[1237]: NOQUEUE: milter-reject: RCPT from unknown[183.23.75.53]: 550 5.7.1 XGEMAIL_000X Command rejected; from=<badguy@bad-domain.com> to=<recipient@sophos-email-customer.com> proto=SMTP helo=<bad-domain.com>
 #
 # XGEMAIL_0004
 # Mar  9 03:59:43 ip-172-20-0-4 postfix-is/smtpd[1237]: NOQUEUE: reject: SOPHOS_UUID_ba19915c-4973-4504-a1c9-aea5d1931d99: RCPT from unknown[91.216.61.22]: 554 5.7.1 Service unavailable; Client host [91.216.61.22] is blacklisted. Visit https://www.sophos.com/en-us/threat-center/ip-lookup.aspx?ip=91.216.61.22 to request delisting; from=<badguy@bad-domain.com> to=<recipient@sophos-email-customer.com> proto=ESMTP helo=<[91.216.61.22]>
@@ -25,21 +23,6 @@
   </store>
   <store>
     @type rewrite_tag_filter
-    <rule>
-      key message
-      pattern XGEMAIL_0001
-      tag sns.msg_stats_reject.XGEMAIL_0001
-    </rule>
-    <rule>
-      key message
-      pattern XGEMAIL_0002
-      tag sns.msg_stats_reject.XGEMAIL_0002
-    </rule>
-    <rule>
-      key message
-      pattern XGEMAIL_0003
-      tag sns.msg_stats_reject.XGEMAIL_0003
-    </rule>
     <rule>
       key message
       pattern ([^ ]+) ([^\/]+\/smtpd\[\d+\]): ([^ ]+): (reject): (SOPHOS_UUID_[^ ]+): ((RCPT from ([^ ]+)\[([^ ]+)\]:) (554 5.7.1 Service unavailable); (Client host \S* is blacklisted). (([^;]+)); from=<(([^>]+)(@(\S*)))> to=<(([^>]+)(@(\S*)))>.*)
