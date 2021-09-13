@@ -20,6 +20,7 @@ from botocore.exceptions import ClientError, WaiterError
 from botocore.waiter import WaiterModel
 from botocore.waiter import create_waiter_with_client
 
+
 print('Loading function')
 
 account = os.environ['ACCOUNT']
@@ -150,6 +151,24 @@ class MultiEip:
         else:
             return None
 
+    def get_current_eip(self, private_ip):
+        """
+        Get current EIP associated to private ip.
+        """
+        try:
+            current_eip = self.ec2_client.describe-addresses(
+                Filters=[
+                    {
+                        'Name': 'PrivateIpAddress',
+                        'Values': [private_ip]
+                    }
+                ]
+            )['Addresses'][0]['PublicIp']
+        except ClientError as e:
+                logger.exception("Unable to get current elastic IP {}".format(e))
+        else:
+            return current_eip
+
     def associate_address(self, eip, instance_id, private_ip):
         """
         Associate an EIP to an EC2 Instance.
@@ -165,23 +184,25 @@ class MultiEip:
         except ClientError as e:
             if e.response['Error']['Code'] == 'Resource.AlreadyAssociated':
                 logger.debug("Unable to associate elastic IP {}".format(e))
-                self.disassociate_address(eip)
+                """ Get current EIP """
+                current_eip = self.get_current_eip(private_ip)
+                self.disassociate_address(current_eip)
             else:
                 logger.exception("Unable to associate elastic IP {}".format(e))
         else:
             return True
 
-    def disassociate_address(self, eip):
+    def disassociate_address(self, current_eip):
         """
         Get EIP Info from describe_address. Disassociate the EIP from the EC2 Instance then tag the EIP with the time it was detached.
         """
-        logger.info("Disassociating and Tagging EIP {}".format(eip['PublicIp']))
+        logger.info("Disassociating and Tagging EIP {}".format(current_eip['PublicIp']))
         try:
             self.ec2_client.disassociate_address(
-                AssociationId=eip['AssociationId']
+                AssociationId=current_eip['AssociationId']
             )
             self.ec2_client.create_tags(
-                Resources=[eip['AllocationId']],
+                Resources=[current_eip['AllocationId']],
                 Tags=[
                     {
                         'Key': 'detached',
@@ -325,9 +346,6 @@ def get_instances_by_name():
     """
     Get EC2 Instances matching filter.
     """
-    region = os.environ['AWS_REGION']
-    session = boto3.session.Session(region_name=region)
-    ec2 = session.resource('ec2')
     instances = ec2.instances.filter(
         Filters=[
             {
@@ -344,66 +362,6 @@ def get_instances_by_name():
         ]
     )
     return instances
-
-
-def rotate_eip(instance, current_eip, new_eip):
-    hostname = socket.gethostbyaddr(new_eip['PublicIp'])[0]
-    if postfix_service(instance_id=instance.id, cmd='stop'):
-        if disassociate_address(eip=current_eip):
-            if associate_address(allocation_id=new_eip['AllocationId'], instance_id=instance.id):
-                if update_hostname(instance_id=instance.id, hostname=hostname):
-                    logger.info("Successfully rotated EIP on Instance: {}.".format(instance.id))
-                    return True
-                else:
-                    logger.error("Unable to Update Hostname on Instance: {}.".format(instance.id))
-                    return False
-            else:
-                logger.error("There was a problem with EIP association for Instance: {}.".format(instance.id))
-                return False
-        else:
-            postfix_service(instance_id=instance.id, cmd='start')
-            logger.error("There was a problem with EIP disassociation for Instance: {}.".format(instance.id))
-            return False
-    else:
-        logger.error("Unable to stop Postfix Service on Instance: {}.".format(instance.id))
-        return False
-
-
-def rotate_all_eips():
-    """
-    If triggered from scheduled event rotate all EIP's.
-    """
-
-    for instance in get_instances_by_name():
-        if (datetime.now(instance.launch_time.tzinfo) - instance.launch_time).total_seconds() <= 1800:
-            logger.info("Instance Id: {} was recently deployed. Skipping".format(instance.id))
-            continue
-        multi_eip = MultiEip(instance)
-        if multi_eip.fetch_private_ips() is not None:
-            multi_eip.associate_multi_eips()
-
-    logger.info("===FINISHED=== Rotating Delivery Multi EIP's.")
-
-
-def rotate_all_eips():
-    """
-    If triggered from scheduled event rotate all EIP's.
-    """
-    rotation_complete = True
-
-    for instance in get_instances_by_name():
-        if (datetime.now(instance.launch_time.tzinfo) - instance.launch_time).total_seconds() <= 1800:
-            logger.info("Instance Id: {} was recently deployed. Skipping".format(instance.id))
-            continue
-        current_eip = lookup_eip(eip=instance.public_ip_address)
-        if current_eip is None:
-            continue
-        new_eip = get_clean_eip(instance)
-
-        rotation_complete &= rotate_eip(instance, current_eip, new_eip)
-
-    logger.info("===FINISHED=== Rotating Outbound Delivery EIP's.")
-    return rotation_complete
 
 
 def complete_lifecycle_action(autoscaling_group_name, lifecycle_hook_name, lifecycle_action_token, lifecycle_action_result):
@@ -439,7 +397,8 @@ def multi_eip_rotation_handler(event, context):
         instance_id = event['EC2InstanceId']
         multi_eip = MultiEip(instance_id)
         if multi_eip.fetch_private_ips() is not None:
-            multi_eip.associate_multi_eips()
+            if multi_eip.associate_multi_eips():
+                logger.info("===FINISHED=== Rotating SSM Delivery Multi EIP's.")
 
     elif 'EC2InstanceId' in event['detail']:
         logger.info("Lambda Function triggered from Instance Launching Lifecycle Hook.")
@@ -466,4 +425,11 @@ def multi_eip_rotation_handler(event, context):
         )
     else:
         logger.info("Lambda Function triggered from CloudWatch Scheduled Event for multi-EIP Rotation.")
-        return rotate_all_eips()
+        for instance in get_instances_by_name():
+            if (datetime.now(instance.launch_time.tzinfo) - instance.launch_time).total_seconds() <= 1800:
+                logger.info("Instance Id: {} was recently deployed. Skipping".format(instance.id))
+                continue
+            multi_eip = MultiEip(instance.id)
+            if multi_eip.fetch_private_ips() is not None:
+                if multi_eip.associate_multi_eips():
+                    logger.info("===FINISHED=== Rotating ALL Delivery Multi EIP's.")
