@@ -9,3 +9,9 @@ check process xgemail-sqs-consumer with pidfile /var/run/xgemail-sqs-consumer.pi
   group mail
   start program = "/etc/init.d/xgemail-sqs-consumer start"
   stop  program = "/etc/init.d/xgemail-sqs-consumer stop"
+
+
+check process xgemail-transport-updater with pidfile /var/run/xgemail-transport-updater.pid
+  group mail
+  start program = "/etc/init.d/xgemail-transport-updater force-restart"
+  stop  program = "/etc/init.d/xgemail-transport-updater stop"
