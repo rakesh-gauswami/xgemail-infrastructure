@@ -115,9 +115,9 @@ else
 end
 
 if NODE_TYPE == 'mf-inbound-submit' || NODE_TYPE == 'mf-outbound-delivery'
-    PRODUCT_TYPE = 'mailflow'
+    PRODUCT_TYPE = 'Mailflow'
 else
-    PRODUCT_TYPE = 'gateway'
+    PRODUCT_TYPE = 'Gateway'
 end
 
 ### Fluentd Source Configuration Files ###
