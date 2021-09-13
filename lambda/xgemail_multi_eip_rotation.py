@@ -159,7 +159,7 @@ class MultiEip:
             current_eip = self.ec2_client.describe_addresses(
                 Filters=[
                     {
-                        'Name': 'PrivateIpAddress',
+                        'Name': 'private-ip-address',
                         'Values': [private_ip]
                     }
                 ]
