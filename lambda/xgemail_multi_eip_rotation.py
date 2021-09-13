@@ -156,7 +156,7 @@ class MultiEip:
         Get current EIP associated to private ip.
         """
         try:
-            current_eip = self.ec2_client.describe-addresses(
+            current_eip = self.ec2_client.describe_addresses(
                 Filters=[
                     {
                         'Name': 'PrivateIpAddress',
@@ -397,7 +397,7 @@ def multi_eip_rotation_handler(event, context):
         instance_id = event['EC2InstanceId']
         multi_eip = MultiEip(instance_id)
         if multi_eip.fetch_private_ips() is not None:
-            if multi_eip.associate_multi_eips():
+            if multi_eip.associate_multi_eipsassociate_multi_eips():
                 logger.info("===FINISHED=== Rotating SSM Delivery Multi EIP's.")
 
     elif 'EC2InstanceId' in event['detail']:
