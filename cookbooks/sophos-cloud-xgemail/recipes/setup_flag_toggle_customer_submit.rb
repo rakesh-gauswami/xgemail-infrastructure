@@ -2,16 +2,16 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: setup_flag_toggle_customer_submit.rb
 #
-# Copyright 2019, Sophos
+# Copyright 2021, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
-# This recipe installs creates a script which allows for the otubound split flag to be toggled
+# This recipe installs creates a script which allows for the outbound split flag to be toggled
 #
 
 NODE_TYPE = node['xgemail']['cluster_type']
 
-if NODE_TYPE != 'customer-submit' && NODE_TYPE != 'mf-outbound-submit'
+if NODE_TYPE != 'customer-submit'
   return
 end
 

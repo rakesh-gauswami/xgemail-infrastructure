@@ -200,6 +200,9 @@ default['xgemail']['sqs_message_consumer_wait_time_seconds'] = 10
 default['xgemail']['mail_pic_apis_response_timeout_seconds'] = 60
 default['xgemail']['mail_pic_api_auth'] = "xgemail-#{node['sophos_cloud']['region']}-mail"
 
+## Customer delivery settings
+default['xgemail']['transport_updater'] = 'xgemail-transport-updater'
+
 ## Internet delivery DSN/NDR settings
 XGEMAIL_SQS_MESSAGE_BOUNCER_DIR ="#{XGEMAIL_FILES_DIR}/message-bouncer"
 default['xgemail']['internet_delivery_message_bouncer_processor_dir'] = XGEMAIL_SQS_MESSAGE_BOUNCER_DIR
@@ -242,6 +245,8 @@ default['xgemail']['savdid_ide_cron_minute_frequency'] = 15
 default['xgemail']['submit_destination_concurrency_limit'] = 10
 default['xgemail']['internet_submit_domain_cron_minute_frequency'] = 10
 default['xgemail']['internet_submit_recipient_cron_minute_frequency'] = 10
+default['xgemail']['mf_inbound_submit_domain_cron_minute_frequency'] = 10
+default['xgemail']['mf_inbound_submit_recipient_cron_minute_frequency'] = 10
 default['xgemail']['xgemail_sqs_lifecycle_poller_cron_minute_frequency'] = 1
 
 default['xgemail']['recipient_access_filename'] = 'recipient_access'

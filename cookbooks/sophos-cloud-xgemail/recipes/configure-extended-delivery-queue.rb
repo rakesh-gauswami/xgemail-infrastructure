@@ -200,7 +200,7 @@ if NODE_TYPE == 'xdelivery'
   end
 
   include_recipe 'sophos-cloud-xgemail::configure-bounce-message-customer-delivery-queue'
-  include_recipe 'sophos-cloud-xgemail::setup_customer_delivery_transport_updater_cron'
+  include_recipe 'sophos-cloud-xgemail::setup_customer_delivery_transport_updater'
   include_recipe 'sophos-cloud-xgemail::setup_push_policy_delivery_toggle'
 else
   if NODE_TYPE == 'internet-xdelivery'
@@ -219,6 +219,9 @@ else
     include_recipe 'sophos-cloud-xgemail::configure-bounce-message-delta-delivery-queue'
   end
 end
+
+# Setup multi IP NAT rules in IPTABLES if IP_COUNT > 1 for all xdelivery types
+include_recipe 'sophos-cloud-xgemail::setup_iptables_nat_rules'
 
 # recipes to be run in all x-delivery servers for Mhv2
 include_recipe 'sophos-cloud-xgemail::setup_message_history_storage_dir'

@@ -57,19 +57,13 @@ MSG_HISTORY_EVENT_PROCESSOR_PORT              = node['xgemail']['mh_event_proces
 #constants to use
 SUBMIT = 'submit'
 INTERNET_SUBMIT = 'internet-submit'
-MF_INBOUND_SUBMIT = 'mf-inbound-submit'
 CUSTOMER_SUBMIT = 'customer-submit'
-MF_OUTBOUND_SUBMIT = 'mf-outbound-submit'
 
 # Configs use by sqsmsgproducer
 if NODE_TYPE == INTERNET_SUBMIT
   XGEMAIL_SUBMIT_TYPE                   = 'INTERNET'
 elsif NODE_TYPE == CUSTOMER_SUBMIT
   XGEMAIL_SUBMIT_TYPE                   = 'CUSTOMER'
-elsif NODE_TYPE == MF_INBOUND_SUBMIT
-  XGEMAIL_SUBMIT_TYPE                   = 'MF_INBOUND'
-elsif NODE_TYPE == MF_OUTBOUND_SUBMIT
-  XGEMAIL_SUBMIT_TYPE                   = 'MF_OUTBOUND'
 else
   raise "Unsupported node type to setup sqsmsgproducer [#{NODE_TYPE}]"
 end
@@ -134,7 +128,7 @@ PIPE_COMMAND='pipe ' +
 end
 
 # Activate new service by postfix configs
-if NODE_TYPE == INTERNET_SUBMIT || NODE_TYPE == MF_INBOUND_SUBMIT
+if NODE_TYPE == INTERNET_SUBMIT
   # Update transports to use new pipe service
   [
       "default_transport = #{SERVICE_NAME}",
@@ -145,7 +139,7 @@ if NODE_TYPE == INTERNET_SUBMIT || NODE_TYPE == MF_INBOUND_SUBMIT
     execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
   end
 
-elsif NODE_TYPE == CUSTOMER_SUBMIT || NODE_TYPE == MF_OUTBOUND_SUBMIT
+elsif NODE_TYPE == CUSTOMER_SUBMIT
   #update master.cf with content filter setting
   [
       # Configure assigned SMTPD port

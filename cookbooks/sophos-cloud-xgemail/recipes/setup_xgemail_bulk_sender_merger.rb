@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: setup_xgemail_bulk_sender_merger.rb
 #
-# Copyright 2017, Sophos
+# Copyright 2021, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -20,7 +20,7 @@ require 'json'
 NODE_TYPE = node['xgemail']['cluster_type']
 
 # Only continue when it's customer-submit
-if NODE_TYPE != 'customer-submit' && NODE_TYPE != 'mf-outbound-submit'
+if NODE_TYPE != 'customer-submit'
     return
 end
 

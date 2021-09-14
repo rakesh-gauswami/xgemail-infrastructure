@@ -33,8 +33,27 @@ ptrzoneid = {
 
 def update_byoip_a_record(ip, dnsrecord):
     response = ""
+    ip = "{{\"Value\": \"{}\"}}".format(ip)
+    new_value = json.loads(ip)
     try:
-        print("Creating A record: " + dnsrecord + " for IP: " + ip)
+        existing_records = route53_client.list_resource_record_sets(
+            HostedZoneId=azoneid.get(account, "A HostedZoneId not found for account provided."),
+            StartRecordName=dnsrecord,
+            StartRecordType='A',
+            MaxItems='1'
+        )
+        if dnsrecord == existing_records["ResourceRecordSets"][0]["Name"][:-1]:
+            existing_values = existing_records["ResourceRecordSets"][0]["ResourceRecords"]
+            print("Found existing A records: " + str(existing_values))
+            if new_value not in existing_values:
+                print("Adding new value to existing A records.")
+                existing_values.append(new_value)
+            else:
+                print("Records already current.")
+            values = existing_values
+        else:
+            values = json.loads("[" + ip + "]")
+        print("Creating A records: " + dnsrecord + " for IPs: " + str(values))
         response = route53_client.change_resource_record_sets(
             HostedZoneId=azoneid.get(account, "A HostedZoneId not found for account provided."),
             ChangeBatch={
@@ -45,12 +64,8 @@ def update_byoip_a_record(ip, dnsrecord):
                             'Name': dnsrecord,
                             'Type': 'A',
                             'TTL': ttl,
-                            'ResourceRecords': [
-                                {
-                                    'Value': ip
-                                }
-                            ]
-                        }
+                            'ResourceRecords': values
+                            }
                     }
                 ]
             }
@@ -140,6 +155,8 @@ except IOError:
     print("Could not read json file:", f)
 
 for byoip in records_dict:
+    if not byoip['DnsRecord'] or not byoip['EipName']:
+        continue
     print(byoip['IpAddress'])
 
     print("Attempting DNS A record creation")
