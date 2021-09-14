@@ -82,23 +82,20 @@ class MultiEip:
     def associate_multi_eips(self):
         for private_ip in self.private_ips:
             eip = self.get_clean_eip()
-        if eip is not None:
-            try:
-                logger.info("Associating EIP {} to Private IP {} on Instance: {}.".format(eip['PublicIp'], private_ip, self.instance.id))
-                if self.associate_address(eip=eip, instance_id=self.instance.id, private_ip=private_ip):
-                    logger.info("Successfully rotated EIP on Instance: {}.".format(self.instance.id))
-                    return True
-                else:
-                    logger.exception("Unable to associate EIP {} to Private IP {} on Instance: {}".format(eip['PublicIp'], private_ip, self.instance.id))
+            if eip is not None:
+                try:
+                    logger.info("Associating EIP {} to Private IP {} on Instance: {}.".format(eip['PublicIp'], private_ip, self.instance.id))
+                    self.associate_address(eip=eip, instance_id=self.instance.id, private_ip=private_ip):
+                except ClientError as e:
+                    logger.exception("Unable to associate EIP {} to Private IP {} on Instance: {}. Exception: {}".format(eip['PublicIp'], private_ip, self.instance.id, e))
                     return False
-            except ClientError as e:
-                logger.exception("Unable to associate EIP {} to Private IP {} on Instance: {}. Exception: {}".format(eip['PublicIp'], private_ip, self.instance.id, e))
+            else:
+                logger.error("Unable to obtain EIP for Instance: {}.".format(self.instance.id))
                 return False
-        else:
-            logger.error("Unable to obtain EIP for Instance: {}.".format(self.instance.id))
-            return False
 
-    def fetch_private_ips(self):
+        return True
+
+def fetch_private_ips(self):
         try:
             nic = self.ec2_client.describe_network_interfaces(NetworkInterfaceIds=[self.eni])
             logger.debug("Fetch private ips: {}".format([private_ip['PrivateIpAddress'] for private_ip in nic['NetworkInterfaces'][0]['PrivateIpAddresses']]))
