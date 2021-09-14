@@ -114,7 +114,7 @@ else
   NON_DELIVERY_DSN      = 'UNKNOWN'
 end
 
-if NODE_TYPE == 'mf-inbound-submit' || NODE_TYPE == 'mf-outbound-delivery'
+if NODE_TYPE == 'mf-inbound-submit'
     EMAIL_PRODUCT_TYPE = 'Mailflow'
 else
     EMAIL_PRODUCT_TYPE = 'Gateway'
