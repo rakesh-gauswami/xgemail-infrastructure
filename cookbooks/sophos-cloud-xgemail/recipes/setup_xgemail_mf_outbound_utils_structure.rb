@@ -62,6 +62,7 @@ end
     'scaneventattributes.py',
     'uuidutils.py',
     'rfxrecoveryutils.py',
+    'get_metadata_from_msghistory_config.py',
     'toggle_flag_s3.py'
 ].each do | cur |
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{cur}" do
