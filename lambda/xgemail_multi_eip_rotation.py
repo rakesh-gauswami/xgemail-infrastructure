@@ -85,16 +85,11 @@ class MultiEip:
         if eip is not None:
             try:
                 logger.info("Associating EIP {} to Private IP {} on Instance: {}.".format(eip['PublicIp'], private_ip, self.instance.id))
-                if postfix_service(instance_id=self.instance.id, cmd='stop'):
-                    if self.associate_address(eip=eip, instance_id=self.instance.id, private_ip=private_ip):
-                        logger.info("Successfully rotated EIP on Instance: {}.".format(self.instance.id))
-                        return True
-                    else:
-                        postfix_service(instance_id=self.instance.id, cmd='start')
-                        logger.exception("Unable to associate EIP {} to Private IP {} on Instance: {}".format(eip['PublicIp'], private_ip, self.instance.id))
-                        return False
+                if self.associate_address(eip=eip, instance_id=self.instance.id, private_ip=private_ip):
+                    logger.info("Successfully rotated EIP on Instance: {}.".format(self.instance.id))
+                    return True
                 else:
-                    logger.error("Unable to stop Postfix Service on Instance: {}.".format(self.instance.id))
+                    logger.exception("Unable to associate EIP {} to Private IP {} on Instance: {}".format(eip['PublicIp'], private_ip, self.instance.id))
                     return False
             except ClientError as e:
                 logger.exception("Unable to associate EIP {} to Private IP {} on Instance: {}. Exception: {}".format(eip['PublicIp'], private_ip, self.instance.id, e))
@@ -404,8 +399,16 @@ def multi_eip_rotation_handler(event, context):
         instance_id = event['EC2InstanceId']
         multi_eip = MultiEip(instance_id)
         if multi_eip.fetch_private_ips() is not None:
-            if multi_eip.associate_multi_eipsassociate_multi_eips():
-                logger.info("===FINISHED=== Rotating SSM Delivery Multi EIP's.")
+            if postfix_service(instance_id=instance_id, cmd='stop'):
+                logger.info("Successfully stopped Postfix service.")
+                if multi_eip.associate_multi_eips():
+                    logger.info("===FINISHED=== Rotating SSM Delivery Multi EIP's.")
+                if postfix_service(instance_id=instance_id, cmd='start'):
+                    logger.info("Successfully started Postfix service.")
+                else:
+                    logger.error("Unable to start Postfix Service on Instance: {}.".format(instance_id))
+            else:
+                logger.error("Unable to stop Postfix Service on Instance: {}.".format(instance_id))
 
     elif 'EC2InstanceId' in event['detail']:
         logger.info("Lambda Function triggered from Instance Launching Lifecycle Hook.")
@@ -438,5 +441,13 @@ def multi_eip_rotation_handler(event, context):
                 continue
             multi_eip = MultiEip(instance.id)
             if multi_eip.fetch_private_ips() is not None:
-                if multi_eip.associate_multi_eips():
-                    logger.info("===FINISHED=== Rotating ALL Delivery Multi EIP's.")
+                if postfix_service(instance_id=instance.id, cmd='stop'):
+                    logger.info("Successfully stopped Postfix service.")
+                    if multi_eip.associate_multi_eips():
+                        logger.info("===FINISHED=== Rotating ALL Delivery Multi EIP's.")
+                    if postfix_service(instance_id=instance.id, cmd='start'):
+                        logger.info("Successfully started Postfix service.")
+                    else:
+                        logger.error("Unable to start Postfix Service on Instance: {}.".format(instance.id))
+                else:
+                    logger.error("Unable to stop Postfix Service on Instance: {}.".format(instance.id))
