@@ -85,7 +85,7 @@ class MultiEip:
             if eip is not None:
                 try:
                     logger.info("Associating EIP {} to Private IP {} on Instance: {}.".format(eip['PublicIp'], private_ip, self.instance.id))
-                    self.associate_address(eip=eip, instance_id=self.instance.id, private_ip=private_ip):
+                    self.associate_address(eip=eip, instance_id=self.instance.id, private_ip=private_ip)
                 except ClientError as e:
                     logger.exception("Unable to associate EIP {} to Private IP {} on Instance: {}. Exception: {}".format(eip['PublicIp'], private_ip, self.instance.id, e))
                     return False
@@ -95,7 +95,7 @@ class MultiEip:
 
         return True
 
-def fetch_private_ips(self):
+    def fetch_private_ips(self):
         try:
             nic = self.ec2_client.describe_network_interfaces(NetworkInterfaceIds=[self.eni])
             logger.debug("Fetch private ips: {}".format([private_ip['PrivateIpAddress'] for private_ip in nic['NetworkInterfaces'][0]['PrivateIpAddresses']]))
