@@ -324,23 +324,6 @@ def postfix_service(instance_id, cmd):
         return command_invocation_waiter(command_id=ssmresponse['Command']['CommandId'], instance_id=instance_id)
 
 
-def lookup_eip(eip):
-    """
-    Lookup EIP to check if it is in fact an EIP and return the Allocation Id and Association Id.
-    """
-    logger.info("Looking up EIP: {}.".format(eip))
-    try:
-        eip = ec2_client.describe_addresses(
-            PublicIps=[eip]
-        )['Addresses'][0]
-    except ClientError as e:
-        if e.response['Error']['Code'] == 'InvalidAddress.NotFound':
-            logger.exception("The current Public IP Address is not an Elastic IP Address.")
-        return None
-    else:
-        return eip
-
-
 def get_instances_by_name():
     """
     Get EC2 Instances matching filter.
