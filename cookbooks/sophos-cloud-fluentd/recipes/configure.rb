@@ -700,7 +700,7 @@ template 'fluentd-filter-msg-delivery' do
 template 'fluentd-filter-msg-stats-reject' do
   path "#{CONF_DIR}/70-filter-msg-stats-reject.conf"
   source 'fluentd-filter-msg-stats-reject.conf.erb'
-  mode '0644'
+  mode '0644
   owner 'root'
   group 'root'
   only_if {
@@ -845,6 +845,18 @@ template 'fluentd-match-sns-msg-delivery' do
     NODE_TYPE == 'delta-xdelivery'
   }
 end
+
+template 'sns_msg_stats_reject_template' do
+  path "#{MAIN_DIR}/sns_msg_stats_reject_template.erb"
+  source 'fluentd_sns_msg_stats_reject_template.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :email_product_type => EMAIL_PRODUCT_TYPE
+  )
+end
+
 
 # Message delivery status on all delivery and x delivery servers
 template 'fluentd-match-sqs-msg-delivery' do
