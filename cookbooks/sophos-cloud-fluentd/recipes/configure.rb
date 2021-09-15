@@ -713,6 +713,9 @@ template 'fluentd-filter-msg-stats-reject' do
     NODE_TYPE == 'internet-submit' ||
     NODE_TYPE == 'mf-inbound-submit'
   }
+  variables(
+    :email_product_type => EMAIL_PRODUCT_TYPE
+  )
 end
 
 # All instances - Start Order: 70
