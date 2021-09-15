@@ -53,7 +53,7 @@ class MultiEip:
         self.ssm = self.session.client('ssm')
         """:type: pyboto3.ssm """
         self.instance = self.ec2.Instance(instance_id)
-        self.eni, self.attachment_id  = self.get_eni()
+        self.eni, self.attachment_id = self.get_eni()
         self.eip_count = self.get_eip_count()
         self.private_ips = []
 
@@ -67,7 +67,7 @@ class MultiEip:
         return int(1)
 
     def get_eni(self):
-        return (self.instance.network_interfaces_attribute[0]['NetworkInterfaceId'],self.instance.network_interfaces_attribute[0]['Attachment']['AttachmentId'])
+        return self.instance.network_interfaces_attribute[0]['NetworkInterfaceId'], self.instance.network_interfaces_attribute[0]['Attachment']['AttachmentId']
 
     def assign_private_ips(self):
         logger.info("Assigning {} Private IP(s) on Interface: {}.".format(self.eip_count, self.eni))
@@ -119,7 +119,7 @@ class MultiEip:
         """
         Find an xgemail-outbound EIP that is NOT listed on any blacklists and is NOT attached to an instance.
         """
-        instance_type = [ t['Value'] for t in self.instance.tags if t['Key'] == 'Application' ][0]
+        instance_type = [t['Value'] for t in self.instance.tags if t['Key'] == 'Application'][0]
         logger.info("Locating a clean {} EIP to use.".format(instance_type))
         try:
             addresses = self.ec2_client.describe_addresses(
@@ -162,7 +162,7 @@ class MultiEip:
                         'Values': [private_ip]
                     }
                 ]
-            )['Addresses'][0]['PublicIp']
+            )['Addresses'][0]
         except ClientError as e:
                 logger.exception("Unable to get current elastic IP {}".format(e))
         else:
@@ -337,8 +337,7 @@ def get_instances_by_name():
             {
                 'Name': 'tag:Name',
                 'Values': [
-                    'CloudEmail:warmup-delivery:*',
-                    'CloudEmail:warmup-xdelivery:*'
+                    'CloudEmail:warmup-delivery:*'
                 ]
             }
         ]
