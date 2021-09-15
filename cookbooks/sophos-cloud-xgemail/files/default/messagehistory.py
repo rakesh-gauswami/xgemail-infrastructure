@@ -119,21 +119,6 @@ def read_msghistory_accepted_events(queue_id, directory):
     except Exception as ex:
       logger.debug("Queue Id:[{0}]. Error reading accepted events: [{1}]".format(queue_id, ex))
 
-def get_rejected_recipients(queue_id, directory):
-    """
-    Reads the rejected recipients information written by Jilter
-    """
-    file_path = directory + '/' + queue_id + '.rejected'
-
-    if not os.path.exists(file_path):
-        return set()
-
-    try:
-        return set(line.strip().lower() for line in io.open(file_path, encoding='utf8'))
-    except Exception as ex:
-      logger.error("File path [{0}]. Error reading rejected recipients: [{1}]".format(file_path, ex))
-      return set()
-
 def update_msghistory_event_inbound(msghistory_events, s3_file_path, policy_metadata, recipients, email_product_type):
     for recipient in recipients:
       recipient = recipient.lower()
