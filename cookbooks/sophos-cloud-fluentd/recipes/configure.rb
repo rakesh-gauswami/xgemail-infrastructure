@@ -114,6 +114,12 @@ else
   NON_DELIVERY_DSN      = 'UNKNOWN'
 end
 
+if NODE_TYPE == 'mf-inbound-submit'
+    EMAIL_PRODUCT_TYPE = 'Mailflow'
+else
+    EMAIL_PRODUCT_TYPE = 'Gateway'
+end
+
 ### Fluentd Source Configuration Files ###
 
 # All instances - Start Order: 10
@@ -707,6 +713,9 @@ template 'fluentd-filter-msg-stats-reject' do
     NODE_TYPE == 'internet-submit' ||
     NODE_TYPE == 'mf-inbound-submit'
   }
+  variables(
+    :email_product_type => EMAIL_PRODUCT_TYPE
+  )
 end
 
 # All instances - Start Order: 70
