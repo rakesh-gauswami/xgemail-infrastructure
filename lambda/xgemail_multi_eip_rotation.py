@@ -185,7 +185,9 @@ class MultiEip:
                 logger.debug("Unable to associate elastic IP {}".format(e))
                 """ Get current EIP """
                 current_eip = self.get_current_eip(private_ip)
-                self.disassociate_address(current_eip)
+                if self.disassociate_address(current_eip):
+                    logger.info("Retrying Associating Private IP {} with EIP Allocation Id:{} on Instance: {}".format(private_ip, eip['AllocationId'], instance_id))
+                    self.associate_address(eip=eip, instance_id=self.instance.id, private_ip=private_ip)
             else:
                 logger.exception("Unable to associate elastic IP {}".format(e))
         else:
