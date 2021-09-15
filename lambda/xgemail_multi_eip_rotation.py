@@ -119,7 +119,7 @@ class MultiEip:
         """
         Find an xgemail-outbound EIP that is NOT listed on any blacklists and is NOT attached to an instance.
         """
-        instance_type = [t['Value'] for t in self.instance.tags if t['Key'] == 'Application'][0]
+        instance_type = [ t['Value'] for t in self.instance.tags if t['Key'] == 'Application' ][0]
         logger.info("Locating a clean {} EIP to use.".format(instance_type))
         try:
             addresses = self.ec2_client.describe_addresses(
