@@ -53,7 +53,7 @@ class MultiEip:
         self.ssm = self.session.client('ssm')
         """:type: pyboto3.ssm """
         self.instance = self.ec2.Instance(instance_id)
-        self.eni, self.attachment_id = self.get_eni()
+        self.eni, self.attachment_id  = self.get_eni()
         self.eip_count = self.get_eip_count()
         self.private_ips = []
 
