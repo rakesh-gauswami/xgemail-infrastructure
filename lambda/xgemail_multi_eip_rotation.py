@@ -67,7 +67,7 @@ class MultiEip:
         return int(1)
 
     def get_eni(self):
-        return self.instance.network_interfaces_attribute[0]['NetworkInterfaceId'], self.instance.network_interfaces_attribute[0]['Attachment']['AttachmentId']
+        return (self.instance.network_interfaces_attribute[0]['NetworkInterfaceId'],self.instance.network_interfaces_attribute[0]['Attachment']['AttachmentId'])
 
     def assign_private_ips(self):
         logger.info("Assigning {} Private IP(s) on Interface: {}.".format(self.eip_count, self.eni))
