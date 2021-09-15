@@ -54,7 +54,7 @@ PIC_XGEMAIL_API_URL = 'https://%s/mail/api/xgemail' % (PIC_FQDN)
 PIC_DOMAINS_URL = PIC_XGEMAIL_API_URL + '/domains'
 PIC_TLS_DOMAINS_URL = PIC_XGEMAIL_API_URL +'/tls-domain-exists/'
 
-logger.info('customer delivery transport updater - pic url [%s]', PIC_XGEMAIL_API_URL)
+logger.debug('customer delivery transport updater - pic url [%s]', PIC_XGEMAIL_API_URL)
 
 def get_passphrase():
     s3 = boto3.client('s3')
@@ -174,7 +174,7 @@ transport_updater_parser.add_argument('--daemon', choices=['True', 'False'], hel
 transport_updater_parser_args = transport_updater_parser.parse_args()
 
 if transport_updater_parser_args.daemon == 'True':
-  logger.info('daemon argument is true')
+  logger.debug('daemon argument is true')
 
 auth = get_passphrase()
 
