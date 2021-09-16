@@ -121,7 +121,7 @@ else
   #do nothing
 end
 
-if NODE_TYPE == 'mf-outbound-delivery'
+if NODE_TYPE == 'mf-outbound-delivery' or NODE_TYPE == 'mf-outbound-xdelivery'
   [
       'postfix_injection_response.py',
       'queue_log.py',
