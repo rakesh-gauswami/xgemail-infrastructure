@@ -4,8 +4,3 @@ check process xgemail-jilter-service with pidfile /var/run/xgemail-jilter-servic
   stop  program = "/etc/init.d/xgemail-jilter-service stop"
   if changed pid then alert
   if failed port 9876 type tcp then restart
-
-check process xgemail-transport-updater with pidfile /var/run/xgemail-transport-updater.pid
-  group mail
-  start program = "/etc/init.d/xgemail-transport-updater force-restart"
-  stop  program = "/etc/init.d/xgemail-transport-updater stop"

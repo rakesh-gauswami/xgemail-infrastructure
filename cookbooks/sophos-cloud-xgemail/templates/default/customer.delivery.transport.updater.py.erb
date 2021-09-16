@@ -54,7 +54,7 @@ PIC_XGEMAIL_API_URL = 'https://%s/mail/api/xgemail' % (PIC_FQDN)
 PIC_DOMAINS_URL = PIC_XGEMAIL_API_URL + '/domains'
 PIC_TLS_DOMAINS_URL = PIC_XGEMAIL_API_URL +'/tls-domain-exists/'
 
-logger.info('customer delivery transport updater - pic url [%s]', PIC_XGEMAIL_API_URL)
+logger.debug('customer delivery transport updater - pic url [%s]', PIC_XGEMAIL_API_URL)
 
 def get_passphrase():
     s3 = boto3.client('s3')
@@ -174,7 +174,7 @@ transport_updater_parser.add_argument('--daemon', choices=['True', 'False'], hel
 transport_updater_parser_args = transport_updater_parser.parse_args()
 
 if transport_updater_parser_args.daemon == 'True':
-  logger.info('daemon argument is true')
+  logger.debug('daemon argument is true')
 
 auth = get_passphrase()
 
@@ -199,13 +199,17 @@ while True:
   TRANSPORT_FILE = POSTFIX_CONFIG_DIR + '/' + TRANSPORT_FILENAME
   TRANSPORT_FILE_TMP = TRANSPORT_FILE + '.tmp'
 
-  logger.info('staring to update transport map file [%s.db]', TRANSPORT_FILE)
+  logger.info('starting to update transport map file [%s.db]', TRANSPORT_FILE)
 
   response = requests.get(
       PIC_DOMAINS_URL,
       headers=HEADERS,
       timeout=MAIL_PIC_RESPONSE_TIMEOUT
   )
+
+  if response.status_code != 200:
+    logger.warn("Got response code [{}] from mail pic".format(response.status_code));
+
   response.raise_for_status()
 
   with open(TRANSPORT_FILE_TMP, 'w') as f:
