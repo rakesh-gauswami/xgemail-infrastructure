@@ -664,7 +664,7 @@ template 'fluentd-filter-transportupdater' do
   variables(
     :application_name => NODE_TYPE,
     :log_name => 'transportupdater',
-    :grok_pattern => 'SQSMSGCONSUMER',
+    :grok_pattern => 'TRANSPORTUPDATER',
     :reserve_data => 'true',
     :patterns_dir => PATTERNS_DIR
   )
