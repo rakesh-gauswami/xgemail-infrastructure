@@ -199,7 +199,7 @@ while True:
   TRANSPORT_FILE = POSTFIX_CONFIG_DIR + '/' + TRANSPORT_FILENAME
   TRANSPORT_FILE_TMP = TRANSPORT_FILE + '.tmp'
 
-  logger.info('starting to update transport map file [%s.db]', TRANSPORT_FILE)
+  logger.debug('starting to update transport map file [%s.db]', TRANSPORT_FILE)
 
   response = requests.get(
       PIC_DOMAINS_URL,
@@ -243,7 +243,7 @@ while True:
       transport_line = parse_domain_response(domain, domain_response.json(), s3, False)
       f.write('{0}\n'.format(transport_line))
       if (float(round(time.time() * 1000)) - float(timestamp_start)) > 15 * 60 * 1000:
-        logger.info('transport map file updater taken more than 15 mins')
+        logger.warn('transport map file updater taken more than 15 mins')
 
     # Add catch-all to retry any unknown domain
     f.write('* retry: domain is unknown\n')
@@ -252,8 +252,8 @@ while True:
   os.rename(TRANSPORT_FILE_TMP, TRANSPORT_FILE);
   os.rename(TRANSPORT_FILE_TMP + '.db', TRANSPORT_FILE + '.db');
 
-  logger.info('transport map file [%s.db] successfully updated. Time taken [%s]', TRANSPORT_FILE, float(round(time.time() * 1000)) - float(timestamp_start))
+  logger.debug('transport map file [%s.db] successfully updated. Time taken [%s]', TRANSPORT_FILE, float(round(time.time() * 1000)) - float(timestamp_start))
 
   if transport_updater_parser_args.daemon == 'False':
-    logger.info('daemon argument is false')
+    logger.debug('daemon argument is false')
     break
