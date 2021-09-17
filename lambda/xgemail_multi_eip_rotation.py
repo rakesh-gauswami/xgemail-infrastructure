@@ -22,7 +22,6 @@ from botocore.waiter import create_waiter_with_client
 
 print('Loading function')
 
-account = os.environ['ACCOUNT']
 region = os.environ['AWS_REGION']
 ssm_postfix_service = os.environ['SSM_POSTFIX_SERVICE']
 
