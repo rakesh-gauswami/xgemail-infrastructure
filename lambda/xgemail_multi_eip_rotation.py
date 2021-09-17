@@ -216,6 +216,23 @@ class MultiEip:
         else:
             return True
 
+    def postfix_service(self, cmd):
+        """
+        Run SSM Command to Start or Stop the Postfix Service.
+        """
+        logger.info("Executing {} Postfix SSM Document, for Instance Id: {}".format(cmd, self.instance))
+        try:
+            ssmresponse = self.ssm.send_command(
+                InstanceIds=[self.instance],
+                DocumentName=ssm_postfix_service,
+                Parameters={'cmd': [cmd]}
+            )
+        except ClientError as e:
+            logger.exception("Unable to send SSM command. {}".format(e))
+            return False
+        else:
+            return command_invocation_waiter(command_id=ssmresponse['Command']['CommandId'], instance_id=self.instance)
+
 
 def command_invocation_waiter(command_id, instance_id):
     """
@@ -307,24 +324,6 @@ def command_invocation_waiter(command_id, instance_id):
         return True
 
 
-def postfix_service(instance_id, cmd):
-    """
-    Run SSM Command to Start or Stop the Postfix Service.
-    """
-    logger.info("Executing {} Postfix SSM Document, for Instance Id: {}".format(cmd, instance_id))
-    try:
-        ssmresponse = ssm.send_command(
-            InstanceIds=[instance_id],
-            DocumentName=ssm_postfix_service,
-            Parameters={'cmd': [cmd]}
-        )
-    except ClientError as e:
-        logger.exception("Unable to send SSM command. {}".format(e))
-        return False
-    else:
-        return command_invocation_waiter(command_id=ssmresponse['Command']['CommandId'], instance_id=instance_id)
-
-
 def get_instances_by_name():
     """
     Get EC2 Instances matching filter.
@@ -379,11 +378,11 @@ def multi_eip_rotation_handler(event, context):
         instance_id = event['EC2InstanceId']
         multi_eip = MultiEip(instance_id)
         if multi_eip.fetch_private_ips() is not None:
-            if postfix_service(instance_id=instance_id, cmd='stop'):
+            if multi_eip.postfix_service('stop'):
                 logger.info("Successfully stopped Postfix service.")
                 if multi_eip.associate_multi_eips():
                     logger.info("===FINISHED=== Rotating SSM Delivery Multi EIP's.")
-                if postfix_service(instance_id=instance_id, cmd='start'):
+                if multi_eip.postfix_service('start'):
                     logger.info("Successfully started Postfix service.")
                 else:
                     logger.error("Unable to start Postfix Service on Instance: {}.".format(instance_id))
@@ -421,11 +420,11 @@ def multi_eip_rotation_handler(event, context):
                 continue
             multi_eip = MultiEip(instance.id)
             if multi_eip.fetch_private_ips() is not None:
-                if postfix_service(instance_id=instance.id, cmd='stop'):
+                if multi_eip.postfix_service('stop'):
                     logger.info("Successfully stopped Postfix service.")
                     if multi_eip.associate_multi_eips():
                         logger.info("===FINISHED=== Rotating ALL Delivery Multi EIP's.")
-                    if postfix_service(instance_id=instance.id, cmd='start'):
+                    if multi_eip.postfix_service('start'):
                         logger.info("Successfully started Postfix service.")
                     else:
                         logger.error("Unable to start Postfix Service on Instance: {}.".format(instance.id))
