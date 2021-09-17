@@ -15,9 +15,7 @@ import logging
 import json
 import os
 from datetime import datetime
-from botocore.exceptions import ClientError, WaiterError
-from botocore.waiter import WaiterModel
-from botocore.waiter import create_waiter_with_client
+from botocore.exceptions import ClientError
 
 
 print('Loading function')
@@ -36,10 +34,6 @@ else:
 session = boto3.session.Session(region_name=region)
 ec2 = session.resource('ec2')
 """:type: pyboto3.ec2 """
-ec2_client = ec2.meta.client
-""":type: pyboto3.ec2 """
-ssm = session.client('ssm')
-""":type: pyboto3.ssm """
 
 
 class MultiEip:
@@ -163,7 +157,7 @@ class MultiEip:
                 ]
             )['Addresses'][0]
         except ClientError as e:
-                logger.exception("Unable to get current elastic IP {}".format(e))
+            logger.exception("Unable to get current elastic IP {}".format(e))
         else:
             return current_eip
 
@@ -231,97 +225,12 @@ class MultiEip:
             logger.exception("Unable to send SSM command. {}".format(e))
             return False
         else:
-            return command_invocation_waiter(command_id=ssmresponse['Command']['CommandId'], instance_id=self.instance)
+            waiter = self.ec2_client.get_waiter('command_executed')
 
-
-def command_invocation_waiter(command_id, instance_id):
-    """
-    SSM Command Invocation Waiter.
-    """
-    delay = 5
-    max_attempts = 20
-    waiter_name = 'CommandComplete'
-
-    waiter_config = {
-        "version": 2,
-        "waiters": {
-            waiter_name: {
-                "operation": "GetCommandInvocation",
-                "maxAttempts": max_attempts,
-                "delay": delay,
-                "acceptors": [
-                    {
-                        "state": "retry",
-                        "matcher": "path",
-                        "argument": "Status",
-                        "expected": "Pending"
-                    },
-                    {
-                        "state": "retry",
-                        "matcher": "path",
-                        "argument": "Status",
-                        "expected": "InProgress"
-                    },
-                    {
-                        "state": "retry",
-                        "matcher": "path",
-                        "argument": "Status",
-                        "expected": "Delayed"
-                    },
-                    {
-                        "state": "success",
-                        "matcher": "path",
-                        "argument": "Status",
-                        "expected": "Success"
-                    },
-                    {
-                        "state": "failure",
-                        "matcher": "path",
-                        "argument": "Status",
-                        "expected": "Cancelled"
-                    },
-                    {
-                        "state": "failure",
-                        "matcher": "path",
-                        "argument": "Status",
-                        "expected": "TimedOut"
-                    },
-                    {
-                        "state": "failure",
-                        "matcher": "path",
-                        "argument": "Status",
-                        "expected": "Failed"
-                    },
-                    {
-                        "state": "retry",
-                        "matcher": "path",
-                        "argument": "Status",
-                        "expected": "Cancelling"
-                    },
-                    {
-                        "state": "retry",
-                        "matcher": "error",
-                        "expected": "InvocationDoesNotExist"
-                    }
-                ]
-            }
-        }
-    }
-
-    waiter_model = WaiterModel(waiter_config)
-    custom_waiter = create_waiter_with_client(waiter_name, waiter_model, ssm)
-
-    try:
-        custom_waiter.wait(CommandId=command_id, InstanceId=instance_id)
-
-    except WaiterError as we:
-        if "Max Attempts Exceeded" in we.message:
-            logger.exception("Timeout")
-        else:
-            logger.exception(we.message)
-        return False
-    else:
-        return True
+            waiter.wait(
+                CommandId=ssmresponse['Command']['CommandId'],
+                InstanceId=self.instance
+            )
 
 
 def get_instances_by_name():
