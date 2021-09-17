@@ -1,0 +1,7 @@
+# Syslog stuff
+#
+NOMATCH %{GREEDYDATA:message}
+#
+LOGBASE %{SYSLOGHOST:host} \[%{PROG:process}\] %{POSINT:pid} %{LOGLEVEL:level}
+#
+TRANSPORTUPDATER %{LOGBASE} (?:%{NOMATCH})

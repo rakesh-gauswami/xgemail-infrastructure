@@ -150,9 +150,15 @@ def get_metadata(message_headers):
         recipient_domain = sys.argv[5]
         # TODO: see if we can pipe arrival date from postfix
         date_recorded = datetime.utcnow().strftime(DATETIME_FORMAT)
+        # load rejected recipients from the file written by Jilter based on queue id
+        rejected_recipients = get_rejected_recipients(queue_id, MSG_HISTORY_EVENT_DIR)
         recipient_list = [ ]
         for i in range (6,len(sys.argv)):
-            recipient_list.append(strip_dot_at_end(sys.argv[i]))
+            recipient = strip_dot_at_end(sys.argv[i])
+            if recipient.lower() in rejected_recipients:
+                logger.info("silent dropping recipient [{0}] for queue id [{1}] due to rejection by jilter".format(recipient, queue_id))
+            else:
+                recipient_list.append(recipient)
 
         if (sender_address == null_sender):
             sender_address = None
@@ -816,6 +822,20 @@ def outbound_split_by_recipients(metadata, sender, domain, message, direction, m
     if msghistory_events is not None:
         messagehistory.handle_msghistory_events(queue_id, msghistory_events, MSG_HISTORY_EVENT_PROCESSOR_URL, MSG_HISTORY_EVENT_DIR)
 
+def get_rejected_recipients(queue_id, directory):
+    """
+    Reads the rejected recipients information written by Jilter
+    """
+    file_path = directory + '/' + queue_id + '.rejected'
+
+    if not os.path.exists(file_path):
+        return set()
+
+    try:
+        return set(line.strip().lower() for line in io.open(file_path, encoding='utf8'))
+    except Exception as ex:
+        logger.error("File path [{0}]. Error reading rejected recipients: [{1}]".format(file_path, ex))
+        return set()
 
 # accepts data from postfix and send message and metadata to S3 and
 # a json object to SQS which provides pointer to the message in S3
@@ -831,6 +851,10 @@ def main():
         queue_id = metadata.get_queue_id()
         #A dict where key is mailbox address and value is the 'accepted' event record.
         msghistory_events = messagehistory.read_msghistory_accepted_events(queue_id, MSG_HISTORY_EVENT_DIR)
+
+        if len(metadata.get_recipients()) == 0:
+            logger.info("all recipients rejected by jilter for multiple reasons for metadata [{0}]".format(metadata))
+            return
 
         if INTERNET == SUBMIT_TYPE:
             domain = metadata.get_recipient_domain()
