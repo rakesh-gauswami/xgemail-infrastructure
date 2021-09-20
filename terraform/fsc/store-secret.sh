@@ -25,11 +25,11 @@ TAGS=$(
     --arg name "${SECRET_NAME}" \
   '
   {
-    Application: "common-infrastructure",
-    BusinessUnit: "CPG",
+    Application: "xgemail-infrastructure",
+    BusinessUnit: "MSG",
     Name: $name,
-    OwnerEmail: "cre@sophos.com",
-    Project: "common-infrastructure"
+    OwnerEmail: "SophosMailOps@sophos.com",
+    Project: "xgemail-infrastructure"
   }
   |
   to_entries
