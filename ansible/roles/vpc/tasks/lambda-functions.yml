@@ -115,7 +115,6 @@
     disable_rollback:                       true
     template:                               "{{template.lambda.lambda_xgemail_multi_eip_rotation_template}}"
     template_parameters:
-      Environment:                          "{{account.name}}"
       FunctionName:                         "{{lambda.multi_eip_rotation_lambda_function}}"
       HandlerName:                          xgemail_multi_eip_rotation.multi_eip_rotation_handler
       IAMRoleArn:                           "{{iam_stack.stack_outputs.MultiEipRotationLambdaExecutionRoleArn}}"
