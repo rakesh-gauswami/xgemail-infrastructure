@@ -80,7 +80,6 @@ if ACCOUNT != 'sandbox'
   CONFIGURATION_COMMANDS.each do | cur |
     execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
   end
-end
 include_recipe 'sophos-cloud-xgemail::setup_mf_outbound_delivery_transport_updater_cron'
 include_recipe 'sophos-cloud-xgemail::configure-bounce-message-mf-outbound-delivery-queue'
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_consumer'
