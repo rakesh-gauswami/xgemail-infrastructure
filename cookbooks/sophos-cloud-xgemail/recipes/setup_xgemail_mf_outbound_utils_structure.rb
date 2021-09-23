@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: sophos-cloud-xgemail
-# Recipe:: setup_xgemail_mf_inbound_utils_structure
+# Recipe:: setup_xgemail_mf_outbound_utils_structure
 #
 # Copyright 2021, Sophos
 #

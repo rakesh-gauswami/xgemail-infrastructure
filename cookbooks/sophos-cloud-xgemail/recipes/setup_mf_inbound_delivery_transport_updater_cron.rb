@@ -1,8 +1,8 @@
 #
 # Cookbook Name:: sophos-cloud-xgemail
-# Recipe:: setup_mf_inbound_customer_delivery_transport_updater_cron
+# Recipe:: setup_mf_inbound_delivery_transport_updater_cron
 #
-# Copyright 2016, Sophos
+# Copyright 2021, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -64,8 +64,8 @@ if ACCOUNT == 'sandbox'
 
 end
 
-PACKAGE_DIR           = "#{XGEMAIL_FILES_DIR}/customer-delivery-transport-cron"
-CRON_SCRIPT           = 'mf.inbound.customer.delivery.transport.updater.py'
+PACKAGE_DIR           = "#{XGEMAIL_FILES_DIR}/mf-inbound-delivery-transport-cron"
+CRON_SCRIPT           = 'mf.inbound.delivery.transport.updater.py'
 CRON_SCRIPT_PATH      = "#{PACKAGE_DIR}/#{CRON_SCRIPT}"
 XGEMAIL_PIC_FQDN      = "mail-#{STATION_VPC_NAME.downcase}-#{REGION}.#{ACCOUNT}.hydra.sophos.com"
 

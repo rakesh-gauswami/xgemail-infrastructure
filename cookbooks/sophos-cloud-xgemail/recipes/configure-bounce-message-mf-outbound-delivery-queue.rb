@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: sophos-cloud-xgemail
-# Recipe:: configure-bounce-message-internet-delivery-queue.rb
+# Recipe:: configure-bounce-message-mf-outbound-delivery-queue
 #
 # Copyright 2021, Sophos
 #
@@ -41,7 +41,7 @@ EX_TEMPFAIL = node['xgemail']['temp_failure_code']
 XGEMAIL_UTILS_DIR = node['xgemail']['xgemail_utils_files_dir']
 XGEMAIL_NOTIFIER_QUEUE_URL = node['xgemail']['msg_notifier_queue_url']
 
-if NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'internet-xdelivery'
+if NODE_TYPE == 'mf-outbound-delivery' || NODE_TYPE == 'mf-outbound-xdelivery'
 
  CONFIGURATION_COMMANDS_DELIVER_BOUNCE =
    [
