@@ -38,7 +38,7 @@ raise "Unsupported node type [#{NODE_TYPE}]" if INTERNET_XDELIVERY_INSTANCE_DATA
 
 SMTP_PORT = INTERNET_XDELIVERY_INSTANCE_DATA[:port]
 
-SMTP_FALLBACK_RELAY = "internet-xdelivery-cloudemail-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com:#{SMTP_PORT}"
+	SMTP_FALLBACK_RELAY = "internet-xdelivery-cloudemail-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com:#{SMTP_PORT}"
 
 HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
 
@@ -79,7 +79,6 @@ if ACCOUNT != 'sandbox'
   CONFIGURATION_COMMANDS.each do | cur |
     execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
   end
-end
 include_recipe 'sophos-cloud-xgemail::configure-bounce-message-internet-delivery-queue'
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_consumer'
 include_recipe 'sophos-cloud-xgemail::setup_message_history_storage_dir'
