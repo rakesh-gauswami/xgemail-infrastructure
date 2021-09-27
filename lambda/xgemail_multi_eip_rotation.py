@@ -15,7 +15,7 @@ import logging
 import json
 import os
 from datetime import datetime
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError, WaiterError
 
 
 print('Loading function')
@@ -221,16 +221,17 @@ class MultiEip:
                 DocumentName=ssm_postfix_service,
                 Parameters={'cmd': [cmd]}
             )
-        except ClientError as e:
-            logger.exception("Unable to send SSM command. {}".format(e))
-            return False
-        else:
-            waiter = self.ec2_client.get_waiter('command_executed')
-
-            waiter.wait(
+            self.ec2_client.get_waiter('command_executed').wait(
                 CommandId=ssmresponse['Command']['CommandId'],
                 InstanceId=self.instance
             )
+        except ClientError as e:
+            logger.exception("Unable to send SSM command. {}".format(e))
+            return False
+        except WaiterError as we:
+            logger.exception("Waiter max attempts exceeded. {}".format(we))
+            return False
+        return True
 
 
 def get_instances_by_name():
