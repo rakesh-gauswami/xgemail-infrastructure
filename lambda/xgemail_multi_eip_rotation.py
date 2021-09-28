@@ -214,14 +214,15 @@ class MultiEip:
         """
         Run SSM Command to Start or Stop the Postfix Service.
         """
-        logger.info("Executing {} Postfix SSM Document, for Instance Id: {}".format(cmd, self.instance))
+        logger.info("Executing {} Postfix SSM Document, for Instance Id: {}".format(cmd, self.instance.id))
         try:
             ssmresponse = self.ssm.send_command(
                 InstanceIds=[self.instance.id],
                 DocumentName=ssm_postfix_service,
                 Parameters={'cmd': [cmd]}
             )
-            self.ec2_client.get_waiter('command_executed').wait(
+            waiter = self.ssm.get_waiter('command_executed')\
+            waiter.wait(
                 CommandId=ssmresponse['Command']['CommandId'],
                 InstanceId=self.instance.id
             )
