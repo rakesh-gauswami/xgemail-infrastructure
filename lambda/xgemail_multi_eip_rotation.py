@@ -221,7 +221,7 @@ class MultiEip:
                 DocumentName=ssm_postfix_service,
                 Parameters={'cmd': [cmd]}
             )
-            waiter = self.ssm.get_waiter('command_executed')\
+            waiter = self.ssm.get_waiter('command_executed')
             waiter.wait(
                 CommandId=ssmresponse['Command']['CommandId'],
                 InstanceId=self.instance.id
