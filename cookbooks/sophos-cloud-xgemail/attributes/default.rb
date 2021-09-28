@@ -367,7 +367,7 @@ default['xgemail']['postfix_instance_data'] = {
     :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
     :server_type => 'MF_INBOUND_DELIVERY'
   },
-  # mf-inbound-delivery
+  # mf-inbound-xdelivery
   'mf-inbound-xdelivery' => {
     :instance_name => 'mfix',
     :port => 25,
