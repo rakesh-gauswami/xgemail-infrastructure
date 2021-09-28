@@ -217,13 +217,13 @@ class MultiEip:
         logger.info("Executing {} Postfix SSM Document, for Instance Id: {}".format(cmd, self.instance))
         try:
             ssmresponse = self.ssm.send_command(
-                InstanceIds=[self.instance],
+                InstanceIds=[self.instance.id],
                 DocumentName=ssm_postfix_service,
                 Parameters={'cmd': [cmd]}
             )
             self.ec2_client.get_waiter('command_executed').wait(
                 CommandId=ssmresponse['Command']['CommandId'],
-                InstanceId=self.instance
+                InstanceId=self.instance.id
             )
         except ClientError as e:
             logger.exception("Unable to send SSM command. {}".format(e))
