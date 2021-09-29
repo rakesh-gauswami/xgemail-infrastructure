@@ -345,6 +345,15 @@
           },
           "Version": {"Fn::GetAtt": ["XgemailAutoScalingLaunchTemplate", "LatestVersionNumber"]}
         },
+        "LifecycleHookSpecificationList" : [
+          {
+            "LifecycleHookName": { "Ref": "LifecycleHookLaunching" },
+            "HeartbeatTimeout" : "300",
+            "LifecycleTransition" : "autoscaling:EC2_INSTANCE_LAUNCHING",
+            "NotificationTargetARN" : { "Ref": "AutoScalingNotificationTopicARN" },
+            "RoleARN" : { "Ref": "AutoScalingInstanceRoleArn" }
+          }
+        ],
         "LoadBalancerNames": { "Ref": "LoadBalancerName" },
         "MaxSize": { "Ref": "AutoScalingMaxSize" },
         "MinSize": { "Ref": "AutoScalingMinSize" },
