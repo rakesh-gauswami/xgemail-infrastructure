@@ -13,6 +13,7 @@ import json
 import logging
 import base64
 import traceback
+import hashlib
 import boto3
 from awshandler import AwsHandler
 import policyformatter
@@ -27,14 +28,18 @@ from botocore.exceptions import ClientError
 EFS_POLICY_STORAGE_PATH = '/policy-storage/'
 
 MULTI_POLICY_DOMAINS_PATH = 'config/policies/domains/'
+MULTI_POLICY_DOMAINS_PATH_WITH_PREFIX = 'policies/domains/'
 EFS_MULTI_POLICY_DOMAINS_PATH = EFS_POLICY_STORAGE_PATH + MULTI_POLICY_DOMAINS_PATH
 
 MULTI_POLICY_ENDPOINTS_PATH = 'config/policies/endpoints/'
+MULTI_POLICY_PREFIX_ENDPOINTS_PATH = 'policies/endpoints/'
+
 EFS_MULTI_POLICY_ENDPOINTS_PATH = EFS_POLICY_STORAGE_PATH + MULTI_POLICY_ENDPOINTS_PATH
 
 INBOUND_RELAY_CONTROL_PATH = EFS_POLICY_STORAGE_PATH + 'config/inbound-relay-control/'
 OUTBOUND_RELAY_CONTROL_PATH = EFS_POLICY_STORAGE_PATH + 'config/outbound-relay-control/'
 OUTBOUND_RELAY_CONTROL_DOMAIN_PATH = 'config/outbound-relay-control/domains/'
+OUTBOUND_RELAY_CONTROL_PREFIX_DOMAIN_PATH = 'outbound-relay-control/domains/'
 EFS_MULTI_POLICY_CONFIG_PATH = INBOUND_RELAY_CONTROL_PATH + 'multi-policy/'
 EFS_MULTI_POLICY_CONFIG_FILE = EFS_MULTI_POLICY_CONFIG_PATH + 'global.CONFIG'
 FLAG_TO_READ_POLICY_FROM_S3_FILE = EFS_MULTI_POLICY_CONFIG_PATH + 'msg_producer_read_policy_from_s3_global.CONFIG'
@@ -230,47 +235,61 @@ def read_endpoint_policy_from_EFS(userid):
     return load_multi_policy_file_locally(file_name)
 
 def read_policy_from_S3(recipient, aws_region, policy_bucket_name):
-    file_name = build_recipient_file_path(recipient, MULTI_POLICY_DOMAINS_PATH)
+    file_name = build_recipient_file_path_with_prefix(recipient, MULTI_POLICY_DOMAINS_PATH_WITH_PREFIX)
     if not file_name:
         return None
 
-    return load_multi_policy_file_from_S3(aws_region, policy_bucket_name, file_name)
+    policy_file = load_multi_policy_file_from_S3(aws_region, policy_bucket_name, file_name)
+
+    if policy_file is None:
+        # Try old location
+        file_name = build_recipient_file_path(recipient, MULTI_POLICY_DOMAINS_PATH)
+        policy_file = load_multi_policy_file_from_S3(aws_region, policy_bucket_name, file_name)
+    return policy_file    
 
 
 def policy_file_exists_in_S3(recipient, aws_region, policy_bucket_name):
-    file_name = build_recipient_file_path(recipient, MULTI_POLICY_DOMAINS_PATH)
+
+    file_name = build_recipient_file_path_with_prefix(recipient, MULTI_POLICY_DOMAINS_PATH_WITH_PREFIX)
     if not file_name:
         return False
 
-    try:
-        awshandler = AwsHandler(aws_region)
-        policy_data = awshandler.download_data_from_s3(policy_bucket_name, file_name)
-        return policy_data is not None
-    except (IOError, ClientError):
-        logger.warn("File [{0}] does not exist or failed to read".format(file_name))
-        return False
+    policy_exists = check_file_exists_in_S3(aws_region, policy_bucket_name, file_name)
+    if policy_exists is False:
+        #Try old location
+        file_name = build_recipient_file_path(recipient, MULTI_POLICY_DOMAINS_PATH)
+        policy_exists = check_file_exists_in_S3(aws_region, policy_bucket_name, file_name)
+    return policy_exists
+
 
 
 def outbound_relay_policy_file_exists_in_S3(recipient, aws_region, policy_bucket_name):
-    file_name = build_recipient_file_path(recipient, OUTBOUND_RELAY_CONTROL_DOMAIN_PATH)
+    file_name = build_recipient_file_path_with_prefix(recipient, OUTBOUND_RELAY_CONTROL_PREFIX_DOMAIN_PATH)
     if not file_name:
         return False
 
-    try:
-        awshandler = AwsHandler(aws_region)
-        policy_data = awshandler.download_data_from_s3(policy_bucket_name, file_name)
-        return policy_data is not None
-    except (IOError, ClientError):
-        logger.warn("Outbound relay control mailbox File [{0}] does not exist or failed to read".format(file_name))
-        return False
+
+    policy_exists = check_file_exists_in_S3(aws_region, policy_bucket_name, file_name)
+    if policy_exists is False:
+        #Try old location
+        file_name = build_recipient_file_path(recipient, OUTBOUND_RELAY_CONTROL_DOMAIN_PATH)
+        policy_exists = check_file_exists_in_S3(aws_region, policy_bucket_name, file_name)
+    return policy_exists
+
 
 
 def read_endpoint_policy_from_S3(userid, aws_region, policy_bucket_name):
-    file_name = MULTI_POLICY_ENDPOINTS_PATH + userid + ".POLICY"
+    file_name = build_endpoint_file_path_with_prefix(userid, MULTI_POLICY_PREFIX_ENDPOINTS_PATH)
     if not file_name:
         return None
 
-    return load_multi_policy_file_from_S3(aws_region, policy_bucket_name, file_name)
+    policy_file = load_multi_policy_file_from_S3(aws_region, policy_bucket_name, file_name)
+
+    if policy_file is None:
+        # Try old location
+        file_name = MULTI_POLICY_ENDPOINTS_PATH + userid + ".POLICY"
+        policy_file = load_multi_policy_file_from_S3(aws_region, policy_bucket_name, file_name)
+    return policy_file
 
 def load_multi_policy_file_locally(filename):
     try:
@@ -296,11 +315,39 @@ def load_multi_policy_file_from_S3(aws_region, policy_bucket_name, file_name):
     except (IOError, ClientError):
         logger.error("File [{0}] does not exist or failed to read".format(file_name))
 
+def check_file_exists_in_S3(aws_region, policy_bucket_name, file_name):
+    try:
+        awshandler = AwsHandler(aws_region)
+        return awshandler.s3_key_exists(policy_bucket_name, file_name)
+    except (IOError, ClientError):
+        logger.error("File [{0}] does not exist or failed to check".format(file_name))
+        return False
+
+def build_recipient_file_path_with_prefix(recipient, root_path):
+    try:
+        user_part, domain_part = recipient.split("@")
+        s3_object = base64.urlsafe_b64encode(user_part)
+        prefix_chars = hashlib.md5(s3_object).hexdigest().lower()[0:4]
+        return root_path + prefix_chars + "/" + domain_part + "/" + s3_object
+    except ValueError:
+        logger.info("Invalid recipient address. [{0}]".format(
+            recipient)
+        )
 
 def build_recipient_file_path(recipient, root_path):
     try:
         user_part, domain_part = recipient.split("@")
         return root_path + domain_part + "/" + base64.b64encode(user_part)
+    except ValueError:
+        logger.info("Invalid recipient address. [{0}]".format(
+            recipient)
+        )
+
+def build_endpoint_file_path_with_prefix(userid, root_path):
+    try:
+        s3_object = userid + ".POLICY"
+        prefix_chars = hashlib.md5(s3_object).hexdigest().lower()[0:4]
+        return root_path + prefix_chars + "/" + s3_object
     except ValueError:
         logger.info("Invalid recipient address. [{0}]".format(
             recipient)
