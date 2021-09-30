@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Library:: sophos-cloud-xgemail_helper
 #
-# Copyright 2018, Sophos
+# Copyright 2021, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
