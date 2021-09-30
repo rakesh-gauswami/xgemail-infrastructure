@@ -370,7 +370,7 @@ default['xgemail']['postfix_instance_data'] = {
   # mf-inbound-xdelivery
   'mf-inbound-xdelivery' => {
     :instance_name => 'mfix',
-    :port => 25,
+    :port => 8025,
     # Give delivery queues extra padding because extra content may be created during processing
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800 + 5242880),
     :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
@@ -396,7 +396,7 @@ default['xgemail']['postfix_instance_data'] = {
   # mf-outbound-xdelivery
   'mf-outbound-xdelivery' => {
       :instance_name => 'mfox',
-      :port => 25,
+      :port => 8025,
       # Give delivery queues extra padding because extra content may be created during processing
       :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800 + 5242880),
       :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
