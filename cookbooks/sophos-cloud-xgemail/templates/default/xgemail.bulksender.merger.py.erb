@@ -23,6 +23,7 @@ EX_TEMPFAIL = <%= @temp_failure_code %>
 POLICY_BUCKET_NAME = "<%= @policy_bucket %>"
 S3_ENCRYPTION_ALGORITHM = "<%= @s3_encryption_algorithm %>"
 BULK_SENDER_S3_PATH = "<%= @bulksender_s3_path %>"
+BULK_SENDER_S3_RESTRUCTURE_PATH = "<%= @bulksender_s3_restructure_path %>"
 MERGED_BULK_SENDER_FILENAME = "<%= @merged_bulksender_filename %>"
 
 # logging to syslog setup
@@ -77,6 +78,17 @@ if __name__ == "__main__":
             S3_ENCRYPTION_ALGORITHM
         )
 
+        # Once migration is complete we remove above call that writes to old  path.
+        # This script runs once every hour in one CS server per region. Every time we write to both 
+        # old and new location.
+        awshandler.upload_data_in_s3_without_expiration(
+            POLICY_BUCKET_NAME,
+            bulksenderformatter.get_s3_bulk_sender_path(
+                "".join([BULK_SENDER_S3_PATH, MERGED_BULK_SENDER_FILENAME])
+            ),
+            formatted_data,
+            S3_ENCRYPTION_ALGORITHM
+        )        
     except Exception as e:
         logger.exception("Unhandled exception in main ", e)
         exit(EX_TEMPFAIL)
