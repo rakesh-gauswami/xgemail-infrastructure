@@ -39,7 +39,7 @@ EFS_MULTI_POLICY_ENDPOINTS_PATH = EFS_POLICY_STORAGE_PATH + MULTI_POLICY_ENDPOIN
 INBOUND_RELAY_CONTROL_PATH = EFS_POLICY_STORAGE_PATH + 'config/inbound-relay-control/'
 OUTBOUND_RELAY_CONTROL_PATH = EFS_POLICY_STORAGE_PATH + 'config/outbound-relay-control/'
 OUTBOUND_RELAY_CONTROL_DOMAIN_PATH = 'config/outbound-relay-control/domains/'
-OUTBOUND_RELAY_CONTROL_PREFIX_DOMAIN_PATH = 'outbound-relay-control/domains/'
+OUTBOUND_RELAY_CONTROL_DOMAIN_PATH_WITH_PREFIX = 'outbound-relay-control/domains/'
 EFS_MULTI_POLICY_CONFIG_PATH = INBOUND_RELAY_CONTROL_PATH + 'multi-policy/'
 EFS_MULTI_POLICY_CONFIG_FILE = EFS_MULTI_POLICY_CONFIG_PATH + 'global.CONFIG'
 FLAG_TO_READ_POLICY_FROM_S3_FILE = EFS_MULTI_POLICY_CONFIG_PATH + 'msg_producer_read_policy_from_s3_global.CONFIG'
@@ -236,8 +236,6 @@ def read_endpoint_policy_from_EFS(userid):
 
 def read_policy_from_S3(recipient, aws_region, policy_bucket_name):
     file_name = build_recipient_file_path_with_prefix(recipient, MULTI_POLICY_DOMAINS_PATH_WITH_PREFIX)
-    if not file_name:
-        return None
 
     policy_file = load_multi_policy_file_from_S3(aws_region, policy_bucket_name, file_name)
 
@@ -251,10 +249,9 @@ def read_policy_from_S3(recipient, aws_region, policy_bucket_name):
 def policy_file_exists_in_S3(recipient, aws_region, policy_bucket_name):
 
     file_name = build_recipient_file_path_with_prefix(recipient, MULTI_POLICY_DOMAINS_PATH_WITH_PREFIX)
-    if not file_name:
-        return False
 
     policy_exists = check_file_exists_in_S3(aws_region, policy_bucket_name, file_name)
+
     if policy_exists is False:
         #Try old location
         file_name = build_recipient_file_path(recipient, MULTI_POLICY_DOMAINS_PATH)
@@ -264,12 +261,10 @@ def policy_file_exists_in_S3(recipient, aws_region, policy_bucket_name):
 
 
 def outbound_relay_policy_file_exists_in_S3(recipient, aws_region, policy_bucket_name):
-    file_name = build_recipient_file_path_with_prefix(recipient, OUTBOUND_RELAY_CONTROL_PREFIX_DOMAIN_PATH)
-    if not file_name:
-        return False
-
+    file_name = build_recipient_file_path_with_prefix(recipient, OUTBOUND_RELAY_CONTROL_DOMAIN_PATH_WITH_PREFIX)
 
     policy_exists = check_file_exists_in_S3(aws_region, policy_bucket_name, file_name)
+
     if policy_exists is False:
         #Try old location
         file_name = build_recipient_file_path(recipient, OUTBOUND_RELAY_CONTROL_DOMAIN_PATH)
@@ -280,8 +275,6 @@ def outbound_relay_policy_file_exists_in_S3(recipient, aws_region, policy_bucket
 
 def read_endpoint_policy_from_S3(userid, aws_region, policy_bucket_name):
     file_name = build_endpoint_file_path_with_prefix(userid, MULTI_POLICY_PREFIX_ENDPOINTS_PATH)
-    if not file_name:
-        return None
 
     policy_file = load_multi_policy_file_from_S3(aws_region, policy_bucket_name, file_name)
 
@@ -302,6 +295,8 @@ def load_multi_policy_file_locally(filename):
         )
 
 def load_multi_policy_file_from_S3(aws_region, policy_bucket_name, file_name):
+    if not file_name:
+        return False
     try:
         awshandler = AwsHandler(aws_region)
         s3_data = awshandler.download_data_from_s3(policy_bucket_name, file_name)
@@ -316,6 +311,8 @@ def load_multi_policy_file_from_S3(aws_region, policy_bucket_name, file_name):
         logger.error("File [{0}] does not exist or failed to read".format(file_name))
 
 def check_file_exists_in_S3(aws_region, policy_bucket_name, file_name):
+    if not file_name:
+        return False
     try:
         awshandler = AwsHandler(aws_region)
         return awshandler.s3_key_exists(policy_bucket_name, file_name)
