@@ -13,6 +13,7 @@ respective owners.
 import boto3
 import logging
 import json
+import time
 import os
 from datetime import datetime
 from botocore.exceptions import ClientError, WaiterError
@@ -221,6 +222,7 @@ class MultiEip:
                 DocumentName=ssm_postfix_service,
                 Parameters={'cmd': [cmd]}
             )
+            time.sleep(1)
             waiter = self.ssm.get_waiter('command_executed')
             waiter.wait(
                 CommandId=ssmresponse['Command']['CommandId'],
