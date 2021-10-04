@@ -29,7 +29,10 @@ import tempfile
 import unittest
 import awshandler
 
+from mock import call
 from recipientsplitconfig import RecipientSplitConfig
+
+
 
 # on OSX, the file /dev/log does not exist and needs to be changed to /var/run/syslog
 if sys.platform.startswith('darwin'):
@@ -222,10 +225,10 @@ class MultiPolicyReaderUtilsTest(unittest.TestCase):
             "76656a08-c17b-47d6-aafd-ef8fc7c250a0"
         )
 
-    @mock.patch.object(awshandler.AwsHandler, 'download_data_from_s3')
-    def test_policy_file_exists_in_S3_file_missing(self, mock_download_data_from_s3):
+    @mock.patch.object(awshandler.AwsHandler, 's3_key_exists')
+    def test_policy_file_exists_in_S3_file_missing(self, mock_s3_key_exists):
 
-        mock_download_data_from_s3.return_value = None
+        mock_s3_key_exists.return_value = False
 
         self.assertFalse(
             multipolicyreaderutils.policy_file_exists_in_S3(
@@ -235,16 +238,20 @@ class MultiPolicyReaderUtilsTest(unittest.TestCase):
             )
         )
 
-        mock_download_data_from_s3.assert_called_with(
-            'policy-bucket',
-            'config/policies/domains/somewhere.com/c29tZW9uZQ=='
+        calls = [
+            call('policy-bucket', 'policies/domains/ba0f/somewhere.com/c29tZW9uZQ=='),
+            call('policy-bucket', 'config/policies/domains/somewhere.com/c29tZW9uZQ==')
+        ]
+        
+        mock_s3_key_exists.assert_has_calls(
+             calls
         )
 
 
-    @mock.patch.object(awshandler.AwsHandler, 'download_data_from_s3')
-    def test_policy_file_exists_in_S3_file_present(self, mock_download_data_from_s3):
+    @mock.patch.object(awshandler.AwsHandler, 's3_key_exists')
+    def test_policy_file_exists_in_S3_file_present(self, mock_s3_key_exists):
 
-        mock_download_data_from_s3.return_value = "Some data"
+        mock_s3_key_exists.side_effect =  [ False, True]
 
         self.assertTrue(
             multipolicyreaderutils.policy_file_exists_in_S3(
@@ -254,15 +261,19 @@ class MultiPolicyReaderUtilsTest(unittest.TestCase):
             )
         )
 
-        mock_download_data_from_s3.assert_called_with(
-            'policy-bucket',
-            'config/policies/domains/somewhere.com/c29tZW9uZQ=='
+        calls = [
+            call('policy-bucket', 'policies/domains/ba0f/somewhere.com/c29tZW9uZQ=='),
+            call('policy-bucket', 'config/policies/domains/somewhere.com/c29tZW9uZQ==')
+        ]
+        
+        mock_s3_key_exists.assert_has_calls(
+             calls
         )
 
-    @mock.patch.object(awshandler.AwsHandler, 'download_data_from_s3')
-    def test_policy_file_exists_in_S3_with_exception(self, mock_download_data_from_s3):
+    @mock.patch.object(awshandler.AwsHandler, 's3_key_exists')
+    def test_policy_file_exists_in_S3_with_exception(self, mock_s3_key_exists):
 
-        mock_download_data_from_s3.side_effect = IOError('load error')
+        mock_s3_key_exists.side_effect = IOError('load error')
 
         self.assertFalse(
             multipolicyreaderutils.policy_file_exists_in_S3(
@@ -272,9 +283,13 @@ class MultiPolicyReaderUtilsTest(unittest.TestCase):
             )
         )
 
-        mock_download_data_from_s3.assert_called_with(
-            'policy-bucket',
-            'config/policies/domains/somewhere.com/c29tZW9uZQ=='
+        calls = [
+            call('policy-bucket', 'policies/domains/ba0f/somewhere.com/c29tZW9uZQ=='),
+            call('policy-bucket', 'config/policies/domains/somewhere.com/c29tZW9uZQ==')
+        ]
+        
+        mock_s3_key_exists.assert_has_calls(
+             calls
         )
 
 
