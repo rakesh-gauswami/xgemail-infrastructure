@@ -41,6 +41,7 @@ PACKAGE_DIR                     = "#{XGEMAIL_FILES_DIR}/xgemail-bulksender-servi
 BULKSENDER_SCRIPT               = 'xgemail.bulksender.merger.py'
 BULKSENDER_SCRIPT_PATH          = "#{PACKAGE_DIR}/#{BULKSENDER_SCRIPT}"
 BULK_SENDER_PATH_PREFIX         = 'config/outbound-relay-control/bulksenders/'
+BULK_SENDER_RESTRUCTURE_PATH    = 'outbound-relay-control/bulksenders/'
 MERGED_BULK_SENDER_FILENAME     = 'approved-bulksenders'
 
 
@@ -66,6 +67,7 @@ template BULKSENDER_SCRIPT_PATH do
     :aws_region => AWS_REGION,
     :policy_bucket => POLICY_BUCKET_NAME,
     :bulksender_s3_path => BULK_SENDER_PATH_PREFIX,
+    :bulksender_s3_restrucure_path => BULK_SENDER_RESTRUCTURE_PATH,
     :merged_bulksender_filename => MERGED_BULK_SENDER_FILENAME,
     :s3_encryption_algorithm =>  S3_ENCRYPTION_ALGORITHM,
     :temp_failure_code => TEMP_FAILURE_CODE,
