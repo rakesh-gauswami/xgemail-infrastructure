@@ -20,10 +20,6 @@
   },
 
   "Parameters": {
-    "Environment": {
-      "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
-      "Type": "String"
-    },
     "FunctionDescription": {
       "Description": "Description for this function.",
       "Type": "String",
@@ -84,6 +80,11 @@
       ]
     },
 
+    "SsmPostfixService": {
+      "Description": "The SSM Document to Start or Stop Postfix.",
+      "Type": "String"
+    },
+
     "Timeout": {
       "Description": "Timeout in seconds.",
       "Type": "Number",
@@ -113,7 +114,7 @@
         "Description": { "Ref": "FunctionDescription" },
         "Environment": {
           "Variables": {
-            "ACCOUNT": { "Ref": "Environment" }
+            "SSM_POSTFIX_SERVICE": { "Ref": "SsmPostfixService" }
           }
         },
         "FunctionName": {
