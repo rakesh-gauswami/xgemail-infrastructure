@@ -33,7 +33,7 @@ ACCOUNT = node['sophos_cloud']['environment']
 
 HOP_COUNT_DELIVERY_INSTANCE = node['xgemail']['hop_count_delivery_instance']
 
-INTERNET_XDELIVERY_INSTANCE_DATA = node['xgemail']['postfix_instance_data']['internet-xdelivery']
+INTERNET_XDELIVERY_INSTANCE_DATA = node['xgemail']['postfix_instance_data']['mf-outbound-xdelivery']
 raise "Unsupported node type [#{NODE_TYPE}]" if INTERNET_XDELIVERY_INSTANCE_DATA.nil?
 
 SMTP_PORT = INTERNET_XDELIVERY_INSTANCE_DATA[:port]

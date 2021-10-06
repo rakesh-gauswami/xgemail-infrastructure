@@ -32,7 +32,7 @@ AWS_REGION = node['sophos_cloud']['region']
 
 HOP_COUNT_DELIVERY_INSTANCE = node['xgemail']['hop_count_delivery_instance']
 
-XDELIVERY_INSTANCE_DATA = node['xgemail']['postfix_instance_data']['xdelivery']
+XDELIVERY_INSTANCE_DATA = node['xgemail']['postfix_instance_data']['mf-inbound-xdelivery']
 raise "Unsupported node type [#{NODE_TYPE}]" if XDELIVERY_INSTANCE_DATA.nil?
 
 SMTP_PORT = XDELIVERY_INSTANCE_DATA[:port]
