@@ -21,6 +21,7 @@ import subprocess
 import logging
 import traceback
 import configformatter
+import hashlib
 from logging.handlers import SysLogHandler
 
 
@@ -33,10 +34,12 @@ MAIL_PIC_API_AUTH = '<%= @mail_pic_api_auth %>'
 CONNECTIONS_BUCKET = '<%= @connections_bucket %>'
 POLICY_BUCKET = '<%= @policy_bucket %>'
 ENC_CONFIG_KEY = '<%= @enc_config_key %>'
+ENC_CONFIG_PREFIX_KEY = '<%= @enc_config_prefix_key %>'
 INBOUND_TLS_CONFIG_KEY = '<%= @inbound_tls_config_key %>'
 TLS_SMTP_TRANSPORT_TAG = ' smtp_encrypt:'
 DEFAULT_SMTP_TRANSPORT_TAG = ' smtp:'
 CUSTOM_ROUTE_TRANSPORT_PATH = "<%= @custom_route_transport_path %>"
+CUSTOM_ROUTE_TRANSPORT_PREFIX_PATH = "<%= @custom_route_transport_prefix_path %>"
 CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME = CUSTOM_ROUTE_TRANSPORT_PATH + "customer-delivery-custom-recipient-transport.CONFIG"
 
 # logging to syslog setup
@@ -61,11 +64,24 @@ def get_passphrase():
     passphrase = s3.get_object(Bucket=CONNECTIONS_BUCKET, Key=MAIL_PIC_API_AUTH)
     return base64.b64encode('mail:' + passphrase['Body'].read())
 
+def get_enc_config_path_with_prefix(domain_name):
+  s3_object = domain_name + '.ENC_CONFIG'
+  prefix_chars = hashlib.md5(s3_object).hexdigest().lower()[0:4]
+  return ENC_CONFIG_PREFIX_KEY + prefix_chars + "/" + s3_object
+
 # Returns the smtp transport tag to be used for the customer
 # with the given id
 def get_smtp_transport_tag(s3, domain_name, customer_id):
 
-  if encryption_config_exists(s3, domain_name):
+  #Check new location.
+  key_path = get_enc_config_path_with_prefix(domain_name)
+  logger.info('Checking new location' + key_path)
+  if encryption_config_exists(s3, key_path):
+    return TLS_SMTP_TRANSPORT_TAG
+  
+  #Check old location.
+  key_path = ENC_CONFIG_KEY + domain_name + '.ENC_CONFIG'
+  if encryption_config_exists(s3, key_path):
     return TLS_SMTP_TRANSPORT_TAG
 
   if tls_config_exists_in_api_response(customer_id):
@@ -103,13 +119,11 @@ def tls_config_exists_in_api_response(customer_id):
     return False
 
 # Checks if encryption config exists for the given domain
-def encryption_config_exists(s3_client, domain_name):
+def encryption_config_exists(s3_client, key_path):
 
   if not POLICY_BUCKET:
     return False
-
-  key_path = ENC_CONFIG_KEY + domain_name + '.ENC_CONFIG'
-
+  
   try:
     s3_client.head_object(Bucket = POLICY_BUCKET, Key = key_path)
     logger.debug("key (%s) exists!", key_path)
