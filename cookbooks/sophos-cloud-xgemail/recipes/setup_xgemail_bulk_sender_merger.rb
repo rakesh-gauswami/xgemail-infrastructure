@@ -67,7 +67,7 @@ template BULKSENDER_SCRIPT_PATH do
     :aws_region => AWS_REGION,
     :policy_bucket => POLICY_BUCKET_NAME,
     :bulksender_s3_path => BULK_SENDER_PATH_PREFIX,
-    :bulksender_s3_restrucure_path => BULK_SENDER_RESTRUCTURE_PATH,
+    :bulksender_s3_restructure_path => BULK_SENDER_RESTRUCTURE_PATH,
     :merged_bulksender_filename => MERGED_BULK_SENDER_FILENAME,
     :s3_encryption_algorithm =>  S3_ENCRYPTION_ALGORITHM,
     :temp_failure_code => TEMP_FAILURE_CODE,
