@@ -123,7 +123,7 @@ def build_policy_map(recipients, aws_region = None, policy_bucket_name = None, p
         The second is the id of the customer to which all recipients belong
     """
     user_list = policies.copy()
-    read_from_s3 = get_read_from_s3_enabled()
+    read_from_s3 = True 
     split_config = RecipientSplitConfig(INBOUND_SPLIT_BY_RECIPIENTS_CONFIG_PATH)
     customer_id = None
 
