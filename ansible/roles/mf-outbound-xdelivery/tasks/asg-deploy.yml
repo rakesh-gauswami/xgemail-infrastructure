@@ -53,14 +53,14 @@
       XgemailPolicyBucketName:              "{{s3.policy_bucket}}"
       XgemailServiceType:                   "mf-outbound-xdelivery"
   with_together:
-    - "{{aws.asg.ix.stack_number}}"
-    - "{{aws.asg.ix.asg_min_size}}"
-    - "{{aws.asg.ix.zone_index}}"
-  register: ix_stack_async_results
+    - "{{aws.asg.mfox.stack_number}}"
+    - "{{aws.asg.mfox.asg_min_size}}"
+    - "{{aws.asg.mfox.zone_index}}"
+  register: mfox_stack_async_results
 
 - async_status:
     jid: "{{item.ansible_job_id}}"
-  with_items: "{{ix_stack_async_results.results}}"
-  register: ix_stack_async_poll_results
-  until: "{{ix_stack_async_poll_results.finished}}"
+  with_items: "{{mfox_stack_async_results.results}}"
+  register: mfox_stack_async_poll_results
+  until: "{{mfox_stack_async_poll_results.finished}}"
   retries: 50
