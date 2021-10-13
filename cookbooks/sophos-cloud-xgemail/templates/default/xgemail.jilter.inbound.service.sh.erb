@@ -8,7 +8,7 @@ exec java -Dcom.sun.management.jmxremote.port=6007 \
     -Djava.library.path=<%= @deployment_dir %>/xgemail-jilter-inbound/lib \
     -Dconf.dir=<%= @deployment_dir %>/xgemail-jilter-inbound/conf \
     -Dspring.profiles.active=<%= @active_profile %> \
-    -Xms256m \
-    -Xmx256m \
+    -Xms1024m \
+    -Xmx1024m \
     -cp "<%= @deployment_dir %>/xgemail-jilter-inbound/lib/*" \
     com.sophos.xgemail.jilter.Application

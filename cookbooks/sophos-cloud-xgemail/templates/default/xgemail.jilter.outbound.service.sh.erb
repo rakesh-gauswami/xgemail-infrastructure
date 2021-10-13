@@ -7,7 +7,7 @@ exec java -Dlogback.configurationFile=./logback.xml \
     -Djava.library.path=<%= @deployment_dir %>/xgemail-jilter-outbound/lib \
     -Dconf.dir=<%= @deployment_dir %>/xgemail-jilter-outbound/conf \
     -Dspring.profiles.active=<%= @active_profile %> \
-    -Xms256m \
-    -Xmx256m \
+    -Xms1024m \
+    -Xmx1024m \
     -cp "<%= @deployment_dir %>/xgemail-jilter-outbound/lib/*" \
     com.sophos.xgemail.jilter.OutboundApplication
