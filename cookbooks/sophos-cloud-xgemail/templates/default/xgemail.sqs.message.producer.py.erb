@@ -150,9 +150,15 @@ def get_metadata(message_headers):
         recipient_domain = sys.argv[5]
         # TODO: see if we can pipe arrival date from postfix
         date_recorded = datetime.utcnow().strftime(DATETIME_FORMAT)
+        # load rejected recipients from the file written by Jilter based on queue id
+        rejected_recipients = get_rejected_recipients(queue_id, MSG_HISTORY_EVENT_DIR)
         recipient_list = [ ]
         for i in range (6,len(sys.argv)):
-            recipient_list.append(strip_dot_at_end(sys.argv[i]))
+            recipient = strip_dot_at_end(sys.argv[i])
+            if recipient.lower() in rejected_recipients:
+                logger.info("silent dropping recipient [{0}] for queue id [{1}] due to rejection by jilter".format(recipient, queue_id))
+            else:
+                recipient_list.append(recipient)
 
         if (sender_address == null_sender):
             sender_address = None
@@ -345,7 +351,7 @@ def get_metadata_for_outbound(metadata, headers, msghistory_events):
 
     validated_sender = None
     customer_id = get_customer_id(metadata.get_queue_id(), msghistory_events)
-    if multipolicyreaderutils.get_valid_sender_from_msghistory_enabled(customer_id, SUBMIT_HOST_IP) and msghistory_events is not None and len(msghistory_events) > 0:
+    if msghistory_events is not None and len(msghistory_events) > 0:
         # Get validated sender using MH accepted event file.
         logger.debug("Using message history to get sender for customer {0}".format(customer_id))
         validated_sender = list(msghistory_events.keys())[0]
@@ -662,7 +668,7 @@ def multi_policy_flow(metadata, direction, domain, sender, message, msghistory_e
     recipients = metadata.get_recipients()
     customer_id = get_customer_id(metadata.get_queue_id(), msghistory_events)
     policy_list = None
-    if customer_id is not None and multipolicyreaderutils.build_recipient_map_from_msghistory_enabled(customer_id, SUBMIT_HOST_IP) and msghistory_events is not None and len(msghistory_events) > 0:
+    if customer_id is not None and msghistory_events is not None and len(msghistory_events) > 0:
         logger.debug("Using message history to build recipient map for customer {0}".format(customer_id))
         policy_list = build_recipient_map_from_msghistory_enabled(metadata.get_queue_id(), recipients, msghistory_events)
 
@@ -816,6 +822,20 @@ def outbound_split_by_recipients(metadata, sender, domain, message, direction, m
     if msghistory_events is not None:
         messagehistory.handle_msghistory_events(queue_id, msghistory_events, MSG_HISTORY_EVENT_PROCESSOR_URL, MSG_HISTORY_EVENT_DIR)
 
+def get_rejected_recipients(queue_id, directory):
+    """
+    Reads the rejected recipients information written by Jilter
+    """
+    file_path = directory + '/' + queue_id + '.rejected'
+
+    if not os.path.exists(file_path):
+        return set()
+
+    try:
+        return set(line.strip().lower() for line in io.open(file_path, encoding='utf8'))
+    except Exception as ex:
+        logger.error("File path [{0}]. Error reading rejected recipients: [{1}]".format(file_path, ex))
+        return set()
 
 # accepts data from postfix and send message and metadata to S3 and
 # a json object to SQS which provides pointer to the message in S3
@@ -832,6 +852,10 @@ def main():
         #A dict where key is mailbox address and value is the 'accepted' event record.
         msghistory_events = messagehistory.read_msghistory_accepted_events(queue_id, MSG_HISTORY_EVENT_DIR)
 
+        if len(metadata.get_recipients()) == 0:
+            logger.info("all recipients rejected by jilter for multiple reasons for metadata [{0}]".format(metadata))
+            return
+
         if INTERNET == SUBMIT_TYPE:
             domain = metadata.get_recipient_domain()
             direction = INBOUND_MESSAGE_DIRECTION
@@ -841,8 +865,8 @@ def main():
                 "ACCEPTED",
                 "v1"
             )
-            if multipolicyreaderutils.get_multi_policy_enabled():
-                return multi_policy_flow(metadata, direction, domain, sender, plaintext_message, msghistory_events, message_attributes)
+            
+            return multi_policy_flow(metadata, direction, domain, sender, plaintext_message, msghistory_events, message_attributes)
 
         elif MF_INBOUND == SUBMIT_TYPE:
             domain = metadata.get_recipient_domain()
@@ -853,8 +877,8 @@ def main():
                 "ACCEPTED",
                 "v1"
             )
-            if multipolicyreaderutils.get_multi_policy_enabled():
-                return multi_policy_flow(metadata, direction, domain, sender, plaintext_message, msghistory_events, message_attributes)
+            
+            return multi_policy_flow(metadata, direction, domain, sender, plaintext_message, msghistory_events, message_attributes)
 
         elif CUSTOMER == SUBMIT_TYPE:
             direction = OUTBOUND_MESSAGE_DIRECTION

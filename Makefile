@@ -42,7 +42,7 @@ GROUP_1 = 	.check.python \
 			.check.pyunit.local \
 			$(EOL)
 
-# Build Group 2 - Python Local
+# Build Group 2 - CloudFormation Templates
 GROUP_2 = 	.check.cloudformation \
 			$(EOL)
 
@@ -252,7 +252,7 @@ NUM_BASH_FILES=$(shell echo $(BASH_FILES) | wc -w)
 
 PYTHON_FILES := $(shell find ./cookbooks -name '*.py')
 PYTHON_FILES += $(shell find ./utils -name '*.py')
-PYTHON_FILES += $(shell find ./bamboo -name '*.py')
+#PYTHON_FILES += $(shell find ./bamboo -name '*.py') Need to add a Python3 syntax checker. Files in this directory are all python3 now.
 PYTHON_FILES += $(shell find ./bamboo/xgemail -name '*.py')
 PYTHON_FILES += ./utils/xgemail_send_eml.py
 PYTHON_FILES += ./utils/xgemail_terminate_instance.py

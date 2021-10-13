@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: configure-postfix
 #
-# Copyright 2020, Sophos
+# Copyright 2021, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -80,6 +80,8 @@ include_recipe 'sophos-cloud-xgemail::configure-risky-delivery-queue'
 include_recipe 'sophos-cloud-xgemail::configure-warmup-delivery-queue'
 include_recipe 'sophos-cloud-xgemail::configure-beta-delivery-queue'
 include_recipe 'sophos-cloud-xgemail::configure-delta-delivery-queue'
+include_recipe 'sophos-cloud-xgemail::configure-mf-inbound-submit-queue'
+include_recipe 'sophos-cloud-xgemail::configure-mf-outbound-submit-queue'
 
 if ACCOUNT == 'sandbox'
   include_recipe 'sophos-cloud-xgemail::configure-extended-delivery-queue'

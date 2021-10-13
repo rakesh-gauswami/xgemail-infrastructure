@@ -23,6 +23,7 @@ EX_TEMPFAIL = <%= @temp_failure_code %>
 POLICY_BUCKET_NAME = "<%= @policy_bucket %>"
 S3_ENCRYPTION_ALGORITHM = "<%= @s3_encryption_algorithm %>"
 BULK_SENDER_S3_PATH = "<%= @bulksender_s3_path %>"
+BULK_SENDER_S3_RESTRUCTURE_PATH = "<%= @bulksender_s3_restructure_path %>"
 MERGED_BULK_SENDER_FILENAME = "<%= @merged_bulksender_filename %>"
 
 # logging to syslog setup
@@ -43,22 +44,29 @@ def get_approved_bulksenders_json(directory_objects):
     }
     return json.dumps(bulksender_json)
 
+def populate_approved_bulk_senders(bulk_sender_path, directory_objects):
+    #get all approved files from S3
+    approved_bulk_sender = awshandler.list_filtered_objects(
+        POLICY_BUCKET_NAME,
+        bulk_sender_path,
+        ".APPROVED"
+    )
+
+    for filename in approved_bulk_sender:
+        dir_object = os.path.splitext(os.path.basename(filename))[0]
+        directory_objects.add(dir_object)
 
 if __name__ == "__main__":
     try:
 
-        #get all approved files from S3
-        approved_bulk_sender = awshandler.list_filtered_objects(
-            POLICY_BUCKET_NAME,
-            BULK_SENDER_S3_PATH,
-            ".APPROVED"
-        )
-
+        
         directory_objects = set()
 
-        for filename in approved_bulk_sender:
-            dir_object = os.path.splitext(os.path.basename(filename))[0]
-            directory_objects.add(dir_object)
+        #get all approved files from S3 old location.
+        populate_approved_bulk_senders(BULK_SENDER_S3_PATH, directory_objects)
+
+        #get all approved files from S3 new location.
+        populate_approved_bulk_senders(BULK_SENDER_S3_RESTRUCTURE_PATH, directory_objects)
 
         #Upload file same policy bucket
         # magic_bytes, schema_version, nonce_length, bulk_sender_json):
@@ -77,6 +85,17 @@ if __name__ == "__main__":
             S3_ENCRYPTION_ALGORITHM
         )
 
+        # Once migration is complete we remove above call that writes to old  path.
+        # This script runs once every hour in one CS server per region. Every time we write to both 
+        # old and new location.
+        awshandler.upload_data_in_s3_without_expiration(
+            POLICY_BUCKET_NAME,
+            bulksenderformatter.get_s3_bulk_sender_path(
+                "".join([BULK_SENDER_S3_RESTRUCTURE_PATH, MERGED_BULK_SENDER_FILENAME])
+            ),
+            formatted_data,
+            S3_ENCRYPTION_ALGORITHM
+        )        
     except Exception as e:
         logger.exception("Unhandled exception in main ", e)
         exit(EX_TEMPFAIL)

@@ -542,6 +542,16 @@ def wait_for_jilter():
         logger.error("jilter process not found on port 9876. Exiting")
         exit(1)
 
+
+def get_email_product_type(node_type):
+    """
+    Based on node type returns product type Mailflow or Gateway
+    """
+    if node_type in ['mf-inbound-delivery','mf-outbound-delivery']:
+        return "Mailflow"
+    else:
+        return "Gateway"
+
 def deliver_messages():
     while True:
         try:
@@ -677,7 +687,8 @@ def deliver_messages():
                             e2e_telemetry_data = E2ETelemetryData(queue_id,
                                                                   MESSAGE_DIRECTION,
                                                                   float(round(time.time() * 1000)) - float(timestamp_header),
-                                                                  datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+                                                                  datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                                                  get_email_product_type(NODE_TYPE))
                             #put data to Kinesis firehose delivery stream
                             response = awshandler.put_data_to_kinesis_delivery_stream(
                                 E2E_LATENCY_TELEMETRY_DELIVERY_STREAM,

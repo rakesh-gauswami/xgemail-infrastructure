@@ -9,27 +9,28 @@
 # This recipe configures fluentd (td-agent)
 #
 
-ACCOUNT                         = node['sophos_cloud']['environment']
-CONF_DIR                        = node['fluentd']['conf_dir']
-INSTANCE_ID                     = node['ec2']['instance_id']
-MAIN_DIR                        = node['fluentd']['main_dir']
-NODE_TYPE                       = node['xgemail']['cluster_type']
-PATTERNS_DIR                    = node['fluentd']['patterns_dir']
-PLUGIN_DIR                      = node['fluentd']['plugin_dir']
-SQS_DELIVERY_DELAY              = node['fluentd']['sqs_delivery_delay']
-REGION                          = node['sophos_cloud']['region']
-MSG_STATS_REJECT_SNS_TOPIC      = node['xgemail']['msg_statistics_rejection_sns_topic']
-DELIVERY_STATUS_SQS             = node['xgemail']['msg_history_delivery_status_sqs']
-DELIVERY_STATUS_SNS_TOPIC       = node['xgemail']['msg_history_status_sns_topic']
-SERVER_IP                       = node['ipaddress']
-MAILLOG_FILTER_PATTERNS         = "(\\.#{REGION}\\.compute\\.internal|:\\sdisconnect\\sfrom\\s|\\swarning:\\shostname\\s|:\\sremoved\\s|table\\shash:|sm-msp-queue|:\\sstatistics:\\s)"
-JILTER_FILTER_PATTERNS          = "(com\\.launchdarkly\\.client\\.LDClient|com\\.launchdarkly\\.client\\.LDUser)"
-LIFECYCLE_FILTER_PATTERNS       = "(?!.*)"
-MESSAGEBOUNCER_FILTER_PATTERNS  = "(?!.*)"
-MULTIPOLICY_FILTER_PATTERNS     = "(?!.*)"
-SQSMSGCONSUMER_FILTER_PATTERNS  = "(?!.*)"
-SQSMSGPRODUCER_FILTER_PATTERNS  = "(?!.*)"
-MH_MAIL_INFO_STORAGE_DIR        = node['xgemail']['mh_mail_info_storage_dir']
+ACCOUNT                          = node['sophos_cloud']['environment']
+CONF_DIR                         = node['fluentd']['conf_dir']
+INSTANCE_ID                      = node['ec2']['instance_id']
+MAIN_DIR                         = node['fluentd']['main_dir']
+NODE_TYPE                        = node['xgemail']['cluster_type']
+PATTERNS_DIR                     = node['fluentd']['patterns_dir']
+PLUGIN_DIR                       = node['fluentd']['plugin_dir']
+SQS_DELIVERY_DELAY               = node['fluentd']['sqs_delivery_delay']
+REGION                           = node['sophos_cloud']['region']
+MSG_STATS_REJECT_SNS_TOPIC       = node['xgemail']['msg_statistics_rejection_sns_topic']
+DELIVERY_STATUS_SQS              = node['xgemail']['msg_history_delivery_status_sqs']
+DELIVERY_STATUS_SNS_TOPIC        = node['xgemail']['msg_history_status_sns_topic']
+SERVER_IP                        = node['ipaddress']
+MAILLOG_FILTER_PATTERNS          = "(\\.#{REGION}\\.compute\\.internal|:\\sdisconnect\\sfrom\\s|\\swarning:\\shostname\\s|:\\sremoved\\s|table\\shash:|sm-msp-queue|:\\sstatistics:\\s)"
+JILTER_FILTER_PATTERNS           = "(com\\.launchdarkly\\.client\\.LDClient|com\\.launchdarkly\\.client\\.LDUser)"
+LIFECYCLE_FILTER_PATTERNS        = "(?!.*)"
+MESSAGEBOUNCER_FILTER_PATTERNS   = "(?!.*)"
+MULTIPOLICY_FILTER_PATTERNS      = "(?!.*)"
+SQSMSGCONSUMER_FILTER_PATTERNS   = "(?!.*)"
+SQSMSGPRODUCER_FILTER_PATTERNS   = "(?!.*)"
+TRANSPORTUPDATER_FILTER_PATTERNS = "(?!.*)"
+MH_MAIL_INFO_STORAGE_DIR         = node['xgemail']['mh_mail_info_storage_dir']
 
 # Configs
 if NODE_TYPE == 'customer-delivery'
@@ -112,6 +113,12 @@ else
   SERVER_TYPE_XDELIVERY = 'UNKNOWN'
   DIRECTION             = 'UNKNOWN'
   NON_DELIVERY_DSN      = 'UNKNOWN'
+end
+
+if NODE_TYPE == 'mf-inbound-submit'
+    EMAIL_PRODUCT_TYPE = 'Mailflow'
+else
+    EMAIL_PRODUCT_TYPE = 'Gateway'
 end
 
 ### Fluentd Source Configuration Files ###
@@ -244,6 +251,23 @@ template 'fluentd-source-sqsmsgconsumer' do
     NODE_TYPE == 'warmup-delivery' ||
     NODE_TYPE == 'beta-delivery' ||
     NODE_TYPE == 'delta-delivery'
+  }
+end
+
+# Customer delivery and xdelivery instances - Start Order: 10
+template 'fluentd-source-transportupdater' do
+  path "#{CONF_DIR}/10-source-transportupdater.conf"
+  source 'fluentd-source-generic.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :log_name => 'transportupdater',
+    :log_path => '/var/log/xgemail/transportupdater.log'
+  )
+  only_if {
+    NODE_TYPE == 'customer-delivery' ||
+    NODE_TYPE == 'xdelivery'
   }
 end
 
@@ -460,6 +484,23 @@ template 'fluentd-match-sqsmsgconsumer' do
   }
 end
 
+template 'fluentd-match-transportupdater' do
+  path "#{CONF_DIR}/20-match-transportupdater.conf"
+  source 'fluentd-match-generic.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :application_name => NODE_TYPE,
+    :log_name => 'transportupdater',
+    :filter_patterns => TRANSPORTUPDATER_FILTER_PATTERNS
+  )
+  only_if {
+    NODE_TYPE == 'customer-delivery' ||
+    NODE_TYPE == 'xdelivery'
+  }
+end
+
 ### Fluentd Filter Configuration Files ###
 
 # All instances - Start Order: 50
@@ -620,6 +661,25 @@ template 'fluentd-filter-sqsmsgconsumer' do
   }
 end
 
+template 'fluentd-filter-transportupdater' do
+  path "#{CONF_DIR}/50-filter-transportupdater.conf"
+  source 'fluentd-filter-generic.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :application_name => NODE_TYPE,
+    :log_name => 'transportupdater',
+    :grok_pattern => 'TRANSPORTUPDATER',
+    :reserve_data => 'true',
+    :patterns_dir => PATTERNS_DIR
+  )
+  only_if {
+    NODE_TYPE == 'customer-delivery' ||
+    NODE_TYPE == 'xdelivery'
+  }
+end
+
 ### Fluentd Customized Configuration Files ###
 #
 # Only internet-submit  - Start Order: 60
@@ -707,6 +767,9 @@ template 'fluentd-filter-msg-stats-reject' do
     NODE_TYPE == 'internet-submit' ||
     NODE_TYPE == 'mf-inbound-submit'
   }
+  variables(
+    :email_product_type => EMAIL_PRODUCT_TYPE
+  )
 end
 
 # All instances - Start Order: 70
@@ -979,6 +1042,15 @@ end
 cookbook_file 'sqsmsgconsumer grok patterns' do
   path "#{PATTERNS_DIR}/sqsmsgconsumer"
   source 'sqsmsgconsumer.grok'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  action :create
+end
+
+cookbook_file 'transportupdater grok patterns' do
+  path "#{PATTERNS_DIR}/transportupdater"
+  source 'transportupdater.grok'
   mode '0644'
   owner 'root'
   group 'root'

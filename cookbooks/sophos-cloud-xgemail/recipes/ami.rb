@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: ami
 #
-# Copyright 2018, Sophos
+# Copyright 2021, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -122,6 +122,12 @@ DEPLOYMENT_DIR = '/opt/sophos/xgemail'
 JILTER_INBOUND_VERSION = node['xgemail']['jilter_inbound_version']
 JILTER_INBOUND_PACKAGE_NAME = "xgemail-jilter-inbound-#{JILTER_INBOUND_VERSION}"
 
+JILTER_MF_INBOUND_VERSION = node['xgemail']['jilter_mf_inbound_version']
+JILTER_MF_INBOUND_PACKAGE_NAME = "xgemail-jilter-mf-inbound-#{JILTER_MF_INBOUND_VERSION}"
+
+JILTER_MF_OUTBOUND_VERSION = node['xgemail']['jilter_mf_outbound_version']
+JILTER_MF_OUTBOUND_PACKAGE_NAME = "xgemail-jilter-mf-outbound-#{JILTER_MF_OUTBOUND_VERSION}"
+
 JILTER_OUTBOUND_VERSION = node['xgemail']['jilter_outbound_version']
 JILTER_OUTBOUND_PACKAGE_NAME = "xgemail-jilter-outbound-#{JILTER_OUTBOUND_VERSION}"
 
@@ -203,6 +209,48 @@ link "#{DEPLOYMENT_DIR}/xgemail-jilter-outbound" do
   to "#{DEPLOYMENT_DIR}/#{JILTER_OUTBOUND_PACKAGE_NAME}"
 end
 
+execute 'download_jilter_mf_inbound' do
+  user 'root'
+  cwd "#{PACKAGES_DIR}"
+  command <<-EOH
+      aws --region us-west-2 s3 cp s3:#{sophos_thirdparty}/xgemail/#{JILTER_MF_INBOUND_PACKAGE_NAME}.tar .
+  EOH
+end
+
+execute 'extract_jilter_mf_inbound_package' do
+  user 'root'
+  cwd "#{PACKAGES_DIR}"
+  command <<-EOH
+      tar xf #{JILTER_MF_INBOUND_PACKAGE_NAME}.tar -C #{DEPLOYMENT_DIR}
+  EOH
+end
+
+# Create a sym link to xgemail-jilter-mf-inbound
+link "#{DEPLOYMENT_DIR}/xgemail-jilter-mf-inbound" do
+  to "#{DEPLOYMENT_DIR}/#{JILTER_MF_INBOUND_PACKAGE_NAME}"
+end
+
+execute 'download_jilter_mf_outbound' do
+  user 'root'
+  cwd "#{PACKAGES_DIR}"
+  command <<-EOH
+      aws --region us-west-2 s3 cp s3:#{sophos_thirdparty}/xgemail/#{JILTER_MF_OUTBOUND_PACKAGE_NAME}.tar .
+  EOH
+end
+
+execute 'extract_jilter_mf_outbound_package' do
+  user 'root'
+  cwd "#{PACKAGES_DIR}"
+  command <<-EOH
+      tar xf #{JILTER_MF_OUTBOUND_PACKAGE_NAME}.tar -C #{DEPLOYMENT_DIR}
+  EOH
+end
+
+# Create a sym link to xgemail-jilter-mf-outbound
+link "#{DEPLOYMENT_DIR}/xgemail-jilter-mf-outbound" do
+  to "#{DEPLOYMENT_DIR}/#{JILTER_MF_OUTBOUND_PACKAGE_NAME}"
+end
+
 execute 'download_jilter_encryption' do
   user 'root'
   cwd "#{PACKAGES_DIR}"
@@ -259,6 +307,20 @@ directory "#{DEPLOYMENT_DIR}/#{JILTER_OUTBOUND_PACKAGE_NAME}/conf" do
   recursive true
 end
 
+directory "#{DEPLOYMENT_DIR}/#{JILTER_MF_INBOUND_PACKAGE_NAME}/conf" do
+  mode '0755'
+  owner 'root'
+  group 'root'
+  recursive true
+end
+
+directory "#{DEPLOYMENT_DIR}/#{JILTER_MF_OUTBOUND_PACKAGE_NAME}/conf" do
+  mode '0755'
+  owner 'root'
+  group 'root'
+  recursive true
+end
+
 directory "#{DEPLOYMENT_DIR}/#{JILTER_ENCRYPTION_PACKAGE_NAME}/conf" do
   mode '0755'
   owner 'root'
@@ -291,6 +353,24 @@ end
     mode '0700'
     variables(
         :launch_darkly_key => node['xgemail']["launch_darkly_#{cur}"]
+    )
+  end
+
+  template "launch_darkly_#{cur}.properties" do
+    path "#{DEPLOYMENT_DIR}/#{JILTER_MF_INBOUND_PACKAGE_NAME}/conf/launch_darkly_#{cur}.properties"
+    source 'jilter-launch-darkly.properties.erb'
+    mode '0700'
+    variables(
+      :launch_darkly_key => node['xgemail']["launch_darkly_#{cur}"]
+    )
+  end
+
+  template "launch_darkly_#{cur}.properties" do
+    path "#{DEPLOYMENT_DIR}/#{JILTER_MF_OUTBOUND_PACKAGE_NAME}/conf/launch_darkly_#{cur}.properties"
+    source 'jilter-launch-darkly.properties.erb'
+    mode '0700'
+    variables(
+      :launch_darkly_key => node['xgemail']["launch_darkly_#{cur}"]
     )
   end
 

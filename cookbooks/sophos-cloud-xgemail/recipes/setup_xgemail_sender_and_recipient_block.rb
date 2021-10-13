@@ -19,8 +19,8 @@ require 'json'
 
 NODE_TYPE = node['xgemail']['cluster_type']
 
-# Only continue when it's customer-submit or internet-submit or mf-inbound-submit or mf-outbound-submit
-if NODE_TYPE != 'customer-submit' and NODE_TYPE != 'internet-submit' and NODE_TYPE != 'mf-inbound-submit' and NODE_TYPE != 'mf-outbound-submit'
+# Only continue when it's customer-submit or internet-submit
+if NODE_TYPE != 'customer-submit' and NODE_TYPE != 'internet-submit'
   return
 end
 
@@ -52,7 +52,7 @@ execute SENDER_AND_RECIPIENT_BLOCK_SCRIPT_PATH do
   action :nothing
 end
 
-# Write block list script to customer-submit and internet-submit and mf-inbound-submit instances and mf-outbound-submit instances
+# Write block list script to customer-submit and internet-submit
 template SENDER_AND_RECIPIENT_BLOCK_SCRIPT_PATH do
   source "#{SENDER_AND_RECIPIENT_BLOCK_SCRIPT}.erb"
   mode '0750'

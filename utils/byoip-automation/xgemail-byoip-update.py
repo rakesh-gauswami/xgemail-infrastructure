@@ -35,7 +35,6 @@ ptrzoneid = {
 
 def update_byoip_a_record(ip, dnsrecord):
     response = ""
-    print("Creating A record: " + dnsrecord + " for IP: " + ip)
     ip = "{{\"Value\": \"{}\"}}".format(ip)
     new_value = json.loads(ip)
     try:
@@ -45,14 +44,18 @@ def update_byoip_a_record(ip, dnsrecord):
             StartRecordType='A',
             MaxItems='1'
         )
-        existing_values = existing_records["ResourceRecordSets"][0]["ResourceRecords"]
-        if existing_values:
+        if dnsrecord == existing_records["ResourceRecordSets"][0]["Name"][:-1]:
+            existing_values = existing_records["ResourceRecordSets"][0]["ResourceRecords"]
+            print("Found existing A records: " + str(existing_values))
             if new_value not in existing_values:
+                print("Adding new value to existing A records.")
                 existing_values.append(new_value)
+            else:
+                print("Records already current.")
             values = existing_values
         else:
-            values = new_value
-        print("Creating A records: " + dnsrecord + " for IP: " + str(values))
+            values = json.loads("[" + ip + "]")
+        print("Creating A records: " + dnsrecord + " for IPs: " + str(values))
         response = route53_client.change_resource_record_sets(
             HostedZoneId=azoneid.get(account, "A HostedZoneId not found for account provided."),
             ChangeBatch={
