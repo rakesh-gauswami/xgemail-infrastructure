@@ -1,0 +1,11 @@
+---
+# Ansible version required: 2.4.0
+# -----------------------------------
+# Execute: ansible-playbook -vvv ./playbooks/deploy-cloud-email-cx.yml --extra-vars="aws_region=${REGION} aws_account=${ENVIRONMENT} branch_name=${bamboo_planRepository_branchName} branch_build=${bamboo_buildNumber} vpc_name=${VPC_NAME}"
+# -----------------------------------
+- hosts: localhost
+  gather_facts: no
+  connection: local
+
+  roles:
+    - { role: mf-inbound-xdelivery }

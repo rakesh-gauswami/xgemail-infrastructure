@@ -367,6 +367,15 @@ default['xgemail']['postfix_instance_data'] = {
     :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
     :server_type => 'MF_INBOUND_DELIVERY'
   },
+  # mf-inbound-xdelivery
+  'mf-inbound-xdelivery' => {
+    :instance_name => 'mfix',
+    :port => 8025,
+    # Give delivery queues extra padding because extra content may be created during processing
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800 + 5242880),
+    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+    :server_type => 'MF_INBOUND_XDELIVERY'
+  },
   # mf-inbound-submit
   'mf-inbound-submit' => {
     :instance_name => 'mfis',
@@ -383,6 +392,15 @@ default['xgemail']['postfix_instance_data'] = {
       :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800 + 5242880),
       :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
       :server_type => 'MF_OUTBOUND_DELIVERY'
+  },
+  # mf-outbound-xdelivery
+  'mf-outbound-xdelivery' => {
+      :instance_name => 'mfox',
+      :port => 8025,
+      # Give delivery queues extra padding because extra content may be created during processing
+      :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800 + 5242880),
+      :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+      :server_type => 'MF_OUTBOUND_XDELIVERY'
   },
   # mf-outbound-submit
   'mf-outbound-submit' => {

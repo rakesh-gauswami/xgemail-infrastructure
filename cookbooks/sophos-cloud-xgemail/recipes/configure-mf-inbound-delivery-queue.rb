@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: sophos-cloud-xgemail
-# Recipe:: configure-customer-delivery-queue
+# Recipe:: configure-mf-inbound-delivery-queue
 #
 # Copyright 2021, Sophos
 #
@@ -12,7 +12,7 @@
 NODE_TYPE = node['xgemail']['cluster_type']
 ACCOUNT   =  node['sophos_cloud']['environment']
 
-if NODE_TYPE != 'customer-delivery'
+if NODE_TYPE != 'mf-inbound-delivery'
   return
 end
 
@@ -32,12 +32,12 @@ AWS_REGION = node['sophos_cloud']['region']
 
 HOP_COUNT_DELIVERY_INSTANCE = node['xgemail']['hop_count_delivery_instance']
 
-XDELIVERY_INSTANCE_DATA = node['xgemail']['postfix_instance_data']['xdelivery']
+XDELIVERY_INSTANCE_DATA = node['xgemail']['postfix_instance_data']['mf-inbound-xdelivery']
 raise "Unsupported node type [#{NODE_TYPE}]" if XDELIVERY_INSTANCE_DATA.nil?
 
 SMTP_PORT = XDELIVERY_INSTANCE_DATA[:port]
 
-SMTP_FALLBACK_RELAY = "xdelivery-cloudemail-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com:#{SMTP_PORT}"
+SMTP_FALLBACK_RELAY = "mf-inbound-xdelivery-cloudemail-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com:#{SMTP_PORT}"
 
 # Run an instance of the smtp process that enforces TLS encryption
 [
@@ -66,16 +66,13 @@ CONFIGURATION_COMMANDS =
         'bounce_queue_lifetime=0',
         "hopcount_limit = #{HOP_COUNT_DELIVERY_INSTANCE}",
         "smtp_fallback_relay = #{SMTP_FALLBACK_RELAY}",
-        'smtp_tls_security_level=may',
+        'smtp_tls_security_level = encrypt',
         'smtp_tls_ciphers=high',
-        'smtp_tls_mandatory_ciphers=high',
-        'smtp_tls_mandatory_protocols = TLSv1.2',
+        'smtp_tls_mandatory_ciphers = high',
+        'smtp_tls_mandatory_protocols = !SSLv2,!SSLv3,!TLSv1,!TLSv1.1,TLSv1.2',
+        'smtp_tls_protocols = !SSLv2,!SSLv3,!TLSv1,!TLSv1.1,TLSv1.2',
         'smtp_tls_loglevel=1',
         'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache'
-
-    # TODO XGE-8891
-    # Once we're fully cut over to push policy, uncomment the header_checks line below
-    # "header_checks=regexp:#{HEADER_CHECKS_PATH}"
     ]
 
 CONFIGURATION_COMMANDS.each do | cur |
@@ -83,11 +80,11 @@ CONFIGURATION_COMMANDS.each do | cur |
 end
 
 if ACCOUNT == 'sandbox'
-  include_recipe 'sophos-cloud-xgemail::setup_xgemail_utils_structure'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_mf_inbound_utils_structure'
 end
 
-include_recipe 'sophos-cloud-xgemail::setup_customer_delivery_transport_updater'
-include_recipe 'sophos-cloud-xgemail::configure-bounce-message-customer-delivery-queue'
+include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_delivery_transport_updater_cron'
+include_recipe 'sophos-cloud-xgemail::configure-bounce-message-mf-inbound-delivery-queue'
 include_recipe 'sophos-cloud-xgemail::setup_customer_delivery_custom_recipient_transport_updater'
 include_recipe 'sophos-cloud-xgemail::setup_transport_route_config'
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_consumer'

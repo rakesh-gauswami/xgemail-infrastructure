@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: sophos-cloud-xgemail
-# Recipe:: configure-bounce-message-internet-delivery-queue.rb
+# Recipe:: configure-bounce-message-mf-outbound-delivery-queue
 #
 # Copyright 2021, Sophos
 #
@@ -26,12 +26,12 @@ TRANSPORT_MAPS_FILENAME = 'transport_maps'
 
 SERVICE_NAME='bounce-handler'
 
-INTERNET_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_DIR = node['xgemail']['internet_delivery_message_bouncer_processor_dir']
-INTERNET_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_COMMON_DIR  = node['xgemail']['internet_delivery_message_bouncer_common_dir']
+MF_OUTBOUND_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_DIR = node['xgemail']['mf_outbound_delivery_message_bouncer_processor_dir']
+MF_OUTBOUND_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_COMMON_DIR  = node['xgemail']['mf_outbound_delivery_message_bouncer_common_dir']
 
 BOUNCE_HANDLER_SCRIPT = 'xgemail.message.bouncer.py'
 NOTIFICATION_EVENT_FILE_NAME = 'notificationsubmitinfo.py'
-BOUNCE_HANDLER_SCRIPT_PATH = "#{INTERNET_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_DIR}/#{BOUNCE_HANDLER_SCRIPT}"
+BOUNCE_HANDLER_SCRIPT_PATH = "#{MF_OUTBOUND_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_DIR}/#{BOUNCE_HANDLER_SCRIPT}"
 AWS_REGION = node['sophos_cloud']['region']
 ACCOUNT    = node['sophos_cloud']['context']
 
@@ -41,7 +41,7 @@ EX_TEMPFAIL = node['xgemail']['temp_failure_code']
 XGEMAIL_UTILS_DIR = node['xgemail']['xgemail_utils_files_dir']
 XGEMAIL_NOTIFIER_QUEUE_URL = node['xgemail']['msg_notifier_queue_url']
 
-if NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'internet-xdelivery'
+if NODE_TYPE == 'mf-outbound-delivery' || NODE_TYPE == 'mf-outbound-xdelivery'
 
  CONFIGURATION_COMMANDS_DELIVER_BOUNCE =
    [
@@ -67,7 +67,7 @@ if NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'internet-xdelivery'
  # Configure Postfix
  # This master.cf configuration pipes information to bounce-handler script
  SERVICE_TYPE='unix'
- BOUNCE_USER=node['xgemail']['internet_delivery_bounce_message_processor_user']
+ BOUNCE_USER=node['xgemail']['mf_outbound_delivery_bounce_message_processor_user']
  SCRIPT_PATH="#{BOUNCE_HANDLER_SCRIPT_PATH}"
  CONCURRENCY_LIMIT=10
 
@@ -111,7 +111,7 @@ if NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'internet-xdelivery'
  end
 
  # Create directory for bounce-handler script
- directory INTERNET_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_DIR do
+ directory MF_OUTBOUND_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_DIR do
    owner BOUNCE_USER
    group BOUNCE_USER
    mode '0755'
@@ -120,7 +120,7 @@ if NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'internet-xdelivery'
  end
 
  # Create directory for bounce-handler script
- directory INTERNET_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_COMMON_DIR do
+ directory MF_OUTBOUND_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_COMMON_DIR do
    owner 'root'
    group 'root'
    mode '0755'
@@ -129,14 +129,14 @@ if NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'internet-xdelivery'
  end
 
  # Ensure __init__py file is created in python module
- file "#{INTERNET_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_COMMON_DIR}/__init__.py" do
+ file "#{MF_OUTBOUND_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_COMMON_DIR}/__init__.py" do
    mode '0644'
    owner 'root'
    group 'root'
  end
 
  # Create notification event file.
- cookbook_file "#{INTERNET_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_COMMON_DIR}/#{NOTIFICATION_EVENT_FILE_NAME}" do
+ cookbook_file "#{MF_OUTBOUND_DELIVERY_BOUNCE_MESSAGE_PROCESSOR_COMMON_DIR}/#{NOTIFICATION_EVENT_FILE_NAME}" do
    source NOTIFICATION_EVENT_FILE_NAME
    mode  '0644'
    owner 'root'
