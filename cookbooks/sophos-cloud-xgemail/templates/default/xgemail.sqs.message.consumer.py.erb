@@ -256,6 +256,7 @@ def attempt_to_retrieve_transport_route(domain, persist_if_missing):
             data = json.dumps(
                 {
                     'domain' : domain,
+                    'productType': get_email_product_type(NODE_TYPE),
                     'persistIfMissing': persist_if_missing
                 }
             ),
@@ -617,7 +618,7 @@ def deliver_messages():
                 queue_id = metadata["queue_id"]
                 sender = metadata["sender_address"]
                 recipients = metadata["recipients"]
-    
+
                 # required logging for EncryptionServiceTest automation test
                 logger.info(
                     "Email and metadata retrieved from S3. "
