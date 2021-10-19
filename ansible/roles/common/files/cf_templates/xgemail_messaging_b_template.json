@@ -618,7 +618,10 @@
                   "Fn::Sub": "arn:aws:iam::${O365AccountNumber}:root"
                 }
               },
-              "Action": ["sns:Subscribe"],
+              "Action": [
+                "sns:Subscribe",
+                "SNS:Publish"
+              ],
               "Resource": {"Ref": "XdrO365StartSubscriptionEventTopicArn"}
             }
           ]
