@@ -904,6 +904,20 @@ aws:
       template_parameters:
         QueueName:                                                "{{sqs.message_bounce_sqs_queue_sns_listener}}"
         TagApplication:                                           "xgemail-mail"
+    ml_scanner_request_queue:
+      stack_name:                                                 "{{stack.sqs.ml_scanner_request_queue}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.ml_scanner_request_queue}}"
+        TagApplication:                                           "xgemail-mail"
+    ml_scanner_response_queue:
+      stack_name:                                                 "{{stack.sqs.ml_scanner_response_queue}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.ml_scanner_response_queue}}"
+        TagApplication:                                           "xgemail-mail"
     notifier_request_sqs_queue:
       stack_name:                                                 "{{stack.sqs.notifier_request_sqs_queue}}"
       state:                                                      present
@@ -995,20 +1009,6 @@ aws:
       template:                                                   "{{template.sqs.sqs_simple_template}}"
       template_parameters:
         QueueName:                                                "{{sqs.xgemail_alert_sqs_queue}}"
-        TagApplication:                                           "xgemail-mail"
-    xgemail_ml_scanner_request_queue:
-      stack_name:                                                 "{{stack.sqs.xgemail_ml_scanner_request_queue}}"
-      state:                                                      present
-      template:                                                   "{{template.sqs.sqs_simple_template}}"
-      template_parameters:
-        QueueName:                                                "{{sqs.xgemail_ml_scanner_request_queue}}"
-        TagApplication:                                           "xgemail-mail"
-    xgemail_ml_scanner_response_queue:
-      stack_name:                                                 "{{stack.sqs.xgemail_ml_scanner_response_queue}}"
-      state:                                                      present
-      template:                                                   "{{template.sqs.sqs_simple_template}}"
-      template_parameters:
-        QueueName:                                                "{{sqs.xgemail_ml_scanner_response_queue}}"
         TagApplication:                                           "xgemail-mail"
 aes_decryption_key:                                               "{{lookup('env','AES_KEY') | default('EFB0D00E7B34527A6CFE3CD804A53312C5A7AF129650A9793D2CEF3A3C6B3741')}}"
 ami_parent_id:                                                    "{{ami_id}}"

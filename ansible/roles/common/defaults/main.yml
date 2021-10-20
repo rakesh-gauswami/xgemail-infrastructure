@@ -125,6 +125,8 @@ sqs:
   multi_policy_sqs_queue:                               "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_multi_policy"
   message_redirect_sqs_queue_sns_listener:              "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_MessageRedirect_SNS_Listener"
   message_bounce_sqs_queue_sns_listener:                "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_MessageBounce_SNS_Listener"
+  ml_scanner_request_queue:                             "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_ML_Scanner_Request"
+  ml_scanner_response_queue:                            "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_ML_Scanner_Response"
   notifier_request_sqs_queue:                           "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Notifier_Request"
   outbound_malware_protection_queue_sns_listener:       "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Outbound_Malware_Protection_SNS_Listener"
   outbound_malware_protection_unblock_sender_queue:     "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Outbound_Malware_Protection_Unblock_Sender"
@@ -138,8 +140,6 @@ sqs:
   user_deleted_action_sqs_queue_sns_listener:           "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_User_Deleted_Action_SNS_Listener"
   warmup_delivery_sqs_queue_sns_listener:               "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Warmup_Delivery_SNS_Listener"
   xgemail_alert_sqs_queue:                              "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_Alert_Queue"
-  xgemail_ml_scanner_request_queue:                    "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_ml_scanner_request"
-  xgemail_ml_scanner_response_queue:                   "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-Xgemail_ml_scanner_response"
 # CloudEmail SNS Topic Names.
 sns:
   arn_prefix:                                           "arn:aws:sns:{{account.region}}:{{aws_account_id}}:"
