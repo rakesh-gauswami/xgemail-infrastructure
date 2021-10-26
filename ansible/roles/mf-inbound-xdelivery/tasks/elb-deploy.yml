@@ -1,0 +1,34 @@
+---
+- name: "Deploy {{stack.ec2.elb.mfix}} to {{account.name}} {{account.region}}"
+  cloudformation:
+    stack_name: "{{stack.ec2.elb.mfix}}"
+    state: present
+    region: "{{account.region}}"
+    disable_rollback: true
+    template: "{{template.ec2.elb.elb_advanced_template}}"
+    template_parameters:
+      Branch:                        "{{build.branch}}"
+      Environment:                   "{{account.name}}"
+      HealthCheckTarget:             "TCP:8025"
+      HostAlarmTopicARN:             "{{sns.arn_prefix}}{{sns.alarm_sns_topic}}"
+      InstancePort:                  "8025"
+      InstanceProtocol:              "TCP"
+      InternetFacing:                "internal"
+      LoadBalancerName:              "{{ec2.elb.mfix}}"
+      LoadbalancerPort:              "8025"
+      LoadbalancerProtocol:          "TCP"
+      SecurityGroupLb:               "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.XgemailMfInboundXdeliverySecurityGroupLb}}"
+      SslSecurityPolicy:             "{{elb_security_policy}}"
+      Subnets:                       "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.VpcZoneIdentifiersPublic}}"
+      TagApplication:                "mf-inbound-xdelivery"
+      Vpc:                           "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.Vpc}}"
+  register: elb_stack_output
+
+- debug:
+    var: elb_stack_output
+    verbosity: 3
+
+- name: "Display ELB Stack Output"
+  debug:
+    msg: "{{elb_stack_output.stack_outputs}}"
+    verbosity: 2

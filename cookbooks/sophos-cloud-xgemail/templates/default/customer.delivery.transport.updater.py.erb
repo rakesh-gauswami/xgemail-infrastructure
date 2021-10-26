@@ -201,9 +201,14 @@ while True:
 
   logger.debug('starting to update transport map file [%s.db]', TRANSPORT_FILE)
 
+  query_parameters = {
+  'productType':'Gateway',
+  }
+
   response = requests.get(
       PIC_DOMAINS_URL,
       headers=HEADERS,
+      params = query_parameters,
       timeout=MAIL_PIC_RESPONSE_TIMEOUT
   )
 
@@ -236,7 +241,12 @@ while True:
       domain_response = requests.post(
           PIC_DESTINATION_URL,
           headers=HEADERS,
-          data=json.dumps({'domain':domain}),
+          data=json.dumps(
+            {
+              'domain':domain,
+              'productType':'Gateway'
+            }
+          ),
           timeout=MAIL_PIC_RESPONSE_TIMEOUT
         )
       domain_response.raise_for_status()

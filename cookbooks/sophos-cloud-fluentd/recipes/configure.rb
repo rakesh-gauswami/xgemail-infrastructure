@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-fluentd
 # Recipe:: configure
 #
-# Copyright 2018, Sophos
+# Copyright 2021, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -108,6 +108,16 @@ elsif NODE_TYPE == 'mf-outbound-delivery'
   SERVER_TYPE_XDELIVERY = 'UNKNOWN'
   DIRECTION             = 'OUTBOUND'
   NON_DELIVERY_DSN      = '5.4.7'
+elsif NODE_TYPE == 'mf-inbound-xdelivery'
+  SERVER_TYPE           = 'MF_INBOUND_DELIVERY'
+  SERVER_TYPE_XDELIVERY = 'UNKNOWN'
+  DIRECTION             = 'INBOUND'
+  NON_DELIVERY_DSN      = '5.4.7'
+elsif NODE_TYPE == 'mf-outbound-xdelivery'
+  SERVER_TYPE           = 'MF_OUTBOUND_DELIVERY'
+  SERVER_TYPE_XDELIVERY = 'UNKNOWN'
+  DIRECTION             = 'OUTBOUND'
+  NON_DELIVERY_DSN      = '5.4.7'
 else
   SERVER_TYPE           = 'UNKNOWN'
   SERVER_TYPE_XDELIVERY = 'UNKNOWN'
@@ -161,6 +171,8 @@ template 'fluentd-source-jilter' do
     NODE_TYPE == 'mf-outbound-submit' ||
     NODE_TYPE == 'mf-inbound-delivery' ||
     NODE_TYPE == 'mf-outbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery' ||
     NODE_TYPE == 'xdelivery' ||
     NODE_TYPE == 'internet-xdelivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
@@ -188,7 +200,9 @@ template 'fluentd-source-lifecycle' do
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-xdelivery' ||
     NODE_TYPE == 'beta-xdelivery' ||
-    NODE_TYPE == 'delta-xdelivery'
+    NODE_TYPE == 'delta-xdelivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery'
   }
 end
 
@@ -347,6 +361,8 @@ template 'fluentd-match-jilter' do
     NODE_TYPE == 'mf-outbound-submit' ||
     NODE_TYPE == 'mf-inbound-delivery' ||
     NODE_TYPE == 'mf-outbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'warmup-delivery' ||
     NODE_TYPE == 'beta-delivery' ||
@@ -379,7 +395,9 @@ template 'fluentd-match-lifecycle' do
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-xdelivery' ||
     NODE_TYPE == 'beta-xdelivery' ||
-    NODE_TYPE == 'delta-xdelivery'
+    NODE_TYPE == 'delta-xdelivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery'
   }
 end
 
@@ -445,6 +463,8 @@ template 'fluentd-match-sqsmsgproducer' do
     NODE_TYPE == 'mf-outbound-submit' ||
     NODE_TYPE == 'mf-inbound-delivery' ||
     NODE_TYPE == 'mf-outbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'warmup-delivery' ||
     NODE_TYPE == 'beta-delivery' ||
@@ -562,7 +582,9 @@ template 'fluentd-filter-lifecycle' do
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-xdelivery' ||
     NODE_TYPE == 'beta-xdelivery' ||
-    NODE_TYPE == 'delta-xdelivery'
+    NODE_TYPE == 'delta-xdelivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery'
   }
 end
 
@@ -585,7 +607,6 @@ end
      NODE_TYPE == 'risky-delivery' ||
      NODE_TYPE == 'warmup-delivery' ||
      NODE_TYPE == 'beta-delivery'||
-     NODE_TYPE == 'mf-inbound-delivery' ||
      NODE_TYPE == 'mf-outbound-delivery' ||
      NODE_TYPE == 'delta-delivery'
    }
@@ -719,6 +740,8 @@ template 'fluentd-match-msg-delivery' do
     NODE_TYPE == 'internet-xdelivery' ||
     NODE_TYPE == 'mf-inbound-delivery' ||
     NODE_TYPE == 'mf-outbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-delivery' ||
@@ -745,6 +768,8 @@ template 'fluentd-filter-msg-delivery' do
     NODE_TYPE == 'internet-xdelivery' ||
     NODE_TYPE == 'mf-inbound-delivery' ||
     NODE_TYPE == 'mf-outbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-delivery' ||
@@ -808,6 +833,8 @@ template 'fluentd-filter-transform-msg-delivery' do
     NODE_TYPE == 'internet-xdelivery' ||
     NODE_TYPE == 'mf-inbound-delivery' ||
     NODE_TYPE == 'mf-outbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-delivery' ||
@@ -836,6 +863,8 @@ template 'fluentd-filter-transform-sqs-msg' do
     NODE_TYPE == 'internet-xdelivery' ||
     NODE_TYPE == 'mf-inbound-delivery' ||
     NODE_TYPE == 'mf-outbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-delivery' ||
@@ -867,6 +896,8 @@ template 'fluentd-filter-transform-msg-history-v2' do
     NODE_TYPE == 'internet-xdelivery' ||
     NODE_TYPE == 'mf-inbound-delivery' ||
     NODE_TYPE == 'mf-outbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-delivery' ||
@@ -898,6 +929,8 @@ template 'fluentd-match-sns-msg-delivery' do
     NODE_TYPE == 'internet-xdelivery' ||
     NODE_TYPE == 'mf-inbound-delivery' ||
     NODE_TYPE == 'mf-outbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-delivery' ||
@@ -928,6 +961,8 @@ template 'fluentd-match-sqs-msg-delivery' do
     NODE_TYPE == 'internet-xdelivery' ||
     NODE_TYPE == 'mf-inbound-delivery' ||
     NODE_TYPE == 'mf-outbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-delivery' ||
@@ -953,6 +988,8 @@ template 'fluentd-match-http-output-msg-history-v2' do
     NODE_TYPE == 'internet-xdelivery' ||
     NODE_TYPE == 'mf-inbound-delivery' ||
     NODE_TYPE == 'mf-outbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-delivery' ||

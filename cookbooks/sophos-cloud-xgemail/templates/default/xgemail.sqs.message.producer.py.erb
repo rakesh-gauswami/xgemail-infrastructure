@@ -902,7 +902,7 @@ def main():
             logger.debug("Outbound split flag is set to {0} for metadata {1} ".format(outbound_split,metadata));
 
             if outbound_split:
-                return outbound_split_by_recipients(metadata,domain,plaintext_message,direction, msghistory_events)
+                return outbound_split_by_recipients(metadata,sender,domain,plaintext_message,direction, msghistory_events)
 
         else:
             raise ("Wrong submit type [{0}]".format(SUBMIT_TYPE))
