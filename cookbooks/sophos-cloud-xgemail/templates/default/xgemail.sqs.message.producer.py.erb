@@ -677,7 +677,9 @@ def multi_policy_flow(metadata, direction, domain, sender, message, msghistory_e
         (policy_list, customer_id) = multipolicyreaderutils.build_policy_map(recipients, AWS_REGION, POLICY_S3_BUCKET_NAME)
 
     # Message routing information in metadata pertaining to micro-service
-    metadata.set_microservice_request(routingmanager.perform_routing(customer_id))
+    # We are no longer planning to use mail-inbound micro-service.
+    # So setting this to false by default. Saves two EFS reads.
+    metadata.set_microservice_request(False)
 
     # required logging for EncryptionServiceTest automation test
     logger.info("Input email metadata info [{0}]".format(metadata))
