@@ -239,14 +239,14 @@ default['xgemail']['delta_delivery_bounce_message_processor_user'] = 'bouncer'
 default['xgemail']['cron_job_timeout'] = '10m'
 default['xgemail']['mail_flow_cron_job_timeout'] = '10m'
 default['xgemail']['customer_delivery_transport_cron_minute_frequency'] = 10
-default['xgemail']['mail_flow_sender_by_relay_cron_minute_frequency'] = 10
+default['xgemail']['mail_flow_sender_by_relay_cron_minute_frequency'] = 4
 default['xgemail']['savdid_cron_job_timeout_vdl'] = '30m'
 default['xgemail']['savdid_ide_cron_minute_frequency'] = 15
 default['xgemail']['submit_destination_concurrency_limit'] = 10
 default['xgemail']['internet_submit_domain_cron_minute_frequency'] = 10
 default['xgemail']['internet_submit_recipient_cron_minute_frequency'] = 10
-default['xgemail']['mf_inbound_submit_domain_cron_minute_frequency'] = 10
-default['xgemail']['mf_inbound_submit_recipient_cron_minute_frequency'] = 10
+default['xgemail']['mf_inbound_submit_domain_cron_minute_frequency'] = 4
+default['xgemail']['mf_inbound_submit_recipient_cron_minute_frequency'] = 4
 default['xgemail']['xgemail_sqs_lifecycle_poller_cron_minute_frequency'] = 1
 
 default['xgemail']['recipient_access_filename'] = 'recipient_access'
