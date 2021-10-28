@@ -147,6 +147,17 @@ end
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf -P '#{cur}'" )
 end
 
+#make soft bounce to yes for mf-inbound and mf-outbound xdelivery so 5xx error can be retried for delivery
+if NODE_TYPE == 'mf-inbound-xdelivery' || NODE_TYPE == 'mf-outbound-xdelivery'
+  [
+      # Retry delivery on 5xx too
+      'soft_bounce=yes'
+  ].each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf -P '#{cur}'" )
+  end
+end
+
+
 [
   # Server side TLS configuration
   'smtpd_tls_security_level = may',
