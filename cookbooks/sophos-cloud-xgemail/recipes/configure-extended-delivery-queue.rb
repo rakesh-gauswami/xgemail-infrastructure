@@ -147,16 +147,6 @@ end
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf -P '#{cur}'" )
 end
 
-#make soft bounce to yes for mf-inbound and mf-outbound xdelivery so 5xx error can be retried for delivery
-if NODE_TYPE == 'mf-inbound-xdelivery' || NODE_TYPE == 'mf-outbound-xdelivery'
-  [
-      # Retry delivery on 5xx too
-      'soft_bounce=yes'
-  ].each do | cur |
-    execute print_postmulti_cmd( INSTANCE_NAME, "postconf -P '#{cur}'" )
-  end
-end
-
 
 [
   # Server side TLS configuration
@@ -178,6 +168,16 @@ end
   'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache'
 ].each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+end
+
+#make soft bounce to yes for mf-inbound and mf-outbound xdelivery so 5xx error can be retried for delivery
+if NODE_TYPE == 'mf-inbound-xdelivery' || NODE_TYPE == 'mf-outbound-xdelivery'
+  [
+      # Retry delivery on 5xx too
+      'soft_bounce=yes'
+  ].each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf  '#{cur}'" )
+  end
 end
 
 if NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery' || NODE_TYPE == 'warmup-xdelivery' || NODE_TYPE == 'beta-xdelivery' || NODE_TYPE == 'delta-xdelivery' || NODE_TYPE == 'mf-outbound-xdelivery'
