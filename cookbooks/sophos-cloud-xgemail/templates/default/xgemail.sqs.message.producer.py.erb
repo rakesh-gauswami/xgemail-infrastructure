@@ -645,6 +645,8 @@ def base_policy_flow(metadata, direction, domain, sender, message, msghistory_ev
 
     if msghistory_events is not None:
         messagehistory.handle_msghistory_events(queue_id, msghistory_events, MSG_HISTORY_EVENT_PROCESSOR_URL, MSG_HISTORY_EVENT_DIR)
+    else:
+        logger.warning("MH events not generated for Queue ID [{0}]".format(queue_id))
 
 def build_recipient_map_from_msghistory_enabled(queue_id, recipients, msghistory_events):
     """
@@ -749,6 +751,8 @@ def multi_policy_flow(metadata, direction, domain, sender, message, msghistory_e
 
     if msghistory_events is not None:
         messagehistory.handle_msghistory_events(queue_id, msghistory_events, MSG_HISTORY_EVENT_PROCESSOR_URL, MSG_HISTORY_EVENT_DIR)
+    else:
+        logger.warning("MH events not generated for Queue ID [{0}]".format(queue_id))
 
 def get_message_headers(message):
     return Parser().parsestr(message, headersonly=True)
@@ -823,6 +827,8 @@ def outbound_split_by_recipients(metadata, sender, domain, message, direction, m
 
     if msghistory_events is not None:
         messagehistory.handle_msghistory_events(queue_id, msghistory_events, MSG_HISTORY_EVENT_PROCESSOR_URL, MSG_HISTORY_EVENT_DIR)
+    else:
+        logger.warning("MH events not generated for Queue ID [{0}]".format(queue_id))
 
 def get_rejected_recipients(queue_id, directory):
     """
