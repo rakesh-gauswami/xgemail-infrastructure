@@ -147,7 +147,6 @@ end
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf -P '#{cur}'" )
 end
 
-
 [
   # Server side TLS configuration
   'smtpd_tls_security_level = may',
