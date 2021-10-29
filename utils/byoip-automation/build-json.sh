@@ -1,5 +1,5 @@
 #!/bin/bash
-REGIONS=('prod-us-east-2' 'prod-us-west-2' 'prod-eu-central-1' 'prod-eu-west-1' 'prod-eml-ca-central-1')
+REGIONS=('prod-us-east-2' 'prod-us-east-2-spare' 'prod-us-west-2' 'prod-us-west-2-spare' 'prod-eu-central-1' 'prod-eu-west-1' 'eml100yul-ca-central-1' 'eml100hnd-ap-northeast-1' 'eml100syd-ap-southeast-2')
 for region in "${REGIONS[@]}"
 do
   OUTPUT=xgemail-byoip-address-config-$region.json
