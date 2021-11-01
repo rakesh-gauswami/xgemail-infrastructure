@@ -16,20 +16,22 @@ azoneid = {
     "dev": 'ZBKEJ4BMWTGLP',
     "qa": 'Z3PNQYIZM8851A',
     "prod": 'Z1LGZDUSPJAUO4',
-    "ap-s2-fsc": 'Z04757282YOTSCLF8L9GW',
-    "ap-n1-fsc": 'Z07508741CVLNIIET1065',
-    "ca-c1-fsc": 'Z00800781RZ26AD1QM60Z',
-    "us-west-2-fsc": 'Z00382154IYYFLZVB78D',
-    "ca-c1-eml": 'Z1014554AERXECT6FME1'
+    "eml100hnd": 'Z00959292MKFE2F8O3SVR',
+    "eml100syd": 'Z1011819W5HGRZRGPENU',
+    "eml100yul": 'Z1014554AERXECT6FME1'
 }
 
 # HostedZoneIDs for PTR records based on region
 ptrzoneid = {
     "prod-us-east-2": 'Z082430616C3R7N712JOG',
-    "prod-us-west-2": 'Z05672293M9YCC10NXQZ5',
-    "prod-eu-central-1": 'Z0601549389CMBAMATPSJ',
     "prod-eu-west-1": 'Z0901709WN6V809KXTJ4',
-    "prod-eml-ca-central-1": 'Z03549533C0Q1VKM8ZL9I'
+    "prod-us-west-2": 'Z05672293M9YCC10NXQZ5',
+    "prod-us-west-2-spare": 'Z00382154IYYFLZVB78D',
+    "prod-us-east-2-spare": 'Z00800781RZ26AD1QM60Z',
+    "prod-eu-central-1": 'Z0601549389CMBAMATPSJ',
+    "eml100hnd-ap-northeast-1": 'Z0082350LSQ96QL4AU36',
+    "eml100syd-ap-southeast-2": 'Z089354717CN71A5M9BXE',
+    "eml100yul-ca-central-1": 'Z03549533C0Q1VKM8ZL9I'
 }
 
 
@@ -138,9 +140,9 @@ def update_byoip_tag(ip, eipname):
 
 
 parser = argparse.ArgumentParser(description='BYOIP automation of Route53 records and EIP tags.')
-parser.add_argument('account', choices=['inf', 'dev', 'qa', 'prod'],
+parser.add_argument('account', choices=['inf', 'dev', 'qa', 'prod', 'eml100hnd', 'eml100syd', 'eml100yul'],
                     help='Account/Environment to run automation.')
-parser.add_argument('region', choices=['eu-west-1', 'eu-central-1', 'us-west-2', 'us-east-2', 'eml-ca-central-1'],
+parser.add_argument('region', choices=['eu-west-1', 'eu-central-1', 'us-west-2', 'us-east-2', 'ap-northeast-1', 'ap-southeast-2', 'ca-central-1', 'us-west-2-spare', 'us-east-2-spare'],
                     help='Region to run automation.')
 args = parser.parse_args()
 account = args.account
