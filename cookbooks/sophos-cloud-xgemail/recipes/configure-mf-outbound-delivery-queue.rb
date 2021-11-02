@@ -64,6 +64,7 @@ end
 if ACCOUNT != 'sandbox'
   CONFIGURATION_COMMANDS =
     [
+      'soft_bounce=yes',
       'bounce_queue_lifetime=0',
       "hopcount_limit = #{HOP_COUNT_DELIVERY_INSTANCE}",
       "smtp_fallback_relay = #{SMTP_FALLBACK_RELAY}",
