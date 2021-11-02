@@ -147,37 +147,54 @@ end
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf -P '#{cur}'" )
 end
 
-[
-  # Server side TLS configuration
-  'smtpd_tls_security_level = may',
-  'smtpd_tls_ciphers = high',
-  'smtpd_tls_mandatory_ciphers = high',
-  'smtpd_tls_loglevel = 1',
-  'smtpd_tls_received_header = yes',
-  "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
-  "smtpd_tls_key_file = #{KEY_FILE}",
-  'bounce_queue_lifetime=0',
-  "hopcount_limit = #{HOP_COUNT_DELIVERY_INSTANCE}",
-  'mynetworks = 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16',
-  'smtp_tls_security_level=may',
-  'smtp_tls_ciphers=high',
-  'smtp_tls_mandatory_ciphers=high',
-  'smtp_tls_mandatory_protocols = TLSv1.2',
-  'smtp_tls_loglevel=1',
-  'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache'
-].each do | cur |
-  execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
-end
-
-#make soft bounce to yes for mf-inbound and mf-outbound xdelivery so 5xx error can be retried for delivery
 if NODE_TYPE == 'mf-inbound-xdelivery' || NODE_TYPE == 'mf-outbound-xdelivery'
   [
-      # Retry delivery on 5xx too
+      # Server side TLS configuration
+      'smtpd_tls_security_level = may',
+      'smtpd_tls_ciphers = high',
+      'smtpd_tls_mandatory_ciphers = high',
+      'smtpd_tls_loglevel = 1',
+      'smtpd_tls_received_header = yes',
+      "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
+      "smtpd_tls_key_file = #{KEY_FILE}",
+      'bounce_queue_lifetime=0',
+      "hopcount_limit = #{HOP_COUNT_DELIVERY_INSTANCE}",
+      'mynetworks = 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16',
+      'smtp_tls_security_level = encrypt',
+      'smtp_tls_ciphers=high',
+      'smtp_tls_mandatory_ciphers = high',
+      'smtp_tls_mandatory_protocols = !SSLv2,!SSLv3,!TLSv1,!TLSv1.1,TLSv1.2',
+      'smtp_tls_protocols = !SSLv2,!SSLv3,!TLSv1,!TLSv1.1,TLSv1.2',
+      'smtp_tls_loglevel=1',
+      'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache',
       'soft_bounce=yes'
-  ].each do | cur |
-    execute print_postmulti_cmd( INSTANCE_NAME, "postconf  '#{cur}'" )
+  ].each do |cur|
+    execute print_postmulti_cmd(INSTANCE_NAME, "postconf '#{cur}'")
+  end
+else
+  [
+      # Server side TLS configuration
+      'smtpd_tls_security_level = may',
+      'smtpd_tls_ciphers = high',
+      'smtpd_tls_mandatory_ciphers = high',
+      'smtpd_tls_loglevel = 1',
+      'smtpd_tls_received_header = yes',
+      "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
+      "smtpd_tls_key_file = #{KEY_FILE}",
+      'bounce_queue_lifetime=0',
+      "hopcount_limit = #{HOP_COUNT_DELIVERY_INSTANCE}",
+      'mynetworks = 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16',
+      'smtp_tls_security_level=may',
+      'smtp_tls_ciphers=high',
+      'smtp_tls_mandatory_ciphers=high',
+      'smtp_tls_mandatory_protocols = TLSv1.2',
+      'smtp_tls_loglevel=1',
+      'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache'
+  ].each do |cur|
+    execute print_postmulti_cmd(INSTANCE_NAME, "postconf '#{cur}'")
   end
 end
+
 
 if NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery' || NODE_TYPE == 'warmup-xdelivery' || NODE_TYPE == 'beta-xdelivery' || NODE_TYPE == 'delta-xdelivery' || NODE_TYPE == 'mf-outbound-xdelivery'
 
