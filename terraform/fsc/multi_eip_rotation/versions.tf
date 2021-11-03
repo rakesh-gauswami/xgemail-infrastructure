@@ -1,7 +1,6 @@
 # vim: autoindent expandtab shiftwidth=2 filetype=terraform
 
 locals {
-
   common_tags = {
     Application  = "xgemail-infrastructure"
     BusinessUnit = "MSG"
@@ -16,7 +15,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 3.47.0"
+      version = "~> 3.63.0"
     }
   }
   required_version = "~> 1.0.0"
@@ -29,10 +28,8 @@ provider "aws" {
 }
 
 provider "aws" {
-  alias = "parameters"
-
+  alias  = "parameters"
   region = "us-east-1"
-
   default_tags {
     tags = local.common_tags
   }
