@@ -16,7 +16,7 @@ data "aws_iam_policy_document" "eip_rotation_lambda_execution_role_policy" {
 }
 
 resource "aws_iam_role" "eip_rotation_lambda_execution_role" {
-  name_prefix = local.eip_rotation_prefix
+  name = local.eip_rotation_lambda_name
   assume_role_policy = data.aws_iam_policy_document.eip_rotation_lambda_execution_role_policy.json
 }
 
@@ -91,4 +91,85 @@ resource "aws_iam_role_policy" "eip_rotation_lambda_execution_role_policy" {
   name   = "eip_rotation_lambda_execution_role_policy"
   role   = aws_iam_role.eip_rotation_lambda_execution_role.id
   policy = data.aws_iam_policy_document.eip_rotation_lambda_execution_role_policy.json
+}
+
+# ----------------------------------------------------
+# Event Rules IAM Role and Policies
+# ----------------------------------------------------
+
+resource "aws_iam_role" "events_rule_eip_rotation_role" {
+  name               = "EIPLifecycle"
+  assume_role_policy = data.aws_iam_policy_document.events_rule_eip_rotation_trust.json
+}
+
+data "aws_iam_policy_document" "events_rule_eip_rotation_trust" {
+  policy_id = "events_rule_eip_rotation_trust"
+
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["events.amazonaws.com"]
+    }
+  }
+}
+
+data "aws_iam_policy_document" "events_rule_eip_rotation_policy" {
+  policy_id = "events_rule_eip_rotation"
+
+  statement {
+    sid = "EipRotationLambda"
+    effect    = "Allow",
+    actions   = [
+      "lambda:*",
+    ]
+    resources = [
+      "*",
+    ]
+  }
+
+  statement {
+    sid = "CloudWatchLogGroup"
+    actions = [
+      "logs:CreateLogGroup",
+    ]
+    effect    = "Allow"
+    resources = [
+      "arn:aws:logs:${local.input_param_primary_region}:*:*"
+    ]
+  }
+  statement {
+    sid = "CloudWatchLogStream"
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+    ]
+    effect    = "Allow"
+    resources = [
+      "arn:aws:logs:${local.input_param_primary_region}:*:log-group:*:*"
+    ]
+  }
+
+  statement {
+    sid = "Ec2Permissions"
+    effect    = "Allow"
+    actions   = [
+      "ec2:CreateTags",
+      "ec2:DescribeAddresses",
+      "ec2:AssociateAddress",
+      "ec2:DescribeInstances",
+      "ec2:DescribeInstanceStatus",
+      "ec2:DisassociateAddress"
+    ]
+    resources = [
+      "*",
+    ]
+  }
+}
+
+resource "aws_iam_role_policy" "events_rule_eip_rotation_policy" {
+  name   = "events_rule_eip_rotation_policy"
+  role   = aws_iam_role.events_rule_eip_rotation_role.id
+  policy = data.aws_iam_policy_document.events_rule_eip_rotation_policy.json
 }
