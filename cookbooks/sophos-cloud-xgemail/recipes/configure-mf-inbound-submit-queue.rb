@@ -312,7 +312,7 @@ else
   include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_submit_domain_updater_cron'
   include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_submit_recipient_updater_cron'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_mf_inbound_sqs_message_producer'
-  include_recipe 'sophos-cloud-xgemail::setup_xgemail_mf_inbound_utils_structure'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_mf_utils_structure'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_mf_inbound_sqs_message_processors_structure'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_mf_inbound_multi_policy_service'
   include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_submit_bulk_release_post_quarantine'

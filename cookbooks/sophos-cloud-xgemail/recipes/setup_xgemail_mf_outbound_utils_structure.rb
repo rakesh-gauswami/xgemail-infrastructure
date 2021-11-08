@@ -80,24 +80,6 @@ if NODE_TYPE == 'mf-outbound-submit'
     owner 'root'
     group 'root'
   end
-  cookbook_file "#{XGEMAIL_UTILS_DIR}/#{BLOCKED_SENDER_API}" do
-    source 'blocked_sender_api.py'
-    mode '0644'
-    owner 'root'
-    group 'root'
-  end
-  cookbook_file "#{XGEMAIL_UTILS_DIR}/#{BULKSENDER_FORMATTER}" do
-    source 'bulksenderformatter.py'
-    mode '0644'
-    owner 'root'
-    group 'root'
-  end
-  cookbook_file "#{XGEMAIL_UTILS_DIR}/#{DELIVERY_DIRECTOR_FORMATTER}" do
-    source 'deliverydirectorthreshold.py'
-    mode '0644'
-    owner 'root'
-    group 'root'
-  end
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{BULK_SENDER_ACTION}" do
     source 'bulk_sender_action.py'
     mode '0644'
