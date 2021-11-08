@@ -1,7 +1,7 @@
 # ----------------------------------------------------
 # Eip Rotation Lambda Execution IAM Role and policy
 # ----------------------------------------------------
-data "aws_iam_policy_document" "eip_rotation_lambda_execution_role_policy" {
+data "aws_iam_policy_document" "eip_rotation_lambda_assume_role_policy" {
   statement {
     actions = [
       "sts:AssumeRole"
@@ -18,7 +18,7 @@ data "aws_iam_policy_document" "eip_rotation_lambda_execution_role_policy" {
 
 resource "aws_iam_role" "eip_rotation_lambda_execution_role" {
   name = local.eip_rotation_lambda_name
-  assume_role_policy = data.aws_iam_policy_document.eip_rotation_lambda_execution_role_policy.json
+  assume_role_policy = data.aws_iam_policy_document.eip_rotation_lambda_assume_role_policy.json
 }
 
 data "aws_iam_policy_document" "eip_rotation_lambda_execution_role_policy" {

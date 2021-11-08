@@ -23,12 +23,16 @@ resource "aws_ssm_document" "eip_rotation" {
           },
           "mainSteps": [
             {
+              "name": "eipRotation",
+              "action": "aws:invokeLambdaFunction",
+              "timeoutSeconds": 300,
               "maxAttempts": 3,
+              "onFailure": "Abort",
               "inputs": {
-                "FunctionName": "eip_rotation",
-                "Api": "DescribeInstances",
-                "InstanceIds": [
-                  "{{ InstanceId }}"
+                "InvocationType": "RequestResponse",
+                "LogType": "Tail",
+                "FunctionName":{ "Ref": "eip_rotation" },
+                "Payload":"{\"EC2InstanceId\":\"{{InstanceId}}\", \"Eip\":\"{{Eip}}\"}"
                 ]
               },
               "outputs": [
