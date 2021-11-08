@@ -20,14 +20,26 @@ module "output_string_parameters" {
 
     {
       name        = "/central/lambda/eip_rotation_lambda_function/arn"
-      value       = aws_lambda_function.xgemail_eip_rotation.arn
+      value       = aws_lambda_function.eip_rotation.arn
       description = "EIP Rotation Lambda Arn"
     },
 
     {
       name        = "/central/lambda/eip_rotation_event_rule/name"
-      value       = aws_lambda_function.xgemail_eip_rotation.id
+      value       = aws_lambda_function.eip_rotation.id
       description = "EIP Rotation Lambda Name"
+    },
+
+    {
+      name        = "/central/ssm/document/eip_rotation_ssm_document/arn"
+      value       = aws_ssm_document.eip_rotation.arn
+      description = "EIP Rotation SSM Document Arn"
+    },
+
+    {
+      name        = "/central/ssm/eip_rotation_event_rule/name"
+      value       = aws_ssm_document.eip_rotation.id
+      description = "EIP Rotation SSM Document Name"
     }
   ]
 }

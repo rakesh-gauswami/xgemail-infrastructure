@@ -1,5 +1,6 @@
-# Eip Rotation Lambda Execution Role
-
+# ----------------------------------------------------
+# Eip Rotation Lambda Execution IAM Role and policy
+# ----------------------------------------------------
 data "aws_iam_policy_document" "eip_rotation_lambda_execution_role_policy" {
   statement {
     actions = [
@@ -91,6 +92,32 @@ resource "aws_iam_role_policy" "eip_rotation_lambda_execution_role_policy" {
   name   = "eip_rotation_lambda_execution_role_policy"
   role   = aws_iam_role.eip_rotation_lambda_execution_role.id
   policy = data.aws_iam_policy_document.eip_rotation_lambda_execution_role_policy.json
+}
+
+# ----------------------------------------------------
+# SSM Automation IAM Role and Policies
+# ----------------------------------------------------
+resource "aws_iam_role" "eip_rotation_role" {
+  name = "eip_rotation_role"
+  assume_role_policy = data.aws_iam_policy_document.eip_rotation_trust_policy.json
+}
+
+data "aws_iam_policy_document" "eip_rotation_trust_policy" {
+  policy_id = "eip_rotation_trust_policy"
+
+  statement {
+    actions = [
+      "sts:AssumeRole"
+    ]
+    effect  = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = [
+        "ec2.amazonaws.com",
+        "ssm.amazonaws.com"
+      ]
+    }
+  }
 }
 
 # ----------------------------------------------------
