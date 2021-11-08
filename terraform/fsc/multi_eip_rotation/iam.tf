@@ -4,14 +4,7 @@
 # SSM Automation IAM Role and Policies
 # ----------------------------------------------------
 
-resource "aws_iam_role" "multi_eip_rotation_role" {
-  name = "multi_eip_rotation_role"
-  assume_role_policy = data.aws_iam_policy_document.multi_eip_rotation_trust_policy.json
-}
-
-data "aws_iam_policy_document" "multi_eip_rotation_trust_policy" {
-  policy_id = "multi_eip_rotation_trust_policy"
-
+data "aws_iam_policy_document" "multi_eip_rotation_assume_role_policy" {
   statement {
     actions = [
       "sts:AssumeRole"
@@ -20,14 +13,19 @@ data "aws_iam_policy_document" "multi_eip_rotation_trust_policy" {
     principals {
       type        = "Service"
       identifiers = [
-        "ssm.amazonaws.com"
+        "lambda.amazonaws.com"
       ]
     }
   }
 }
 
-data "aws_iam_policy_document" "multi_eip_rotation_policy" {
-  policy_id = "multi_eip_rotation_policy"
+resource "aws_iam_role" "multi_eip_rotation_lambda_execution_role" {
+  name = "multi-eip-rotation-lambda-execution-role"
+  assume_role_policy = data.aws_iam_policy_document.multi_eip_rotation_assume_role_policy.json
+}
+
+data "aws_iam_policy_document" "multi_eip_rotation_lambda_execution_role_policy" {
+  policy_id = "multi-eip-rotation-lambda-execution-role-policy"
 
   statement {
     effect = "Allow"
@@ -95,17 +93,17 @@ data "aws_iam_policy_document" "multi_eip_rotation_policy" {
   }
 }
 
-resource "aws_iam_role_policy" "multi_eip_rotation_policy" {
-  name   = "termination-automation-policy"
-  role   = aws_iam_role.multi_eip_rotation_role.id
-  policy = data.aws_iam_policy_document.multi_eip_rotation_policy.json
+resource "aws_iam_role_policy" "multi_eip_rotation_lambda_execution_role_policy" {
+  name   = "multi-eip-rotation-lambda-execution-policy"
+  role   = aws_iam_role.multi_eip_rotation_lambda_execution_role.id
+  policy = data.aws_iam_policy_document.multi_eip_rotation_lambda_execution_role_policy.json
 }
 
 # ----------------------------------------------------
-# Event Rules IAM Role and Policies
+# Multi EIP Rotation Event Rule IAM Role and Policy
 # ----------------------------------------------------
 
-resource "aws_iam_role" "events_rule_ssm_automation_role" {
+resource "aws_iam_role" "multi_eip_rotation_event_role" {
   name               = "SSMLifecycle"
   assume_role_policy = data.aws_iam_policy_document.events_rule_ssm_automation_trust.json
 }

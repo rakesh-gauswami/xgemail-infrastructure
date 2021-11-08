@@ -1,7 +1,9 @@
 # vim: autoindent expandtab shiftwidth=2 filetype=terraform
 
-resource "aws_cloudwatch_event_rule" "multi_eip_rotation" {
-  name        = "multi-eip-rotation-lifecycle-launching"
+##  Multi EIP lifecycle launching event rule and target
+
+resource "aws_cloudwatch_event_rule" "multi_eip_lifecycle_event_rule" {
+  name        = "multi-eip-lifecycle-event-rule"
   description = "Capture ASG Instance Launching"
 
   event_pattern = <<EOF
@@ -28,8 +30,24 @@ resource "aws_cloudwatch_event_rule" "multi_eip_rotation" {
 EOF
 }
 
-resource "aws_cloudwatch_event_target" "multi_eip_rotation" {
-  target_id = "multi-eip-rotation-lifecycle-launching"
-  arn  = aws_lambda_function.multi_eip_rotation_lambda.arn
-  rule = aws_cloudwatch_event_rule.multi_eip_rotation.id
+resource "aws_cloudwatch_event_target" "multi_eip_lifecycle_event_target" {
+  target_id = "multi-eip-lifecycle-event-target"
+  arn       = aws_lambda_function.multi_eip_rotation_lambda.arn
+  rule      = aws_cloudwatch_event_rule.multi_eip_lifecycle_event_rule.id
+}
+
+##  Multi EIP rotation scheduled event rule and target
+
+resource "aws_cloudwatch_event_rule" "multi_eip_rotation_scheduled_event_rule" {
+  name        = "multi-eip-rotation-scheduled-event-rule"
+  description = "Scheduled Cloudwatch Event for Multi EIP Rotation"
+
+  schedule_expression = var.multi_eip_rotation_schedule
+  is_enabled          = var.multi_eip_rotation_schedule_enabled
+}
+
+resource "aws_cloudwatch_event_target" "multi_eip_rotation_scheduled_event_target" {
+  target_id = "multi-eip-rotation-scheduled-event-target"
+  arn       = aws_lambda_function.multi_eip_rotation_lambda.arn
+  rule      = aws_cloudwatch_event_rule.multi_eip_rotation_scheduled_event_rule.id
 }

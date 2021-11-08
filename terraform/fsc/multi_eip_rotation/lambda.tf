@@ -23,8 +23,8 @@ data "archive_file" "multi_eip_rotation_lambda_zip" {
 
 resource "aws_lambda_function" "multi_eip_rotation_lambda" {
   filename          = data.archive_file.multi_eip_rotation_lambda_zip.output_path
-  function_name     = "${local.multi_eip_rotation_lambda_name}"
-  role              = aws_iam_role.multi_eip_rotation_role.arn
+  function_name     = local.multi_eip_rotation_lambda_name
+  role              = aws_iam_role.multi_eip_rotation_lambda_execution_role.arn
   handler           = "${local.multi_eip_rotation_lambda_name}.${local.multi_eip_rotation_lambda_name}_handler"
   source_code_hash  = data.archive_file.multi_eip_rotation_lambda_zip.output_base64sha256
   runtime           = "python3.8"
@@ -36,6 +36,6 @@ resource "aws_lambda_function" "multi_eip_rotation_lambda" {
     }
   }
   tags = {
-    Name = "${local.multi_eip_rotation_lambda_name}"
+    Name = local.multi_eip_rotation_lambda_name
   }
 }
