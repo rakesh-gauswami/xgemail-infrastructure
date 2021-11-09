@@ -10,7 +10,7 @@ module "output_string_parameters" {
       description = "Volume Tracker SimpleDb Domain name"
     },
     {
-      name        = "/central/simpledb/domain/volume_tracker/name"
+      name        = "/central/simpledb/domain/volume_tracker/id"
       value       = aws_simple_db_domain.volume_tracker.id
       description = "Volume Tracker SimpleDb Domain id"
     }
