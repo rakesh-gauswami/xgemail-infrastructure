@@ -1,23 +1,6 @@
 locals {
   eip_rotation_lambda_name = "eip_rotation"
-  input_param_account_type            = data.aws_ssm_parameter.account_type.value
-  input_param_deployment_environment  = data.aws_ssm_parameter.deployment_environment.value
-  input_param_primary_region          = data.aws_ssm_parameter.primary_region.value
-}
-
-data "aws_ssm_parameter" "account_type" {
-  name     = "/central/account/type"
-  provider = aws.parameters
-}
-
-data "aws_ssm_parameter" "deployment_environment" {
-  name     = "/central/account/deployment-environment"
-  provider = aws.parameters
-}
-
-data "aws_ssm_parameter" "primary_region" {
-  name     = "/central/account/primary-region"
-  provider = aws.parameters
+  deployment_environment   = "${path.module}/input-ssm-parameters.${local.input_param_deployment_environment}"
 }
 
 resource "null_resource" "pip" {
@@ -53,7 +36,9 @@ resource "aws_lambda_function" "eip_rotation" {
   timeout           = 300
   environment {
     variables = {
-      DEPLOYMENT_ENVIRONMENT = local.input_param_deployment_environment
+      ACCOUNT                = local.input_param_account
+      SSM_POSTFIX_SERVICE    = local.input_param_ssm_postfix_service
+      SSM_UPDATE_HOSTNAME    = local.input_parameter_ssm_update_hostname
       TYPE                   = "lambda"
     }
   }
