@@ -162,7 +162,7 @@ data "aws_iam_policy_document" "events_rule_ssm_automation_policy" {
 
   statement {
     sid = "SsmAutomationPermissions"
-    effect    = "Allow",
+    effect    = "Allow"
     actions   = [
       "ssm:*",
     ]
