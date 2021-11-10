@@ -1,6 +1,5 @@
 locals {
   eip_rotation_lambda_name = "eip_rotation"
-  deployment_environment   = "${path.module}/input-ssm-parameters.${local.input_param_deployment_environment}"
 }
 
 resource "null_resource" "pip" {
@@ -36,9 +35,10 @@ resource "aws_lambda_function" "eip_rotation" {
   timeout           = 300
   environment {
     variables = {
-      ACCOUNT                = local.input_param_account
+      ACCOUNT                = local.input_param_account_type
+      AWS_REGION             = local.input_param_primary_region
       SSM_POSTFIX_SERVICE    = local.input_param_ssm_postfix_service
-      SSM_UPDATE_HOSTNAME    = local.input_parameter_ssm_update_hostname
+      SSM_UPDATE_HOSTNAME    = local.input_param_ssm_update_hostname
       TYPE                   = "lambda"
     }
   }
