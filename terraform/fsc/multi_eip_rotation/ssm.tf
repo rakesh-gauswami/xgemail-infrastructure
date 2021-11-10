@@ -6,7 +6,7 @@ resource "aws_ssm_document" "multi_eip_rotation" {
   content       = <<DOC
   {
     "schemaVersion": "0.3",
-    "assumeRole": ${aws_iam_role.multi_eip_rotation_role.arn},
+    "assumeRole": ${aws_iam_role.multi_eip_rotation_ssm_automation_role.arn},
     "description": "Rotate all EIPs on an EC2 instance in an AutoScaling Group",
     "parameters": {
       "InstanceId": {

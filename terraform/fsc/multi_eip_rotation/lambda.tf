@@ -2,19 +2,6 @@ locals {
   multi_eip_rotation_lambda_name = "multi_eip_rotation_lambda"
 }
 
-resource "null_resource" "pip" {
-  triggers = {
-    build_number = timestamp()
-  }
-  provisioner "local-exec" {
-    command = <<EOL
-    pip3 install -r ${path.module}/${local.multi_eip_rotation_lambda_name}/src/requirements.txt -t ${path.module}/${local.multi_eip_rotation_lambda_name}/src;
-    rm -rf ${path.module}/${local.multi_eip_rotation_lambda_name}/src/boto3*;
-    rm -rf ${path.module}/${local.multi_eip_rotation_lambda_name}/src/botocore*;
-    EOL
-  }
-}
-
 data "archive_file" "multi_eip_rotation_lambda_zip" {
   type        = "zip"
   source_file = "${path.module}/${local.multi_eip_rotation_lambda_name}/src/${local.multi_eip_rotation_lambda_name}.py"
@@ -38,4 +25,20 @@ resource "aws_lambda_function" "multi_eip_rotation_lambda" {
   tags = {
     Name = local.multi_eip_rotation_lambda_name
   }
+}
+
+resource "aws_lambda_permission" "allow_cloudwatch_scheduled_event" {
+  statement_id  = "AllowExecutionFromCloudWatchScheduledEvent"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.multi_eip_rotation_lambda.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.multi_eip_rotation_scheduled_event_rule.arn
+}
+
+resource "aws_lambda_permission" "allow_cloudwatch_lifecycle_event" {
+  statement_id  = "AllowExecutionFromCloudWatchLifecycleEvent"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.multi_eip_rotation_lambda.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.multi_eip_lifecycle_event_rule.arn
 }
