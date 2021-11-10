@@ -1,7 +1,9 @@
+# vim: autoindent expandtab shiftwidth=2 filetype=terraform
 
-#CloudWatch Event Rule
-resource "aws_cloudwatch_event_rule" "eip_rotation" {
-  name        = "eip-rotation"
+##  EIP lifecycle launching event rule and target
+
+resource "aws_cloudwatch_event_rule" "eip_rotation_event_rule" {
+  name        = "eip-rotation-lifecycle-event-rule"
   description = "Capture ASG Instance Launching"
 
   event_pattern = <<EOF
@@ -26,4 +28,10 @@ resource "aws_cloudwatch_event_rule" "eip_rotation" {
     }
   }
 EOF
+}
+
+resource "aws_cloudwatch_event_target" "eip_lifecycle_event_target" {
+  target_id = "eip-lifecycle-event-target"
+  arn       = aws_lambda_function.eip_rotation_lambda.arn
+  rule      = aws_cloudwatch_event_rule.eip_rotation_event_rule.id
 }
