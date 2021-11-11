@@ -1,8 +1,8 @@
 locals {
-  input_param_account_type            = data.aws_ssm_parameter.account_type.value
-  input_param_alarm_topic_arn         = data.aws_ssm_parameter.alarm_topic_arn.value
-  input_param_deployment_environment  = data.aws_ssm_parameter.deployment_environment.value
-  input_param_primary_region          = data.aws_ssm_parameter.primary_region.value
+  input_param_account_type            = nonsensitive(data.aws_ssm_parameter.account_type.value)
+  input_param_alarm_topic_arn         = nonsensitive(data.aws_ssm_parameter.alarm_topic_arn.value)
+  input_param_deployment_environment  = nonsensitive(data.aws_ssm_parameter.deployment_environment.value)
+  input_param_primary_region          = nonsensitive(data.aws_ssm_parameter.primary_region.value)
   input_param_ssm_postfix_service     = nonsensitive(data.aws_ssm_parameter.ssm_postfix_service.value)
   input_param_ssm_update_hostname     = nonsensitive(data.aws_ssm_parameter.ssm_update_hostname.value)
 }

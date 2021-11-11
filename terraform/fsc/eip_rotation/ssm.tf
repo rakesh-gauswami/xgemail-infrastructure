@@ -31,7 +31,7 @@ resource "aws_ssm_document" "eip_rotation" {
               "inputs": {
                 "InvocationType": "RequestResponse",
                 "LogType": "Tail",
-                "FunctionName":{ "Ref": "eip_rotation" },
+                "FunctionName":${aws_lambda_function.eip_rotation_lambda},
                 "Payload":"{\"EC2InstanceId\":\"{{InstanceId}}\", \"Eip\":\"{{Eip}}\"}"
                 ]
               },
