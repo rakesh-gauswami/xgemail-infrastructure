@@ -31,17 +31,17 @@ data "aws_iam_policy_document" "termination_automation_policy" {
   policy_id = "termination_automation_policy"
 
   statement {
-    effect = "Allow"
+    sid = "IamPermissions"
     actions = [
       "iam:PassRole",
     ]
+    effect = "Allow"
     resources = [
       "*",
     ]
   }
   statement {
     sid = "AutoScalingPermissions"
-    effect = "Allow"
     actions = [
       "autoscaling:CompleteLifecycleAction",
       "autoscaling:DescribeAutoScalingInstances",
@@ -49,13 +49,13 @@ data "aws_iam_policy_document" "termination_automation_policy" {
       "autoscaling:TerminateInstanceInAutoScalingGroup",
       "autoscaling:UpdateAutoScalingGroup",
     ]
+    effect = "Allow"
     resources = [
       "*"
     ]
   }
   statement {
     sid = "Ec2Permissions"
-    effect = "Allow"
     actions = [
       "ec2:CreateTags",
       "ec2:DescribeInstances",
@@ -64,13 +64,13 @@ data "aws_iam_policy_document" "termination_automation_policy" {
       "ec2:DetachVolume",
       "ec2:DeleteVolume",
     ]
+    effect = "Allow"
     resources = [
       "*"
     ]
   }
   statement {
     sid = "SnsTopicPermissions"
-    effect = "Allow"
     actions = [
       "sns:GetSubscriptionAttributes",
       "sns:ListSubscriptionsByTopic",
@@ -78,6 +78,7 @@ data "aws_iam_policy_document" "termination_automation_policy" {
       "sns:Publish",
       "sns:Unsubscribe",
     ]
+    effect = "Allow"
     resources = [
       "*"
     ]
@@ -139,13 +140,13 @@ resource "aws_iam_role_policy" "termination_automation_policy" {
 # Event Rules IAM Role and Policies
 # ----------------------------------------------------
 
-resource "aws_iam_role" "events_rule_ssm_automation_role" {
+resource "aws_iam_role" "termination_automation_event_rule_role" {
   name               = "SSMLifecycle"
-  assume_role_policy = data.aws_iam_policy_document.events_rule_ssm_automation_trust.json
+  assume_role_policy = data.aws_iam_policy_document.termination_automation_event_rule_trust_policy.json
 }
 
-data "aws_iam_policy_document" "events_rule_ssm_automation_trust" {
-  policy_id = "events_rule_ssm_automation_trust"
+data "aws_iam_policy_document" "termination_automation_event_rule_trust_policy" {
+  policy_id = "event_rule_ssm_automation_trust"
 
   statement {
     actions = ["sts:AssumeRole"]
@@ -157,20 +158,19 @@ data "aws_iam_policy_document" "events_rule_ssm_automation_trust" {
   }
 }
 
-data "aws_iam_policy_document" "events_rule_ssm_automation_policy" {
-  policy_id = "events_rule_ssm_automation"
+data "aws_iam_policy_document" "termination_automation_event_rule_policy" {
+  policy_id = "termination_automation_event_rule_policy"
 
   statement {
     sid = "SsmAutomationPermissions"
-    effect    = "Allow"
     actions   = [
       "ssm:*",
     ]
+    effect    = "Allow"
     resources = [
       "*",
     ]
   }
-
   statement {
     sid = "CloudWatchLogGroup"
     actions = [
@@ -192,22 +192,21 @@ data "aws_iam_policy_document" "events_rule_ssm_automation_policy" {
       "arn:aws:logs:${local.input_param_primary_region}:*:log-group:*:*"
     ]
   }
-
   statement {
     sid = "Ec2Permissions"
-    effect    = "Allow"
     actions   = [
       "ec2:CreateTags",
       "ec2:DescribeAddresses",
     ]
+    effect    = "Allow"
     resources = [
       "*",
     ]
   }
 }
 
-resource "aws_iam_role_policy" "events_rule_ssm_automation_policy" {
-  name   = "events_rule_ssm_automation_policy"
-  role   = aws_iam_role.events_rule_ssm_automation_role.id
-  policy = data.aws_iam_policy_document.events_rule_ssm_automation_policy.json
+resource "aws_iam_role_policy" "termination_automation_event_rule_policy" {
+  name   = "termination_automation_event_rule_policy"
+  role   = aws_iam_role.termination_automation_event_rule_role.id
+  policy = data.aws_iam_policy_document.termination_automation_event_rule_policy.json
 }

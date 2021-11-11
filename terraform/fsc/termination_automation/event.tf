@@ -4,8 +4,8 @@ resource "aws_cloudwatch_event_rule" "termination_automation" {
   name        = "termination-automation"
   description = "Capture ASG Instance Termination"
 
-  event_pattern = <<EOF
-{
+  event_pattern = <<DOC
+  {
     "source": [
       "aws.autoscaling"
     ],
@@ -25,7 +25,7 @@ resource "aws_cloudwatch_event_rule" "termination_automation" {
       ]
     }
   }
-EOF
+DOC
 }
 
 resource "aws_cloudwatch_event_target" "termination_automation" {
@@ -42,15 +42,15 @@ resource "aws_cloudwatch_event_target" "termination_automation" {
       "lifecycle_hook_name" : "$.detail.LifecycleHookName",
       "lifecycle_action_token" : "$.detail.LifecycleActionToken",
     }
-    input_template = <<EOF
-{
-  "Region":<region>,
-  "Time":<time>,
-  "AutoScalingGroupName":<autocaling_group_name>,
-  "InstanceId":<instance_id>,
-  "LifecycleHookName":<lifecycle_hook_name>,
-  "LifecycleActionToken":<lifecycle_action_token>
-}
-EOF
+    input_template = <<DOC
+    {
+      "Region":<region>,
+      "Time":<time>,
+      "AutoScalingGroupName":<autocaling_group_name>,
+      "InstanceId":<instance_id>,
+      "LifecycleHookName":<lifecycle_hook_name>,
+      "LifecycleActionToken":<lifecycle_action_token>
+    }
+  DOC
   }
 }
