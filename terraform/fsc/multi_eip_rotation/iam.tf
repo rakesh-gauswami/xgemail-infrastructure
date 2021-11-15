@@ -148,9 +148,10 @@ data "aws_iam_policy_document" "multi_eip_rotation_event_policy" {
       "lambda:InvokeFunction"
     ]
     effect    = "Allow"
-    resources = ["arn:aws:lambda:us-west-2:202058678495:function:Xgemail-Multi-Eip-Rotation"]
+    resources = [
+      aws_lambda_function.multi_eip_rotation_lambda.arn
+    ]
   }
-
 }
 
 resource "aws_iam_role_policy" "multi_eip_rotation_event_policy" {

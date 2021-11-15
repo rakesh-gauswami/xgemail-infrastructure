@@ -19,7 +19,7 @@ resource "aws_lambda_function" "multi_eip_rotation_lambda" {
   timeout           = 300
   environment {
     variables = {
-      DEPLOYMENT_ENVIRONMENT = local.input_param_deployment_environment
+      SSM_POSTFIX_SERVICE = local.input_param_ssm_postfix_service
     }
   }
   tags = {
