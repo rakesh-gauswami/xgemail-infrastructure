@@ -13,6 +13,7 @@ package 'tar'
 
 NODE_TYPE = node['xgemail']['cluster_type']
 ACCOUNT = node['sophos_cloud']['environment']
+REGION = node['sophos_cloud']['region']
 
 # Make sure we're on an encryption submit node
 if NODE_TYPE != 'encryption-submit'
@@ -128,6 +129,7 @@ template 'xgemail.jilter.properties' do
   variables(
       :policy_bucket => POLICY_BUCKET_NAME,
       :account => ACCOUNT,
+      :region => REGION,
       :customer_submit_bucket => CUSTOMER_SUBMIT_BUCKET_NAME,
       :node_ip => NODE_IP,
       :msg_history_v2_stream_name => MSG_HISTORY_V2_STREAM_NAME,
