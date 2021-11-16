@@ -245,7 +245,7 @@ else
   if NODE_TYPE == 'delta-xdelivery'
     include_recipe 'sophos-cloud-xgemail::configure-bounce-message-delta-delivery-queue'
   end
-  if NODE_TYPE == 'mf-inbound-xdelivery' || 'mf-outbound-xdelivery'
+  if NODE_TYPE == 'mf-inbound-xdelivery' || NODE_TYPE == 'mf-outbound-xdelivery'
 
     TRANSPORT_ROUTE_HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
 
