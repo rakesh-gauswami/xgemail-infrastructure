@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: sophos-cloud-xgemail
-# Recipe:: configure-bounce-message-mf-inbound-delivery-queue
+# Recipe:: configure-bounce-message-mf-delivery-queue
 #
 # Copyright 2021, Sophos
 #
@@ -21,7 +21,7 @@ raise "Unsupported node type [#{NODE_TYPE}]" if INSTANCE_DATA.nil?
 INSTANCE_NAME = INSTANCE_DATA[:instance_name]
 raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 
-if NODE_TYPE == 'mf-inbound-delivery' || NODE_TYPE == 'mf-inbound-xdelivery'
+if NODE_TYPE == 'mf-inbound-delivery' || NODE_TYPE == 'mf-inbound-xdelivery' || NODE_TYPE == 'mf-outbound-delivery' || NODE_TYPE == 'mf-outbound-xdelivery'
   [
   #Change master.cf "bounce" command from default(bounce) to "discard" so NDR and bounces can be disabled.
   'bounce/unix/command=discard'

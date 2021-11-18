@@ -230,6 +230,6 @@ else
   end
 
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_mf_outbound_sqs_message_producer'
-  include_recipe 'sophos-cloud-xgemail::setup_xgemail_mf_outbound_utils_structure'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_mf_utils_structure'
   include_recipe 'sophos-cloud-xgemail::setup_flag_toggle_mf_outbound_submit'
 end
