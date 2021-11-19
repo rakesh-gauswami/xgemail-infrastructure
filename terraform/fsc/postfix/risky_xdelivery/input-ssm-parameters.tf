@@ -3,7 +3,7 @@ locals {
   input_param_deployment_environment          = nonsensitive(data.aws_ssm_parameter.deployment_environment.value)
   input_param_primary_region                  = nonsensitive(data.aws_ssm_parameter.primary_region.value)
   input_param_sg_base_id                      = nonsensitive(data.aws_ssm_parameter.sg_base_id.value)
-  input_param_sg_warmup_delivery_ec2_id       = nonsensitive(data.aws_ssm_parameter.sg_warmup_delivery_ec2_id.value)
+  input_param_sg_risky_delivery_ec2_id        = nonsensitive(data.aws_ssm_parameter.sg_risky_delivery_ec2_id.value)
   input_param_sg_logicmonitor_id              = nonsensitive(data.aws_ssm_parameter.sg_logicmonitor_id.value)
   input_param_vpc_id                          = nonsensitive(data.aws_ssm_parameter.vpc_id.value)
 }
@@ -29,10 +29,10 @@ data "aws_ssm_parameter" "sg_base_id" {
   name = "/central/sg/base/id"
 }
 
-data "aws_ssm_parameter" "sg_warmup_delivery_ec2_id" {
+data "aws_ssm_parameter" "sg_risky_delivery_ec2_id" {
   provider = aws.parameters
 
-  name = "/central/sg/warmup/delivery/ec2/id"
+  name = "/central/sg/risky/delivery/ec2/id"
 }
 
 data "aws_ssm_parameter" "sg_logicmonitor_id" {
