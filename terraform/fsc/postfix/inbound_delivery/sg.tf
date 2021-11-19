@@ -43,8 +43,8 @@ resource "aws_security_group_rule" "ec2_egress_world" {
 
 resource "aws_security_group_rule" "ec2_ingress_lb_smtp" {
   type                     = "ingress"
-  from_port                 = local.smtp_tcp_port
-  to_port                   = local.smtp_tcp_port
+  from_port                = local.smtp_tcp_port
+  to_port                  = local.smtp_tcp_port
   protocol                 = "tcp"
   security_group_id        = aws_security_group.security_group_ec2.id
   source_security_group_id = aws_security_group.security_group_lb.id
@@ -52,8 +52,8 @@ resource "aws_security_group_rule" "ec2_ingress_lb_smtp" {
 
 resource "aws_security_group_rule" "ec2_ingress_lb_smtptls" {
   type                     = "ingress"
-  from_port                 = local.smtptls_tcp_port
-  to_port                   = local.smtptls_tcp_port
+  from_port                = local.smtptls_tcp_port
+  to_port                  = local.smtptls_tcp_port
   protocol                 = "tcp"
   security_group_id        = aws_security_group.security_group_ec2.id
   source_security_group_id = aws_security_group.security_group_lb.id
