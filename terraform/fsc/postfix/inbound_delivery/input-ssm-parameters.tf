@@ -35,12 +35,6 @@ data "aws_ssm_parameter" "sg_logicmonitor_id" {
   name = "/central/sg/logicmonitor/id"
 }
 
-data "aws_ssm_parameter" "sg_redis_id" {
-  provider = aws.parameters
-
-  name = "/central/sg/redis/id"
-}
-
 data "aws_ssm_parameter" "vpc_id" {
   provider = aws.parameters
   name     = "/central/vpc/id"

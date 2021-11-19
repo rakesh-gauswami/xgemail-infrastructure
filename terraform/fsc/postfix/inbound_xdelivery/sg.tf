@@ -1,5 +1,6 @@
 locals {
   cidr_block_world        = "0.0.0.0/0"
+  ntp_udp_port            = 123
   smtp_tcp_port           = 8025
   snmp_port               = 161
   snmp_trap_port          = 162
@@ -74,6 +75,24 @@ resource "aws_security_group_rule" "logicmonitor_ingress_snmp_udp" {
   type                     = "ingress"
   from_port                = local.snmp_port
   to_port                  = local.snmp_trap_port
+  protocol                 = "udp"
+  security_group_id        = aws_security_group.security_group_ec2.id
+  source_security_group_id = data.aws_security_group.logicmonitor.id
+}
+
+resource "aws_security_group_rule" "logicmonitor_ingress_icmp" {
+  type                     = "ingress"
+  from_port                = -1
+  to_port                  = -1
+  protocol                 = "icmp"
+  security_group_id        = aws_security_group.security_group_ec2.id
+  source_security_group_id = data.aws_security_group.logicmonitor.id
+}
+
+resource "aws_security_group_rule" "logicmonitor_ingress_ntp_udp" {
+  type                     = "ingress"
+  from_port                = local.ntp_udp_port
+  to_port                  = local.ntp_udp_port
   protocol                 = "udp"
   security_group_id        = aws_security_group.security_group_ec2.id
   source_security_group_id = data.aws_security_group.logicmonitor.id
