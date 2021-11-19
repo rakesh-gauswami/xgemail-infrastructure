@@ -1,6 +1,5 @@
 locals {
   cidr_block_world        = "0.0.0.0/0"
-  redis_tcp_port          = 6379
   smtp_tcp_port           = 25
   smtptls_tcp_port        = 587
   snmp_port               = 161
@@ -10,10 +9,6 @@ locals {
 
 data "aws_security_group" "base" {
   id = local.input_param_sg_base_id
-}
-
-data "aws_security_group" "redis" {
-  id = local.input_param_sg_redis_id
 }
 
 data "aws_security_group" "logicmonitor" {
@@ -79,13 +74,4 @@ resource "aws_security_group_rule" "logicmonitor_ingress_snmp_udp" {
   protocol                 = "udp"
   security_group_id        = aws_security_group.security_group_ec2.id
   source_security_group_id = data.aws_security_group.logicmonitor.id
-}
-
-resource "aws_security_group_rule" "redis_ingress_tcp" {
-  type                     = "ingress"
-  from_port                = local.redis_tcp_port
-  to_port                  = local.redis_tcp_port
-  protocol                 = "tcp"
-  security_group_id        = aws_security_group.security_group_ec2.id
-  source_security_group_id = data.aws_security_group.redis.id
 }
