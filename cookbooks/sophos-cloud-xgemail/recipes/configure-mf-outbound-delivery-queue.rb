@@ -81,7 +81,7 @@ CONFIGURATION_COMMANDS.each do | cur |
 end
 
 if ACCOUNT == 'sandbox'
-  include_recipe 'sophos-cloud-xgemail::setup_xgemail_mf_utils_structure'
+  include_recipe 'sophos-cloud-xgemail::setup_xgemail_mf_outbound_utils_structure'
 end
 
 include_recipe 'sophos-cloud-xgemail::setup_mf_outbound_delivery_transport_updater_cron.rb'

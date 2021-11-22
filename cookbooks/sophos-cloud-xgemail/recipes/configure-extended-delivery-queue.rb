@@ -196,7 +196,7 @@ else
 end
 
 
-if NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery' || NODE_TYPE == 'warmup-xdelivery' || NODE_TYPE == 'beta-xdelivery' || NODE_TYPE == 'delta-xdelivery'
+if NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery' || NODE_TYPE == 'warmup-xdelivery' || NODE_TYPE == 'beta-xdelivery' || NODE_TYPE == 'delta-xdelivery' || NODE_TYPE == 'mf-outbound-xdelivery'
 
   HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
 
@@ -261,19 +261,7 @@ else
     include_recipe 'sophos-cloud-xgemail::setup_push_policy_delivery_toggle'
   end
   if NODE_TYPE == 'mf-outbound-xdelivery'
-
-    TRANSPORT_ROUTE_HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
-
-    # Add the header checks config file
-    file "#{TRANSPORT_ROUTE_HEADER_CHECKS_PATH}" do
-      content "/^X-Sophos-Email-Transport-Route: (smtp|smtp_encrypt):(.*)$/i FILTER $1:$2"
-      mode '0644'
-      owner 'root'
-      group 'root'
-    end
     include_recipe 'sophos-cloud-xgemail::configure-bounce-message-mf-outbound-delivery-queue'
-    include_recipe 'sophos-cloud-xgemail::setup_mf_outbound_delivery_transport_updater_cron'
-    include_recipe 'sophos-cloud-xgemail::setup_push_policy_delivery_toggle'
   end
 end
 
