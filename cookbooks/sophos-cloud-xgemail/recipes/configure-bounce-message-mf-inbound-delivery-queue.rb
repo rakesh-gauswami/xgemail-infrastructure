@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: sophos-cloud-xgemail
-# Recipe:: configure-bounce-message-mf-delivery-queue
+# Recipe:: configure-bounce-message-mf-inbound-delivery-queue
 #
 # Copyright 2021, Sophos
 #
