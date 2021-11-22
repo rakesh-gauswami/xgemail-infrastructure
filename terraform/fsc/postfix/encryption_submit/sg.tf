@@ -1,7 +1,7 @@
 locals {
   cidr_block_world        = "0.0.0.0/0"
   ntp_udp_port            = 123
-  smtp_tcp_port           = 8025
+  smtp_tcp_port           = 25
   snmp_port               = 161
   snmp_trap_port          = 162
   security_group_name_lb  = "${local.instance_type}-lb"
@@ -9,10 +9,6 @@ locals {
 
 data "aws_security_group" "base" {
   id = local.input_param_sg_base_id
-}
-
-data "aws_security_group" "delta_delivery_ec2" {
-  id = local.input_param_sg_delta_delivery_ec2_id
 }
 
 data "aws_security_group" "logicmonitor" {
@@ -44,6 +40,15 @@ resource "aws_security_group_rule" "ec2_egress_world" {
   source_security_group_id = data.aws_security_group.base.id
 }
 
+resource "aws_security_group_rule" "lb_ingress_world_smtp" {
+  type                      = "ingress"
+  cidr_blocks               = local.cidr_block_world
+  from_port                 = local.smtp_tcp_port
+  to_port                   = local.smtp_tcp_port
+  protocol                  = "tcp"
+  security_group_id         = aws_security_group.security_group_lb.id
+}
+
 resource "aws_security_group_rule" "ec2_ingress_lb_smtp" {
   type                     = "ingress"
   from_port                = local.smtp_tcp_port
@@ -51,15 +56,6 @@ resource "aws_security_group_rule" "ec2_ingress_lb_smtp" {
   protocol                 = "tcp"
   security_group_id        = aws_security_group.security_group_ec2.id
   source_security_group_id = aws_security_group.security_group_lb.id
-}
-
-resource "aws_security_group_rule" "ec2_ingress_delta_delivery_ec2_smtp" {
-  type                     = "ingress"
-  from_port                = local.smtp_tcp_port
-  to_port                  = local.smtp_tcp_port
-  protocol                 = "tcp"
-  security_group_id        = aws_security_group.security_group_ec2.id
-  source_security_group_id = data.aws_security_group.delta_delivery_ec2.id
 }
 
 resource "aws_security_group_rule" "logicmonitor_ingress_snmp_tcp" {
