@@ -18,6 +18,6 @@ output "eip_rotation_ssm_execution_arn" {
   value = aws_ssm_document.eip_rotation.arn
 }
 
-output "eip_rotation_lambda_ssm_execution_role_name" {
+output "eip_rotation_lambda_ssm_execution_name" {
   value = aws_ssm_document.eip_rotation.name
 }
