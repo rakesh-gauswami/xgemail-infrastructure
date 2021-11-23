@@ -68,7 +68,7 @@ if ACCOUNT == 'sandbox'
 end
 
 PACKAGE_DIR                    = "#{XGEMAIL_FILES_DIR}/mf-outbound-xdelivery-transport"
-TRANSPORT_UPDATER_SCRIPT       = 'mf-outbound.xdelivery.transport.updater.py.erb'
+TRANSPORT_UPDATER_SCRIPT       = 'mf.outbound.xdelivery.transport.updater.py'
 TRANSPORT_UPDATER_SCRIPT_PATH  = "#{PACKAGE_DIR}/#{TRANSPORT_UPDATER_SCRIPT}"
 XGEMAIL_PIC_FQDN               = "mail-#{STATION_VPC_NAME.downcase}-#{REGION}.#{ACCOUNT}.hydra.sophos.com"
 TRANSPORT_UPDATER_SERVICE_NAME = node['xgemail']['transport_updater']
