@@ -32,6 +32,7 @@ resource "aws_cloudwatch_event_target" "termination_automation" {
   target_id = "termination-automation"
   arn  = aws_ssm_document.termination_automation.arn
   rule = aws_cloudwatch_event_rule.termination_automation.id
+  role_arn = aws_iam_role.termination_automation_event_rule_role.arn
 
   input_transformer {
     input_paths = {
