@@ -262,6 +262,7 @@ else
   end
   if NODE_TYPE == 'mf-outbound-xdelivery'
     include_recipe 'sophos-cloud-xgemail::configure-bounce-message-mf-outbound-delivery-queue'
+    include_recipe 'sophos-cloud-xgemail::setup_mf_outbound_delivery_transport_updater_cron'
   end
 end
 
