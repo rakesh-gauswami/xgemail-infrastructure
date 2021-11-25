@@ -202,7 +202,7 @@ while True:
   logger.debug('starting to update transport map file [%s.db]', TRANSPORT_FILE)
 
   query_parameters = {
-  'productType':'Gateway',
+  'productType':'All',
   }
 
   response = requests.get(
@@ -244,7 +244,7 @@ while True:
           data=json.dumps(
             {
               'domain':domain,
-              'productType':'Gateway'
+              'productType':'All'
             }
           ),
           timeout=MAIL_PIC_RESPONSE_TIMEOUT
