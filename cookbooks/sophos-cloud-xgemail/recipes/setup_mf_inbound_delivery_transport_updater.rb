@@ -1,8 +1,8 @@
 #
 # Cookbook Name:: sophos-cloud-xgemail
-# Recipe:: setup_mf_inbound_delivery_transport_updater_cron
+# Recipe:: setup_mf_inbound_xdelivery_transport_updater
 #
-# Copyright 2021, Sophos
+# Copyright 2016, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -26,15 +26,18 @@ LOCAL_CERT_PATH       = node['sophos_cloud']['local_cert_path']
 REGION                = node['sophos_cloud']['region']
 CONNECTIONS_BUCKET    = node['sophos_cloud']['connections']
 
-CRON_JOB_TIMEOUT      = node['xgemail']['mail_flow_cron_job_timeout']
-CRON_MINUTE_FREQUENCY = node['xgemail']['mail_flow_sender_by_relay_cron_minute_frequency']
+CRON_JOB_TIMEOUT      = node['xgemail']['cron_job_timeout']
+CRON_MINUTE_FREQUENCY = node['xgemail']['customer_delivery_transport_cron_minute_frequency']
 STATION_VPC_NAME      = node['xgemail']['station_vpc_name']
 XGEMAIL_FILES_DIR     = node['xgemail']['xgemail_files_dir']
 TRANSPORT_FILENAME    = 'transport'
 MAIL_PIC_API_RESPONSE_TIMEOUT = node['xgemail']['mail_pic_apis_response_timeout_seconds']
 MAIL_PIC_API_AUTH     = node['xgemail']['mail_pic_api_auth']
 POLICY_BUCKET         = node['xgemail']['xgemail_policy_bucket_name']
+ENC_CONFIG_KEY        = node['xgemail']['enc_config_key']
+INBOUND_TLS_CONFIG_KEY = node['xgemail']['inbound_tls_config_key']
 XGEMAIL_UTILS_DIR      = node['xgemail']['xgemail_utils_files_dir']
+CUSTOM_ROUTE_TRANSPORT_PATH  = node['xgemail']['custom_route_transport_path']
 
 CONFIGURATION_COMMANDS =
   [
@@ -64,10 +67,11 @@ if ACCOUNT == 'sandbox'
 
 end
 
-PACKAGE_DIR           = "#{XGEMAIL_FILES_DIR}/mf-inbound-delivery-transport-cron"
-CRON_SCRIPT           = 'mf.inbound.delivery.transport.updater.py'
-CRON_SCRIPT_PATH      = "#{PACKAGE_DIR}/#{CRON_SCRIPT}"
-XGEMAIL_PIC_FQDN      = "mail-#{STATION_VPC_NAME.downcase}-#{REGION}.#{ACCOUNT}.hydra.sophos.com"
+PACKAGE_DIR                    = "#{XGEMAIL_FILES_DIR}/mf-inbound-delivery-transport"
+TRANSPORT_UPDATER_SCRIPT       = 'mf.inbound.delivery.transport.updater.py'
+TRANSPORT_UPDATER_SCRIPT_PATH  = "#{PACKAGE_DIR}/#{TRANSPORT_UPDATER_SCRIPT}"
+XGEMAIL_PIC_FQDN               = "mail-#{STATION_VPC_NAME.downcase}-#{REGION}.#{ACCOUNT}.hydra.sophos.com"
+TRANSPORT_UPDATER_SERVICE_NAME = node['xgemail']['transport_updater']
 
 directory XGEMAIL_FILES_DIR do
   mode '0755'
@@ -82,15 +86,10 @@ directory PACKAGE_DIR do
   group 'root'
 end
 
-# Setup cron script execution
-execute CRON_SCRIPT_PATH do
-  ignore_failure true
-  user 'root'
-  action :nothing
-end
 
-template CRON_SCRIPT_PATH do
-  source "#{CRON_SCRIPT}.erb"
+
+template TRANSPORT_UPDATER_SCRIPT_PATH do
+  source "#{TRANSPORT_UPDATER_SCRIPT}.erb"
   mode '0750'
   owner 'root'
   group 'root'
@@ -103,16 +102,49 @@ template CRON_SCRIPT_PATH do
     :connections_bucket => CONNECTIONS_BUCKET,
     :policy_bucket => POLICY_BUCKET,
     :xgemail_utils_path => XGEMAIL_UTILS_DIR,
+    :custom_route_transport_path => CUSTOM_ROUTE_TRANSPORT_PATH,
+    :enc_config_key => ENC_CONFIG_KEY,
+    :inbound_tls_config_key => INBOUND_TLS_CONFIG_KEY
   )
-  notifies :run, "execute[#{CRON_SCRIPT_PATH}]", :immediately
+  notifies :run, "execute[#{TRANSPORT_UPDATER_SCRIPT_PATH}]", :immediately
 end
 
 CONFIGURATION_COMMANDS.each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
 end
 
-cron "#{INSTANCE_NAME}-transport-cron" do
-  minute "1-59/#{CRON_MINUTE_FREQUENCY}"
+# Run once manually
+execute TRANSPORT_UPDATER_SCRIPT_PATH do
+  ignore_failure true
   user 'root'
-  command "source /etc/profile && timeout #{CRON_JOB_TIMEOUT} flock --nb /var/lock/#{CRON_SCRIPT}.lock -c '#{CRON_SCRIPT_PATH}' >/dev/null 2>&1"
+  action :nothing
+end
+
+template 'xgemail-transport-updater' do
+  path "/etc/init.d/#{TRANSPORT_UPDATER_SERVICE_NAME}"
+  source 'xgemail.transport.updater.init.erb'
+  mode '0755'
+  owner 'root'
+  group 'root'
+  variables(
+    :service => TRANSPORT_UPDATER_SERVICE_NAME,
+    :script_path => TRANSPORT_UPDATER_SCRIPT_PATH,
+    :user => 'root'
+  )
+end
+
+# Add rsyslog config file to redirect transportupdater messages to its own log file.
+file '/etc/rsyslog.d/00-xgemail-transportupdater.conf' do
+  content "if $syslogtag == '[mfid-transport-updater]' then /var/log/xgemail/transportupdater.log\n& ~"
+  mode '0600'
+  owner 'root'
+  group 'root'
+end
+
+service 'xgemail-transport-updater' do
+  service_name TRANSPORT_UPDATER_SERVICE_NAME
+  init_command "/etc/init.d/#{TRANSPORT_UPDATER_SERVICE_NAME}"
+  supports :restart => true, :start => true, :stop => true, :reload => true
+  subscribes :enable, 'template[xgemail-transport-updater]', :immediately
+  action :start
 end
