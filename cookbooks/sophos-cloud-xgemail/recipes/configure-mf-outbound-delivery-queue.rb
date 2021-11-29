@@ -84,9 +84,8 @@ if ACCOUNT == 'sandbox'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_mf_outbound_utils_structure'
 end
 
-include_recipe 'sophos-cloud-xgemail::setup_mf_outbound_delivery_transport_updater_cron'
+
 include_recipe 'sophos-cloud-xgemail::configure-bounce-message-mf-outbound-delivery-queue'
-include_recipe 'sophos-cloud-xgemail::setup_customer_delivery_custom_recipient_transport_updater'
 include_recipe 'sophos-cloud-xgemail::setup_transport_route_config'
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_consumer'
 include_recipe 'sophos-cloud-xgemail::setup_message_history_storage_dir'
