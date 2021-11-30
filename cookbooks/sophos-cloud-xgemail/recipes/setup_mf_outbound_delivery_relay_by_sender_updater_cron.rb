@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: sophos-cloud-xgemail
-# Recipe:: setup_mf_delivery_transport_updater_cron
+# Recipe:: setup_mf_outbound_delivery_transport_updater_cron
 #
 # Copyright 2021, Sophos
 #
@@ -30,20 +30,20 @@ CRON_JOB_TIMEOUT      = node['xgemail']['mail_flow_cron_job_timeout']
 CRON_MINUTE_FREQUENCY = node['xgemail']['mail_flow_sender_by_relay_cron_minute_frequency']
 STATION_VPC_NAME      = node['xgemail']['station_vpc_name']
 XGEMAIL_FILES_DIR     = node['xgemail']['xgemail_files_dir']
-TRANSPORT_FILENAME    = 'transport'
+RELAY_BY_SENDER_FILENAME = 'relay_by_sender'
 MAIL_PIC_API_RESPONSE_TIMEOUT = node['xgemail']['mail_pic_apis_response_timeout_seconds']
 MAIL_PIC_API_AUTH     = node['xgemail']['mail_pic_api_auth']
-POLICY_BUCKET         = node['xgemail']['xgemail_policy_bucket_name']
 XGEMAIL_UTILS_DIR      = node['xgemail']['xgemail_utils_files_dir']
+CUSTOM_ROUTE_TRANSPORT_PATH  = node['xgemail']['custom_route_transport_path']
 
 CONFIGURATION_COMMANDS =
   [
-    "transport_maps=hash:$config_directory/#{TRANSPORT_FILENAME}"
+    "sender_dependent_relayhost_maps=hash:$config_directory/#{RELAY_BY_SENDER_FILENAME}"
   ]
 
 if ACCOUNT == 'sandbox'
-  TRANSPORT_FILE = "/etc/#{instance_name(INSTANCE_NAME)}/#{TRANSPORT_FILENAME}"
-  file TRANSPORT_FILE do
+  RELAY_BY_SENDER_FILE = "/etc/#{instance_name(INSTANCE_NAME)}/#{RELAY_BY_SENDER_FILENAME}"
+  file RELAY_BY_SENDER_FILE do
     content "#{node['sandbox']['mail_transport_entry']}\n"
     mode '0644'
     owner 'root'
@@ -55,7 +55,7 @@ if ACCOUNT == 'sandbox'
   execute 'build_postmap_for_transport' do
     user 'root'
     command <<-EOH
-          postmap #{TRANSPORT_FILE}
+          postmap #{RELAY_BY_SENDER_FILE}
     EOH
   end
 
@@ -64,8 +64,8 @@ if ACCOUNT == 'sandbox'
 
 end
 
-PACKAGE_DIR           = "#{XGEMAIL_FILES_DIR}/mf-delivery-transport-cron"
-CRON_SCRIPT           = 'mf.delivery.transport.updater.py'
+PACKAGE_DIR           = "#{XGEMAIL_FILES_DIR}/mf-outbound-delivery-transport-cron"
+CRON_SCRIPT           = 'mf.outbound.delivery.sender.dependent.relayhost.py'
 CRON_SCRIPT_PATH      = "#{PACKAGE_DIR}/#{CRON_SCRIPT}"
 XGEMAIL_PIC_FQDN      = "mail-#{STATION_VPC_NAME.downcase}-#{REGION}.#{ACCOUNT}.hydra.sophos.com"
 
@@ -97,13 +97,12 @@ template CRON_SCRIPT_PATH do
   variables(
     :xgemail_pic_fqdn => XGEMAIL_PIC_FQDN,
     :postfix_instance_name => instance_name( INSTANCE_NAME ),
-    :transport_filename => TRANSPORT_FILENAME,
+    :relay_by_sender_filename => RELAY_BY_SENDER_FILENAME,
     :mail_pic_api_response_timeout => MAIL_PIC_API_RESPONSE_TIMEOUT,
     :mail_pic_api_auth => MAIL_PIC_API_AUTH,
     :connections_bucket => CONNECTIONS_BUCKET,
-    :policy_bucket => POLICY_BUCKET,
     :xgemail_utils_path => XGEMAIL_UTILS_DIR,
-  )
+    )
   notifies :run, "execute[#{CRON_SCRIPT_PATH}]", :immediately
 end
 

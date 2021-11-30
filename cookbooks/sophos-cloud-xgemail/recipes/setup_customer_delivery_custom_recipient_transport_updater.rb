@@ -19,8 +19,8 @@ require 'json'
 
 NODE_TYPE = node['xgemail']['cluster_type']
 
-# Only continue when it's customer-delivery or mf-inbound-delivery or mf-outbound-delivery
-if NODE_TYPE != 'customer-delivery' && NODE_TYPE != 'mf-inbound-delivery' && NODE_TYPE != 'mf-outbound-delivery'
+# Only continue when it's customer-delivery or mf-inbound-delivery
+if NODE_TYPE != 'customer-delivery' && NODE_TYPE != 'mf-inbound-delivery'
     return
 end
 

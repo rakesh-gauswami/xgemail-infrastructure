@@ -69,14 +69,15 @@ SERVICE_USER = node['xgemail']['sqs_message_processor_user']
 
 # TODO : We shouldn't need sqsconsumer on any XDelivery or encryption submit right?
 # Configs use by sqsmsgconsumer
-if NODE_TYPE == 'customer-delivery' or NODE_TYPE == 'xdelivery' or NODE_TYPE == 'encryption-submit' or NODE_TYPE == 'mf-inbound-delivery' or NODE_TYPE == 'mf-inbound-xdelivery' or NODE_TYPE == 'mf-outbound-delivery' or NODE_TYPE == 'mf-outbound-xdelivery'
+if NODE_TYPE == 'customer-delivery' or NODE_TYPE == 'xdelivery' or NODE_TYPE == 'encryption-submit' or NODE_TYPE == 'mf-inbound-delivery' or NODE_TYPE == 'mf-inbound-xdelivery'
   MESSAGE_DIRECTION = 'INBOUND'
 elsif NODE_TYPE == 'internet-delivery' or NODE_TYPE == 'internet-xdelivery' or
        NODE_TYPE == 'encryption-delivery' or NODE_TYPE == 'risky-delivery' or
        NODE_TYPE == 'risky-xdelivery' or NODE_TYPE == 'warmup-delivery' or
        NODE_TYPE == 'warmup-xdelivery' or NODE_TYPE == 'beta-delivery' or
        NODE_TYPE == 'beta-xdelivery' or NODE_TYPE == 'delta-delivery' or
-       NODE_TYPE == 'delta-xdelivery'
+       NODE_TYPE == 'delta-xdelivery' or NODE_TYPE == 'mf-outbound-delivery' or
+       NODE_TYPE == 'mf-outbound-xdelivery'
   MESSAGE_DIRECTION = 'OUTBOUND'
 else
   raise "Unsupported node type to setup sqsmsgproducer [#{NODE_TYPE}]"

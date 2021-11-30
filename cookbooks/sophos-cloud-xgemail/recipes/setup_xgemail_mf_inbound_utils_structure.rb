@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: sophos-cloud-xgemail
-# Recipe:: setup_xgemail_mf_utils_structure
+# Recipe:: setup_xgemail_mf_inbound_utils_structure
 #
 # Copyright 2021, Sophos
 #
@@ -73,7 +73,7 @@ end
   end
 end
 
-if NODE_TYPE == 'mf-inbound-submit' or NODE_TYPE == 'mf-outbound-submit'
+if NODE_TYPE == 'mf-inbound-submit'
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{POLICY_FORMATTER}" do
     source 'policyformatter.py'
     mode '0644'
@@ -86,7 +86,7 @@ if NODE_TYPE == 'mf-inbound-submit' or NODE_TYPE == 'mf-outbound-submit'
     owner 'root'
     group 'root'
   end
-elsif NODE_TYPE == 'mf-inbound-delivery' or NODE_TYPE == 'mf-outbound-delivery'
+elsif NODE_TYPE == 'mf-inbound-delivery'
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{TRANSPORT_ROUTE_CONFIG}" do
     source 'transportrouteconfig.py'
     mode '0644'
@@ -103,7 +103,7 @@ else
   #do nothing
 end
 
-if NODE_TYPE == 'mf-inbound-delivery' or NODE_TYPE == 'mf-inbound-xdelivery' or NODE_TYPE == 'mf-outbound-delivery' or NODE_TYPE == 'mf-outbound-xdelivery'
+if NODE_TYPE == 'mf-inbound-delivery' or NODE_TYPE == 'mf-inbound-xdelivery'
   [
       'postfix_injection_response.py',
       'queue_log.py',

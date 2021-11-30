@@ -221,8 +221,9 @@ end
      NODE_TYPE == 'internet-delivery' ||
      NODE_TYPE == 'risky-delivery' ||
      NODE_TYPE == 'warmup-delivery' ||
-     NODE_TYPE == 'beta-delivery'||
-     NODE_TYPE == 'delta-delivery'
+     NODE_TYPE == 'beta-delivery' ||
+     NODE_TYPE == 'delta-delivery' ||
+     NODE_TYPE == 'mf-outbound-delivery'
    }
  end
 
@@ -416,6 +417,7 @@ end
   )
    only_if {
      NODE_TYPE == 'internet-delivery' ||
+     NODE_TYPE == 'mf-outbound-delivery' ||
      NODE_TYPE == 'risky-delivery' ||
      NODE_TYPE == 'warmup-delivery' ||
      NODE_TYPE == 'beta-delivery'||
@@ -606,6 +608,7 @@ end
   )
    only_if {
      NODE_TYPE == 'internet-delivery' ||
+     NODE_TYPE == 'mf-outbound-delivery' ||
      NODE_TYPE == 'risky-delivery' ||
      NODE_TYPE == 'warmup-delivery' ||
      NODE_TYPE == 'beta-delivery'||
