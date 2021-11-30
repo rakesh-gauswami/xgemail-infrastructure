@@ -257,7 +257,7 @@ else
       group 'root'
     end
     include_recipe 'sophos-cloud-xgemail::configure-bounce-message-customer-delivery-queue'
-    include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_delivery_transport_updater'
+    include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_delivery_transport_updater_cron'
     include_recipe 'sophos-cloud-xgemail::setup_push_policy_delivery_toggle'
   end
   if NODE_TYPE == 'mf-outbound-xdelivery'
