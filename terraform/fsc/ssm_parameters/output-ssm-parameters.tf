@@ -1,3 +1,25 @@
+module "output_stringlist_parameters" {
+  source = "../modules/output_stringlist_parameters"
+
+  providers = {
+    aws = aws.parameters
+  }
+
+  parameters = [
+    {
+      name        = "/central/asg/instances/lifecycle_hook/launching/name"
+      value       = local.asg_instances_lifecycle_hook_launching
+      description = "Launching Lifecycle Hook Names"
+    },
+
+    {
+      name        = "/central/asg/instances/lifecycle_hook/terminating/name"
+      value       = local.asg_instances_lifecycle_hook_terminating
+      description = "Terminating Lifecycle Hook Names"
+    }
+  ]
+}
+
 module "output_string_parameters" {
   source = "../modules/output_string_parameters"
 
@@ -84,8 +106,6 @@ module "output_string_parameters" {
       value       = local.asg_warmup_xdelivery_lifecycle_hook_launching
       description = "Warmup Xdelivery Launching Lifecycle Hook Name"
     },
-
-    # Terminating
 
     {
       name        = "/central/asg/delta_delivery/lifecycle_hook/terminating/name"
