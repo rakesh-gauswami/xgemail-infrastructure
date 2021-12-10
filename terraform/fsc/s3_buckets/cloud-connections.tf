@@ -1,5 +1,5 @@
 locals {
-  cloud_connections_bucket_logical_name    = "cloud-${var.pop_name}-connections"
+  cloud_connections_bucket_logical_name    = "cloud-connections"
 }
 
 module "cloud_connections_bucket" {

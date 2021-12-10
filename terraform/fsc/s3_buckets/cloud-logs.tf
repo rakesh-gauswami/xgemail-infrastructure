@@ -1,5 +1,5 @@
 locals {
-  cloud_logs_bucket_logical_name    = "cloud-${var.pop_name}-logs"
+  cloud_logs_bucket_logical_name    = "cloud-logs"
 }
 
 module "cloud_logs_bucket" {
