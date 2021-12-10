@@ -22,10 +22,6 @@ output "termination_automation_role_name" {
   value = aws_iam_role.termination_automation_role.name
 }
 
-output "termination_automation_ssm_document_arn" {
-  value = aws_ssm_document.termination_automation.arn
-}
-
 output "termination_automation_ssm_document_name" {
   value = aws_ssm_document.termination_automation.name
 }

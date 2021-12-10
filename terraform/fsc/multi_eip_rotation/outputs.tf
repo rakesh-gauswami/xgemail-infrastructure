@@ -45,9 +45,3 @@ output "multi_eip_rotation_scheduled_event_rule_arn" {
 output "multi_eip_rotation_scheduled_event_rule_name" {
   value = aws_cloudwatch_event_rule.multi_eip_rotation_scheduled_event_rule.name
 }
-
-output "zzz_output_parameter_names" {
-  value = keys(
-    module.output_string_parameters.parameters
-  )
-}

@@ -12,16 +12,16 @@ resource "aws_cloudwatch_event_rule" "eip_rotation_event_rule" {
       "aws.autoscaling"
     ],
     "account": [
-      ${local.account_id}
+      "${local.account_id}"
     ],
     "region": [
-      ${local.input_param_primary_region}
+      "${local.input_param_primary_region}"
     ],
     "detail-type": [
       "EC2 Instance-launch Lifecycle Action"
     ],
     "detail": {
-      "LifecycleHookName": ${join(var.lifecycle_hook_names)},
+      "LifecycleHookName": ["${local.input_param_asg_delta_delivery_lifecycle_hook_launching}","${local.input_param_asg_delta_xdelivery_lifecycle_hook_launching}","${local.input_param_asg_customer_delivery_lifecycle_hook_launching}","${local.input_param_asg_customer_xdelivery_lifecycle_hook_launching}","${local.input_param_asg_mf_inbound_delivery_lifecycle_hook_launching}","${local.input_param_asg_mf_inbound_xdelivery_lifecycle_hook_launching}","${local.input_param_asg_mf_outbound_delivery_lifecycle_hook_launching}","${local.input_param_asg_mf_outbound_xdelivery_lifecycle_hook_launching}","${local.input_param_asg_internet_delivery_lifecycle_hook_launching}","${local.input_param_asg_internet_xdelivery_lifecycle_hook_launching}","${local.input_param_asg_risky_delivery_lifecycle_hook_launching}","${local.input_param_asg_risky_xdelivery_lifecycle_hook_launching}"],
       "LifecycleTransition": [
         "autoscaling:EC2_INSTANCE_LAUNCHING"
       ]
