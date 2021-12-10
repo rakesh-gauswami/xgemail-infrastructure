@@ -12,16 +12,16 @@ resource "aws_cloudwatch_event_rule" "multi_eip_lifecycle_event_rule" {
       "aws.autoscaling"
     ],
     "account": [
-      ${local.account_id}
+      "${local.account_id}"
     ],
     "region": [
-      ${local.input_param_primary_region}
+      "${local.input_param_primary_region}"
     ],
     "detail-type": [
       "EC2 Instance-launch Lifecycle Action"
     ],
     "detail": {
-      "LifecycleHookName": ${join(var.lifecycle_hook_names)},
+      "LifecycleHookName": ["${local.input_param_asg_warmup_delivery_lifecycle_hook_launching}","${local.input_param_asg_warmup_xdelivery_lifecycle_hook_launching}"],
       "LifecycleTransition": [
         "autoscaling:EC2_INSTANCE_LAUNCHING"
       ]
