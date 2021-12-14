@@ -1,6 +1,6 @@
 locals {
   input_param_deployment_environment = nonsensitive(data.aws_ssm_parameter.deployment_environment.value)
-  input_param_security_groups        = nonsensitive(data.aws_ssm_parameter.security_groups.value)
+  input_param_security_groups        = split(",", nonsensitive(data.aws_ssm_parameter.security_groups.value))
   input_param_subnet_ids             = nonsensitive(data.aws_ssm_parameter.subnet_ids.value)
 }
 
