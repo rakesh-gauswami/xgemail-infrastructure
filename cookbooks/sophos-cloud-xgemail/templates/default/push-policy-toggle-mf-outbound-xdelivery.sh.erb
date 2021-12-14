@@ -1,0 +1,102 @@
+#!/bin/sh
+#
+# Copyright 2019, Sophos
+#
+# All rights reserved - Do Not Redistribute
+#
+# This script allows for toggling push policy on and off on a single
+# customer extended delivery server.
+
+source ./push-policy-toggle-delivery-common.sh
+
+SERVER_NAME="mfox"
+
+#
+# Enables push policy on this specific server.
+#
+# After all configuration changes have been made, postfix is reloaded.
+# If the reload fails, all changes are reverted.
+#
+enable() {
+
+    echo "Updating Postfix config to remove transport maps..."
+    disable_postfix_transport_maps $SERVER_NAME
+
+    echo "Updating Postfix config to use header checks..."
+    enable_postfix_header_checks $SERVER_NAME
+
+    echo "Reloading Postfix..."
+    reload_postfix
+    postfix_reload_return_code=$?
+
+    if (( postfix_reload_return_code != 0 )); then
+
+        echo "Postfix reload failed! Reverting changes..."
+
+        disable_postfix_header_checks $SERVER_NAME
+
+        enable_postfix_transport_maps $SERVER_NAME
+
+        echo "Revert complete. Update aborted!"
+
+        exit 1
+    else
+
+      echo "DONE"
+
+      echo "Toggle Complete! To revert, re-run script with the 'disable' parameter"
+
+    fi
+}
+
+
+#
+# Disables push policy on this specific server.
+#
+# After all configuration changes have been made, postfix is reloaded.
+# If the reload fails, all changes are reverted.
+#
+disable() {
+
+    echo "Updating Postfix config to remove header checks..."
+    disable_postfix_header_checks $SERVER_NAME
+
+    echo "Updating Postfix config to use transport maps..."
+    enable_postfix_transport_maps $SERVER_NAME
+
+    echo "Reloading Postfix..."
+    reload_postfix
+    postfix_reload_return_code=$?
+
+    if (( postfix_reload_return_code != 0 )); then
+
+        echo "Postfix reload failed! Reverting changes..."
+
+        enable_postfix_header_checks $SERVER_NAME
+
+        disable_postfix_transport_maps $SERVER_NAME
+
+        echo "Revert complete. Update aborted!"
+
+        exit 1
+    else
+
+      echo "DONE"
+
+      echo "Toggle Complete! To revert, re-run script with the 'enable' parameter"
+
+    fi
+}
+
+case "$1" in
+    enable)
+        $1
+        ;;
+    disable)
+        $1
+        ;;
+    *)
+        echo $"Usage: $0 {enable|disable}"
+        exit 2
+esac
+exit $?

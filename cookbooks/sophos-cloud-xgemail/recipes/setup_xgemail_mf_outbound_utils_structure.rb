@@ -22,8 +22,8 @@ DELIVERY_DIRECTOR_FORMATTER = "deliverydirectorthreshold.py"
 TELEMETRY_DATA_FORMATTER = "telemetrydataformatter.py"
 
 [
-    XGEMAIL_FILES_DIR,
-    XGEMAIL_UTILS_DIR
+  XGEMAIL_FILES_DIR,
+  XGEMAIL_UTILS_DIR
 ].each do | cur |
   directory cur do
     mode '0755'
@@ -41,29 +41,29 @@ file "#{XGEMAIL_UTILS_DIR}/__init__.py" do
 end
 
 [
-    'allowblockimporter.py',
-    'awshandler.py',
-    'configformatter.py',
-    'diskutils.py',
-    'formatterutils.py',
-    'gziputils.py',
-    'impersonation_updater.py',
-    'mailinfoformatter.py',
-    'messageformatter.py',
-    'messagehistory.py',
-    'messagehistoryformatter.py',
-    'metadataformatter.py',
-    'multipolicyreaderutils.py',
-    'nonrecoverableexception.py',
-    'notadirectoryexception.py',
-    'recipientsplitconfig.py',
-    'recoverableexception.py',
-    'routingmanager.py',
-    'scaneventattributes.py',
-    'uuidutils.py',
-    'rfxrecoveryutils.py',
-    'get_metadata_from_msghistory_config.py',
-    'toggle_flag_s3.py'
+  'allowblockimporter.py',
+  'awshandler.py',
+  'configformatter.py',
+  'diskutils.py',
+  'formatterutils.py',
+  'gziputils.py',
+  'impersonation_updater.py',
+  'mailinfoformatter.py',
+  'messageformatter.py',
+  'messagehistory.py',
+  'messagehistoryformatter.py',
+  'metadataformatter.py',
+  'multipolicyreaderutils.py',
+  'nonrecoverableexception.py',
+  'notadirectoryexception.py',
+  'recipientsplitconfig.py',
+  'recoverableexception.py',
+  'routingmanager.py',
+  'scaneventattributes.py',
+  'uuidutils.py',
+  'rfxrecoveryutils.py',
+  'get_metadata_from_msghistory_config.py',
+  'toggle_flag_s3.py'
 ].each do | cur |
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{cur}" do
     source cur
@@ -123,9 +123,9 @@ end
 
 if NODE_TYPE == 'mf-outbound-delivery' or NODE_TYPE == 'mf-outbound-xdelivery'
   [
-      'postfix_injection_response.py',
-      'queue_log.py',
-      'sns_message_history_delivery_status.py'
+    'postfix_injection_response.py',
+    'queue_log.py',
+    'sns_message_history_delivery_status.py'
   ].each do | cur |
     cookbook_file "#{XGEMAIL_UTILS_DIR}/#{cur}" do
       source cur

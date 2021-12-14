@@ -221,9 +221,9 @@ end
      NODE_TYPE == 'internet-delivery' ||
      NODE_TYPE == 'risky-delivery' ||
      NODE_TYPE == 'warmup-delivery' ||
-     NODE_TYPE == 'beta-delivery'||
-     NODE_TYPE == 'mf-outbound-delivery' ||
-     NODE_TYPE == 'delta-delivery'
+     NODE_TYPE == 'beta-delivery' ||
+     NODE_TYPE == 'delta-delivery' ||
+     NODE_TYPE == 'mf-outbound-delivery'
    }
  end
 
@@ -281,7 +281,9 @@ template 'fluentd-source-transportupdater' do
   )
   only_if {
     NODE_TYPE == 'customer-delivery' ||
-    NODE_TYPE == 'xdelivery'
+    NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'mf-inbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery'
   }
 end
 
@@ -517,7 +519,9 @@ template 'fluentd-match-transportupdater' do
   )
   only_if {
     NODE_TYPE == 'customer-delivery' ||
-    NODE_TYPE == 'xdelivery'
+    NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'mf-inbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery'
   }
 end
 
@@ -604,10 +608,10 @@ end
   )
    only_if {
      NODE_TYPE == 'internet-delivery' ||
+     NODE_TYPE == 'mf-outbound-delivery' ||
      NODE_TYPE == 'risky-delivery' ||
      NODE_TYPE == 'warmup-delivery' ||
      NODE_TYPE == 'beta-delivery'||
-     NODE_TYPE == 'mf-outbound-delivery' ||
      NODE_TYPE == 'delta-delivery'
    }
  end
@@ -698,6 +702,8 @@ template 'fluentd-filter-transportupdater' do
   only_if {
     NODE_TYPE == 'customer-delivery' ||
     NODE_TYPE == 'xdelivery'
+    NODE_TYPE == 'mf-inbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery'
   }
 end
 

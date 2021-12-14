@@ -7,6 +7,7 @@ exec java -Dcom.sun.management.jmxremote.port=6007 \
     -Dcom.sun.management.jmxremote.ssl=false \
     -Djava.library.path=<%= @deployment_dir %>/xgemail-jilter-inbound/lib \
     -Dconf.dir=<%= @deployment_dir %>/xgemail-jilter-inbound/conf \
+    -Dlog4j2.formatMsgNoLookups=true \
     -Dspring.profiles.active=<%= @active_profile %> \
     -Xms1024m \
     -Xmx1024m \

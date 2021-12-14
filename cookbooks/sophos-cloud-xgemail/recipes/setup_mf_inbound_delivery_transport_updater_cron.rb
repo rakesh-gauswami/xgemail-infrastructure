@@ -103,7 +103,7 @@ template CRON_SCRIPT_PATH do
     :connections_bucket => CONNECTIONS_BUCKET,
     :policy_bucket => POLICY_BUCKET,
     :xgemail_utils_path => XGEMAIL_UTILS_DIR,
-  )
+    )
   notifies :run, "execute[#{CRON_SCRIPT_PATH}]", :immediately
 end
 

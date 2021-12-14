@@ -68,7 +68,7 @@ template '/etc/monit.d/transport-updater.conf' do
   mode '0644'
   owner 'root'
   group 'root'
-  only_if { NODE_TYPE == 'xdelivery' || NODE_TYPE == 'customer-delivery'}
+  only_if { NODE_TYPE == 'xdelivery' || NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'mf-inbound-xdelivery'}
 end
 
 # Restart rsyslog service
