@@ -1,5 +1,5 @@
 locals {
-  cloud_lambda_bucket_logical_name    = "cloud-lambda"
+  cloud_lambda_bucket_logical_name    = "cloud-${local.input_param_account_name}-lambda"
 }
 
 module "cloud_lambda_bucket" {

@@ -1,5 +1,5 @@
 locals {
-  cloud_3rdparty_bucket_logical_name    = "cloud-3rdparty"
+  cloud_3rdparty_bucket_logical_name    = "cloud-${local.input_param_account_name}-3rdparty"
 }
 
 module "cloud_3rdparty_bucket" {

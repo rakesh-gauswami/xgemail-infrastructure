@@ -1,5 +1,5 @@
 locals {
-  cloud_connections_bucket_logical_name    = "cloud-connections"
+  cloud_connections_bucket_logical_name    = "cloud-${local.input_param_account_name}-connections"
 }
 
 module "cloud_connections_bucket" {
