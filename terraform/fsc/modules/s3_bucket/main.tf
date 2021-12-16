@@ -1,6 +1,6 @@
 locals {
 
-  bucket_prefix = "${var.bucket_logical_name}-${local.input_param_account_name}"
+  bucket_prefix = "${var.bucket_logical_name}"
   logging = var.logging_target_bucket == null ? [] : [
     {
       target_bucket = var.logging_target_bucket
