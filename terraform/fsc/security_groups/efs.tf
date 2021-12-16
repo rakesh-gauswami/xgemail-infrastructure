@@ -1,6 +1,5 @@
 locals {
   efs_policy_sg_name  = "efs-policy"
-  efs_tcp_port        = 2049
 }
 
 resource "aws_security_group" "efs_policy" {
