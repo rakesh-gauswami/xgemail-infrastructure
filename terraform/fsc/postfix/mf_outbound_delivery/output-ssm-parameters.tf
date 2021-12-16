@@ -1,6 +1,6 @@
 
 module "output_string_parameters" {
-  source = "../modules/output_string_parameters"
+  source = "../../modules/output_string_parameters"
 
   providers = {
     aws = aws.parameters
