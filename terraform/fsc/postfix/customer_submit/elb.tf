@@ -1,20 +1,5 @@
-locals {
-
-        Environment:                    "{{account.name}}"
-      ExternalPort:                   "25"
-      HealthCheckInterval:            "60"
-      HealthCheckTarget:              "TCP:25"
-      HealthCheckUnhealthyThreshold:  "10"
-      HostAlarmTopicARN:              "{{sns.arn_prefix}}{{sns.alarm_sns_topic}}"
-      LoadBalancerName:               "{{ec2.elb.cs}}"
-      SecurityGroupLb:                "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.XgemailCustomerSubmitSecurityGroupLb}}"
-      Subnets:                        "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.VpcZoneIdentifiersPublic}}"
-      Vpc:                            "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.Vpc}}"
-
-}
-
 resource "aws_elb" "elb" {
-  name              = "customer-submit"
+  name              = local.instance_type
   subnets           = [local.input_param_public_subnet_ids]
   security_groups   = [aws_security_group.security_group_lb]
 
@@ -22,13 +7,6 @@ resource "aws_elb" "elb" {
     instance_port     = 25
     instance_protocol = "tcp"
     lb_port           = 25
-    lb_protocol       = "tcp"
-  }
-
-  listener {
-    instance_port     = 587
-    instance_protocol = "tcp"
-    lb_port           = 587
     lb_protocol       = "tcp"
   }
 
@@ -48,5 +26,5 @@ resource "aws_elb" "elb" {
 
 resource "aws_proxy_protocol_policy" "smtp" {
   load_balancer  = aws_elb.elb.name
-  instance_ports = ["25", "587"]
+  instance_ports = ["25"]
 }
