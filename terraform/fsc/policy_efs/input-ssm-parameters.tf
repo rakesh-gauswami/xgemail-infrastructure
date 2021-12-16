@@ -15,7 +15,7 @@ data "aws_ssm_parameter" "subnet_ids" {
 }
 
 data "aws_ssm_parameter" "security_groups" {
-  name     = "/central/vpc/endpoints-security-group-id"
+  name     = "/central/sg/efs/policy/id"
   provider = aws.parameters
 }
 
