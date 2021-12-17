@@ -1,11 +1,11 @@
 locals {
-  cidr_block_world       = "0.0.0.0/0"
-  efs_tcp_port           = 2049
-  ntp_udp_port           = 123
-  smtp_tcp_port          = 25
-  snmp_port              = 161
-  snmp_trap_port         = 162
-  security_group_name_lb = "${local.instance_type}-lb"
+  cidr_block_world        = "0.0.0.0/0"
+  efs_tcp_port            = 2049
+  ntp_udp_port            = 123
+  smtp_tcp_port           = 25
+  snmp_port               = 161
+  snmp_trap_port          = 162
+  security_group_name_lb  = "${local.instance_type}-lb"
 }
 
 data "aws_security_group" "base" {
@@ -46,12 +46,12 @@ resource "aws_security_group_rule" "ec2_egress_world" {
 }
 
 resource "aws_security_group_rule" "lb_ingress_world_smtp" {
-  type              = "ingress"
-  cidr_blocks       = local.cidr_block_world
-  from_port         = local.smtp_tcp_port
-  to_port           = local.smtp_tcp_port
-  protocol          = "tcp"
-  security_group_id = aws_security_group.security_group_lb.id
+  type                      = "ingress"
+  cidr_blocks               = local.cidr_block_world
+  from_port                 = local.smtp_tcp_port
+  to_port                   = local.smtp_tcp_port
+  protocol                  = "tcp"
+  security_group_id         = aws_security_group.security_group_lb.id
 }
 
 resource "aws_security_group_rule" "ec2_ingress_lb_smtp" {
@@ -86,8 +86,8 @@ resource "aws_security_group_rule" "efs_policy_ingress_tcp" {
   from_port                = local.efs_tcp_port
   to_port                  = local.efs_tcp_port
   protocol                 = "tcp"
-  security_group_id        = data.aws_security_group.efs_policy.id
-  source_security_group_id = aws_security_group.security_group_ec2.id
+  security_group_id        = aws_security_group.security_group_ec2.id
+  source_security_group_id = data.aws_security_group.efs_policy.id
 }
 
 resource "aws_security_group_rule" "logicmonitor_ingress_icmp" {
