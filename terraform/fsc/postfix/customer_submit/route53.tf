@@ -1,5 +1,5 @@
 data "aws_route53_zone" "hosted_zone" {
-  zone_id         = local.input_param_zone_id
+  zone_id = local.input_param_zone_id
 }
 
 resource "aws_route53_record" "www" {
