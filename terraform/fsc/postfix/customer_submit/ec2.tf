@@ -185,13 +185,11 @@ data "aws_ami" "ami" {
   }
 }
 
-
-
 resource "aws_cloudformation_stack" "cloudformation_stack" {
   name: "customer-submit"
     template_body = "${file("${path.module}/templates/as-customer-submit-template.json")}"
     parameters = {
-      AesDecryptionKey                  =                     "{{NO}}"
+      AesDecryptionKey                  =                     "NO"
       AlarmTopicArn                     = local.input_param_alarm_topic_arn
       AmiId                             = data.aws_ami.ami
       AutoScalingInstanceRoleArn        = local.input_param_autoscaling_instance_role_arn
@@ -200,46 +198,46 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
       AutoScalingNotificationTopicARN   = local.input_param_lifecycle_topic_arn
       AvailabilityZones                 = local.input_param_availability_zones
       Branch                            = var.build.branch
-      BuildVersion                      =                         "{{build.result_key}}"
-      BundleVersion                     =                        "{{ami_build}}"
-      DeployMaxBatchSize                =                   "{{aws.asg.cs.as_max_batch_size}}"
+      BuildVersion                      = var.build_result_key
+      BundleVersion                     = var.ami_build
+      DeployMaxBatchSize                = local.as_max_batch_size
       DeployMinInstancesInService       = local.as_min_service
       Environment                       = local.input_param_deployment_environment
       HealthCheckGracePeriod            = local.health_check_grace_period
       InstanceProfile                   = local.input_param_instance_profile_arn
-      InstanceType                      = local
-      KeyName                           =                              "{{NO}}"
+      InstanceType                      = local.instance_size
+      KeyName                           =  "NO"
       LifecycleHookTerminating          = local.input_param_lifecycle_hook_terminating
       LoadBalancerName                  = aws_elb.elb.id
-      MsgHistoryV2BucketName            =           cross    "{{s3.msg_history_v2_bucket_name}}"
-      MsgHistoryV2StreamName            =           cross    "{{kinesis.firehose.msg_history_v2_stream_name}}"
-      MessageHistoryEventsTopicArn      =        cross "{{sns.arn_prefix}}{{sns.msg_history_events_sns_topic}}"
-      PolicyTargetValue                 =                    "{{aws.asg.cs.policy_target_value}}"
-      S3CookbookRepositoryURL           =              "//cloud-{{account.name}}-templates/{{build.branch}}/xgemail-infrastructure/cookbooks.enc"
-      ScaleInOnWeekends                 =                    "{{weekend_scale_down}}"
-      ScaleInCron                       =                          "{{cron_scale_down}}"
-      ScaleOutCron                      =                         "{{cron_scale_up}}"
-      ScheduledASOnHourDesiredCapacity  =     "{{aws.asg.cs.on_hour_desired}}"
-      ScaleInAndOutOnWeekdays           =              "{{aws.asg.cs.scale_in_out_weekdays}}"
-      ScaleInOnWeekdaysCron             =                "{{aws.asg.cs.cron_scale_in}}"
-      ScaleOutOnWeekdaysCron            =               "{{aws.asg.cs.cron_scale_out}}"
+      MsgHistoryV2BucketName            = var.msg_history_v2_bucket_name cross
+      MsgHistoryV2StreamName            = var.firehose_msg_history_v2_stream_name cross
+      MessageHistoryEventsTopicArn      = var.msg_history_events_sns_topic cross
+      PolicyTargetValue                 = local.as_policy_target_value
+      S3CookbookRepositoryURL           = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/xgemail-infrastructure/cookbooks.enc"
+      ScaleInOnWeekends                 = local.weekend_scale_down
+      ScaleInCron                       = local.cron_scale_down
+      ScaleOutCron                      = local.cron_scale_up
+      ScheduledASOnHourDesiredCapacity  = local.on_hour_desired
+      ScaleInAndOutOnWeekdays           = local.scale_in_out_weekdays
+      ScaleInOnWeekdaysCron             = local.cron_scale_in
+      ScaleOutOnWeekdaysCron            = local.cron_scale_out
       SecurityGroups                    = [local.input_param_sg_base_id, aws_security_group.security_group_ec2]
-      SpotPrice                         =                            "{{spot_price}}"
-      StationVpcId                      =                  cross       "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}"
-      StationVpcName                    =                cross       "{{vpc.cloud_station.name}}"
-      Vpc                               =                                  "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.Vpc}}"
+      SpotPrice                         = var.spot_price
+      StationVpcId                      = var.station_vpc_id cross
+      StationVpcName                    = cross      var.station_name cross
+      Vpc                               = local.input_param_vpc_id
       VpcZoneIdentifiers                = [local.input_param_public_subnet_ids]
       VpcName                           = "email"
-      XgemailBucketName                 =              cross      "{{s3.customer_submit_bucket}}"
-      XgemailMinSizeDataGB              =                 "{{xgemail_size_data_gb}}"
-      XgemailMsgHistoryBucketName       =      cross    "{{s3.msg_history_bucket}}"
-      XgemailMsgHistoryMsBucketName     =     cross   "{{s3.msg_history_ms_bucket}}"
-      XgemailMsgHistoryQueueUrl         =     cross       "{{sqs.url_prefix}}{{sqs.msg_history_sqs_queue}}"
-      XgemailPolicyArn                  =      cross               "{{sns.arn_prefix}}{{sns.relay_control_sns_topic}}"
-      XgemailPolicyBucketName           =      cross        "{{s3.policy_bucket}}"
-      XgemailPolicyEfsFileSystemId      =         "{{cloud_email_efs_output.ansible_facts.cloudformation[stack.efs.policy_efs_volume].stack_outputs.FileSystemId}}"
-      XgemailQueueUrl                   =       cross               "{{sqs.url_prefix}}{{sqs.customer_submit_sqs_queue}}"
-      XgemailScanEventsTopicArn         =      cross      "{{sns.arn_prefix}}{{sns.scan_events_sns_topic}}"
+      XgemailBucketName                 = var.customer_submit_bucket cross
+      XgemailMinSizeDataGB              = local.volume_size_data_gb
+      XgemailMsgHistoryBucketName       = var.msg_history_bucket cross
+      XgemailMsgHistoryMsBucketName     = var.msg_history_ms_bucket cross
+      XgemailMsgHistoryQueueUrl         = var.msg_history_sqs_queue cross
+      XgemailPolicyArn                  = var.relay_control_sns_topic cross
+      XgemailPolicyBucketName           = var.policy_bucket cross
+      XgemailPolicyEfsFileSystemId      = local.input_param_policy_efs_mount_id
+      XgemailQueueUrl                   = var.customer_submit_sqs_queue cross
+      XgemailScanEventsTopicArn         = var.scan_events_sns_topic cross
       XgemailServiceType                = local.instance_type
       XgemailSxlDbl                     = local.sxl_dbl
       XgemailSxlRbl                     = local.sxl_rbl
