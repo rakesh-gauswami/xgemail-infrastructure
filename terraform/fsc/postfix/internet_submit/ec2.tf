@@ -186,7 +186,7 @@ data "aws_ami" "ami" {
 }
 
 resource "aws_cloudformation_stack" "cloudformation_stack" {
-  name: "internet-submit"
+  name = "internet-submit"
   template_body = "${file("${path.module}/templates/as-internet-submit-template.json")}"
   parameters = {
     AesDecryptionKey                  =                     "NO"
