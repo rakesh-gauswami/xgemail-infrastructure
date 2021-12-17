@@ -13,7 +13,7 @@ locals {
   input_param_alarm_topic_arn            = nonsensitive(data.aws_ssm_parameter.alarm_topic_arn.value)
   input_param_lifecycle_topic_arn        = nonsensitive(data.aws_ssm_parameter.lifecycle_topic_arn.value)
   input_param_lifecycle_hook_terminating = nonsensitive(data.aws_ssm_parameter.lifecycle_topic_arn.value)
-
+  input_param_policy_efs_mount_id        = nonsensitive(data.aws_ssm_parameter.policy_efs_mount_id.value)
 }
 
 
@@ -93,4 +93,9 @@ data "aws_ssm_parameter" "lifecycle_topic_arn" {
 data "aws_ssm_parameter" "public_subnet_ids" {
   provider = aws.parameters
   name     = "/central/vpc/public-subnet-ids"
+}
+
+data "aws_ssm_parameter" "policy_efs_mount_id" {
+  provider = aws.parameters
+  name     = "/central/efs/policy/volume/id"
 }
