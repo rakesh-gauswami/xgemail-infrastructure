@@ -3,8 +3,12 @@
 # rotate log files daily
 daily
 
-# keep two weeks worth of backlogs
-rotate 14
+# keep three weeks worth of backlogs
+rotate 21
+
+compress
+
+delaycompress
 
 postrotate
 /bin/kill -HUP `cat /var/run/syslogd.pid 2> /dev/null` 2> /dev/null || true
