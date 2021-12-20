@@ -54,6 +54,12 @@ data "aws_ssm_parameter" "sg_efs_policy_id" {
   name = "/central/sg/efs/policy/id"
 }
 
+data "aws_ssm_parameter" "policy_efs_mount_id" {
+  provider = aws.parameters
+
+  name = "/central/efs/policy/volume/id"
+}
+
 data "aws_ssm_parameter" "sg_logicmonitor_id" {
   provider = aws.parameters
 
@@ -88,14 +94,4 @@ data "aws_ssm_parameter" "alarm_topic_arn" {
 data "aws_ssm_parameter" "lifecycle_topic_arn" {
   provider = aws.parameters
   name     = "/central/sns/lifecycle-topic/arn"
-}
-
-data "aws_ssm_parameter" "public_subnet_ids" {
-  provider = aws.parameters
-  name     = "/central/vpc/public-subnet-ids"
-}
-
-data "aws_ssm_parameter" "policy_efs_mount_id" {
-  provider = aws.parameters
-  name     = "/central/efs/policy/volume/id"
 }
