@@ -9,14 +9,14 @@ data "archive_file" "multi_eip_rotation_lambda_zip" {
 }
 
 resource "aws_lambda_function" "multi_eip_rotation_lambda" {
-  filename          = data.archive_file.multi_eip_rotation_lambda_zip.output_path
-  function_name     = local.multi_eip_rotation_lambda_name
-  role              = aws_iam_role.multi_eip_rotation_lambda_execution_role.arn
-  handler           = "${local.multi_eip_rotation_lambda_name}.${local.multi_eip_rotation_lambda_name}_handler"
-  source_code_hash  = data.archive_file.multi_eip_rotation_lambda_zip.output_base64sha256
-  runtime           = "python3.8"
-  memory_size       = 256
-  timeout           = 300
+  filename         = data.archive_file.multi_eip_rotation_lambda_zip.output_path
+  function_name    = local.multi_eip_rotation_lambda_name
+  role             = aws_iam_role.multi_eip_rotation_lambda_execution_role.arn
+  handler          = "${local.multi_eip_rotation_lambda_name}.${local.multi_eip_rotation_lambda_name}_handler"
+  source_code_hash = data.archive_file.multi_eip_rotation_lambda_zip.output_base64sha256
+  runtime          = "python3.8"
+  memory_size      = 256
+  timeout          = 300
   environment {
     variables = {
       SSM_POSTFIX_SERVICE = local.input_param_ssm_postfix_service
