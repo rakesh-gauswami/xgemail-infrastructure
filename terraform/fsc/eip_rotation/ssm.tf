@@ -42,4 +42,4 @@ resource "aws_ssm_document" "eip_rotation" {
                ]
             },
        DOC
-    }
+}
