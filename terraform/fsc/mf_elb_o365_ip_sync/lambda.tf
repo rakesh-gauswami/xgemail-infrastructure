@@ -9,18 +9,18 @@ data "archive_file" "mf_elb_o365_ip_sync_lambda_zip" {
 }
 
 resource "aws_lambda_function" "mf_elb_o365_ip_sync_lambda" {
-  filename          = data.archive_file.mf_elb_o365_ip_sync_lambda_zip.output_path
-  function_name     = local.mf_elb_o365_ip_sync_lambda_name
-  role              = aws_iam_role.mf_elb_o365_ip_sync_lambda_execution_role.arn
-  handler           = "${local.mf_elb_o365_ip_sync_lambda_name}.${local.mf_elb_o365_ip_sync_lambda_name}_handler"
-  source_code_hash  = data.archive_file.mf_elb_o365_ip_sync_lambda_zip.output_base64sha256
+  filename                       = data.archive_file.mf_elb_o365_ip_sync_lambda_zip.output_path
+  function_name                  = local.mf_elb_o365_ip_sync_lambda_name
+  role                           = aws_iam_role.mf_elb_o365_ip_sync_lambda_execution_role.arn
+  handler                        = "${local.mf_elb_o365_ip_sync_lambda_name}.${local.mf_elb_o365_ip_sync_lambda_name}_handler"
+  source_code_hash               = data.archive_file.mf_elb_o365_ip_sync_lambda_zip.output_base64sha256
   reserved_concurrent_executions = 1
-  runtime           = "python3.8"
-  memory_size       = 256
-  timeout           = 300
+  runtime                        = "python3.8"
+  memory_size                    = 256
+  timeout                        = 300
   environment {
     variables = {
-      ACCOUNT = local.input_param_account_type
+      ACCOUNT           = local.input_param_account_type
       MFISSECURITYGROUP = local.input_param_mf_is_security_group
       MFOSSECURITYGROUP = local.input_param_mf_os_security_group
     }

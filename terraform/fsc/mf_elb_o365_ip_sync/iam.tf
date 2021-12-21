@@ -5,9 +5,9 @@ data "aws_iam_policy_document" "mf_elb_o365_ip_sync_lambda_trust_policy" {
     actions = [
       "sts:AssumeRole"
     ]
-    effect  = "Allow"
+    effect = "Allow"
     principals {
-      type        = "Service"
+      type = "Service"
       identifiers = [
         "lambda.amazonaws.com"
       ]
@@ -16,7 +16,7 @@ data "aws_iam_policy_document" "mf_elb_o365_ip_sync_lambda_trust_policy" {
 }
 
 resource "aws_iam_role" "mf_elb_o365_ip_sync_lambda_execution_role" {
-  name = "eip-monitor-lambda-execution-role"
+  name               = "eip-monitor-lambda-execution-role"
   assume_role_policy = data.aws_iam_policy_document.mf_elb_o365_ip_sync_lambda_trust_policy.json
 }
 
