@@ -4,9 +4,9 @@ variable "multi_eip_rotation_schedule" {
 }
 
 variable "multi_eip_rotation_schedule_enabled" {
+  type        = bool
   description = "Enable or disable the multi eip rotation schedule"
   default     = false
-  type        = bool
 }
 
 variable "tag_origin" {

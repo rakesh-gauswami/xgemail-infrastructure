@@ -4,9 +4,9 @@ variable "mf_elb_o365_ip_sync_schedule" {
 }
 
 variable "mf_elb_o365_ip_sync_schedule_enabled" {
+  type        = bool
   description = "Enable or disable the mf elb o365 ip sync schedule"
   default     = false
-  type        = bool
 }
 
 variable "tag_origin" {

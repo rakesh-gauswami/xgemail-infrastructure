@@ -20,9 +20,9 @@ resource "aws_lambda_function" "mf_elb_o365_ip_sync_lambda" {
   timeout                        = 300
   environment {
     variables = {
-      ACCOUNT           = local.input_param_account_type
-      MFISSECURITYGROUP = local.input_param_mf_is_security_group
-      MFOSSECURITYGROUP = local.input_param_mf_os_security_group
+      ACCOUNT              = local.input_param_account_type
+      MF_IS_SECURITY_GROUP = local.input_param_mf_is_security_group_id
+      MF_OS_SECURITY_GROUP = local.input_param_mf_os_security_group_id
     }
   }
   tags = {
