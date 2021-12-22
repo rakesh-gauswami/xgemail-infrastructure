@@ -6,20 +6,20 @@ resource "aws_elb" "elb" {
   listener {
     instance_port     = 25
     instance_protocol = "tcp"
-    lb_port           = 25
+    lb_port           = 2255
     lb_protocol       = "tcp"
   }
 
   health_check {
     healthy_threshold   = 3
-    unhealthy_threshold = 10
+    unhealthy_threshold = 5
     timeout             = 25
     target              = "TCP:25/"
     interval            = 60
   }
 
   cross_zone_load_balancing   = true
-  idle_timeout                = 400
+  idle_timeout                = 60
   connection_draining         = true
   connection_draining_timeout = 300
 }

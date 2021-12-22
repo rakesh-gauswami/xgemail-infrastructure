@@ -5,12 +5,12 @@ locals {
 
 
   DEFAULT_AS_MIN_SIZE                   = 1
-  DEFAULT_AS_MAX_SIZE                   = 1
+  DEFAULT_AS_MAX_SIZE                   = 6
   DEFAULT_AS_MIN_SERVICE                = 1
   DEFAULT_AS_MAX_BATCH_SIZE             = 1
   DEFAULT_AS_CRON_SCALE_IN              = "00 02 * * 1-5"
   DEFAULT_AS_CRON_SCALE_OUT             = "30 14 * * 1-5"
-  DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD  = 2400
+  DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD  = 900
   DEFAULT_AS_POLICY_TARGET_VALUE        = 90
   DEFAULT_AS_ON_HOUR_DESIRED            = 2
   DEFAULT_AS_SCALE_IN_OUT_WEEKDAYS      = false
@@ -189,7 +189,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
   name = "customer-delivery"
   template_body = "${file("${path.module}/templates/as-customer-delivery-template.json")}"
   parameters = {
-    AesDecryptionKey                  =                     "NO"
+    AesDecryptionKey                  = "NO"
     AlarmTopicArn                     = local.input_param_alarm_topic_arn
     AmiId                             = data.aws_ami.ami
     AutoScalingInstanceRoleArn        = local.input_param_autoscaling_instance_role_arn
@@ -206,7 +206,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     HealthCheckGracePeriod            = local.health_check_grace_period
     InstanceProfile                   = local.input_param_instance_profile_arn
     InstanceType                      = local.instance_size
-    KeyName                           =  "NO"
+    KeyName                           = "NO"
     LifecycleHookTerminating          = local.input_param_lifecycle_hook_terminating
     LoadBalancerName                  = aws_elb.elb.id
     MsgHistoryV2BucketName            = var.msg_history_v2_bucket_name cross
