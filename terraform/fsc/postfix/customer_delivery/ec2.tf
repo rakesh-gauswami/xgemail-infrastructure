@@ -3,7 +3,11 @@ locals {
   ami_owner_account = "843638552935"
   ami_type          = "xgemail"
 
-
+  DEFAULT_SCALE_IN_ENABLED              = false
+  DEFAULT_SCALE_OUT_ENABLED             = true
+  DEFAULT_ALARM_SCALING_ENABLED         = false
+  DEFAULT_ALARM_SCALE_IN_THRESHOLD      = 10
+  DEFAULT_ALARM_SCALE_OUT_THRESHOLD     = 50
   DEFAULT_AS_MIN_SIZE                   = 1
   DEFAULT_AS_MAX_SIZE                   = 6
   DEFAULT_AS_MIN_SERVICE                = 1
@@ -19,6 +23,7 @@ locals {
   DEFAULT_VOLUME_SIZE_GIBS              = 35
   DEFAULT_SXL_DBL                       = "t2.small"
   DEFAULT_SXL_RBL                       = "t2.small"
+  DEFAULT_LIFECYCLE_HOOK_TERMINATING    = "" // confirm
 
 
 
@@ -96,7 +101,7 @@ locals {
     prod = "m5a.large"
   }
 
-  PROD_REGION
+
   INSTANCE_COUNT_BY_ENVIRONMENT = {
     inf  = 1
     dev  = 1
