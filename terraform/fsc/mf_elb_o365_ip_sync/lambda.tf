@@ -4,7 +4,7 @@ locals {
 
 data "archive_file" "mf_elb_o365_ip_sync_lambda_zip" {
   type        = "zip"
-  source_file = "${path.module}/${local.mf_elb_o365_ip_sync_lambda_name}/src/${local.mf_elb_o365_ip_sync_lambda_name}.py"
+  source_file = "${path.module}/${local.mf_elb_o365_ip_sync_lambda_name}/src/"
   output_path = "${path.module}/${local.mf_elb_o365_ip_sync_lambda_name}.zip"
 }
 
