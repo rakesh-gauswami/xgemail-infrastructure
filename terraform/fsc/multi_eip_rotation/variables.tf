@@ -1,4 +1,5 @@
 variable "multi_eip_rotation_schedule" {
+  type        = string
   description = "The schedule expression for multi eip rotation event rule"
   default     = "rate(45 minutes)"
 }

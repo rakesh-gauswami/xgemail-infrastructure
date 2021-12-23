@@ -170,6 +170,15 @@ if ACCOUNT != 'sandbox'
     recursive true
   end
 
+  # configure logrotate for jilter
+  template 'xgemail-jilter-logrotate' do
+    path "/etc/logrotate.d/jilter"
+    source 'xgemail.jilter.logrotate.erb'
+    mode '0644'
+    owner 'root'
+    group 'root'
+  end
+
   # Create the Jilter service
   template 'xgemail.jilter.service.sh' do
     path JILTER_SCRIPT_PATH
