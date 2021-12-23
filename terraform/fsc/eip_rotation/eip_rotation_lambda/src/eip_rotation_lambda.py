@@ -45,7 +45,7 @@ ssm = session.client('ssm')
 """:type: pyboto3.ssm """
 
 
-def eip_rotation_handler(event, context):
+def eip_rotation_lambda_handler(event, context):
     logger.info('got event{}'.format(event))
     print("Received event: " + json.dumps(event))
     print("Log stream name:", context.log_stream_name)
