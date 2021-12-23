@@ -4,7 +4,7 @@ resource "aws_ssm_document" "termination_automation" {
   name          = "termination-automation"
   document_type = "Automation"
 
-  content = <<DOC
+  content = <<-DOC
   {
     "schemaVersion": "0.3",
     "assumeRole": "${aws_iam_role.termination_automation_role.arn}",
@@ -198,5 +198,6 @@ resource "aws_ssm_document" "termination_automation" {
       "getInstanceDeleteOnTermination.DeleteOnTermination"
     ]
   }
-DOC
+
+  DOC
 }
