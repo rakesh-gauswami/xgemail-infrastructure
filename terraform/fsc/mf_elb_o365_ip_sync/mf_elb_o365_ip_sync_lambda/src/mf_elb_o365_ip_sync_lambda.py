@@ -24,8 +24,9 @@ logger.setLevel(logging.INFO)
 
 region = os.environ['AWS_REGION']
 account = os.environ['ACCOUNT']
-mf_security_groups = [os.environ['MFISSECURITYGROUP'], os.environ['MFOSSECURITYGROUP']]
+mf_security_group_keys = [os.environ['MF_IS_LB_SG_SSM_KEY'], os.environ['MF_OS_LB_SG_SSM_KEY']]
 ec2 = boto3.client('ec2')
+ssm = boto3.client('ssm')
 
 logger.info("Starting MF ELB O365 IP Sync function")
 
@@ -146,7 +147,11 @@ def mf_elb_o365_ip_sync_lambda_handler(event, context):
     logger.info("Mem. limits(MB): {0}".format(context.memory_limit_in_mb))
 
     o365_ips = o365_api_call()
-    for sg in mf_security_groups:
+    for key in mf_security_group_keys:
+        #  Lookup Security Group ID value from SSM parameter store string
+        sg = ssm.get_parameter(
+            Name=key
+        )['Parameter']['Value']
         existing_ip_list = retrieve_existing_ingress_rules(sg=sg)
         logger.info("O365 IPs: " + str(o365_ips))
         logger.info("SG IPs: " + str(existing_ip_list))
