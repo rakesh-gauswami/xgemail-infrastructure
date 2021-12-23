@@ -6,7 +6,7 @@ resource "aws_ssm_document" "multi_eip_rotation" {
   content       = <<DOC
   {
     "schemaVersion": "0.3",
-    "assumeRole": ${aws_iam_role.multi_eip_rotation_ssm_automation_role.arn},
+    "assumeRole": "${aws_iam_role.multi_eip_rotation_ssm_automation_role.arn}",
     "description": "Rotate all EIPs on an EC2 instance in an AutoScaling Group",
     "parameters": {
       "InstanceId": {
@@ -25,7 +25,7 @@ resource "aws_ssm_document" "multi_eip_rotation" {
         "inputs": {
           "InvocationType": "RequestResponse",
           "LogType": "Tail",
-          "FunctionName": ${aws_lambda_function.multi_eip_rotation_lambda.function_name},
+          "FunctionName": "${aws_lambda_function.multi_eip_rotation_lambda.function_name}",
           "Payload":"{\"EC2InstanceId\":\"{{InstanceId}}\"}"
         }
       }
@@ -36,5 +36,5 @@ resource "aws_ssm_document" "multi_eip_rotation" {
       "multiEipRotation.LogResult"
     ]
   }
-  DOC
+DOC
 }
