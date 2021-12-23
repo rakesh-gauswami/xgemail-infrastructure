@@ -91,12 +91,12 @@ locals {
   }
 
   INSTANCE_SIZE_BY_ENVIRONMENT = {
-    inf  = 1
-    dev  = 1
-    qa   = 1
-    prod = 1
+    dev  = "c4.xlarge"
+    qa   = "c4.xlarge"
+    prod = "m5a.large"
   }
 
+  PROD_REGION
   INSTANCE_COUNT_BY_ENVIRONMENT = {
     inf  = 1
     dev  = 1
