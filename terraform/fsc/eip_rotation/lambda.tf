@@ -19,7 +19,6 @@ resource "aws_lambda_function" "eip_rotation_lambda" {
   timeout          = 300
   environment {
     variables = {
-      AWS_REGION          = local.input_param_primary_region
       SSM_POSTFIX_SERVICE = local.input_param_ssm_postfix_service
       SSM_UPDATE_HOSTNAME = local.input_param_ssm_update_hostname
     }
@@ -41,5 +40,5 @@ resource "aws_lambda_permission" "allow_cloudwatch_lifecycle_event" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.eip_rotation_lambda.function_name
   principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.eip_rotation_event_rule.arn
+  source_arn    = aws_cloudwatch_event_rule.eip_rotation_lifecycle_event_rule.arn
 }

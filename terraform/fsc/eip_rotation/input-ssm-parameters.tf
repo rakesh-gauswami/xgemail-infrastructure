@@ -51,7 +51,7 @@ data "aws_ssm_parameter" "asg_customer_xdelivery_lifecycle_hook_launching" {
 }
 
 data "aws_ssm_parameter" "asg_mf_inbound_delivery_lifecycle_hook_launching" {
-  name     = "/central/asg/mf-inbound_delivery/lifecycle-hook/launching/name"
+  name     = "/central/asg/mf-inbound-delivery/lifecycle-hook/launching/name"
   provider = aws.parameters
 }
 
