@@ -19,7 +19,6 @@ resource "aws_lambda_function" "eip_rotation_lambda" {
   timeout          = 300
   environment {
     variables = {
-      AWS_REGION          = local.input_param_primary_region
       SSM_POSTFIX_SERVICE = local.input_param_ssm_postfix_service
       SSM_UPDATE_HOSTNAME = local.input_param_ssm_update_hostname
     }
