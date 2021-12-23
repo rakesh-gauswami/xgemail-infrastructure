@@ -26,7 +26,7 @@ resource "aws_ssm_document" "multi_eip_rotation" {
           "InvocationType": "RequestResponse",
           "LogType": "Tail",
           "FunctionName": "${aws_lambda_function.multi_eip_rotation_lambda.function_name}",
-          "Payload":"{"EC2InstanceId":"{{InstanceId}}"}"
+          "Payload":"{\"EC2InstanceId\":\"{{InstanceId}}\"}"
         }
       }
     ],
