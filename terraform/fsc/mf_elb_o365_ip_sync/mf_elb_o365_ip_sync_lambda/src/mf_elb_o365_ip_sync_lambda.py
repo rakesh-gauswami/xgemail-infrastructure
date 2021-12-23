@@ -137,7 +137,7 @@ def add_ingress_rules(sg, ip_list):
             print(e)
 
 
-def mf_elb_o365_ip_sync_handler(event, context):
+def mf_elb_o365_ip_sync_lambda_handler(event, context):
     logger.info("got event {0}".format(event))
     logger.info("Received event: {0}".format(json.dumps(event)))
     logger.info("Log stream name: {0}".format(context.log_stream_name))
