@@ -154,6 +154,36 @@ module "output_string_parameters" {
       name        = "/central/iam/policies/cloud-logs-bucket-write/arn"
       value       = aws_iam_policy.cloud_logs_bucket_write_policy.arn
       description = "Cloud Logs S3 bucket write policy ARN"
+    },
+
+    {
+      name        = "/central/iam/policies/cloud-templates-s3-kms-policy/arn"
+      value       = aws_iam_policy.cloud_templates_s3_kms_policy.arn
+      description = "Cloud Templates S3 bucket KMS policy ARN"
+    },
+
+    {
+      name        = "/central/iam/policies/cloud-templates-bucket-delete/arn"
+      value       = aws_iam_policy.cloud_templates_bucket_delete_policy.arn
+      description = "Cloud Templates S3 bucket delete policy ARN"
+    },
+
+    {
+      name        = "/central/iam/policies/cloud-templates-bucket-list/arn"
+      value       = aws_iam_policy.cloud_templates_bucket_list_policy.arn
+      description = "Cloud Templates S3 bucket list policy ARN"
+    },
+
+    {
+      name        = "/central/iam/policies/cloud-templates-bucket-read/arn"
+      value       = aws_iam_policy.cloud_templates_bucket_read_policy.arn
+      description = "Cloud Templates S3 bucket read policy ARN"
+    },
+
+    {
+      name        = "/central/iam/policies/cloud-templates-bucket-write/arn"
+      value       = aws_iam_policy.cloud_templates_bucket_write_policy.arn
+      description = "Cloud Templates S3 bucket write policy ARN"
     }
   ]
 }
