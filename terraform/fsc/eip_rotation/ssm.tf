@@ -4,7 +4,7 @@ resource "aws_ssm_document" "eip_rotation" {
   name          = "eip-rotation"
   document_type = "Automation"
 
-  content = <<-DOC
+  content = <<DOC
   {
     "schemaVersion": "0.3",
     "assumeRole": "${aws_iam_role.eip_rotation_role.arn}",
@@ -33,13 +33,14 @@ resource "aws_ssm_document" "eip_rotation" {
           "LogType": "Tail",
           "FunctionName":"${aws_lambda_function.eip_rotation_lambda.function_name}",
           "Payload":"{\"EC2InstanceId\":\"{{InstanceId}}\", \"Eip\":\"{{Eip}}\"}"
-        },
-        "outputs": [
-          "eipRotation.StatusCode",
-          "eipRotation.FunctionError",
-          "eipRotation.LogResult"
-        ]
+        }
       }
-
-  DOC
+    ],
+    "outputs": [
+      "eipRotation.StatusCode",
+      "eipRotation.FunctionError",
+      "eipRotation.LogResult"
+    ]
+  }
+DOC
 }

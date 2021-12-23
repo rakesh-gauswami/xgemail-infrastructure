@@ -278,7 +278,7 @@ def complete_lifecycle_action(autoscaling_group_name, lifecycle_hook_name, lifec
         return True
 
 
-def multi_eip_rotation_handler(event, context):
+def multi_eip_rotation_lambda_handler(event, context):
     logger.info('got event{}'.format(event))
     print("Received event: " + json.dumps(event))
     print("Log stream name:", context.log_stream_name)

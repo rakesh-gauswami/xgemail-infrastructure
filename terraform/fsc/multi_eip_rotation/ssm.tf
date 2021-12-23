@@ -3,7 +3,7 @@
 resource "aws_ssm_document" "multi_eip_rotation" {
   name          = "multi-eip-rotation"
   document_type = "Automation"
-  content       = <<-DOC
+  content       = <<DOC
   {
     "schemaVersion": "0.3",
     "assumeRole": "${aws_iam_role.multi_eip_rotation_ssm_automation_role.arn}",
@@ -36,6 +36,5 @@ resource "aws_ssm_document" "multi_eip_rotation" {
       "multiEipRotation.LogResult"
     ]
   }
-
-  DOC
+DOC
 }
