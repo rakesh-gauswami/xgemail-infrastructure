@@ -44,22 +44,22 @@ resource "aws_iam_role_policy_attachment" "mf_outbound_delivery_instance_role_fi
   policy_arn = data.aws_iam_policy.firehose_writer_policy.arn
 }
 
-resource "aws_iam_role_policy_attachment" "XXXXX_instance_role_ssm_agent_policy" {
-  role       = aws_iam_role.XXXXX_instance_role.id
+resource "aws_iam_role_policy_attachment" "mf_outbound_delivery_instance_role_ssm_agent_policy" {
+  role       = aws_iam_role.mf_outbound_delivery_instance_role.id
   policy_arn = aws_iam_policy.ssm_agent_policy.arn
 }
 
-resource "aws_iam_role_policy_attachment" "XXXXX_instance_role_asg_policy" {
-  role       = aws_iam_role.XXXXX_instance_role.id
+resource "aws_iam_role_policy_attachment" "mf_outbound_delivery_instance_role_asg_policy" {
+  role       = aws_iam_role.mf_outbound_delivery_instance_role.id
   policy_arn = aws_iam_policy.asg_policy.arn
 }
 
-resource "aws_iam_role_policy_attachment" "XXXXX_instance_role_ec2_policy" {
-  role       = aws_iam_role.XXXXX_instance_role.id
+resource "aws_iam_role_policy_attachment" "mf_outbound_delivery_instance_role_ec2_policy" {
+  role       = aws_iam_role.mf_outbound_delivery_instance_role.id
   policy_arn = aws_iam_policy.ec2_policy.arn
 }
 
-resource "aws_iam_role_policy_attachment" "XXXXX_instance_role_sns_policy" {
-  role       = aws_iam_role.XXXXX_instance_role.id
+resource "aws_iam_role_policy_attachment" "mf_outbound_delivery_instance_role_sns_policy" {
+  role       = aws_iam_role.mf_outbound_delivery_instance_role.id
   policy_arn = aws_iam_policy.sns_policy.arn
 }
