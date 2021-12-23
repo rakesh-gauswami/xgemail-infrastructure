@@ -4,7 +4,7 @@ locals {
 
 data "archive_file" "multi_eip_rotation_lambda_zip" {
   type        = "zip"
-  source_dir  = "${path.module}/${local.multi_eip_rotation_lambda_name}/src/"
+  source_file = "${path.module}/${local.multi_eip_rotation_lambda_name}/src/${local.multi_eip_rotation_lambda_name}.py"
   output_path = "${path.module}/${local.multi_eip_rotation_lambda_name}.zip"
 }
 
