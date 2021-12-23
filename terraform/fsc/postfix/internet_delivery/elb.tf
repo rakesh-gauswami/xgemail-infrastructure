@@ -12,16 +12,16 @@ resource "aws_elb" "elb" {
 
   health_check {
     healthy_threshold   = 3
-    unhealthy_threshold = 10
+    unhealthy_threshold = 5
     timeout             = 25
     target              = "TCP:25/"
     interval            = 60
   }
 
   cross_zone_load_balancing   = true
-  idle_timeout                = 400
+  idle_timeout                = 60
   connection_draining         = true
-  connection_draining_timeout = 300
+  connection_draining_timeout = 150
 }
 
 resource "aws_proxy_protocol_policy" "smtp" {
