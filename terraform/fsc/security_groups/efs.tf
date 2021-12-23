@@ -1,6 +1,5 @@
 locals {
   efs_policy_sg_name  = "efs-policy"
-  efs_tcp_port        = 2049
 }
 
 resource "aws_security_group" "efs_policy" {
@@ -9,13 +8,4 @@ resource "aws_security_group" "efs_policy" {
   vpc_id      = local.input_param_vpc_id
 
   tags = { Name = local.efs_policy_sg_name }
-}
-
-resource "aws_security_group_rule" "efs_policy_ingress_tcp" {
-  type              = "ingress"
-  from_port         = local.efs_tcp_port
-  to_port           = local.efs_tcp_port
-  protocol          = "tcp"
-  self              = true
-  security_group_id = aws_security_group.efs_policy.id
 }

@@ -149,6 +149,15 @@ template 'xgemail.jilter.properties' do
   )
 end
 
+# configure logrotate for jilter
+template 'xgemail-jilter-logrotate' do
+  path "/etc/logrotate.d/jilter"
+  source 'xgemail.jilter.logrotate.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+end
+
 template 'xgemail-jilter-service' do
   path "/etc/init.d/#{JILTER_SERVICE_NAME}"
   source 'xgemail.jilter.service.init.erb'

@@ -17,7 +17,7 @@ resource "null_resource" "pip" {
 
 data "archive_file" "eip_monitor_lambda_zip" {
   type        = "zip"
-  source_dir = "${path.module}/${local.eip_monitor_lambda_name}/src/"
+  source_dir  = "${path.module}/${local.eip_monitor_lambda_name}/src/"
   output_path = "${path.module}/${local.eip_monitor_lambda_name}.zip"
   depends_on = [
     null_resource.pip
@@ -25,17 +25,17 @@ data "archive_file" "eip_monitor_lambda_zip" {
 }
 
 resource "aws_lambda_function" "eip_monitor_lambda" {
-  filename          = data.archive_file.eip_monitor_lambda_zip.output_path
-  function_name     = local.eip_monitor_lambda_name
-  role              = aws_iam_role.eip_monitor_lambda_role.arn
-  handler           = "${local.eip_monitor_lambda_name}.${local.eip_monitor_lambda_name}_handler"
-  source_code_hash  = data.archive_file.eip_monitor_lambda_zip.output_base64sha256
-  runtime           = "python3.8"
-  memory_size       = 256
-  timeout           = 300
+  filename         = data.archive_file.eip_monitor_lambda_zip.output_path
+  function_name    = local.eip_monitor_lambda_name
+  role             = aws_iam_role.eip_monitor_lambda_role.arn
+  handler          = "${local.eip_monitor_lambda_name}.${local.eip_monitor_lambda_name}_handler"
+  source_code_hash = data.archive_file.eip_monitor_lambda_zip.output_base64sha256
+  runtime          = "python3.8"
+  memory_size      = 256
+  timeout          = 300
   environment {
     variables = {
-      TOKEN  = local.input_secret_api_token
+      TOKEN = local.input_secret_api_token
     }
   }
   tags = {

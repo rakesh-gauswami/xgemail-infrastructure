@@ -86,8 +86,8 @@ resource "aws_security_group_rule" "efs_policy_ingress_tcp" {
   from_port                = local.efs_tcp_port
   to_port                  = local.efs_tcp_port
   protocol                 = "tcp"
-  security_group_id        = aws_security_group.security_group_ec2.id
-  source_security_group_id = data.aws_security_group.efs_policy.id
+  security_group_id        = data.aws_security_group.efs_policy.id
+  source_security_group_id = aws_security_group.security_group_ec2.id
 }
 
 resource "aws_security_group_rule" "logicmonitor_ingress_icmp" {

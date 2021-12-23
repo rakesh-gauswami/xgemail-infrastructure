@@ -9,9 +9,9 @@ data "aws_iam_policy_document" "multi_eip_rotation_lambda_trust" {
     actions = [
       "sts:AssumeRole"
     ]
-    effect  = "Allow"
+    effect = "Allow"
     principals {
-      type        = "Service"
+      type = "Service"
       identifiers = [
         "lambda.amazonaws.com"
       ]
@@ -20,7 +20,7 @@ data "aws_iam_policy_document" "multi_eip_rotation_lambda_trust" {
 }
 
 resource "aws_iam_role" "multi_eip_rotation_lambda_execution_role" {
-  name = "multi-eip-rotation-lambda-execution-role"
+  name               = "multi-eip-rotation-lambda-execution-role"
   assume_role_policy = data.aws_iam_policy_document.multi_eip_rotation_lambda_trust.json
 }
 
@@ -104,9 +104,9 @@ data "aws_iam_policy_document" "multi_eip_rotation_ssm_automation_trust" {
     actions = [
       "sts:AssumeRole"
     ]
-    effect  = "Allow"
+    effect = "Allow"
     principals {
-      type        = "Service"
+      type = "Service"
       identifiers = [
         "ssm.amazonaws.com"
       ]
@@ -147,7 +147,7 @@ data "aws_iam_policy_document" "multi_eip_rotation_event_policy" {
     actions = [
       "lambda:InvokeFunction"
     ]
-    effect    = "Allow"
+    effect = "Allow"
     resources = [
       aws_lambda_function.multi_eip_rotation_lambda.arn
     ]

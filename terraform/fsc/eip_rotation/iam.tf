@@ -6,9 +6,9 @@ data "aws_iam_policy_document" "eip_rotation_lambda_assume_role_policy" {
     actions = [
       "sts:AssumeRole"
     ]
-    effect  = "Allow"
+    effect = "Allow"
     principals {
-      type        = "Service"
+      type = "Service"
       identifiers = [
         "lambda.amazonaws.com"
       ]
@@ -17,7 +17,7 @@ data "aws_iam_policy_document" "eip_rotation_lambda_assume_role_policy" {
 }
 
 resource "aws_iam_role" "eip_rotation_lambda_execution_role" {
-  name = local.eip_rotation_lambda_name
+  name               = local.eip_rotation_lambda_name
   assume_role_policy = data.aws_iam_policy_document.eip_rotation_lambda_assume_role_policy.json
 }
 
@@ -30,9 +30,9 @@ data "aws_iam_policy_document" "eip_rotation_lambda_execution_role_policy" {
       "autoscaling:RecordLifecycleActionHeartbeat",
       "autoscaling:UpdateAutoScalingGroup",
     ]
-    effect    = "Allow"
+    effect = "Allow"
     resources = [
-     "*"
+      "*"
     ]
   }
   statement {
@@ -40,7 +40,7 @@ data "aws_iam_policy_document" "eip_rotation_lambda_execution_role_policy" {
     actions = [
       "lambda:*",
     ]
-    effect    = "Allow"
+    effect = "Allow"
     resources = [
       "*"
     ]
@@ -52,7 +52,7 @@ data "aws_iam_policy_document" "eip_rotation_lambda_execution_role_policy" {
       "logs:CreateLogStream",
       "logs:PutLogEvents",
     ]
-    effect    = "Allow"
+    effect = "Allow"
     resources = [
       "*"
     ]
@@ -67,7 +67,7 @@ data "aws_iam_policy_document" "eip_rotation_lambda_execution_role_policy" {
       "ec2:DescribeInstanceStatus",
       "ec2:DisassociateAddress",
     ]
-    effect    = "Allow"
+    effect = "Allow"
     resources = [
       "*"
     ]
@@ -81,7 +81,7 @@ data "aws_iam_policy_document" "eip_rotation_lambda_execution_role_policy" {
       "ssm:ListCommands",
       "ssm:SendCommand",
     ]
-    effect    = "Allow"
+    effect = "Allow"
     resources = [
       "*"
     ]
@@ -98,7 +98,7 @@ resource "aws_iam_role_policy" "eip_rotation_lambda_execution_role_policy" {
 # SSM Automation IAM Role and Policies
 # ----------------------------------------------------
 resource "aws_iam_role" "eip_rotation_role" {
-  name = "eip_rotation_role"
+  name               = "eip_rotation_role"
   assume_role_policy = data.aws_iam_policy_document.eip_rotation_trust_policy.json
 }
 
@@ -109,9 +109,9 @@ data "aws_iam_policy_document" "eip_rotation_trust_policy" {
     actions = [
       "sts:AssumeRole"
     ]
-    effect  = "Allow"
+    effect = "Allow"
     principals {
-      type        = "Service"
+      type = "Service"
       identifiers = [
         "ec2.amazonaws.com",
         "ssm.amazonaws.com"
@@ -146,9 +146,9 @@ data "aws_iam_policy_document" "events_rule_eip_rotation_policy" {
   policy_id = "events_rule_eip_rotation"
 
   statement {
-    sid = "EipRotationLambda"
-    effect    = "Allow",
-    actions   = [
+    sid    = "EipRotationLambda"
+    effect = "Allow"
+    actions = [
       "lambda:*",
     ]
     resources = [
@@ -161,7 +161,7 @@ data "aws_iam_policy_document" "events_rule_eip_rotation_policy" {
     actions = [
       "logs:CreateLogGroup",
     ]
-    effect    = "Allow"
+    effect = "Allow"
     resources = [
       "arn:aws:logs:${local.input_param_primary_region}:*:*"
     ]
@@ -172,16 +172,16 @@ data "aws_iam_policy_document" "events_rule_eip_rotation_policy" {
       "logs:CreateLogStream",
       "logs:PutLogEvents",
     ]
-    effect    = "Allow"
+    effect = "Allow"
     resources = [
       "arn:aws:logs:${local.input_param_primary_region}:*:log-group:*:*"
     ]
   }
 
   statement {
-    sid = "Ec2Permissions"
-    effect    = "Allow"
-    actions   = [
+    sid    = "Ec2Permissions"
+    effect = "Allow"
+    actions = [
       "ec2:CreateTags",
       "ec2:DescribeAddresses",
       "ec2:AssociateAddress",
