@@ -13,6 +13,12 @@ variable "build_number" {
   description = "Build Number"
 }
 
+variable "build_result_key" {
+  type        = string
+  description = "Build Result Key"
+}
+
+
 variable "tag_origin" {
   type = string
   # No default, set by tf-fsc.sh

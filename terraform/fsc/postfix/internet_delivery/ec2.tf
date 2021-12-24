@@ -3,24 +3,21 @@ locals {
   ami_owner_account = "843638552935"
   ami_type          = "xgemail"
 
-
-  DEFAULT_AS_MIN_SIZE                   = 1
-  DEFAULT_AS_MAX_SIZE                   = 1
-  DEFAULT_AS_MIN_SERVICE                = 1
-  DEFAULT_AS_MAX_BATCH_SIZE             = 1
-  DEFAULT_AS_CRON_SCALE_IN              = "00 02 * * 1-5"
-  DEFAULT_AS_CRON_SCALE_OUT             = "30 14 * * 1-5"
-  DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD  = 2400
-  DEFAULT_AS_POLICY_TARGET_VALUE        = 90
-  DEFAULT_AS_ON_HOUR_DESIRED            = 2
-  DEFAULT_AS_SCALE_IN_OUT_WEEKDAYS      = false
-  DEFAULT_INSTANCE_SIZE                 = "t2.small"
-  DEFAULT_INSTANCE_COUNT                = 1
-  DEFAULT_VOLUME_SIZE_GIBS              = 35
-  DEFAULT_SXL_DBL                       = "t2.small"
-  DEFAULT_SXL_RBL                       = "t2.small"
-
-
+  DEFAULT_AS_MIN_SIZE                  = 1
+  DEFAULT_AS_MAX_SIZE                  = 1
+  DEFAULT_AS_MIN_SERVICE               = 1
+  DEFAULT_AS_MAX_BATCH_SIZE            = 1
+  DEFAULT_AS_CRON_SCALE_IN             = "00 02 * * 1-5"
+  DEFAULT_AS_CRON_SCALE_OUT            = "30 14 * * 1-5"
+  DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD = 2400
+  DEFAULT_AS_POLICY_TARGET_VALUE       = 90
+  DEFAULT_AS_ON_HOUR_DESIRED           = 2
+  DEFAULT_AS_SCALE_IN_OUT_WEEKDAYS     = false
+  DEFAULT_INSTANCE_SIZE                = "t2.small"
+  DEFAULT_INSTANCE_COUNT               = 1
+  DEFAULT_VOLUME_SIZE_GIBS             = 35
+  DEFAULT_SXL_DBL                      = "t2.small"
+  DEFAULT_SXL_RBL                      = "t2.small"
 
   AS_MIN_SIZE_BY_ENVIRONMENT = {
     inf  = 1
@@ -32,8 +29,8 @@ locals {
   AS_MAX_SIZE_BY_ENVIRONMENT = {
     inf  = 1
     dev  = 1
-    qa   = 1
-    prod = 1
+    qa   = 3
+    prod = 3
   }
 
   AS_MIN_SERVICE_BY_ENVIRONMENT = {
@@ -44,8 +41,10 @@ locals {
   }
 
   AS_MAX_BATCH_SIZE_BY_ENVIRONMENT = {
-    inf  = "t2.small"
-    prod = "t2.small"
+    inf  = 1
+    dev  = 1
+    qa   = 3
+    prod = 3
   }
 
   AS_CRON_SCALE_IN_BY_ENVIRONMENT = {
@@ -156,7 +155,23 @@ locals {
   local.DEFAULT_AS_MIN_SERVICE
   )
 
+  as_max_batch_size = lookup(
+  local.AS_MAX_BATCH_SIZE_BY_ENVIRONMENT,
+  local.input_param_deployment_environment,
+  local.DEFAULT_AS_MAX_BATCH_SIZE
+  )
 
+  health_check_grace_period = lookup(
+  local.AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT,
+  local.input_param_deployment_environment,
+  local.DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD
+  )
+
+  instance_size = lookup(
+  local.INSTANCE_SIZE_BY_ENVIRONMENT,
+  local.input_param_deployment_environment,
+  local.DEFAULT_INSTANCE_SIZE
+  )
 
 }
 
@@ -187,9 +202,9 @@ data "aws_ami" "ami" {
 
 resource "aws_cloudformation_stack" "cloudformation_stack" {
   name = "internet-delivery"
-  template_body = "${file("${path.module}/templates/as-internet-delivery-template.json")}"
+  template_body = file("${path.module}/templates/as-internet-delivery-template.json")
   parameters = {
-    AesDecryptionKey                  =                     "NO"
+    AesDecryptionKey                  = "NO"
     AlarmTopicArn                     = local.input_param_alarm_topic_arn
     AmiId                             = data.aws_ami.ami
     AutoScalingInstanceRoleArn        = local.input_param_autoscaling_instance_role_arn
@@ -197,16 +212,16 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     AutoScalingMaxSize                = local.as_max_size
     AutoScalingNotificationTopicARN   = local.input_param_lifecycle_topic_arn
     AvailabilityZones                 = local.input_param_availability_zones
-    Branch                            = var.build.branch
+    Branch                            = var.build_branch
     BuildVersion                      = var.build_result_key
-    BundleVersion                     = var.ami_build
+    BundleVersion                     = var.ami_branch
     DeployMaxBatchSize                = local.as_max_batch_size
     DeployMinInstancesInService       = local.as_min_service
     Environment                       = local.input_param_deployment_environment
     HealthCheckGracePeriod            = local.health_check_grace_period
     InstanceProfile                   = local.input_param_instance_profile_arn
     InstanceType                      = local.instance_size
-    KeyName                           =  "NO"
+    KeyName                           = "NO"
     LifecycleHookTerminating          = local.input_param_lifecycle_hook_terminating
     LoadBalancerName                  = aws_elb.elb.id
     MsgHistoryV2BucketName            = var.msg_history_v2_bucket_name cross
