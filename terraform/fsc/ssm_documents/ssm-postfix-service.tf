@@ -1,9 +1,6 @@
 # vim: autoindent expandtab shiftwidth=2 filetype=terraform
-resource "aws_ssm_document" "ssm_postfix_service" {
-  name          = "ssm-postfix-service"
-  document_type = "Command"
-  content = <<DOC
-  {
+locals {
+  ssm_postfix_service_ssm_document = {
     "schemaVersion": "2.2",
     "description": "Start or Stop Postfix Service via Monit Service",
     "parameters": {
@@ -24,5 +21,10 @@ resource "aws_ssm_document" "ssm_postfix_service" {
       }
     ]
   }
-DOC
+}
+
+resource "aws_ssm_document" "ssm_postfix_service" {
+  name          = "ssm-postfix-service"
+  document_type = "Command"
+  content = jsonencode(local.ssm_postfix_service_ssm_document)
 }
