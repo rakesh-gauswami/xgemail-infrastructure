@@ -1,11 +1,6 @@
 # vim: autoindent expandtab shiftwidth=2 filetype=terraform
-
-resource "aws_ssm_document" "eip_rotation" {
-  name          = "eip-rotation"
-  document_type = "Automation"
-
-  content = <<DOC
-  {
+locals {
+   ssm_document = {
     "schemaVersion": "0.3",
     "assumeRole": "${aws_iam_role.eip_rotation_role.arn}",
     "description": "Rotate EIP on an EC2 instance in an AutoScaling Group",
@@ -42,5 +37,11 @@ resource "aws_ssm_document" "eip_rotation" {
       "eipRotation.LogResult"
     ]
   }
-DOC
+}
+
+resource "aws_ssm_document" "eip_rotation" {
+  name          = "eip-rotation"
+  document_type = "Automation"
+
+  content = jsonencode(local.ssm_document)
 }

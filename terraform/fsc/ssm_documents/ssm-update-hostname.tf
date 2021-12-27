@@ -1,9 +1,6 @@
 # vim: autoindent expandtab shiftwidth=2 filetype=terraform
-resource "aws_ssm_document" "ssm_update_hostname" {
-  name          = "ssm-update-hostname"
-  document_type = "Command"
-  content = <<DOC
-  {
+locals {
+  ssm_update_hostname_ssm_document = {
     "schemaVersion": "2.2",
     "description": "Update the hostname on an EC2 instance",
     "parameters": {
@@ -25,5 +22,10 @@ resource "aws_ssm_document" "ssm_update_hostname" {
       }
     ]
   }
-DOC
+}
+
+resource "aws_ssm_document" "ssm_update_hostname" {
+  name          = "ssm-update-hostname"
+  document_type = "Command"
+  content = jsonencode(local.ssm_update_hostname_ssm_document)
 }
