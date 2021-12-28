@@ -1,5 +1,5 @@
 locals {
-  cloud_3rdparty_bucket_logical_name     = "cloud-${local.input_param_account_name}-3rdparty"
+  cloud_3rdparty_bucket_logical_name    = "cloud-${local.input_param_account_name}-3rdparty"
   cloud_3rdparty_bucket_expiration_days = 14
 }
 
@@ -15,8 +15,8 @@ module "cloud_3rdparty_bucket" {
   lifecycle_rules = [
     {
       id = format(
-      "global expiration in %d days",
-      local.cloud_3rdparty_bucket_expiration_days
+        "global expiration in %d days",
+        local.cloud_3rdparty_bucket_expiration_days
       )
       enabled = true
 

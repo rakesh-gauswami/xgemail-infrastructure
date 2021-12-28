@@ -2,8 +2,8 @@ data "aws_iam_policy_document" "cloud_3rdparty_s3_kms_policy" {
   policy_id = "cloud_3rdparty_s3_kms_policy"
 
   statement {
-    effect    = "Allow"
-    actions   = [
+    effect = "Allow"
+    actions = [
       "kms:Decrypt",
       "kms:GenerateDataKey",
     ]
@@ -26,8 +26,8 @@ data "aws_iam_policy_document" "cloud_configs_s3_kms_policy" {
   policy_id = "cloud_configs_s3_kms_policy"
 
   statement {
-    effect    = "Allow"
-    actions   = [
+    effect = "Allow"
+    actions = [
       "kms:Decrypt",
       "kms:GenerateDataKey",
     ]
@@ -50,8 +50,8 @@ data "aws_iam_policy_document" "cloud_connections_s3_kms_policy" {
   policy_id = "cloud_connections_s3_kms_policy"
 
   statement {
-    effect    = "Allow"
-    actions   = [
+    effect = "Allow"
+    actions = [
       "kms:Decrypt",
       "kms:GenerateDataKey",
     ]
@@ -74,8 +74,8 @@ data "aws_iam_policy_document" "cloud_lambda_s3_kms_policy" {
   policy_id = "cloud_lambda_s3_kms_policy"
 
   statement {
-    effect    = "Allow"
-    actions   = [
+    effect = "Allow"
+    actions = [
       "kms:Decrypt",
       "kms:GenerateDataKey",
     ]
@@ -98,8 +98,8 @@ data "aws_iam_policy_document" "cloud_logs_s3_kms_policy" {
   policy_id = "cloud_logs_s3_kms_policy"
 
   statement {
-    effect    = "Allow"
-    actions   = [
+    effect = "Allow"
+    actions = [
       "kms:Decrypt",
       "kms:GenerateDataKey",
     ]
@@ -122,8 +122,8 @@ data "aws_iam_policy_document" "cloud_templates_s3_kms_policy" {
   policy_id = "cloud_templates_s3_kms_policy"
 
   statement {
-    effect    = "Allow"
-    actions   = [
+    effect = "Allow"
+    actions = [
       "kms:Decrypt",
       "kms:GenerateDataKey",
     ]

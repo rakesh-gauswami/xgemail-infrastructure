@@ -15,8 +15,8 @@ module "cloud_configs_bucket" {
   lifecycle_rules = [
     {
       id = format(
-      "global expiration in %d days",
-      local.cloud_configs_bucket_expiration_days
+        "global expiration in %d days",
+        local.cloud_configs_bucket_expiration_days
       )
       enabled = true
 

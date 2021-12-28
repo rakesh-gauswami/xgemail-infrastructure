@@ -15,8 +15,8 @@ module "cloud_lambda_bucket" {
   lifecycle_rules = [
     {
       id = format(
-      "global expiration in %d days",
-      local.cloud_lambda_bucket_expiration_days
+        "global expiration in %d days",
+        local.cloud_lambda_bucket_expiration_days
       )
       enabled = true
 
