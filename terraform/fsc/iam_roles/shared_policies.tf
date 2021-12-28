@@ -1,3 +1,18 @@
+data "aws_iam_policy_document" "autoscaling_assume_role_policy" {
+  statement {
+    effect  = "Allow"
+    actions = [
+      "sts:AssumeRole"
+    ]
+    principals {
+      type        = "Service"
+      identifiers = [
+        "autoscaling.amazonaws.com"
+      ]
+    }
+  }
+}
+
 data "aws_iam_policy_document" "ec2_assume_role_policy" {
   statement {
     effect  = "Allow"
