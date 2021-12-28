@@ -1,5 +1,6 @@
 locals {
   cloud_lambda_bucket_logical_name    = "cloud-${local.input_param_account_name}-lambda"
+  cloud_lambda_bucket_expiration_days = 14
 }
 
 module "cloud_lambda_bucket" {
@@ -11,6 +12,33 @@ module "cloud_lambda_bucket" {
   }
 
   bucket_logical_name = local.cloud_lambda_bucket_logical_name
+  lifecycle_rules = [
+    {
+      id = format(
+      "global expiration in %d days",
+      local.cloud_lambda_bucket_expiration_days
+      )
+      enabled = true
+
+      selector_prefix = null
+      selector_tags   = null
+
+      abort_incomplete_multipart_upload_days = null
+
+      expiration = [
+        {
+          date                         = null
+          days                         = local.cloud_lambda_bucket_expiration_days
+          expired_object_delete_marker = null
+        }
+      ]
+
+      noncurrent_version_expiration = []
+      noncurrent_version_transition = []
+
+      transition = []
+    }
+  ]
 }
 
 data "aws_iam_policy_document" "cloud_lambda_bucket_read_policy" {
@@ -36,6 +64,10 @@ resource "aws_iam_policy" "cloud_lambda_bucket_read_policy" {
   policy      = data.aws_iam_policy_document.cloud_lambda_bucket_read_policy.json
 
   tags = { Name = "CloudLambdaBucketReadPolicy" }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 data "aws_iam_policy_document" "cloud_lambda_bucket_write_policy" {
@@ -61,6 +93,10 @@ resource "aws_iam_policy" "cloud_lambda_bucket_write_policy" {
   policy      = data.aws_iam_policy_document.cloud_lambda_bucket_write_policy.json
 
   tags = { Name = "CloudLambdaBucketWritePolicy" }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 data "aws_iam_policy_document" "cloud_lambda_bucket_delete_policy" {
@@ -86,6 +122,10 @@ resource "aws_iam_policy" "cloud_lambda_bucket_delete_policy" {
   policy      = data.aws_iam_policy_document.cloud_lambda_bucket_delete_policy.json
 
   tags = { Name = "CloudLambdaBucketDeletePolicy" }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 data "aws_iam_policy_document" "cloud_lambda_bucket_list_policy" {
@@ -112,4 +152,8 @@ resource "aws_iam_policy" "cloud_lambda_bucket_list_policy" {
   policy      = data.aws_iam_policy_document.cloud_lambda_bucket_list_policy.json
 
   tags = { Name = "CloudLambdaBucketListPolicy" }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
