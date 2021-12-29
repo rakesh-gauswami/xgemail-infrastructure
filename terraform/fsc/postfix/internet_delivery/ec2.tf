@@ -138,39 +138,39 @@ locals {
   }
 
   as_min_size = lookup(
-  local.AS_MIN_SIZE_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_MIN_SIZE
+    local.AS_MIN_SIZE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_MIN_SIZE
   )
 
   as_max_size = lookup(
-  local.AS_MAX_SIZE_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_MAX_SIZE
+    local.AS_MAX_SIZE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_MAX_SIZE
   )
 
   as_min_service = lookup(
-  local.AS_MIN_SERVICE_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_MIN_SERVICE
+    local.AS_MIN_SERVICE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_MIN_SERVICE
   )
 
   as_max_batch_size = lookup(
-  local.AS_MAX_BATCH_SIZE_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_MAX_BATCH_SIZE
+    local.AS_MAX_BATCH_SIZE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_MAX_BATCH_SIZE
   )
 
   health_check_grace_period = lookup(
-  local.AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD
+    local.AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD
   )
 
   instance_size = lookup(
-  local.INSTANCE_SIZE_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_INSTANCE_SIZE
+    local.INSTANCE_SIZE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_INSTANCE_SIZE
   )
 
 }
@@ -204,7 +204,6 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
   name = "internet-delivery"
   template_body = file("${path.module}/templates/as-internet-delivery-template.json")
   parameters = {
-    AesDecryptionKey                  = "NO"
     AlarmTopicArn                     = local.input_param_alarm_topic_arn
     AmiId                             = data.aws_ami.ami
     AutoScalingInstanceRoleArn        = local.input_param_autoscaling_instance_role_arn
@@ -221,7 +220,6 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     HealthCheckGracePeriod            = local.health_check_grace_period
     InstanceProfile                   = local.input_param_instance_profile_arn
     InstanceType                      = local.instance_size
-    KeyName                           = "NO"
     LifecycleHookTerminating          = local.input_param_lifecycle_hook_terminating
     LoadBalancerName                  = aws_elb.elb.id
     MsgHistoryV2BucketName            = var.msg_history_v2_bucket_name cross
@@ -239,7 +237,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     SecurityGroups                    = [local.input_param_sg_base_id, aws_security_group.security_group_ec2]
     SpotPrice                         = var.spot_price
     StationVpcId                      = var.station_vpc_id cross
-    StationVpcName                    = cross      var.station_name cross
+    StationVpcName                    = var.station_name cross
     Vpc                               = local.input_param_vpc_id
     VpcZoneIdentifiers                = [local.input_param_public_subnet_ids]
     VpcName                           = "email"

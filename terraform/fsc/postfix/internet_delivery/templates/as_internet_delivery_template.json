@@ -19,10 +19,6 @@
   },
 
   "Parameters": {
-    "AesDecryptionKey": {
-      "Description": "Decryption key for encrypted buckets",
-      "Type": "String"
-    },
     "AlarmScalingEnabled": {
       "Description": "Enable AutoScaling Alarms to trigger scaling policies.",
       "Type": "String",
@@ -129,10 +125,6 @@
       "Type": "String",
       "Default": "c3.large"
     },
-    "KeyName": {
-      "Type": "AWS::EC2::KeyPair::KeyName",
-      "Description": "Key pair used to SSH to the instance"
-    },
     "LifecycleHookLaunching": {
       "Description": "Name of the Launching Lifecycle Hook.",
       "Type": "String"
@@ -195,7 +187,7 @@
     "StationVpcName": {
       "Description": "Name of the CloudStation VPC",
       "Type": "String",
-      "Default": "CloudStation"
+      "Default": "station"
     },
     "Vpc": {
       "Description": "ID of an existing VPC",
@@ -204,7 +196,7 @@
     "VpcName": {
       "Description": "Name of an existing VPC",
       "Type": "String",
-      "Default": "CloudStation"
+      "Default": "email"
     },
     "VpcZoneIdentifiers": {
       "Type": "List<AWS::EC2::Subnet::Id>",

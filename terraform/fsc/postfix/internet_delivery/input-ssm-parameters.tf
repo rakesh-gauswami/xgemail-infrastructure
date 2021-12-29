@@ -43,53 +43,51 @@ data "aws_ssm_parameter" "public_subnet_ids" {
 }
 
 data "aws_ssm_parameter" "sg_base_id" {
-  provider = aws.parameters
-
   name = "/central/sg/base/id"
+  provider = aws.parameters
 }
 
 data "aws_ssm_parameter" "sg_logicmonitor_id" {
-  provider = aws.parameters
-
   name = "/central/sg/logicmonitor/id"
+  provider = aws.parameters
 }
 
 data "aws_ssm_parameter" "vpc_id" {
-  provider = aws.parameters
   name     = "/central/vpc/id"
+  provider = aws.parameters
 }
 
 data "aws_ssm_parameter" "zone_fqdn" {
-  provider = aws.parameters
   name     = "/central/account/dns/zone-fqdn"
+  provider = aws.parameters
 }
 
 data "aws_ssm_parameter" "zone_id" {
-  provider = aws.parameters
   name     = "/central/account/dns/zone-id"
+  provider = aws.parameters
 }
 
 data "aws_ssm_parameter" "lifecycle_hook_terminating_name" {
-  provider = aws.parameters
   name     = "/central/asg/internet-submit/lifecycle-hook/terminating/name"
+  provider = aws.parameters
 }
 
 data "aws_ssm_parameter" "alarm_topic_arn" {
-  provider = aws.parameters
   name     = "/central/sns/alarm-topic/arn"
+  provider = aws.parameters
 }
 
 data "aws_ssm_parameter" "lifecycle_topic_arn" {
-  provider = aws.parameters
   name     = "/central/sns/lifecycle-topic/arn"
+  provider = aws.parameters
 }
 
 data "aws_ssm_parameter" "internet_delivery_instance_profile_arn" {
-  provider = aws.parameters
   name     = "/central/msg/iam/profiles/internet-delivery-instance/arn"
+  provider = aws.parameters
 }
 
 data "aws_ssm_parameter" "autoscaling_instance_role_arn" {
-  provider = aws.parameters
   name     = "/central/msg/iam/roles/autoscaling-instance/arn"
+  provider = aws.parameters
 }
