@@ -1,10 +1,6 @@
 # vim: autoindent expandtab shiftwidth=2 filetype=terraform
-resource "aws_ssm_document" "terminate_asg_instance_automation" {
-  name          = "terminate-asg-instance-automation"
-  document_type = "Automation"
-
-  content = <<DOC
-  {
+locals {
+  terminate_asg_instance_automation_ssm_document = {
     "schemaVersion": "0.3",
     "assumeRole": "${aws_iam_role.terminate_asg_instance_automation_role.arn}",
     "description": "Terminate an EC2 instance in an AutoScaling Group",
@@ -45,7 +41,13 @@ resource "aws_ssm_document" "terminate_asg_instance_automation" {
       }
     ]
   }
-DOC
+}
+
+resource "aws_ssm_document" "terminate_asg_instance_automation" {
+  name          = "terminate-asg-instance-automation"
+  document_type = "Automation"
+
+  content = jsonencode(local.terminate_asg_instance_automation_ssm_document)
 }
 
 # ----------------------------------------------------

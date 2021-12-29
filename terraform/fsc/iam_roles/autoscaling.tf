@@ -1,3 +1,17 @@
+resource "aws_iam_role" "autoscaling_role" {
+  name_prefix        = "AutoScalingRole-"
+  path               = "/"
+  assume_role_policy = data.aws_iam_policy_document.autoscaling_assume_role_policy.json
+
+  tags = {
+    Name = "AutoScalingRole"
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
 data "aws_iam_policy_document" "autoscaling_policy" {
   policy_id = "autoscaling_policy"
 
