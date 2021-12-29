@@ -1,6 +1,7 @@
 locals {
   cloud_configs_bucket_logical_name    = "cloud-${local.input_param_account_name}-configs"
   cloud_configs_bucket_expiration_days = 14
+  cloud_configs_enable_versioning = true
 }
 
 module "cloud_configs_bucket" {
@@ -10,6 +11,8 @@ module "cloud_configs_bucket" {
     aws            = aws
     aws.parameters = aws.parameters
   }
+
+  enable_versioning = local.cloud_configs_enable_versioning
 
   bucket_logical_name = local.cloud_configs_bucket_logical_name
   lifecycle_rules = [
