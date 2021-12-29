@@ -41,12 +41,12 @@ module "cloud_3rdparty_bucket" {
   ]
 }
 
-resource "aws_s3_bucket_public_access_block" "cloud_3rdparty_bucket_public_access" {
-  bucket = module.cloud_3rdparty_bucket.bucket
+resource "aws_s3_bucket_public_access_block" "cloud_3rdparty_bucket_block_public_access" {
+  bucket = module.cloud_3rdparty_bucket.bucket_name
 
   block_public_acls       = false
   block_public_policy     = false
-  ignore_public_acls      = true
+  ignore_public_acls      = false
   restrict_public_buckets = false
 }
 
