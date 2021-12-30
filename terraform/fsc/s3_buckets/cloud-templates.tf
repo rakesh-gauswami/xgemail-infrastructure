@@ -1,6 +1,7 @@
 locals {
   cloud_templates_bucket_logical_name    = "cloud-${local.input_param_account_name}-templates"
   cloud_templates_bucket_expiration_days = 30
+  cloud_templates_enable_versioning      = true
 }
 
 module "cloud_templates_bucket" {
@@ -10,6 +11,8 @@ module "cloud_templates_bucket" {
     aws            = aws
     aws.parameters = aws.parameters
   }
+
+  enable_versioning = local.cloud_templates_enable_versioning
 
   bucket_logical_name = local.cloud_templates_bucket_logical_name
   lifecycle_rules = [
