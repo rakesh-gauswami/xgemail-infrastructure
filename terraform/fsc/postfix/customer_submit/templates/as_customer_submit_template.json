@@ -63,6 +63,14 @@
       "Description": "Version of the AMI bundle",
       "Type": "Number"
     },
+    "CloudConfigsBucket": {
+      "Description": "The absolute S3 path to the cloud-configs bucket.",
+      "Type": "String"
+    },
+    "CloudConnectionsBucket": {
+      "Description": "The absolute S3 path to the cloud-connections bucket.",
+      "Type": "String"
+    },
     "DeployIgnoreUnmodifiedGroupSize": {
       "Description": "During a stack update, indicates whether AWS CloudFormation ignores any group size property differences between your current Auto Scaling group and the Auto Scaling group that is described in the update.",
       "Type": "String",
@@ -666,8 +674,8 @@
                     "    \"application_name\"                       : \"{{cluster}}\",\n",
                     "    \"application_type\"                       : \"xgemail\",\n",
                     "    \"availability_zone\"                      : \"{{availability_zone}}\",\n",
-                    "    \"connections\"                            : \"cloud-{{environment}}-connections\",\n",
-                    "    \"configs\"                                : \"cloud-{{environment}}-configs\",\n",
+                    "    \"connections\"                            : \"{{cloud-connections}}\",\n",
+                    "    \"configs\"                                : \"{{cloud-configs}}\",\n",
                     "    \"context\"                                : \"{{environment}}\",\n",
                     "    \"environment\"                            : \"{{environment}}\",\n",
                     "    \"branch\"                                 : \"{{branch}}\",\n",
@@ -711,6 +719,8 @@
                   "branch":                                         { "Ref": "Branch" },
                   "cluster":                                        { "Ref": "XgemailServiceType" },
                   "cluster_type":                                   { "Ref": "XgemailServiceType" },
+                  "cloud_configs":                                  { "Ref": "CloudConfigsBucket" },
+                  "cloud_connections":                              { "Ref": "CloudConnectionsBucket" },
                   "environment":                                    { "Ref": "Environment" },
                   "lifecycle_topic_arn":                            { "Ref": "AutoScalingNotificationTopicARN" },
                   "msg_history_bucket_name":                        { "Ref": "XgemailMsgHistoryBucketName" },

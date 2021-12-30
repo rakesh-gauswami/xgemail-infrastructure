@@ -3,9 +3,9 @@ locals {
   input_param_account_type                    = nonsensitive(data.aws_ssm_parameter.account_type.value)
   input_param_autoscaling_role_arn            = nonsensitive(data.aws_ssm_parameter.autoscaling_role_arn.value)
   input_param_availability_zones              = nonsensitive(data.aws_ssm_parameter.availability_zones.value)
+  input_param_cloud_configs_bucket_name       = nonsensitive(data.aws_ssm_parameter.cloud_configs_bucket_name.value)
   input_param_cloud_connections_bucket_name   = nonsensitive(data.aws_ssm_parameter.cloud_connections_bucket_name.value)
   input_param_cloud_templates_bucket_name     = nonsensitive(data.aws_ssm_parameter.cloud_templates_bucket_name.value)
-  input_param_cloud_configs_bucket_name       = nonsensitive(data.aws_ssm_parameter.cloud_configs_bucket_name.value)
   input_param_deployment_environment          = nonsensitive(data.aws_ssm_parameter.deployment_environment.value)
   input_param_policy_efs_volume_id            = nonsensitive(data.aws_ssm_parameter.policy_efs_volume_id.value)
   input_param_primary_region                  = nonsensitive(data.aws_ssm_parameter.primary_region.value)
@@ -20,9 +20,6 @@ locals {
   input_param_lifecycle_topic_arn             = nonsensitive(data.aws_ssm_parameter.lifecycle_topic_arn.value)
   input_param_lifecycle_hook_terminating      = nonsensitive(data.aws_ssm_parameter.lifecycle_topic_arn.value)
   input_param_iam_instance_profile_arn        = nonsensitive(data.aws_ssm_parameter.iam_instance_profile_arn.value)
-
-
-
 }
 
 data "aws_ssm_parameter" "account_name" {
@@ -45,6 +42,11 @@ data "aws_ssm_parameter" "availability_zones" {
   provider = aws.parameters
 }
 
+data "aws_ssm_parameter" "cloud_configs_bucket_name" {
+  name     = "/central/s3/cloud-${local.input_param_account_name}-configs/name"
+  provider = aws.parameters
+}
+
 data "aws_ssm_parameter" "cloud_connections_bucket_name" {
   name     = "/central/s3/cloud-${local.input_param_account_name}-connections/name"
   provider = aws.parameters
@@ -52,11 +54,6 @@ data "aws_ssm_parameter" "cloud_connections_bucket_name" {
 
 data "aws_ssm_parameter" "cloud_templates_bucket_name" {
   name     = "/central/s3/cloud-${local.input_param_account_name}-templates/name"
-  provider = aws.parameters
-}
-
-data "aws_ssm_parameter" "cloud_configs_bucket_name" {
-  name     = "/central/s3/cloud-${local.input_param_account_name}-configs/name"
   provider = aws.parameters
 }
 
