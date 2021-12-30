@@ -37,30 +37,6 @@ module "output_string_parameters" {
     },
 
     {
-      name        = "/central/iam/policies/cloud-3rdparty-bucket-delete/arn"
-      value       = aws_iam_policy.cloud_3rdparty_bucket_delete_policy.arn
-      description = "Cloud 3rdparty S3 bucket delete policy ARN"
-    },
-
-    {
-      name        = "/central/iam/policies/cloud-3rdparty-bucket-list/arn"
-      value       = aws_iam_policy.cloud_3rdparty_bucket_list_policy.arn
-      description = "Cloud 3rdparty S3 bucket list policy ARN"
-    },
-
-    {
-      name        = "/central/iam/policies/cloud-3rdparty-bucket-read/arn"
-      value       = aws_iam_policy.cloud_3rdparty_bucket_read_policy.arn
-      description = "Cloud 3rdparty S3 bucket read policy ARN"
-    },
-
-    {
-      name        = "/central/iam/policies/cloud-3rdparty-bucket-write/arn"
-      value       = aws_iam_policy.cloud_3rdparty_bucket_write_policy.arn
-      description = "Cloud 3rdparty S3 bucket write policy ARN"
-    },
-
-    {
       name        = "/central/iam/policies/cloud-connections-s3-kms-policy/arn"
       value       = aws_iam_policy.cloud_connections_s3_kms_policy.arn
       description = "Cloud Connections S3 bucket KMS policy ARN"
