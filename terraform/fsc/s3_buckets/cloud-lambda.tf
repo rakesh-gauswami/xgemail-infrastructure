@@ -1,7 +1,6 @@
 locals {
   cloud_lambda_bucket_logical_name    = "cloud-${local.input_param_account_name}-lambda"
   cloud_lambda_bucket_expiration_days = 14
-  cloud_lambda_should_create_kms_key  = false
 }
 
 module "cloud_lambda_bucket" {
@@ -13,8 +12,6 @@ module "cloud_lambda_bucket" {
   }
 
   bucket_logical_name = local.cloud_lambda_bucket_logical_name
-
-  should_create_kms_key = local.cloud_lambda_should_create_kms_key
 
   lifecycle_rules = [
     {

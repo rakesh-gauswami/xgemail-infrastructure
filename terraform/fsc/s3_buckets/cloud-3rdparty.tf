@@ -1,7 +1,6 @@
 locals {
   cloud_3rdparty_bucket_logical_name    = "cloud-${local.input_param_account_name}-3rdparty"
   cloud_3rdparty_bucket_expiration_days = 14
-  cloud_3rdparty_should_create_kms_key  = false
 }
 
 module "cloud_3rdparty_bucket" {
@@ -13,8 +12,6 @@ module "cloud_3rdparty_bucket" {
   }
 
   bucket_logical_name = local.cloud_3rdparty_bucket_logical_name
-
-  should_create_kms_key = local.cloud_3rdparty_should_create_kms_key
 
   lifecycle_rules = [
     {

@@ -14,8 +14,6 @@ module "cloud_logs_bucket" {
 
   bucket_logical_name = local.cloud_logs_bucket_logical_name
 
-  should_create_kms_key = local.cloud_logs_should_create_kms_key
-
   lifecycle_rules = [
     {
       id = format(
