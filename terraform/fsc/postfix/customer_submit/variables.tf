@@ -18,11 +18,6 @@ variable "build_url" {
   description = "Build URL"
 }
 
-variable "message_history_v2_bucket_name" {
-  type        = string
-  description = "msg_history_v2_bucket_name"
-}
-
 variable "firehose_msg_history_v2_stream_name" {
   type        = string
   description = "firehose_msg_history_v2_stream_name"

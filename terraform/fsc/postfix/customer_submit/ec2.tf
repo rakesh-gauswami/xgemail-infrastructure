@@ -296,7 +296,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     InstanceType                      = local.instance_size
     LifecycleHookTerminating          = local.input_param_lifecycle_hook_terminating
     LoadBalancerName                  = aws_elb.elb.id
-    MsgHistoryV2BucketName            = var.message_history_v2_bucket_name
+    MsgHistoryV2BucketName            = var.message_history_ms_bucket
     MsgHistoryV2StreamName            = var.firehose_msg_history_v2_stream_name
     MessageHistoryEventsTopicArn      = var.message_history_events_sns_topic
     PolicyTargetValue                 = local.as_policy_target_value
