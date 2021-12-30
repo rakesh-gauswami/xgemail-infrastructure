@@ -1,7 +1,7 @@
 locals {
   cloud_connections_bucket_logical_name    = "cloud-${local.input_param_account_name}-connections"
   cloud_connections_bucket_expiration_days = 14
-  cloud_connections_enable_versioning = true
+  cloud_connections_enable_versioning      = true
 }
 
 module "cloud_connections_bucket" {
