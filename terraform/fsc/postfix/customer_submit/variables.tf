@@ -18,7 +18,7 @@ variable "build_url" {
   description = "Build URL"
 }
 
-variable "msg_history_v2_bucket_name" {
+variable "message_history_v2_bucket_name" {
   type        = string
   description = "msg_history_v2_bucket_name"
 }
@@ -28,7 +28,7 @@ variable "firehose_msg_history_v2_stream_name" {
   description = "firehose_msg_history_v2_stream_name"
 }
 
-variable "msg_history_events_sns_topic" {
+variable "message_history_events_sns_topic" {
   type        = string
   description = "msg_history_events_sns_topic"
 }
@@ -38,17 +38,17 @@ variable "customer_submit_bucket" {
   description = "customer_submit_bucket"
 }
 
-variable "msg_history_bucket" {
+variable "message_history_bucket" {
   type        = string
   description = "msg_history_bucket"
 }
 
-variable "msg_history_ms_bucket" {
+variable "message_history_ms_bucket" {
   type        = string
   description = "msg_history_ms_bucket"
 }
 
-variable "msg_history_sqs_queue" {
+variable "message_history_sqs_queue" {
   type        = string
   description = "msg_history_sqs_queue"
 }

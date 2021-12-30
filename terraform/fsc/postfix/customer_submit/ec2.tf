@@ -296,9 +296,9 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     InstanceType                      = local.instance_size
     LifecycleHookTerminating          = local.input_param_lifecycle_hook_terminating
     LoadBalancerName                  = aws_elb.elb.id
-    MsgHistoryV2BucketName            = var.msg_history_v2_bucket_name
+    MsgHistoryV2BucketName            = var.message_history_v2_bucket_name
     MsgHistoryV2StreamName            = var.firehose_msg_history_v2_stream_name
-    MessageHistoryEventsTopicArn      = var.msg_history_events_sns_topic
+    MessageHistoryEventsTopicArn      = var.message_history_events_sns_topic
     PolicyTargetValue                 = local.as_policy_target_value
     S3CookbookRepositoryURL           = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/cookbooks.enc"
     ScaleInOnWeekends                 = local.as_scale_in_on_weekends
@@ -317,9 +317,9 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     VpcName                           = "email"
     XgemailBucketName                 = var.customer_submit_bucket
     XgemailMinSizeDataGB              = local.volume_size_gibs
-    XgemailMsgHistoryBucketName       = var.msg_history_bucket
-    XgemailMsgHistoryMsBucketName     = var.msg_history_ms_bucket
-    XgemailMsgHistoryQueueUrl         = var.msg_history_sqs_queue
+    XgemailMsgHistoryBucketName       = var.message_history_bucket
+    XgemailMsgHistoryMsBucketName     = var.message_history_ms_bucket
+    XgemailMsgHistoryQueueUrl         = var.message_history_sqs_queue
     XgemailPolicyArn                  = var.relay_control_sns_topic
     XgemailPolicyBucketName           = var.policy_bucket
     XgemailPolicyEfsFileSystemId      = local.input_param_policy_efs_volume_id
