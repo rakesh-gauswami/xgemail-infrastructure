@@ -1,6 +1,6 @@
 locals {
   cloud_templates_bucket_logical_name    = "cloud-${local.input_param_account_name}-templates"
-  cloud_templates_bucket_expiration_days = 14
+  cloud_templates_bucket_expiration_days = 30
 }
 
 module "cloud_templates_bucket" {

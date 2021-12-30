@@ -1,6 +1,6 @@
 locals {
   cloud_configs_bucket_logical_name    = "cloud-${local.input_param_account_name}-configs"
-  cloud_configs_bucket_expiration_days = 14
+  cloud_configs_bucket_expiration_days = 90
   cloud_configs_enable_versioning      = true
 }
 
