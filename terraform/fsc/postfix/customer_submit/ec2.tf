@@ -103,12 +103,12 @@ locals {
     prod = 1
   }
 
-  VOLUME_SIZES_GIBS_BY_ENVIRONMENT = {
+  VOLUME_SIZE_GIBS_BY_ENVIRONMENT = {
     prod = 300
     inf  = 10
   }
 
-  VOLUME_SIZES_GIBS_BY_POP = {
+  VOLUME_SIZE_GIBS_BY_POP = {
     # This is a most granular setting, if you need adjustments in particular PoP set it here
 
     stn000cmh = 10
@@ -155,64 +155,114 @@ locals {
     local.DEFAULT_AS_MIN_SERVICE
   )
 
+  as_max_batch_size = lookup(
+    local.AS_MAX_BATCH_SIZE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_MAX_BATCH_SIZE
+  )
 
+  as_cron_scale_in = lookup(
+    local.AS_CRON_SCALE_IN_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_CRON_SCALE_IN
+  )
 
-}
+  as_cron_scale_out = lookup(
+    local.AS_CRON_SCALE_OUT_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_CRON_SCALE_OUT
+  )
 
-data "aws_ami" "ami" {
-  most_recent      = true
-  owners           = [local.ami_owner_account]
+  health_check_grace_period = lookup(
+    local.AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD
+  )
 
-  filter {
-    name   = "name"
-    values = ["hmr-core-${var.build_branch}-${local.ami_type}-*"]
-  }
+  as_policy_target_value = lookup(
+    local.AS_POLICY_TARGET_VALUE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_POLICY_TARGET_VALUE
+  )
 
-  filter {
-    name   = "is-public"
-    values = ["no"]
-  }
+  as_on_hour_desired = lookup(
+    local.AS_ON_HOUR_DESIRED_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_ON_HOUR_DESIRED
+  )
 
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
+  as_scale_in_out_weekdays = lookup(
+    local.AS_SCALE_IN_OUT_WEEKDAYS_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_SCALE_IN_OUT_WEEKDAYS
+  )
 
-  filter {
-    name   = "tag:ami_type"
-    values = [local.ami_type]
-  }
+  instance_size = lookup(
+    local.INSTANCE_SIZE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_INSTANCE_SIZE
+  )
+
+  instance_count = lookup(
+    local.INSTANCE_COUNT_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_INSTANCE_COUNT
+  )
+
+  volume_size_gibs = lookup(
+    local.VOLUME_SIZE_GIBS_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_VOLUME_SIZE_GIBS
+  )
+
+  sxl_dbl = lookup(
+    local.SXL_DBL_BY_POP,
+    local.input_param_account_name,
+    lookup(
+      local.SXL_DBL_BY_ENVIRONMENT,
+      local.input_param_deployment_environment,
+      local.DEFAULT_SXL_DBL
+    )
+  )
+
+  sxl_rbl = lookup(
+    local.SXL_RBL_BY_POP,
+    local.input_param_account_name,
+    lookup(
+      local.SXL_RBL_BY_ENVIRONMENT,
+      local.input_param_deployment_environment,
+      local.DEFAULT_SXL_RBL
+    )
+  )
 }
 
 resource "aws_cloudformation_stack" "cloudformation_stack" {
   name = "customer-submit"
   template_body = "${file("${path.module}/templates/as-customer-submit-template.json")}"
   parameters = {
-    AesDecryptionKey                  =                     "NO"
     AlarmTopicArn                     = local.input_param_alarm_topic_arn
-    AmiId                             = data.aws_ami.ami
+    AmiId                             = data.aws_ami.ami.id
     AutoScalingInstanceRoleArn        = local.input_param_autoscaling_role_arn
     AutoScalingMinSize                = local.as_min_size
     AutoScalingMaxSize                = local.as_max_size
     AutoScalingNotificationTopicARN   = local.input_param_lifecycle_topic_arn
     AvailabilityZones                 = local.input_param_availability_zones
     Branch                            = var.build_branch
-    BuildVersion                      = var.build_result_key
-    BundleVersion                     = var.ami_build
+    BuildVersion                      = var.build_tag
+    BundleVersion                     = data.ami_build
     DeployMaxBatchSize                = local.as_max_batch_size
     DeployMinInstancesInService       = local.as_min_service
     Environment                       = local.input_param_deployment_environment
     HealthCheckGracePeriod            = local.health_check_grace_period
-    InstanceProfile                   = local.input_param_instance_profile_arn
+    InstanceProfile                   = local.input_param_iam_instance_profile_arn
     InstanceType                      = local.instance_size
-    KeyName                           =  "NO"
     LifecycleHookTerminating          = local.input_param_lifecycle_hook_terminating
     LoadBalancerName                  = aws_elb.elb.id
     MsgHistoryV2BucketName            = var.msg_history_v2_bucket_name
     MsgHistoryV2StreamName            = var.firehose_msg_history_v2_stream_name
     MessageHistoryEventsTopicArn      = var.msg_history_events_sns_topic
     PolicyTargetValue                 = local.as_policy_target_value
-    S3CookbookRepositoryURL           = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/xgemail-infrastructure/cookbooks.enc"
+    S3CookbookRepositoryURL           = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/cookbooks.enc"
     ScaleInOnWeekends                 = local.weekend_scale_down
     ScaleInCron                       = local.cron_scale_down
     ScaleOutCron                      = local.cron_scale_up
@@ -221,9 +271,9 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     ScaleInOnWeekdaysCron             = local.cron_scale_in
     ScaleOutOnWeekdaysCron            = local.cron_scale_out
     SecurityGroups                    = [local.input_param_sg_base_id, aws_security_group.security_group_ec2]
-    SpotPrice                         = var.spot_price
+    SpotPrice                         = "-1"
     StationVpcId                      = var.station_vpc_id
-    StationVpcName                    = var.station_name
+    StationVpcName                    = "station"
     Vpc                               = local.input_param_vpc_id
     VpcZoneIdentifiers                = [local.input_param_public_subnet_ids]
     VpcName                           = "email"
@@ -234,7 +284,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     XgemailMsgHistoryQueueUrl         = var.msg_history_sqs_queue
     XgemailPolicyArn                  = var.relay_control_sns_topic
     XgemailPolicyBucketName           = var.policy_bucket
-    XgemailPolicyEfsFileSystemId      = local.input_param_policy_efs_mount_id
+    XgemailPolicyEfsFileSystemId      = local.input_param_policy_efs_volume_id
     XgemailQueueUrl                   = var.customer_submit_sqs_queue
     XgemailScanEventsTopicArn         = var.scan_events_sns_topic
     XgemailServiceType                = local.instance_type
