@@ -174,7 +174,7 @@ def is_blacklist_updated(eip):
                 return False
 
 
-def eip_monitor_handler(event, context):
+def eip_monitor_lambda_handler(event, context):
     logger.info("got event {}".format(event))
     logger.info("Received event: {}".format(json.dumps(event)))
     logger.info("Log stream name: {}".format(context.log_stream_name))

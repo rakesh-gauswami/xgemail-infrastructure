@@ -1,10 +1,6 @@
 # vim: autoindent expandtab shiftwidth=2 filetype=terraform
-resource "aws_ssm_document" "tag_instance_automation" {
-  name          = "tag-instance-automation"
-  document_type = "Automation"
-
-  content = <<DOC
-  {
+locals {
+  tag_instance_automation_ssm_document = {
     "schemaVersion": "0.3",
     "assumeRole": "{{assumeRole}}",
     "description": "Update a Tag on an EC2 instance in an AutoScaling Group",
@@ -51,5 +47,11 @@ resource "aws_ssm_document" "tag_instance_automation" {
       }
     ]
   }
-DOC
+}
+
+resource "aws_ssm_document" "tag_instance_automation" {
+  name          = "tag-instance-automation"
+  document_type = "Automation"
+
+  content = jsonencode(local.tag_instance_automation_ssm_document)
 }

@@ -14,10 +14,6 @@ output "multi_eip_rotation_lambda_execution_role_name" {
   value = aws_iam_role.multi_eip_rotation_lambda_execution_role.name
 }
 
-output "multi_eip_rotation_ssm_arn" {
-  value = aws_ssm_document.multi_eip_rotation.arn
-}
-
 output "multi_eip_rotation_ssm_name" {
   value = aws_ssm_document.multi_eip_rotation.name
 }
