@@ -54,7 +54,7 @@ locals {
     prod = "0 1 * * 6"
   }
 
-  AS_CRON_SCALE_OUT_BY_ENVIRONMENT = {
+  AS_CRON_SCALE_UP_BY_ENVIRONMENT = {
     inf  = "0 4 * * 1"
     dev  = "0 4 * * 1"
     qa   = "0 4 * * 1"
@@ -179,6 +179,18 @@ locals {
     local.DEFAULT_AS_MAX_BATCH_SIZE
   )
 
+  as_cron_scale_down = lookup(
+    local.AS_CRON_SCALE_DOWN_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_CRON_SCALE_DOWN
+  )
+
+  as_cron_scale_up = lookup(
+    local.AS_CRON_SCALE_UP_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_CRON_SCALE_UP
+  )
+
   as_cron_scale_in = lookup(
     local.AS_CRON_SCALE_IN_BY_ENVIRONMENT,
     local.input_param_deployment_environment,
@@ -290,8 +302,8 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     PolicyTargetValue                 = local.as_policy_target_value
     S3CookbookRepositoryURL           = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/cookbooks.enc"
     ScaleInOnWeekends                 = local.as_scale_in_on_weekends
-    ScaleInCron                       = local.as_cron_scale_in
-    ScaleOutCron                      = local.as_cron_scale_out
+    ScaleInCron                       = local.as_cron_scale_down
+    ScaleOutCron                      = local.as_cron_scale_up
     ScheduledASOnHourDesiredCapacity  = local.as_on_hour_desired
     ScaleInAndOutOnWeekdays           = local.as_scale_in_out_weekdays
     ScaleInOnWeekdaysCron             = local.as_cron_scale_in
