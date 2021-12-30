@@ -16,7 +16,7 @@ module "cloud_logs_bucket" {
   bucket_logical_name = local.cloud_logs_bucket_logical_name
 
   should_create_kms_key = local.cloud_logs_should_create_kms_key
-  bucket_key_enabled    = local.cloud_logs_bucket_key_enabled
+  apply_server_side_encryption_by_default    = local.cloud_logs_bucket_key_enabled
 
   lifecycle_rules = [
     {
