@@ -15,7 +15,8 @@ module "cloud_lambda_bucket" {
 
   bucket_logical_name = local.cloud_lambda_bucket_logical_name
 
-  should_create_kms_key =  local.cloud_lambda_should_create_kms_key
+  should_create_kms_key = local.cloud_lambda_should_create_kms_key
+  bucket_key_enabled    = local.cloud_lambda_bucket_key_enabled
 
   lifecycle_rules = [
     {

@@ -15,8 +15,8 @@ module "cloud_3rdparty_bucket" {
 
   bucket_logical_name = local.cloud_3rdparty_bucket_logical_name
 
-  should_create_kms_key =  local.cloud_3rdparty_should_create_kms_key
-  bucket_key_enabled    = cloud_3rdparty_bucket_key_enabled
+  should_create_kms_key = local.cloud_3rdparty_should_create_kms_key
+  bucket_key_enabled    = local.cloud_3rdparty_bucket_key_enabled
 
   lifecycle_rules = [
     {
