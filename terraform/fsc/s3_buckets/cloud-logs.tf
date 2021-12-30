@@ -2,7 +2,6 @@ locals {
   cloud_logs_bucket_logical_name    = "cloud-${local.input_param_account_name}-logs"
   cloud_logs_bucket_expiration_days = 14
   cloud_logs_should_create_kms_key  = false
-  cloud_logs_bucket_key_enabled     = false
 }
 
 module "cloud_logs_bucket" {
@@ -16,7 +15,6 @@ module "cloud_logs_bucket" {
   bucket_logical_name = local.cloud_logs_bucket_logical_name
 
   should_create_kms_key = local.cloud_logs_should_create_kms_key
-  apply_server_side_encryption_by_default    = local.cloud_logs_bucket_key_enabled
 
   lifecycle_rules = [
     {
