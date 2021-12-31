@@ -357,7 +357,7 @@ data "aws_ami" "ami" {
 
 resource "aws_cloudformation_stack" "cloudformation_stack" {
   name = "customer-delivery"
-  template_body = "${file("${path.module}/templates/as-customer_submit-template.json")}"
+  template_body = "${file("${path.module}/templates/as-customer_delivery-template.json")}"
   parameters = {
     AesDecryptionKey                  = "No"
     AlarmScaleInEnabled               = local.alarm_scale_in_enabled
@@ -401,7 +401,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     Vpc                               = local.input_param_vpc_id
     VpcZoneIdentifiers                = [local.input_param_public_subnet_ids]
     VpcName                           = "email"
-    XgemailBucketName                 = var.customer_submit_bucket
+    XgemailBucketName                 = var.customer_delivery_bucket
     XgemailMinSizeDataGB              = local.volume_size_gibs
     XgemailMsgHistoryBucketName       = var.message_history_bucket
     XgemailMsgHistoryMsBucketName     = var.message_history_ms_bucket

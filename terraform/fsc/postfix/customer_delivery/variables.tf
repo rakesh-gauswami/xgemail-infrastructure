@@ -28,9 +28,9 @@ variable "message_history_events_sns_topic" {
   description = "msg_history_events_sns_topic"
 }
 
-variable "customer_submit_bucket" {
+variable "customer_delivery_bucket" {
   type        = string
-  description = "customer_submit_bucket"
+  description = "customer_delivery_bucket"
 }
 
 variable "message_history_bucket" {
@@ -74,9 +74,9 @@ variable "policy_bucket" {
   description = "policy_bucket"
 }
 
-variable "customer_submit_sqs_queue" {
+variable "customer_delivery_sqs_queue" {
   type        = string
-  description = "customer_submit_sqs_queue"
+  description = "customer_delivery_sqs_queue"
 }
 
 variable "customer_delivery_sqs_queue_sns_listener" {
