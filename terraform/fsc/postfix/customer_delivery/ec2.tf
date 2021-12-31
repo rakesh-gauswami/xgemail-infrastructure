@@ -3,6 +3,12 @@ locals {
   ami_owner_account = "843638552935"
   ami_type          = "xgemail"
 
+  DEFAULT_SCALE_IN_ENABLED              = false
+  DEFAULT_SCALE_OUT_ENABLED             = true
+  DEFAULT_ALARM_SCALING_ENABLED         = false
+  DEFAULT_ALARM_SCALE_IN_THRESHOLD      = 10
+  DEFAULT_ALARM_SCALE_OUT_THRESHOLD     = 50
+
   DEFAULT_AS_ALARM_SCALING_ENABLED      = false
   DEFAULT_AS_MIN_SIZE                   = 1
   DEFAULT_AS_MAX_SIZE                   = 6
@@ -22,6 +28,36 @@ locals {
   DEFAULT_VOLUME_SIZE_GIBS              = 35
   DEFAULT_SXL_DBL                       = "uri.cal1.sophosxl.com"
   DEFAULT_SXL_RBL                       = "fur.cal1.sophosxl.com"
+
+  SCALE_IN_ENABLED = {
+    inf  = false
+    dev  = false
+    qa   = false
+    prod = false
+  }
+
+  SCALE_OUT_ENABLED = {
+    inf  = false
+    dev  = false
+    qa   = false
+    prod = false
+  }
+
+  ALARM_SCALE_IN_THRESHOLD = {
+    inf  = false
+    dev  = false
+    qa   = false
+    prod = false
+  }
+
+  ALARM_SCALE_OUT_THRESHOLD= {
+    inf  = false
+    dev  = false
+    qa   = false
+    prod = false
+  }
+
+### confirm above parameters
 
   AS_MIN_SIZE_BY_ENVIRONMENT = {
     inf  = 1
@@ -154,6 +190,29 @@ locals {
   SXL_RBL_BY_POP = {
     stn000cmh = "fur.cal1.sophosxl.com"
   }
+
+  alarm_scale_in_enabled = lookup(
+  local.input_param_deployment_environment,
+  local.DEFAULT_SCALE_IN_ENABLED
+  )
+
+  alarm_scale_out_enabled = lookup(
+  local.input_param_deployment_environment,
+  local.DEFAULT_SCALE_OUT_ENABLED
+  )
+
+  alarm_scale_in_threshold = lookup(
+  local.input_param_deployment_environment,
+  local.DEFAULT_ALARM_SCALE_IN_THRESHOLD
+  )
+
+  alarm_scale_out_threshold = lookup(
+  local.input_param_deployment_environment,
+  local.DEFAULT_ALARM_SCALE_OUT_THRESHOLD
+  )
+
+  ### Confirm above parameters
+
 
   as_min_size = lookup(
   local.AS_MIN_SIZE_BY_ENVIRONMENT,
@@ -321,7 +380,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     HealthCheckGracePeriod            = local.health_check_grace_period
     InstanceProfile                   = local.input_param_iam_instance_profile_arn
     InstanceType                      = local.instance_size
-    KeyName:                              "private-{{account.region}}"
+    KeyName                           = data.primary_region
     LifecycleHookTerminating          = local.input_param_lifecycle_hook_terminating
     LoadBalancerName                  = aws_elb.elb.id
     MsgHistoryV2BucketName            = var.message_history_ms_bucket

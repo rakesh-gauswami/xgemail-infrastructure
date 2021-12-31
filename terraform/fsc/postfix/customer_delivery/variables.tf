@@ -19,7 +19,7 @@ variable "build_url" {
 }
 
 variable "firehose_msg_history_v2_stream_name" {
-  type        = stringß
+  type        = string
   description = "firehose_msg_history_v2_stream_name"
 }
 
@@ -48,9 +48,25 @@ variable "message_history_sqs_queue" {
   description = "msg_history_sqs_queue"
 }
 
-variable "relay_control_sns_topic" {
+
+variable "message_history_status_sqs_queue" {
   type        = string
-  description = "relay_control_sns_topic"
+  description = "msg_history_status_sqs_queue"
+}
+
+variable "message_history_status_sns_topic" {
+  type        = string
+  description = "msg_history_status_sns_topic"
+}
+
+variable "message_history_v2_dynamodb" {
+  type        = string
+  description = "msg_history_v2_dynamodb"
+}
+
+variable "message_history_v2_stream_name" {
+  type        = string
+  description = "msg_history_v2_stream_name"
 }
 
 variable "policy_bucket" {
@@ -63,9 +79,14 @@ variable "customer_submit_sqs_queue" {
   description = "customer_submit_sqs_queue"
 }
 
-variable "scan_events_sns_topic" {
+variable "customer_delivery_sqs_queue_sns_listener" {
   type        = string
-  description = "scan_events_sns_topic"
+  description = "customer_delivery_sqs_queue_sns_listener"
+}
+
+variable "customer_delivery_sqs_queue_sns_listener_url" {
+  type        = string
+  description = "customer_delivery_sqs_queue_sns_listener_url"
 }
 
 variable "station_vpc_id" {
