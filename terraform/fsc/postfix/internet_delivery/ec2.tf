@@ -275,13 +275,13 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     ScaleInOnWeekends                = local.as_scale_in_on_weekends
     ScaleInCron                      = local.as_cron_scale_down
     ScaleOutCron                     = local.as_cron_scale_up
-    SecurityGroups                   = [local.input_param_sg_base_id, aws_security_group.security_group_ec2]
-    SpotPrice                         = "-1"
+    SecurityGroups                   = aws_security_group.security_group_ec2
+    SpotPrice                        = "-1"
     StationVpcId                     = var.station_vpc_id
     StationVpcName                   = var.station_name
     Vpc                              = local.input_param_vpc_id
     VpcName                          = "email"
-    VpcZoneIdentifiers               = local.input_param_public_subnet_ids
+    VpcZoneIdentifiers               = join(",", local.input_param_public_subnet_ids)
     XgemailBucketName                = var.customer_submit_bucket
     XgemailMinSizeDataGB             = local.xgemail_size_data_gb
     XgemailPolicyBucketName          = var.policy_bucket
