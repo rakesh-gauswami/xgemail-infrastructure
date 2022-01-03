@@ -766,7 +766,7 @@
                 "command": {
                   "Fn::Join": [
                     "",
-                    [ "aws s3 cp s3:", { "Ref": "S3CookbookRepositoryURL" }, " /var/chef/chef-repo/cookbooks.enc" ]
+                    [ "aws s3 cp s3:", { "Ref": "S3CookbookRepositoryURL" }, " /var/chef/chef-repo/cookbooks.tar.gz" ]
                   ]
                 },
                 "cwd": "/var/chef",
@@ -774,19 +774,7 @@
                   "HOME": "/var/chef"
                 }
               },
-              "02_decrypt_cookbook": {
-                "command": {
-                  "Fn::Join": [
-                    "",
-                    [ "openssl enc -aes-256-cbc -d -in /var/chef/chef-repo/cookbooks.enc -out /var/chef/chef-repo/cookbooks.tar.gz -pass pass:", { "Ref": "AesDecryptionKey" } ]
-                  ]
-                },
-                "cwd": "/var/chef/chef-repo",
-                "env": {
-                  "HOME": "/var/chef"
-                }
-              },
-              "03_unpack_cookbook": {
+              "02_unpack_cookbook": {
                 "command": "tar xvf /var/chef/chef-repo/cookbooks.tar.gz",
                 "cwd": "/var/chef/chef-repo"
               }

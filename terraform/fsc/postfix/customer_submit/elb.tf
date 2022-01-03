@@ -14,7 +14,7 @@ resource "aws_elb" "elb" {
     healthy_threshold   = 3
     unhealthy_threshold = 10
     timeout             = 25
-    target              = "TCP:25/"
+    target              = "TCP:25"
     interval            = 60
   }
 
