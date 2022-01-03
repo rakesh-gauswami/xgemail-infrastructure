@@ -159,30 +159,6 @@ locals {
 
 }
 
-data "aws_ami" "ami" {
-  most_recent      = true
-  owners           = [local.ami_owner_account]
-
-  filter {
-    name   = "name"
-    values = ["hmr-core-${var.build_branch}-${local.ami_type}-*"]
-  }
-
-  filter {
-    name   = "is-public"
-    values = ["no"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  filter {
-    name   = "tag:ami_type"
-    values = [local.ami_type]
-  }
-}
 
 resource "aws_cloudformation_stack" "cloudformation_stack" {
   name = "internet-delivery"
@@ -230,11 +206,9 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     XgemailMsgHistoryBucketName       = var.msg_history_bucket
     XgemailMsgHistoryMsBucketName     = var.msg_history_ms_bucket
     XgemailMsgHistoryQueueUrl         = var.msg_history_sqs_queue
-    XgemailPolicyArn                  = var.relay_control_sns_topic
     XgemailPolicyBucketName           = var.policy_bucket
     XgemailPolicyEfsFileSystemId      = local.input_param_policy_efs_mount_id
     XgemailQueueUrl                   = var.customer_submit_sqs_queue
-    XgemailScanEventsTopicArn         = var.scan_events_sns_topic
     XgemailServiceType                = local.instance_type
     XgemailSxlDbl                     = local.sxl_dbl
     XgemailSxlRbl                     = local.sxl_rbl
