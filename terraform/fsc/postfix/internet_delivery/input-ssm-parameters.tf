@@ -14,6 +14,9 @@ locals {
   input_param_lifecycle_hook_terminating    = nonsensitive(data.aws_ssm_parameter.lifecycle_topic_arn.value)
   input_param_instance_profile_arn          = nonsensitive(data.aws_ssm_parameter.internet_delivery_instance_profile_arn.value)
   input_param_autoscaling_instance_role_arn = nonsensitive(data.aws_ssm_parameter.autoscaling_instance_role_arn.value)
+
+
+
 }
 
 

@@ -773,12 +773,7 @@
                 }
               },
               "02_decrypt_cookbook": {
-                "command": {
-                  "Fn::Join": [
-                    "",
-                    [ "openssl enc -aes-256-cbc -d -in /var/chef/chef-repo/cookbooks.enc -out /var/chef/chef-repo/cookbooks.tar.gz -pass pass:", { "Ref": "AesDecryptionKey" } ]
-                  ]
-                },
+                "command": "openssl enc -aes-256-cbc -d -in /var/chef/chef-repo/cookbooks.enc -out /var/chef/chef-repo/cookbooks.tar.gz",
                 "cwd": "/var/chef/chef-repo",
                 "env": {
                   "HOME": "/var/chef"
@@ -955,9 +950,6 @@
           },
           "IamInstanceProfile": {
             "Name": { "Ref": "InstanceProfile" }
-          },
-          "KeyName": {
-            "Ref": "KeyName"
           },
           "Monitoring": {
             "Enabled": {
