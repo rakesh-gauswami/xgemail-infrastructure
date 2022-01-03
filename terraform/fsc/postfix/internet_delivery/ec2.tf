@@ -3,20 +3,14 @@ locals {
   ami_type          = "xgemail"
 
   DEFAULT_AS_MIN_SIZE                   = 1
-  DEFAULT_AS_MAX_SIZE                   = 1
+  DEFAULT_AS_MAX_SIZE                   = 6
   DEFAULT_AS_MIN_SERVICE                = 1
   DEFAULT_AS_MAX_BATCH_SIZE             = 1
-  DEFAULT_AS_CRON_SCALE_IN              = "00 02 * * 1-5"
-  DEFAULT_AS_CRON_SCALE_OUT             = "30 14 * * 1-5"
   DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD  = 2400
-  DEFAULT_AS_POLICY_TARGET_VALUE        = 90
-  DEFAULT_AS_ON_HOUR_DESIRED            = 2
-  DEFAULT_AS_SCALE_IN_OUT_WEEKDAYS      = false
   DEFAULT_INSTANCE_SIZE                 = "t2.small"
-  DEFAULT_INSTANCE_COUNT                = 1
   DEFAULT_XGEMAIL_SIZE_DATA_GB          = 10
-  DEFAULT_SXL_DBL                       = "t2.small"
-  DEFAULT_SXL_RBL                       = "t2.small"
+  DEFAULT_SXL_DBL                       = "uri.cal1.sophosxl.com"
+  DEFAULT_SXL_RBL                       = "fur.cal1.sophosxl.com"
 
   AS_MIN_SIZE_BY_ENVIRONMENT = {
     inf  = 1
@@ -26,10 +20,10 @@ locals {
   }
 
   AS_MAX_SIZE_BY_ENVIRONMENT = {
-    inf  = 1
-    dev  = 1
-    qa   = 3
-    prod = 3
+    inf  = 6
+    dev  = 6
+    qa   = 6
+    prod = 6
   }
 
   AS_MIN_SERVICE_BY_ENVIRONMENT = {
@@ -81,25 +75,11 @@ locals {
     prod = 1
   }
 
-  AS_SCALE_IN_OUT_WEEKDAYS_BY_ENVIRONMENT = {
-    inf  = 1
-    dev  = 1
-    qa   = 1
-    prod = 1
-  }
-
   INSTANCE_SIZE_BY_ENVIRONMENT = {
-    inf  = 1
-    dev  = 1
-    qa   = 1
-    prod = 1
-  }
-
-  INSTANCE_COUNT_BY_ENVIRONMENT = {
-    inf  = 1
-    dev  = 1
-    qa   = 1
-    prod = 1
+    inf  = "t2.small"
+    dev  = "c4.xlarge"
+    qa   = "c4.xlarge"
+    prod = "m5.2xlarge"
   }
 
   XGEMAIL_SIZE_DATA_GB_BY_ENVIRONMENT = {
@@ -110,25 +90,25 @@ locals {
   }
 
   SXL_DBL_BY_ENVIRONMENT = {
-    inf  = 1
-    dev  = 1
-    qa   = 1
-    prod = 1
+    inf  = "uri.cal1.sophosxl.com"
+    dev  = "uri.cal1.sophosxl.com"
+    qa   = "uri.cal1.sophosxl.com"
+    prod = "uri.cal1.sophosxl.com"
   }
 
   SXL_DBL_BY_POP = {
-    stn000cmh = 10
+    stn000cmh = "uri.cal1.sophosxl.com"
   }
 
   SXL_RBL_BY_ENVIRONMENT = {
-    inf  = 1
-    dev  = 1
-    qa   = 1
-    prod = 1
+    inf  = "fur.cal1.sophosxl.com"
+    dev  = "fur.cal1.sophosxl.com"
+    qa   = "fur.cal1.sophosxl.com"
+    prod = "fur.cal1.sophosxl.com"
   }
 
   SXL_RBL_BY_POP = {
-    stn000cmh = 10
+    stn000cmh = "fur.cal1.sophosxl.com"
   }
 
   as_min_size = lookup(
@@ -172,6 +152,26 @@ locals {
     local.input_param_deployment_environment,
     local.DEFAULT_XGEMAIL_SIZE_DATA_GB
   )
+
+  sxl_dbl = lookup(
+    local.SXL_DBL_BY_POP,
+    local.input_param_account_name,
+    lookup(
+      local.SXL_DBL_BY_ENVIRONMENT,
+      local.input_param_deployment_environment,
+      local.DEFAULT_SXL_DBL
+    )
+  )
+
+  sxl_rbl = lookup(
+    local.SXL_RBL_BY_POP,
+    local.input_param_account_name,
+    lookup(
+      local.SXL_RBL_BY_ENVIRONMENT,
+      local.input_param_deployment_environment,
+      local.DEFAULT_SXL_RBL
+    )
+  )
 }
 
 
@@ -212,12 +212,9 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     VpcZoneIdentifiers                = [local.input_param_public_subnet_ids]
     XgemailBucketName                 = var.customer_submit_bucket
     XgemailMinSizeDataGB              = local.xgemail_size_data_gb
-    XgemailMsgHistoryBucketName       = var.msg_history_bucket
-    XgemailMsgHistoryMsBucketName     = var.msg_history_ms_bucket
-    XgemailMsgHistoryQueueUrl         = var.msg_history_sqs_queue
     XgemailPolicyBucketName           = var.policy_bucket
-    XgemailPolicyEfsFileSystemId      = local.input_param_policy_efs_mount_id
-    XgemailQueueUrl                   = var.customer_submit_sqs_queue
+    XgemailSnsSqsQueue                = var.internet_delivery_sqs_queue_name
+    XgemailSnsSqsQueueUrl             = var.internet_delivery_sqs_queue_url
     XgemailServiceType                = local.instance_type
     XgemailSxlDbl                     = local.sxl_dbl
     XgemailSxlRbl                     = local.sxl_rbl

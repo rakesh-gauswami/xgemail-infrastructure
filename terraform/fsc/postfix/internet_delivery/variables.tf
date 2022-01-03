@@ -23,6 +23,21 @@ variable "customer_submit_bucket" {
   description = "customer_submit_bucket"
 }
 
+variable "firehose_msg_history_v2_stream_name" {
+  type        = string
+  description = "firehose_msg_history_v2_stream_name"
+}
+
+variable "internet_delivery_sqs_queue_name" {
+  type        = string
+  description = "internet_delivery_sqs_queue_name"
+}
+
+variable "internet_delivery_sqs_queue_url" {
+  type        = string
+  description = "internet_delivery_sqs_queue_url"
+}
+
 variable "message_history_bucket" {
   type        = string
   description = "msg_history_bucket"
@@ -51,11 +66,6 @@ variable "message_history_sqs_queue" {
 variable "policy_bucket" {
   type        = string
   description = "policy_bucket"
-}
-
-variable "firehose_msg_history_v2_stream_name" {
-  type        = string
-  description = "firehose_msg_history_v2_stream_name"
 }
 
 variable "station_vpc_id" {
