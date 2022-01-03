@@ -7,7 +7,7 @@ locals {
   input_param_deployment_environment      = nonsensitive(data.aws_ssm_parameter.deployment_environment.value)
   input_param_policy_efs_volume_id        = nonsensitive(data.aws_ssm_parameter.policy_efs_volume_id.value)
   input_param_primary_region              = nonsensitive(data.aws_ssm_parameter.primary_region.value)
-  input_param_public_subnet_ids           = split(",", nonsensitive(data.aws_ssm_parameter.public_subnet_ids.value))
+  input_param_public_subnet_ids           = nonsensitive(data.aws_ssm_parameter.public_subnet_ids.value)
   input_param_sg_base_id                  = nonsensitive(data.aws_ssm_parameter.sg_base_id.value)
   input_param_sg_logicmonitor_id          = nonsensitive(data.aws_ssm_parameter.sg_logicmonitor_id.value)
   input_param_sg_efs_policy_id            = nonsensitive(data.aws_ssm_parameter.sg_efs_policy_id.value)
