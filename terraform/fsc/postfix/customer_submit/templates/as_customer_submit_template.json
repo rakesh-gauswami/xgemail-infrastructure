@@ -54,8 +54,13 @@
       "Description": "(Develop, XGE-XXX, etc...)",
       "Type": "String"
     },
-    "BuildVersion": {
-      "Description": "Version of the application from Bamboo",
+    "BuildTag": {
+      "Description": "Version of the application from Jenkins",
+      "Type": "String",
+      "Default": "1.0"
+    },
+    "BuildUrl": {
+      "Description": "Link to Build from Jenkins",
       "Type": "String",
       "Default": "1.0"
     },
@@ -493,7 +498,7 @@
           },
           {
             "Key": "BuildResultKey",
-            "Value": { "Ref": "BuildVersion" },
+            "Value": { "Ref": "BuildTag" },
             "PropagateAtLaunch": "true"
           },
           {
@@ -891,7 +896,7 @@
                       "export AWS_AMI_ID='", { "Ref" : "AmiId" }, "'\n",
                       "export AWS_APPLICATION='", { "Ref": "XgemailServiceType" }, "'\n",
                       "export AWS_BRANCH='", { "Ref" : "Branch" }, "'\n",
-                      "export AWS_BUILD_RESULT_KEY='", { "Ref" : "BuildVersion" }, "'\n",
+                      "export AWS_BUILD_RESULT_KEY='", { "Ref" : "BuildTag" }, "'\n",
                       "export AWS_BUNDLE_VERSION='", { "Ref" : "BundleVersion" }, "'\n",
                       "export AWS_INSTANCE_ID=$(curl -f http://169.254.169.254/latest/meta-data/instance-id)\n",
                       "export AWS_REGION='", { "Ref" : "AWS::Region" }, "'\n",
@@ -969,7 +974,7 @@
                   "# Force replacement of the LaunchConfiguration object by changing this value.\n",
                   "# ",
                   {
-                    "Ref": "BuildVersion"
+                    "Ref": "BuildTag"
                   },
                   "\n",
                   "# Make sure we call cfn-signal before exiting, otherwise we have to\n",
@@ -1075,9 +1080,9 @@
       "Description": "Branch we are using so we know for things like ansible",
       "Value": { "Ref": "Branch" }
     },
-    "BuildVersion": {
+    "BuildTag": {
       "Description": "Version of the application from Bamboo",
-      "Value": { "Ref": "BuildVersion" }
+      "Value": { "Ref": "BuildTag" }
     },
     "LaunchTemplate": {
       "Description": "Auto Scaling Launch Template Name.",

@@ -1,7 +1,4 @@
 locals {
-  ami_owner_account = "843638552935"
-  ami_type          = "xgemail"
-
   DEFAULT_AS_ALARM_SCALING_ENABLED      = false
   DEFAULT_AS_MIN_SIZE                   = 1
   DEFAULT_AS_MAX_SIZE                   = 6
@@ -284,8 +281,9 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     AutoScalingNotificationTopicARN   = local.input_param_lifecycle_topic_arn
     AvailabilityZones                 = local.input_param_availability_zones
     Branch                            = var.build_branch
-    BuildVersion                      = var.build_tag
-    BundleVersion                     = data.ami_build
+    BuildTag                          = var.build_tag
+    BuildUrl                          = var.build_url
+    BundleVersion                     = local.ami_build
     CloudConfigsBucket                = local.input_param_cloud_configs_bucket_name
     CloudConnectionsBucket            = local.input_param_cloud_connections_bucket_name
     DeployMaxBatchSize                = local.as_max_batch_size
