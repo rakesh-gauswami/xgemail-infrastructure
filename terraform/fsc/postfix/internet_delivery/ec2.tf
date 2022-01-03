@@ -1,12 +1,18 @@
 locals {
-  ami_owner_account = "843638552935"
-  ami_type          = "xgemail"
-
+  DEFAULT_AS_ALARM_SCALING_ENABLED     = false
   DEFAULT_AS_MIN_SIZE                  = 1
   DEFAULT_AS_MAX_SIZE                  = 6
   DEFAULT_AS_MIN_SERVICE               = 1
   DEFAULT_AS_MAX_BATCH_SIZE            = 1
+  DEFAULT_AS_CRON_SCALE_DOWN           = "0 1 * * 6"
+  DEFAULT_AS_CRON_SCALE_UP             = "0 4 * * 1"
+  DEFAULT_AS_CRON_SCALE_IN             = "00 02 * * 1-5"
+  DEFAULT_AS_CRON_SCALE_OUT            = "30 14 * * 1-5"
   DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD = 2400
+  DEFAULT_AS_ON_HOUR_DESIRED           = 2
+  DEFAULT_AS_POLICY_TARGET_VALUE       = 90
+  DEFAULT_AS_SCALE_IN_OUT_WEEKDAYS     = false
+  DEFAULT_AS_SCALE_IN_ON_WEEKENDS      = false
   DEFAULT_INSTANCE_SIZE                = "t2.small"
   DEFAULT_XGEMAIL_SIZE_DATA_GB         = 10
   DEFAULT_SXL_DBL                      = "uri.cal1.sophosxl.com"
@@ -40,39 +46,67 @@ locals {
     prod = 3
   }
 
+  AS_CRON_SCALE_DOWN_BY_ENVIRONMENT = {
+    inf  = "0 1 * * 6"
+    dev  = "0 1 * * 6"
+    qa   = "0 1 * * 6"
+    prod = "0 1 * * 6"
+  }
+
+  AS_CRON_SCALE_UP_BY_ENVIRONMENT = {
+    inf  = "0 4 * * 1"
+    dev  = "0 4 * * 1"
+    qa   = "0 4 * * 1"
+    prod = "0 4 * * 1"
+  }
+
   AS_CRON_SCALE_IN_BY_ENVIRONMENT = {
-    inf  = 1
-    dev  = 1
-    qa   = 2
-    prod = 3
+    inf  = "00 02 * * 1-5"
+    dev  = "00 02 * * 1-5"
+    qa   = "00 02 * * 1-5"
+    prod = "00 02 * * 1-5"
   }
 
   AS_CRON_SCALE_OUT_BY_ENVIRONMENT = {
-    inf  = 1
-    dev  = 1
-    qa   = 2
-    prod = 3
+    inf  = "30 14 * * 1-5"
+    dev  = "30 14 * * 1-5"
+    qa   = "30 14 * * 1-5"
+    prod = "30 14 * * 1-5"
   }
 
   AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT = {
-    inf  = 1
-    dev  = 1
-    qa   = 2
-    prod = 3
+    inf  = 2400
+    dev  = 2400
+    qa   = 2400
+    prod = 2400
   }
 
   AS_POLICY_TARGET_VALUE_BY_ENVIRONMENT = {
-    inf  = 1
-    dev  = 1
-    qa   = 1
-    prod = 1
+    inf  = 90
+    dev  = 90
+    qa   = 90
+    prod = 65
   }
 
   AS_ON_HOUR_DESIRED_BY_ENVIRONMENT = {
-    inf  = 1
-    dev  = 1
-    qa   = 1
-    prod = 1
+    inf  = 2
+    dev  = 2
+    qa   = 2
+    prod = 2
+  }
+
+  AS_SCALE_IN_OUT_WEEKDAYS_BY_ENVIRONMENT = {
+    inf  = false
+    dev  = false
+    qa   = false
+    prod = false
+  }
+
+  AS_SCALE_IN_ON_WEEKENDS_BY_ENVIRONMENT = {
+    inf  = false
+    dev  = false
+    qa   = false
+    prod = false
   }
 
   INSTANCE_SIZE_BY_ENVIRONMENT = {
@@ -135,10 +169,58 @@ locals {
     local.DEFAULT_AS_MAX_BATCH_SIZE
   )
 
+  as_cron_scale_down = lookup(
+    local.AS_CRON_SCALE_DOWN_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_CRON_SCALE_DOWN
+  )
+
+  as_cron_scale_up = lookup(
+    local.AS_CRON_SCALE_UP_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_CRON_SCALE_UP
+  )
+
+  as_cron_scale_in = lookup(
+    local.AS_CRON_SCALE_IN_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_CRON_SCALE_IN
+  )
+
+  as_cron_scale_out = lookup(
+    local.AS_CRON_SCALE_OUT_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_CRON_SCALE_OUT
+  )
+
   health_check_grace_period = lookup(
     local.AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT,
     local.input_param_deployment_environment,
     local.DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD
+  )
+
+  as_policy_target_value = lookup(
+    local.AS_POLICY_TARGET_VALUE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_POLICY_TARGET_VALUE
+  )
+
+  as_on_hour_desired = lookup(
+    local.AS_ON_HOUR_DESIRED_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_ON_HOUR_DESIRED
+  )
+
+  as_scale_in_out_weekdays = lookup(
+    local.AS_SCALE_IN_OUT_WEEKDAYS_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_SCALE_IN_OUT_WEEKDAYS
+  )
+
+  as_scale_in_on_weekends = lookup(
+    local.AS_SCALE_IN_ON_WEEKENDS_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_SCALE_IN_ON_WEEKENDS
   )
 
   instance_size = lookup(
@@ -179,44 +261,51 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
   name          = "internet-delivery"
   template_body = file("${path.module}/templates/as_internet_delivery_template.json")
   parameters = {
-    AlarmTopicArn                   = local.input_param_alarm_topic_arn
-    AmiId                           = data.aws_ami.ami
-    AutoScalingInstanceRoleArn      = local.input_param_autoscaling_role_arn
-    AutoScalingMinSize              = local.as_min_size
-    AutoScalingMaxSize              = local.as_max_size
-    AutoScalingNotificationTopicARN = local.input_param_lifecycle_topic_arn
-    AvailabilityZones               = local.input_param_availability_zones
-    Branch                          = var.build_branch
-    BuildVersion                    = var.build_tag
-    BuildUrl                        = var.build_url
-    BundleVersion                   = local.ami_build
-    DeployMaxBatchSize              = local.as_max_batch_size
-    DeployMinInstancesInService     = local.as_min_service
-    Environment                     = local.input_param_deployment_environment
-    HealthCheckGracePeriod          = local.health_check_grace_period
-    InstanceProfile                 = local.input_param_iam_instance_profile_arn
-    InstanceType                    = local.instance_size
-    LifecycleHookLaunching          = local.input_param_lifecycle_hook_launching
-    LifecycleHookTerminating        = local.input_param_lifecycle_hook_terminating
-    LoadBalancerName                = aws_elb.elb.id
-    MsgHistoryV2BucketName          = var.message_history_bucket
-    MsgHistoryV2DynamoDbTableName   = var.message_history_dynamodb_table_name
-    MsgHistoryV2StreamName          = var.firehose_msg_history_v2_stream_name
-    MessageHistoryEventsTopicArn    = var.message_history_events_sns_topic
-    S3CookbookRepositoryURL         = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/xgemail-infrastructure/cookbooks.enc"
-    SecurityGroups                  = [local.input_param_sg_base_id, aws_security_group.security_group_ec2]
-    StationVpcId                    = var.station_vpc_id
-    StationVpcName                  = var.station_name
-    Vpc                             = local.input_param_vpc_id
-    VpcName                         = "email"
-    VpcZoneIdentifiers              = [local.input_param_public_subnet_ids]
-    XgemailBucketName               = var.customer_submit_bucket
-    XgemailMinSizeDataGB            = local.xgemail_size_data_gb
-    XgemailPolicyBucketName         = var.policy_bucket
-    XgemailSnsSqsQueue              = var.internet_delivery_sqs_queue_name
-    XgemailSnsSqsQueueUrl           = var.internet_delivery_sqs_queue_url
-    XgemailServiceType              = local.instance_type
-    XgemailSxlDbl                   = local.sxl_dbl
-    XgemailSxlRbl                   = local.sxl_rbl
+    AlarmTopicArn                    = local.input_param_alarm_topic_arn
+    AmiId                            = data.aws_ami.ami
+    AutoScalingInstanceRoleArn       = local.input_param_autoscaling_role_arn
+    AutoScalingMinSize               = local.as_min_size
+    AutoScalingMaxSize               = local.as_max_size
+    AutoScalingNotificationTopicARN  = local.input_param_lifecycle_topic_arn
+    AvailabilityZones                = local.input_param_availability_zones
+    Branch                           = var.build_branch
+    BuildVersion                     = var.build_tag
+    BuildUrl                         = var.build_url
+    BundleVersion                    = local.ami_build
+    DeployMaxBatchSize               = local.as_max_batch_size
+    DeployMinInstancesInService      = local.as_min_service
+    Environment                      = local.input_param_deployment_environment
+    HealthCheckGracePeriod           = local.health_check_grace_period
+    InstanceProfile                  = local.input_param_iam_instance_profile_arn
+    InstanceType                     = local.instance_size
+    LifecycleHookLaunching           = local.input_param_lifecycle_hook_launching
+    LifecycleHookTerminating         = local.input_param_lifecycle_hook_terminating
+    LoadBalancerName                 = aws_elb.elb.id
+    MsgHistoryV2BucketName           = var.message_history_bucket
+    MsgHistoryV2DynamoDbTableName    = var.message_history_dynamodb_table_name
+    MsgHistoryV2StreamName           = var.firehose_msg_history_v2_stream_name
+    MessageHistoryEventsTopicArn     = var.message_history_events_sns_topic
+    S3CookbookRepositoryURL          = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/xgemail-infrastructure/cookbooks.enc"
+    ScaleInOnWeekends                = local.as_scale_in_on_weekends
+    ScaleInCron                      = local.as_cron_scale_down
+    ScaleOutCron                     = local.as_cron_scale_up
+    ScheduledASOnHourDesiredCapacity = local.as_on_hour_desired
+    ScaleInAndOutOnWeekdays          = local.as_scale_in_out_weekdays
+    ScaleInOnWeekdaysCron            = local.as_cron_scale_in
+    ScaleOutOnWeekdaysCron           = local.as_cron_scale_out
+    SecurityGroups                   = [local.input_param_sg_base_id, aws_security_group.security_group_ec2]
+    StationVpcId                     = var.station_vpc_id
+    StationVpcName                   = var.station_name
+    Vpc                              = local.input_param_vpc_id
+    VpcName                          = "email"
+    VpcZoneIdentifiers               = [local.input_param_public_subnet_ids]
+    XgemailBucketName                = var.customer_submit_bucket
+    XgemailMinSizeDataGB             = local.xgemail_size_data_gb
+    XgemailPolicyBucketName          = var.policy_bucket
+    XgemailSnsSqsQueue               = var.internet_delivery_sqs_queue_name
+    XgemailSnsSqsQueueUrl            = var.internet_delivery_sqs_queue_url
+    XgemailServiceType               = local.instance_type
+    XgemailSxlDbl                    = local.sxl_dbl
+    XgemailSxlRbl                    = local.sxl_rbl
   }
 }
