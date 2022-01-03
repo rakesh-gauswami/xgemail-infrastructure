@@ -14,7 +14,7 @@ locals {
   DEFAULT_AS_SCALE_IN_OUT_WEEKDAYS      = false
   DEFAULT_INSTANCE_SIZE                 = "t2.small"
   DEFAULT_INSTANCE_COUNT                = 1
-  DEFAULT_VOLUME_SIZE_GIBS              = 35
+  DEFAULT_XGEMAIL_SIZE_DATA_GB          = 10
   DEFAULT_SXL_DBL                       = "t2.small"
   DEFAULT_SXL_RBL                       = "t2.small"
 
@@ -102,16 +102,11 @@ locals {
     prod = 1
   }
 
-  VOLUME_SIZES_GIBS_BY_ENVIRONMENT = {
-    prod = 300
+  XGEMAIL_SIZE_DATA_GB_BY_ENVIRONMENT = {
     inf  = 10
-  }
-
-  VOLUME_SIZES_GIBS_BY_POP = {
-    # This is a most granular setting, if you need adjustments in particular PoP set it here
-
-    stn000cmh = 10
-
+    dev  = 40
+    qa   = 70
+    prod = 100
   }
 
   SXL_DBL_BY_ENVIRONMENT = {
@@ -137,41 +132,46 @@ locals {
   }
 
   as_min_size = lookup(
-  local.AS_MIN_SIZE_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_MIN_SIZE
+    local.AS_MIN_SIZE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_MIN_SIZE
   )
 
   as_max_size = lookup(
-  local.AS_MAX_SIZE_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_MAX_SIZE
+    local.AS_MAX_SIZE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_MAX_SIZE
   )
 
   as_min_service = lookup(
-  local.AS_MIN_SERVICE_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_MIN_SERVICE
+    local.AS_MIN_SERVICE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_MIN_SERVICE
   )
 
   as_max_batch_size = lookup(
-  local.AS_MAX_BATCH_SIZE_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_MAX_BATCH_SIZE
+    local.AS_MAX_BATCH_SIZE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_MAX_BATCH_SIZE
   )
 
   health_check_grace_period = lookup(
-  local.AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD
+    local.AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD
   )
 
   instance_size = lookup(
-  local.INSTANCE_SIZE_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_INSTANCE_SIZE
+    local.INSTANCE_SIZE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_INSTANCE_SIZE
   )
 
+  xgemail_size_data_gb = lookup(
+    local.XGEMAIL_SIZE_DATA_GB_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_XGEMAIL_SIZE_DATA_GB
+  )
 }
 
 
@@ -204,22 +204,14 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     MsgHistoryV2StreamName            = var.firehose_msg_history_v2_stream_name
     MessageHistoryEventsTopicArn      = var.message_history_events_sns_topic
     S3CookbookRepositoryURL           = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/xgemail-infrastructure/cookbooks.enc"
-    ScaleInOnWeekends                 = local.weekend_scale_down
-    ScaleInCron                       = local.cron_scale_down
-    ScaleOutCron                      = local.cron_scale_up
-    ScheduledASOnHourDesiredCapacity  = local.on_hour_desired
-    ScaleInAndOutOnWeekdays           = local.scale_in_out_weekdays
-    ScaleInOnWeekdaysCron             = local.cron_scale_in
-    ScaleOutOnWeekdaysCron            = local.cron_scale_out
     SecurityGroups                    = [local.input_param_sg_base_id, aws_security_group.security_group_ec2]
-    SpotPrice                         = var.spot_price
     StationVpcId                      = var.station_vpc_id
     StationVpcName                    = var.station_name
     Vpc                               = local.input_param_vpc_id
-    VpcZoneIdentifiers                = [local.input_param_public_subnet_ids]
     VpcName                           = "email"
+    VpcZoneIdentifiers                = [local.input_param_public_subnet_ids]
     XgemailBucketName                 = var.customer_submit_bucket
-    XgemailMinSizeDataGB              = local.volume_size_data_gb
+    XgemailMinSizeDataGB              = local.xgemail_size_data_gb
     XgemailMsgHistoryBucketName       = var.msg_history_bucket
     XgemailMsgHistoryMsBucketName     = var.msg_history_ms_bucket
     XgemailMsgHistoryQueueUrl         = var.msg_history_sqs_queue
