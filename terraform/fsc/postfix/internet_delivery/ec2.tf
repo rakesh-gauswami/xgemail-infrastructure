@@ -1,5 +1,7 @@
 locals {
   DEFAULT_AS_ALARM_SCALING_ENABLED     = false
+  DEFAULT_AS_ALARM_SCALE_IN_THRESHOLD  = 10
+  DEFAULT_AS_ALARM_SCALE_OUT_THRESHOLD = 50
   DEFAULT_AS_MIN_SIZE                  = 1
   DEFAULT_AS_MAX_SIZE                  = 6
   DEFAULT_AS_MIN_SERVICE               = 1
@@ -17,6 +19,26 @@ locals {
   DEFAULT_XGEMAIL_SIZE_DATA_GB         = 10
   DEFAULT_SXL_DBL                      = "uri.cal1.sophosxl.com"
   DEFAULT_SXL_RBL                      = "fur.cal1.sophosxl.com"
+
+  AS_ALARM_SCALING_ENABLED_BY_ENVIRONMENT = {
+    inf  = false
+    dev  = false
+    qa   = false
+    prod = true
+  }
+  AS_ALARM_SCALE_IN_THRESHOLD_BY_ENVIRONMENT = {
+    inf  = 10
+    dev  = 10
+    qa   = 10
+    prod = 100
+  }
+
+  AS_ALARM_SCALE_OUT_THRESHOLD_BY_ENVIRONMENT = {
+    inf  = 50
+    dev  = 50
+    qa   = 50
+    prod = 500
+  }
 
   AS_MIN_SIZE_BY_ENVIRONMENT = {
     inf  = 1
@@ -145,6 +167,24 @@ locals {
     stn000cmh = "fur.cal1.sophosxl.com"
   }
 
+  alarm_scaling_enabled = lookup(
+    local.AS_ALARM_SCALING_ENABLED_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_ALARM_SCALING_ENABLED
+  )
+
+  alarm_scale_in_threshold = lookup(
+    local.AS_ALARM_SCALE_IN_THRESHOLD_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_ALARM_SCALE_IN_THRESHOLD
+  )
+
+  alarm_scale_out_threshold = lookup(
+    local.AS_ALARM_SCALE_OUT_THRESHOLD_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_ALARM_SCALE_OUT_THRESHOLD
+  )
+
   as_min_size = lookup(
     local.AS_MIN_SIZE_BY_ENVIRONMENT,
     local.input_param_deployment_environment,
@@ -262,6 +302,9 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
   template_body = file("${path.module}/templates/as_internet_delivery_template.json")
   parameters = {
     AlarmTopicArn                    = local.input_param_alarm_topic_arn
+    AlarmScalingEnabled              = local.alarm_scaling_enabled
+    AlarmScaleInThreshold            = local.alarm_scale_in_threshold
+    AlarmScaleOutThreshold           = local.alarm_scale_out_threshold
     AmiId                            = data.aws_ami.ami
     AutoScalingInstanceRoleArn       = local.input_param_autoscaling_role_arn
     AutoScalingMinSize               = local.as_min_size
