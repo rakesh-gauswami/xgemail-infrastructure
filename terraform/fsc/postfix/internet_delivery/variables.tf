@@ -33,6 +33,11 @@ variable "message_history_ms_bucket" {
   description = "msg_history_ms_bucket"
 }
 
+variable "message_history_dynamodb_table_name" {
+  type        = string
+  description = "msg_history_dynamodb_table_name"
+}
+
 variable "message_history_events_sns_topic" {
   type        = string
   description = "msg_history_events_sns_topic"

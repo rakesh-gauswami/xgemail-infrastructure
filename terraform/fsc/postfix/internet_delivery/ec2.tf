@@ -2,7 +2,6 @@ locals {
   ami_owner_account = "843638552935"
   ami_type          = "xgemail"
 
-
   DEFAULT_AS_MIN_SIZE                   = 1
   DEFAULT_AS_MAX_SIZE                   = 1
   DEFAULT_AS_MIN_SERVICE                = 1
@@ -19,8 +18,6 @@ locals {
   DEFAULT_SXL_DBL                       = "t2.small"
   DEFAULT_SXL_RBL                       = "t2.small"
 
-
-
   AS_MIN_SIZE_BY_ENVIRONMENT = {
     inf  = 1
     dev  = 1
@@ -31,8 +28,8 @@ locals {
   AS_MAX_SIZE_BY_ENVIRONMENT = {
     inf  = 1
     dev  = 1
-    qa   = 1
-    prod = 1
+    qa   = 3
+    prod = 3
   }
 
   AS_MIN_SERVICE_BY_ENVIRONMENT = {
@@ -43,8 +40,10 @@ locals {
   }
 
   AS_MAX_BATCH_SIZE_BY_ENVIRONMENT = {
-    inf  = "t2.small"
-    prod = "t2.small"
+    inf  = 1
+    dev  = 1
+    qa   = 3
+    prod = 3
   }
 
   AS_CRON_SCALE_IN_BY_ENVIRONMENT = {
@@ -155,14 +154,30 @@ locals {
   local.DEFAULT_AS_MIN_SERVICE
   )
 
+  as_max_batch_size = lookup(
+  local.AS_MAX_BATCH_SIZE_BY_ENVIRONMENT,
+  local.input_param_deployment_environment,
+  local.DEFAULT_AS_MAX_BATCH_SIZE
+  )
 
+  health_check_grace_period = lookup(
+  local.AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT,
+  local.input_param_deployment_environment,
+  local.DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD
+  )
+
+  instance_size = lookup(
+  local.INSTANCE_SIZE_BY_ENVIRONMENT,
+  local.input_param_deployment_environment,
+  local.DEFAULT_INSTANCE_SIZE
+  )
 
 }
 
 
 resource "aws_cloudformation_stack" "cloudformation_stack" {
   name = "internet-delivery"
-  template_body = "${file("${path.module}/templates/as-internet-delivery-template.json")}"
+  template_body = file("${path.module}/templates/as-internet-delivery-template.json")
   parameters = {
     AlarmTopicArn                     = local.input_param_alarm_topic_arn
     AmiId                             = data.aws_ami.ami
@@ -172,20 +187,22 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     AutoScalingNotificationTopicARN   = local.input_param_lifecycle_topic_arn
     AvailabilityZones                 = local.input_param_availability_zones
     Branch                            = var.build_branch
-    BuildVersion                      = var.build_result_key
-    BundleVersion                     = var.ami_build
+    BuildVersion                      = var.build_tag
+    BuildUrl                          = var.build_url
+    BundleVersion                     = local.ami_build
     DeployMaxBatchSize                = local.as_max_batch_size
     DeployMinInstancesInService       = local.as_min_service
     Environment                       = local.input_param_deployment_environment
     HealthCheckGracePeriod            = local.health_check_grace_period
-    InstanceProfile                   = local.input_param_instance_profile_arn
+    InstanceProfile                   = local.input_param_iam_instance_profile_arn
     InstanceType                      = local.instance_size
+    LifecycleHookLaunching            = local.input_param_lifecycle_hook_launching
     LifecycleHookTerminating          = local.input_param_lifecycle_hook_terminating
     LoadBalancerName                  = aws_elb.elb.id
-    MsgHistoryV2BucketName            = var.msg_history_v2_bucket_name
+    MsgHistoryV2BucketName            = var.message_history_bucket
+    MsgHistoryV2DynamoDbTableName     = var.message_history_dynamodb_table_name
     MsgHistoryV2StreamName            = var.firehose_msg_history_v2_stream_name
-    MessageHistoryEventsTopicArn      = var.msg_history_events_sns_topic
-    PolicyTargetValue                 = local.as_policy_target_value
+    MessageHistoryEventsTopicArn      = var.message_history_events_sns_topic
     S3CookbookRepositoryURL           = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/xgemail-infrastructure/cookbooks.enc"
     ScaleInOnWeekends                 = local.weekend_scale_down
     ScaleInCron                       = local.cron_scale_down
