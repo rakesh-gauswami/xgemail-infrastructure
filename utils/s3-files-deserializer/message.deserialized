@@ -1,0 +1,709 @@
+X-Sophos-Processing-Start-Time: 1629747960383
+X-Sophos-Email-ID: 77127cba910243f7adf4737972a35472
+Received: from GBR01-CWL-obe.outbound.protection.outlook.com (mail-cwlgbr01lp2058.outbound.protection.outlook.com [104.47.20.58])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by relay-eu-west-1.prod.hydra.sophos.com (Postfix) with ESMTPS id 4GtjKJ3C32zgY8K;
+	Mon, 23 Aug 2021 19:41:08 +0000 (UTC)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=DcRkKbWJ/X/FbmS1CGyFvLLkDQTX0q/HfBHOfygHRzZNwpoxPZ6w/86m02hvmwSB90gQcJSJAwcvforS4saCttaKMN/mFbbtsdGFkqkM098e4GST2a7e96ZLi0+pEXMxWIOQTxLw3zsmNRxsW6SZHcv39C32Sr9RHPuSGORBkECpU6dS4ppogPKigI3jxEzMMm1f+OmCOziPv2bsEDTBDsT+QTy6XHm2rRUxmkuSWIs9R914YDWVtkbigdl3u1N4+hZJgHv8pRb4+lY2ACyEVviJ0OXGq30NmsKp4dzhMaVbTWoYPBEXQsQZoSFl4M+1qMgDmTnU/xJLAE1YMIJP/A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=60989H1R/w69WPFM4yfCt38yn5zbulEIXeEIIREt4E0=;
+ b=hzdXVVwjfAqZLyzAAqwM1Do/YVES5cUWHnSVslGcEvwjzxPZ6uSnedvyXCemHf2BId0bcwFzfgPpMl3hftX/RxAn4aFCK3Dovelbbw9vyyK0NV58vELH979c2/xeNDfi6Fvo10KTReDJVHyxzmLbpnkO9Orra8Hlek122GdKPCUcz0eVXJgVRiWsf/rbvCvX8F0dh4CQYQRmeRDGZGs/XcOwL640grZ4kf1Hh4JYrUoT9xQQvljKnv0Mr9Es6zpkSmqCEEkcsn959iauIV6lVlCnW/xi4ZlW4MB7eaicrWZku9UiZ/2b9q9puPg6t1Uw886Merpkdepu/Xz98x9mMA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=alderhey.nhs.uk; dmarc=pass action=none
+ header.from=alderhey.nhs.uk; dkim=pass header.d=alderhey.nhs.uk; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=alderheynhsuk.onmicrosoft.com; s=selector2-alderheynhsuk-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=60989H1R/w69WPFM4yfCt38yn5zbulEIXeEIIREt4E0=;
+ b=hFisdAZoLK5uS9p8NIO1lqE/TYv2hoGXnOklpAIzjH6um6+koD1InOrbMYqz0XE60PPiDXnVt4rcVO3iH42/h5bgMaRrWT+neNcsX/tFbDiIhqkw747F8X5MraibmyljNTFtSN0TFSOrXMyeW8dimuL7dAhfoZGnhQo1lLi/TO4=
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1629710327;
+	s=sophosfb944dd84ff54420a2fccdb723099488; d=alderhey.nhs.uk;
+	h=Content-Type:Date:Subject:To:From;
+	bh=60989H1R/w69WPFM4yfCt38yn5zbulEIXeEIIREt4E0=;
+	b=HX+GfjP9jagZoJhtl9mPjQNio4CRu15Fi1YDVz7y97TMyvWgMHG55TkLDv3aYnVL
+	87GNk/6fr5UE1X5gUOk1MQRPHqocYS/MpWTH2M3NSDX/8eUALMh64H9TDNxf0YzuacV
+	miPCTE1w6acgRAiHevhQXM5/nAgwvJelAVD0z2jeJtrgzfNj3XgD0QxFKSNJa1iGBTS
+	SW7AyX+igX/5SQatFE+o7uHflaU50WGZcPaK3G27BTmAqTy6YWlT7h+C7nqflu+fGaW
+	2AlUNx/3AY68t0Tg5v29w9lyzRAN2gX6H02ycpx7kRS5Utp6rTmJV5qQopVQJQYaH2c
+	0dZ4tJuZJg==
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1629710327;
+	s=v1; d=mail-dkim-eu-west-1.prod.hydra.sophos.com;
+	h=Content-Type:Date:Subject:To:From;
+	bh=60989H1R/w69WPFM4yfCt38yn5zbulEIXeEIIREt4E0=;
+	b=saoIfk/a2A8yolj/CnfLurr3OYpZtmZHhrOZW7086GhSBe/IhOaAtIGIDhUrR2BP
+	+mvdkoyU+TRF786b7gH5YQLVEvPq1QpA4vsp0ddsSNbcp67woPJro953AmJgimzd875
+	6bG7FVzhdD2sHaixGdXvw3E/wtWQS/zJq09uunBiF/GxwtofUEs+kyfCei3LWJP++XL
+	O0A1oA3dhAo4FwHfBF4pbhEy8ZGW01xQhvj9xjjtPzkwT9W4kX+Wg6QI0V7IOlXK7QW
+	QZLbuChy1rIu0k4e/HOPc+udrjtVHrgFSI4+GX2DE0G9ZeOqn4oODDxn+30i5rnrHq7
+	/hDHN0RWUw==
+Received: from LO3P265MB2396.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:10c::14)
+ by LO4P265MB3536.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:1ac::9) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.4436.22; Mon, 23 Aug
+ 2021 09:18:47 +0000
+Received: from LO3P265MB2396.GBRP265.PROD.OUTLOOK.COM
+ ([fe80::8581:7ac0:ab77:8690]) by LO3P265MB2396.GBRP265.PROD.OUTLOOK.COM
+ ([fe80::8581:7ac0:ab77:8690%8]) with mapi id 15.20.4436.024; Mon, 23 Aug 2021
+ 09:18:47 +0000
+From: Horrocks Sue <Sue.Horrocks@alderhey.nhs.uk>
+To: Andrea Kayayan <a.kayayan@sacredheart.liverpool.sch.uk>, Andrea Lea
+	<alea@stceciliascjs.co.uk>, Angela HOUGHTON
+	<a.houghton@listerjuniors.liverpool.sch.uk>, Anne Bass
+	<a.bass@wavertree.liverpool.sch.uk>, "aparkinson@stannes1.com"
+	<aparkinson@stannes1.com>, C Harkness <charkness@stfinbars.co.uk>,
+	"c.thistleton@st-cecilias-inf.liverpool.sch.uk"
+	<c.thistleton@st-cecilias-inf.liverpool.sch.uk>, "Cath McKenna
+ (cmckenna@st-oswalds.liverpool.sch.uk)"
+	<cmckenna@st-oswalds.liverpool.sch.uk>, Claire Kendrick
+	<c.kendrick@st-vincentdepaul.liverpool.sch.uk>, Clare Wigelsworth
+	<c.wigelsworth@pinehurst-primary.co.uk>, "cmitchell@remat.org.uk"
+	<cmitchell@remat.org.uk>, Danielle Fox <d.fox@faithprimaryschool.co.uk>,
+	Diane Crute <d.crute@sthughsprimary.co.uk>,
+	"e.cottom@kirkdale.liverpool.sch.uk" <e.cottom@kirkdale.liverpool.sch.uk>,
+	Eve Stokes <e.stokes@st-annesstanley.liverpool.sch.uk>, Gemma Hawksworth
+	<g.hawksworth@listerjuniors.liverpool.sch.uk>, Gill Murphy
+	<gmurphy@stannes1.com>, Head Wavertree
+	<wavertree-ht@wavertree.liverpool.sch.uk>, Holly Lucas
+	<h.lucas@lipaprimary.org>, Jackie Hilton <jhilton@ssscfederation.co.uk>,
+	Jacqueline Parkinson <j.parkinson@sacredheart.liverpool.sch.uk>, Janette
+ Coleman <jcoleman@stceciliascjs.co.uk>, Janice Garrity
+	<j.garrity@kingsley.liverpool.sch.uk>, Janice Ireland
+	<j.ireland@smithdown.liverpool.sch.uk>, j.west <j.west@matthewarnold.co.uk>,
+	Joanne Devine <jdevine@ssscfederation.co.uk>, Joanne Steers
+	<j.steers@pinehurst-primary.co.uk>, Jonathon Bayliss
+	<j.bayliss@northway.liverpool.sch.uk>, Julie Reece
+	<j.reece@holycrossprimaryschool.co.uk>, "k.poulson@newparkprimary.com"
+	<k.poulson@newparkprimary.com>, Karen FORD <kford@lawrence-primary.co.uk>,
+	k.carter <k.carter@matthewarnold.co.uk>, Kate Cassim <kcassim@remat.org.uk>,
+	Kate Lunt <klunt@ssscfederation.co.uk>, "kate.warren@kensingtonprimary.co.uk"
+	<kate.warren@kensingtonprimary.co.uk>, Kathryn Davies
+	<k.davies01@windsor.liverpool.sch.uk>, Katie Bushell
+	<k.bushell@sthughsprimary.co.uk>, "kcarroll@fouroaksprimary.com"
+	<kcarroll@fouroaksprimary.com>, "Kirsty Sparrow
+ (sparrowk@pleasantstreet.liverpool.sch.uk)"
+	<sparrowk@pleasantstreet.liverpool.sch.uk>, Louise Edwards
+	<l.edwards@thetrinityliverpool.co.uk>, "m.rufus@stcleopas.com"
+	<m.rufus@stcleopas.com>, Maria Mitchell
+	<m.mitchell@phoenixprimaryschool.co.uk>, Marsha Eades <meades@remat.org.uk>,
+	Mary Spofforth <m.spofforth@thetrinityliverpool.co.uk>, Miss Ainsworth
+	<k.ainsworth@mosspits.com>, Miss Mullan <hmullan@olgh.co.uk>,
+	"mkeating@fouroaksprimary.com" <mkeating@fouroaksprimary.com>, Mrs Clein
+	<j.clein@holyfamily.liverpool.sch.uk>, Mrs FLOOD
+	<a.flood@sthughsprimary.co.uk>, Mrs J Brown <j.brown@oliprimaryschool.co.uk>,
+	"n.clarke@listerdrive-inf.liverpool.sch.uk"
+	<n.clarke@listerdrive-inf.liverpool.sch.uk>, Nicola BIRCH
+	<nicola.birch@stmichaelscatholicprimary.co.uk>, Nicole Garvey
+	<n.garvey@smithdown.liverpool.sch.uk>,
+	"pastoral@st-nicholas.liverpool.sch.uk"
+	<pastoral@st-nicholas.liverpool.sch.uk>, Paula PRICE
+	<p.price@st-patricks.liverpool.sch.uk>, "PILKINGTON, Gwen"
+	<g.pilkington@st-clares.liverpool.sch.uk>, Rebecca Moran
+	<rebecca.moran@kensingtonprimary.co.uk>, Sam Nelson <snelson@remat.org.uk>,
+	Suzanne Evans <s.evans@broadgreenprimary.org.uk>, Thomas Vandewiele
+	<t.vandewiele@northway.liverpool.sch.uk>
+Subject: FYI - MYA Free Bitesize Training Sessions for staff and
+ parents/carers
+Thread-Topic: FYI - MYA Free Bitesize Training Sessions for staff and
+ parents/carers
+Thread-Index: AdeX/9I4xmaL/XfvSoWGCEqWm//VOA==
+Date: Mon, 23 Aug 2021 09:18:47 +0000
+Message-ID: <LO3P265MB239626CA1759B276B56DE349C5C49@LO3P265MB2396.GBRP265.PROD.OUTLOOK.COM>
+Accept-Language: en-GB, en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: sacredheart.liverpool.sch.uk; dkim=none (message not
+ signed) header.d=none;sacredheart.liverpool.sch.uk; dmarc=none action=none
+ header.from=alderhey.nhs.uk;
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 25a63922-8d40-49a7-07cb-08d966170356
+x-ms-traffictypediagnostic: LO4P265MB3536:
+x-ld-processed: 473ccf1b-3957-4eb0-82ba-be8a6aa1f64a,ExtAddr
+x-microsoft-antispam-prvs:
+ <LO4P265MB3536BE1E307FBAD2231EAFFAC5C49@LO4P265MB3536.GBRP265.PROD.OUTLOOK.COM>
+x-ms-oob-tlc-oobclassifiers: OLM:8273;
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info:
+ riE12NoXaqSAtvSt+mlx+0UTcrzxGVtrN7hWDOeAVN+gjfT7Yl6BG0HX7S0HpAG6tneAGppHF1g0WVG6lEoBtxopJQ/QED3UBKI4PB6/O+2jrBWW3rx9RejmMqUcbyj259z4uW3aiB4062La+Wgm93CERqPLm355fkmuJ48C80BxYVMIcjwX9gGmD8fGX9XyojdTDJEnSOw3HiKlMNbbXZ4Az7OUiLUmBltDPRIf4qViM9oliU1f7k43vC/ZjgSzdHFqmxeihKDK382yTqR4RD+SGr2p6jlQdw1gjjVjgPvV79Ujg5EUGNjBKFUgsqrgbUu9ndXglBSvngN09w2QelKfFX+/edvQ1rwrVmeDMrjGT2XRJ6AyEHzl4y4R9CsX7BMrTATjPqmSpyNnZpVg6X9ARHSTSPYITrg3PdkbniTV/qAmFGgpvcNqdvHvULdTdepMK6+vi9OPXWodoXTFfCelDFY+M42Gz9gxrGM+qmMxdR2xdBskOOfeGbAFwTKr80G34zjlims5sCnSGcM07VgzaUJFn1NYmZlK7qrFN/rx9fxkvSB1z79bfbu2pJTN1RMgDFNcnm9Av4akdaxTEJN+QPFglRQ+Q5Hse9fyZyXYRymkIUOQOh+iLXuJis9asM/XAkYEAbb+qilMexNXud11nkcp9EKTb0kmF2VHpBuuzdvVped+6Y9LopReUNz7rjS/uSTFCfyyWQgit0rfLjl1oYyFf0mG5JEksjpGK9xaZ3LXXh9K8DeiJ9bWkhPfzcU3Asqtuke5iBEdgSXK2k5/MckG593eTxUNXSG9AOIiI4Ra+rrcv4X3HkstWSpb
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LO3P265MB2396.GBRP265.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(346002)(376002)(39850400004)(366004)(396003)(136003)(6506007)(2906002)(186003)(26005)(33656002)(8936002)(166002)(8676002)(7416002)(122000001)(5660300002)(71200400001)(9686003)(7406005)(55016002)(7366002)(316002)(296002)(38070700005)(52536014)(64756008)(1191002)(66946007)(86362001)(478600001)(66476007)(76116006)(66556008)(7696005)(921005)(83380400001)(38100700002)(66446008)(110136005);DIR:OUT;SFP:1102;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?iso-8859-1?Q?WhydFSXrtpU7tHP/Axst/V5jbmdENvzBi05MJEqGkQucBI4b/0GJQXF/Wj?=
+ =?iso-8859-1?Q?nBn8WQv7LoK3gI/3n+gPJqAcGun9F7ooSA/rWyWYyta5cl2VyUw+hJSdES?=
+ =?iso-8859-1?Q?0GqWMrl07y38dmwGlJ5Br8g+nUIYbCi2W4l97EBGzTAMgdsmN776rmiCVr?=
+ =?iso-8859-1?Q?+/QI28/b+cAhmH9x77Bn5Flwg+t4wKatk603Zv4dRNhqM1oZvMxoItfzyM?=
+ =?iso-8859-1?Q?Jdkrmdf30RUPjr9ZFcSg1kypzq4GnlsZLe2Iu/8zGNNgwmbMRcLOiH5SHn?=
+ =?iso-8859-1?Q?F5skLN6qcVRRM0jmvGRf2ihJ2cXwtgqJGIiCt7ASqjWTrX84t6SN4oWUis?=
+ =?iso-8859-1?Q?AuM22MvUInCUoCZMnFlAfzDuSHIoZfSTkWzA3vww/DNu0+YQkw7VsO1G5d?=
+ =?iso-8859-1?Q?aVZ8J55HmNh23GGcNCYoHHnCMdO8svS0iUDxz9rcGXmsx44HfG7uigCM5+?=
+ =?iso-8859-1?Q?uMnSUsFNzy34tvXgaxcc6+GKzeQTZ26G4aJXeaFs+BPkWD322JzZKgPxMz?=
+ =?iso-8859-1?Q?gcqSsIQ03yMSzmQ9QAbQGEum0kz8zXohuN8/LruR07K1rb9OfCn/BuhXwl?=
+ =?iso-8859-1?Q?eXh2iEixBvqaXXWmWPzmmSPNuEJJAkjTtzXWZVfFH8WeAU2wNkWQTn9/Zb?=
+ =?iso-8859-1?Q?t/4oCKLPpoaXJFw6htTxvQn8aMEBUBFyYTANXuj9CN/VeN49MxRw7Ckc2i?=
+ =?iso-8859-1?Q?Fqn7aovd1OmuQ7rRQ82N1n+aqvKIlkqR4uUj8kiQaHzfrYCioTIq7a+Xq9?=
+ =?iso-8859-1?Q?EQfsJDNhohMr0ZSTNsqt69hrfA2CBIC+DS+yFju1zLeYoAEb3yFH9kr9at?=
+ =?iso-8859-1?Q?q0A8W1W9MWbQmAHsSiyJZBGXqE4jswxb2NliO2Qq6ePDlt2OOFd885M8lH?=
+ =?iso-8859-1?Q?TzPmFNybZaWG3xX7b6+hsFkn5rqT82b4ov2Lh43BiBzKp40Oco2ICHiRBA?=
+ =?iso-8859-1?Q?HuEthbK1iXmgBCAX+td85GUR7qGibEAHgStNwqd5IumwRBauid6G3wdofQ?=
+ =?iso-8859-1?Q?iD8BfXiFDCl7rjlHGC8jgO5C0PWTxWGWabstd/86pQ/silK4Dlm3xnDhji?=
+ =?iso-8859-1?Q?nCd2HS/03L+aTFGccKYE3y3XqNTEINIatVJ1EtJ2TmepgESJHdFheekFdB?=
+ =?iso-8859-1?Q?n45aXcxvbSbwjQcMUtNNAf4Hun+Z2hZLY9zeySS3vy1Wqy2+Tc4jU6lmif?=
+ =?iso-8859-1?Q?tb9fqS1z5g/KJuWDywJlssSZkus4Re9f2ORkpU7qxx9apEUhKs2Q5TbhIH?=
+ =?iso-8859-1?Q?CdQIymjfz/aZn6OZ3H7HXw4UbrzaaTEV8Qk5BdxficAwYtGvGFZTeIWKDe?=
+ =?iso-8859-1?Q?aC66F+PLp7MOUS271qoAdH0/aOTx7JsflueOMf56tae2qGc=3D?=
+x-ms-exchange-transport-forked: True
+Content-Type: multipart/alternative;
+	boundary="_000_LO3P265MB239626CA1759B276B56DE349C5C49LO3P265MB2396GBRP_"
+MIME-Version: 1.0
+X-OriginatorOrg: alderhey.nhs.uk
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: LO3P265MB2396.GBRP265.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-Network-Message-Id: 25a63922-8d40-49a7-07cb-08d966170356
+X-MS-Exchange-CrossTenant-originalarrivaltime: 23 Aug 2021 09:18:47.5309
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 473ccf1b-3957-4eb0-82ba-be8a6aa1f64a
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: TZLUtxYgOpPJvSJqsBdEtAue4yUGrujHD2b+bqnBUhP024MfWWl2aedw3KYBu/En6Q2DjJlk3lenGSNLp4adS9BdUEG+bBsJgcjpbg9czi8=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: LO4P265MB3536
+
+--_000_LO3P265MB239626CA1759B276B56DE349C5C49LO3P265MB2396GBRP_
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+Bite-size training for parents/carers and professionals working with childr=
+en and young people
+
+[https://gallery.mailchimp.com/29d06172a566a7a062c8c4b01/images/61cae8de-9e=
+15-459b-a6f0-53f563c2b6d4.png]
+Merseyside Youth Association's mental health promotion team (RAISE Team) co=
+ntinue to deliver their range of bite-size courses, adapted from courses th=
+ey have previously delivered.
+These sessions cover a range of mental health issues that impact children, =
+young people and their families.
+
+Bite-size sessions coming up in September and October, delivered via Zoom
+Resilience - 02/09/2021 10:00 am - 10:45 am Book here <https://eu-west-1.pr=
+otection.sophos.com?d=3Dlist-manage.com&u=3DaHR0cHM6Ly9saXZlcnBvb2xjYW1ocy5=
+1czEyLmxpc3QtbWFuYWdlLmNvbS90cmFjay9jbGljaz91PTI5ZDA2MTcyYTU2NmE3YTA2MmM4Yz=
+RiMDEmaWQ9YzU0MTliZWMyZCZlPTU4YWU5ZjgyMTY=3D&i=3DNjBhZTJkZjNkMGRjZTQwZjVlMD=
+Q4YzM3&t=3DVUNTUjFtOFY4Z1dQdnlpTXVZaGNXbGJ2eEI0aUJFSVhUZWJyWmt2cXF2az0=3D&h=
+=3D1719a60daf5948abae55a6632e7780c8>
+Post-traumatic stress disorder - 09/09/2021 10:00 am - 10:45 am Book here<h=
+ttps://eu-west-1.protection.sophos.com?d=3Dlist-manage.com&u=3DaHR0cHM6Ly9s=
+aXZlcnBvb2xjYW1ocy51czEyLmxpc3QtbWFuYWdlLmNvbS90cmFjay9jbGljaz91PTI5ZDA2MTc=
+yYTU2NmE3YTA2MmM4YzRiMDEmaWQ9YWRhYjM0ZjZlZCZlPTU4YWU5ZjgyMTY=3D&i=3DNjBhZTJ=
+kZjNkMGRjZTQwZjVlMDQ4YzM3&t=3DVnBlRldkWW91Nk9nUWhuVE5MME1IQjZtS0dCcnFHQ2Q3b=
+kswNkI1MVE4MD0=3D&h=3D1719a60daf5948abae55a6632e7780c8>
+Eating Disorders - 23/09/2021 10:00 am - 10:45 am Book here <https://eu-wes=
+t-1.protection.sophos.com?d=3Dlist-manage.com&u=3DaHR0cHM6Ly9saXZlcnBvb2xjY=
+W1ocy51czEyLmxpc3QtbWFuYWdlLmNvbS90cmFjay9jbGljaz91PTI5ZDA2MTcyYTU2NmE3YTA2=
+MmM4YzRiMDEmaWQ9MDZmN2Q0OTMyYSZlPTU4YWU5ZjgyMTY=3D&i=3DNjBhZTJkZjNkMGRjZTQw=
+ZjVlMDQ4YzM3&t=3DdEFMQ2FQL2Rod3V5bEp0RUphTTNoSHBCd1FUSU8waDE5Mm5JWWEvUXE5RT=
+0=3D&h=3D1719a60daf5948abae55a6632e7780c8>
+An awareness session to EMDR - 28/09/2021 9:00 am - 10:30 am Book here<http=
+s://eu-west-1.protection.sophos.com?d=3Dlist-manage.com&u=3DaHR0cHM6Ly9saXZ=
+lcnBvb2xjYW1ocy51czEyLmxpc3QtbWFuYWdlLmNvbS90cmFjay9jbGljaz91PTI5ZDA2MTcyYT=
+U2NmE3YTA2MmM4YzRiMDEmaWQ9N2Q4ODEwMjViZSZlPTU4YWU5ZjgyMTY=3D&i=3DNjBhZTJkZj=
+NkMGRjZTQwZjVlMDQ4YzM3&t=3DdTlsdVI2Z09GS3Yza2R2OGRWODNuQlZkalFnbVhlYWRoU29n=
+VE1vTFEzQT0=3D&h=3D1719a60daf5948abae55a6632e7780c8>
+Social media and mental health - 01/10/2021 10:00 am - 10:45 am Book here <=
+https://eu-west-1.protection.sophos.com?d=3Dlist-manage.com&u=3DaHR0cHM6Ly9=
+saXZlcnBvb2xjYW1ocy51czEyLmxpc3QtbWFuYWdlLmNvbS90cmFjay9jbGljaz91PTI5ZDA2MT=
+cyYTU2NmE3YTA2MmM4YzRiMDEmaWQ9NTE3Yzg2YjZkNiZlPTU4YWU5ZjgyMTY=3D&i=3DNjBhZT=
+JkZjNkMGRjZTQwZjVlMDQ4YzM3&t=3DYmErWDh2anhESGdhcEJ5dVRyS2p4cU9zY2ZjZmpoQmZn=
+RXA1R09kcTlJcz0=3D&h=3D1719a60daf5948abae55a6632e7780c8>
+Grief and Loss -  07/10/2021 10:00 am - 11:00 am Book here<https://eu-west-=
+1.protection.sophos.com?d=3Dlist-manage.com&u=3DaHR0cHM6Ly9saXZlcnBvb2xjYW1=
+ocy51czEyLmxpc3QtbWFuYWdlLmNvbS90cmFjay9jbGljaz91PTI5ZDA2MTcyYTU2NmE3YTA2Mm=
+M4YzRiMDEmaWQ9ODkxMDAwNjhjYyZlPTU4YWU5ZjgyMTY=3D&i=3DNjBhZTJkZjNkMGRjZTQwZj=
+VlMDQ4YzM3&t=3DOEx2eUR0QVRQaFRWSWZZQWFTY0dIdWRoUXZ0RjIrd0V4Snc5U0gzek1pcz0=
+=3D&h=3D1719a60daf5948abae55a6632e7780c8>
+An Introduction to Psychosis - 14/10/2021 10:00 am - 11:00 am Book here<htt=
+ps://eu-west-1.protection.sophos.com?d=3Dlist-manage.com&u=3DaHR0cHM6Ly9saX=
+ZlcnBvb2xjYW1ocy51czEyLmxpc3QtbWFuYWdlLmNvbS90cmFjay9jbGljaz91PTI5ZDA2MTcyY=
+TU2NmE3YTA2MmM4YzRiMDEmaWQ9ZDgzMDIzNDdiOCZlPTU4YWU5ZjgyMTY=3D&i=3DNjBhZTJkZ=
+jNkMGRjZTQwZjVlMDQ4YzM3&t=3DVWV0NkNjZUhqRjYxVjN1R0RVdittVEljcWI5Ym94cGNNeGp=
+jY2Nwdnh0ND0=3D&h=3D1719a60daf5948abae55a6632e7780c8>
+Attachment - 21/10/2021 10:00 am - 10:45 am Book here <https://eu-west-1.pr=
+otection.sophos.com?d=3Dlist-manage.com&u=3DaHR0cHM6Ly9saXZlcnBvb2xjYW1ocy5=
+1czEyLmxpc3QtbWFuYWdlLmNvbS90cmFjay9jbGljaz91PTI5ZDA2MTcyYTU2NmE3YTA2MmM4Yz=
+RiMDEmaWQ9YWM0YTBmMGYyNiZlPTU4YWU5ZjgyMTY=3D&i=3DNjBhZTJkZjNkMGRjZTQwZjVlMD=
+Q4YzM3&t=3DeW9MTHZacUROWkFka0ZxaU1XQVc5K0t1WTBXc29BN1ptN2hnU3ppOHZJUT0=3D&h=
+=3D1719a60daf5948abae55a6632e7780c8>
+
+
+See the CAMHS training calendar here<https://eu-west-1.protection.sophos.co=
+m?d=3Dlist-manage.com&u=3DaHR0cHM6Ly9saXZlcnBvb2xjYW1ocy51czEyLmxpc3QtbWFuY=
+WdlLmNvbS90cmFjay9jbGljaz91PTI5ZDA2MTcyYTU2NmE3YTA2MmM4YzRiMDEmaWQ9NzRmZTU4=
+MDQ3MCZlPTU4YWU5ZjgyMTY=3D&i=3DNjBhZTJkZjNkMGRjZTQwZjVlMDQ4YzM3&t=3DbFJ3Njl=
+GN2lxRVRDTTRGYStzRldCckVFTmNzbG5JbFhYb2l4b1dlRmhiOD0=3D&h=3D1719a60daf5948a=
+bae55a6632e7780c8>
+
+
+Kindest regards
+Sue Horrocks
+(Pronouns: she/her)
+Mental Health Support Team Central Lead
+Senior Systemic Family Practitioner
+
+Alder Hey Children's NHS Foundation Trust
+Mobile : 07971 304061
+E-mail: sue.horrocks@alderhey.nhs.uk<mailto:sue.horrocks@alderhey.nhs.uk>
+
+Working Hours:
+Monday        09:00 - 18:00
+Tuesday        09:00 - 19:00
+Wednesday 09:00 - 19:00
+Thursday      09:00 - 16:30
+Friday            09:00 - 12:30
+
+Please note:  The MHST is not a crisis service and this email inbox is not =
+monitored outside of my working hours.
+However, children and young people, parents and carers in crisis can call t=
+he
+Alder Hey CAMHS <https://eu-west-1.protection.sophos.com/?d=3Dlist-manage.c=
+om&u=3DaHR0cHM6Ly9saXZlcnBvb2xjYW1ocy51czEyLmxpc3QtbWFuYWdlLmNvbS90cmFjay9j=
+bGljaz91PTI5ZDA2MTcyYTU2NmE3YTA2MmM4YzRiMDEmaWQ9NjQ1MzliZjllMCZlPTU4YWU5Zjg=
+yMTY=3D&i=3DNWVjZTgwODQxZGFkMGQwZTJiN2UxYjI3&t=3DQk5yS2FqOTF5cWVsdWx1RVZ5Rl=
+VMOWs4T3VSMmN4bXR2WEZiQVBPWFp4VT0=3D&h=3Dda2350b3903848978282b827f2893d7e> =
+crisis care<https://eu-west-1.protection.sophos.com/?d=3Dlist-manage.com&u=
+=3DaHR0cHM6Ly9saXZlcnBvb2xjYW1ocy51czEyLmxpc3QtbWFuYWdlLmNvbS90cmFjay9jbGlj=
+az91PTI5ZDA2MTcyYTU2NmE3YTA2MmM4YzRiMDEmaWQ9NzIwZWY5MTJjMyZlPTU4YWU5ZjgyMTY=
+=3D&i=3DNWVjZTgwODQxZGFkMGQwZTJiN2UxYjI3&t=3DenA0dlNBQ1Vld1cwNTNsVkZPYjJacG=
+dUditRTldWVGtjalBBdHg2UXppcz0=3D&h=3Dda2350b3903848978282b827f2893d7e> line=
+ 24 hours a day, seven days a week on 0151 293 3577 or freephone 0808 196 3=
+550. Professionals can call: 0151 282 4724
+They should only present to A&E if they need medical treatment or are strug=
+gling to keep themselves safe in the immediate moment.
+
+"I've learned that people will forget what you said, people will forget wha=
+t you did, BUT people will never forget how you made them feel"
+Maya Angelou
+
+
+--_000_LO3P265MB239626CA1759B276B56DE349C5C49LO3P265MB2396GBRP_
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" xmlns:o=3D"urn:schemas-micr=
+osoft-com:office:office" xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" xmlns=3D"http:=
+//www.w3.org/TR/REC-html40">
+<head>
+<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Diso-8859-=
+1">
+<meta name=3D"Generator" content=3D"Microsoft Word 15 (filtered medium)">
+<!--[if !mso]><style>v\:* {behavior:url(#default#VML);}
+o\:* {behavior:url(#default#VML);}
+w\:* {behavior:url(#default#VML);}
+.shape {behavior:url(#default#VML);}
+</style><![endif]--><style><!--
+/* Font Definitions */
+@font-face
+	{font-family:Helvetica;
+	panose-1:2 11 6 4 2 2 2 2 2 4;}
+@font-face
+	{font-family:"Cambria Math";
+	panose-1:2 4 5 3 5 4 6 3 2 4;}
+@font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+@font-face
+	{font-family:"Brush Script MT";
+	panose-1:3 6 8 2 4 4 6 7 3 4;}
+@font-face
+	{font-family:"Arial Black";
+	panose-1:2 11 10 4 2 1 2 2 2 4;}
+/* Style Definitions */
+p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:11.0pt;
+	font-family:"Calibri",sans-serif;
+	mso-fareast-language:EN-US;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:"Calibri",sans-serif;
+	color:#244061;
+	font-weight:normal;
+	font-style:normal;
+	text-decoration:none none;}
+.MsoChpDefault
+	{mso-style-type:export-only;
+	font-family:"Calibri",sans-serif;
+	mso-fareast-language:EN-US;}
+@page WordSection1
+	{size:612.0pt 792.0pt;
+	margin:72.0pt 72.0pt 72.0pt 72.0pt;}
+div.WordSection1
+	{page:WordSection1;}
+--></style><!--[if gte mso 9]><xml>
+<o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+<o:shapelayout v:ext=3D"edit">
+<o:idmap v:ext=3D"edit" data=3D"1" />
+</o:shapelayout></xml><![endif]-->
+</head>
+<body lang=3D"EN-GB" link=3D"blue" vlink=3D"purple">
+<div class=3D"WordSection1">
+<table class=3D"MsoNormalTable" border=3D"0" cellspacing=3D"0" cellpadding=
+=3D"0" width=3D"100%" style=3D"width:100.0%;border-collapse:collapse">
+<tbody>
+<tr>
+<td style=3D"padding:0cm 0cm 0cm 0cm">
+<div align=3D"center">
+<table class=3D"MsoNormalTable" border=3D"0" cellspacing=3D"0" cellpadding=
+=3D"0" width=3D"100%" style=3D"width:100.0%;border-collapse:collapse">
+<tbody>
+<tr>
+<td valign=3D"top" style=3D"padding:0cm 0cm 0cm 0cm"></td>
+<td valign=3D"top" style=3D"padding:0cm 0cm 0cm 0cm">
+<table class=3D"MsoNormalTable" border=3D"0" cellspacing=3D"0" cellpadding=
+=3D"0" align=3D"left" width=3D"100%" style=3D"width:100.0%;border-collapse:=
+collapse">
+<tbody>
+<tr>
+<td style=3D"padding:6.75pt 13.5pt 6.75pt 13.5pt">
+<table class=3D"MsoNormalTable" border=3D"0" cellspacing=3D"0" cellpadding=
+=3D"0" width=3D"100%" style=3D"width:100.0%;background:#F2F0F6;border-colla=
+pse:collapse">
+<tbody>
+<tr>
+<td valign=3D"top" style=3D"padding:13.5pt 13.5pt 13.5pt 13.5pt">
+<p class=3D"MsoNormal" style=3D"line-height:125%"><b><span style=3D"font-si=
+ze:19.5pt;line-height:125%;font-family:&quot;Helvetica&quot;,sans-serif;col=
+or:indigo;mso-fareast-language:EN-GB">Bite-size training for parents/carers=
+ and professionals working with children and young
+ people&nbsp;</span></b><b><span style=3D"font-size:19.5pt;line-height:125%=
+;font-family:&quot;Helvetica&quot;,sans-serif;color:#202020;mso-fareast-lan=
+guage:EN-GB"><o:p></o:p></span></b></p>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<p class=3D"MsoNormal"><span style=3D"mso-fareast-language:EN-GB"><o:p>&nbs=
+p;</o:p></span></p>
+<table class=3D"MsoNormalTable" border=3D"0" cellspacing=3D"0" cellpadding=
+=3D"0" width=3D"100%" style=3D"width:100.0%;border-collapse:collapse">
+<tbody>
+<tr>
+<td valign=3D"top" style=3D"padding:6.75pt 6.75pt 6.75pt 6.75pt">
+<table class=3D"MsoNormalTable" border=3D"0" cellspacing=3D"0" cellpadding=
+=3D"0" width=3D"100%" style=3D"width:100.0%;border-collapse:collapse">
+<tbody>
+<tr>
+<td valign=3D"top" style=3D"padding:0cm 6.75pt 0cm 6.75pt">
+<table class=3D"MsoNormalTable" border=3D"0" cellspacing=3D"0" cellpadding=
+=3D"0" align=3D"left" width=3D"176" style=3D"width:132.0pt;border-collapse:=
+collapse">
+<tbody>
+<tr>
+<td valign=3D"top" style=3D"padding:0cm 0cm 0cm 0cm">
+<p class=3D"MsoNormal" align=3D"center" style=3D"text-align:center"><span s=
+tyle=3D"mso-fareast-language:EN-GB"><img width=3D"150" style=3D"width:1.562=
+5in" id=3D"_x0000_i1025" src=3D"https://gallery.mailchimp.com/29d06172a566a=
+7a062c8c4b01/images/61cae8de-9e15-459b-a6f0-53f563c2b6d4.png"><o:p></o:p></=
+span></p>
+</td>
+</tr>
+</tbody>
+</table>
+<table class=3D"MsoNormalTable" border=3D"0" cellspacing=3D"0" cellpadding=
+=3D"0" align=3D"right" width=3D"352" style=3D"width:264.0pt;border-collapse=
+:collapse">
+<tbody>
+<tr>
+<td valign=3D"top" style=3D"padding:0cm 0cm 0cm 0cm">
+<p class=3D"MsoNormal" style=3D"line-height:150%"><span style=3D"font-size:=
+12.0pt;line-height:150%;font-family:&quot;Helvetica&quot;,sans-serif;color:=
+#202020;mso-fareast-language:EN-GB">Merseyside Youth Association&#8217;s me=
+ntal health promotion team (RAISE Team) continue to deliver
+ their range of bite-size courses, adapted from courses they have previousl=
+y delivered.
+<o:p></o:p></span></p>
+<p class=3D"MsoNormal" style=3D"mso-margin-top-alt:7.5pt;margin-right:0cm;m=
+argin-bottom:7.5pt;margin-left:0cm;line-height:150%">
+<span style=3D"font-size:12.0pt;line-height:150%;font-family:&quot;Helvetic=
+a&quot;,sans-serif;color:#202020;mso-fareast-language:EN-GB">These sessions=
+ cover a range of mental health issues that impact children, young people a=
+nd their families.<o:p></o:p></span></p>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+<p class=3D"MsoNormal"><span style=3D"mso-fareast-language:EN-GB"><o:p>&nbs=
+p;</o:p></span></p>
+<table class=3D"MsoNormalTable" border=3D"0" cellspacing=3D"0" cellpadding=
+=3D"0" width=3D"100%" style=3D"width:100.0%;border-collapse:collapse">
+<tbody>
+<tr>
+<td valign=3D"top" style=3D"padding:6.75pt 0cm 0cm 0cm">
+<table class=3D"MsoNormalTable" border=3D"0" cellspacing=3D"0" cellpadding=
+=3D"0" align=3D"left" width=3D"100%" style=3D"width:100.0%;border-collapse:=
+collapse;margin-left:-2.25pt;margin-right:-2.25pt">
+<tbody>
+<tr>
+<td width=3D"599" valign=3D"top" style=3D"width:449.25pt;padding:0cm 0cm 0c=
+m 0cm">
+<table class=3D"MsoNormalTable" border=3D"0" cellspacing=3D"0" cellpadding=
+=3D"0" align=3D"left" width=3D"100%" style=3D"width:100.0%;border-collapse:=
+collapse">
+<tbody>
+<tr>
+<td valign=3D"top" style=3D"padding:0cm 13.5pt 6.75pt 13.5pt">
+<p class=3D"MsoNormal" style=3D"line-height:150%"><b><span style=3D"font-si=
+ze:12.0pt;line-height:150%;font-family:&quot;Helvetica&quot;,sans-serif;col=
+or:#202020;mso-fareast-language:EN-GB">Bite-size sessions coming up in Sept=
+ember and October, delivered via Zoom</span></b><span style=3D"font-size:12=
+.0pt;line-height:150%;font-family:&quot;Helvetica&quot;,sans-serif;color:#2=
+02020;mso-fareast-language:EN-GB"><br>
+Resilience &#8211; 02/09/2021&nbsp;10:00 am - 10:45 am <a href=3D"https://e=
+u-west-1.protection.sophos.com?d=3Dlist-manage.com&amp;u=3DaHR0cHM6Ly9saXZl=
+cnBvb2xjYW1ocy51czEyLmxpc3QtbWFuYWdlLmNvbS90cmFjay9jbGljaz91PTI5ZDA2MTcyYTU=
+2NmE3YTA2MmM4YzRiMDEmaWQ9YzU0MTliZWMyZCZlPTU4YWU5ZjgyMTY=3D&amp;i=3DNjBhZTJ=
+kZjNkMGRjZTQwZjVlMDQ4YzM3&amp;t=3DVUNTUjFtOFY4Z1dQdnlpTXVZaGNXbGJ2eEI0aUJFS=
+VhUZWJyWmt2cXF2az0=3D&amp;h=3D1719a60daf5948abae55a6632e7780c8" target=3D"_=
+blank">
+<span style=3D"color:#007C89">Book here&nbsp;</span></a><br>
+Post-traumatic stress disorder - 09/09/2021&nbsp;10:00 am - 10:45 am <a hre=
+f=3D"https://eu-west-1.protection.sophos.com?d=3Dlist-manage.com&amp;u=3DaH=
+R0cHM6Ly9saXZlcnBvb2xjYW1ocy51czEyLmxpc3QtbWFuYWdlLmNvbS90cmFjay9jbGljaz91P=
+TI5ZDA2MTcyYTU2NmE3YTA2MmM4YzRiMDEmaWQ9YWRhYjM0ZjZlZCZlPTU4YWU5ZjgyMTY=3D&a=
+mp;i=3DNjBhZTJkZjNkMGRjZTQwZjVlMDQ4YzM3&amp;t=3DVnBlRldkWW91Nk9nUWhuVE5MME1=
+IQjZtS0dCcnFHQ2Q3bkswNkI1MVE4MD0=3D&amp;h=3D1719a60daf5948abae55a6632e7780c=
+8" target=3D"_blank">
+<span style=3D"color:#007C89">Book here</span></a><br>
+Eating Disorders &#8211; 23/09/2021&nbsp;10:00 am - 10:45 am <a href=3D"htt=
+ps://eu-west-1.protection.sophos.com?d=3Dlist-manage.com&amp;u=3DaHR0cHM6Ly=
+9saXZlcnBvb2xjYW1ocy51czEyLmxpc3QtbWFuYWdlLmNvbS90cmFjay9jbGljaz91PTI5ZDA2M=
+TcyYTU2NmE3YTA2MmM4YzRiMDEmaWQ9MDZmN2Q0OTMyYSZlPTU4YWU5ZjgyMTY=3D&amp;i=3DN=
+jBhZTJkZjNkMGRjZTQwZjVlMDQ4YzM3&amp;t=3DdEFMQ2FQL2Rod3V5bEp0RUphTTNoSHBCd1F=
+USU8waDE5Mm5JWWEvUXE5RT0=3D&amp;h=3D1719a60daf5948abae55a6632e7780c8" targe=
+t=3D"_blank">
+<span style=3D"color:#007C89">Book here&nbsp;</span></a><br>
+An awareness session to EMDR - 28/09/2021&nbsp;9:00 am - 10:30 am <a href=
+=3D"https://eu-west-1.protection.sophos.com?d=3Dlist-manage.com&amp;u=3DaHR=
+0cHM6Ly9saXZlcnBvb2xjYW1ocy51czEyLmxpc3QtbWFuYWdlLmNvbS90cmFjay9jbGljaz91PT=
+I5ZDA2MTcyYTU2NmE3YTA2MmM4YzRiMDEmaWQ9N2Q4ODEwMjViZSZlPTU4YWU5ZjgyMTY=3D&am=
+p;i=3DNjBhZTJkZjNkMGRjZTQwZjVlMDQ4YzM3&amp;t=3DdTlsdVI2Z09GS3Yza2R2OGRWODNu=
+QlZkalFnbVhlYWRoU29nVE1vTFEzQT0=3D&amp;h=3D1719a60daf5948abae55a6632e7780c8=
+" target=3D"_blank">
+<span style=3D"color:#007C89">Book here</span></a>&nbsp;<br>
+Social media and mental health &#8211; 01/10/2021&nbsp;10:00 am - 10:45 am =
+<a href=3D"https://eu-west-1.protection.sophos.com?d=3Dlist-manage.com&amp;=
+u=3DaHR0cHM6Ly9saXZlcnBvb2xjYW1ocy51czEyLmxpc3QtbWFuYWdlLmNvbS90cmFjay9jbGl=
+jaz91PTI5ZDA2MTcyYTU2NmE3YTA2MmM4YzRiMDEmaWQ9NTE3Yzg2YjZkNiZlPTU4YWU5ZjgyMT=
+Y=3D&amp;i=3DNjBhZTJkZjNkMGRjZTQwZjVlMDQ4YzM3&amp;t=3DYmErWDh2anhESGdhcEJ5d=
+VRyS2p4cU9zY2ZjZmpoQmZnRXA1R09kcTlJcz0=3D&amp;h=3D1719a60daf5948abae55a6632=
+e7780c8" target=3D"_blank">
+<span style=3D"color:#007C89">Book here&nbsp;</span></a><br>
+Grief and Loss -&nbsp; 07/10/2021&nbsp;10:00 am - 11:00 am <a href=3D"https=
+://eu-west-1.protection.sophos.com?d=3Dlist-manage.com&amp;u=3DaHR0cHM6Ly9s=
+aXZlcnBvb2xjYW1ocy51czEyLmxpc3QtbWFuYWdlLmNvbS90cmFjay9jbGljaz91PTI5ZDA2MTc=
+yYTU2NmE3YTA2MmM4YzRiMDEmaWQ9ODkxMDAwNjhjYyZlPTU4YWU5ZjgyMTY=3D&amp;i=3DNjB=
+hZTJkZjNkMGRjZTQwZjVlMDQ4YzM3&amp;t=3DOEx2eUR0QVRQaFRWSWZZQWFTY0dIdWRoUXZ0R=
+jIrd0V4Snc5U0gzek1pcz0=3D&amp;h=3D1719a60daf5948abae55a6632e7780c8" target=
+=3D"_blank">
+<span style=3D"color:#007C89">Book here</span></a>&nbsp;<br>
+An Introduction to Psychosis &#8211; 14/10/2021&nbsp;10:00 am - 11:00 am <a=
+ href=3D"https://eu-west-1.protection.sophos.com?d=3Dlist-manage.com&amp;u=
+=3DaHR0cHM6Ly9saXZlcnBvb2xjYW1ocy51czEyLmxpc3QtbWFuYWdlLmNvbS90cmFjay9jbGlj=
+az91PTI5ZDA2MTcyYTU2NmE3YTA2MmM4YzRiMDEmaWQ9ZDgzMDIzNDdiOCZlPTU4YWU5ZjgyMTY=
+=3D&amp;i=3DNjBhZTJkZjNkMGRjZTQwZjVlMDQ4YzM3&amp;t=3DVWV0NkNjZUhqRjYxVjN1R0=
+RVdittVEljcWI5Ym94cGNNeGpjY2Nwdnh0ND0=3D&amp;h=3D1719a60daf5948abae55a6632e=
+7780c8" target=3D"_blank">
+<span style=3D"color:#007C89">Book here</span></a>&nbsp;<br>
+Attachment - 21/10/2021&nbsp;10:00 am - 10:45 am <a href=3D"https://eu-west=
+-1.protection.sophos.com?d=3Dlist-manage.com&amp;u=3DaHR0cHM6Ly9saXZlcnBvb2=
+xjYW1ocy51czEyLmxpc3QtbWFuYWdlLmNvbS90cmFjay9jbGljaz91PTI5ZDA2MTcyYTU2NmE3Y=
+TA2MmM4YzRiMDEmaWQ9YWM0YTBmMGYyNiZlPTU4YWU5ZjgyMTY=3D&amp;i=3DNjBhZTJkZjNkM=
+GRjZTQwZjVlMDQ4YzM3&amp;t=3DeW9MTHZacUROWkFka0ZxaU1XQVc5K0t1WTBXc29BN1ptN2h=
+nU3ppOHZJUT0=3D&amp;h=3D1719a60daf5948abae55a6632e7780c8" target=3D"_blank"=
+>
+<span style=3D"color:#007C89">Book here&nbsp;</span></a><br>
+&nbsp; <o:p></o:p></span></p>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+<p class=3D"MsoNormal"><span style=3D"mso-fareast-language:EN-GB"><o:p>&nbs=
+p;</o:p></span></p>
+<table class=3D"MsoNormalTable" border=3D"0" cellspacing=3D"0" cellpadding=
+=3D"0" width=3D"100%" style=3D"width:100.0%;border-collapse:collapse">
+<tbody>
+<tr>
+<td valign=3D"top" style=3D"padding:0cm 13.5pt 13.5pt 13.5pt">
+<div align=3D"center">
+<table class=3D"MsoNormalTable" border=3D"0" cellspacing=3D"0" cellpadding=
+=3D"0" style=3D"background:#FFA200;border-collapse:collapse">
+<tbody>
+<tr>
+<td style=3D"padding:13.5pt 13.5pt 13.5pt 13.5pt">
+<p class=3D"MsoNormal" align=3D"center" style=3D"text-align:center"><span s=
+tyle=3D"font-size:12.0pt;font-family:&quot;Arial&quot;,sans-serif;mso-farea=
+st-language:EN-GB"><a href=3D"https://eu-west-1.protection.sophos.com?d=3Dl=
+ist-manage.com&amp;u=3DaHR0cHM6Ly9saXZlcnBvb2xjYW1ocy51czEyLmxpc3QtbWFuYWdl=
+LmNvbS90cmFjay9jbGljaz91PTI5ZDA2MTcyYTU2NmE3YTA2MmM4YzRiMDEmaWQ9NzRmZTU4MDQ=
+3MCZlPTU4YWU5ZjgyMTY=3D&amp;i=3DNjBhZTJkZjNkMGRjZTQwZjVlMDQ4YzM3&amp;t=3DbF=
+J3NjlGN2lxRVRDTTRGYStzRldCckVFTmNzbG5JbFhYb2l4b1dlRmhiOD0=3D&amp;h=3D1719a6=
+0daf5948abae55a6632e7780c8" target=3D"_blank" title=3D"See the CAMHS traini=
+ng calendar here"><b><span style=3D"color:white;text-decoration:none">See
+ the CAMHS training calendar here</span></b></a><span style=3D"color:black"=
+> </span>
+<o:p></o:p></span></p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<p class=3D"MsoNormal"><span style=3D"font-size:12.0pt;color:#244061"><o:p>=
+&nbsp;</o:p></span></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:12.0pt;color:#244061"><o:p>=
+&nbsp;</o:p></span></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:12.0pt;color:#244061;mso-fa=
+reast-language:EN-GB">Kindest regards<o:p></o:p></span></p>
+<p class=3D"MsoNormal"><b><span style=3D"font-size:20.0pt;font-family:&quot=
+;Brush Script MT&quot;;color:#244061;mso-fareast-language:EN-GB">Sue Horroc=
+ks
+<o:p></o:p></span></b></p>
+<p class=3D"MsoNormal"><b><span style=3D"font-size:12.0pt;color:#244061;mso=
+-fareast-language:EN-GB">(</span></b><b><span style=3D"font-size:10.0pt;col=
+or:#244061;mso-fareast-language:EN-GB">Pronouns: she/her)</span></b><b><spa=
+n style=3D"font-size:12.0pt;color:#244061;mso-fareast-language:EN-GB"><o:p>=
+</o:p></span></b></p>
+<p class=3D"MsoNormal"><b><span style=3D"font-size:12.0pt;color:#244061;mso=
+-fareast-language:EN-GB">Mental Health Support Team Central Lead<o:p></o:p>=
+</span></b></p>
+<p class=3D"MsoNormal"><b><span style=3D"font-size:12.0pt;color:#244061;mso=
+-fareast-language:EN-GB">Senior Systemic Family Practitioner
+<o:p></o:p></span></b></p>
+<p class=3D"MsoNormal"><b><span style=3D"font-size:12.0pt;color:#244061;mso=
+-fareast-language:EN-GB"><o:p>&nbsp;</o:p></span></b></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:12.0pt;color:#244061;mso-fa=
+reast-language:EN-GB">Alder Hey Children's NHS Foundation Trust<o:p></o:p><=
+/span></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:12.0pt;color:#244061;mso-fa=
+reast-language:EN-GB">Mobile : 07971 304061<o:p></o:p></span></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:12.0pt;color:#244061;mso-fa=
+reast-language:EN-GB">E-mail:
+<u><a href=3D"mailto:sue.horrocks@alderhey.nhs.uk"><span style=3D"color:#24=
+4061">sue.horrocks@alderhey.nhs.uk</span></a></u><o:p></o:p></span></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:12.0pt;color:#244061;mso-fa=
+reast-language:EN-GB"><o:p>&nbsp;</o:p></span></p>
+<p class=3D"MsoNormal"><b><span style=3D"font-size:12.0pt;color:#244061;mso=
+-fareast-language:EN-GB">Working Hours:<o:p></o:p></span></b></p>
+<p class=3D"MsoNormal"><b><span style=3D"font-size:12.0pt;color:#244061;mso=
+-fareast-language:EN-GB">Monday&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0=
+9:00 &#8211; 18:00<o:p></o:p></span></b></p>
+<p class=3D"MsoNormal"><b><span style=3D"font-size:12.0pt;color:#244061;mso=
+-fareast-language:EN-GB">Tuesday&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+09:00 &#8211; 19:00<o:p></o:p></span></b></p>
+<p class=3D"MsoNormal"><b><span style=3D"font-size:12.0pt;color:#244061;mso=
+-fareast-language:EN-GB">Wednesday 09:00 &#8211; 19:00<o:p></o:p></span></b=
+></p>
+<p class=3D"MsoNormal"><b><span style=3D"font-size:12.0pt;color:#244061;mso=
+-fareast-language:EN-GB">Thursday&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 09:00 &#821=
+1; 16:30<o:p></o:p></span></b></p>
+<p class=3D"MsoNormal"><b><span style=3D"font-size:12.0pt;color:#244061;mso=
+-fareast-language:EN-GB">Friday&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp; 09:00 &#8211; 12:30<o:p></o:p></span></b></p>
+<p class=3D"MsoNormal"><b><span style=3D"font-size:12.0pt;color:#244061;mso=
+-fareast-language:EN-GB"><o:p>&nbsp;</o:p></span></b></p>
+<p class=3D"MsoNormal"><b><u><span style=3D"font-size:14.0pt;color:#244061;=
+mso-fareast-language:EN-GB">Please note:</span></u></b><b><span style=3D"fo=
+nt-size:14.0pt;color:#244061;mso-fareast-language:EN-GB">&nbsp; The MHST is
+<i>not</i> a crisis service and this email inbox is not monitored outside o=
+f my working hours.</span></b><b><span style=3D"font-size:12.0pt;color:#244=
+061;mso-fareast-language:EN-GB"><o:p></o:p></span></b></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:12.0pt;color:#244061">Howev=
+er, c</span><span style=3D"font-size:12.0pt;color:#1B3049;mso-style-textfil=
+l-fill-color:#1B3049;mso-style-textfill-fill-alpha:100.0%">hildren and youn=
+g people, parents and carers in crisis
+ can call the<br>
+<a href=3D"https://eu-west-1.protection.sophos.com/?d=3Dlist-manage.com&amp=
+;u=3DaHR0cHM6Ly9saXZlcnBvb2xjYW1ocy51czEyLmxpc3QtbWFuYWdlLmNvbS90cmFjay9jbG=
+ljaz91PTI5ZDA2MTcyYTU2NmE3YTA2MmM4YzRiMDEmaWQ9NjQ1MzliZjllMCZlPTU4YWU5ZjgyM=
+TY=3D&amp;i=3DNWVjZTgwODQxZGFkMGQwZTJiN2UxYjI3&amp;t=3DQk5yS2FqOTF5cWVsdWx1=
+RVZ5RlVMOWs4T3VSMmN4bXR2WEZiQVBPWFp4VT0=3D&amp;h=3Dda2350b3903848978282b827=
+f2893d7e" target=3D"_blank"><span style=3D"color:#1B3049;mso-style-textfill=
+-fill-color:#1B3049;mso-style-textfill-fill-alpha:100.0%">Alder
+ Hey&nbsp;CAMHS&nbsp;</span></a><a href=3D"https://eu-west-1.protection.sop=
+hos.com/?d=3Dlist-manage.com&amp;u=3DaHR0cHM6Ly9saXZlcnBvb2xjYW1ocy51czEyLm=
+xpc3QtbWFuYWdlLmNvbS90cmFjay9jbGljaz91PTI5ZDA2MTcyYTU2NmE3YTA2MmM4YzRiMDEma=
+WQ9NzIwZWY5MTJjMyZlPTU4YWU5ZjgyMTY=3D&amp;i=3DNWVjZTgwODQxZGFkMGQwZTJiN2UxY=
+jI3&amp;t=3DenA0dlNBQ1Vld1cwNTNsVkZPYjJacGdUditRTldWVGtjalBBdHg2UXppcz0=3D&=
+amp;h=3Dda2350b3903848978282b827f2893d7e"><span style=3D"color:#1B3049;mso-=
+style-textfill-fill-color:#1B3049;mso-style-textfill-fill-alpha:100.0%">c<b=
+>risis
+ care</b></span></a><b> line&nbsp;24 hours a day, seven days a week on&nbsp=
+;0151 293 3577 or freephone 0808 196 3550. Professionals can
+</b></span><b><span style=3D"font-size:12.0pt;color:#0C1B2F;mso-style-textf=
+ill-fill-color:#0C1B2F;mso-style-textfill-fill-alpha:100.0%">call:
+</span></b><b><span style=3D"font-size:12.0pt;color:#0F243E;mso-fareast-lan=
+guage:EN-GB">0151 282 4724</span></b><b><span style=3D"font-size:12.0pt;col=
+or:black;mso-fareast-language:EN-GB">
+</span></b><span style=3D"font-size:12.0pt;color:#1B3049;mso-style-textfill=
+-fill-color:#1B3049;mso-style-textfill-fill-alpha:100.0%"><br>
+They should only present to A&amp;E if they need medical treatment or are s=
+truggling to keep themselves safe in the immediate moment</span><span style=
+=3D"font-size:12.0pt;color:#244061">.</span><span style=3D"font-size:10.0pt=
+;color:black;mso-fareast-language:EN-GB"><o:p></o:p></span></p>
+<p class=3D"MsoNormal" align=3D"center" style=3D"text-align:center"><b><spa=
+n style=3D"font-size:14.0pt;font-family:&quot;Arial Black&quot;,sans-serif;=
+color:#5F497A;mso-fareast-language:EN-GB"><o:p>&nbsp;</o:p></span></b></p>
+<p class=3D"MsoNormal" align=3D"center" style=3D"text-align:center"><b><spa=
+n style=3D"font-size:14.0pt;font-family:&quot;Arial Black&quot;,sans-serif;=
+color:#5F497A;mso-fareast-language:EN-GB">&#8220;I&#8217;ve learned that pe=
+ople will forget what you said, people will forget what you did,
+ BUT people will never forget how you made them feel&#8221;<o:p></o:p></spa=
+n></b></p>
+<p class=3D"MsoNormal" align=3D"center" style=3D"text-align:center"><span s=
+tyle=3D"font-size:12.0pt;font-family:&quot;Arial Black&quot;,sans-serif;col=
+or:#5F497A;mso-fareast-language:EN-GB">Maya Angelou<o:p></o:p></span></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+</div>
+</body>
+</html>
+
+--_000_LO3P265MB239626CA1759B276B56DE349C5C49LO3P265MB2396GBRP_--
