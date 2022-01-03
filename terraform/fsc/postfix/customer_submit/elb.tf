@@ -1,7 +1,7 @@
 resource "aws_elb" "elb" {
   name              = local.instance_type
-  subnets           = [local.input_param_public_subnet_ids]
-  security_groups   = [aws_security_group.security_group_lb]
+  subnets           = local.input_param_public_subnet_ids
+  security_groups   = [aws_security_group.security_group_lb.id]
 
   listener {
     instance_port     = 25

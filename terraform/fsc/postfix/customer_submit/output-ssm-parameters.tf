@@ -7,13 +7,13 @@ module "output_string_parameters" {
 
   parameters = [
     {
-      name        = "/central/sg/inbound/submit/lb/id"
+      name        = "/central/sg/customer/submit/lb/id"
       value       = aws_security_group.security_group_lb.id
       description = aws_security_group.security_group_lb.description
     },
 
     {
-      name        = "/central/sg/inbound/submit/ec2/id"
+      name        = "/central/sg/customer/submit/ec2/id"
       value       = aws_security_group.security_group_ec2.id
       description = aws_security_group.security_group_ec2.description
     },

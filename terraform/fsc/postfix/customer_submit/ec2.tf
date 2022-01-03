@@ -114,10 +114,6 @@ locals {
     prod = "m5.2xlarge"
   }
 
-  INSTANCE_COUNT_BY_ENVIRONMENT = {
-    inf  = 3
-  }
-
   VOLUME_SIZE_GIBS_BY_ENVIRONMENT = {
     prod = 300
     inf  = 40
@@ -236,12 +232,6 @@ locals {
     local.DEFAULT_INSTANCE_SIZE
   )
 
-  instance_count = lookup(
-    local.INSTANCE_COUNT_BY_ENVIRONMENT,
-    local.input_param_deployment_environment,
-    local.DEFAULT_INSTANCE_COUNT
-  )
-
   volume_size_gibs = lookup(
     local.VOLUME_SIZE_GIBS_BY_ENVIRONMENT,
     local.input_param_deployment_environment,
@@ -271,7 +261,7 @@ locals {
 
 resource "aws_cloudformation_stack" "cloudformation_stack" {
   name = "customer-submit"
-  template_body = "${file("${path.module}/templates/as_customer_submit_template.json")}"
+  template_body = file("${path.module}/templates/as_customer_submit_template.json")
   parameters = {
     AlarmTopicArn                     = local.input_param_alarm_topic_arn
     AmiId                             = data.aws_ami.ami.id
@@ -298,7 +288,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     MsgHistoryV2StreamName            = var.firehose_msg_history_v2_stream_name
     MessageHistoryEventsTopicArn      = var.message_history_events_sns_topic
     PolicyTargetValue                 = local.as_policy_target_value
-    S3CookbookRepositoryURL           = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/cookbooks.enc"
+    S3CookbookRepositoryURL           = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/cookbooks.tar.gz"
     ScaleInOnWeekends                 = local.as_scale_in_on_weekends
     ScaleInCron                       = local.as_cron_scale_down
     ScaleOutCron                      = local.as_cron_scale_up
@@ -306,12 +296,12 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     ScaleInAndOutOnWeekdays           = local.as_scale_in_out_weekdays
     ScaleInOnWeekdaysCron             = local.as_cron_scale_in
     ScaleOutOnWeekdaysCron            = local.as_cron_scale_out
-    SecurityGroups                    = [local.input_param_sg_base_id, aws_security_group.security_group_ec2]
+    SecurityGroups                    = aws_security_group.security_group_ec2.id
     SpotPrice                         = "-1"
     StationVpcId                      = var.station_vpc_id
     StationVpcName                    = "station"
     Vpc                               = local.input_param_vpc_id
-    VpcZoneIdentifiers                = [local.input_param_public_subnet_ids]
+    VpcZoneIdentifiers                = join(",", local.input_param_public_subnet_ids)
     VpcName                           = "email"
     XgemailBucketName                 = var.customer_submit_bucket
     XgemailMinSizeDataGB              = local.volume_size_gibs
