@@ -281,7 +281,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     StationVpcName                   = var.station_name
     Vpc                              = local.input_param_vpc_id
     VpcName                          = "email"
-    VpcZoneIdentifiers               = [local.input_param_public_subnet_ids]
+    VpcZoneIdentifiers               = local.input_param_public_subnet_ids
     XgemailBucketName                = var.customer_submit_bucket
     XgemailMinSizeDataGB             = local.xgemail_size_data_gb
     XgemailPolicyBucketName          = var.policy_bucket
