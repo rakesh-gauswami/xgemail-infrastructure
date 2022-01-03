@@ -18,16 +18,6 @@ variable "build_url" {
   description = "Build URL"
 }
 
-variable "firehose_msg_history_v2_stream_name" {
-  type        = string
-  description = "firehose_msg_history_v2_stream_name"
-}
-
-variable "message_history_events_sns_topic" {
-  type        = string
-  description = "msg_history_events_sns_topic"
-}
-
 variable "customer_submit_bucket" {
   type        = string
   description = "customer_submit_bucket"
@@ -43,6 +33,11 @@ variable "message_history_ms_bucket" {
   description = "msg_history_ms_bucket"
 }
 
+variable "message_history_events_sns_topic" {
+  type        = string
+  description = "msg_history_events_sns_topic"
+}
+
 variable "message_history_sqs_queue" {
   type        = string
   description = "msg_history_sqs_queue"
@@ -51,6 +46,11 @@ variable "message_history_sqs_queue" {
 variable "policy_bucket" {
   type        = string
   description = "policy_bucket"
+}
+
+variable "firehose_msg_history_v2_stream_name" {
+  type        = string
+  description = "firehose_msg_history_v2_stream_name"
 }
 
 variable "station_vpc_id" {
