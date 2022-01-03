@@ -1,8 +1,3 @@
-variable "ami_branch" {
-  type        = string
-  description = "AMI Bitbucket branch"
-}
-
 variable "build_branch" {
   type        = string
   description = "Bitbucket Branch"
@@ -13,19 +8,14 @@ variable "build_number" {
   description = "Build Number"
 }
 
-variable "build_result_key" {
+variable "build_tag" {
   type        = string
-  description = "Build Result Key"
+  description = "Build Tag"
 }
 
-variable "ami_build" {
+variable "build_url" {
   type        = string
-  description = "AMI build number"
-}
-
-variable "msg_history_v2_bucket_name" {
-  type        = string
-  description = "msg_history_v2_bucket_name"
+  description = "Build URL"
 }
 
 variable "firehose_msg_history_v2_stream_name" {
@@ -33,19 +23,9 @@ variable "firehose_msg_history_v2_stream_name" {
   description = "firehose_msg_history_v2_stream_name"
 }
 
-variable "msg_history_events_sns_topic" {
+variable "message_history_events_sns_topic" {
   type        = string
   description = "msg_history_events_sns_topic"
-}
-
-variable "station_vpc_id" {
-  type        = string
-  description = "station_vpc_id"
-}
-
-variable "station_name" {
-  type        = string
-  description = "station_name"
 }
 
 variable "customer_submit_bucket" {
@@ -53,17 +33,17 @@ variable "customer_submit_bucket" {
   description = "customer_submit_bucket"
 }
 
-variable "msg_history_bucket" {
+variable "message_history_bucket" {
   type        = string
   description = "msg_history_bucket"
 }
 
-variable "msg_history_ms_bucket" {
+variable "message_history_ms_bucket" {
   type        = string
   description = "msg_history_ms_bucket"
 }
 
-variable "msg_history_sqs_queue" {
+variable "message_history_sqs_queue" {
   type        = string
   description = "msg_history_sqs_queue"
 }
@@ -86,6 +66,16 @@ variable "customer_submit_sqs_queue" {
 variable "scan_events_sns_topic" {
   type        = string
   description = "scan_events_sns_topic"
+}
+
+variable "station_vpc_id" {
+  type        = string
+  description = "station_vpc_id"
+}
+
+variable "station_name" {
+  type        = string
+  description = "station_name"
 }
 
 variable "tag_origin" {
