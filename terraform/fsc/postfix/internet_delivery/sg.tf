@@ -1,10 +1,15 @@
 locals {
+  cidr_block_world       = "0.0.0.0/0"
   ntp_udp_port           = 123
   smtp_tcp_port          = 25
   smtptls_tcp_port       = 587
   snmp_port              = 161
   snmp_trap_port         = 162
   security_group_name_lb = "${local.instance_type}-lb"
+}
+
+data "aws_security_group" "base" {
+  id = local.input_param_sg_base_id
 }
 
 data "aws_security_group" "logicmonitor" {
@@ -19,6 +24,15 @@ resource "aws_security_group" "security_group_lb" {
   tags = { Name = local.security_group_name_lb }
 }
 
+resource "aws_security_group_rule" "lb_egress_world" {
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  security_group_id = aws_security_group.security_group_lb.id
+  cidr_blocks       = [local.cidr_block_world]
+}
+
 resource "aws_security_group" "security_group_ec2" {
   name        = local.instance_type
   description = "Security group controlling access to ${local.instance_type}."
@@ -27,20 +41,13 @@ resource "aws_security_group" "security_group_ec2" {
   tags = { Name = local.instance_type }
 }
 
-resource "aws_security_group_rule" "lb_egress_world" {
-  type              = "egress"
-  from_port         = 0
-  to_port           = 0
-  protocol          = "-1"
-  security_group_id = aws_security_group.security_group_lb.id
-}
-
 resource "aws_security_group_rule" "ec2_egress_world" {
   type              = "egress"
   from_port         = 0
   to_port           = 0
   protocol          = "-1"
   security_group_id = aws_security_group.security_group_ec2.id
+  cidr_blocks       = [local.cidr_block_world]
 }
 
 resource "aws_security_group_rule" "ec2_ingress_lb_smtp" {

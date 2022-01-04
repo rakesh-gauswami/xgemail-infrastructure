@@ -249,7 +249,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     AlarmScaleInThreshold           = local.alarm_scale_in_threshold
     AlarmScaleOutThreshold          = local.alarm_scale_out_threshold
     AlarmTopicArn                   = local.input_param_alarm_topic_arn
-    AmiId                           = data.aws_ami.ami
+    AmiId                           = data.aws_ami.ami.id
     AutoScalingInstanceRoleArn      = local.input_param_autoscaling_role_arn
     AutoScalingMinSize              = local.as_min_size
     AutoScalingMaxSize              = local.as_max_size
@@ -271,11 +271,11 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     MsgHistoryV2BucketName          = var.message_history_bucket
     MsgHistoryV2DynamoDbTableName   = var.message_history_dynamodb_table_name
     MsgHistoryV2StreamName          = var.firehose_msg_history_v2_stream_name
-    S3CookbookRepositoryURL         = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/xgemail-infrastructure/cookbooks.enc"
+    S3CookbookRepositoryURL         = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/cookbooks.tar.gz"
     ScaleInOnWeekends               = local.as_scale_in_on_weekends
     ScaleInCron                     = local.as_cron_scale_down
     ScaleOutCron                    = local.as_cron_scale_up
-    SecurityGroups                  = aws_security_group.security_group_ec2
+    SecurityGroups                  = aws_security_group.security_group_ec2.id
     SpotPrice                       = "-1"
     StationVpcId                    = var.station_vpc_id
     StationVpcName                  = var.station_name

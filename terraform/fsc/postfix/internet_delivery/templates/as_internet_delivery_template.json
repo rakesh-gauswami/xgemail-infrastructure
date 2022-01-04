@@ -155,8 +155,7 @@
     },
     "S3CookbookRepositoryURL": {
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
-      "Type": "String",
-      "Default": "//cloud-applications/develop/cookbooks.enc"
+      "Type": "String"
     },
     "ScaleInOnWeekends": {
       "Description": "Enable scale in to zero on Saturday at midnight and scale out on Monday morning. (Times are UTC, NON PROD/QA ENVIRONMENT ONLY)",
@@ -453,7 +452,7 @@
           },
           {
             "Key": "BuildResultKey",
-            "Value": { "Ref": "BuildVersion" },
+            "Value": { "Ref": "BuildTag" },
             "PropagateAtLaunch": "true"
           },
           {
@@ -758,7 +757,6 @@
                 "command": {
                   "Fn::Join": [ "; ",[
                     "rm -f /var/chef/chef-repo/nodes/*.*",
-                    "rm -f /var/chef/chef-repo/cookbooks.enc",
                     "rm -f /var/chef/chef-repo/cookbooks.tar.gz",
                     "rm -rf /var/chef/chef-repo/cookbooks"
                   ]]
@@ -893,7 +891,7 @@
                       "export AWS_AMI_ID='", { "Ref" : "AmiId" }, "'\n",
                       "export AWS_APPLICATION='", { "Ref": "XgemailServiceType" }, "'\n",
                       "export AWS_BRANCH='", { "Ref" : "Branch" }, "'\n",
-                      "export AWS_BUILD_RESULT_KEY='", { "Ref" : "BuildVersion" }, "'\n",
+                      "export AWS_BUILD_RESULT_KEY='", { "Ref" : "BuildTag" }, "'\n",
                       "export AWS_BUNDLE_VERSION='", { "Ref" : "BundleVersion" }, "'\n",
                       "export AWS_INSTANCE_ID=$(curl -f http://169.254.169.254/latest/meta-data/instance-id)\n",
                       "export AWS_REGION='", { "Ref" : "AWS::Region" }, "'\n",
@@ -984,7 +982,7 @@
                   "# Force replacement of the LaunchConfiguration object by changing this value.\n",
                   "# ",
                   {
-                    "Ref": "BuildVersion"
+                    "Ref": "BuildTag"
                   },
                   "\n",
                   "# Make sure we call cfn-signal before exiting, otherwise we have to\n",
@@ -1106,9 +1104,9 @@
       "Description": "Branch we are using so we know for things like ansible",
       "Value": { "Ref": "Branch" }
     },
-    "BuildVersion": {
+    "BuildTag": {
       "Description": "Version of the application from Bamboo",
-      "Value": { "Ref": "BuildVersion" }
+      "Value": { "Ref": "BuildTag" }
     },
     "LaunchTemplate": {
       "Description": "Auto Scaling Launch Template Name.",
