@@ -1,6 +1,6 @@
 locals {
 
-  bucket_prefix = "${var.bucket_logical_name}"
+  bucket_name = var.bucket_name
   logging = var.logging_target_bucket == null ? [] : [
     {
       target_bucket = var.logging_target_bucket
@@ -19,7 +19,7 @@ locals {
 }
 
 resource "aws_s3_bucket" "bucket" {
-  bucket_prefix = "${local.bucket_prefix}-"
+  name = local.bucket_name
 
   force_destroy = local.resolved_force_destroy
 
@@ -100,7 +100,7 @@ resource "aws_s3_bucket" "bucket" {
     }
   }
 
-  tags = { Name = local.bucket_prefix }
+  tags = { Name = local.bucket_name }
 }
 
 resource "aws_s3_bucket_public_access_block" "public_access_block" {
