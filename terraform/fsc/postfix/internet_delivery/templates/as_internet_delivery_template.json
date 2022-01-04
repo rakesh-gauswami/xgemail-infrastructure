@@ -19,6 +19,10 @@
   },
 
   "Parameters": {
+    "AccountName": {
+      "Description": "The AWS Account name.",
+      "Type": "String"
+    },
     "AlarmScalingEnabled": {
       "Description": "Enable AutoScaling Alarms to trigger scaling policies.",
       "Type": "String",
@@ -685,8 +689,8 @@
                     "    \"application_name\"                       : \"{{cluster}}\",\n",
                     "    \"application_type\"                       : \"xgemail\",\n",
                     "    \"availability_zone\"                      : \"{{availability_zone}}\",\n",
-                    "    \"connections\"                            : \"cloud-{{environment}}-connections\",\n",
-                    "    \"configs\"                                : \"cloud-{{environment}}-configs\",\n",
+                    "    \"connections\"                            : \"cloud-{{account_name}}-connections\",\n",
+                    "    \"configs\"                                : \"cloud-{{account_name}}-configs\",\n",
                     "    \"context\"                                : \"{{environment}}\",\n",
                     "    \"environment\"                            : \"{{environment}}\",\n",
                     "    \"branch\"                                 : \"{{branch}}\",\n",
@@ -721,6 +725,7 @@
                   ]]
                 },
                 "context": {
+                  "account_name":                                   { "Ref": "AccountName"},
                   "alarm_topic_arn":                                { "Ref": "AlarmTopicArn" },
                   "availability_zone":                              { "Ref": "AvailabilityZones" },
                   "branch":                                         { "Ref": "Branch" },
@@ -844,7 +849,6 @@
                   "Fn::Join": ["", [
                     "knife node run_list set -z `knife node list -z` \"",
                     "recipe[sophos-cloud-xgemail::setup_xgemail_instance_terminator],",
-                    "recipe[sophos-cloud-xgemail::configure-policy-efs-mount],",
                     "recipe[sophos-cloud-ntpd::default],",
                     "recipe[sophos-cloud-fluentd::configure],",
                     "recipe[sophos-cloud-snmpd::configure],",
