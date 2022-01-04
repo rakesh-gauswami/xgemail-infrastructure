@@ -274,11 +274,9 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     BuildTag                          = var.build_tag
     BuildUrl                          = var.build_url
     BundleVersion                     = local.ami_build
-    CloudConfigsBucket                = local.input_param_cloud_configs_bucket_name
-    CloudConnectionsBucket            = local.input_param_cloud_connections_bucket_name
     DeployMaxBatchSize                = local.as_max_batch_size
     DeployMinInstancesInService       = local.as_min_service
-    Environment                       = local.input_param_deployment_environment
+    Environment                       = local.input_param_account_name
     HealthCheckGracePeriod            = local.health_check_grace_period
     InstanceProfile                   = local.input_param_iam_instance_profile_arn
     InstanceType                      = local.instance_size

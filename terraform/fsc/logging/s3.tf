@@ -1,10 +1,10 @@
 locals {
-  application_log_bucket_logical_name = "logs-sophos-central"
+  application_log_bucket_name = "logs-sophos-central"
 
   lifecycle_rules = {
     for config in [
       {
-        bucket_id       = local.application_log_bucket_logical_name
+        bucket_id       = local.application_log_bucket_name
         expiration_days = var.logs_expiration_days
         transition_days = var.logs_transition_days
       }
@@ -53,6 +53,6 @@ module "logs_bucket" {
     aws.parameters = aws.parameters
   }
 
-  bucket_logical_name   = local.application_log_bucket_logical_name
-  lifecycle_rules       = local.lifecycle_rules[local.application_log_bucket_logical_name]
+  bucket_name   = local.application_log_bucket_name
+  lifecycle_rules       = local.lifecycle_rules[local.application_log_bucket_name]
 }
