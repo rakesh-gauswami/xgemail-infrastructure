@@ -79,14 +79,14 @@ variable "customer_delivery_sqs_queue" {
   description = "customer_delivery_sqs_queue"
 }
 
-variable "customer_delivery_sqs_queue_sns_listener" {
+variable "customer_delivery_sqs_queue_name" {
   type        = string
-  description = "customer_delivery_sqs_queue_sns_listener"
+  description = "customer_delivery_sqs_queue_name"
 }
 
-variable "customer_delivery_sqs_queue_sns_listener_url" {
+variable "customer_delivery_sqs_queue_url" {
   type        = string
-  description = "customer_delivery_sqs_queue_sns_listener_url"
+  description = "customer_delivery_sqs_queue_url"
 }
 
 variable "station_vpc_id" {

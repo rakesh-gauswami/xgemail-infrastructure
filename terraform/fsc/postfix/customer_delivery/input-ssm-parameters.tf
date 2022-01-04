@@ -18,6 +18,7 @@ locals {
   input_param_zone_id                         = nonsensitive(data.aws_ssm_parameter.zone_id.value)
   input_param_alarm_topic_arn                 = nonsensitive(data.aws_ssm_parameter.alarm_topic_arn.value)
   input_param_lifecycle_topic_arn             = nonsensitive(data.aws_ssm_parameter.lifecycle_topic_arn.value)
+  input_param_lifecycle_hook_launching        = nonsensitive(data.aws_ssm_parameter.lifecycle_hook_launching_name.value)
   input_param_lifecycle_hook_terminating      = nonsensitive(data.aws_ssm_parameter.lifecycle_hook_terminating_name.value)
   input_param_iam_instance_profile_arn        = nonsensitive(data.aws_ssm_parameter.iam_instance_profile_arn.value)
 }
@@ -107,8 +108,13 @@ data "aws_ssm_parameter" "zone_id" {
   provider = aws.parameters
 }
 
+data "aws_ssm_parameter" "lifecycle_hook_launching_name" {
+  name     = "/central/asg/customer-delivery/lifecycle-hook/launching/name"
+  provider = aws.parameters
+}
+
 data "aws_ssm_parameter" "lifecycle_hook_terminating_name" {
-  name     = "/central/asg/${local.instance_type}/lifecycle-hook/terminating/name"
+  name     = "/central/asg/customer-delivery/lifecycle-hook/terminating/name"
   provider = aws.parameters
 }
 

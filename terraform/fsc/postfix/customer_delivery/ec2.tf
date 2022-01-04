@@ -3,13 +3,9 @@ locals {
   ami_owner_account = "843638552935"
   ami_type          = "xgemail"
 
-  DEFAULT_SCALE_IN_ENABLED              = false
-  DEFAULT_SCALE_OUT_ENABLED             = true
-  DEFAULT_ALARM_SCALING_ENABLED         = false
-  DEFAULT_ALARM_SCALE_IN_THRESHOLD      = 10
-  DEFAULT_ALARM_SCALE_OUT_THRESHOLD     = 50
-
   DEFAULT_AS_ALARM_SCALING_ENABLED      = false
+  DEFAULT_AS_ALARM_SCALE_IN_THRESHOLD   = 10
+  DEFAULT_AS_ALARM_SCALE_OUT_THRESHOLD  = 50
   DEFAULT_AS_MIN_SIZE                   = 1
   DEFAULT_AS_MAX_SIZE                   = 6
   DEFAULT_AS_MIN_SERVICE                = 1
@@ -29,48 +25,37 @@ locals {
   DEFAULT_SXL_DBL                       = "uri.cal1.sophosxl.com"
   DEFAULT_SXL_RBL                       = "fur.cal1.sophosxl.com"
 
-  SCALE_IN_ENABLED = {
+  AS_ALARM_SCALING_ENABLED_BY_ENVIRONMENT = {
     inf  = false
     dev  = false
     qa   = false
-    prod = false
+    prod = true
+  }
+  AS_ALARM_SCALE_IN_THRESHOLD_BY_ENVIRONMENT = {
+    inf  = 10
+    dev  = 10
+    qa   = 10
+    prod = 100
   }
 
-  SCALE_OUT_ENABLED = {
-    inf  = false
-    dev  = false
-    qa   = false
-    prod = false
+  AS_ALARM_SCALE_OUT_THRESHOLD_BY_ENVIRONMENT = {
+    inf  = 50
+    dev  = 50
+    qa   = 50
+    prod = 500
   }
-
-  ALARM_SCALE_IN_THRESHOLD = {
-    inf  = false
-    dev  = false
-    qa   = false
-    prod = false
-  }
-
-  ALARM_SCALE_OUT_THRESHOLD= {
-    inf  = false
-    dev  = false
-    qa   = false
-    prod = false
-  }
-
-### confirm above parameters
-
   AS_MIN_SIZE_BY_ENVIRONMENT = {
     inf  = 1
     dev  = 1
     qa   = 1
-    prod = 1
+    prod = 6
   }
 
   AS_MAX_SIZE_BY_ENVIRONMENT = {
     inf  = 6
     dev  = 6
     qa   = 6
-    prod = 6
+    prod = 12
   }
 
   AS_MIN_SERVICE_BY_ENVIRONMENT = {
@@ -82,6 +67,9 @@ locals {
 
   AS_MAX_BATCH_SIZE_BY_ENVIRONMENT = {
     inf  = 1
+    dev  = 1
+    qa   = 3
+    prod = 3
   }
 
   AS_CRON_SCALE_DOWN_BY_ENVIRONMENT = {
@@ -148,13 +136,10 @@ locals {
   }
 
   INSTANCE_SIZE_BY_ENVIRONMENT = {
+    inf  = "t3.small"
     dev  = "c4.xlarge"
     qa   = "c4.xlarge"
     prod = "m5a.large"
-  }
-
-  INSTANCE_COUNT_BY_ENVIRONMENT = {
-    inf  = 3
   }
 
   VOLUME_SIZE_GIBS_BY_ENVIRONMENT = {
@@ -191,28 +176,23 @@ locals {
     stn000cmh = "fur.cal1.sophosxl.com"
   }
 
-  alarm_scale_in_enabled = lookup(
+  alarm_scaling_enabled = lookup(
+  local.AS_ALARM_SCALING_ENABLED_BY_ENVIRONMENT,
   local.input_param_deployment_environment,
-  local.DEFAULT_SCALE_IN_ENABLED
-  )
-
-  alarm_scale_out_enabled = lookup(
-  local.input_param_deployment_environment,
-  local.DEFAULT_SCALE_OUT_ENABLED
+  local.DEFAULT_AS_ALARM_SCALING_ENABLED
   )
 
   alarm_scale_in_threshold = lookup(
+  local.AS_ALARM_SCALE_IN_THRESHOLD_BY_ENVIRONMENT,
   local.input_param_deployment_environment,
-  local.DEFAULT_ALARM_SCALE_IN_THRESHOLD
+  local.DEFAULT_AS_ALARM_SCALE_IN_THRESHOLD
   )
 
   alarm_scale_out_threshold = lookup(
+  local.AS_ALARM_SCALE_OUT_THRESHOLD_BY_ENVIRONMENT,
   local.input_param_deployment_environment,
-  local.DEFAULT_ALARM_SCALE_OUT_THRESHOLD
+  local.DEFAULT_AS_ALARM_SCALE_OUT_THRESHOLD
   )
-
-  ### Confirm above parameters
-
 
   as_min_size = lookup(
   local.AS_MIN_SIZE_BY_ENVIRONMENT,
@@ -298,12 +278,6 @@ locals {
   local.DEFAULT_INSTANCE_SIZE
   )
 
-  instance_count = lookup(
-  local.INSTANCE_COUNT_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_INSTANCE_COUNT
-  )
-
   volume_size_gibs = lookup(
   local.VOLUME_SIZE_GIBS_BY_ENVIRONMENT,
   local.input_param_deployment_environment,
@@ -317,7 +291,7 @@ locals {
   local.SXL_DBL_BY_ENVIRONMENT,
   local.input_param_deployment_environment,
   local.DEFAULT_SXL_DBL
-   )
+  )
   )
 
   sxl_rbl = lookup(
@@ -327,7 +301,7 @@ locals {
   local.SXL_RBL_BY_ENVIRONMENT,
   local.input_param_deployment_environment,
   local.DEFAULT_SXL_RBL
-   )
+  )
   )
 }
 
@@ -335,8 +309,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
   name = "customer-delivery"
   template_body = "${file("${path.module}/templates/as_customer_delivery-template.json")}"
   parameters = {
-    AlarmScaleInEnabled               = local.alarm_scale_in_enabled
-    AlarmScaleOutEnabled              = local.alarm_scale_out_enabled
+    AlarmScalingEnabled               = local.alarm_scaling_enabled
     AlarmScaleInThreshold             = local.alarm_scale_in_threshold
     AlarmScaleOutThreshold            = local.alarm_scale_out_threshold
     AlarmTopicArn                     = local.input_param_alarm_topic_arn
@@ -358,7 +331,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     HealthCheckGracePeriod            = local.health_check_grace_period
     InstanceProfile                   = local.input_param_iam_instance_profile_arn
     InstanceType                      = local.instance_size
-    KeyName                           = data.primary_region
+    LifecycleHookLaunching            = local.input_param_lifecycle_hook_launching
     LifecycleHookTerminating          = local.input_param_lifecycle_hook_terminating
     LoadBalancerName                  = aws_elb.elb.id
     MsgHistoryV2BucketName            = var.message_history_ms_bucket
@@ -387,8 +360,8 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     XgemailMsgHistoryStatusQueueUrl   = var.message_history_status_sqs_queue
     XgemailMsgHistoryStatusSnsArn     = var.message_history_status_sns_topic
     XgemailPolicyBucketName           = var.policy_bucket
-    XgemailSnsSqsQueue                = var.customer_delivery_sqs_queue_sns_listener
-    XgemailSnsSqsQueueUrl             = var.customer_delivery_sqs_queue_sns_listener_url
+    XgemailSnsSqsQueue                = var.customer_delivery_sqs_queue_name
+    XgemailSnsSqsQueueUrl             = var.customer_delivery_sqs_queue_url
     XgemailServiceType                = local.instance_type
     XgemailSxlDbl                     = local.sxl_dbl
     XgemailSxlRbl                     = local.sxl_rbl
