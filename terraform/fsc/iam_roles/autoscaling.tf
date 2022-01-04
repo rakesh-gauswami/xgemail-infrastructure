@@ -26,7 +26,7 @@ data "aws_iam_policy_document" "autoscaling_policy" {
       "arn:aws:sns:${local.input_param_primary_region}:${local.input_param_account_id}:*"
     ]
 
-    sid = "AutoscalingSnsPolicy"
+    sid = "AutoScalingSnsPolicy"
   }
   statement {
     actions = [
@@ -38,19 +38,12 @@ data "aws_iam_policy_document" "autoscaling_policy" {
 
     resources = ["arn:aws:sqs:${local.input_param_primary_region}:${local.input_param_account_id}:*"]
 
-    sid = "AutoscalingSqsPolicy"
+    sid = "AutoScalingSqsPolicy"
   }
 }
 
-resource "aws_iam_policy" "autoscaling_policy" {
-  name_prefix = "AutoScalingPolicy-"
-  path        = "/"
-  description = "Policy for AutoScaling"
+resource "aws_iam_role_policy" "autoscaling_policy" {
+  name        = "AutoScalingPolicy"
+  role        = aws_iam_role.autoscaling_role.id
   policy      = data.aws_iam_policy_document.autoscaling_policy.json
-
-  tags = { Name = "AutoScalingPolicy" }
-
-  lifecycle {
-    create_before_destroy = true
-  }
 }
