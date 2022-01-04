@@ -24,7 +24,7 @@ data "aws_iam_policy_document" "mf_elb_o365_ip_sync_lambda_role_policy" {
   policy_id = "mf-elb-o365-ip-sync-lambda-role-policy"
 
   statement {
-    sid = "MfElbO365IpSync"
+    sid = "CwLogsPermissions"
     actions = [
       "logs:CreateLogGroup",
       "logs:CreateLogStream",
@@ -34,7 +34,7 @@ data "aws_iam_policy_document" "mf_elb_o365_ip_sync_lambda_role_policy" {
     resources = ["arn:aws:logs:*:*:*"]
   }
   statement {
-    sid = "MfElbO365IpSync"
+    sid = "Ec2Permissions"
     actions = [
       "ec2:CreateTags",
       "ec2:DescribeAddresses",

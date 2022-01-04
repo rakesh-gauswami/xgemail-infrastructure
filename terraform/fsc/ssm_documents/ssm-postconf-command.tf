@@ -1,9 +1,6 @@
 # vim: autoindent expandtab shiftwidth=2 filetype=terraform
-resource "aws_ssm_document" "ssm_postconf_command" {
-  name          = "ssm-postconf-command"
-  document_type = "Command"
-  content = <<DOC
-  {
+locals {
+  ssm_postconf_command_ssm_document = {
     "schemaVersion": "2.2",
     "description": "Run any Postmulti/Postconf command on any instance",
     "parameters": {
@@ -28,5 +25,10 @@ resource "aws_ssm_document" "ssm_postconf_command" {
       }
     ]
   }
-DOC
+}
+
+resource "aws_ssm_document" "ssm_postconf_command" {
+  name          = "ssm-postconf-command"
+  document_type = "Command"
+  content = jsonencode(local.ssm_postconf_command_ssm_document)
 }
