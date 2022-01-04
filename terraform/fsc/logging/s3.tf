@@ -1,5 +1,5 @@
 locals {
-  application_log_bucket_name = "logs-sophos-central"
+  application_log_bucket_name = "cloud-${local.input_param_account_name}-logs"
 
   lifecycle_rules = {
     for config in [
