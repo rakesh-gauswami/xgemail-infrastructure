@@ -19,10 +19,6 @@
   },
 
   "Parameters": {
-    "AesDecryptionKey": {
-      "Description": "Decryption key for encrypted buckets",
-      "Type": "String"
-    },
     "AlarmScaleInEnabled": {
       "Description": "Enable AutoScaling Alarms to trigger scaling policies.",
       "Type": "String",
@@ -80,14 +76,25 @@
       "Description": "(Develop, XGE-XXX, etc...)",
       "Type": "String"
     },
-    "BuildVersion": {
-      "Description": "Version of the application from Bamboo",
-      "Type": "String",
-      "Default": "1.0"
+    "BuildTag": {
+      "Description": "Version of the application from Jenkins",
+      "Type": "String"
+    },
+    "BuildUrl": {
+      "Description": "Link to Build from Jenkins",
+      "Type": "String"
     },
     "BundleVersion": {
       "Description": "Version of the AMI bundle",
       "Type": "Number"
+    },
+    "CloudConfigsBucket": {
+      "Description": "The absolute S3 path to the cloud-configs bucket.",
+      "Type": "String"
+    },
+    "CloudConnectionsBucket": {
+      "Description": "The absolute S3 path to the cloud-connections bucket.",
+      "Type": "String"
     },
     "DeployIgnoreUnmodifiedGroupSize": {
       "Description": "During a stack update, indicates whether AWS CloudFormation ignores any group size property differences between your current Auto Scaling group and the Auto Scaling group that is described in the update.",
@@ -135,10 +142,6 @@
       "Type": "String",
       "Default": "c3.large"
     },
-    "KeyName": {
-      "Type": "AWS::EC2::KeyPair::KeyName",
-      "Description": "Key pair used to SSH to the instance"
-    },
     "LifecycleHookTerminating": {
       "Description": "Name of the Lifecycle Hook.",
       "Type": "String"
@@ -162,7 +165,7 @@
     "S3CookbookRepositoryURL": {
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
       "Type": "String",
-      "Default": "//cloud-applications/develop/cookbooks.enc"
+      "Default": "//cloud-applications/develop/cookbooks.tar.gz"
     },
     "ScaleInOnWeekends": {
       "Description": "Enable scale in to zero on Saturday at midnight and scale out on Monday morning. (Times are UTC, NON PROD/QA ENVIRONMENT ONLY)",
@@ -218,7 +221,7 @@
     "StationVpcName": {
       "Description": "Name of the CloudStation VPC",
       "Type": "String",
-      "Default": "CloudStation"
+      "Default": "station"
     },
     "Vpc": {
       "Description": "ID of an existing VPC",
@@ -227,7 +230,7 @@
     "VpcName": {
       "Description": "Name of an existing VPC",
       "Type": "String",
-      "Default": "CloudStation"
+      "Default": "email"
     },
     "VpcZoneIdentifiers": {
       "Type": "List<AWS::EC2::Subnet::Id>",
@@ -493,8 +496,13 @@
             "PropagateAtLaunch": "true"
           },
           {
-            "Key": "BuildResultKey",
-            "Value": { "Ref": "BuildVersion" },
+            "Key": "BuildTag",
+            "Value": { "Ref": "BuildTag" },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "BuildUrl",
+            "Value": { "Ref": "BuildUrl" },
             "PropagateAtLaunch": "true"
           },
           {
@@ -746,8 +754,8 @@
                     "    \"application_name\"                       : \"{{cluster}}\",\n",
                     "    \"application_type\"                       : \"xgemail\",\n",
                     "    \"availability_zone\"                      : \"{{availability_zone}}\",\n",
-                    "    \"connections\"                            : \"cloud-{{environment}}-connections\",\n",
-                    "    \"configs\"                                : \"cloud-{{environment}}-configs\",\n",
+                    "    \"connections\"                            : \"{{cloud-connections}}\",\n",
+                    "    \"configs\"                                : \"{{cloud-configs}}\",\n",
                     "    \"context\"                                : \"{{environment}}\",\n",
                     "    \"environment\"                            : \"{{environment}}\",\n",
                     "    \"branch\"                                 : \"{{branch}}\",\n",
@@ -790,6 +798,8 @@
                   "branch":                                         { "Ref": "Branch" },
                   "cluster":                                        { "Ref": "XgemailServiceType" },
                   "cluster_type":                                   { "Ref": "XgemailServiceType" },
+                  "cloud_configs":                                  { "Ref": "CloudConfigsBucket" },
+                  "cloud_connections":                              { "Ref": "CloudConnectionsBucket" },
                   "environment":                                    { "Ref": "Environment" },
                   "lifecycle_topic_arn":                            { "Ref": "AutoScalingNotificationTopicARN" },
                   "msg_history_bucket_name":                        { "Ref": "XgemailMsgHistoryBucketName" },
@@ -834,7 +844,7 @@
                 "command": {
                   "Fn::Join": [
                     "",
-                    [ "aws s3 cp s3:", { "Ref": "S3CookbookRepositoryURL" }, " /var/chef/chef-repo/cookbooks.enc" ]
+                    [ "aws s3 cp s3:", { "Ref": "S3CookbookRepositoryURL" }, " /var/chef/chef-repo/cookbooks.tar.gz" ]
                   ]
                 },
                 "cwd": "/var/chef",
@@ -842,19 +852,7 @@
                   "HOME": "/var/chef"
                 }
               },
-              "02_decrypt_cookbook": {
-                "command": {
-                  "Fn::Join": [
-                    "",
-                    [ "openssl enc -aes-256-cbc -d -in /var/chef/chef-repo/cookbooks.enc -out /var/chef/chef-repo/cookbooks.tar.gz -pass pass:", { "Ref": "AesDecryptionKey" } ]
-                  ]
-                },
-                "cwd": "/var/chef/chef-repo",
-                "env": {
-                  "HOME": "/var/chef"
-                }
-              },
-              "03_unpack_cookbook": {
+              "02_unpack_cookbook": {
                 "command": "tar xvf /var/chef/chef-repo/cookbooks.tar.gz",
                 "cwd": "/var/chef/chef-repo"
               }
@@ -971,13 +969,12 @@
                       "export AWS_AMI_ID='", { "Ref" : "AmiId" }, "'\n",
                       "export AWS_APPLICATION='", { "Ref": "XgemailServiceType" }, "'\n",
                       "export AWS_BRANCH='", { "Ref" : "Branch" }, "'\n",
-                      "export AWS_BUILD_RESULT_KEY='", { "Ref" : "BuildVersion" }, "'\n",
-                      "export AWS_BUNDLE_VERSION='", { "Ref" : "BundleVersion" }, "'\n",
+                      "export AWS_BUILD_TAG='", { "Ref" : "BuildTag" }, "'\n",                      "export AWS_BUNDLE_VERSION='", { "Ref" : "BundleVersion" }, "'\n",
                       "export AWS_INSTANCE_ID=$(curl -f http://169.254.169.254/latest/meta-data/instance-id)\n",
                       "export AWS_REGION='", { "Ref" : "AWS::Region" }, "'\n",
                       "export AWS_VPC_NAME='", { "Ref": "VpcName"} , "'\n",
-                      "for i in $(aws ec2 describe-volumes --region $AWS_REGION --filters Name=attachment.instance-id,Values=$AWS_INSTANCE_ID --query Volumes[*].VolumeId --output text); do aws ec2 create-tags --resources $i --tags Key=Application,Value=\"$AWS_APPLICATION\" Key=BaseAmi,Value=\"$AWS_AMI_ID\" Key=BuildResultKey,Value=\"$AWS_BUILD_RESULT_KEY\" Key=BundleVersion,Value=\"$AWS_BUNDLE_VERSION\" Key=BusinessUnit,Value=MSG Key=Name,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION:$AWS_BRANCH:$AWS_BUNDLE_VERSION\" Key=OwnerEmail,Value=sophosmailops@sophos.com Key=Project,Value=xgemail Key=ServiceCategory,Value=\"$AWS_VPC_NAME:email\" Key=ServiceType,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION\" --region $AWS_REGION; done \n",
-                      "for i in $(aws ec2 describe-network-interfaces --region $AWS_REGION --filters Name=attachment.instance-id,Values=$AWS_INSTANCE_ID --query NetworkInterfaces[0].NetworkInterfaceId --output text); do aws ec2 create-tags --resources $i --tags Key=Application,Value=\"$AWS_APPLICATION\" Key=BaseAmi,Value=\"$AWS_AMI_ID\" Key=BuildResultKey,Value=\"$AWS_BUILD_RESULT_KEY\" Key=BundleVersion,Value=\"$AWS_BUNDLE_VERSION\" Key=BusinessUnit,Value=MSG Key=Name,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION:$AWS_BRANCH:$AWS_BUNDLE_VERSION\" Key=OwnerEmail,Value=sophosmailops@sophos.com Key=Project,Value=xgemail Key=ServiceCategory,Value=\"$AWS_VPC_NAME:email\" Key=ServiceType,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION\" --region $AWS_REGION; done \n"
+                      "for i in $(aws ec2 describe-volumes --region $AWS_REGION --filters Name=attachment.instance-id,Values=$AWS_INSTANCE_ID --query Volumes[*].VolumeId --output text); do aws ec2 create-tags --resources $i --tags Key=Application,Value=\"$AWS_APPLICATION\" Key=BaseAmi,Value=\"$AWS_AMI_ID\" Key=BuildTag,Value=\"$AWS_BUILD_TAG\" Key=BundleVersion,Value=\"$AWS_BUNDLE_VERSION\" Key=BusinessUnit,Value=MSG Key=Name,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION:$AWS_BRANCH:$AWS_BUNDLE_VERSION\" Key=OwnerEmail,Value=sophosmailops@sophos.com Key=Project,Value=xgemail Key=ServiceCategory,Value=\"$AWS_VPC_NAME:email\" Key=ServiceType,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION\" --region $AWS_REGION; done \n",
+                      "for i in $(aws ec2 describe-network-interfaces --region $AWS_REGION --filters Name=attachment.instance-id,Values=$AWS_INSTANCE_ID --query NetworkInterfaces[0].NetworkInterfaceId --output text); do aws ec2 create-tags --resources $i --tags Key=Application,Value=\"$AWS_APPLICATION\" Key=BaseAmi,Value=\"$AWS_AMI_ID\" Key=BuildTag,Value=\"$AWS_BUILD_TAG\" Key=BundleVersion,Value=\"$AWS_BUNDLE_VERSION\" Key=BusinessUnit,Value=MSG Key=Name,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION:$AWS_BRANCH:$AWS_BUNDLE_VERSION\" Key=OwnerEmail,Value=sophosmailops@sophos.com Key=Project,Value=xgemail Key=ServiceCategory,Value=\"$AWS_VPC_NAME:email\" Key=ServiceType,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION\" --region $AWS_REGION; done \n"
                     ]
                   ]
                 },
@@ -1023,9 +1020,6 @@
           "InstanceType": {
             "Ref": "InstanceType"
           },
-          "KeyName": {
-            "Ref": "KeyName"
-          },
           "Monitoring": {
             "Enabled": {
               "Fn::If": [
@@ -1065,7 +1059,7 @@
                   "# Force replacement of the LaunchConfiguration object by changing this value.\n",
                   "# ",
                   {
-                    "Ref": "BuildVersion"
+                    "Ref": "BuildTag"
                   },
                   "\n",
                   "# Make sure we call cfn-signal before exiting, otherwise we have to\n",
@@ -1187,9 +1181,9 @@
       "Description": "Branch we are using so we know for things like ansible",
       "Value": { "Ref": "Branch" }
     },
-    "BuildVersion": {
+    "BuildTag": {
       "Description": "Version of the application from Bamboo",
-      "Value": { "Ref": "BuildVersion" }
+      "Value": { "Ref": "BuildTag" }
     },
     "LaunchTemplate": {
       "Description": "Auto Scaling Launch Template Name.",

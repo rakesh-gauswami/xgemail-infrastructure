@@ -330,36 +330,11 @@ locals {
    )
   )
 }
-data "aws_ami" "ami" {
-  most_recent      = true
-  owners           = [local.ami_owner_account]
-
-  filter {
-    name   = "name"
-    values = ["hmr-core-${var.build_branch}-${local.ami_type}-*"]
-  }
-
-  filter {
-    name   = "is-public"
-    values = ["no"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  filter {
-    name   = "tag:ami_type"
-    values = [local.ami_type]
-  }
-}
 
 resource "aws_cloudformation_stack" "cloudformation_stack" {
   name = "customer-delivery"
-  template_body = "${file("${path.module}/templates/as-customer_delivery-template.json")}"
+  template_body = "${file("${path.module}/templates/as_customer_delivery-template.json")}"
   parameters = {
-    AesDecryptionKey                  = "No"
     AlarmScaleInEnabled               = local.alarm_scale_in_enabled
     AlarmScaleOutEnabled              = local.alarm_scale_out_enabled
     AlarmScaleInThreshold             = local.alarm_scale_in_threshold
@@ -372,8 +347,11 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     AutoScalingNotificationTopicARN   = local.input_param_lifecycle_topic_arn
     AvailabilityZones                 = local.input_param_availability_zones
     Branch                            = var.build_branch
-    BuildVersion                      = var.build_tag
-    BundleVersion                     = data.ami_build
+    BuildTag                          = var.build_tag
+    BuildUrl                          = var.build_url
+    BundleVersion                     = local.ami_build
+    CloudConfigsBucket                = local.input_param_cloud_configs_bucket_name
+    CloudConnectionsBucket            = local.input_param_cloud_connections_bucket_name
     DeployMaxBatchSize                = local.as_max_batch_size
     DeployMinInstancesInService       = local.as_min_service
     Environment                       = local.input_param_deployment_environment
@@ -386,7 +364,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     MsgHistoryV2BucketName            = var.message_history_ms_bucket
     MsgHistoryV2DynamoDbTableName     = var.message_history_v2_dynamodb
     MsgHistoryV2StreamName            = var.message_history_v2_stream_name
-    S3CookbookRepositoryURL           = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/cookbooks.enc"
+    S3CookbookRepositoryURL           = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/cookbooks.tar.gz"
     ScaleInOnWeekends                 = local.as_scale_in_on_weekends
     ScaleInCron                       = local.as_cron_scale_down
     ScaleOutCron                      = local.as_cron_scale_up
@@ -394,12 +372,12 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     ScaleInAndOutOnWeekdays           = local.as_scale_in_out_weekdays
     ScaleInOnWeekdaysCron             = local.as_cron_scale_in
     ScaleOutOnWeekdaysCron            = local.as_cron_scale_out
-    SecurityGroups                    = [local.input_param_sg_base_id, aws_security_group.security_group_ec2]
+    SecurityGroups                    = aws_security_group.security_group_ec2.id
     SpotPrice                         = "-1"
     StationVpcId                      = var.station_vpc_id
     StationVpcName                    = "station"
     Vpc                               = local.input_param_vpc_id
-    VpcZoneIdentifiers                = [local.input_param_public_subnet_ids]
+    VpcZoneIdentifiers                = join(",", local.input_param_public_subnet_ids)
     VpcName                           = "email"
     XgemailBucketName                 = var.customer_delivery_bucket
     XgemailMinSizeDataGB              = local.volume_size_gibs
