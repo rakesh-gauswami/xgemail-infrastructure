@@ -263,6 +263,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
   name = "customer-submit"
   template_body = file("${path.module}/templates/as_customer_submit_template.json")
   parameters = {
+    AccountName                       = local.input_param_account_name
     AlarmTopicArn                     = local.input_param_alarm_topic_arn
     AmiId                             = data.aws_ami.ami.id
     AutoScalingInstanceRoleArn        = local.input_param_autoscaling_role_arn
@@ -276,7 +277,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     BundleVersion                     = local.ami_build
     DeployMaxBatchSize                = local.as_max_batch_size
     DeployMinInstancesInService       = local.as_min_service
-    Environment                       = local.input_param_account_name
+    Environment                       = local.input_param_deployment_environment
     HealthCheckGracePeriod            = local.health_check_grace_period
     InstanceProfile                   = local.input_param_iam_instance_profile_arn
     InstanceType                      = local.instance_size

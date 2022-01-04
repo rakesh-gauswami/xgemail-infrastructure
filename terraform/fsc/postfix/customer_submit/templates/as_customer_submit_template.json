@@ -19,6 +19,10 @@
   },
 
   "Parameters": {
+    "AccountName": {
+      "Description": "(eml000cmh, eml010yul, eml030hnd, eml100syd, etc...)",
+      "Type": "String"
+    },
     "AlarmTopicArn": {
       "Description": "ARN for SNS Topic that should receive alarm notifications",
       "Type": "String"
@@ -670,8 +674,8 @@
                     "    \"application_name\"                       : \"{{cluster}}\",\n",
                     "    \"application_type\"                       : \"xgemail\",\n",
                     "    \"availability_zone\"                      : \"{{availability_zone}}\",\n",
-                    "    \"connections\"                            : \"cloud-{{environment}}-connections\",\n",
-                    "    \"configs\"                                : \"cloud-{{environment}}-configs\",\n",
+                    "    \"connections\"                            : \"cloud-{{account_name}}-connections\",\n",
+                    "    \"configs\"                                : \"cloud-{{account_name}}-configs\",\n",
                     "    \"context\"                                : \"{{environment}}\",\n",
                     "    \"environment\"                            : \"{{environment}}\",\n",
                     "    \"branch\"                                 : \"{{branch}}\",\n",
@@ -710,6 +714,7 @@
                   ]]
                 },
                 "context": {
+                  "account_name":                                   { "Ref": "AccountName" },
                   "alarm_topic_arn":                                { "Ref": "AlarmTopicArn" },
                   "availability_zone":                              { "Ref": "AvailabilityZones" },
                   "branch":                                         { "Ref": "Branch" },
@@ -841,11 +846,9 @@
                     "recipe[sophos-cloud-xgemail::configure-policy-efs-mount],",
                     "recipe[sophos-cloud-ntpd::default],",
                     "recipe[sophos-cloud-fluentd::configure],",
-                    "recipe[sophos-cloud-snmpd::configure],",
                     "recipe[sophos-cloud-xgemail::deploy_certs],",
                     "recipe[sophos-cloud-xgemail::setup_xgemail_utils_structure],",
                     "recipe[sophos-cloud-xgemail::configure-postfix],",
-                    "recipe[sophos-cloud-xgemail::configure_postfix_snmp_logicmonitor],",
                     "recipe[sophos-cloud-xgemail::configure_monit],",
                     "recipe[sophos-cloud-xgemail::run_install_cleanup]",
                     "\""
