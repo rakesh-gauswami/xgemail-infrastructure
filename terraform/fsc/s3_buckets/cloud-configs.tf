@@ -1,5 +1,5 @@
 locals {
-  cloud_configs_bucket_logical_name    = "cloud-${local.input_param_account_name}-configs"
+  cloud_configs_bucket_name    = "cloud-${local.input_param_account_name}-configs"
   cloud_configs_bucket_expiration_days = 90
   cloud_configs_enable_versioning      = true
 }
@@ -14,7 +14,7 @@ module "cloud_configs_bucket" {
 
   enable_versioning = local.cloud_configs_enable_versioning
 
-  bucket_logical_name = local.cloud_configs_bucket_logical_name
+  bucket_name = local.cloud_configs_bucket_name
   lifecycle_rules = [
     {
       id = format(

@@ -1,5 +1,5 @@
 locals {
-  cloud_logs_bucket_logical_name    = "cloud-${local.input_param_account_name}-logs"
+  cloud_logs_bucket_name    = "cloud-${local.input_param_account_name}-logs"
   cloud_logs_bucket_expiration_days = 14
 }
 
@@ -11,7 +11,7 @@ module "cloud_logs_bucket" {
     aws.parameters = aws.parameters
   }
 
-  bucket_logical_name = local.cloud_logs_bucket_logical_name
+  bucket_name = local.cloud_logs_bucket_name
 
   lifecycle_rules = [
     {

@@ -1,5 +1,5 @@
 locals {
-  cloud_lambda_bucket_logical_name    = "cloud-${local.input_param_account_name}-lambda"
+  cloud_lambda_bucket_name    = "cloud-${local.input_param_account_name}-lambda"
 }
 
 module "cloud_lambda_bucket" {
@@ -10,7 +10,7 @@ module "cloud_lambda_bucket" {
     aws.parameters = aws.parameters
   }
 
-  bucket_logical_name = local.cloud_lambda_bucket_logical_name
+  bucket_name = local.cloud_lambda_bucket_name
 }
 
 resource "aws_s3_bucket_public_access_block" "cloud_lambda_bucket_block_public_access" {

@@ -1,5 +1,5 @@
 locals {
-  ssm_root_path = "/central/s3/${var.bucket_logical_name}"
+  ssm_root_path = "/central/s3/${var.bucket_name}"
 
   bucket_arn_path  = "${local.ssm_root_path}/arn"
   bucket_name_path = "${local.ssm_root_path}/name"
