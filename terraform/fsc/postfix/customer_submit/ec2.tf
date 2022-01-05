@@ -259,24 +259,13 @@ locals {
   )
 }
 
-module "aws_ami" {
-  source = "../../modules/ami"
-
-  providers = {
-    aws            = aws
-    aws.parameters = aws.parameters
-  }
-
-  build_branch = var.build_branch
-}
-
 resource "aws_cloudformation_stack" "cloudformation_stack" {
   name = "customer-submit"
   template_body = file("${path.module}/templates/as_customer_submit_template.json")
   parameters = {
     AccountName                       = local.input_param_account_name
     AlarmTopicArn                     = local.input_param_alarm_topic_arn
-    AmiId                             = module.aws_ami.id
+    AmiId                             = data.aws_ami.ami.id
     AutoScalingInstanceRoleArn        = local.input_param_autoscaling_role_arn
     AutoScalingMinSize                = local.as_min_size
     AutoScalingMaxSize                = local.as_max_size
@@ -285,7 +274,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     Branch                            = var.build_branch
     BuildTag                          = var.build_tag
     BuildUrl                          = var.build_url
-    BundleVersion                     = module.aws_ami.build
+    BundleVersion                     = local.ami_build
     DeployMaxBatchSize                = local.as_max_batch_size
     DeployMinInstancesInService       = local.as_min_service
     Environment                       = local.input_param_deployment_environment
