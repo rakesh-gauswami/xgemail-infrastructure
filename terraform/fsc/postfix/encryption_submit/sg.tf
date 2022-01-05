@@ -42,7 +42,7 @@ resource "aws_security_group_rule" "ec2_egress_world" {
 
 resource "aws_security_group_rule" "lb_ingress_world_smtp" {
   type                      = "ingress"
-  cidr_blocks               = local.cidr_block_world
+  cidr_blocks               = [local.cidr_block_world]
   from_port                 = local.smtp_tcp_port
   to_port                   = local.smtp_tcp_port
   protocol                  = "tcp"
