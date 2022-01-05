@@ -19,13 +19,11 @@
   },
 
   "Parameters": {
-    "AlarmScaleInEnabled": {
-      "Description": "Enable AutoScaling Alarms to trigger scaling policies.",
-      "Type": "String",
-      "Default": "false",
-      "AllowedValues": [ "true", "false" ]
+    "AccountName": {
+      "Description": "The AWS Account name.",
+      "Type": "String"
     },
-    "AlarmScaleOutEnabled": {
+    "AlarmScalingEnabled": {
       "Description": "Enable AutoScaling Alarms to trigger scaling policies.",
       "Type": "String",
       "Default": "false",
@@ -87,14 +85,6 @@
     "BundleVersion": {
       "Description": "Version of the AMI bundle",
       "Type": "Number"
-    },
-    "CloudConfigsBucket": {
-      "Description": "The absolute S3 path to the cloud-configs bucket.",
-      "Type": "String"
-    },
-    "CloudConnectionsBucket": {
-      "Description": "The absolute S3 path to the cloud-connections bucket.",
-      "Type": "String"
     },
     "DeployIgnoreUnmodifiedGroupSize": {
       "Description": "During a stack update, indicates whether AWS CloudFormation ignores any group size property differences between your current Auto Scaling group and the Auto Scaling group that is described in the update.",
@@ -634,7 +624,7 @@
     "AlarmScaleIn": {
       "Type": "AWS::CloudWatch::Alarm",
       "Properties": {
-        "ActionsEnabled": { "Ref": "AlarmScaleInEnabled" },
+        "ActionsEnabled": { "Ref": "AlarmScalingEnabled" },
         "AlarmDescription": {
           "Fn::Join": [
             " ", [
@@ -670,7 +660,7 @@
     "AlarmScaleOut": {
       "Type": "AWS::CloudWatch::Alarm",
       "Properties": {
-        "ActionsEnabled": { "Ref": "AlarmScaleOutEnabled" },
+        "ActionsEnabled": { "Ref": "AlarmScalingEnabled" },
         "AlarmDescription": {
           "Fn::Join": [
             " ", [
@@ -754,8 +744,8 @@
                     "    \"application_name\"                       : \"{{cluster}}\",\n",
                     "    \"application_type\"                       : \"xgemail\",\n",
                     "    \"availability_zone\"                      : \"{{availability_zone}}\",\n",
-                    "    \"connections\"                            : \"{{cloud-connections}}\",\n",
-                    "    \"configs\"                                : \"{{cloud-configs}}\",\n",
+                    "    \"connections\"                            : \"cloud-{{account_name}}-connections\",\n",
+                    "    \"configs\"                                : \"cloud-{{account_name}}-configs\",\n",
                     "    \"context\"                                : \"{{environment}}\",\n",
                     "    \"environment\"                            : \"{{environment}}\",\n",
                     "    \"branch\"                                 : \"{{branch}}\",\n",
@@ -793,13 +783,12 @@
                   ]]
                 },
                 "context": {
+                  "account_name":                                   { "Ref": "AccountName"},
                   "alarm_topic_arn":                                { "Ref": "AlarmTopicArn" },
                   "availability_zone":                              { "Ref": "AvailabilityZones" },
                   "branch":                                         { "Ref": "Branch" },
                   "cluster":                                        { "Ref": "XgemailServiceType" },
                   "cluster_type":                                   { "Ref": "XgemailServiceType" },
-                  "cloud_configs":                                  { "Ref": "CloudConfigsBucket" },
-                  "cloud_connections":                              { "Ref": "CloudConnectionsBucket" },
                   "environment":                                    { "Ref": "Environment" },
                   "lifecycle_topic_arn":                            { "Ref": "AutoScalingNotificationTopicARN" },
                   "msg_history_bucket_name":                        { "Ref": "XgemailMsgHistoryBucketName" },
@@ -834,7 +823,6 @@
                 "command": {
                   "Fn::Join": [ "; ",[
                     "rm -f /var/chef/chef-repo/nodes/*.*",
-                    "rm -f /var/chef/chef-repo/cookbooks.enc",
                     "rm -f /var/chef/chef-repo/cookbooks.tar.gz",
                     "rm -rf /var/chef/chef-repo/cookbooks"
                   ]]
@@ -1076,7 +1064,7 @@
                   "\n",
                   "  ACCOUNT='",
                   {
-                    "Ref": "Environment"
+                    "Ref": "AccountName"
                   },
                   "'\n",
                   "  BRANCH='",
