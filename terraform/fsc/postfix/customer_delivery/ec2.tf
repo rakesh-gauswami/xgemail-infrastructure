@@ -307,7 +307,7 @@ locals {
 
 resource "aws_cloudformation_stack" "cloudformation_stack" {
   name = "customer-delivery"
-  template_body = "${file("${path.module}/templates/as_customer_delivery-template.json")}"
+  template_body = "${file("${path.module}/templates/as_customer_delivery_template.json")}"
   parameters = {
     AlarmScalingEnabled               = local.alarm_scaling_enabled
     AlarmScaleInThreshold             = local.alarm_scale_in_threshold
