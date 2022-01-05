@@ -11,7 +11,6 @@ locals {
   input_param_primary_region                  = nonsensitive(data.aws_ssm_parameter.primary_region.value)
   input_param_public_subnet_ids               = split(",", nonsensitive(data.aws_ssm_parameter.public_subnet_ids.value))
   input_param_sg_base_id                      = nonsensitive(data.aws_ssm_parameter.sg_base_id.value)
-  input_param_sg_logicmonitor_id              = nonsensitive(data.aws_ssm_parameter.sg_logicmonitor_id.value)
   input_param_sg_efs_policy_id                = nonsensitive(data.aws_ssm_parameter.sg_efs_policy_id.value)
   input_param_vpc_id                          = nonsensitive(data.aws_ssm_parameter.vpc_id.value)
   input_param_zone_fqdn                       = nonsensitive(data.aws_ssm_parameter.zone_fqdn.value)
@@ -84,11 +83,6 @@ data "aws_ssm_parameter" "sg_base_id" {
 
 data "aws_ssm_parameter" "sg_efs_policy_id" {
   name = "/central/sg/efs/policy/id"
-  provider = aws.parameters
-}
-
-data "aws_ssm_parameter" "sg_logicmonitor_id" {
-  name = "/central/sg/logicmonitor/id"
   provider = aws.parameters
 }
 
