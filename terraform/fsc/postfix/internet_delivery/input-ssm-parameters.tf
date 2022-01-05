@@ -8,6 +8,7 @@ locals {
   input_param_primary_region              = nonsensitive(data.aws_ssm_parameter.primary_region.value)
   input_param_public_subnet_ids           = split(",", nonsensitive(data.aws_ssm_parameter.public_subnet_ids.value))
   input_param_vpc_id                      = nonsensitive(data.aws_ssm_parameter.vpc_id.value)
+  input_param_vpc_name                    = replace(nonsensitive(data.aws_ssm_parameter.vpc_name.value), "/-.*/", "")
   input_param_zone_fqdn                   = nonsensitive(data.aws_ssm_parameter.zone_fqdn.value)
   input_param_zone_id                     = nonsensitive(data.aws_ssm_parameter.zone_id.value)
   input_param_alarm_topic_arn             = nonsensitive(data.aws_ssm_parameter.alarm_topic_arn.value)
@@ -59,6 +60,11 @@ data "aws_ssm_parameter" "public_subnet_ids" {
 
 data "aws_ssm_parameter" "vpc_id" {
   name     = "/central/vpc/id"
+  provider = aws.parameters
+}
+
+data "aws_ssm_parameter" "vpc_name" {
+  name     = "/central/vpc/name"
   provider = aws.parameters
 }
 
