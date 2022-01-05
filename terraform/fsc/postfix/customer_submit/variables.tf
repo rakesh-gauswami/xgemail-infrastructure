@@ -28,9 +28,9 @@ variable "message_history_events_sns_topic" {
   description = "msg_history_events_sns_topic"
 }
 
-variable "customer_submit_bucket" {
+variable "outbound_submit_bucket" {
   type        = string
-  description = "customer_submit_bucket"
+  description = "outbound_submit_bucket"
 }
 
 variable "message_history_bucket" {
