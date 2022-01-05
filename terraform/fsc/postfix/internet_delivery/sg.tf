@@ -1,10 +1,6 @@
 locals {
   cidr_block_world       = "0.0.0.0/0"
-  ntp_udp_port           = 123
   smtp_tcp_port          = 25
-  smtptls_tcp_port       = 587
-  snmp_port              = 161
-  snmp_trap_port         = 162
   security_group_name_lb = "${local.instance_type}-lb"
 }
 
