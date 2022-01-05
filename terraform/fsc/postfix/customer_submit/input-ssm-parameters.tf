@@ -122,7 +122,7 @@ data "aws_ssm_parameter" "lifecycle_topic_arn" {
   provider = aws.parameters
 }
 
-data "aws_ssm_parameter" "iam_instance_profile_arn" {
-  name     = "/central/iam/profiles/${local.instance_type}-instance/arn"
+data "aws_ssm_parameter" "iam_instance_profile_name" {
+  name     = "/central/iam/profiles/${local.instance_type}-instance/name"
   provider = aws.parameters
 }
