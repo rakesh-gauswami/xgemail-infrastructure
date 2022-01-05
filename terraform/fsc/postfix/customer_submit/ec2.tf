@@ -279,7 +279,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     DeployMinInstancesInService       = local.as_min_service
     Environment                       = local.input_param_deployment_environment
     HealthCheckGracePeriod            = local.health_check_grace_period
-    InstanceProfile                   = local.input_param_iam_instance_profile_arn
+    InstanceProfile                   = local.input_param_iam_instance_profile_name
     InstanceType                      = local.instance_size
     LifecycleHookTerminating          = local.input_param_lifecycle_hook_terminating
     LoadBalancerName                  = aws_elb.elb.id
