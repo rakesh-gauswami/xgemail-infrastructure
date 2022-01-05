@@ -18,7 +18,7 @@ locals {
   input_param_lifecycle_topic_arn         = nonsensitive(data.aws_ssm_parameter.lifecycle_topic_arn.value)
   input_param_lifecycle_hook_launching    = nonsensitive(data.aws_ssm_parameter.lifecycle_hook_launching_name.value)
   input_param_lifecycle_hook_terminating  = nonsensitive(data.aws_ssm_parameter.lifecycle_hook_terminating_name.value)
-  input_param_iam_instance_profile_arn    = nonsensitive(data.aws_ssm_parameter.iam_instance_profile_arn.value)
+  input_param_iam_instance_profile_name   = nonsensitive(data.aws_ssm_parameter.iam_instance_profile_name.value)
 }
 
 data "aws_ssm_parameter" "account_name" {
@@ -116,7 +116,7 @@ data "aws_ssm_parameter" "lifecycle_topic_arn" {
   provider = aws.parameters
 }
 
-data "aws_ssm_parameter" "iam_instance_profile_arn" {
-  name     = "/central/iam/profiles/${local.instance_type}-instance/arn"
+data "aws_ssm_parameter" "iam_instance_profile_name" {
+  name     = "/central/iam/profiles/${local.instance_type}-instance/name"
   provider = aws.parameters
 }
