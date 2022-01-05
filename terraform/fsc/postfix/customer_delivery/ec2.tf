@@ -1,8 +1,4 @@
 locals {
-  # Configuration for elasticsearch across environments
-  ami_owner_account = "843638552935"
-  ami_type          = "xgemail"
-
   DEFAULT_AS_ALARM_SCALING_ENABLED      = false
   DEFAULT_AS_ALARM_SCALE_IN_THRESHOLD   = 10
   DEFAULT_AS_ALARM_SCALE_OUT_THRESHOLD  = 50
