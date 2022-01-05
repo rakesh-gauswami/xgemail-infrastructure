@@ -23,6 +23,16 @@ variable "customer_delivery_bucket" {
   description = "customer_delivery_bucket"
 }
 
+variable "message_history_dynamodb_table_name" {
+  type        = string
+  description = "message_history_dynamodb_table_name"
+}
+
+variable "firehose_msg_history_v2_stream_name" {
+  type        = string
+  description = "firehose_msg_history_v2_stream_name"
+}
+
 variable "message_history_bucket" {
   type        = string
   description = "msg_history_bucket"

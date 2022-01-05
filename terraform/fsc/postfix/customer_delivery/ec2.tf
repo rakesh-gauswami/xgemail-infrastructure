@@ -17,7 +17,7 @@ locals {
   DEFAULT_AS_SCALE_IN_ON_WEEKENDS       = false
   DEFAULT_INSTANCE_SIZE                 = "t2.small"
   DEFAULT_INSTANCE_COUNT                = 1
-  DEFAULT_VOLUME_SIZE_GIBS              = 35
+  DEFAULT_XGEMAIL_SIZE_DATA_GB          = 35
   DEFAULT_SXL_DBL                       = "uri.cal1.sophosxl.com"
   DEFAULT_SXL_RBL                       = "fur.cal1.sophosxl.com"
 
@@ -138,16 +138,11 @@ locals {
     prod = "m5a.large"
   }
 
-  VOLUME_SIZE_GIBS_BY_ENVIRONMENT = {
-    prod = 300
+  XGEMAIL_SIZE_DATA_GB_BY_ENVIRONMENT = {
     inf  = 40
-  }
-
-  VOLUME_SIZE_GIBS_BY_POP = {
-    # This is a most granular setting, if you need adjustments in particular PoP set it here
-
-    stn000cmh = 40
-
+    dev  = 40
+    qa   = 70
+    prod = 300
   }
 
   SXL_DBL_BY_ENVIRONMENT = {
@@ -274,10 +269,10 @@ locals {
   local.DEFAULT_INSTANCE_SIZE
   )
 
-  volume_size_gibs = lookup(
-  local.VOLUME_SIZE_GIBS_BY_ENVIRONMENT,
+  xgemail_size_data_gb = lookup(
+  local.XGEMAIL_SIZE_DATA_GB_BY_ENVIRONMENT,
   local.input_param_deployment_environment,
-  local.DEFAULT_VOLUME_SIZE_GIBS
+  local.DEFAULT_XGEMAIL_SIZE_DATA_GB
   )
 
   sxl_dbl = lookup(
@@ -331,8 +326,8 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     LifecycleHookTerminating          = local.input_param_lifecycle_hook_terminating
     LoadBalancerName                  = aws_elb.elb.id
     MsgHistoryV2BucketName            = var.message_history_ms_bucket
-    MsgHistoryV2DynamoDbTableName     = var.message_history_v2_dynamodb
-    MsgHistoryV2StreamName            = var.message_history_v2_stream_name
+    MsgHistoryV2DynamoDbTableName     = var.message_history_dynamodb_table_name
+    MsgHistoryV2StreamName            = var.firehose_msg_history_v2_stream_name
     S3CookbookRepositoryURL           = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/cookbooks.tar.gz"
     ScaleInOnWeekends                 = local.as_scale_in_on_weekends
     ScaleInCron                       = local.as_cron_scale_down
@@ -349,7 +344,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     VpcZoneIdentifiers                = join(",", local.input_param_public_subnet_ids)
     VpcName                           = "email"
     XgemailBucketName                 = var.customer_delivery_bucket
-    XgemailMinSizeDataGB              = local.volume_size_gibs
+    XgemailMinSizeDataGB              = local.xgemail_size_data_gb
     XgemailMsgHistoryBucketName       = var.message_history_bucket
     XgemailMsgHistoryMsBucketName     = var.message_history_ms_bucket
     XgemailMsgHistoryQueueUrl         = var.message_history_sqs_queue
