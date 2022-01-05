@@ -18,16 +18,6 @@ variable "build_url" {
   description = "Build URL"
 }
 
-variable "firehose_msg_history_v2_stream_name" {
-  type        = string
-  description = "firehose_msg_history_v2_stream_name"
-}
-
-variable "message_history_events_sns_topic" {
-  type        = string
-  description = "msg_history_events_sns_topic"
-}
-
 variable "customer_delivery_bucket" {
   type        = string
   description = "customer_delivery_bucket"
@@ -59,24 +49,9 @@ variable "message_history_status_sns_topic" {
   description = "msg_history_status_sns_topic"
 }
 
-variable "message_history_v2_dynamodb" {
-  type        = string
-  description = "msg_history_v2_dynamodb"
-}
-
-variable "message_history_v2_stream_name" {
-  type        = string
-  description = "msg_history_v2_stream_name"
-}
-
 variable "policy_bucket" {
   type        = string
   description = "policy_bucket"
-}
-
-variable "customer_delivery_sqs_queue" {
-  type        = string
-  description = "customer_delivery_sqs_queue"
 }
 
 variable "customer_delivery_sqs_queue_name" {
