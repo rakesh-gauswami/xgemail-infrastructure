@@ -71,7 +71,6 @@ DEFAULT_LOG_COMMANDS = {
     "netstat-r.out":    "/bin/netstat -rn",
     "top.out":          "/usr/bin/top -b -n 1",
     "uname.out":        "/bin/uname -a",
-    "ec2-metadata.out": "/opt/aws/bin/ec2-metadata",
 }
 
 
