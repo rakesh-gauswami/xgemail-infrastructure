@@ -3,6 +3,9 @@ locals {
   input_param_account_type             = nonsensitive(data.aws_ssm_parameter.account_type.value)
   input_param_autoscaling_role_arn     = nonsensitive(data.aws_ssm_parameter.autoscaling_role_arn.value)
   input_param_availability_zones       = nonsensitive(data.aws_ssm_parameter.availability_zones.value)
+  input_param_cloud_configs_bucket_name       = nonsensitive(data.aws_ssm_parameter.cloud_configs_bucket_name.value)
+  input_param_cloud_connections_bucket_name   = nonsensitive(data.aws_ssm_parameter.cloud_connections_bucket_name.value)
+  input_param_cloud_templates_bucket_name     = nonsensitive(data.aws_ssm_parameter.cloud_templates_bucket_name.value)
   input_param_deployment_environment   = nonsensitive(data.aws_ssm_parameter.deployment_environment.value)
   input_param_primary_region           = nonsensitive(data.aws_ssm_parameter.primary_region.value)
   input_param_public_subnet_ids        = split(",", nonsensitive(data.aws_ssm_parameter.public_subnet_ids.value))
@@ -13,6 +16,8 @@ locals {
   input_param_zone_id                  = nonsensitive(data.aws_ssm_parameter.zone_id.value)
   input_param_alarm_topic_arn          = nonsensitive(data.aws_ssm_parameter.alarm_topic_arn.value)
   input_param_iam_instance_profile_arn = nonsensitive(data.aws_ssm_parameter.iam_instance_profile_name.value)
+  input_param_lifecycle_topic_arn             = nonsensitive(data.aws_ssm_parameter.lifecycle_topic_arn.value)
+  input_param_lifecycle_hook_terminating      = nonsensitive(data.aws_ssm_parameter.lifecycle_hook_terminating_name.value)
 }
 
 data "aws_ssm_parameter" "account_name" {
@@ -40,6 +45,21 @@ data "aws_ssm_parameter" "availability_zones" {
   provider = aws.parameters
 }
 
+data "aws_ssm_parameter" "cloud_configs_bucket_name" {
+  name     = "/central/s3/cloud-${local.input_param_account_name}-configs/name"
+  provider = aws.parameters
+}
+
+data "aws_ssm_parameter" "cloud_connections_bucket_name" {
+  name     = "/central/s3/cloud-${local.input_param_account_name}-connections/name"
+  provider = aws.parameters
+}
+
+data "aws_ssm_parameter" "cloud_templates_bucket_name" {
+  name     = "/central/s3/cloud-${local.input_param_account_name}-templates/name"
+  provider = aws.parameters
+}
+
 data "aws_ssm_parameter" "deployment_environment" {
   name     = "/central/account/deployment-environment"
   provider = aws.parameters
@@ -47,6 +67,16 @@ data "aws_ssm_parameter" "deployment_environment" {
 
 data "aws_ssm_parameter" "iam_instance_profile_name" {
   name     = "/central/iam/profiles/${local.instance_type}-instance/name"
+  provider = aws.parameters
+}
+
+data "aws_ssm_parameter" "lifecycle_topic_arn" {
+  name     = "/central/sns/lifecycle-topic/arn"
+  provider = aws.parameters
+}
+
+data "aws_ssm_parameter" "lifecycle_hook_terminating_name" {
+  name     = "/central/asg/${local.instance_type}/lifecycle-hook/terminating/name"
   provider = aws.parameters
 }
 
