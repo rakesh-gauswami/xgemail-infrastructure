@@ -1,7 +1,7 @@
 resource "aws_elb" "elb" {
-  name            = local.instance_type
-  subnets         = [local.input_param_public_subnet_ids]
-  security_groups = [aws_security_group.security_group_lb]
+  name              = local.instance_type
+  subnets           = local.input_param_public_subnet_ids
+  security_groups   = [aws_security_group.security_group_lb.id]
 
   listener {
     instance_port     = 25
@@ -14,7 +14,7 @@ resource "aws_elb" "elb" {
     healthy_threshold   = 3
     unhealthy_threshold = 10
     timeout             = 25
-    target              = "TCP:25/"
+    target              = "TCP:25"
     interval            = 60
   }
 
