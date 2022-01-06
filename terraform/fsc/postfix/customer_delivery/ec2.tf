@@ -327,7 +327,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     MsgHistoryV2BucketName            = var.message_history_ms_bucket
     MsgHistoryV2DynamoDbTableName     = var.message_history_dynamodb_table_name
     MsgHistoryV2StreamName            = var.firehose_msg_history_v2_stream_name
-    S3CookbookRepositoryURL           = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/cookbooks.tar.gz"
+    S3CookbookRepositoryURL           = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/${var.build_number}/cookbooks.tar.gz"
     ScaleInOnWeekends                 = local.as_scale_in_on_weekends
     ScaleInCron                       = local.as_cron_scale_down
     ScaleOutCron                      = local.as_cron_scale_up
