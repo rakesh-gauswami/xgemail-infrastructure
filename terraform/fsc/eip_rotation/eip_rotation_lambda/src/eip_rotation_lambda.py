@@ -175,6 +175,7 @@ def get_instances_by_name():
                 'Name': 'tag:Name',
                 'Values': [
                     'CloudEmail:internet-delivery:*',
+                    'CloudEmail:customer-delivery:*',
                     'CloudEmail:mf-inbound-delivery:*',
                     'CloudEmail:mf-outbound-delivery:*',
                     'CloudEmail:mf-inbound-xdelivery:*',
