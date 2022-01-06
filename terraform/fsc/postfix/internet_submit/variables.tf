@@ -23,7 +23,7 @@ variable "internet_submit_bucket" {
   description = "internet_submit_bucket"
 }
 
-variable "internet_submit_sqs_queue" {
+variable "internet_submit_sqs_queue_name" {
   type        = string
   description = "internet_submit_sqs_queue name"
 }
@@ -61,11 +61,6 @@ variable "message_history_sqs_queue" {
 variable "message_history_events_sns_topic" {
   type        = string
   description = "message_history_events_sns_topic name"
-}
-
-variable "message_history_status_sns_topic" {
-  type        = string
-  description = "msg_history_status_sns_topic"
 }
 
 variable "policy_bucket" {
