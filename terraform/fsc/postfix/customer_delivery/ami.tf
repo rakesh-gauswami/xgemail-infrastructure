@@ -10,7 +10,7 @@ data "aws_ami" "ami" {
 
   filter {
     name   = "name"
-    values = ["hmr-core-develop-xgemail-*"]
+    values = ["hmr-core-${var.build_branch}-xgemail-*"]
   }
 
   filter {
