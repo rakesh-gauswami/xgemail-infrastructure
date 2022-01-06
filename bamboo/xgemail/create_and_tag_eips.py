@@ -4,7 +4,7 @@ import boto3
 from datetime import datetime, timedelta
 from botocore.exceptions import ClientError
 
-session = boto3.session.Session(profile_name='inf', region_name='eu-west-1')
+session = boto3.session.Session(profile_name='eml000cmh', region_name='us-east-2')
 ec2 = session.resource('ec2')
 ec2_client = session.client('ec2')
 #ec2_client = boto3.client('ec2', region_name='eu-central-1')
@@ -55,8 +55,8 @@ def tag_eip(allocation_id):
 def parse_command_line():
     parser = argparse.ArgumentParser(
         description='Create EIP and add specified Tags.')
-    parser.add_argument('--account', '-a', dest='account', default='inf', required=True, help='The account you are working in.')
-    parser.add_argument('--region', '-r', dest='region', default='eu-west-1', required=True, help='The region you are working in.')
+    #parser.add_argument('--account', '-a', dest='account', default='inf', required=True, help='The account you are working in.')
+    #parser.add_argument('--region', '-r', dest='region', default='eu-west-1', required=True, help='The region you are working in.')
     parser.add_argument('--instance', '-i', dest='instance', required=True, help='The region you are working in.')
     return parser.parse_args()
 
