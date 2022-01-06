@@ -329,7 +329,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     ScaleInOnWeekends                 = local.as_scale_in_on_weekends
     ScaleInCron                       = local.as_cron_scale_down
     ScaleOutCron                      = local.as_cron_scale_up
-    ScheduledASOnHourDesiredCapacity  = local.as_on_hour_desired
+    ScheduledAsOnHourDesiredCapacity  = local.as_on_hour_desired
     ScaleInAndOutOnWeekdays           = local.as_scale_in_out_weekdays
     ScaleInOnWeekdaysCron             = local.as_cron_scale_in
     ScaleOutOnWeekdaysCron            = local.as_cron_scale_out
