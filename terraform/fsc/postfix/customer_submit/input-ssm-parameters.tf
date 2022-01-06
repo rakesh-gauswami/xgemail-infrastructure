@@ -11,15 +11,15 @@ locals {
   input_param_primary_region                  = nonsensitive(data.aws_ssm_parameter.primary_region.value)
   input_param_public_subnet_ids               = split(",", nonsensitive(data.aws_ssm_parameter.public_subnet_ids.value))
   input_param_sg_base_id                      = nonsensitive(data.aws_ssm_parameter.sg_base_id.value)
-  input_param_sg_logicmonitor_id              = nonsensitive(data.aws_ssm_parameter.sg_logicmonitor_id.value)
   input_param_sg_efs_policy_id                = nonsensitive(data.aws_ssm_parameter.sg_efs_policy_id.value)
   input_param_vpc_id                          = nonsensitive(data.aws_ssm_parameter.vpc_id.value)
+  input_param_vpc_name                        = replace(nonsensitive(data.aws_ssm_parameter.vpc_name.value), "/-.*/", "")
   input_param_zone_fqdn                       = nonsensitive(data.aws_ssm_parameter.zone_fqdn.value)
   input_param_zone_id                         = nonsensitive(data.aws_ssm_parameter.zone_id.value)
   input_param_alarm_topic_arn                 = nonsensitive(data.aws_ssm_parameter.alarm_topic_arn.value)
   input_param_lifecycle_topic_arn             = nonsensitive(data.aws_ssm_parameter.lifecycle_topic_arn.value)
   input_param_lifecycle_hook_terminating      = nonsensitive(data.aws_ssm_parameter.lifecycle_hook_terminating_name.value)
-  input_param_iam_instance_profile_arn        = nonsensitive(data.aws_ssm_parameter.iam_instance_profile_arn.value)
+  input_param_iam_instance_profile_name        = nonsensitive(data.aws_ssm_parameter.iam_instance_profile_name.value)
 }
 
 data "aws_ssm_parameter" "account_name" {
@@ -87,13 +87,13 @@ data "aws_ssm_parameter" "sg_efs_policy_id" {
   provider = aws.parameters
 }
 
-data "aws_ssm_parameter" "sg_logicmonitor_id" {
-  name = "/central/sg/logicmonitor/id"
+data "aws_ssm_parameter" "vpc_id" {
+  name     = "/central/vpc/id"
   provider = aws.parameters
 }
 
-data "aws_ssm_parameter" "vpc_id" {
-  name     = "/central/vpc/id"
+data "aws_ssm_parameter" "vpc_name" {
+  name     = "/central/vpc/name"
   provider = aws.parameters
 }
 
@@ -122,7 +122,7 @@ data "aws_ssm_parameter" "lifecycle_topic_arn" {
   provider = aws.parameters
 }
 
-data "aws_ssm_parameter" "iam_instance_profile_arn" {
-  name     = "/central/iam/profiles/${local.instance_type}-instance/arn"
+data "aws_ssm_parameter" "iam_instance_profile_name" {
+  name     = "/central/iam/profiles/${local.instance_type}-instance/name"
   provider = aws.parameters
 }
