@@ -318,7 +318,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     HealthCheckGracePeriod            = local.health_check_grace_period
     InstanceProfile                   = local.input_param_iam_instance_profile_arn
     InstanceType                      = local.instance_size
-    JilterHeloTelemetryStreamName     = var.kinesis_firehose_jilter_helo_telemetry_stream
+    JilterHeloTelemetryStreamName     = var.firehose_jilter_helo_telemetry_stream_name
     LifecycleHookTerminating          = local.input_param_lifecycle_hook_terminating
     LoadBalancerName                  = aws_elb.elb.id
     MsgHistoryV2BucketName            = var.message_history_ms_bucket
@@ -345,7 +345,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     XgemailMsgHistoryBucketName       = var.message_history_bucket
     XgemailMsgHistoryMsBucketName     = var.message_history_ms_bucket
     XgemailMsgHistoryQueueUrl         = var.message_history_sqs_queue
-    XgemailPolicyArn                  = var.policy_sns_topic
+    XgemailPolicyArn                  = var.relay_control_sns_topic
     XgemailPolicyBucketName           = var.policy_bucket
     XgemailPolicyEfsFileSystemId      = local.input_param_policy_efs_volume_id
     XgemailQueueUrl                   = var.internet_submit_sqs_queue

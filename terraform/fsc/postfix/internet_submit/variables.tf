@@ -20,7 +20,7 @@ variable "build_url" {
 
 variable "internet_submit_bucket" {
   type        = string
-  description = "customer_delivery_bucket"
+  description = "internet_submit_bucket"
 }
 
 variable "internet_submit_sqs_queue" {
@@ -33,9 +33,9 @@ variable "scan_events_sns_topic" {
   description = "scan_events_sns_topic name"
 }
 
-variable "kinesis_firehose_jilter_helo_telemetry_stream" {
+variable "firehose_jilter_helo_telemetry_stream_name" {
   type        = string
-  description = "kinesis_firehose_jilter_helo_telemetry_stream"
+  description = "firehose_jilter_helo_telemetry_stream_name"
 }
 
 variable "firehose_msg_history_v2_stream_name" {
@@ -73,9 +73,9 @@ variable "policy_bucket" {
   description = "policy_bucket"
 }
 
-variable "policy_sns_topic" {
+variable "relay_control_sns_topic" {
   type        = string
-  description = "policy_sns_topic"
+  description = "relay_control_sns_topic"
 }
 
 variable "station_vpc_id" {
