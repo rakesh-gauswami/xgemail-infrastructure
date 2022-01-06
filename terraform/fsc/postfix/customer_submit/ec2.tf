@@ -263,6 +263,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
   name = "customer-submit"
   template_body = file("${path.module}/templates/as_customer_submit_template.json")
   parameters = {
+    AccountName                       = local.input_param_account_name
     AlarmTopicArn                     = local.input_param_alarm_topic_arn
     AmiId                             = data.aws_ami.ami.id
     AutoScalingInstanceRoleArn        = local.input_param_autoscaling_role_arn
@@ -274,13 +275,11 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     BuildTag                          = var.build_tag
     BuildUrl                          = var.build_url
     BundleVersion                     = local.ami_build
-    CloudConfigsBucket                = local.input_param_cloud_configs_bucket_name
-    CloudConnectionsBucket            = local.input_param_cloud_connections_bucket_name
     DeployMaxBatchSize                = local.as_max_batch_size
     DeployMinInstancesInService       = local.as_min_service
     Environment                       = local.input_param_deployment_environment
     HealthCheckGracePeriod            = local.health_check_grace_period
-    InstanceProfile                   = local.input_param_iam_instance_profile_arn
+    InstanceProfile                   = local.input_param_iam_instance_profile_name
     InstanceType                      = local.instance_size
     LifecycleHookTerminating          = local.input_param_lifecycle_hook_terminating
     LoadBalancerName                  = aws_elb.elb.id
@@ -288,7 +287,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     MsgHistoryV2StreamName            = var.firehose_msg_history_v2_stream_name
     MessageHistoryEventsTopicArn      = var.message_history_events_sns_topic
     PolicyTargetValue                 = local.as_policy_target_value
-    S3CookbookRepositoryURL           = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/cookbooks.tar.gz"
+    S3CookbookRepositoryURL           = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/${var.build_number}/cookbooks.tar.gz"
     ScaleInOnWeekends                 = local.as_scale_in_on_weekends
     ScaleInCron                       = local.as_cron_scale_down
     ScaleOutCron                      = local.as_cron_scale_up
@@ -299,11 +298,11 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     SecurityGroups                    = aws_security_group.security_group_ec2.id
     SpotPrice                         = "-1"
     StationVpcId                      = var.station_vpc_id
-    StationVpcName                    = "station"
+    StationVpcName                    = replace(nonsensitive(var.station_name), "/-.*/", "")
     Vpc                               = local.input_param_vpc_id
     VpcZoneIdentifiers                = join(",", local.input_param_public_subnet_ids)
-    VpcName                           = "email"
-    XgemailBucketName                 = var.customer_submit_bucket
+    VpcName                           = local.input_param_vpc_name
+    XgemailBucketName                 = var.outbound_submit_bucket
     XgemailMinSizeDataGB              = local.volume_size_gibs
     XgemailMsgHistoryBucketName       = var.message_history_bucket
     XgemailMsgHistoryMsBucketName     = var.message_history_ms_bucket
