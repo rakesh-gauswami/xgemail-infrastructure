@@ -26,8 +26,8 @@
     ]
   },
   "Parameters": {
-    "AesDecryptionKey": {
-      "Description": "Decryption key for encrypted buckets",
+    "AccountName": {
+      "Description": "The AWS Account name.",
       "Type": "String"
     },
     "AmiId": {
@@ -38,15 +38,15 @@
       "Description": "Arn of the AutoScaling Role.",
       "Type": "String"
     },
-    "AutoScalingMaxSize": {
-      "Description": "Maximum number of instances in the Auto Scaling Group",
-      "Type": "String",
-      "Default": "12"
-    },
     "AutoScalingMinSize": {
       "Description": "Minimum number of instances in the Auto Scaling Group",
       "Type": "String",
       "Default": "3"
+    },
+    "AutoScalingMaxSize": {
+      "Description": "Maximum number of instances in the Auto Scaling Group",
+      "Type": "String",
+      "Default": "12"
     },
     "AutoScalingNotificationTopicARN": {
       "Description": "ARN for SNS Topic that should receive launch and termination notifications",
@@ -63,13 +63,17 @@
       "ConstraintDescription": "must be a comma-separated list of valid Availability Zones for the selected VPC"
     },
     "Branch": {
-      "Description": "(Develop, CPLAT-XXXX, etc...)",
+      "Description": "(Develop, XGE-XXXX, etc...)",
       "Type": "String"
     },
-    "BuildVersion": {
+    "BuildTag": {
       "Description": "Version of the application from Bamboo",
       "Type": "String",
       "Default": "1.0"
+    },
+    "BuildUrl": {
+      "Description": "Link to Build from Jenkins",
+      "Type": "String"
     },
     "BundleVersion": {
       "Description": "Version of the AMI bundle",
@@ -100,10 +104,6 @@
       "Type": "String",
       "Default": "t3.large"
     },
-    "KeyName": {
-      "Description": "Key pair used to SSH to the instance",
-      "Type": "AWS::EC2::KeyPair::KeyName"
-    },
     "LifecycleHookLaunching": {
       "Description": "Name of the Launching Lifecycle Hook.",
       "Type": "String"
@@ -127,7 +127,6 @@
     "S3CookbookRepositoryURL": {
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
       "Type": "String",
-      "Default": "//cloud-applications/develop/cookbooks.enc"
     },
     "ScaleDownOnWeekends": {
       "Description": "Enable scale down to zero on Saturday at midnight and scale back on Monday morning. (Times are UTC, NON PROD/QA ENVIRONMENT ONLY)",
@@ -155,7 +154,7 @@
     "StationVpcName": {
       "Description": "Name of the CloudStation VPC",
       "Type": "String",
-      "Default": "CloudStation"
+      "Default": "station"
     },
     "UpdateInterval": {
       "Description": "The interval in minutes cfn-hup watches stack modifications.",
@@ -180,7 +179,7 @@
     "VpcName": {
       "Description": "Name of an existing VPC",
       "Type": "String",
-      "Default": "CloudStation"
+      "Default": "email"
     },
     "VpcZoneIdentifiers": {
       "Description": "The list of Public Subnets for your VPC",
@@ -376,7 +375,7 @@
           },
           {
             "Key": "BuildResultKey",
-            "Value": { "Ref": "BuildVersion" },
+            "Value": { "Ref": "BuildTag" },
             "PropagateAtLaunch": "true"
           },
           {
@@ -502,6 +501,7 @@
                   ]
                 },
                 "context": {
+                  "account_name":                             { "Ref": "AccountName"},
                   "availability_zone":                        { "Fn::Select": [
                     { "Ref": "AvailabilityZoneIndex" },
                     { "Ref": "AvailabilityZones" }
@@ -560,7 +560,6 @@
                 "command": {
                   "Fn::Join": [ "; ",[
                     "rm -f /var/chef/chef-repo/nodes/*.*",
-                    "rm -f /var/chef/chef-repo/cookbooks.enc",
                     "rm -f /var/chef/chef-repo/cookbooks.tar.gz",
                     "rm -rf /var/chef/chef-repo/cookbooks"
                   ]]
@@ -570,7 +569,7 @@
                 "command": {
                   "Fn::Join": [
                     "",
-                    [ "aws s3 cp s3:", { "Ref": "S3CookbookRepositoryURL" }, " /var/chef/chef-repo/cookbooks.enc" ]
+                    [ "aws s3 cp s3:", { "Ref": "S3CookbookRepositoryURL" }, " /var/chef/chef-repo/cookbooks.tar.gz" ]
                   ]
                 },
                 "cwd": "/var/chef",
@@ -578,19 +577,7 @@
                   "HOME": "/var/chef"
                 }
               },
-              "02_decrypt_cookbook": {
-                "command": {
-                  "Fn::Join": [
-                    "",
-                    [ "openssl enc -aes-256-cbc -d -in /var/chef/chef-repo/cookbooks.enc -out /var/chef/chef-repo/cookbooks.tar.gz -pass pass:", { "Ref": "AesDecryptionKey" } ]
-                  ]
-                },
-                "cwd": "/var/chef/chef-repo",
-                "env": {
-                  "HOME": "/var/chef"
-                }
-              },
-              "03_unpack_cookbook": {
+              "02_unpack_cookbook": {
                 "command": "tar xvf /var/chef/chef-repo/cookbooks.tar.gz",
                 "cwd": "/var/chef/chef-repo"
               }
@@ -699,12 +686,10 @@
                       "recipe[sophos-cloud-mount::default],",
                       "recipe[sophos-cloud-mount::install],",
                       "recipe[sophos-cloud-ntpd::default],",
-                      "recipe[sophos-cloud-snmpd::configure],",
                       "recipe[sophos-cloud-xgemail::deploy_certs],",
                       "recipe[sophos-cloud-xgemail::setup_xgemail_utils_structure],",
                       "recipe[sophos-cloud-fluentd::configure],",
                       "recipe[sophos-cloud-xgemail::configure-extended-delivery-queue],",
-                      "recipe[sophos-cloud-xgemail::configure_postfix_snmp_logicmonitor],",
                       "recipe[sophos-cloud-xgemail::configure_monit],",
                       "recipe[sophos-cloud-xgemail::run_install_cleanup]",
                       "\""
@@ -757,7 +742,7 @@
                       "export AWS_AMI_ID='", { "Ref" : "AmiId" }, "'\n",
                       "export AWS_APPLICATION='", { "Ref": "XgemailServiceType" }, "'\n",
                       "export AWS_BRANCH='", { "Ref" : "Branch" }, "'\n",
-                      "export AWS_BUILD_RESULT_KEY='", { "Ref" : "BuildVersion" }, "'\n",
+                      "export AWS_BUILD_RESULT_KEY='", { "Ref" : "BuildTag" }, "'\n",
                       "export AWS_BUNDLE_VERSION='", { "Ref" : "BundleVersion" }, "'\n",
                       "export AWS_INSTANCE_ID=$(curl -f http://169.254.169.254/latest/meta-data/instance-id)\n",
                       "export AWS_REGION='", { "Ref" : "AWS::Region" }, "'\n",
@@ -785,7 +770,6 @@
                     "", [
                       "knife node run_list set -z `knife node list -z` \"",
                       "recipe[sophos-cloud-ntpd::default],",
-                      "recipe[sophos-cloud-snmpd::update]",
                       "\""
                     ]
                   ]
@@ -842,9 +826,6 @@
           "InstanceType": {
             "Ref": "InstanceType"
           },
-          "KeyName": {
-            "Ref": "KeyName"
-          },
           "InstanceMarketOptions": {
             "Fn::If": [
               "UseSpotPrice",
@@ -890,7 +871,7 @@
                   "    # Upload logs before reporting failure to avoid race against termination.\n",
                   "    ACCOUNT='",
                   {
-                    "Ref": "Environment"
+                    "Ref": "AccountName"
                   },
                   "'\n",
                   "    BRANCH='",
@@ -969,9 +950,9 @@
       "Description": "Branch we are using so we know for things like ansible",
       "Value": { "Ref": "Branch" }
     },
-    "BuildVersion": {
+    "BuildTag": {
       "Description": "Version of the application from Bamboo",
-      "Value": { "Ref": "BuildVersion" }
+      "Value": { "Ref": "BuildTag" }
     },
     "LaunchTemplate": {
       "Description": "Auto Scaling Launch Template Name.",
