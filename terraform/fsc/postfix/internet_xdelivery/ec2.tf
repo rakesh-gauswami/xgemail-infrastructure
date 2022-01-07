@@ -133,6 +133,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     HealthCheckGracePeriod          = local.health_check_grace_period
     InstanceProfile                 = local.input_param_iam_instance_profile_name
     InstanceType                    = local.instance_size
+    KmsKeyAlias                     = module.kms_key.key_alias_name
     LifecycleHookLaunching          = local.input_param_lifecycle_hook_launching
     LoadBalancerName                = aws_elb.elb.id
     MsgHistoryV2BucketName          = var.message_history_bucket

@@ -104,6 +104,10 @@
       "Type": "String",
       "Default": "t3.large"
     },
+    "KmsKeyAlias": {
+      "Description": "KMS Key Alias for Ebs Volume",
+      "Type": "String"
+    },
     "LifecycleHookLaunching": {
       "Description": "Name of the Launching Lifecycle Hook.",
       "Type": "String"
@@ -462,6 +466,7 @@
                       "    \"cluster\"                        : \"{{cluster}}\",\n",
                       "    \"client-endpoint\"                : \"{{region}}\",\n",
                       "    \"region\"                         : \"{{region}}\",\n",
+                      "    \"sdb_region\"                     : \"{{region}}\",\n",
                       "    \"vpc_id\"                         : \"{{vpc_id}}\",\n",
                       "    \"vpc_name\"                       : \"{{vpc_name}}\"\n",
                       "  },\n",
@@ -472,6 +477,7 @@
                       "    \"should_install_mx\"              : \"true\"\n",
                       "  },\n",
                       "  \"volumes\" : {\n",
+                      "    \"kms_alias\"                      : \"{{kms_alias}}\",\n",
                       "    \"volume_min_iops\"                : \"{{volume_min_iops}}\",\n",
                       "    \"volume_min_size_data_gb\"        : \"{{volume_min_size_data_gb}}\",\n",
                       "    \"volume_mount_point\"             : \"storage\",\n",
@@ -486,7 +492,6 @@
                       "    \"msg_history_v2_dynamodb_table_name\" : \"{{msg_history_v2_dynamodb_table_name}}\",\n",
                       "    \"msg_history_v2_stream_name\"     : \"{{msg_history_v2_stream_name}}\",\n",
                       "    \"msg_notifier_queue_url\"         : \"{{msg_notifier_queue_url}}\",\n",
-                      "    \"sdb_region\"                     : \"{{region}}\",\n",
                       "    \"station_vpc_id\"                 : \"{{station_vpc_id}}\",\n",
                       "    \"station_vpc_name\"               : \"{{station_vpc_name}}\",\n",
                       "    \"xgemail_policy_bucket_name\"     : \"{{xgemail_policy_bucket_name}}\"\n",
@@ -505,6 +510,7 @@
                   "cluster":                                  { "Ref": "XgemailServiceType" },
                   "cluster_type":                             { "Ref": "XgemailServiceType" },
                   "environment":                              { "Ref": "Environment" },
+                  "kms_alias":                                { "Ref": "KmsKeyAlias" },
                   "msg_notifier_queue_url":                   { "Ref": "XgemailNotifierQueueUrl" },
                   "msg_history_v2_bucket_name":               { "Ref": "MsgHistoryV2BucketName" },
                   "msg_history_v2_dynamodb_table_name":       { "Ref": "MsgHistoryV2DynamoDbTableName"},
