@@ -38,6 +38,7 @@ default['sophos_cloud']['local_key_path']               = '/etc/ssl/private'
 default['sophos_cloud']['script_path']                  = '/var/sophos/scripts'
 default['sophos_cloud']['thirdparty']                   = '//cloud-dev-3rdparty'
 default['sophos_cloud']['tmp']                          = '/tmp/sophos'
+default['sophos_cloud']['sdb_region']                   = 'us-west-2'
 
 
 # XGEmail-specific settings

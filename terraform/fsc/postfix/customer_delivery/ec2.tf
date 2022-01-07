@@ -142,7 +142,7 @@ locals {
     inf  = 40
     dev  = 40
     qa   = 70
-    prod = 300
+    prod = 100
   }
 
   SXL_DBL_BY_ENVIRONMENT = {
@@ -297,7 +297,7 @@ locals {
 }
 
 resource "aws_cloudformation_stack" "cloudformation_stack" {
-  name          = "customer-delivery"
+  name          = local.instance_type
   template_body = file("${path.module}/templates/as_customer_delivery_template.json")
   parameters = {
     AccountName                      = local.input_param_account_name

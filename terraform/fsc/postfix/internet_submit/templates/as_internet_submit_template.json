@@ -1,7 +1,7 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
 
-  "Description": "Sophos Email AutoScaling Group template for Sophos Cloud used for internet-delivery EC2 Instances.",
+  "Description": "Sophos Email AutoScaling Group template for Sophos Cloud used for internet-submit EC2 Instances.",
 
   "Metadata": {
     "Copyright": [
@@ -14,16 +14,22 @@
     ],
 
     "Comments": [
-      "Sophos Email AutoScaling Group template for Sophos Cloud used for internet-delivery EC2 Instances."
+      "Sophos Email AutoScaling Group template for Sophos Cloud used for internet-submit EC2 Instances."
     ]
   },
 
   "Parameters": {
     "AccountName": {
-      "Description": "The AWS Account name.",
+      "Description": "(eml000cmh, eml010yul, eml030hnd, eml100syd, etc...)",
       "Type": "String"
     },
-    "AlarmScalingEnabled": {
+    "AlarmScaleInEnabled": {
+      "Description": "Enable AutoScaling Alarms to trigger scaling policies.",
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [ "true", "false" ]
+    },
+    "AlarmScaleOutEnabled": {
       "Description": "Enable AutoScaling Alarms to trigger scaling policies.",
       "Type": "String",
       "Default": "false",
@@ -32,12 +38,12 @@
     "AlarmScaleInThreshold": {
       "Description": "The value against which the specified statistic is compared.",
       "Type": "Number",
-      "Default": "10"
+      "Default": "1000"
     },
     "AlarmScaleOutThreshold": {
       "Description": "The value against which the specified statistic is compared.",
       "Type": "Number",
-      "Default": "50"
+      "Default": "5000"
     },
     "AlarmTopicArn": {
       "Description": "ARN for SNS Topic that should receive alarm notifications",
@@ -75,9 +81,8 @@
       "Type": "String"
     },
     "BuildTag": {
-      "Description": "Version of the application from Bamboo",
-      "Type": "String",
-      "Default": "1.0"
+      "Description": "Version of the application from Jenkins",
+      "Type": "String"
     },
     "BuildUrl": {
       "Description": "Link to Build from Jenkins",
@@ -133,38 +138,46 @@
       "Type": "String",
       "Default": "c3.large"
     },
-    "LifecycleHookLaunching": {
-      "Description": "Name of the Launching Lifecycle Hook.",
+    "JilterHeloTelemetryStreamName": {
+      "Description": "Name of the jilter helo telemetry firehose stream",
       "Type": "String"
     },
     "LifecycleHookTerminating": {
-      "Description": "Name of the Terminating Lifecycle Hook.",
+      "Description": "Name of the Lifecycle Hook.",
       "Type": "String"
     },
     "LoadBalancerName": {
       "Description": "Name for the ELB to attach to the Auto Scaling Group",
-      "Type": "List<String>"
+      "Type": "String"
     },
     "MsgHistoryV2BucketName" : {
       "Description" : "Message History s3 bucket name for writing failure records",
-      "Type": "String"
-    },
-    "MsgHistoryV2DynamoDbTableName": {
-      "Description": "Name of the message history DynamoDB table",
       "Type": "String"
     },
     "MsgHistoryV2StreamName" : {
       "Description" : "Message History firehose stream name",
       "Type": "String"
     },
+    "PolicyTargetValue": {
+      "Description": "The target value for the metric.",
+      "Type": "Number",
+      "Default": "85"
+    },
     "S3CookbookRepositoryURL": {
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
-      "Type": "String"
+      "Type": "String",
+      "Default": "//cloud-applications/develop/cookbooks.tar.gz"
     },
     "ScaleInOnWeekends": {
       "Description": "Enable scale in to zero on Saturday at midnight and scale out on Monday morning. (Times are UTC, NON PROD/QA ENVIRONMENT ONLY)",
       "Type": "String",
-      "Default": "true",
+      "Default": "false",
+      "AllowedValues": [ "true", "false" ]
+    },
+    "ScaleInAndOutOnWeekdays": {
+      "Description": "Enable scale in on at evening and scale out on morning.  (Times are UTC)",
+      "Type": "String",
+      "Default": "false",
       "AllowedValues": [ "true", "false" ]
     },
     "ScaleInCron": {
@@ -176,6 +189,21 @@
       "Description": "Cron string for when to begin scale out.",
       "Type": "String",
       "Default": "0 4 * * 1"
+    },
+    "ScaleInOnWeekdaysCron": {
+      "Description": "Cron string for when to begin scale in.",
+      "Type": "String",
+      "Default": "00 18 * * 1-5"
+    },
+    "ScaleOutOnWeekdaysCron": {
+      "Description": "Cron string for when to begin scale out.",
+      "Type": "String",
+      "Default": "00 08 * * 1-5"
+    },
+    "ScheduledAsOnHourDesiredCapacity": {
+      "Description": "DesiredCapacity of instances in the Auto Scaling Group inside of business hour.",
+      "Type": "String",
+      "Default": "3"
     },
     "SecurityGroups": {
       "Description": "The security group that allows communication within the VPC.",
@@ -220,13 +248,23 @@
       "MinValue": "1",
       "MaxValue": "16384"
     },
-    "XgemailMsgHistoryStatusSnsArn": {
-      "Description" : "ARN for the SNS Topic where Message History delivery status events are published",
-      "Type" : "String",
+    "XgemailMsgHistoryBucketName": {
+      "Description": "Name of the S3 Bucket where XGEMAIL messages are sent",
+      "Type": "String",
       "Default": ""
     },
-    "XgemailNotifierQueueUrl" : {
-      "Description" : "URL for the SQS Queue where XGEMAIL messages are sent",
+    "XgemailMsgHistoryMsBucketName": {
+      "Description": "Name of the S3 Bucket where XGEMAIL messages are sent for micro-service",
+      "Type": "String",
+      "Default": ""
+    },
+    "XgemailMsgHistoryQueueUrl": {
+      "Description": "URL for the SQS Queue where XGEMAIL messages are sent",
+      "Type": "String",
+      "Default": ""
+    },
+    "XgemailPolicyArn" : {
+      "Description" : "ARN for the SNS Topic where XGEMAIL policies are sent",
       "Type" : "String",
       "Default": ""
     },
@@ -235,10 +273,23 @@
       "Type" : "String",
       "Default": ""
     },
-    "XgemailSnsSqsQueue": {
-      "Description": "The SNS-SQS Queue where XGEMAIL messages are sent",
+    "XgemailPolicyEfsFileSystemId" : {
+      "Description": "The id of the EFS file system used to store policy",
+      "Type" : "String",
+      "Default": ""
+    },
+    "XgemailQueueUrl": {
+      "Description": "URL for the SQS Queue where XGEMAIL messages are sent",
       "Type": "String",
       "Default": ""
+    },
+    "XgemailScanEventsTopicArn": {
+      "Description": "Arn of scan events",
+      "Type": "String"
+    },
+    "MessageHistoryEventsTopicArn": {
+      "Description": "Arn of message history events",
+      "Type": "String"
     },
     "XgemailSnsSqsQueueUrl": {
       "Description": "URL for the SNS-SQS Queue where XGEMAIL messages are sent",
@@ -382,6 +433,12 @@
         }
       ]
     },
+    "EnableScaleInOutOnWeekdays": {
+      "Fn::Equals": [
+        { "Ref": "ScaleInAndOutOnWeekdays" },
+        "true"
+      ]
+    },
     "IsInfDevelopmentEnvironment": {
       "Fn::Or": [
         {
@@ -403,6 +460,14 @@
           ]
         }
       ]
+    },
+    "ScalingEnabled": {
+      "Fn::Equals": [
+        {
+          "Ref": "Environment"
+        },
+        "prod"
+      ]
     }
   },
 
@@ -422,13 +487,6 @@
         },
         "LifecycleHookSpecificationList" : [
           {
-            "LifecycleHookName": { "Ref": "LifecycleHookLaunching" },
-            "HeartbeatTimeout" : "300",
-            "LifecycleTransition" : "autoscaling:EC2_INSTANCE_LAUNCHING",
-            "NotificationTargetARN" : { "Ref": "AutoScalingNotificationTopicARN" },
-            "RoleARN" : { "Ref": "AutoScalingInstanceRoleArn" }
-          },
-          {
             "LifecycleHookName": { "Ref": "LifecycleHookTerminating" },
             "HeartbeatTimeout" : "300",
             "LifecycleTransition" : "autoscaling:EC2_INSTANCE_TERMINATING",
@@ -436,7 +494,7 @@
             "RoleARN" : { "Ref": "AutoScalingInstanceRoleArn" }
           }
         ],
-        "LoadBalancerNames": { "Ref": "LoadBalancerName" },
+        "LoadBalancerNames": [ { "Ref": "LoadBalancerName" } ],
         "MinSize": { "Ref": "AutoScalingMinSize" },
         "MaxSize": { "Ref": "AutoScalingMaxSize" },
         "TerminationPolicies": [ "Default" ],
@@ -455,8 +513,13 @@
             "PropagateAtLaunch": "true"
           },
           {
-            "Key": "BuildResultKey",
+            "Key": "BuildTag",
             "Value": { "Ref": "BuildTag" },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "BuildUrl",
+            "Value": { "Ref": "BuildUrl" },
             "PropagateAtLaunch": "true"
           },
           {
@@ -497,6 +560,11 @@
           {
             "Key": "ServiceType",
             "Value": { "Fn::Sub": "${VpcName}:${XgemailServiceType}" },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "sxl-revision",
+            "Value": "a",
             "PropagateAtLaunch": "true"
           }
         ]
@@ -545,7 +613,25 @@
         "Recurrence": { "Ref": "ScaleOutCron" }
       }
     },
+    "AutoScalingScheduledScaleInWeekdays": {
+      "Type": "AWS::AutoScaling::ScheduledAction",
+      "Condition": "EnableScaleInOutOnWeekdays",
+      "Properties": {
+        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
+        "DesiredCapacity": {"Ref": "AutoScalingMinSize"},
+        "Recurrence": { "Ref": "ScaleInOnWeekdaysCron" }
+      }
+    },
 
+    "AutoScalingScheduledScaleOutWeekdays": {
+      "Type": "AWS::AutoScaling::ScheduledAction",
+      "Condition": "EnableScaleInOutOnWeekdays",
+      "Properties": {
+        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
+        "DesiredCapacity": {"Ref": "ScheduledAsOnHourDesiredCapacity"},
+        "Recurrence": { "Ref": "ScaleOutOnWeekdaysCron" }
+      }
+    },
     "XgemailScaleOutPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
       "Properties": {
@@ -566,16 +652,33 @@
       }
     },
 
+    "XgemailScaleCpuPolicy": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+      "Condition": "ScalingEnabled",
+      "Properties": {
+        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
+        "EstimatedInstanceWarmup": "400",
+        "PolicyType": "TargetTrackingScaling",
+        "TargetTrackingConfiguration": {
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "ASGAverageCPUUtilization"
+          },
+          "TargetValue": { "Ref": "PolicyTargetValue"},
+          "DisableScaleIn" : "true"
+        }
+      }
+    },
+
     "AlarmScaleIn": {
       "Type": "AWS::CloudWatch::Alarm",
       "Properties": {
-        "ActionsEnabled": { "Ref": "AlarmScalingEnabled" },
+        "ActionsEnabled": { "Ref": "AlarmScaleInEnabled" },
         "AlarmDescription": {
           "Fn::Join": [
             " ", [
               "Alarm when",
               { "Ref": "XgemailServiceType" },
-              "visible SQS messages is below threshold of",
+              "ELB RequestCount is below threshold of",
               { "Ref": "AlarmScaleInThreshold" },
               "for a duration of time"
             ]
@@ -584,34 +687,34 @@
         "DatapointsToAlarm": "3",
         "EvaluationPeriods": "10",
         "Period": "60",
-        "Statistic": "Average",
+        "Statistic": "Sum",
         "Threshold": { "Ref": "AlarmScaleInThreshold" },
         "InsufficientDataActions": [ { "Ref": "XgemailScaleInPolicy" } ],
         "AlarmActions": [
           { "Ref": "XgemailScaleInPolicy" }
         ],
-        "Namespace": "AWS/SQS",
+        "Namespace": "AWS/ELB",
         "Dimensions": [
           {
-            "Name": "QueueName",
-            "Value": { "Ref": "XgemailSnsSqsQueue" }
+            "Name": "LoadBalancerName",
+            "Value": { "Ref": "LoadBalancerName" }
           }
         ],
-        "ComparisonOperator":"LessThanThreshold",
-        "MetricName":"ApproximateNumberOfMessagesVisible"
+        "ComparisonOperator": "LessThanThreshold",
+        "MetricName": "RequestCount"
       }
     },
 
     "AlarmScaleOut": {
       "Type": "AWS::CloudWatch::Alarm",
       "Properties": {
-        "ActionsEnabled": { "Ref": "AlarmScalingEnabled" },
+        "ActionsEnabled": { "Ref": "AlarmScaleOutEnabled" },
         "AlarmDescription": {
           "Fn::Join": [
             " ", [
               "Alarm when",
               { "Ref": "XgemailServiceType" },
-              "visible SQS messages exceeds a threshold of",
+              "ELB RequestCount exceeds a threshold of",
               { "Ref": "AlarmScaleOutThreshold" },
               "for a duration of time"
             ]
@@ -620,20 +723,20 @@
         "DatapointsToAlarm": "5",
         "EvaluationPeriods": "8",
         "Period": "60",
-        "Statistic": "Average",
+        "Statistic": "Sum",
         "Threshold": { "Ref": "AlarmScaleOutThreshold" },
         "AlarmActions": [
           { "Ref": "XgemailScaleOutPolicy" }
         ],
-        "Namespace": "AWS/SQS",
+        "Namespace": "AWS/ELB",
         "Dimensions": [
           {
-            "Name": "QueueName",
-            "Value": { "Ref": "XgemailSnsSqsQueue" }
+            "Name": "LoadBalancerName",
+            "Value": { "Ref": "LoadBalancerName" }
           }
         ],
-        "ComparisonOperator":"GreaterThanThreshold",
-        "MetricName":"ApproximateNumberOfMessagesVisible"
+        "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+        "MetricName": "RequestCount"
       }
     },
 
@@ -707,37 +810,46 @@
                     "  \"xgemail\" : {\n",
                     "    \"alarm_topic_arn\"                        : \"{{alarm_topic_arn}}\",\n",
                     "    \"cluster_type\"                           : \"{{cluster_type}}\",\n",
+                    "    \"jilter_helo_telemetry_stream_name\"      : \"{{jilter_helo_telemetry_stream_name}}\",\n",
                     "    \"lifecycle_topic_arn\"                    : \"{{lifecycle_topic_arn}}\",\n",
-                    "    \"msg_history_status_sns_arn\"             : \"{{msg_history_delivery_status_sns_arn}}\",\n",
+                    "    \"msg_history_bucket_name\"                : \"{{msg_history_bucket_name}}\",\n",
+                    "    \"msg_history_ms_bucket_name\"             : \"{{msg_history_ms_bucket_name}}\",\n",
+                    "    \"msg_history_queue_url\"                  : \"{{msg_history_queue_url}}\",\n",
                     "    \"msg_history_v2_bucket_name\"             : \"{{msg_history_v2_bucket_name}}\",\n",
-                    "    \"msg_history_v2_dynamodb_table_name\"     : \"{{msg_history_v2_dynamodb_table_name}}\",\n",
                     "    \"msg_history_v2_stream_name\"             : \"{{msg_history_v2_stream_name}}\",\n",
-                    "    \"msg_notifier_queue_url\"                 : \"{{msg_notifier_queue_url}}\",\n",
+                    "    \"policy_efs_file_system_id\"              : \"{{policy_efs_file_system_id}}\",\n",
                     "    \"station_vpc_id\"                         : \"{{station_vpc_id}}\",\n",
                     "    \"station_vpc_name\"                       : \"{{station_vpc_name}}\",\n",
                     "    \"sxl_dbl\"                                : \"{{sxl_dbl}}\",\n",
                     "    \"sxl_rbl\"                                : \"{{sxl_rbl}}\",\n",
-                    "    \"xgemail_bucket_name\"                    : \"{{xgemail_bucket_name}}\",\n",
                     "    \"xgemail_policy_bucket_name\"             : \"{{xgemail_policy_bucket_name}}\",\n",
-                    "    \"xgemail_sns_sqs_url\"                    : \"{{xgemail_sns_sqs_url}}\"\n",
+                    "    \"xgemail_bucket_name\"                    : \"{{xgemail_bucket_name}}\",\n",
+                    "    \"xgemail_policy_arn\"                     : \"{{xgemail_policy_arn}}\",\n",
+                    "    \"xgemail_service_queue_url\"              : \"{{xgemail_service_queue_url}}\",\n",
+                    "    \"xgemail_sns_sqs_url\"                    : \"{{xgemail_sns_sqs_url}}\",\n",
+                    "    \"xgemail_queue_url\"                      : \"{{xgemail_queue_url}}\",\n",
+                    "    \"xgemail_scan_events_topic_arn\"          : \"{{xgemail_scan_events_topic_arn}}\",\n",
+                    "    \"xgemail_msg_history_events_topic_arn\"   : \"{{xgemail_msg_history_events_topic_arn}}\"\n",
                     "  }\n",
                     "}\n"
                   ]]
                 },
                 "context": {
-                  "account_name":                                   { "Ref": "AccountName"},
+                  "account_name":                                   { "Ref": "AccountName" },
                   "alarm_topic_arn":                                { "Ref": "AlarmTopicArn" },
                   "availability_zone":                              { "Ref": "AvailabilityZones" },
                   "branch":                                         { "Ref": "Branch" },
                   "cluster":                                        { "Ref": "XgemailServiceType" },
                   "cluster_type":                                   { "Ref": "XgemailServiceType" },
                   "environment":                                    { "Ref": "Environment" },
+                  "jilter_helo_telemetry_stream_name":              { "Ref": "JilterHeloTelemetryStreamName" },
                   "lifecycle_topic_arn":                            { "Ref": "AutoScalingNotificationTopicARN" },
-                  "msg_history_delivery_status_sns_arn":            { "Ref": "XgemailMsgHistoryStatusSnsArn"},
+                  "msg_history_bucket_name":                        { "Ref": "XgemailMsgHistoryBucketName" },
+                  "msg_history_ms_bucket_name":                     { "Ref": "XgemailMsgHistoryMsBucketName" },
+                  "msg_history_queue_url":                          { "Ref": "XgemailMsgHistoryQueueUrl" },
                   "msg_history_v2_bucket_name":                     { "Ref": "MsgHistoryV2BucketName" },
-                  "msg_history_v2_dynamodb_table_name":             { "Ref": "MsgHistoryV2DynamoDbTableName"},
                   "msg_history_v2_stream_name":                     { "Ref": "MsgHistoryV2StreamName" },
-                  "msg_notifier_queue_url":                         { "Ref": "XgemailNotifierQueueUrl" },
+                  "policy_efs_file_system_id":                      { "Ref": "XgemailPolicyEfsFileSystemId" },
                   "region":                                         { "Ref": "AWS::Region" },
                   "stack":                                          { "Ref": "AWS::StackName" },
                   "station_vpc_id":                                 { "Ref": "StationVpcId" },
@@ -747,8 +859,12 @@
                   "vpc_id":                                         { "Ref": "Vpc" },
                   "vpc_name":                                       { "Ref": "VpcName" },
                   "xgemail_bucket_name":                            { "Ref": "XgemailBucketName" },
+                  "xgemail_policy_arn":                             { "Ref": "XgemailPolicyArn" },
                   "xgemail_policy_bucket_name":                     { "Ref": "XgemailPolicyBucketName" },
-                  "xgemail_sns_sqs_url":                            { "Ref": "XgemailSnsSqsQueueUrl" }
+                  "xgemail_queue_url":                              { "Ref": "XgemailQueueUrl" },
+                  "xgemail_sns_sqs_url":                            { "Ref": "XgemailSnsSqsQueueUrl" },
+                  "xgemail_scan_events_topic_arn":                  { "Ref": "XgemailScanEventsTopicArn" },
+                  "xgemail_msg_history_events_topic_arn":           { "Ref": "MessageHistoryEventsTopicArn" }
                 },
                 "mode": "000444",
                 "owner": "root"
@@ -762,6 +878,7 @@
                 "command": {
                   "Fn::Join": [ "; ",[
                     "rm -f /var/chef/chef-repo/nodes/*.*",
+                    "rm -f /var/chef/chef-repo/cookbooks.enc",
                     "rm -f /var/chef/chef-repo/cookbooks.tar.gz",
                     "rm -rf /var/chef/chef-repo/cookbooks"
                   ]]
@@ -849,6 +966,7 @@
                   "Fn::Join": ["", [
                     "knife node run_list set -z `knife node list -z` \"",
                     "recipe[sophos-cloud-xgemail::setup_xgemail_instance_terminator],",
+                    "recipe[sophos-cloud-xgemail::configure-policy-efs-mount],",
                     "recipe[sophos-cloud-ntpd::default],",
                     "recipe[sophos-cloud-fluentd::configure],",
                     "recipe[sophos-cloud-xgemail::deploy_certs],",
@@ -893,13 +1011,13 @@
                       "export AWS_AMI_ID='", { "Ref" : "AmiId" }, "'\n",
                       "export AWS_APPLICATION='", { "Ref": "XgemailServiceType" }, "'\n",
                       "export AWS_BRANCH='", { "Ref" : "Branch" }, "'\n",
-                      "export AWS_BUILD_RESULT_KEY='", { "Ref" : "BuildTag" }, "'\n",
+                      "export AWS_BUILD_TAG='", { "Ref" : "BuildTag" }, "'\n",
                       "export AWS_BUNDLE_VERSION='", { "Ref" : "BundleVersion" }, "'\n",
                       "export AWS_INSTANCE_ID=$(curl -f http://169.254.169.254/latest/meta-data/instance-id)\n",
                       "export AWS_REGION='", { "Ref" : "AWS::Region" }, "'\n",
                       "export AWS_VPC_NAME='", { "Ref": "VpcName"} , "'\n",
-                      "for i in $(aws ec2 describe-volumes --region $AWS_REGION --filters Name=attachment.instance-id,Values=$AWS_INSTANCE_ID --query Volumes[*].VolumeId --output text); do aws ec2 create-tags --resources $i --tags Key=Application,Value=\"$AWS_APPLICATION\" Key=BaseAmi,Value=\"$AWS_AMI_ID\" Key=BuildResultKey,Value=\"$AWS_BUILD_RESULT_KEY\" Key=BundleVersion,Value=\"$AWS_BUNDLE_VERSION\" Key=BusinessUnit,Value=MSG Key=Name,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION:$AWS_BRANCH:$AWS_BUNDLE_VERSION\" Key=OwnerEmail,Value=sophosmailops@sophos.com Key=Project,Value=xgemail Key=ServiceCategory,Value=\"$AWS_VPC_NAME:email\" Key=ServiceType,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION\" --region $AWS_REGION; done \n",
-                      "for i in $(aws ec2 describe-network-interfaces --region $AWS_REGION --filters Name=attachment.instance-id,Values=$AWS_INSTANCE_ID --query NetworkInterfaces[0].NetworkInterfaceId --output text); do aws ec2 create-tags --resources $i --tags Key=Application,Value=\"$AWS_APPLICATION\" Key=BaseAmi,Value=\"$AWS_AMI_ID\" Key=BuildResultKey,Value=\"$AWS_BUILD_RESULT_KEY\" Key=BundleVersion,Value=\"$AWS_BUNDLE_VERSION\" Key=BusinessUnit,Value=MSG Key=Name,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION:$AWS_BRANCH:$AWS_BUNDLE_VERSION\" Key=OwnerEmail,Value=sophosmailops@sophos.com Key=Project,Value=xgemail Key=ServiceCategory,Value=\"$AWS_VPC_NAME:email\" Key=ServiceType,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION\" --region $AWS_REGION; done \n"
+                      "for i in $(aws ec2 describe-volumes --region $AWS_REGION --filters Name=attachment.instance-id,Values=$AWS_INSTANCE_ID --query Volumes[*].VolumeId --output text); do aws ec2 create-tags --resources $i --tags Key=Application,Value=\"$AWS_APPLICATION\" Key=BaseAmi,Value=\"$AWS_AMI_ID\" Key=BuildTag,Value=\"$AWS_BUILD_TAG\" Key=BundleVersion,Value=\"$AWS_BUNDLE_VERSION\" Key=BusinessUnit,Value=MSG Key=Name,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION:$AWS_BRANCH:$AWS_BUNDLE_VERSION\" Key=OwnerEmail,Value=sophosmailops@sophos.com Key=Project,Value=xgemail Key=ServiceCategory,Value=\"$AWS_VPC_NAME:email\" Key=ServiceType,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION\" --region $AWS_REGION; done \n",
+                      "for i in $(aws ec2 describe-network-interfaces --region $AWS_REGION --filters Name=attachment.instance-id,Values=$AWS_INSTANCE_ID --query NetworkInterfaces[0].NetworkInterfaceId --output text); do aws ec2 create-tags --resources $i --tags Key=Application,Value=\"$AWS_APPLICATION\" Key=BaseAmi,Value=\"$AWS_AMI_ID\" Key=BuildTag,Value=\"$AWS_BUILD_TAG\" Key=BundleVersion,Value=\"$AWS_BUNDLE_VERSION\" Key=BusinessUnit,Value=MSG Key=Name,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION:$AWS_BRANCH:$AWS_BUNDLE_VERSION\" Key=OwnerEmail,Value=sophosmailops@sophos.com Key=Project,Value=xgemail Key=ServiceCategory,Value=\"$AWS_VPC_NAME:email\" Key=ServiceType,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION\" --region $AWS_REGION; done \n"
                     ]
                   ]
                 },
@@ -921,12 +1039,8 @@
               "DeviceName": "/dev/xvdi",
               "Ebs": {
                 "DeleteOnTermination": "true",
-                "VolumeSize": {
-                  "Ref": "XgemailMinSizeDataGB"
-                },
-                "VolumeType": {
-                  "Ref": "EbsVolumeType"
-                }
+                "VolumeSize": { "Ref": "XgemailMinSizeDataGB" },
+                "VolumeType": { "Ref": "EbsVolumeType" }
               }
             }
           ],
@@ -934,146 +1048,101 @@
             {
               "AssociatePublicIpAddress": "true",
               "DeviceIndex": "0",
-              "Groups": {
-                "Ref": "SecurityGroups"
-              }
+              "Groups": { "Ref": "SecurityGroups" }
             }
           ],
-          "ImageId": {
-            "Ref": "AmiId"
-          },
-          "InstanceType": {
-            "Ref": "InstanceType"
+          "ImageId": { "Ref": "AmiId" },
+          "InstanceType": { "Ref": "InstanceType" },
+          "Monitoring": {
+            "Enabled": { "Fn::If": ["EnableDetailedMonitoring", "true", "false"] }
           },
           "IamInstanceProfile": {
             "Name": { "Ref": "InstanceProfile" }
           },
-          "Monitoring": {
-            "Enabled": {
-              "Fn::If": [
-                "EnableDetailedMonitoring",
-                "true",
-                "false"
-              ]
-            }
-          },
           "InstanceMarketOptions": {
-            "Fn::If": [
-              "UseSpotPrice",
-              {
-                "MarketType": "spot",
-                "SpotOptions": {
-                  "MaxPrice": {
-                    "Ref": "SpotPrice"
-                  }
-                }
-              },
-              {
-                "Ref": "AWS::NoValue"
+            "Fn::If": ["UseSpotPrice", {
+              "MarketType": "spot",
+              "SpotOptions": {
+                "MaxPrice": { "Ref": "SpotPrice" }
               }
-            ]
+            }, {"Ref": "AWS::NoValue"}]
           },
           "UserData": {
             "Fn::Base64": {
-              "Fn::Join": [
-                "",
-                [
-                  "#!/bin/bash -xe\n",
-                  "# Install the files and packages from the metadata\n",
-                  "\n",
-                  "# Force replacement of the LaunchConfiguration object by changing this value.\n",
-                  "# ",
-                  {
-                    "Ref": "BuildTag"
-                  },
-                  "\n",
-                  "# Make sure we call cfn-signal before exiting, otherwise we have to\n",
-                  "# wait for the CreationPolicy timeout to detect failed initialization.\n",
-                  "# That's because of using the bash -e option, which makes the script\n",
-                  "# exit immediately as soon as any command, e.g. cfn-init, fails.\n",
-                  "\n",
-                  "onexit() {\n",
-                  "  # Save exit code for call to cfn-signal below.\n",
-                  "  exit_code=$?\n",
-                  "\n",
-                  "  # Disable errexit so errors below don't prevent the call to cfn-signal.\n",
-                  "  set +o errexit\n",
-                  "\n",
-                  "  ACCOUNT='",
-                  {
-                    "Ref": "AccountName"
-                  },
-                  "'\n",
-                  "  BRANCH='",
-                  {
-                    "Ref": "Branch"
-                  },
-                  "'\n",
-                  "  DEPLOYMENT_NAME='",
-                  {
-                    "Ref": "XgemailServiceType"
-                  },
-                  "'\n",
-                  "  ENVIRONMENT='",
-                  {
-                    "Ref": "Environment"
-                  },
-                  "'\n",
-                  "  # Set LastHealth tag so cloud list command shows progress.\n",
-                  "  if [ \"$exit_code\" == 0 ]; then\n",
-                  "    /opt/sophos/bin/set_instance_tag.py LastHealth UserDataSuccess\n",
-                  "    if [ \"$ENVIRONMENT\" == \"prod\" ]; then\n",
-                  "      /opt/sophos/bin/ebs-delete-on-termination.py\n",
-                  "    fi\n",
-                  "    /sbin/service monit start\n",
-                  "  else\n",
-                  "    /opt/sophos/bin/set_instance_tag.py LastHealth UserDataFailure\n",
-                  "    # Upload logs before reporting failure to avoid race against termination.\n",
-                  "    /opt/sophos/bin/upload_deployment_logs.py -a ${ACCOUNT} -b ${BRANCH} ${DEPLOYMENT_NAME} -c netstat_tuna.out='netstat -tuna'\n",
-                  "  fi\n",
-                  "\n",
-                  "  /opt/aws/bin/cfn-signal -e $exit_code",
-                  " --stack ",
-                  {
-                    "Ref": "AWS::StackName"
-                  },
-                  " --resource XgemailAutoScalingGroup",
-                  " --region ",
-                  {
-                    "Ref": "AWS::Region"
-                  },
-                  "\n",
-                  "}\n",
-                  "\n",
-                  "trap onexit EXIT\n",
-                  "\n",
-                  "# Wait for network access.\n",
-                  "/usr/bin/nc -v -z -w 60 www.google.com 80\n",
-                  "\n",
-                  "# Set LastHealth tag so cloud list command shows progress.\n",
-                  "/opt/sophos/bin/set_instance_tag.py LastHealth UserDataStarted\n",
-                  "\n",
-                  "/opt/aws/bin/cfn-init --verbose ",
-                  " --stack ",
-                  {
-                    "Ref": "AWS::StackName"
-                  },
-                  " --resource XgemailAutoScalingLaunchTemplate ",
-                  " --configsets xgemail_install ",
-                  " --region ",
-                  {
-                    "Ref": "AWS::Region"
-                  },
-                  "\n",
-                  "\n",
-                  "# Disable errexit so errors below don't prevent the call to cfn-signal.\n",
-                  "# This is NOT redundant with the call to disable errexit inside onexit,\n",
-                  "# because an error that happens earlier than this point will be trapped\n",
-                  "# and generate a call to onexit before this code is reached.\n",
-                  "set +o errexit\n",
-                  "\n",
-                  "# Now the onexit function will get called.\n"
-                ]
+              "Fn::Join": [ "", [
+                "#!/bin/bash -xe\n",
+                "# Install the files and packages from the metadata\n",
+                "\n",
+
+                "# Force replacement of the LaunchConfiguration object by changing this value.\n",
+                "# ", { "Ref": "BuildTag" }, "\n",
+
+                "# Make sure we call cfn-signal before exiting, otherwise we have to\n",
+                "# wait for the CreationPolicy timeout to detect failed initialization.\n",
+                "# That's because of using the bash -e option, which makes the script\n",
+                "# exit immediately as soon as any command, e.g. cfn-init, fails.\n",
+                "\n",
+
+                "onexit() {\n",
+                "  # Save exit code for call to cfn-signal below.\n",
+                "  exit_code=$?\n",
+                "\n",
+                "  # Disable errexit so errors below don't prevent the call to cfn-signal.\n",
+                "  set +o errexit\n",
+                "\n",
+                "  ACCOUNT='", { "Ref" : "AccountName" }, "'\n",
+                "  BRANCH='", { "Ref": "Branch" }, "'\n",
+                "  ENVIRONMENT='", { "Ref": "Environment" }, "'\n",
+                "  DEPLOYMENT_NAME='", { "Ref": "XgemailServiceType" }, "'\n",
+                "  # Set LastHealth tag so cloud list command shows progress.\n",
+                "  if [ \"$exit_code\" == 0 ]; then\n",
+                "    /opt/sophos/bin/set_instance_tag.py LastHealth UserDataSuccess\n",
+                "    if [ \"$ENVIRONMENT\" == \"prod\" ]; then\n",
+                "      /opt/sophos/bin/ebs-delete-on-termination.py\n",
+                "    fi\n",
+                "    /sbin/service monit start\n",
+                "  else\n",
+                "    /opt/sophos/bin/set_instance_tag.py LastHealth UserDataFailure\n",
+                "    # Upload logs before reporting failure to avoid race against termination.\n",
+                "    /opt/sophos/bin/upload_deployment_logs.py -a ${ACCOUNT} -b ${BRANCH} ${DEPLOYMENT_NAME} -c netstat_tuna.out='netstat -tuna'\n",
+                "  fi\n",
+                "\n",
+
+                "  /opt/aws/bin/cfn-signal -e $exit_code",
+                " --stack ", { "Ref": "AWS::StackName" },
+                " --resource XgemailAutoScalingGroup",
+                " --region ", { "Ref": "AWS::Region" },
+                "\n",
+                "}\n",
+                "\n",
+
+                "trap onexit EXIT\n",
+                "\n",
+
+                "# Wait for network access.\n",
+                "/usr/bin/nc -v -z -w 60 www.google.com 80\n",
+                "\n",
+
+                "# Set LastHealth tag so cloud list command shows progress.\n",
+                "/opt/sophos/bin/set_instance_tag.py LastHealth UserDataStarted\n",
+                "\n",
+
+                "/opt/aws/bin/cfn-init --verbose ",
+                " --stack ", { "Ref": "AWS::StackName" },
+                " --resource XgemailAutoScalingLaunchTemplate ",
+                " --configsets xgemail_install ",
+                " --region ", { "Ref": "AWS::Region" }, "\n",
+                "\n",
+
+                "# Disable errexit so errors below don't prevent the call to cfn-signal.\n",
+                "# This is NOT redundant with the call to disable errexit inside onexit,\n",
+                "# because an error that happens earlier than this point will be trapped\n",
+                "# and generate a call to onexit before this code is reached.\n",
+                "set +o errexit\n",
+                "\n",
+
+                "# Now the onexit function will get called.\n"
+              ]
               ]
             }
           }
@@ -1126,6 +1195,11 @@
     "XgemailScaleInPolicy": {
       "Description": "Auto Scaling Scale In Policy ARN..",
       "Value": { "Ref": "XgemailScaleInPolicy" }
+    },
+    "XgemailScaleCpuPolicy": {
+      "Description": "Auto Scaling Scale Out Policy based on CPU.",
+      "Value": { "Ref": "XgemailScaleCpuPolicy" },
+      "Condition": "ScalingEnabled"
     }
   }
 }
