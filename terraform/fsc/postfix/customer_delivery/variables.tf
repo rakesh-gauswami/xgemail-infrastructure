@@ -18,19 +18,29 @@ variable "build_url" {
   description = "Build URL"
 }
 
-variable "customer_delivery_bucket" {
+variable "firehose_msg_history_v2_stream_name" {
   type        = string
-  description = "customer_delivery_bucket"
+  description = "firehose_msg_history_v2_stream_name"
+}
+
+variable "customer_delivery_sqs_queue_name" {
+  type        = string
+  description = "customer_delivery_sqs_queue_name"
+}
+
+variable "customer_delivery_sqs_queue_url" {
+  type        = string
+  description = "customer_delivery_sqs_queue_url"
+}
+
+variable "inbound_submit_bucket" {
+  type        = string
+  description = "inbound_submit_bucket"
 }
 
 variable "message_history_dynamodb_table_name" {
   type        = string
   description = "message_history_dynamodb_table_name"
-}
-
-variable "firehose_msg_history_v2_stream_name" {
-  type        = string
-  description = "firehose_msg_history_v2_stream_name"
 }
 
 variable "message_history_bucket" {
@@ -48,7 +58,6 @@ variable "message_history_sqs_queue" {
   description = "msg_history_sqs_queue"
 }
 
-
 variable "message_history_status_sqs_queue" {
   type        = string
   description = "msg_history_status_sqs_queue"
@@ -62,16 +71,6 @@ variable "message_history_status_sns_topic" {
 variable "policy_bucket" {
   type        = string
   description = "policy_bucket"
-}
-
-variable "customer_delivery_sqs_queue_name" {
-  type        = string
-  description = "customer_delivery_sqs_queue_name"
-}
-
-variable "customer_delivery_sqs_queue_url" {
-  type        = string
-  description = "customer_delivery_sqs_queue_url"
 }
 
 variable "station_vpc_id" {

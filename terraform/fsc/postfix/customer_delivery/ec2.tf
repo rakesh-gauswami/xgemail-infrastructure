@@ -142,7 +142,7 @@ locals {
     inf  = 40
     dev  = 40
     qa   = 70
-    prod = 300
+    prod = 100
   }
 
   SXL_DBL_BY_ENVIRONMENT = {
