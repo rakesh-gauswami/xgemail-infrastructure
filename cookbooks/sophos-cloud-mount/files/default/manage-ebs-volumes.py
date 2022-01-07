@@ -260,7 +260,7 @@ class App(object):
         self.settings = InstanceSettings()
         self.settings.load("/var/sophos/cookbooks/attributes.json")
 
-        self.aws_wrapper = AWSWrapper(self.settings.region)
+        self.aws_wrapper = AWSWrapper(self.settings.region, self.settings.sdb_region)
         self.aws_wrapper.set_logging_level(logging.DEBUG if options.debug else logging.ERROR)
         self.aws_wrapper.set_print_responses(options.verbose)
 
