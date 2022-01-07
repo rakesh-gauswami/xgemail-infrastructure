@@ -18,9 +18,9 @@ variable "build_url" {
   description = "Build URL"
 }
 
-variable "outbound_submit_bucket" {
+variable "customer_submit_bucket" {
   type        = string
-  description = "outbound_submit_bucket"
+  description = "customer_submit_bucket"
 }
 
 variable "customer_submit_sqs_queue" {
@@ -28,9 +28,9 @@ variable "customer_submit_sqs_queue" {
   description = "customer_submit_sqs_queue"
 }
 
-variable "inbound_submit_bucket" {
+variable "internet_submit_bucket" {
   type        = string
-  description = "inbound_submit_bucket"
+  description = "internet_submit_bucket"
 }
 
 variable "internet_submit_sqs_queue" {
