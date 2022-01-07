@@ -14,21 +14,14 @@ locals {
     3 = 0
   }
 
-  AS_MIN_SIZE_BY_ENVIRONMENT = {
-    inf  = 1
-    dev  = 1
-    qa   = 1
-    prod = 6
-  }
-
-   AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT = {
+  AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT = {
     inf  = 2400
     dev  = 2400
     qa   = 2400
     prod = 2400
   }
 
-    EBS_SIZE_DATA_GB_BY_ENVIRONMENT = {
+  EBS_SIZE_DATA_GB_BY_ENVIRONMENT = {
     inf  = 10
     dev  = 40
     qa   = 70
@@ -117,7 +110,6 @@ locals {
     local.input_param_deployment_environment,
     local.DEFAULT_ZONE_INDEX
   )
-
 }
 
 resource "aws_cloudformation_stack" "cloudformation_stack" {
