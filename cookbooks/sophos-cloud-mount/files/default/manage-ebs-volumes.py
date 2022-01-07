@@ -82,7 +82,7 @@ def parse_command_line():
 
 
 class AWSWrapper(object):
-    def __init__(self, region):
+    def __init__(self, region, sdb_region):
         self._print_responses = False
 
         self._ec2_client = boto3.client("ec2", region_name=region)
