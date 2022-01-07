@@ -23,19 +23,9 @@ variable "outbound_submit_bucket" {
   description = "outbound_submit_bucket"
 }
 
-variable "firehose_msg_history_v2_stream_name" {
-  type        = string
-  description = "firehose_msg_history_v2_stream_name"
-}
-
 variable "encryption_delivery_sqs_queue" {
   type        = string
   description = "encryption_delivery_sqs_queue"
-}
-
-variable "message_history_events_sns_topic" {
-  type        = string
-  description = "msg_history_events_sns_topic"
 }
 
 variable "msg_history_v2_bucket_name" {
@@ -43,14 +33,24 @@ variable "msg_history_v2_bucket_name" {
   description = "msg_history_v2_bucket_name"
 }
 
+variable "message_history_events_sns_topic" {
+  type        = string
+  description = "msg_history_events_sns_topic"
+}
+
 variable "msg_history_v2_dynamodb" {
   type        = string
   description = "msg_history_v2_dynamodb"
 }
 
-variable "tag_origin" {
-  type = string
-  # No default, set by tf-fsc.sh
+variable "policy_bucket" {
+  type        = string
+  description = "policy_bucket"
+}
+
+variable "firehose_msg_history_v2_stream_name" {
+  type        = string
+  description = "firehose_msg_history_v2_stream_name"
 }
 
 variable "station_vpc_id" {
@@ -63,7 +63,7 @@ variable "station_name" {
   description = "station_name"
 }
 
-variable "policy_bucket" {
-  type        = string
-  description = "policy_bucket"
+variable "tag_origin" {
+  type = string
+  # No default, set by tf-fsc.sh
 }
