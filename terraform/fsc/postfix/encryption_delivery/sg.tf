@@ -25,6 +25,15 @@ resource "aws_security_group" "security_group_ec2" {
   tags = { Name = local.instance_type }
 }
 
+resource "aws_security_group_rule" "lb_egress_world" {
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  security_group_id = aws_security_group.security_group_lb.id
+  cidr_blocks       = [local.cidr_block_world]
+}
+
 resource "aws_security_group_rule" "ec2_egress_world" {
   type              = "egress"
   from_port         = 0
