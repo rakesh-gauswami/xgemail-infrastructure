@@ -10,10 +10,10 @@ locals {
   input_param_lifecycle_topic_arn         = nonsensitive(data.aws_ssm_parameter.lifecycle_topic_arn.value)
   input_param_lifecycle_hook_terminating  = nonsensitive(data.aws_ssm_parameter.lifecycle_hook_terminating_name.value)
   input_param_primary_region              = nonsensitive(data.aws_ssm_parameter.primary_region.value)
+  input_param_public_subnet_ids           = split(",", nonsensitive(data.aws_ssm_parameter.public_subnet_ids.value))
   input_param_sg_base_id                  = nonsensitive(data.aws_ssm_parameter.sg_base_id.value)
   input_param_vpc_id                      = nonsensitive(data.aws_ssm_parameter.vpc_id.value)
   input_param_vpc_name                    = replace(nonsensitive(data.aws_ssm_parameter.vpc_name.value), "/-.*/", "")
-  input_param_public_subnet_ids           = split(",", nonsensitive(data.aws_ssm_parameter.public_subnet_ids.value))
   input_param_zone_id                     = nonsensitive(data.aws_ssm_parameter.zone_id.value)
   input_param_zone_fqdn                   = nonsensitive(data.aws_ssm_parameter.zone_fqdn.value)
 }
@@ -43,16 +43,6 @@ data "aws_ssm_parameter" "availability_zones" {
   provider = aws.parameters
 }
 
-data "aws_ssm_parameter" "cloud_configs_bucket_name" {
-  name     = "/central/s3/cloud-${local.input_param_account_name}-configs/name"
-  provider = aws.parameters
-}
-
-data "aws_ssm_parameter" "cloud_connections_bucket_name" {
-  name     = "/central/s3/cloud-${local.input_param_account_name}-connections/name"
-  provider = aws.parameters
-}
-
 data "aws_ssm_parameter" "cloud_templates_bucket_name" {
   name     = "/central/s3/cloud-${local.input_param_account_name}-templates/name"
   provider = aws.parameters
@@ -77,7 +67,6 @@ data "aws_ssm_parameter" "lifecycle_topic_arn" {
   name     = "/central/sns/lifecycle-topic/arn"
   provider = aws.parameters
 }
-
 
 data "aws_ssm_parameter" "primary_region" {
   name     = "/central/account/primary-region"

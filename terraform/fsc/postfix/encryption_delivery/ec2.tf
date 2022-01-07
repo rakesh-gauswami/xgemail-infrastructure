@@ -83,8 +83,8 @@ locals {
   }
 
   VOLUME_SIZE_GIBS_BY_ENVIRONMENT = {
-    prod = 300
-    inf  = 40
+    prod = 100
+    inf  = 30
   }
 
   VOLUME_SIZE_GIBS_BY_POP = {
