@@ -2,6 +2,16 @@ locals {
   DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD = 2400
   DEFAULT_INSTANCE_SIZE                = "t2.small"
   DEFAULT_XGEMAIL_SIZE_DATA_GB         = 10
+  DEFAULT_ZONE_INDEX = {
+    1 = 0
+    2 = 1
+    3 = 2
+  }
+  DEFAULT_AS_MIN_SIZE = {
+    1 = 1
+    2 = 0
+    3 = 0
+  }
 
   AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT = {
     inf  = 2400
@@ -24,37 +34,95 @@ locals {
     prod = 100
   }
 
+  AS_MIN_SIZE_BY_ENVIRONMENT = {
+    inf = {
+      1 = 1
+      2 = 0
+      3 = 0
+    }
+    dev = {
+      1 = 1
+      2 = 0
+      3 = 0
+    }
+    qa = {
+      1 = 1
+      2 = 0
+      3 = 0
+    }
+    prod = {
+      1 = 1
+      2 = 0
+      3 = 0
+    }
+  }
+
+  ZONE_INDEX_BY_ENVIRONMENT = {
+    inf = {
+      1 = 0
+      2 = 1
+      3 = 2
+    }
+    dev = {
+      1 = 0
+      2 = 1
+      3 = 2
+    }
+    qa = {
+      1 = 0
+      2 = 1
+      3 = 2
+    }
+    prod = {
+      1 = 0
+      2 = 1
+      3 = 2
+    }
+  }
+  as_min_size = lookup(
+    local.AS_MIN_SIZE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_MIN_SIZE
+  )
+
+  zone_index = lookup(
+    local.ZONE_INDEX_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_ZONE_INDEX
+  )
+
   health_check_grace_period = lookup(
-  local.AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD
+    local.AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD
   )
 
   instance_size = lookup(
-  local.INSTANCE_SIZE_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_INSTANCE_SIZE
+    local.INSTANCE_SIZE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_INSTANCE_SIZE
   )
 
   xgemail_size_data_gb = lookup(
-  local.XGEMAIL_SIZE_DATA_GB_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_XGEMAIL_SIZE_DATA_GB
+    local.XGEMAIL_SIZE_DATA_GB_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_XGEMAIL_SIZE_DATA_GB
   )
 }
 
 
 resource "aws_cloudformation_stack" "cloudformation_stack" {
-  name          = "internet-xdelivery"
+  for_each      = local.zone_index
+  name          = "${local.instance_type}-${each.key}"
   template_body = file("${path.module}/templates/as_internet_xdelivery_template.json")
   parameters = {
     AccountName                     = local.input_param_account_name
     AmiId                           = data.aws_ami.ami.id
     AutoScalingInstanceRoleArn      = local.input_param_autoscaling_role_arn
-    AutoScalingMinSize              = 1
+    AutoScalingMinSize              = local.as_min_size[each.key]
+    AvailabilityZoneIndex           = each.value
     AutoScalingMaxSize              = 1
     AutoScalingNotificationTopicARN = local.input_param_lifecycle_topic_arn
-    AvailabilityZoneIndex           = 0
     AvailabilityZones               = local.input_param_availability_zones
     Branch                          = var.build_branch
     BuildTag                        = var.build_tag
@@ -76,7 +144,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     SpotPrice                       = "-1"
     StationVpcId                    = var.station_vpc_id
     StationVpcName                  = replace(var.station_name, "/-.*/", "")
-    VolumeSetId                     = "internet-xdelivery-1"
+    VolumeSetId                     = "${local.instance_type}-${each.key}"
     VolumeTrackerSimpleDbDomain     = local.input_param_volume_tracker_simpledb_name
     Vpc                             = local.input_param_vpc_id
     VpcName                         = local.input_param_vpc_name
