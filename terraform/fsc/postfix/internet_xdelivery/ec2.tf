@@ -51,10 +51,10 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     AccountName                     = local.input_param_account_name
     AmiId                           = data.aws_ami.ami.id
     AutoScalingInstanceRoleArn      = local.input_param_autoscaling_role_arn
-    AutoScalingMinSize              = "{{item.1}}"
+    AutoScalingMinSize              = 1
     AutoScalingMaxSize              = 1
     AutoScalingNotificationTopicARN = local.input_param_lifecycle_topic_arn
-    AvailabilityZoneIndex           = "{{item.2}}"
+    AvailabilityZoneIndex           = 0
     AvailabilityZones               = local.input_param_availability_zones
     Branch                          = var.build_branch
     BuildTag                        = var.build_tag
@@ -76,8 +76,8 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     SpotPrice                       = "-1"
     StationVpcId                    = var.station_vpc_id
     StationVpcName                  = replace(nonsensitive(var.station_name), "/-.*/", "")
-    VolumeSetId                     = "internet-xdelivery-{{item.0}}"
-    VolumeTrackerSimpleDbDomain     = "{{volume_tracker_sdb_output.ansible_facts.cloudformation[stack.sdb.volume_tracker_sdb].stack_outputs.SimpleDbDomain}}"
+    VolumeSetId                     = "internet-xdelivery-1"
+    VolumeTrackerSimpleDbDomain     = local.input_param_volume_tracker_simpledb_name
     Vpc                             = local.input_param_vpc_id
     VpcName                         = local.input_param_vpc_name
     VpcZoneIdentifiers              = join(",", local.input_param_public_subnet_ids)
