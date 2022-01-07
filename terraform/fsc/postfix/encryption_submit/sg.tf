@@ -19,7 +19,7 @@ resource "aws_security_group" "security_group_lb" {
 
 resource "aws_security_group_rule" "lb_ingress_smtp" {
   type              = "ingress"
-  cidr_blocks       = ["52.211.15.91/32","52.211.67.90/32","52.209.4.238/32","52.209.219.173/32","52.19.12.201/32","52.209.235.6/32","18.196.89.248/32","18.184.91.171/32","3.121.221.91/32","3.121.255.216/32","13.58.136.73/32","18.191.85.155/32","18.223.14.153/32","18.217.225.34/32","198.144.101.0/24","208.70.208.0/22"]
+  cidr_blocks       = ["52.211.15.91/32", "52.211.67.90/32", "52.209.4.238/32", "52.209.219.173/32", "52.19.12.201/32", "52.209.235.6/32", "18.196.89.248/32", "18.184.91.171/32", "3.121.221.91/32", "3.121.255.216/32", "13.58.136.73/32", "18.191.85.155/32", "18.223.14.153/32", "18.217.225.34/32", "198.144.101.0/24", "208.70.208.0/22"]
   from_port         = local.smtp_tcp_port
   to_port           = local.smtp_tcp_port
   protocol          = "tcp"
@@ -53,10 +53,10 @@ resource "aws_security_group_rule" "ec2_ingress_lb_smtp" {
 }
 
 resource "aws_security_group_rule" "ec2_egress_world" {
-  type                     = "egress"
-  from_port                = 0
-  to_port                  = 0
-  protocol                 = "-1"
-  security_group_id        = aws_security_group.security_group_ec2.id
-  cidr_blocks              = [local.cidr_block_world]
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  security_group_id = aws_security_group.security_group_ec2.id
+  cidr_blocks       = [local.cidr_block_world]
 }
