@@ -1,6 +1,6 @@
 locals {
   cidr_block_world       = "0.0.0.0/0"
-  smtp_tcp_port          = 25
+  smtp_tcp_port          = 8025
   security_group_name_lb = "${local.instance_type}-lb"
 }
 

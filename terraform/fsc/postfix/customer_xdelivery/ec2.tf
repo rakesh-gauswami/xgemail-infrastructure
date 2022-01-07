@@ -123,7 +123,7 @@ locals {
 resource "aws_cloudformation_stack" "cloudformation_stack" {
   for_each      = local.zone_index
   name          = "${local.instance_type}-${each.key}"
-  template_body = "${file("${path.module}/templates/as_customer_xdelivery_template.json")}"
+  template_body = file("${path.module}/templates/as_customer_xdelivery_template.json")
 
   parameters = {
     AccountName                       = local.input_param_account_name
@@ -137,13 +137,13 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     BuildTag                          = var.build_tag
     BuildUrl                          = var.build_url
     BundleVersion                     = local.ami_build
+    EbsMinIops                        = 0
     Environment                       = local.input_param_deployment_environment
     HealthCheckGracePeriod            = local.health_check_grace_period
     InstanceProfile                   = local.input_param_iam_instance_profile_arn
     InstanceType                      = local.instance_size
     KmsKeyAlias                       = module.kms_key.key_alias_name
     LifecycleHookLaunching            = local.input_param_lifecycle_hook_launching
-    LifecycleHookTerminating          = local.input_param_lifecycle_hook_terminating
     LoadBalancerName                  = aws_elb.elb.id
     MsgHistoryV2BucketName            = var.message_history_ms_bucket
     MsgHistoryV2DynamoDbTableName     = var.message_history_dynamodb_table_name
