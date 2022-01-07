@@ -90,7 +90,7 @@ class AWSWrapper(object):
 
         self._kms_client = boto3.client("kms", region_name=region)
 
-        self._sdb_client = boto3.client("sdb", region_name="us-west-2")
+        self._sdb_client = boto3.client("sdb", region_name=sdb_region)
 
     def set_logging_level(self, level):
         logging.getLogger("boto3").setLevel(level)
@@ -181,6 +181,7 @@ class InstanceSettings(object):
         self.availability_zone  = None
         self.environment        = None
         self.region             = None
+        self.sdb_region         = None
         self.vpc_name           = None
 
         # volumes attributes
@@ -210,6 +211,7 @@ class InstanceSettings(object):
         self.availability_zone          = sophos_attrs["availability_zone"]
         self.environment                = sophos_attrs["environment"]
         self.region                     = sophos_attrs["region"]
+        self.sdb_region                 = sophos_attrs["sdb_region"]
         self.vpc_name                   = sophos_attrs["vpc_name"]
 
         volume_attrs = attributes["volumes"]
