@@ -10,7 +10,6 @@ locals {
   DEFAULT_AS_CRON_SCALE_OUT            = "30 14 * * 1-5"
   DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD = 2400
   DEFAULT_AS_POLICY_TARGET_VALUE       = 90
-  DEFAULT_AS_ON_HOUR_DESIRED           = 2
   DEFAULT_AS_SCALE_IN_OUT_WEEKDAYS     = false
   DEFAULT_AS_SCALE_IN_ON_WEEKENDS      = false
   DEFAULT_INSTANCE_SIZE                = "t2.small"
@@ -86,13 +85,6 @@ locals {
     prod = 65
   }
 
-  AS_ON_HOUR_DESIRED_BY_ENVIRONMENT = {
-    inf  = 2
-    dev  = 2
-    qa   = 2
-    prod = 2
-  }
-
   AS_SCALE_IN_OUT_WEEKDAYS_BY_ENVIRONMENT = {
     inf  = false
     dev  = false
@@ -115,8 +107,8 @@ locals {
   }
 
   VOLUME_SIZE_GIBS_BY_ENVIRONMENT = {
-    prod = 300
-    inf  = 40
+    prod = 100
+    inf  = 30
   }
 
   VOLUME_SIZE_GIBS_BY_POP = {
@@ -208,12 +200,6 @@ locals {
     local.DEFAULT_AS_POLICY_TARGET_VALUE
   )
 
-  as_on_hour_desired = lookup(
-    local.AS_ON_HOUR_DESIRED_BY_ENVIRONMENT,
-    local.input_param_deployment_environment,
-    local.DEFAULT_AS_ON_HOUR_DESIRED
-  )
-
   as_scale_in_out_weekdays = lookup(
     local.AS_SCALE_IN_OUT_WEEKDAYS_BY_ENVIRONMENT,
     local.input_param_deployment_environment,
@@ -260,7 +246,7 @@ locals {
 }
 
 resource "aws_cloudformation_stack" "cloudformation_stack" {
-  name          = "encryption-submit"
+  name          = local.instance_type
   template_body = file("${path.module}/templates/as_encryption_submit_template.json")
   parameters = {
     AccountName                      = local.input_param_account_name
@@ -292,28 +278,22 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     ScaleInOnWeekends                = local.as_scale_in_on_weekends
     ScaleInCron                      = local.as_cron_scale_down
     ScaleOutCron                     = local.as_cron_scale_up
-    ScheduledASOnHourDesiredCapacity = local.as_on_hour_desired
-    ScaleInAndOutOnWeekdays          = local.as_scale_in_out_weekdays
-    ScaleInOnWeekdaysCron            = local.as_cron_scale_in
-    ScaleOutOnWeekdaysCron           = local.as_cron_scale_out
     SecurityGroups                   = aws_security_group.security_group_ec2.id
     SpotPrice                        = "-1"
     StationVpcId                     = var.station_vpc_id
-    StationVpcName                   = replace(nonsensitive(var.station_name), "/-.*/", "")
+    StationVpcName                   = replace(var.station_name, "/-.*/", "")
     Vpc                              = local.input_param_vpc_id
     VpcZoneIdentifiers               = join(",", local.input_param_public_subnet_ids)
     VpcName                          = local.input_param_vpc_name
-    XgemailBucketName                = var.internet_submit_bucket
-    XgemailCustomerSubmitBucketName  = var.customer_submit_bucket
+    XgemailBucketName                = var.inbound_submit_bucket
+    XgemailCustomerSubmitBucketName  = var.outbound_submit_bucket
     XgemailCustomerSubmitQueueUrl    = var.customer_submit_sqs_queue
     XgemailMinSizeDataGB             = local.volume_size_gibs
     XgemailMsgHistoryBucketName      = var.message_history_bucket
     XgemailMsgHistoryMsBucketName    = var.message_history_ms_bucket
     XgemailMsgHistoryQueueUrl        = var.message_history_sqs_queue
-    XgemailPolicyArn                 = var.relay_control_sns_topic
     XgemailPolicyBucketName          = var.policy_bucket
     XgemailQueueUrl                  = var.internet_submit_sqs_queue
-    XgemailScanEventsTopicArn        = var.scan_events_sns_topic
     XgemailServiceType               = local.instance_type
     XgemailSxlDbl                    = local.sxl_dbl
     XgemailSxlRbl                    = local.sxl_rbl
