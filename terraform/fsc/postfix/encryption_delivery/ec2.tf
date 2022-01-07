@@ -298,11 +298,11 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     SecurityGroups                   = aws_security_group.security_group_ec2.id
     SpotPrice                        = "-1"
     StationVpcId                     = var.station_vpc_id
-    StationVpcName                   = replace(nonsensitive(var.station_name), "/-.*/", "")
+    StationVpcName                   = replace(var.station_name, "/-.*/", "")
     Vpc                              = local.input_param_vpc_id
     VpcZoneIdentifiers               = join(",", local.input_param_public_subnet_ids)
     VpcName                          = local.input_param_vpc_name
-    XgemailBucketName                = var.customer_submit_bucket
+    XgemailBucketName                = var.outbound_submit_bucket
     XgemailMinSizeDataGB             = local.volume_size_gibs
     XgemailPolicyBucketName          = var.policy_bucket
     XgemailSnsSqsQueueUrl            = var.encryption_delivery_sqs_queue
