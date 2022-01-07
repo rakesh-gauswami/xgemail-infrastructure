@@ -141,6 +141,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     MsgHistoryV2StreamName          = var.firehose_msg_history_v2_stream_name
     S3CookbookRepositoryURL         = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/${var.build_number}/cookbooks.tar.gz"
     ScaleDownOnWeekends             = "true"
+    SdbRegion                       = "us-east-1"
     SecurityGroups                  = aws_security_group.security_group_ec2.id
     SpotPrice                       = "-1"
     StationVpcId                    = var.station_vpc_id

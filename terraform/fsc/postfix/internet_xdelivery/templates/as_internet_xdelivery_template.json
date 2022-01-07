@@ -141,6 +141,10 @@
         "false"
       ]
     },
+    "SdbRegion": {
+      "Description": "The region where the volume tracker simple db exists.",
+      "Type": "String"
+    },
     "SecurityGroups": {
       "Description": "The security group that allows communication within the VPC.",
       "Type": "List<AWS::EC2::SecurityGroup::Id>"
@@ -466,7 +470,7 @@
                       "    \"cluster\"                        : \"{{cluster}}\",\n",
                       "    \"client-endpoint\"                : \"{{region}}\",\n",
                       "    \"region\"                         : \"{{region}}\",\n",
-                      "    \"sdb_region\"                     : \"{{region}}\",\n",
+                      "    \"sdb_region\"                     : \"{{sdb_region}}\",\n",
                       "    \"vpc_id\"                         : \"{{vpc_id}}\",\n",
                       "    \"vpc_name\"                       : \"{{vpc_name}}\"\n",
                       "  },\n",
@@ -516,6 +520,7 @@
                   "msg_history_v2_dynamodb_table_name":       { "Ref": "MsgHistoryV2DynamoDbTableName"},
                   "msg_history_v2_stream_name":               { "Ref": "MsgHistoryV2StreamName" },
                   "region":                                   { "Ref": "AWS::Region" },
+                  "sdb_region":                               { "Ref": "SdbRegion" },
                   "station_vpc_id":                           { "Ref": "StationVpcId" },
                   "stack":                                    { "Ref": "AWS::StackName" },
                   "station_vpc_name":                         { "Ref": "StationVpcName" },
