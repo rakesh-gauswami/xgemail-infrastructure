@@ -242,7 +242,7 @@ locals {
 
 
 resource "aws_cloudformation_stack" "cloudformation_stack" {
-  name          = "internet-delivery"
+  name          = local.instance_type
   template_body = file("${path.module}/templates/as_internet_delivery_template.json")
   parameters = {
     AccountName                     = local.input_param_account_name
@@ -279,12 +279,14 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     SecurityGroups                  = aws_security_group.security_group_ec2.id
     SpotPrice                       = "-1"
     StationVpcId                    = var.station_vpc_id
-    StationVpcName                  = replace(nonsensitive(var.station_name), "/-.*/", "")
+    StationVpcName                  = replace(var.station_name, "/-.*/", "")
     Vpc                             = local.input_param_vpc_id
     VpcName                         = local.input_param_vpc_name
     VpcZoneIdentifiers              = join(",", local.input_param_public_subnet_ids)
     XgemailBucketName               = var.outbound_submit_bucket
     XgemailMinSizeDataGB            = local.xgemail_size_data_gb
+    XgemailMsgHistoryStatusSnsArn   = var.msg_history_status_sns_topic
+    XgemailNotifierQueueUrl         = var.notifier_request_sqs_queue
     XgemailPolicyBucketName         = var.policy_bucket
     XgemailSnsSqsQueue              = var.internet_delivery_sqs_queue_name
     XgemailSnsSqsQueueUrl           = var.internet_delivery_sqs_queue_url
