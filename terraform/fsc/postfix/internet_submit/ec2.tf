@@ -297,7 +297,7 @@ locals {
 }
 
 resource "aws_cloudformation_stack" "cloudformation_stack" {
-  name          = "internet-submit"
+  name          = local.instance_type
   template_body = file("${path.module}/templates/as_internet_submit_template.json")
   parameters = {
     AccountName                      = local.input_param_account_name
