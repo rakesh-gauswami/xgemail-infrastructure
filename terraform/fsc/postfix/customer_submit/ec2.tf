@@ -260,7 +260,7 @@ locals {
 }
 
 resource "aws_cloudformation_stack" "cloudformation_stack" {
-  name          = "${local.instance_type}"
+  name          = local.instance_type
   template_body = file("${path.module}/templates/as_customer_submit_template.json")
 
   parameters = {

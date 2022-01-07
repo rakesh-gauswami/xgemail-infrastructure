@@ -2,7 +2,7 @@ data "aws_route53_zone" "hosted_zone" {
   zone_id = local.input_param_zone_id
 }
 
-resource "aws_route53_record" "www" {
+resource "aws_route53_record" "route53_record" {
   zone_id = data.aws_route53_zone.hosted_zone.zone_id
   name    = "relay.${local.input_param_zone_fqdn}"
   type    = "CNAME"
