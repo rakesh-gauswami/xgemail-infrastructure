@@ -260,7 +260,7 @@ locals {
 }
 
 resource "aws_cloudformation_stack" "cloudformation_stack" {
-  name          = "encryption-delivery"
+  name          = local.instance_type
   template_body = file("${path.module}/templates/as_encryption_delivery_template.json")
   parameters = {
     AccountName                      = local.input_param_account_name
