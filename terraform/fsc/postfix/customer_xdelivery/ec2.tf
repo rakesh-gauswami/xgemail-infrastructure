@@ -123,7 +123,7 @@ locals {
 resource "aws_cloudformation_stack" "cloudformation_stack" {
   for_each      = local.zone_index
   name          = "${local.instance_type}-${each.key}"
-  template_body = "${file("${path.module}/templates/as_customer_delivery_template.json")}"
+  template_body = "${file("${path.module}/templates/as_customer_xdelivery_template.json")}"
 
   parameters = {
     AccountName                       = local.input_param_account_name
@@ -157,17 +157,11 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     VolumeTrackerSimpleDbDomain       = local.input_param_sdb_volume_tracker_name
     Vpc                               = local.input_param_vpc_id
     VpcZoneIdentifiers                = join(",", local.input_param_public_subnet_ids)
-    VpcName                           = "email"
-    XgemailBucketName                 = var.customer_delivery_bucket
+    VpcName                           = local.input_param_vpc_name
     XgemailMinSizeDataGB              = local.xgemail_size_data_gb
-    XgemailMsgHistoryBucketName       = var.message_history_bucket
-    XgemailMsgHistoryMsBucketName     = var.message_history_ms_bucket
-    XgemailMsgHistoryQueueUrl         = var.message_history_sqs_queue
     XgemailMsgHistoryStatusQueueUrl   = var.message_history_status_sqs_queue
     XgemailMsgHistoryStatusSnsArn     = var.message_history_status_sns_topic
     XgemailPolicyBucketName           = var.policy_bucket
-    XgemailSnsSqsQueue                = var.customer_delivery_sqs_queue_name
-    XgemailSnsSqsQueueUrl             = var.customer_delivery_sqs_queue_url
     XgemailServiceType                = local.instance_type
   }
 }
