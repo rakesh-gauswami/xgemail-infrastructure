@@ -240,7 +240,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     StationVpcId                    = var.station_vpc_id
     StationVpcName                  = replace(var.station_name, "/-.*/", "")
     Vpc                             = local.input_param_vpc_id
-    VpcZoneIdentifiers              = join(",", local.input_param_public_subnet_ids)
+    VpcZoneIdentifiers              = join(",", local.input_param_private_subnet_ids)
     VpcName                         = local.input_param_vpc_name
     XgemailBucketName               = var.outbound_submit_bucket
     XgemailMinSizeDataGB            = local.volume_size_gibs
