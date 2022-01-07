@@ -279,7 +279,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     SecurityGroups                  = aws_security_group.security_group_ec2.id
     SpotPrice                       = "-1"
     StationVpcId                    = var.station_vpc_id
-    StationVpcName                  = replace(nonsensitive(var.station_name), "/-.*/", "")
+    StationVpcName                  = replace(var.station_name, "/-.*/", "")
     Vpc                             = local.input_param_vpc_id
     VpcName                         = local.input_param_vpc_name
     VpcZoneIdentifiers              = join(",", local.input_param_public_subnet_ids)
