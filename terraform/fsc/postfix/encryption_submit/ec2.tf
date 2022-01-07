@@ -260,8 +260,8 @@ locals {
 }
 
 resource "aws_cloudformation_stack" "cloudformation_stack" {
-  name          = "customer-submit"
-  template_body = file("${path.module}/templates/as_customer_submit_template.json")
+  name          = "encryption-submit"
+  template_body = file("${path.module}/templates/as_encryption_submit_template.json")
   parameters = {
     AccountName                      = local.input_param_account_name
     AlarmTopicArn                    = local.input_param_alarm_topic_arn
