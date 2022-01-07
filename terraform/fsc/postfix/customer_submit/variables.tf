@@ -18,19 +18,19 @@ variable "build_url" {
   description = "Build URL"
 }
 
-variable "firehose_msg_history_v2_stream_name" {
+variable "customer_submit_sqs_queue" {
   type        = string
-  description = "firehose_msg_history_v2_stream_name"
+  description = "customer_submit_sqs_queue"
+}
+
+variable "message_history_v2_stream_name" {
+  type        = string
+  description = "message_history_v2_stream_name"
 }
 
 variable "message_history_events_sns_topic" {
   type        = string
   description = "msg_history_events_sns_topic"
-}
-
-variable "outbound_submit_bucket" {
-  type        = string
-  description = "outbound_submit_bucket"
 }
 
 variable "message_history_bucket" {
@@ -48,9 +48,9 @@ variable "message_history_sqs_queue" {
   description = "msg_history_sqs_queue"
 }
 
-variable "relay_control_sns_topic" {
+variable "outbound_submit_bucket" {
   type        = string
-  description = "relay_control_sns_topic"
+  description = "outbound_submit_bucket"
 }
 
 variable "policy_bucket" {
@@ -58,9 +58,9 @@ variable "policy_bucket" {
   description = "policy_bucket"
 }
 
-variable "customer_submit_sqs_queue" {
+variable "relay_control_sns_topic" {
   type        = string
-  description = "customer_submit_sqs_queue"
+  description = "relay_control_sns_topic"
 }
 
 variable "scan_events_sns_topic" {

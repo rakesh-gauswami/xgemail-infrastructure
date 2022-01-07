@@ -88,6 +88,12 @@
       "MinValue": "0",
       "MaxValue": "4000"
     },
+    "EbsMinSizeDataGB": {
+      "Description": "Total GB to reserve for storing data files",
+      "Type": "Number",
+      "MinValue": "1",
+      "MaxValue": "16384"
+    },
     "Environment": {
       "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
       "Type": "String"
@@ -118,6 +124,16 @@
       "Description": "Name for the ELB to attach to the Auto Scaling Group",
       "Type": "List<String>"
     },
+    "MsgHistoryStatusQueueUrl" : {
+      "Description" : "URL for the SQS Queue where Message History delivery status events are sent",
+      "Type" : "String",
+      "Default": ""
+    },
+    "MsgHistoryStatusSnsArn": {
+      "Description" : "ARN for the SNS Topic where Message History delivery status events are published",
+      "Type" : "String",
+      "Default": ""
+    },
     "MsgHistoryV2BucketName" : {
       "Description" : "Message History s3 bucket name for writing failure records",
       "Type": "String"
@@ -129,6 +145,11 @@
     "MsgHistoryV2StreamName" : {
       "Description" : "Message History firehose stream name",
       "Type": "String"
+    },
+    "PolicyBucketName" : {
+      "Description" : "Name of the S3 Bucket where XGEMAIL policy docs are stored",
+      "Type" : "String",
+      "Default": ""
     },
     "S3CookbookRepositoryURL": {
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
@@ -192,27 +213,6 @@
       "Description": "The list of Public Subnets for your VPC",
       "Type": "List<AWS::EC2::Subnet::Id>",
       "ConstraintDescription": "must be a comma-separated list of valid Public Subnets for the selected VPC"
-    },
-    "XgemailMinSizeDataGB": {
-      "Description": "Total GB to reserve for storing data files",
-      "Type": "Number",
-      "MinValue": "1",
-      "MaxValue": "16384"
-    },
-    "XgemailMsgHistoryStatusQueueUrl" : {
-      "Description" : "URL for the SQS Queue where Message History delivery status events are sent",
-      "Type" : "String",
-      "Default": ""
-    },
-    "XgemailMsgHistoryStatusSnsArn": {
-      "Description" : "ARN for the SNS Topic where Message History delivery status events are published",
-      "Type" : "String",
-      "Default": ""
-    },
-    "XgemailPolicyBucketName" : {
-      "Description" : "Name of the S3 Bucket where XGEMAIL policy docs are stored",
-      "Type" : "String",
-      "Default": ""
     },
     "XgemailServiceType": {
       "Description": "Service type for the xgemail instance (Defaults to unknown so not to break builds)",
@@ -521,8 +521,8 @@
                   "cluster_type":                             { "Ref": "XgemailServiceType" },
                   "environment":                              { "Ref": "Environment" },
                   "kms_alias":                                { "Ref": "KmsKeyAlias" },
-                  "msg_history_status_queue_url":             { "Ref": "XgemailMsgHistoryStatusQueueUrl" },
-                  "msg_history_delivery_status_sns_arn":      { "Ref": "XgemailMsgHistoryStatusSnsArn"},
+                  "msg_history_status_queue_url":             { "Ref": "MsgHistoryStatusQueueUrl" },
+                  "msg_history_delivery_status_sns_arn":      { "Ref": "MsgHistoryStatusSnsArn"},
                   "msg_history_v2_bucket_name":               { "Ref": "MsgHistoryV2BucketName" },
                   "msg_history_v2_dynamodb_table_name":       { "Ref": "MsgHistoryV2DynamoDbTableName"},
                   "msg_history_v2_stream_name":               { "Ref": "MsgHistoryV2StreamName" },
@@ -531,12 +531,12 @@
                   "stack":                                    { "Ref": "AWS::StackName" },
                   "station_vpc_name":                         { "Ref": "StationVpcName" },
                   "volume_min_iops":                          { "Ref": "EbsMinIops" },
-                  "volume_min_size_data_gb":                  { "Ref": "XgemailMinSizeDataGB" },
+                  "volume_min_size_data_gb":                  { "Ref": "EbsMinSizeDataGB" },
                   "volume_set_id":                            { "Ref": "VolumeSetId" },
                   "volume_tracker_sdb_domain":                { "Ref": "VolumeTrackerSimpleDbDomain" },
                   "vpc_id":                                   { "Ref": "Vpc" },
                   "vpc_name":                                 { "Ref": "VpcName" },
-                  "xgemail_policy_bucket_name":               { "Ref": "XgemailPolicyBucketName" }
+                  "xgemail_policy_bucket_name":               { "Ref": "PolicyBucketName" }
                 },
                 "owner": "root",
                 "mode": "000444"

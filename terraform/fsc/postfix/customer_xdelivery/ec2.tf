@@ -1,7 +1,7 @@
 locals {
   DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD  = 900
   DEFAULT_INSTANCE_SIZE                 = "t2.small"
-  DEFAULT_XGEMAIL_SIZE_DATA_GB          = 10
+  DEFAULT_EBS_SIZE_DATA_GB          = 10
   DEFAULT_ZONE_INDEX = {
     1 = 0
     2 = 1
@@ -28,18 +28,18 @@ locals {
     prod = 2400
   }
 
+    EBS_SIZE_DATA_GB_BY_ENVIRONMENT = {
+    inf  = 10
+    dev  = 40
+    qa   = 70
+    prod = 100
+  }
+
   INSTANCE_SIZE_BY_ENVIRONMENT = {
     inf  = "t2.small"
     dev  = "c4.xlarge"
     qa   = "c4.xlarge"
     prod = "m5.2xlarge"
-  }
-
-  XGEMAIL_SIZE_DATA_GB_BY_ENVIRONMENT = {
-    inf  = 10
-    dev  = 40
-    qa   = 70
-    prod = 100
   }
 
   AS_MIN_SIZE_BY_ENVIRONMENT = {
@@ -94,6 +94,12 @@ locals {
     local.DEFAULT_AS_MIN_SIZE
   )
 
+  ebs_size_data_gb = lookup(
+    local.EBS_SIZE_DATA_GB_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_EBS_SIZE_DATA_GB
+  )
+
   health_check_grace_period = lookup(
     local.AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT,
     local.input_param_deployment_environment,
@@ -104,12 +110,6 @@ locals {
     local.INSTANCE_SIZE_BY_ENVIRONMENT,
     local.input_param_deployment_environment,
     local.DEFAULT_INSTANCE_SIZE
-  )
-
-  xgemail_size_data_gb = lookup(
-    local.XGEMAIL_SIZE_DATA_GB_BY_ENVIRONMENT,
-    local.input_param_deployment_environment,
-    local.DEFAULT_XGEMAIL_SIZE_DATA_GB
   )
 
   zone_index = lookup(
@@ -138,6 +138,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     BuildUrl                          = var.build_url
     BundleVersion                     = local.ami_build
     EbsMinIops                        = 0
+    EbsMinSizeDataGB                  = local.ebs_size_data_gb
     Environment                       = local.input_param_deployment_environment
     HealthCheckGracePeriod            = local.health_check_grace_period
     InstanceProfile                   = local.input_param_iam_instance_profile_arn
@@ -145,9 +146,12 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     KmsKeyAlias                       = module.kms_key.key_alias_name
     LifecycleHookLaunching            = local.input_param_lifecycle_hook_launching
     LoadBalancerName                  = aws_elb.elb.id
+    MsgHistoryStatusQueueUrl          = var.message_history_status_sqs_queue
+    MsgHistoryStatusSnsArn            = var.message_history_status_sns_topic
     MsgHistoryV2BucketName            = var.message_history_ms_bucket
     MsgHistoryV2DynamoDbTableName     = var.message_history_dynamodb_table_name
-    MsgHistoryV2StreamName            = var.firehose_msg_history_v2_stream_name
+    MsgHistoryV2StreamName            = var.message_history_v2_stream_name
+    PolicyBucketName                  = var.policy_bucket
     S3CookbookRepositoryURL           = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/${var.build_number}/cookbooks.tar.gz"
     SecurityGroups                    = aws_security_group.security_group_ec2.id
     SpotPrice                         = "-1"
@@ -158,10 +162,6 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     Vpc                               = local.input_param_vpc_id
     VpcZoneIdentifiers                = join(",", local.input_param_public_subnet_ids)
     VpcName                           = local.input_param_vpc_name
-    XgemailMinSizeDataGB              = local.xgemail_size_data_gb
-    XgemailMsgHistoryStatusQueueUrl   = var.message_history_status_sqs_queue
-    XgemailMsgHistoryStatusSnsArn     = var.message_history_status_sns_topic
-    XgemailPolicyBucketName           = var.policy_bucket
     XgemailServiceType                = local.instance_type
   }
 }
