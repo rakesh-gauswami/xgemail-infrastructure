@@ -1,17 +1,17 @@
 locals {
   DEFAULT_AS_ALARM_SCALING_ENABLED      = false
-  DEFAULT_AS_ALARM_SCALE_IN_THRESHOLD   = 10
-  DEFAULT_AS_ALARM_SCALE_OUT_THRESHOLD  = 50
+  DEFAULT_AS_ALARM_SCALE_IN_THRESHOLD   = 100
+  DEFAULT_AS_ALARM_SCALE_OUT_THRESHOLD  = 500
   DEFAULT_AS_MIN_SIZE                   = 1
-  DEFAULT_AS_MAX_SIZE                   = 6
+  DEFAULT_AS_MAX_SIZE                   = 3
   DEFAULT_AS_MIN_SERVICE                = 1
   DEFAULT_AS_MAX_BATCH_SIZE             = 1
   DEFAULT_AS_CRON_SCALE_DOWN            = "0 1 * * 6"
   DEFAULT_AS_CRON_SCALE_UP              = "0 4 * * 1"
   DEFAULT_AS_CRON_SCALE_IN              = "00 02 * * 1-5"
   DEFAULT_AS_CRON_SCALE_OUT             = "30 14 * * 1-5"
-  DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD  = 900
-  DEFAULT_AS_POLICY_TARGET_VALUE        = 90
+  DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD  = 1800
+  DEFAULT_AS_POLICY_TARGET_VALUE        = 85
   DEFAULT_AS_ON_HOUR_DESIRED            = 2
   DEFAULT_AS_SCALE_IN_OUT_WEEKDAYS      = false
   DEFAULT_AS_SCALE_IN_ON_WEEKENDS       = false
@@ -25,20 +25,20 @@ locals {
     inf  = false
     dev  = false
     qa   = false
-    prod = true
+    prod = aflse
   }
   AS_ALARM_SCALE_IN_THRESHOLD_BY_ENVIRONMENT = {
     inf  = 10
     dev  = 10
     qa   = 10
-    prod = 100
+    prod = 5000
   }
 
   AS_ALARM_SCALE_OUT_THRESHOLD_BY_ENVIRONMENT = {
     inf  = 50
     dev  = 50
     qa   = 50
-    prod = 500
+    prod = 30000
   }
   AS_MIN_SIZE_BY_ENVIRONMENT = {
     inf  = 1
@@ -86,28 +86,28 @@ locals {
     inf  = "00 02 * * 1-5"
     dev  = "00 02 * * 1-5"
     qa   = "00 02 * * 1-5"
-    prod = "00 02 * * 1-5"
+    prod = "0 1 * * 6"
   }
 
   AS_CRON_SCALE_OUT_BY_ENVIRONMENT = {
     inf  = "30 14 * * 1-5"
     dev  = "30 14 * * 1-5"
     qa   = "30 14 * * 1-5"
-    prod = "30 14 * * 1-5"
+    prod = "30 11 * * 1-5"
   }
 
   AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT = {
-    inf  = 2400
-    dev  = 2400
-    qa   = 2400
-    prod = 2400
+    inf  = 1800
+    dev  = 1800
+    qa   = 1800
+    prod = 1800
   }
 
   AS_POLICY_TARGET_VALUE_BY_ENVIRONMENT = {
-    inf  = 90
-    dev  = 90
-    qa   = 90
-    prod = 65
+    inf  = 85
+    dev  = 85
+    qa   = 85
+    prod = 85
   }
 
   AS_ON_HOUR_DESIRED_BY_ENVIRONMENT = {
@@ -121,7 +121,7 @@ locals {
     inf  = false
     dev  = false
     qa   = false
-    prod = false
+    prod = true
   }
 
   AS_SCALE_IN_ON_WEEKENDS_BY_ENVIRONMENT = {
@@ -134,15 +134,15 @@ locals {
   INSTANCE_SIZE_BY_ENVIRONMENT = {
     inf  = "t2.small"
     dev  = "c4.xlarge"
-    qa   = "c4.xlarge"
-    prod = "m5a.large"
+    qa   = "m4.large"
+    prod = "m5.2xlarge"
   }
 
   XGEMAIL_SIZE_DATA_GB_BY_ENVIRONMENT = {
     inf  = 40
     dev  = 40
     qa   = 70
-    prod = 300
+    prod = 100
   }
 
   SXL_DBL_BY_ENVIRONMENT = {
