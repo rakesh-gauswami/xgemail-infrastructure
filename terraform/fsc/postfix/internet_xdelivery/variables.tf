@@ -43,6 +43,11 @@ variable "message_history_sqs_queue" {
   description = "msg_history_sqs_queue"
 }
 
+variable "notifier_request_sqs_queue" {
+  type        = string
+  description = "notifier_request_sqs_queue"
+}
+
 variable "policy_bucket" {
   type        = string
   description = "policy_bucket"
