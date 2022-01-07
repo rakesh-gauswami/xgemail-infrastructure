@@ -260,8 +260,9 @@ locals {
 }
 
 resource "aws_cloudformation_stack" "cloudformation_stack" {
-  name = "customer-submit"
+  name          = "${local.instance_type}"
   template_body = file("${path.module}/templates/as_customer_submit_template.json")
+
   parameters = {
     AccountName                       = local.input_param_account_name
     AlarmTopicArn                     = local.input_param_alarm_topic_arn
@@ -298,7 +299,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     SecurityGroups                    = aws_security_group.security_group_ec2.id
     SpotPrice                         = "-1"
     StationVpcId                      = var.station_vpc_id
-    StationVpcName                    = replace(nonsensitive(var.station_name), "/-.*/", "")
+    StationVpcName                    = replace(var.station_name, "/-.*/", "")
     Vpc                               = local.input_param_vpc_id
     VpcZoneIdentifiers                = join(",", local.input_param_public_subnet_ids)
     VpcName                           = local.input_param_vpc_name
