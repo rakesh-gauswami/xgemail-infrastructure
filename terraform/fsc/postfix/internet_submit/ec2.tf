@@ -25,7 +25,7 @@ locals {
     inf  = false
     dev  = false
     qa   = false
-    prod = false
+    prod = true
   }
   AS_ALARM_SCALE_IN_THRESHOLD_BY_ENVIRONMENT = {
     inf  = 10
