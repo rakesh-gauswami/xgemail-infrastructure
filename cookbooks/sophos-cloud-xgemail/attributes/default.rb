@@ -330,6 +330,17 @@ default['xgemail']['postfix_instance_data'] = {
     # Give delivery queues extra padding because extra content may be created during processing
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600 + 5242880),
     :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+    :fallback_relay_prefix => 'xdelivery-cloudemail',
+    :server_type => 'CUSTOMER_XDELIVERY'
+  },
+  # customer-xdelivery
+  'customer-xdelivery' => {
+    :instance_name => 'cx',
+    :port => 8025,
+    # Give delivery queues extra padding because extra content may be created during processing
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600 + 5242880),
+    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+    :fallback_relay_prefix => 'customer-xdelivery',
     :server_type => 'CUSTOMER_XDELIVERY'
   },
   # internet-extended-delivery
