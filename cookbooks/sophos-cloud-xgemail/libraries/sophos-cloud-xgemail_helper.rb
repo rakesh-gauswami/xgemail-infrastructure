@@ -99,6 +99,73 @@ module SophosCloudXgemail
 
   end
   module AwsHelper
+    def get_fsc_hostname ( type )
+      region = node['sophos_cloud']['region']
+      account_name = node['sophos_cloud']['account_name']
+      ec2 = Aws::EC2::Client.new(region: region)
+      case type
+      when 'internet-submit'
+        return "mx-01.#{account_name}.ctr.sophos.com"
+      when 'mf-inbound-submit'
+        return "mf-inbound-submit.#{account_name}.ctr.sophos.com"
+      when 'customer-submit'
+        return "relay.#{account_name}.ctr.sophos.com"
+      when 'mf-outbound-submit'
+        return "mf-outbound-submit.#{account_name}.ctr.sophos.com"
+      when 'encryption-delivery'
+        return "encryption-delivery.#{account_name}.ctr.sophos.com"
+      when 'encryption-submit'
+        return "encryption-submit.#{account_name}.ctr.sophos.com"
+      when 'internet-delivery', 'internet-xdelivery', 'customer-delivery', 'customer-xdelivery', 'risky-delivery', 'risky-xdelivery', 'warmup-delivery', 'warmup-xdelivery', 'beta-delivery', 'beta-xdelivery', 'delta-delivery', 'delta-xdelivery', 'mf-outbound-delivery', 'mf-inbound-delivery', 'mf-outbound-xdelivery', 'mf-inbound-xdelivery'
+        if account_name == 'sandbox'
+          # Return docker instance fully qualified domain name
+          return node['fqdn']
+        else
+          instance_id = node['ec2']['instance_id']
+          instance = Aws::EC2::Instance.new(instance_id, options={client: ec2})
+          eip = instance.public_ip_address
+          begin
+            # Lookup the reverse DNS record of the EIP and use it as postfix hostname
+            Chef::Log.info("Getting reverse DNS of EIP: #{eip}")
+            hostname = Resolv.getname "#{eip}"
+            raise "Resolved hostname is empty for EIP <#{eip}>" if hostname.nil?
+            Chef::Log.info("Setting postfix hostname: #{hostname}")
+            return hostname
+          rescue
+            Chef::Log.error("ERROR: Cannot resolve hostname from EIP <#{eip}>. Cannot Continue. Exiting")
+            raise "ERROR: Cannot resolve hostname from EIP <#{eip}>. Cannot Continue."
+          end
+        end
+      else
+        if account_name == 'sandbox'
+          localip = node['ipaddress'].split(".")
+          return "inbound-#{localip.reverse.join("-")}.#{account_name}.ctr.sophos.com"
+        else
+          mac = node['macaddress'].downcase
+          subnet_id = node['ec2']['network_interfaces_macs'][mac]['subnet_id']
+          destination_cidr_block = '0.0.0.0/0'
+          begin
+            resp = ec2.describe_route_tables({
+                                               filters:[{
+                                                          name:'association.subnet-id',
+                                                          values:[subnet_id]
+                                                        }]
+                                             })
+            resp.route_tables[0].routes.each do |r|
+              if destination_cidr_block == r.destination_cidr_block
+                return "inbound-#{ec2.describe_nat_gateways({
+                                                              nat_gateway_ids: [r.nat_gateway_id],
+                                                            }).nat_gateways[0].nat_gateway_addresses[0].public_ip.gsub('.','-')}.#{account_name}.ctr.sophos.com"
+              end
+            end
+          rescue Aws::EC2::Errors::ServiceError => e
+            Chef::Log.error("ERROR: Unknown error #{e.message}. Cannot Continue. Exiting")
+            raise "ERROR: Unknown error #{e.message}. Cannot Continue. Exiting"
+          end
+        end
+      end
+    end
+
     def get_hostname ( type )
       region = node['sophos_cloud']['region']
       account = node['sophos_cloud']['environment']

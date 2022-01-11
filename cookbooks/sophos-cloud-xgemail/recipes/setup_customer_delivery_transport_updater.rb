@@ -22,6 +22,7 @@ INSTANCE_NAME = INSTANCE_DATA[:instance_name]
 raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 
 ACCOUNT               = node['sophos_cloud']['environment']
+ACCOUNT_NAME          = node['sophos_cloud']['account_name']
 LOCAL_CERT_PATH       = node['sophos_cloud']['local_cert_path']
 REGION                = node['sophos_cloud']['region']
 CONNECTIONS_BUCKET    = node['sophos_cloud']['connections']
@@ -70,7 +71,11 @@ end
 PACKAGE_DIR                    = "#{XGEMAIL_FILES_DIR}/customer-delivery-transport"
 TRANSPORT_UPDATER_SCRIPT       = 'customer.delivery.transport.updater.py'
 TRANSPORT_UPDATER_SCRIPT_PATH  = "#{PACKAGE_DIR}/#{TRANSPORT_UPDATER_SCRIPT}"
-XGEMAIL_PIC_FQDN               = "mail-#{STATION_VPC_NAME.downcase}-#{REGION}.#{ACCOUNT}.hydra.sophos.com"
+if ACCOUNT_NAME == 'legacy'
+  XGEMAIL_PIC_FQDN = "mail-#{STATION_VPC_NAME.downcase}-#{REGION}.#{ACCOUNT}.hydra.sophos.com"
+else
+  XGEMAIL_PIC_FQDN = "mail.#{ACCOUNT_NAME}.ctr.sophos.com"
+end
 TRANSPORT_UPDATER_SERVICE_NAME = node['xgemail']['transport_updater']
 
 directory XGEMAIL_FILES_DIR do

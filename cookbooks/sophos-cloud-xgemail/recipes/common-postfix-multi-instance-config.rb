@@ -13,6 +13,8 @@
 
 ACCOUNT =  node['sophos_cloud']['environment']
 
+ACCOUNT_NAME = node['sophos_cloud']['account_name']
+
 require 'aws-sdk'
 
 # Include Helper library
@@ -41,9 +43,13 @@ FILE_CACHE_DIR = ::Chef::Config[:file_cache_path]
 
 TLS_HIGH_CIPHERLIST = node['xgemail']['tls_high_cipherlist']
 
-INSTANCE_HOST_NAME = get_hostname(NODE_TYPE)
+if ACCOUNT_NAME == 'legacy'
+  INSTANCE_HOST_NAME = get_hostname(NODE_TYPE)
+else
+  INSTANCE_HOST_NAME = get_fsc_hostname(NODE_TYPE)
+end
 
-POSTFIX_DEFAULT_PROCESS_LIMIT = node["xgemail"]["postfix_default_process_limit"]
+  POSTFIX_DEFAULT_PROCESS_LIMIT = node["xgemail"]["postfix_default_process_limit"]
 
 CONFIGURATION_COMMANDS =
   node['xgemail']['common_instance_config_params'] +
