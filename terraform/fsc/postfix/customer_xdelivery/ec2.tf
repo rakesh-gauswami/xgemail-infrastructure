@@ -31,7 +31,7 @@ locals {
   INSTANCE_SIZE_BY_ENVIRONMENT = {
     inf  = "t2.small"
     dev  = "t2.small"
-    qa   = "c4.xlarge"
+    qa   = "t2.small"
     prod = "m5.2xlarge"
   }
 
