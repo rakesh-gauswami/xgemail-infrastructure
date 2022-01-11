@@ -7,9 +7,6 @@ locals {
   input_param_primary_region                      = nonsensitive(data.aws_ssm_parameter.primary_region.value)
   input_param_volume_tracker_simpledb_policy_arn  = nonsensitive(data.aws_ssm_parameter.volume_tracker_simpledb_policy_arn.value)
   input_param_vpc_id                              = nonsensitive(data.aws_ssm_parameter.vpc_id.value)
-
-
-
 }
 
 data "aws_ssm_parameter" "account_id" {

@@ -25,6 +25,7 @@
 # cookbooks are running; e.g. do not add the name of the "next host".
 
 # Sophos
+default['sophos_cloud']['account_name']                 = 'legacy'
 default['sophos_cloud']['application']                  = '//cloud-applications/develop/core-services.war'
 default['sophos_cloud']['configs']                      = '//cloud-dev-configs'
 default['sophos_cloud']['connections']                  = '//cloud-dev-connections'
@@ -38,6 +39,7 @@ default['sophos_cloud']['local_key_path']               = '/etc/ssl/private'
 default['sophos_cloud']['script_path']                  = '/var/sophos/scripts'
 default['sophos_cloud']['thirdparty']                   = '//cloud-dev-3rdparty'
 default['sophos_cloud']['tmp']                          = '/tmp/sophos'
+default['sophos_cloud']['sdb_region']                   = 'us-west-2'
 
 
 # XGEmail-specific settings
@@ -325,6 +327,15 @@ default['xgemail']['postfix_instance_data'] = {
   # extended-delivery
   'xdelivery' => {
     :instance_name => 'xd',
+    :port => 8025,
+    # Give delivery queues extra padding because extra content may be created during processing
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600 + 5242880),
+    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+    :server_type => 'CUSTOMER_XDELIVERY'
+  },
+  # customer-xdelivery
+  'customer-xdelivery' => {
+    :instance_name => 'cx',
     :port => 8025,
     # Give delivery queues extra padding because extra content may be created during processing
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600 + 5242880),

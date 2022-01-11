@@ -31,6 +31,8 @@ AWS_REGION = node['sophos_cloud']['region']
 
 ACCOUNT = node['sophos_cloud']['environment']
 
+ACCOUNT_NAME = node['sophos_cloud']['account_name']
+
 HOP_COUNT_DELIVERY_INSTANCE = node['xgemail']['hop_count_delivery_instance']
 
 DELTA_XDELIVERY_INSTANCE_DATA = node['xgemail']['postfix_instance_data']['delta-xdelivery']
@@ -38,7 +40,11 @@ raise "Unsupported node type [#{NODE_TYPE}]" if DELTA_XDELIVERY_INSTANCE_DATA.ni
 
 SMTP_PORT = DELTA_XDELIVERY_INSTANCE_DATA[:port]
 
-SMTP_FALLBACK_RELAY = "delta-xdelivery-cloudemail-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com:#{SMTP_PORT}"
+if ACCOUNT_NAME == 'legacy'
+  SMTP_FALLBACK_RELAY = "delta-xdelivery-cloudemail-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com:#{SMTP_PORT}"
+else
+  SMTP_FALLBACK_RELAY = "delta-xdelivery.#{ACCOUNT_NAME}.ctr.sophos.com:#{SMTP_PORT}"
+end
 
 HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
 

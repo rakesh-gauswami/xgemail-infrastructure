@@ -1,10 +1,6 @@
 # vim: autoindent expandtab shiftwidth=2 filetype=terraform
-resource "aws_ssm_document" "bulk_sender_automation" {
-  name          = "bulk-sender-automation"
-  document_type = "Automation"
-
-  content = <<DOC
-  {
+locals {
+  bulk_sender_automation_ssm_document = {
     "schemaVersion": "0.3",
     "assumeRole": "${aws_iam_role.bulk_sender_automation_role.arn}",
     "description": "Execute BulkSender PythonScript",
@@ -73,7 +69,13 @@ resource "aws_ssm_document" "bulk_sender_automation" {
       }
     ]
   }
-DOC
+}
+
+resource "aws_ssm_document" "bulk_sender_automation" {
+  name          = "bulk-sender-automation"
+  document_type = "Automation"
+
+  content = jsonencode(local.bulk_sender_automation_ssm_document)
 }
 
 # ----------------------------------------------------
