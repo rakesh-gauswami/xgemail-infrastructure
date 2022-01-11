@@ -158,6 +158,11 @@
       "Description" : "Message History firehose stream name",
       "Type": "String"
     },
+    "ParentAccountName" : {
+      "Description" : "FSC Parent Account Name",
+      "Type": "String",
+      "Default": ""
+    },
     "PolicyTargetValue": {
       "Description": "The target value for the metric.",
       "Type": "Number",
@@ -793,6 +798,7 @@
                   "Fn::Join": [ "", [
                     "{\n",
                     "  \"sophos_cloud\" : {\n",
+                    "    \"account_name\"                           : \"{{account_name}}\",\n",
                     "    \"application_name\"                       : \"{{cluster}}\",\n",
                     "    \"application_type\"                       : \"xgemail\",\n",
                     "    \"availability_zone\"                      : \"{{availability_zone}}\",\n",
@@ -821,6 +827,7 @@
                     "    \"msg_history_queue_url\"                  : \"{{msg_history_queue_url}}\",\n",
                     "    \"msg_history_v2_bucket_name\"             : \"{{msg_history_v2_bucket_name}}\",\n",
                     "    \"msg_history_v2_stream_name\"             : \"{{msg_history_v2_stream_name}}\",\n",
+                    "    \"parent_account_name\"                    : \"{{parent_account_name}}\",\n",
                     "    \"policy_efs_file_system_id\"              : \"{{policy_efs_file_system_id}}\",\n",
                     "    \"station_vpc_id\"                         : \"{{station_vpc_id}}\",\n",
                     "    \"station_vpc_name\"                       : \"{{station_vpc_name}}\",\n",
@@ -853,6 +860,7 @@
                   "msg_history_queue_url":                          { "Ref": "XgemailMsgHistoryQueueUrl" },
                   "msg_history_v2_bucket_name":                     { "Ref": "MsgHistoryV2BucketName" },
                   "msg_history_v2_stream_name":                     { "Ref": "MsgHistoryV2StreamName" },
+                  "parent_account_name":                            { "Ref": "ParentAccountName" },
                   "policy_efs_file_system_id":                      { "Ref": "XgemailPolicyEfsFileSystemId" },
                   "region":                                         { "Ref": "AWS::Region" },
                   "stack":                                          { "Ref": "AWS::StackName" },

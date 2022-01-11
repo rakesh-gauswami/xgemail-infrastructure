@@ -1,6 +1,6 @@
 locals {
   DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD  = 900
-  DEFAULT_INSTANCE_SIZE                 = "t2.small"
+  DEFAULT_INSTANCE_SIZE                 = "t3.medium"
   DEFAULT_EBS_SIZE_DATA_GB          = 10
   DEFAULT_ZONE_INDEX = {
     1 = 0
@@ -29,9 +29,9 @@ locals {
   }
 
   INSTANCE_SIZE_BY_ENVIRONMENT = {
-    inf  = "t2.small"
-    dev  = "c4.xlarge"
-    qa   = "c4.xlarge"
+    inf  = "t3.medium"
+    dev  = "t3.medium"
+    qa   = "t3.medium"
     prod = "m5.2xlarge"
   }
 
@@ -143,6 +143,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     MsgHistoryV2BucketName            = var.message_history_ms_bucket
     MsgHistoryV2DynamoDbTableName     = var.message_history_dynamodb_table_name
     MsgHistoryV2StreamName            = var.message_history_v2_stream_name
+    ParentAccountName                 = local.input_param_parent_account_name
     PolicyBucketName                  = var.policy_bucket
     S3CookbookRepositoryURL           = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/${var.build_number}/cookbooks.tar.gz"
     SecurityGroups                    = aws_security_group.security_group_ec2.id

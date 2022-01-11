@@ -7,6 +7,8 @@
 # All rights reserved - Do Not Redistribute
 #
 
+ACCOUNT_NAME = node['sophos_cloud']['account_name']
+
 tmp_certificate_download_path = "#{node['sophos_cloud']['tmp']}/certificates"
 
 MX_CERT_NAME = node['cert']['mx']
@@ -156,19 +158,36 @@ bash "add_dep_services_certificates_to_keystore" do
   EOH
 end
 
-bash "add_default_cert_to_keystore" do
-  user "root"
-  cwd "/tmp"
-  code <<-EOH
-        mv /tmp/sophos/certificates/*hydra.sophos.com.crt /etc/ssl/certs/#{node['cert']['default']}.crt
-        chmod 0444 /etc/ssl/certs/#{node['cert']['default']}.crt
-        chown root:root /etc/ssl/certs/#{node['cert']['default']}.crt
+if ACCOUNT_NAME == 'legacy'
+  bash "add_default_cert_to_keystore" do
+    user "root"
+    cwd "/tmp"
+    code <<-EOH
+          mv /tmp/sophos/certificates/*hydra.sophos.com.crt /etc/ssl/certs/#{node['cert']['default']}.crt
+          chmod 0444 /etc/ssl/certs/#{node['cert']['default']}.crt
+          chown root:root /etc/ssl/certs/#{node['cert']['default']}.crt
+  
+          mv /tmp/sophos/certificates/*hydra.sophos.com.key /etc/ssl/private/#{node['cert']['default']}.key
+          chmod 0440 /etc/ssl/private/#{node['cert']['default']}.key
+          chown root:root /etc/ssl/private/#{node['cert']['default']}.key
 
-        mv /tmp/sophos/certificates/*hydra.sophos.com.key /etc/ssl/private/#{node['cert']['default']}.key
-        chmod 0440 /etc/ssl/private/#{node['cert']['default']}.key
-        chown root:root /etc/ssl/private/#{node['cert']['default']}.key
+    EOH
+  end
+else
+  bash "add_default_cert_to_keystore" do
+    user "root"
+    cwd "/tmp"
+    code <<-EOH
+          mv /tmp/sophos/certificates/*ctr.sophos.com.crt /etc/ssl/certs/#{node['cert']['default']}.crt
+          chmod 0444 /etc/ssl/certs/#{node['cert']['default']}.crt
+          chown root:root /etc/ssl/certs/#{node['cert']['default']}.crt
+  
+          mv /tmp/sophos/certificates/*ctr.sophos.com.key /etc/ssl/private/#{node['cert']['default']}.key
+          chmod 0440 /etc/ssl/private/#{node['cert']['default']}.key
+          chown root:root /etc/ssl/private/#{node['cert']['default']}.key
 
-  EOH
+    EOH
+  end
 end
 
 # Add mx certificate

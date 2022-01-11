@@ -25,6 +25,7 @@
 # cookbooks are running; e.g. do not add the name of the "next host".
 
 # Sophos
+default['sophos_cloud']['account_name']                 = 'legacy'
 default['sophos_cloud']['application']                  = '//cloud-applications/develop/core-services.war'
 default['sophos_cloud']['configs']                      = '//cloud-dev-configs'
 default['sophos_cloud']['connections']                  = '//cloud-dev-connections'

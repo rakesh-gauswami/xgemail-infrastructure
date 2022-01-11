@@ -15,7 +15,7 @@ locals {
   DEFAULT_AS_ON_HOUR_DESIRED           = 2
   DEFAULT_AS_SCALE_IN_OUT_WEEKDAYS     = false
   DEFAULT_AS_SCALE_IN_ON_WEEKENDS      = false
-  DEFAULT_INSTANCE_SIZE                = "t2.small"
+  DEFAULT_INSTANCE_SIZE                = "t3.medium"
   DEFAULT_INSTANCE_COUNT               = 1
   DEFAULT_XGEMAIL_SIZE_DATA_GB         = 35
   DEFAULT_SXL_DBL                      = "uri.cal1.sophosxl.com"
@@ -132,9 +132,9 @@ locals {
   }
 
   INSTANCE_SIZE_BY_ENVIRONMENT = {
-    inf  = "t2.small"
-    dev  = "c4.xlarge"
-    qa   = "c4.xlarge"
+    inf  = "t3.small"
+    dev  = "t3.small"
+    qa   = "t3.small"
     prod = "m5a.large"
   }
 
@@ -327,6 +327,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     MsgHistoryV2BucketName           = var.message_history_ms_bucket
     MsgHistoryV2DynamoDbTableName    = var.message_history_dynamodb_table_name
     MsgHistoryV2StreamName           = var.firehose_msg_history_v2_stream_name
+    ParentAccountName                = local.input_param_parent_account_name
     S3CookbookRepositoryURL          = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/${var.build_number}/cookbooks.tar.gz"
     ScaleInOnWeekends                = local.as_scale_in_on_weekends
     ScaleInCron                      = local.as_cron_scale_down

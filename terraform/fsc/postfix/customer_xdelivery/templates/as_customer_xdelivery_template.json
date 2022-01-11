@@ -146,6 +146,11 @@
       "Description" : "Message History firehose stream name",
       "Type": "String"
     },
+    "ParentAccountName" : {
+      "Description" : "FSC Parent Account Name",
+      "Type": "String",
+      "Default": ""
+    },
     "PolicyBucketName" : {
       "Description" : "Name of the S3 Bucket where XGEMAIL policy docs are stored",
       "Type" : "String",
@@ -468,6 +473,7 @@
                     "", [
                       "{\n",
                       "  \"sophos_cloud\" : {\n",
+                      "    \"account_name\"                   : \"{{account_name}}\",\n",
                       "    \"application_name\"               : \"{{cluster}}\",\n",
                       "    \"application_type\"               : \"xgemail\",\n",
                       "    \"availability_zone\"              : \"{{availability_zone}}\",\n",
@@ -478,6 +484,7 @@
                       "    \"branch\"                         : \"{{branch}}\",\n",
                       "    \"cluster\"                        : \"{{cluster}}\",\n",
                       "    \"client-endpoint\"                : \"{{region}}\",\n",
+                      "    \"parent_account_name\"            : \"{{parent_account_name}}\",\n",
                       "    \"region\"                         : \"{{region}}\",\n",
                       "    \"sdb_region\"                     : \"{{sdb_region}}\",\n",
                       "    \"vpc_id\"                         : \"{{vpc_id}}\",\n",
@@ -532,6 +539,7 @@
                   "msg_history_v2_bucket_name":               { "Ref": "MsgHistoryV2BucketName" },
                   "msg_history_v2_dynamodb_table_name":       { "Ref": "MsgHistoryV2DynamoDbTableName"},
                   "msg_history_v2_stream_name":               { "Ref": "MsgHistoryV2StreamName" },
+                  "parent_account_name":                      { "Ref": "ParentAccountName" },
                   "region":                                   { "Ref": "AWS::Region" },
                   "sdb_region":                               { "Ref": "SdbRegion" },
                   "station_vpc_id":                           { "Ref": "StationVpcId" },
