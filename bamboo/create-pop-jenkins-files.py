@@ -19,7 +19,7 @@ NO_CRON = False
 
 PIPELINES = [
     # pipeline_name, pipeline_function
-    ('xgemail-infrastructure-ci',       'xgemailInfrastructureCIPipeline',    NO_CRON),
+    ('xgemail-infrastructure-ci',       'xgemailInfrastructureCIPipeline',       NO_CRON),
     ('xgemail-infrastructure',          'xgemailInfrastructureDeployPipeline',   CRON),
     ('internet-submit-deploy',          'internetSubmitDeployPipeline',          NO_CRON),
     ('customer-delivery-deploy',        'customerDeliveryDeployPipeline',        NO_CRON),
@@ -35,12 +35,12 @@ PIPELINES = [
     ('delta-xdelivery-deploy',          'deltaXdeliveryDeployPipeline',          NO_CRON),
     ('encryption-submit-deploy',        'encryptionSubmitDeployPipeline',        NO_CRON),
     ('encryption-delivery-deploy',      'encryptionDeliveryDeployPipeline',      NO_CRON),
-    ('mfr-inbound-submit-deploy',       'mfrInboundSubmitDeployPipeline',        NO_CRON),
-    ('mfr-inbound-delivery-deploy',     'mfrInboundDeliveryDeployPipeline',      NO_CRON),
-    ('mfr-inbound-xdelivery-deploy',    'mfrInboundXdeliveryDeployPipeline',     NO_CRON),
-    ('mfr-outbound-submit-deploy',      'mfrOutboundSubmitDeployPipeline',       NO_CRON),
-    ('mfr-outbound-delivery-deploy',    'mfrOutboundDeliveryDeployPipeline',     NO_CRON),
-    ('mfr-outbound-xdelivery-deploy',   'mfrOutboundXdeliveryDeployPipeline',    NO_CRON)
+    ('mf-inbound-submit-deploy',        'mfInboundSubmitDeployPipeline',         NO_CRON),
+    ('mf-inbound-delivery-deploy',      'mfInboundDeliveryDeployPipeline',       NO_CRON),
+    ('mf-inbound-xdelivery-deploy',     'mfInboundXdeliveryDeployPipeline',      NO_CRON),
+    ('mf-outbound-submit-deploy',       'mfOutboundSubmitDeployPipeline',        NO_CRON),
+    ('mf-outbound-delivery-deploy',     'mfOutboundDeliveryDeployPipeline',      NO_CRON),
+    ('mf-outbound-xdelivery-deploy',    'mfOutboundXdeliveryDeployPipeline',     NO_CRON)
 ]
 
 CRON_MINUTE_OFFSETS = {
