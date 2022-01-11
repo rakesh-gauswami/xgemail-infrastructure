@@ -49,7 +49,7 @@ else
   INSTANCE_HOST_NAME = get_fsc_hostname(NODE_TYPE)
 end
 
-  POSTFIX_DEFAULT_PROCESS_LIMIT = node["xgemail"]["postfix_default_process_limit"]
+POSTFIX_DEFAULT_PROCESS_LIMIT = node["xgemail"]["postfix_default_process_limit"]
 
 CONFIGURATION_COMMANDS =
   node['xgemail']['common_instance_config_params'] +
