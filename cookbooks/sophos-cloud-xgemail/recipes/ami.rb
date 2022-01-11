@@ -115,10 +115,6 @@ yum_package 'libuuid' do
   action :upgrade
 end
 
-yum_package 'openssl11' do
-  action :install
-end
-
 SOPHOS_BIN_DIR = '/opt/sophos/bin'
 PACKAGES_DIR = '/opt/sophos/packages'
 DEPLOYMENT_DIR = '/opt/sophos/xgemail'
