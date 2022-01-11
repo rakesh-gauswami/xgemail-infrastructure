@@ -34,12 +34,15 @@ SOPHOS_ACCOUNT = node['sophos_cloud']['environment']
 SMTP_PORT = INSTANCE_DATA[:port]
 
 DESTINATION_PORT = 25
+DESTINATION_HOST_CA_CENTRAL = 'ca.emailencryption.sophos.com'
 DESTINATION_HOST_EU_WEST    = 'euw-smtp.emailencryption.sophos.com'
 DESTINATION_HOST_EU_CENTRAL = 'euc-smtp.emailencryption.sophos.com'
 DESTINATION_HOST_US_WEST    = 'us-smtp.emailencryption.sophos.com'
 DESTINATION_HOST_US_EAST    = 'us-smtp.emailencryption.sophos.com'
 
-if AWS_REGION == 'eu-west-1'
+if AWS_REGION == 'ca-central-1'
+  DESTINATION_HOST = "#{DESTINATION_HOST_CA_CENTRAL}:#{DESTINATION_PORT}"
+elsif AWS_REGION == 'eu-west-1'
   DESTINATION_HOST = "#{DESTINATION_HOST_EU_WEST}:#{DESTINATION_PORT}"
 elsif AWS_REGION == 'eu-central-1'
   DESTINATION_HOST = "#{DESTINATION_HOST_EU_CENTRAL}:#{DESTINATION_PORT}"
