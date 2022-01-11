@@ -22,7 +22,7 @@ INSTANCE_NAME = INSTANCE_DATA[:instance_name]
 raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 
 # add the cron job in all 14 delivery servers
-if NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'risky-delivery' ||
+if NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'customer-xdelivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'warmup-delivery' || NODE_TYPE == 'beta-delivery' || NODE_TYPE == 'delta-delivery' ||
     NODE_TYPE == 'xdelivery' || NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-xdelivery' || NODE_TYPE == 'beta-xdelivery' || NODE_TYPE == 'delta-xdelivery'||

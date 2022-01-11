@@ -17,7 +17,7 @@ NODE_TYPE = node['xgemail']['cluster_type']
 ACCOUNT = node['sophos_cloud']['environment']
 
 # Make sure we're on a delivery node
-if NODE_TYPE != 'customer-delivery' && NODE_TYPE != 'xdelivery' &&
+if NODE_TYPE != 'customer-delivery' && NODE_TYPE != 'xdelivery' && NODE_TYPE != 'customer-xdelivery' &&
   NODE_TYPE != 'internet-delivery' && NODE_TYPE != 'internet-xdelivery' &&
   NODE_TYPE != 'risky-delivery' && NODE_TYPE != 'risky-xdelivery' &&
   NODE_TYPE != 'warmup-delivery' && NODE_TYPE != 'warmup-xdelivery' &&

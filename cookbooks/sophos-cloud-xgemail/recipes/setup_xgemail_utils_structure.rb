@@ -143,7 +143,7 @@ if NODE_TYPE == 'customer-delivery' or NODE_TYPE == 'internet-delivery' or
     NODE_TYPE == 'risky-xdelivery' or NODE_TYPE == 'warmup-delivery' or
     NODE_TYPE == 'warmup-xdelivery' or NODE_TYPE == 'beta-delivery' or
     NODE_TYPE == 'beta-xdelivery' or NODE_TYPE == 'delta-delivery' or
-    NODE_TYPE == 'delta-xdelivery'
+    NODE_TYPE == 'delta-xdelivery' or NODE_TYPE == 'customer-xdelivery'
   [
       'postfix_injection_response.py',
       'queue_log.py',

@@ -12,7 +12,7 @@
 NODE_TYPE = node['xgemail']['cluster_type']
 ACCOUNT =  node['sophos_cloud']['environment']
 
-if NODE_TYPE != 'xdelivery' && NODE_TYPE != 'internet-xdelivery' && NODE_TYPE != 'risky-xdelivery' && NODE_TYPE != 'warmup-xdelivery' && NODE_TYPE != 'beta-xdelivery' && NODE_TYPE != 'delta-xdelivery' && NODE_TYPE != 'mf-inbound-xdelivery' && NODE_TYPE != 'mf-outbound-xdelivery'
+if NODE_TYPE != 'xdelivery' && NODE_TYPE != 'customer-xdelivery' && NODE_TYPE != 'internet-xdelivery' && NODE_TYPE != 'risky-xdelivery' && NODE_TYPE != 'warmup-xdelivery' && NODE_TYPE != 'beta-xdelivery' && NODE_TYPE != 'delta-xdelivery' && NODE_TYPE != 'mf-inbound-xdelivery' && NODE_TYPE != 'mf-outbound-xdelivery'
   return
 end
 
@@ -214,7 +214,7 @@ if NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery' || NODE_T
   end
 end
 
-if NODE_TYPE == 'xdelivery'
+if NODE_TYPE == 'xdelivery' || NODE_TYPE == 'customer-xdelivery'
 
   TRANSPORT_ROUTE_HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
 

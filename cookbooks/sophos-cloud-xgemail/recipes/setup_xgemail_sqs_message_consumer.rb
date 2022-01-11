@@ -75,7 +75,7 @@ SERVICE_USER = node['xgemail']['sqs_message_processor_user']
 
 # TODO : We shouldn't need sqsconsumer on any XDelivery or encryption submit right?
 # Configs use by sqsmsgconsumer
-if NODE_TYPE == 'customer-delivery' or NODE_TYPE == 'xdelivery' or NODE_TYPE == 'encryption-submit' or NODE_TYPE == 'mf-inbound-delivery' or NODE_TYPE == 'mf-inbound-xdelivery'
+if NODE_TYPE == 'customer-delivery' or NODE_TYPE == 'customer-xdelivery' or NODE_TYPE == 'xdelivery' or NODE_TYPE == 'encryption-submit' or NODE_TYPE == 'mf-inbound-delivery' or NODE_TYPE == 'mf-inbound-xdelivery'
   MESSAGE_DIRECTION = 'INBOUND'
 elsif NODE_TYPE == 'internet-delivery' or NODE_TYPE == 'internet-xdelivery' or
        NODE_TYPE == 'encryption-delivery' or NODE_TYPE == 'risky-delivery' or
