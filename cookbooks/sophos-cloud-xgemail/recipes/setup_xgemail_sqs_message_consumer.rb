@@ -18,6 +18,7 @@ SMTPD_PORT = INSTANCE_DATA[:port]
 raise "Invalid smtpd port for node type [#{NODE_TYPE}]" if SMTPD_PORT.nil?
 
 ACCOUNT = node['sophos_cloud']['context']
+ACCOUNT_NAME = node['sophos_cloud']['account_name']
 AWS_REGION = node['sophos_cloud']['region']
 LOCAL_CERT_PATH = node['sophos_cloud']['local_cert_path']
 STATION_VPC_NAME = node['xgemail']['station_vpc_name']
@@ -55,7 +56,11 @@ THREAD_COUNT_CONFIG_KEY                 = 'config/delivery/multi.thread.count.' 
 if ACCOUNT == 'sandbox'
   XGEMAIL_PIC_FQDN = 'mail-service:8080'
 else
-  XGEMAIL_PIC_FQDN = "mail-#{STATION_VPC_NAME.downcase}-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com"
+  if ACCOUNT_NAME == 'legacy'
+    XGEMAIL_PIC_FQDN = "mail-#{STATION_VPC_NAME.downcase}-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com"
+  else
+    XGEMAIL_PIC_FQDN = "mail.#{node['sophos_cloud']['parent_account_name']}.ctr.sophos.com"
+  end
 end
 
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_processors_structure'
