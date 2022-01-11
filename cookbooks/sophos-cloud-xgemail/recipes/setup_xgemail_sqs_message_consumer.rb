@@ -21,7 +21,6 @@ ACCOUNT = node['sophos_cloud']['context']
 ACCOUNT_NAME = node['sophos_cloud']['account_name']
 AWS_REGION = node['sophos_cloud']['region']
 LOCAL_CERT_PATH = node['sophos_cloud']['local_cert_path']
-PARENT_ACCOUNT_NAME = node['sophos_cloud']['parent_account_name']
 STATION_VPC_NAME = node['xgemail']['station_vpc_name']
 CONNECTIONS_BUCKET = node['sophos_cloud']['connections']
 
@@ -60,7 +59,7 @@ else
   if ACCOUNT_NAME == 'legacy'
     XGEMAIL_PIC_FQDN = "mail-#{STATION_VPC_NAME.downcase}-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com"
   else
-    XGEMAIL_PIC_FQDN = "mail.#{PARENT_ACCOUNT_NAME}.ctr.sophos.com"
+    XGEMAIL_PIC_FQDN = "mail.#{node['sophos_cloud']['parent_account_name']}.ctr.sophos.com"
   end
 end
 
