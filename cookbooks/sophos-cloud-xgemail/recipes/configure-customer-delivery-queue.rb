@@ -32,16 +32,12 @@ AWS_REGION = node['sophos_cloud']['region']
 
 HOP_COUNT_DELIVERY_INSTANCE = node['xgemail']['hop_count_delivery_instance']
 
-EXTENDED_DELIVERY = node['xgemail']['extended_delivery']
-
-XDELIVERY_INSTANCE_DATA = node['xgemail']['postfix_instance_data'][EXTENDED_DELIVERY]
+XDELIVERY_INSTANCE_DATA = node['xgemail']['postfix_instance_data']['xdelivery']
 raise "Unsupported node type [#{NODE_TYPE}]" if XDELIVERY_INSTANCE_DATA.nil?
 
 SMTP_PORT = XDELIVERY_INSTANCE_DATA[:port]
 
-SMTP_FALLBACK_RELAY_PREFIX = XDELIVERY_INSTANCE_DATA[:fallback_relay_prefix]
-
-SMTP_FALLBACK_RELAY = "#{SMTP_FALLBACK_RELAY_PREFIX}-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com:#{SMTP_PORT}"
+SMTP_FALLBACK_RELAY = "xdelivery-cloudemail-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com:#{SMTP_PORT}"
 
 # Run an instance of the smtp process that enforces TLS encryption
 [
