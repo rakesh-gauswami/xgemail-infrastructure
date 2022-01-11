@@ -882,10 +882,10 @@
                   "  else\n",
                   "    /opt/sophos/bin/set_instance_tag.py LastHealth UserDataFailure\n",
                   "    # Upload logs before reporting failure to avoid race against termination.\n",
-                  "    ACCOUNT='", { "Ref": "Environment" }, "'\n",
+                  "    ACCOUNT='", { "Ref": "AccountName" }, "'\n",
                   "    BRANCH='", { "Ref": "Branch" }, "'\n",
                   "    DEPLOYMENT_NAME='", { "Ref": "XgemailServiceType" }, "'\n",
-                  "    /opt/sophos/bin/upload_deployment_logs.py -a ${ACCOUNT} -b ${BRANCH} ${DEPLOYMENT_NAME} -c netstat_tuna.out='netstat -tuna'\n",
+                  "    /opt/sophos/bin/upload_deployment_logs.py -a ${ACCOUNT} -b ${BRANCH} ${DEPLOYMENT_NAME}\n",
                   "  fi\n",
                   "\n",
 
