@@ -161,6 +161,11 @@
       "Type": "String",
       "Default": "//cloud-applications/develop/cookbooks.enc"
     },
+    "SdbRegion": {
+      "Description": "The region where the volume tracker simple db exists.",
+      "Type": "String",
+      "Default": "us-east-1"
+    },
     "ScaleDownOnWeekends": {
       "Description": "Enable scale down to zero on Saturday at midnight and scale back on Monday morning. (Times are UTC, NON PROD/QA ENVIRONMENT ONLY)",
       "Type": "String",
@@ -481,6 +486,7 @@
                       "    \"client-endpoint\"                : \"{{region}}\",\n",
                       "    \"parent_account_name\"            : \"{{parent_account_name}}\",\n",
                       "    \"region\"                         : \"{{region}}\",\n",
+                      "    \"sdb_region\"                     : \"{{sdb_region}}\",\n",
                       "    \"vpc_id\"                         : \"{{vpc_id}}\",\n",
                       "    \"vpc_name\"                       : \"{{vpc_name}}\"\n",
                       "  },\n",
@@ -535,6 +541,7 @@
                   "msg_history_v2_stream_name":               { "Ref": "MsgHistoryV2StreamName" },
                   "parent_account_name":                      { "Ref": "ParentAccountName" },
                   "region":                                   { "Ref": "AWS::Region" },
+                  "sdb_region":                               { "Ref": "SdbRegion" },
                   "station_vpc_id":                           { "Ref": "StationVpcId" },
                   "stack":                                    { "Ref": "AWS::StackName" },
                   "station_vpc_name":                         { "Ref": "StationVpcName" },
