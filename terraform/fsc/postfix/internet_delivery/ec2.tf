@@ -11,7 +11,7 @@ locals {
   DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD = 2400
   DEFAULT_AS_POLICY_TARGET_VALUE       = 90
   DEFAULT_AS_SCALE_IN_ON_WEEKENDS      = false
-  DEFAULT_INSTANCE_SIZE                = "t2.small"
+  DEFAULT_INSTANCE_SIZE                = "t3.medium"
   DEFAULT_XGEMAIL_SIZE_DATA_GB         = 10
   DEFAULT_SXL_DBL                      = "uri.cal1.sophosxl.com"
   DEFAULT_SXL_RBL                      = "fur.cal1.sophosxl.com"
@@ -100,9 +100,9 @@ locals {
   }
 
   INSTANCE_SIZE_BY_ENVIRONMENT = {
-    inf  = "t2.small"
-    dev  = "t2.small"
-    qa   = "t2.small"
+    inf  = "t3.medium"
+    dev  = "t3.medium"
+    qa   = "t3.medium"
     prod = "m5.2xlarge"
   }
 
