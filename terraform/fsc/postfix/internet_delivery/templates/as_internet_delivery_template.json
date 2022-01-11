@@ -157,6 +157,11 @@
       "Description" : "Message History firehose stream name",
       "Type": "String"
     },
+    "ParentAccountName" : {
+      "Description" : "FSC Parent Account Name",
+      "Type": "String",
+      "Default": ""
+    },
     "S3CookbookRepositoryURL": {
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
       "Type": "String"
@@ -701,6 +706,7 @@
                     "    \"branch\"                                 : \"{{branch}}\",\n",
                     "    \"cluster\"                                : \"{{cluster}}\",\n",
                     "    \"client-endpoint\"                        : \"{{region}}\",\n",
+                    "    \"parent_account_name\"                    : \"{{parent_account_name}}\",\n",
                     "    \"region\"                                 : \"{{region}}\",\n",
                     "    \"vpc_id\"                                 : \"{{vpc_id}}\",\n",
                     "    \"vpc_name\"                               : \"{{vpc_name}}\"\n",
@@ -743,6 +749,7 @@
                   "msg_history_v2_dynamodb_table_name":             { "Ref": "MsgHistoryV2DynamoDbTableName"},
                   "msg_history_v2_stream_name":                     { "Ref": "MsgHistoryV2StreamName" },
                   "msg_notifier_queue_url":                         { "Ref": "XgemailNotifierQueueUrl" },
+                  "parent_account_name":                            { "Ref": "ParentAccountName" },
                   "region":                                         { "Ref": "AWS::Region" },
                   "stack":                                          { "Ref": "AWS::StackName" },
                   "station_vpc_id":                                 { "Ref": "StationVpcId" },
