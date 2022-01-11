@@ -143,6 +143,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     MsgHistoryV2BucketName            = var.message_history_ms_bucket
     MsgHistoryV2DynamoDbTableName     = var.message_history_dynamodb_table_name
     MsgHistoryV2StreamName            = var.message_history_v2_stream_name
+    ParentAccountName                 = local.input_param_parent_account_name
     PolicyBucketName                  = var.policy_bucket
     S3CookbookRepositoryURL           = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/${var.build_number}/cookbooks.tar.gz"
     SecurityGroups                    = aws_security_group.security_group_ec2.id
