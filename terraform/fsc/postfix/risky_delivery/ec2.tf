@@ -9,7 +9,7 @@ locals {
   DEFAULT_AS_CRON_SCALE_DOWN           = "0 1 * * 6"
   DEFAULT_AS_CRON_SCALE_UP             = "0 4 * * 1"
   DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD = 2400
-  DEFAULT_AS_POLICY_TARGET_VALUE       = 90
+  DEFAULT_AS_POLICY_TARGET_VALUE       = 80
   DEFAULT_AS_SCALE_IN_ON_WEEKENDS      = false
   DEFAULT_INSTANCE_SIZE                = "t3.medium"
   DEFAULT_XGEMAIL_SIZE_DATA_GB         = 10
@@ -47,7 +47,7 @@ locals {
     inf  = 6
     dev  = 6
     qa   = 6
-    prod = 6
+    prod = 12
   }
 
   AS_MIN_SERVICE_BY_ENVIRONMENT = {
@@ -86,10 +86,10 @@ locals {
   }
 
   AS_POLICY_TARGET_VALUE_BY_ENVIRONMENT = {
-    inf  = 90
-    dev  = 90
-    qa   = 90
-    prod = 65
+    inf  = 80
+    dev  = 80
+    qa   = 80
+    prod = 80
   }
 
   AS_SCALE_IN_ON_WEEKENDS_BY_ENVIRONMENT = {
@@ -100,10 +100,10 @@ locals {
   }
 
   INSTANCE_SIZE_BY_ENVIRONMENT = {
-    inf  = "t3.medium"
-    dev  = "t3.medium"
-    qa   = "t3.medium"
-    prod = "m5.2xlarge"
+    inf  = "t3a.medium"
+    dev  = "t3a.medium"
+    qa   = "t3a.medium"
+    prod = "c5a.large"
   }
 
   XGEMAIL_SIZE_DATA_GB_BY_ENVIRONMENT = {
@@ -136,107 +136,107 @@ locals {
   }
 
   alarm_scaling_enabled = lookup(
-  local.AS_ALARM_SCALING_ENABLED_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_ALARM_SCALING_ENABLED
+    local.AS_ALARM_SCALING_ENABLED_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_ALARM_SCALING_ENABLED
   )
 
   alarm_scale_in_threshold = lookup(
-  local.AS_ALARM_SCALE_IN_THRESHOLD_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_ALARM_SCALE_IN_THRESHOLD
+    local.AS_ALARM_SCALE_IN_THRESHOLD_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_ALARM_SCALE_IN_THRESHOLD
   )
 
   alarm_scale_out_threshold = lookup(
-  local.AS_ALARM_SCALE_OUT_THRESHOLD_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_ALARM_SCALE_OUT_THRESHOLD
+    local.AS_ALARM_SCALE_OUT_THRESHOLD_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_ALARM_SCALE_OUT_THRESHOLD
   )
 
   as_min_size = lookup(
-  local.AS_MIN_SIZE_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_MIN_SIZE
+    local.AS_MIN_SIZE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_MIN_SIZE
   )
 
   as_max_size = lookup(
-  local.AS_MAX_SIZE_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_MAX_SIZE
+    local.AS_MAX_SIZE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_MAX_SIZE
   )
 
   as_min_service = lookup(
-  local.AS_MIN_SERVICE_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_MIN_SERVICE
+    local.AS_MIN_SERVICE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_MIN_SERVICE
   )
 
   as_max_batch_size = lookup(
-  local.AS_MAX_BATCH_SIZE_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_MAX_BATCH_SIZE
+    local.AS_MAX_BATCH_SIZE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_MAX_BATCH_SIZE
   )
 
   as_cron_scale_down = lookup(
-  local.AS_CRON_SCALE_DOWN_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_CRON_SCALE_DOWN
+    local.AS_CRON_SCALE_DOWN_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_CRON_SCALE_DOWN
   )
 
   as_cron_scale_up = lookup(
-  local.AS_CRON_SCALE_UP_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_CRON_SCALE_UP
+    local.AS_CRON_SCALE_UP_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_CRON_SCALE_UP
   )
 
   health_check_grace_period = lookup(
-  local.AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD
+    local.AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD
   )
 
   as_policy_target_value = lookup(
-  local.AS_POLICY_TARGET_VALUE_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_POLICY_TARGET_VALUE
+    local.AS_POLICY_TARGET_VALUE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_POLICY_TARGET_VALUE
   )
 
   as_scale_in_on_weekends = lookup(
-  local.AS_SCALE_IN_ON_WEEKENDS_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_SCALE_IN_ON_WEEKENDS
+    local.AS_SCALE_IN_ON_WEEKENDS_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_SCALE_IN_ON_WEEKENDS
   )
 
   instance_size = lookup(
-  local.INSTANCE_SIZE_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_INSTANCE_SIZE
+    local.INSTANCE_SIZE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_INSTANCE_SIZE
   )
 
   xgemail_size_data_gb = lookup(
-  local.XGEMAIL_SIZE_DATA_GB_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_XGEMAIL_SIZE_DATA_GB
+    local.XGEMAIL_SIZE_DATA_GB_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_XGEMAIL_SIZE_DATA_GB
   )
 
   sxl_dbl = lookup(
-  local.SXL_DBL_BY_POP,
-  local.input_param_account_name,
-  lookup(
-  local.SXL_DBL_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_SXL_DBL
-  )
+    local.SXL_DBL_BY_POP,
+    local.input_param_account_name,
+    lookup(
+      local.SXL_DBL_BY_ENVIRONMENT,
+      local.input_param_deployment_environment,
+      local.DEFAULT_SXL_DBL
+    )
   )
 
   sxl_rbl = lookup(
-  local.SXL_RBL_BY_POP,
-  local.input_param_account_name,
-  lookup(
-  local.SXL_RBL_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_SXL_RBL
-  )
+    local.SXL_RBL_BY_POP,
+    local.input_param_account_name,
+    lookup(
+      local.SXL_RBL_BY_ENVIRONMENT,
+      local.input_param_deployment_environment,
+      local.DEFAULT_SXL_RBL
+    )
   )
 }
 
@@ -246,9 +246,6 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
   template_body = file("${path.module}/templates/as_risky_delivery_template.json")
   parameters = {
     AccountName                     = local.input_param_account_name
-    AlarmScalingEnabled             = local.alarm_scaling_enabled
-    AlarmScaleInThreshold           = local.alarm_scale_in_threshold
-    AlarmScaleOutThreshold          = local.alarm_scale_out_threshold
     AlarmTopicArn                   = local.input_param_alarm_topic_arn
     AmiId                           = data.aws_ami.ami.id
     AutoScalingInstanceRoleArn      = local.input_param_autoscaling_role_arn
