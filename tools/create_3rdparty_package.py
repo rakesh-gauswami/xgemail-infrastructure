@@ -626,7 +626,7 @@ class JDKPackageFileCreator(PackageFileCreator):
 
     def _set_version(self, version):
         """
-        Parse an Oracle JDK version string like 1.7.0_71-b14 or 1.8.0_312-b07.
+        Parse an Oracle JDK version string like 1.7.0_71-b14 or 1.8.0_311-b11.
         """
 
         m = re.match(r'^1\.(\d+)\.0_(\d+)-b(\d+)$', version)

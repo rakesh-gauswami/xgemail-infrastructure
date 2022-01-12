@@ -17,8 +17,8 @@ java_home = node[:java][:home]
 version = node[:java][:version]
 
 if version == 8
-    url = 'https://openjdk-sources.osci.io/openjdk8/openjdk8u312-ga.tar.xz'
-    file_name = 'jdk1.8.0_312'
+    url = 'http://download.oracle.com/otn-pub/java/jdk/8u131-b11/d54c1d3a095b4ff2b6607d096fa80163/jdk-8u131-linux-x64.tar.gz'
+    file_name = 'jdk1.8.0_131'
 else 
     url = 'http://download.oracle.com/otn-pub/java/jdk/7u67-b01/jdk-7u67-linux-x64.tar.gz'
     file_name = 'jdk1.7.0_67' 
