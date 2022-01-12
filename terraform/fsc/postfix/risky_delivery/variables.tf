@@ -1,8 +1,3 @@
-variable "ami_branch" {
-  type        = string
-  description = "AMI Bitbucket branch"
-}
-
 variable "build_branch" {
   type        = string
   description = "Bitbucket Branch"
@@ -11,6 +6,81 @@ variable "build_branch" {
 variable "build_number" {
   type        = string
   description = "Build Number"
+}
+
+variable "build_tag" {
+  type        = string
+  description = "Build Tag"
+}
+
+variable "build_url" {
+  type        = string
+  description = "Build URL"
+}
+
+variable "outbound_submit_bucket" {
+  type        = string
+  description = "outbound_submit_bucket"
+}
+
+variable "firehose_msg_history_v2_stream_name" {
+  type        = string
+  description = "firehose_msg_history_v2_stream_name"
+}
+
+variable "risky_delivery_sqs_queue_name" {
+  type        = string
+  description = "risky_delivery_sqs_queue_name"
+}
+
+variable "risky_delivery_sqs_queue_url" {
+  type        = string
+  description = "risky_delivery_sqs_queue_url"
+}
+
+variable "message_history_bucket" {
+  type        = string
+  description = "msg_history_bucket"
+}
+
+variable "message_history_ms_bucket" {
+  type        = string
+  description = "msg_history_ms_bucket"
+}
+
+variable "message_history_dynamodb_table_name" {
+  type        = string
+  description = "msg_history_dynamodb_table_name"
+}
+
+variable "message_history_sqs_queue" {
+  type        = string
+  description = "msg_history_sqs_queue"
+}
+
+variable "msg_history_status_sns_topic" {
+  type        = string
+  description = "msg_history_status_sns_topic"
+}
+
+variable "notifier_request_sqs_queue" {
+  type        = string
+  description = "notifier_request_sqs_queue"
+}
+
+variable "policy_bucket" {
+  type        = string
+  description = "policy_bucket"
+}
+
+variable "station_vpc_id" {
+  type        = string
+  description = "station_vpc_id"
+}
+
+variable "station_name" {
+  type        = string
+  description = "station_name"
 }
 
 variable "tag_origin" {
