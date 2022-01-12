@@ -760,6 +760,37 @@ template 'fluentd-match-msg-delivery' do
   }
 end
 
+#  - Start Order: 60
+template 'fluentd-match-smtp-log' do
+  path "#{CONF_DIR}/60-match-smtp-log.conf"
+  source 'fluentd-match-smtp-log.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :application_name => NODE_TYPE,
+    :region => REGION
+  )
+  only_if {
+     NODE_TYPE == 'customer-delivery' ||
+     NODE_TYPE == 'xdelivery' ||
+     NODE_TYPE == 'internet-delivery' ||
+     NODE_TYPE == 'internet-xdelivery' ||
+     NODE_TYPE == 'mf-inbound-delivery' ||
+     NODE_TYPE == 'mf-outbound-delivery' ||
+     NODE_TYPE == 'mf-inbound-xdelivery' ||
+     NODE_TYPE == 'mf-outbound-xdelivery' ||
+     NODE_TYPE == 'risky-delivery' ||
+     NODE_TYPE == 'risky-xdelivery' ||
+     NODE_TYPE == 'warmup-delivery' ||
+     NODE_TYPE == 'warmup-xdelivery' ||
+     NODE_TYPE == 'beta-delivery' ||
+     NODE_TYPE == 'beta-xdelivery' ||
+     NODE_TYPE == 'delta-delivery' ||
+     NODE_TYPE == 'delta-xdelivery'
+  }
+end
+
 #  Start Order: 70
 #  Remove this when we shift completely to SQS type match
 template 'fluentd-filter-msg-delivery' do
@@ -883,6 +914,36 @@ template 'fluentd-filter-transform-sqs-msg' do
   }
 end
 
+# Start Order: 77
+template 'fluentd-filter-transform-sqs-smtp-log' do
+  path "#{CONF_DIR}/77-filter-transform-sqs-smtp-log.conf"
+  source 'fluentd-filter-transform-sqs-smtp-log.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+      :main_dir => MAIN_DIR
+  )
+  only_if {
+    NODE_TYPE == 'customer-delivery' ||
+    NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'internet-delivery' ||
+    NODE_TYPE == 'internet-xdelivery' ||
+    NODE_TYPE == 'mf-inbound-delivery' ||
+    NODE_TYPE == 'mf-outbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery' ||
+    NODE_TYPE == 'risky-delivery' ||
+    NODE_TYPE == 'risky-xdelivery' ||
+    NODE_TYPE == 'warmup-delivery' ||
+    NODE_TYPE == 'warmup-xdelivery'||
+    NODE_TYPE == 'beta-delivery' ||
+    NODE_TYPE == 'beta-xdelivery' ||
+    NODE_TYPE == 'delta-delivery' ||
+    NODE_TYPE == 'delta-xdelivery'
+  }
+end
+
 # Start Order: 78
 template 'fluentd-filter-transform-msg-history-v2' do
   path "#{CONF_DIR}/78-filter-transform-msg-history-v2.conf"
@@ -960,6 +1021,38 @@ template 'fluentd-match-sqs-msg-delivery' do
       :region => REGION,
       :sqs_delivery_delay => SQS_DELIVERY_DELAY,
       :delivery_status_queue => DELIVERY_STATUS_SQS
+  )
+  only_if {
+    NODE_TYPE == 'customer-delivery' ||
+    NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'internet-delivery' ||
+    NODE_TYPE == 'internet-xdelivery' ||
+    NODE_TYPE == 'mf-inbound-delivery' ||
+    NODE_TYPE == 'mf-outbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery' ||
+    NODE_TYPE == 'risky-delivery' ||
+    NODE_TYPE == 'risky-xdelivery' ||
+    NODE_TYPE == 'warmup-delivery' ||
+    NODE_TYPE == 'warmup-xdelivery' ||
+    NODE_TYPE == 'beta-delivery' ||
+    NODE_TYPE == 'beta-xdelivery' ||
+    NODE_TYPE == 'delta-delivery' ||
+    NODE_TYPE == 'delta-xdelivery'
+  }
+end
+
+# Start Order: 97
+template 'fluentd-match-sqs-smtp-log' do
+  path "#{CONF_DIR}/97-match-sqs-smtp-log.conf"
+  source 'fluentd-match-sqs-smtp-log.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+      :region => REGION,
+      :sqs_delivery_delay => SQS_DELIVERY_DELAY,
+      :smtp_log_queue => SMTP_LOG_SQS
   )
   only_if {
     NODE_TYPE == 'customer-delivery' ||
