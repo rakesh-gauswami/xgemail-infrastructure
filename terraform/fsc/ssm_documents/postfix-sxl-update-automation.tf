@@ -1,10 +1,6 @@
 # vim: autoindent expandtab shiftwidth=2 filetype=terraform
-resource "aws_ssm_document" "postfix_sxl_update_automation" {
-  name          = "postfix-sxl-update-automation"
-  document_type = "Automation"
-
-  content = <<DOC
-  {
+locals {
+  postfix_sxl_update_automation_ssm_document = {
     "schemaVersion": "0.3",
     "assumeRole": "${aws_iam_role.postfix_sxl_update_automation_role.arn}",
     "description": "Update Postfix configuration on an EC2 instance in an AutoScaling Group.",
@@ -81,7 +77,13 @@ resource "aws_ssm_document" "postfix_sxl_update_automation" {
       }
     ]
   }
-DOC
+}
+
+resource "aws_ssm_document" "postfix_sxl_update_automation" {
+  name          = "postfix-sxl-update-automation"
+  document_type = "Automation"
+
+  content = jsonencode(local.postfix_sxl_update_automation_ssm_document)
 }
 
 # ----------------------------------------------------

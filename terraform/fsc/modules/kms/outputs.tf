@@ -1,3 +1,6 @@
+output "key_alias_name" {
+  value = aws_kms_alias.alias.name
+}
 
 output "key_alias_arn" {
   value = aws_kms_alias.alias.arn

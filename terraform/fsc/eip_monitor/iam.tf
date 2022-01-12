@@ -5,9 +5,9 @@ data "aws_iam_policy_document" "eip_monitor_lambda_trust_policy" {
     actions = [
       "sts:AssumeRole"
     ]
-    effect  = "Allow"
+    effect = "Allow"
     principals {
-      type        = "Service"
+      type = "Service"
       identifiers = [
         "lambda.amazonaws.com"
       ]
@@ -16,7 +16,7 @@ data "aws_iam_policy_document" "eip_monitor_lambda_trust_policy" {
 }
 
 resource "aws_iam_role" "eip_monitor_lambda_role" {
-  name = "eip-monitor-lambda-role"
+  name               = "eip-monitor-lambda-role"
   assume_role_policy = data.aws_iam_policy_document.eip_monitor_lambda_trust_policy.json
 }
 

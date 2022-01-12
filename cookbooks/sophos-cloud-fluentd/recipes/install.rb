@@ -143,6 +143,7 @@ if ACCOUNT != 'sandbox'
   execute 'install td-agent fluent-plugin-kinesis' do
     user 'root'
     command <<-EOH
+      td-agent-gem install google-protobuf -v 3.19.1
       td-agent-gem install fluent-plugin-kinesis -v 3.1.0
     EOH
   end

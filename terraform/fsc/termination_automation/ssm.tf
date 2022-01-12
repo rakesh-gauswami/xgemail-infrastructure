@@ -1,11 +1,6 @@
 # vim: autoindent expandtab shiftwidth=2 filetype=terraform
-
-resource "aws_ssm_document" "termination_automation" {
-  name          = "termination-automation"
-  document_type = "Automation"
-
-  content = <<DOC
-  {
+locals {
+  ssm_document = {
     "schemaVersion": "0.3",
     "assumeRole": "${aws_iam_role.termination_automation_role.arn}",
     "description": "Safe shutdown of an EC2 instance",
@@ -198,5 +193,11 @@ resource "aws_ssm_document" "termination_automation" {
       "getInstanceDeleteOnTermination.DeleteOnTermination"
     ]
   }
-DOC
+}
+
+resource "aws_ssm_document" "termination_automation" {
+  name          = "termination-automation"
+  document_type = "Automation"
+
+  content = jsonencode(local.ssm_document)
 }
