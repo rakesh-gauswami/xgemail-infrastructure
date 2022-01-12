@@ -109,10 +109,14 @@ yum_package 'amazon-ssm-agent' do
   action :upgrade
 end
 
-# Packages required by postfix 2.4.1.2:
+# Packages required by postfix 3.6.2.1-1:
 
 yum_package 'libuuid' do
   action :upgrade
+end
+
+yum_package 'openssl11' do
+  action :install
 end
 
 SOPHOS_BIN_DIR = '/opt/sophos/bin'
