@@ -115,7 +115,7 @@ else
   end
 end
 
-if NODE_TYPE == 'xdelivery' || NODE_TYPE == 'mf-inbound-xdelivery'
+if NODE_TYPE == 'xdelivery' || NODE_TYPE == 'customer-xdelivery' || NODE_TYPE == 'mf-inbound-xdelivery'
   MANAGED_SERVICES_IN_START_ORDER = [
       'postfix'
   ]

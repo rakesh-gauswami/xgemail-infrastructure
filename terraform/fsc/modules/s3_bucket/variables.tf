@@ -1,6 +1,6 @@
-variable "bucket_logical_name" {
+variable "bucket_name" {
   type        = string
-  description = "Name prefix without PoP account number.  Will be used in SSM parameter store"
+  description = "Name name with PoP account number.  Will be used in SSM parameter store"
 }
 
 variable "enable_versioning" {

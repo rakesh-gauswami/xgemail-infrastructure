@@ -22,6 +22,7 @@ INSTANCE_NAME = INSTANCE_DATA[:instance_name]
 raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 
 ACCOUNT               = node['sophos_cloud']['context']
+ACCOUNT_NAME          = node['sophos_cloud']['account_name']
 LOCAL_CERT_PATH       = node['sophos_cloud']['local_cert_path']
 REGION                = node['sophos_cloud']['region']
 CONNECTIONS_BUCKET    = node['sophos_cloud']['connections']
@@ -38,13 +39,15 @@ MAIL_PIC_API_AUTH = node['xgemail']['mail_pic_api_auth']
 PACKAGE_DIR = "#{XGEMAIL_FILES_DIR}/internet-submit-recipient-cron"
 CRON_SCRIPT = 'internet.submit.recipient.updater.py'
 CRON_SCRIPT_PATH = "#{PACKAGE_DIR}/#{CRON_SCRIPT}"
-CRON_SCRIPT_S3_RECIPIENT_READER = 's3recipientreader.py'
-CRON_SCRIPT_S3_RECIPIENT_READER_PATH = "#{PACKAGE_DIR}/#{CRON_SCRIPT_S3_RECIPIENT_READER}"
 
 if ACCOUNT == 'sandbox'
   XGEMAIL_PIC_FQDN = 'mail-service:8080'
 else
-  XGEMAIL_PIC_FQDN = "mail-#{STATION_VPC_NAME.downcase}-#{REGION}.#{ACCOUNT}.hydra.sophos.com"
+  if ACCOUNT_NAME == 'legacy'
+    XGEMAIL_PIC_FQDN = "mail-#{STATION_VPC_NAME.downcase}-#{REGION}.#{ACCOUNT}.hydra.sophos.com"
+  else
+    XGEMAIL_PIC_FQDN = "mail.#{node['sophos_cloud']['parent_account_name']}.ctr.sophos.com"
+  end
 end
 
 directory XGEMAIL_FILES_DIR do
@@ -86,27 +89,9 @@ template CRON_SCRIPT_PATH do
   notifies :run, "execute[#{CRON_SCRIPT_PATH}]", :immediately
 end
 
-cookbook_file "#{CRON_SCRIPT_S3_RECIPIENT_READER_PATH}" do
-  source "#{CRON_SCRIPT_S3_RECIPIENT_READER}"
-  mode '0750'
-  owner 'root'
-  group 'root'
-end
 
 cron "#{INSTANCE_NAME}-recipient-cron" do
   minute "3-59/#{CRON_MINUTE_FREQUENCY}"
   user 'root'
   command "source /etc/profile && timeout #{CRON_JOB_TIMEOUT} flock --nb /var/lock/#{CRON_SCRIPT}.lock -c '#{CRON_SCRIPT_PATH}' >/dev/null 2>&1"
-end
-
-cron "#{INSTANCE_NAME}-recipient-cron-s3" do
-  minute "3-59/#{CRON_MINUTE_FREQUENCY}"
-  user 'root'
-  command "source /etc/profile && timeout #{CRON_JOB_TIMEOUT} flock --nb /var/lock/#{CRON_SCRIPT_S3_RECIPIENT_READER}.lock -c '#{CRON_SCRIPT_S3_RECIPIENT_READER_PATH} --env #{ACCOUNT} --region #{REGION}' >/dev/null 2>&1"
-end
-
-execute 'execute s3-recipient-reader' do
-  command "#{CRON_SCRIPT_S3_RECIPIENT_READER_PATH} --env #{ACCOUNT} --region #{REGION}"
-  user 'root'
-  action :run
 end

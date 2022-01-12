@@ -10,6 +10,6 @@ module "kms_key" {
   }
 
   alias         = local.ssm_root_path
-  description   = "S3 bucket encryption key for <${var.bucket_logical_name}> bucket"
+  description   = "S3 bucket encryption key for <${var.bucket_name}> bucket"
   ssm_root_path = local.ssm_root_path
 }

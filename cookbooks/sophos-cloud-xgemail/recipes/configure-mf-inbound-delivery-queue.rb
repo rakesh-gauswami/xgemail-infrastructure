@@ -11,6 +11,7 @@
 
 NODE_TYPE = node['xgemail']['cluster_type']
 ACCOUNT   =  node['sophos_cloud']['environment']
+ACCOUNT_NAME = node['sophos_cloud']['account_name']
 
 if NODE_TYPE != 'mf-inbound-delivery'
   return
@@ -37,7 +38,11 @@ raise "Unsupported node type [#{NODE_TYPE}]" if XDELIVERY_INSTANCE_DATA.nil?
 
 SMTP_PORT = XDELIVERY_INSTANCE_DATA[:port]
 
-SMTP_FALLBACK_RELAY = "mf-inbound-xdelivery-cloudemail-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com:#{SMTP_PORT}"
+if ACCOUNT_NAME == 'legacy'
+  SMTP_FALLBACK_RELAY = "mf-inbound-xdelivery-cloudemail-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com:#{SMTP_PORT}"
+else
+  SMTP_FALLBACK_RELAY = "mf-inbound-xdelivery.#{ACCOUNT_NAME}.ctr.sophos.com:#{SMTP_PORT}"
+end
 
 # Run an instance of the smtp process that enforces TLS encryption
 [
