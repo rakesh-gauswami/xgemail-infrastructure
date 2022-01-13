@@ -10,19 +10,26 @@
 #
 # This script is responsible for communicating with AWS.
 
+import os
 import boto3
 import json
 from botocore.exceptions import ClientError
 
+if os.environ.get('STATION_PROFILE') is None:
+    aws_profile =  os.environ.get('STATION_PROFILE')
+else:
+    aws_profile = None
 
 class AwsHandler(object):
-    def __init__(self, aws_region):
+    def __init__(self, aws_region, aws_profile=None):
         self.aws_region = aws_region
+        self.aws_profile = aws_profile
         if aws_region != 'local':
-            self.s3_client = boto3.client("s3", region_name=aws_region)
-            self.sqs_client = boto3.client("sqs", region_name=aws_region)
-            self.sns_client = boto3.client("sns", region_name=aws_region)
-            self.firehose_client = boto3.client('firehose', region_name=aws_region)
+            self.session = boto3.session.Session(profile_name=aws_profile, region_name=aws_region)
+            self.s3_client = self.session.client("s3")
+            self.sqs_client = self.session.client("sqs")
+            self.sns_client = self.session.client("sns")
+            self.firehose_client = self.session.client('firehose')
         else:
             self.s3_client  = boto3.client("s3", region_name='us-east-1', aws_access_key_id='', aws_secret_access_key='', endpoint_url='http://localstack:4572')
             self.sqs_client = boto3.client("sqs", region_name='us-east-1', aws_access_key_id='', aws_secret_access_key='', endpoint_url='http://localstack:4576')
