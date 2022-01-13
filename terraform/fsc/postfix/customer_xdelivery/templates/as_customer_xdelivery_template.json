@@ -184,6 +184,11 @@
       "Type": "String",
       "Default": "-1"
     },
+    "StationAccountRoleArn": {
+      "Description": "Arn of the Station Account Role",
+      "Type": "String",
+      "Default": "none"
+    },
     "StationVpcId" : {
       "Description" : "Cloud Station VPC id ",
       "Type" : "String",
@@ -487,6 +492,7 @@
                       "    \"parent_account_name\"            : \"{{parent_account_name}}\",\n",
                       "    \"region\"                         : \"{{region}}\",\n",
                       "    \"sdb_region\"                     : \"{{sdb_region}}\",\n",
+                      "    \"station_account_role_arn\"               : \"{{station_account_role_arn}}\",\n",
                       "    \"vpc_id\"                         : \"{{vpc_id}}\",\n",
                       "    \"vpc_name\"                       : \"{{vpc_name}}\"\n",
                       "  },\n",
@@ -542,6 +548,7 @@
                   "parent_account_name":                      { "Ref": "ParentAccountName" },
                   "region":                                   { "Ref": "AWS::Region" },
                   "sdb_region":                               { "Ref": "SdbRegion" },
+                  "station_account_role_arn":                       { "Ref": "StationAccountRoleArn" },
                   "station_vpc_id":                           { "Ref": "StationVpcId" },
                   "stack":                                    { "Ref": "AWS::StackName" },
                   "station_vpc_name":                         { "Ref": "StationVpcName" },
