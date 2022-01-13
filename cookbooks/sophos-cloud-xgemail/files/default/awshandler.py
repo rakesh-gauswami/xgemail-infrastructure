@@ -16,9 +16,9 @@ import json
 from botocore.exceptions import ClientError
 
 if os.environ.get('STATION_PROFILE') is None:
-    aws_profile =  os.environ.get('STATION_PROFILE')
-else:
     aws_profile = None
+else:
+    aws_profile = os.environ.get('STATION_PROFILE')
 
 class AwsHandler(object):
     def __init__(self, aws_region, aws_profile=None):

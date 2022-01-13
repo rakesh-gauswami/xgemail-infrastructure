@@ -57,9 +57,10 @@ else
     variables(
       :aws_region => node['sophos_cloud']['region'],
       :station_vpc_name => node['xgemail']['station_vpc_name'],
-      :cross_account_role => node['xgemail']['station_account_role_arn']
+      :cross_account_role => node['sophos_cloud']['station_account_role_arn']
     )
   end
+  ENV['STATION_PROFILE'] = node['xgemail']['station_vpc_name']
 end
 
 POSTFIX_DEFAULT_PROCESS_LIMIT = node["xgemail"]["postfix_default_process_limit"]
