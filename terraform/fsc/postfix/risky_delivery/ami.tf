@@ -10,9 +10,7 @@ data "aws_ami" "ami" {
 
   filter {
     name   = "name"
-# using develop for testing since ami build of feature branch failing
-#    values = ["hmr-core-${var.build_branch}-xgemail-*"]
-     values = ["hmr-core-develop-xgemail-*"]
+    values = ["hmr-core-${var.build_branch}-xgemail-*"]
   }
 
   filter {
