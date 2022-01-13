@@ -1,0 +1,8 @@
+[default]
+s3 =
+    signature_version = s3v4
+
+[profile <%= @station_vpc_name %>]
+role_arn = <%= @cross_account_role %>
+credential_source = Ec2InstanceMetadata
+region = <%= @aws_region %>

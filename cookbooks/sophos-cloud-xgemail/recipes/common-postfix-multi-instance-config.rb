@@ -47,6 +47,19 @@ if ACCOUNT_NAME == 'legacy'
   INSTANCE_HOST_NAME = get_hostname(NODE_TYPE)
 else
   INSTANCE_HOST_NAME = get_fsc_hostname(NODE_TYPE)
+
+  template 'aws config' do
+    path '/root/.aws/config'
+    source 'aws_config.erb'
+    mode '0600'
+    owner 'root'
+    group 'root'
+    variables(
+      :aws_region => node['sophos_cloud']['region'],
+      :station_vpc_name => node['xgemail']['station_vpc_name'],
+      :cross_account_role => node['xgemail']['station_account_role_arn']
+    )
+  end
 end
 
 POSTFIX_DEFAULT_PROCESS_LIMIT = node["xgemail"]["postfix_default_process_limit"]

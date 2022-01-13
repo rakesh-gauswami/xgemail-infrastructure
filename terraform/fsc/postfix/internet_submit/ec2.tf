@@ -336,6 +336,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     ScaleOutOnWeekdaysCron           = local.as_cron_scale_out
     SecurityGroups                   = aws_security_group.security_group_ec2.id
     SpotPrice                        = "-1"
+    StationAccountRoleArn            = var.station_account_role_arn
     StationVpcId                     = var.station_vpc_id
     StationVpcName                   = "station"
     Vpc                              = local.input_param_vpc_id
