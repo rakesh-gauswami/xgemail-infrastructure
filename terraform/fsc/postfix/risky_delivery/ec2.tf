@@ -40,7 +40,7 @@ locals {
     inf  = 1
     dev  = 1
     qa   = 1
-    prod = 1
+    prod = 3
   }
 
   AS_MAX_SIZE_BY_ENVIRONMENT = {
@@ -79,10 +79,10 @@ locals {
   }
 
   AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT = {
-    inf  = 2400
-    dev  = 2400
-    qa   = 2400
-    prod = 2400
+    inf  = 600
+    dev  = 600
+    qa   = 600
+    prod = 600
   }
 
   AS_POLICY_TARGET_VALUE_BY_ENVIRONMENT = {
@@ -96,7 +96,7 @@ locals {
     inf  = false
     dev  = false
     qa   = false
-    prod = false
+    prod = true
   }
 
   INSTANCE_SIZE_BY_ENVIRONMENT = {
