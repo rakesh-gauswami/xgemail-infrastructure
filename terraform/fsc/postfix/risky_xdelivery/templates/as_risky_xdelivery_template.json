@@ -26,8 +26,8 @@
     ]
   },
   "Parameters": {
-    "AesDecryptionKey": {
-      "Description": "Decryption key for encrypted buckets",
+    "AccountName": {
+      "Description": "The AWS Account name.",
       "Type": "String"
     },
     "AmiId": {
@@ -66,10 +66,14 @@
       "Description": "(Develop, CPLAT-XXXX, etc...)",
       "Type": "String"
     },
-    "BuildVersion": {
+    "BuildTag": {
       "Description": "Version of the application from Bamboo",
       "Type": "String",
       "Default": "1.0"
+    },
+    "BuildUrl": {
+      "Description": "Link to Build from Jenkins",
+      "Type": "String"
     },
     "BundleVersion": {
       "Description": "Version of the AMI bundle",
@@ -100,9 +104,9 @@
       "Type": "String",
       "Default": "t3.large"
     },
-    "KeyName": {
-      "Description": "Key pair used to SSH to the instance",
-      "Type": "AWS::EC2::KeyPair::KeyName"
+    "KmsKeyAlias": {
+      "Description": "KMS Key Alias for Ebs Volume",
+      "Type": "String"
     },
     "LifecycleHookLaunching": {
       "Description": "Name of the Launching Lifecycle Hook.",
@@ -126,8 +130,7 @@
     },
     "S3CookbookRepositoryURL": {
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
-      "Type": "String",
-      "Default": "//cloud-applications/develop/cookbooks.enc"
+      "Type": "String"
     },
     "ScaleDownOnWeekends": {
       "Description": "Enable scale down to zero on Saturday at midnight and scale back on Monday morning. (Times are UTC, NON PROD/QA ENVIRONMENT ONLY)",
@@ -138,6 +141,10 @@
         "false"
       ]
     },
+    "SdbRegion": {
+      "Description": "The region where the volume tracker simple db exists.",
+      "Type": "String"
+    },
     "SecurityGroups": {
       "Description": "The security group that allows communication within the VPC.",
       "Type": "List<AWS::EC2::SecurityGroup::Id>"
@@ -147,6 +154,11 @@
       "Type": "String",
       "Default": "-1"
     },
+    "StationAccountRoleArn": {
+      "Description": "Arn of the Station Account Role",
+      "Type": "String",
+      "Default": "none"
+    },
     "StationVpcId" : {
       "Description" : "Cloud Station VPC id ",
       "Type" : "String",
@@ -155,7 +167,7 @@
     "StationVpcName": {
       "Description": "Name of the CloudStation VPC",
       "Type": "String",
-      "Default": "CloudStation"
+      "Default": "station"
     },
     "UpdateInterval": {
       "Description": "The interval in minutes cfn-hup watches stack modifications.",
@@ -180,7 +192,7 @@
     "VpcName": {
       "Description": "Name of an existing VPC",
       "Type": "String",
-      "Default": "CloudStation"
+      "Default": "email"
     },
     "VpcZoneIdentifiers": {
       "Description": "The list of Public Subnets for your VPC",
@@ -233,6 +245,10 @@
       "ap-southeast-2": {
         "Name": "Asia Pacific (Sydney)",
         "PrivateDns": "ap-southeast-2.compute.internal"
+      },
+      "ca-central-1": {
+        "Name": "Canada (Central)",
+        "PrivateDns": "ca-central-1.compute.internal"
       },
       "eu-central-1": {
         "Name": "EU (Frankfurt)",
@@ -381,7 +397,7 @@
           },
           {
             "Key": "BuildResultKey",
-            "Value": { "Ref": "BuildVersion" },
+            "Value": { "Ref": "BuildTag" },
             "PropagateAtLaunch": "true"
           },
           {
@@ -462,17 +478,20 @@
                     "", [
                       "{\n",
                       "  \"sophos_cloud\" : {\n",
+                      "    \"account_name\"                   : \"{{account_name}}\",\n",
                       "    \"application_name\"               : \"{{cluster}}\",\n",
                       "    \"application_type\"               : \"xgemail\",\n",
                       "    \"availability_zone\"              : \"{{availability_zone}}\",\n",
-                      "    \"connections\"                    : \"cloud-{{environment}}-connections\",\n",
-                      "    \"configs\"                        : \"cloud-{{environment}}-configs\",\n",
+                      "    \"connections\"                    : \"cloud-{{account_name}}-connections\",\n",
+                      "    \"configs\"                        : \"cloud-{{account_name}}-configs\",\n",
                       "    \"context\"                        : \"{{environment}}\",\n",
                       "    \"environment\"                    : \"{{environment}}\",\n",
                       "    \"branch\"                         : \"{{branch}}\",\n",
                       "    \"cluster\"                        : \"{{cluster}}\",\n",
                       "    \"client-endpoint\"                : \"{{region}}\",\n",
                       "    \"region\"                         : \"{{region}}\",\n",
+                      "    \"sdb_region\"                     : \"{{sdb_region}}\",\n",
+                      "    \"station_account_role_arn\"       : \"{{station_account_role_arn}}\",\n",
                       "    \"vpc_id\"                         : \"{{vpc_id}}\",\n",
                       "    \"vpc_name\"                       : \"{{vpc_name}}\"\n",
                       "  },\n",
@@ -483,6 +502,7 @@
                       "    \"should_install_mx\"              : \"true\"\n",
                       "  },\n",
                       "  \"volumes\" : {\n",
+                      "    \"kms_alias\"                      : \"{{kms_alias}}\",\n",
                       "    \"volume_min_iops\"                : \"{{volume_min_iops}}\",\n",
                       "    \"volume_min_size_data_gb\"        : \"{{volume_min_size_data_gb}}\",\n",
                       "    \"volume_mount_point\"             : \"storage\",\n",
@@ -508,6 +528,7 @@
                   ]
                 },
                 "context": {
+                  "account_name":                             { "Ref": "AccountName"},
                   "availability_zone":                        { "Fn::Select": [
                     { "Ref": "AvailabilityZoneIndex" },
                     { "Ref": "AvailabilityZones" }
@@ -516,6 +537,7 @@
                   "cluster":                                  { "Ref": "XgemailServiceType" },
                   "cluster_type":                             { "Ref": "XgemailServiceType" },
                   "environment":                              { "Ref": "Environment" },
+                  "kms_alias":                                { "Ref": "KmsKeyAlias" },
                   "msg_history_status_queue_url":             { "Ref": "XgemailMsgHistoryStatusQueueUrl" },
                   "msg_history_delivery_status_sns_arn":      { "Ref": "XgemailMsgHistoryStatusSnsArn"},
                   "msg_history_v2_bucket_name":               { "Ref": "MsgHistoryV2BucketName" },
@@ -523,6 +545,8 @@
                   "msg_history_v2_stream_name":               { "Ref": "MsgHistoryV2StreamName" },
                   "msg_notifier_queue_url":                   { "Ref": "XgemailNotifierQueueUrl" },
                   "region":                                   { "Ref": "AWS::Region" },
+                  "sdb_region":                               { "Ref": "SdbRegion" },
+                  "station_account_role_arn":                 { "Ref": "StationAccountRoleArn" },
                   "station_vpc_id":                           { "Ref": "StationVpcId" },
                   "stack":                                    { "Ref": "AWS::StackName" },
                   "station_vpc_name":                         { "Ref": "StationVpcName" },
@@ -567,7 +591,6 @@
                 "command": {
                   "Fn::Join": [ "; ",[
                     "rm -f /var/chef/chef-repo/nodes/*.*",
-                    "rm -f /var/chef/chef-repo/cookbooks.enc",
                     "rm -f /var/chef/chef-repo/cookbooks.tar.gz",
                     "rm -rf /var/chef/chef-repo/cookbooks"
                   ]]
@@ -577,7 +600,7 @@
                 "command": {
                   "Fn::Join": [
                     "",
-                    [ "aws s3 cp s3:", { "Ref": "S3CookbookRepositoryURL" }, " /var/chef/chef-repo/cookbooks.enc" ]
+                    [ "aws s3 cp s3:", { "Ref": "S3CookbookRepositoryURL" }, " /var/chef/chef-repo/cookbooks.tar.gz" ]
                   ]
                 },
                 "cwd": "/var/chef",
@@ -585,19 +608,7 @@
                   "HOME": "/var/chef"
                 }
               },
-              "02_decrypt_cookbook": {
-                "command": {
-                  "Fn::Join": [
-                    "",
-                    [ "openssl enc -aes-256-cbc -d -in /var/chef/chef-repo/cookbooks.enc -out /var/chef/chef-repo/cookbooks.tar.gz -pass pass:", { "Ref": "AesDecryptionKey" } ]
-                  ]
-                },
-                "cwd": "/var/chef/chef-repo",
-                "env": {
-                  "HOME": "/var/chef"
-                }
-              },
-              "03_unpack_cookbook": {
+              "02_unpack_cookbook": {
                 "command": "tar xvf /var/chef/chef-repo/cookbooks.tar.gz",
                 "cwd": "/var/chef/chef-repo"
               }
@@ -706,12 +717,10 @@
                       "recipe[sophos-cloud-mount::default],",
                       "recipe[sophos-cloud-mount::install],",
                       "recipe[sophos-cloud-ntpd::default],",
-                      "recipe[sophos-cloud-snmpd::configure],",
                       "recipe[sophos-cloud-xgemail::deploy_certs],",
                       "recipe[sophos-cloud-xgemail::setup_xgemail_utils_structure],",
                       "recipe[sophos-cloud-fluentd::configure],",
                       "recipe[sophos-cloud-xgemail::configure-extended-delivery-queue],",
-                      "recipe[sophos-cloud-xgemail::configure_postfix_snmp_logicmonitor],",
                       "recipe[sophos-cloud-xgemail::configure_monit],",
                       "recipe[sophos-cloud-xgemail::run_install_cleanup]",
                       "\""
@@ -764,13 +773,13 @@
                       "export AWS_AMI_ID='", { "Ref" : "AmiId" }, "'\n",
                       "export AWS_APPLICATION='", { "Ref": "XgemailServiceType" }, "'\n",
                       "export AWS_BRANCH='", { "Ref" : "Branch" }, "'\n",
-                      "export AWS_BUILD_RESULT_KEY='", { "Ref" : "BuildVersion" }, "'\n",
+                      "export AWS_BUILD_TAG='", { "Ref" : "BuildTag" }, "'\n",
                       "export AWS_BUNDLE_VERSION='", { "Ref" : "BundleVersion" }, "'\n",
                       "export AWS_INSTANCE_ID=$(curl -f http://169.254.169.254/latest/meta-data/instance-id)\n",
                       "export AWS_REGION='", { "Ref" : "AWS::Region" }, "'\n",
                       "export AWS_VPC_NAME='", { "Ref": "VpcName"} , "'\n",
-                      "for i in $(aws ec2 describe-volumes --region $AWS_REGION --filters Name=attachment.instance-id,Values=$AWS_INSTANCE_ID --query Volumes[*].VolumeId --output text); do aws ec2 create-tags --resources $i --tags Key=Application,Value=\"$AWS_APPLICATION\" Key=BaseAmi,Value=\"$AWS_AMI_ID\" Key=BuildResultKey,Value=\"$AWS_BUILD_RESULT_KEY\" Key=BundleVersion,Value=\"$AWS_BUNDLE_VERSION\" Key=BusinessUnit,Value=MSG Key=Name,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION:$AWS_BRANCH:$AWS_BUNDLE_VERSION\" Key=OwnerEmail,Value=sophosmailops@sophos.com Key=Project,Value=xgemail Key=ServiceCategory,Value=\"$AWS_VPC_NAME:email\" Key=ServiceType,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION\" --region $AWS_REGION; done \n",
-                      "for i in $(aws ec2 describe-network-interfaces --region $AWS_REGION --filters Name=attachment.instance-id,Values=$AWS_INSTANCE_ID --query NetworkInterfaces[0].NetworkInterfaceId --output text); do aws ec2 create-tags --resources $i --tags Key=Application,Value=\"$AWS_APPLICATION\" Key=BaseAmi,Value=\"$AWS_AMI_ID\" Key=BuildResultKey,Value=\"$AWS_BUILD_RESULT_KEY\" Key=BundleVersion,Value=\"$AWS_BUNDLE_VERSION\" Key=BusinessUnit,Value=MSG Key=Name,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION:$AWS_BRANCH:$AWS_BUNDLE_VERSION\" Key=OwnerEmail,Value=sophosmailops@sophos.com Key=Project,Value=xgemail Key=ServiceCategory,Value=\"$AWS_VPC_NAME:email\" Key=ServiceType,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION\" --region $AWS_REGION; done \n"
+                      "for i in $(aws ec2 describe-volumes --region $AWS_REGION --filters Name=attachment.instance-id,Values=$AWS_INSTANCE_ID --query Volumes[*].VolumeId --output text); do aws ec2 create-tags --resources $i --tags Key=Application,Value=\"$AWS_APPLICATION\" Key=BaseAmi,Value=\"$AWS_AMI_ID\" Key=BuildTag,Value=\"$AWS_BUILD_TAG\" Key=BundleVersion,Value=\"$AWS_BUNDLE_VERSION\" Key=BusinessUnit,Value=MSG Key=Name,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION:$AWS_BRANCH:$AWS_BUNDLE_VERSION\" Key=OwnerEmail,Value=sophosmailops@sophos.com Key=Project,Value=xgemail Key=ServiceCategory,Value=\"$AWS_VPC_NAME:email\" Key=ServiceType,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION\" --region $AWS_REGION; done \n",
+                      "for i in $(aws ec2 describe-network-interfaces --region $AWS_REGION --filters Name=attachment.instance-id,Values=$AWS_INSTANCE_ID --query NetworkInterfaces[0].NetworkInterfaceId --output text); do aws ec2 create-tags --resources $i --tags Key=Application,Value=\"$AWS_APPLICATION\" Key=BaseAmi,Value=\"$AWS_AMI_ID\" Key=BuildTag,Value=\"$AWS_BUILD_TAG\" Key=BundleVersion,Value=\"$AWS_BUNDLE_VERSION\" Key=BusinessUnit,Value=MSG Key=Name,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION:$AWS_BRANCH:$AWS_BUNDLE_VERSION\" Key=OwnerEmail,Value=sophosmailops@sophos.com Key=Project,Value=xgemail Key=ServiceCategory,Value=\"$AWS_VPC_NAME:email\" Key=ServiceType,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION\" --region $AWS_REGION; done \n"
                     ]
                   ]
                 },
@@ -792,7 +801,6 @@
                     "", [
                       "knife node run_list set -z `knife node list -z` \"",
                       "recipe[sophos-cloud-ntpd::default],",
-                      "recipe[sophos-cloud-snmpd::update]",
                       "\""
                     ]
                   ]
@@ -849,9 +857,6 @@
           "InstanceType": {
             "Ref": "InstanceType"
           },
-          "KeyName": {
-            "Ref": "KeyName"
-          },
           "InstanceMarketOptions": {
             "Fn::If": [
               "UseSpotPrice",
@@ -897,7 +902,7 @@
                   "    # Upload logs before reporting failure to avoid race against termination.\n",
                   "    ACCOUNT='",
                   {
-                    "Ref": "Environment"
+                    "Ref": "AccountName"
                   },
                   "'\n",
                   "    BRANCH='",
@@ -976,9 +981,9 @@
       "Description": "Branch we are using so we know for things like ansible",
       "Value": { "Ref": "Branch" }
     },
-    "BuildVersion": {
+    "BuildTag": {
       "Description": "Version of the application from Bamboo",
-      "Value": { "Ref": "BuildVersion" }
+      "Value": { "Ref": "BuildTag" }
     },
     "LaunchTemplate": {
       "Description": "Auto Scaling Launch Template Name.",
