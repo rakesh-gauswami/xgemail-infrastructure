@@ -83,6 +83,11 @@ variable "scan_events_sns_topic" {
   description = "scan_events_sns_topic"
 }
 
+variable "station_account_role_arn" {
+  type        = string
+  description = "station_account_role_arn"
+}
+
 variable "station_vpc_id" {
   type        = string
   description = "station_vpc_id"
