@@ -1091,26 +1091,12 @@
                   "  # Disable errexit so errors below don't prevent the call to cfn-signal.\n",
                   "  set +o errexit\n",
                   "\n",
-                  "  ACCOUNT='",
-                  {
-                    "Ref": "AccountName"
-                  },
-                  "'\n",
-                  "  BRANCH='",
-                  {
-                    "Ref": "Branch"
-                  },
-                  "'\n",
-                  "  DEPLOYMENT_NAME='",
-                  {
-                    "Ref": "XgemailServiceType"
-                  },
-                  "'\n",
-                  "  ENVIRONMENT='",
-                  {
-                    "Ref": "Environment"
-                  },
-                  "'\n",                  "  # Set LastHealth tag so cloud list command shows progress.\n",
+                  "  ACCOUNT='", { "Ref": "AccountName" }, "'\n",
+                  "  BRANCH='", { "Ref": "Branch" }, "'\n",
+                  "  ENVIRONMENT='", { "Ref": "Environment" }, "'\n",
+                  "  DEPLOYMENT_NAME='", { "Ref": "XgemailServiceType" }, "'\n",
+                  "  export STATION_PROFILE='", { "Ref": "StationVpcName" }, "'\n",
+                  "  # Set LastHealth tag so cloud list command shows progress.\n",
                   "  if [ \"$exit_code\" == 0 ]; then\n",
                   "    /opt/sophos/bin/set_instance_tag.py LastHealth UserDataSuccess\n",
                   "    if [ \"$ENVIRONMENT\" == \"prod\" ]; then\n",

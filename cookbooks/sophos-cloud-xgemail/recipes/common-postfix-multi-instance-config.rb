@@ -60,13 +60,6 @@ else
       :cross_account_role => node['sophos_cloud']['station_account_role_arn']
     )
   end
-
-  bash 'set_env_var' do
-    code <<-EOH
-      echo export STATION_PROFILE="#{node['xgemail']['station_vpc_name']}" >> /etc/profile
-      source /etc/profile
-    EOH
-  end
 end
 
 POSTFIX_DEFAULT_PROCESS_LIMIT = node["xgemail"]["postfix_default_process_limit"]
