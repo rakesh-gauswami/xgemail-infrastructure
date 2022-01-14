@@ -48,6 +48,13 @@ if ACCOUNT_NAME == 'legacy'
 else
   INSTANCE_HOST_NAME = get_fsc_hostname(NODE_TYPE)
 
+  bash 'set_env_var' do
+    code <<-EOH
+      echo export STATION_PROFILE="#{node['xgemail']['station_vpc_name']}" >> /etc/profile
+      source /etc/profile
+    EOH
+  end
+
   template 'aws config' do
     path '/root/.aws/config'
     source 'aws_config.erb'
