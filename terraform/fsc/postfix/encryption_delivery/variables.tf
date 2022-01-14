@@ -53,6 +53,11 @@ variable "firehose_msg_history_v2_stream_name" {
   description = "firehose_msg_history_v2_stream_name"
 }
 
+variable "station_account_role_arn" {
+  type        = string
+  description = "station_account_role_arn"
+}
+
 variable "station_vpc_id" {
   type        = string
   description = "station_vpc_id"

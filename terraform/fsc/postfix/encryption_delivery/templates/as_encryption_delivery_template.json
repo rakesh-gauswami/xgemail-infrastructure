@@ -171,6 +171,11 @@
       "Type": "String",
       "Default": "-1"
     },
+    "StationAccountRoleArn": {
+      "Description": "Arn of the Station Account Role",
+      "Type": "String",
+      "Default": "none"
+    },
     "StationVpcId" : {
       "Description" : "Cloud Station VPC id ",
       "Type" : "String",
@@ -603,6 +608,7 @@
                     "    \"cluster\"                                : \"{{cluster}}\",\n",
                     "    \"client-endpoint\"                        : \"{{region}}\",\n",
                     "    \"region\"                                 : \"{{region}}\",\n",
+                    "    \"station_account_role_arn\"               : \"{{station_account_role_arn}}\",\n",
                     "    \"vpc_id\"                                 : \"{{vpc_id}}\",\n",
                     "    \"vpc_name\"                               : \"{{vpc_name}}\"\n",
                     "  },\n",
@@ -642,6 +648,7 @@
                   "msg_history_v2_stream_name":                     { "Ref": "MsgHistoryV2StreamName" },
                   "region":                                         { "Ref": "AWS::Region" },
                   "stack":                                          { "Ref": "AWS::StackName" },
+                  "station_account_role_arn":                       { "Ref": "StationAccountRoleArn" },
                   "station_vpc_id":                                 { "Ref": "StationVpcId" },
                   "station_vpc_name":                               { "Ref": "StationVpcName" },
                   "sxl_dbl":                                        { "Ref": "XgemailSxlDbl" },
