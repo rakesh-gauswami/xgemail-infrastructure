@@ -917,7 +917,7 @@ end
 # Start Order: 77
 template 'fluentd-filter-transform-sqs-smtp-log' do
   path "#{CONF_DIR}/77-filter-transform-sqs-smtp-log.conf"
-  source 'fluentd-filter-transform-sqs-smtp-log.erb'
+  source 'fluentd-filter-transform-sqs-smtp-log.conf.erb'
   mode '0644'
   owner 'root'
   group 'root'
