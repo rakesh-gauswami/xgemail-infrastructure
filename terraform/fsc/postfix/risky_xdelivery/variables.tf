@@ -38,21 +38,15 @@ variable "message_history_dynamodb_table_name" {
   description = "msg_history_dynamodb_table_name"
 }
 
-variable "message_history_status_queue" {
+variable "message_history_status_sqs_queue" {
   type        = string
-  description = "message_history_status_queue"
+  description = "message_history_status_sqs_queue"
 }
 
-variable "message_history_status_topic" {
+variable "message_history_status_sns_topic" {
   type        = string
-  description = "message_history_status_topic"
+  description = "message_history_status_sns_topic"
 }
-
-variable "message_history_sqs_queue" {
-  type        = string
-  description = "msg_history_sqs_queue"
-}
-
 
 variable "notifier_request_sqs_queue" {
   type        = string
