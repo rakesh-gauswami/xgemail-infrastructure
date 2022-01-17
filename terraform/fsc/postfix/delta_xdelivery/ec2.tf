@@ -80,33 +80,33 @@ locals {
     }
   }
   as_min_size = lookup(
-  local.AS_MIN_SIZE_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_MIN_SIZE
+    local.AS_MIN_SIZE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_MIN_SIZE
   )
 
   zone_index = lookup(
-  local.ZONE_INDEX_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_ZONE_INDEX
+    local.ZONE_INDEX_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_ZONE_INDEX
   )
 
   health_check_grace_period = lookup(
-  local.AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD
+    local.AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD
   )
 
   instance_size = lookup(
-  local.INSTANCE_SIZE_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_INSTANCE_SIZE
+    local.INSTANCE_SIZE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_INSTANCE_SIZE
   )
 
   xgemail_size_data_gb = lookup(
-  local.XGEMAIL_SIZE_DATA_GB_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_XGEMAIL_SIZE_DATA_GB
+    local.XGEMAIL_SIZE_DATA_GB_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_XGEMAIL_SIZE_DATA_GB
   )
 }
 
