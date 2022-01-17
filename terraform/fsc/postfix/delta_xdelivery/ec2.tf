@@ -153,6 +153,8 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     VpcName                         = local.input_param_vpc_name
     VpcZoneIdentifiers              = join(",", local.input_param_public_subnet_ids)
     XgemailMinSizeDataGB            = local.xgemail_size_data_gb
+    XgemailMsgHistoryStatusQueueUrl = var.message_history_status_sqs_queue
+    XgemailMsgHistoryStatusSnsArn   = var.message_history_status_sns_topic
     XgemailNotifierQueueUrl         = var.notifier_request_sqs_queue
     XgemailPolicyBucketName         = var.policy_bucket
     XgemailServiceType              = local.instance_type
