@@ -22,6 +22,10 @@ resource "aws_elb" "elb" {
   idle_timeout                = 60
   connection_draining         = true
   connection_draining_timeout = 150
+
+  tags = {
+    Application = "${local.instance_type}"
+  }
 }
 
 resource "aws_proxy_protocol_policy" "smtp" {
