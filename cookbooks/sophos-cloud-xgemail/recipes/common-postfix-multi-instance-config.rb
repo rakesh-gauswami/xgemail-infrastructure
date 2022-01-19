@@ -51,6 +51,7 @@ else
   bash 'set_env_var' do
     code <<-EOH
       echo export STATION_PROFILE="#{node['xgemail']['station_vpc_name']}" >> /etc/profile
+      echo export STATION_ACCOUNT_ROLE_ARN="#{node['sophos_cloud']['station_account_role_arn']}" >> /etc/profile
       source /etc/profile
     EOH
   end
