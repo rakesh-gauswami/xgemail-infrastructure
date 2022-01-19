@@ -22,6 +22,7 @@ CUSTOMER_SUBMIT_STORAGE_ROOT=s3://<%= @customer_submit_bucket %>
 INTERNET_SUBMIT_STORAGE_ROOT=s3://no-access
 
 ACCOUNT=<%= @account %>
+station.account.role.arn=<%= @station_account_role_arn %>
 
 # Need to explicitly ignore redis auto configuration
 spring.data.redis.repositories.enabled=false
@@ -44,5 +45,3 @@ MSG_HISTORY_EVENT_PROCESSOR_POOL_SIZE=<%= @msg_history_event_processor_pool_size
 MSG_HISTORY_EVENT_PROCESSOR_PORT=<%= @msg_history_event_processor_port %>
 
 MSG_HISTORY_BUCKET_ROOT=s3://<%= @msg_history_v2_bucket_name %>
-
-station.account.role.arn=<%= @station_account_role_arn %>
