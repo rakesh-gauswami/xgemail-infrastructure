@@ -15,17 +15,11 @@ import boto3
 import json
 from botocore.exceptions import ClientError
 
-if os.environ.get('STATION_PROFILE') is None:
-    aws_profile = None
-else:
-    aws_profile = os.environ.get('STATION_PROFILE')
-
 class AwsHandler(object):
-    def __init__(self, aws_region, aws_profile=None):
+    def __init__(self, aws_region):
         self.aws_region = aws_region
-        self.aws_profile = aws_profile
         if aws_region != 'local':
-            self.session = boto3.session.Session(profile_name=aws_profile, region_name=aws_region)
+            <%= @setup_boto_client %>
             self.s3_client = self.session.client("s3")
             self.sqs_client = self.session.client("sqs")
             self.sns_client = self.session.client("sns")
