@@ -53,11 +53,6 @@ variable "message_history_dynamodb_table_name" {
   description = "msg_history_dynamodb_table_name"
 }
 
-variable "message_history_sqs_queue" {
-  type        = string
-  description = "msg_history_sqs_queue"
-}
-
 variable "msg_history_status_sns_topic" {
   type        = string
   description = "msg_history_status_sns_topic"
