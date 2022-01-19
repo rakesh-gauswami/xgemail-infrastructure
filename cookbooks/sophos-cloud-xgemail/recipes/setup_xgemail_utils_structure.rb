@@ -9,6 +9,8 @@
 # Common configuration for python scripts used by different xgemail components
 # like submit, delivery and policy etc.
 
+ACCOUNT_NAME = node['sophos_cloud']['account_name']
+
 NODE_TYPE = node['xgemail']['cluster_type']
 
 XGEMAIL_FILES_DIR = node['xgemail']['xgemail_files_dir']
@@ -40,9 +42,37 @@ file "#{XGEMAIL_UTILS_DIR}/__init__.py" do
   group 'root'
 end
 
+if ACCOUNT_NAME == 'legacy'
+  SETUP_BOTO_CLIENT = "self.session = boto3.session.Session(region_name=aws_region)"
+else
+  SETUP_BOTO_CLIENT =
+    <<-HEREDOC
+self.sts_client = self.boto3.client('sts').assume_role(
+              RoleArn="#{node['sophos_cloud']['station_account_role_arn']}",
+              RoleSessionName='station'
+            )
+            self.session = boto3.session.Session(
+              aws_access_key_id=self.sts_client["Credentials"]["AccessKeyId"],
+              aws_secret_access_key=self.sts_client["Credentials"]["SecretAccessKey"],
+              aws_session_token=self.sts_client["Credentials"]["SessionToken"],
+              aws_region=aws_region
+            )
+    HEREDOC
+end
+
+template 'awshandler' do
+  path "#{XGEMAIL_UTILS_DIR}/awshandler.py"
+  source 'awshandler.py.erb'
+  mode '0600'
+  owner 'root'
+  group 'root'
+  variables(
+    :setup_boto_client => SETUP_BOTO_CLIENT
+  )
+end
+
 [
     'allowblockimporter.py',
-    'awshandler.py',
     'configformatter.py',
     'diskutils.py',
     'formatterutils.py',
