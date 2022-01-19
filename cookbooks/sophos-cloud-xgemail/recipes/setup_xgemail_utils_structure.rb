@@ -48,15 +48,15 @@ else
   SETUP_BOTO_CLIENT =
     <<-HEREDOC
 self.sts_client = self.boto3.client('sts').assume_role(
-  RoleArn="#{node['sophos_cloud']['station_account_role_arn']}",
-  RoleSessionName='station'
-)
-self.session = boto3.session.Session(
-  aws_access_key_id=self.sts_client["Credentials"]["AccessKeyId"],
-  aws_secret_access_key=self.sts_client["Credentials"]["SecretAccessKey"],
-  aws_session_token=self.sts_client["Credentials"]["SessionToken"],
-  aws_region=aws_region
-)
+              RoleArn="#{node['sophos_cloud']['station_account_role_arn']}",
+              RoleSessionName='station'
+            )
+            self.session = boto3.session.Session(
+              aws_access_key_id=self.sts_client["Credentials"]["AccessKeyId"],
+              aws_secret_access_key=self.sts_client["Credentials"]["SecretAccessKey"],
+              aws_session_token=self.sts_client["Credentials"]["SessionToken"],
+              aws_region=aws_region
+            )
     HEREDOC
 end
 
