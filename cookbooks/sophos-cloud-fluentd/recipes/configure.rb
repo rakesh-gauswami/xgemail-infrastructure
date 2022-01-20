@@ -21,7 +21,7 @@ REGION                           = node['sophos_cloud']['region']
 MSG_STATS_REJECT_SNS_TOPIC       = node['xgemail']['msg_statistics_rejection_sns_topic']
 DELIVERY_STATUS_SQS              = node['xgemail']['msg_history_delivery_status_sqs']
 DELIVERY_STATUS_SNS_TOPIC        = node['xgemail']['msg_history_status_sns_topic']
-SMTP_LOG_SQS                     = node['xgemail']['smtp_log_sqs']
+TELEMETRY_LOG_SQS                = node['xgemail']['telemetry_log_sqs']
 SERVER_IP                        = node['ipaddress']
 MAILLOG_FILTER_PATTERNS          = "(\\.#{REGION}\\.compute\\.internal|:\\sdisconnect\\sfrom\\s|\\swarning:\\shostname\\s|:\\sremoved\\s|table\\shash:|sm-msp-queue|:\\sstatistics:\\s)"
 JILTER_FILTER_PATTERNS           = "(com\\.launchdarkly\\.client\\.LDClient|com\\.launchdarkly\\.client\\.LDUser)"
@@ -761,29 +761,15 @@ template 'fluentd-match-msg-delivery' do
 end
 
 #  - Start Order: 60
-template 'fluentd-match-smtp-log' do
-  path "#{CONF_DIR}/60-match-smtp-log.conf"
-  source 'fluentd-match-smtp-log.conf.erb'
+template 'fluentd-match-telemetry-log' do
+  path "#{CONF_DIR}/60-match-telemetry-log.conf"
+  source 'fluentd-match-telemetry-log.conf.erb'
   mode '0644'
   owner 'root'
   group 'root'
   only_if {
-     NODE_TYPE == 'customer-delivery' ||
-     NODE_TYPE == 'xdelivery' ||
-     NODE_TYPE == 'internet-delivery' ||
-     NODE_TYPE == 'internet-xdelivery' ||
-     NODE_TYPE == 'mf-inbound-delivery' ||
-     NODE_TYPE == 'mf-outbound-delivery' ||
-     NODE_TYPE == 'mf-inbound-xdelivery' ||
-     NODE_TYPE == 'mf-outbound-xdelivery' ||
-     NODE_TYPE == 'risky-delivery' ||
-     NODE_TYPE == 'risky-xdelivery' ||
-     NODE_TYPE == 'warmup-delivery' ||
-     NODE_TYPE == 'warmup-xdelivery' ||
-     NODE_TYPE == 'beta-delivery' ||
-     NODE_TYPE == 'beta-xdelivery' ||
-     NODE_TYPE == 'delta-delivery' ||
-     NODE_TYPE == 'delta-xdelivery'
+     NODE_TYPE == 'internet-submit' ||
+     NODE_TYPE == 'mf-inbound-submit'
   }
 end
 
@@ -844,6 +830,19 @@ template 'fluentd-filter-transform' do
     :instance_id => INSTANCE_ID,
     :region => REGION
   )
+end
+
+# Start Order: 70
+template 'fluentd-filter-transform-sqs-telemetry-log' do
+  path "#{CONF_DIR}/70-filter-transform-sqs-telemetry-log.conf"
+  source 'fluentd-filter-transform-sqs-telemetry-log.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  only_if {
+      NODE_TYPE == 'internet-submit' ||
+      NODE_TYPE == 'mf-inbound-submit'
+    }
 end
 
 # Start Order: 75
@@ -909,40 +908,6 @@ template 'fluentd-filter-transform-sqs-msg' do
     NODE_TYPE == 'delta-xdelivery'
   }
 end
-
-# Start Order: 77
-template 'fluentd-filter-transform-sqs-smtp-log' do
-  path "#{CONF_DIR}/77-filter-transform-sqs-smtp-log.conf"
-  source 'fluentd-filter-transform-sqs-smtp-log.conf.erb'
-  mode '0644'
-  owner 'root'
-  group 'root'
-  only_if {
-      NODE_TYPE == 'internet-submit' ||
-      NODE_TYPE == 'customer-submit' ||
-      NODE_TYPE == 'encryption-submit' ||
-      NODE_TYPE == 'customer-delivery' ||
-      NODE_TYPE == 'internet-delivery' ||
-      NODE_TYPE == 'mf-inbound-submit' ||
-      NODE_TYPE == 'mf-outbound-submit' ||
-      NODE_TYPE == 'mf-inbound-delivery' ||
-      NODE_TYPE == 'mf-outbound-delivery' ||
-      NODE_TYPE == 'mf-inbound-xdelivery' ||
-      NODE_TYPE == 'mf-outbound-xdelivery' ||
-      NODE_TYPE == 'risky-delivery' ||
-      NODE_TYPE == 'warmup-delivery' ||
-      NODE_TYPE == 'beta-delivery' ||
-      NODE_TYPE == 'delta-delivery' ||
-      NODE_TYPE == 'xdelivery' ||
-      NODE_TYPE == 'internet-xdelivery' ||
-      NODE_TYPE == 'risky-xdelivery' ||
-      NODE_TYPE == 'warmup-xdelivery' ||
-      NODE_TYPE == 'beta-xdelivery' ||
-      NODE_TYPE == 'delta-xdelivery' ||
-      NODE_TYPE == 'encryption-delivery'
-    }
-end
-
 # Start Order: 78
 template 'fluentd-filter-transform-msg-history-v2' do
   path "#{CONF_DIR}/78-filter-transform-msg-history-v2.conf"
@@ -1040,44 +1005,6 @@ template 'fluentd-match-sqs-msg-delivery' do
     NODE_TYPE == 'delta-xdelivery'
   }
 end
-
-# Start Order: 97
-template 'fluentd-match-sqs-smtp-log' do
-  path "#{CONF_DIR}/97-match-sqs-smtp-log.conf"
-  source 'fluentd-match-sqs-smtp-log.conf.erb'
-  mode '0644'
-  owner 'root'
-  group 'root'
-  variables(
-      :region => REGION,
-      :smtp_log_queue => SMTP_LOG_SQS
-  )
-  only_if {
-      NODE_TYPE == 'internet-submit' ||
-      NODE_TYPE == 'customer-submit' ||
-      NODE_TYPE == 'encryption-submit' ||
-      NODE_TYPE == 'customer-delivery' ||
-      NODE_TYPE == 'internet-delivery' ||
-      NODE_TYPE == 'mf-inbound-submit' ||
-      NODE_TYPE == 'mf-outbound-submit' ||
-      NODE_TYPE == 'mf-inbound-delivery' ||
-      NODE_TYPE == 'mf-outbound-delivery' ||
-      NODE_TYPE == 'mf-inbound-xdelivery' ||
-      NODE_TYPE == 'mf-outbound-xdelivery' ||
-      NODE_TYPE == 'risky-delivery' ||
-      NODE_TYPE == 'warmup-delivery' ||
-      NODE_TYPE == 'beta-delivery' ||
-      NODE_TYPE == 'delta-delivery' ||
-      NODE_TYPE == 'xdelivery' ||
-      NODE_TYPE == 'internet-xdelivery' ||
-      NODE_TYPE == 'risky-xdelivery' ||
-      NODE_TYPE == 'warmup-xdelivery' ||
-      NODE_TYPE == 'beta-xdelivery' ||
-      NODE_TYPE == 'delta-xdelivery' ||
-      NODE_TYPE == 'encryption-delivery'
-    }
-end
-
 # Start Order: 98 - MHv2
 template 'fluentd-match-http-output-msg-history-v2' do
   path "#{CONF_DIR}/98-match-http-output-msg-history-v2.conf"
@@ -1133,6 +1060,22 @@ template 'fluentd-match-sns-msg-stats-reject' do
     NODE_TYPE == 'internet-submit' ||
     NODE_TYPE == 'mf-inbound-submit'
   }
+end
+
+template 'fluentd-match-sqs-telemetry-log' do
+  path "#{CONF_DIR}/99-match-sqs-telemetry-log.conf"
+  source 'fluentd-match-sqs-telemetry-log.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+      :region => REGION,
+      :telemetry_log_queue => TELEMETRY_LOG_SQS
+  )
+  only_if {
+      NODE_TYPE == 'internet-submit' ||
+      NODE_TYPE == 'mf-inbound-submit'
+    }
 end
 
 cookbook_file 'maillog grok patterns' do
