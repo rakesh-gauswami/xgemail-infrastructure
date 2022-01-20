@@ -58,6 +58,7 @@ MSG_HISTORY_V2_BUCKET_NAME = node['xgemail']['msg_history_v2_bucket_name']
 MSG_HISTORY_V2_DYNAMODB_TABLE_NAME = node['xgemail']['msg_history_v2_dynamodb_table_name']
 
 AWS_REGION = node['sophos_cloud']['region']
+STATION_ACCOUNT_ROLE_ARN = node['sophos_cloud']['station_account_role_arn']
 SERVICE_USER = node['xgemail']['jilter_user']
 POLICY_BUCKET_NAME   = node['xgemail']['xgemail_policy_bucket_name']
 ACTIVE_PROFILE = node['xgemail']['xgemail_active_profile']
@@ -145,7 +146,8 @@ template 'xgemail.jilter.properties' do
       :msg_history_event_processor_port => MSG_HISTORY_EVENT_PROCESSOR_PORT,
       :policy_bucket => POLICY_BUCKET_NAME,
       :region => REGION,
-      :station_vpc_id => STATION_VPC_ID
+      :station_vpc_id => STATION_VPC_ID,
+      :station_account_role_arn => STATION_ACCOUNT_ROLE_ARN
   )
 end
 
