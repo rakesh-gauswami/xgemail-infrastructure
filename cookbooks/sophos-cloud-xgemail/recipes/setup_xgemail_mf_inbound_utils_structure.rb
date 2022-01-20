@@ -47,7 +47,7 @@ if ACCOUNT_NAME == 'legacy'
 else
   SETUP_BOTO_CLIENT =
     <<-HEREDOC
-self.sts_client = self.boto3.client('sts').assume_role(
+self.sts_client = boto3.client('sts').assume_role(
               RoleArn="#{node['sophos_cloud']['station_account_role_arn']}",
               RoleSessionName='station'
             )
@@ -56,8 +56,7 @@ self.sts_client = self.boto3.client('sts').assume_role(
               aws_secret_access_key=self.sts_client["Credentials"]["SecretAccessKey"],
               aws_session_token=self.sts_client["Credentials"]["SessionToken"],
               aws_region=aws_region
-            )
-    HEREDOC
+            )HEREDOC
 end
 
 template 'awshandler' do
