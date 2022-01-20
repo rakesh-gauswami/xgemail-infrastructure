@@ -23,9 +23,9 @@ variable "outbound_submit_bucket" {
   description = "outbound_submit_bucket"
 }
 
-variable "firehose_msg_history_v2_stream_name" {
+variable "message_history_v2_stream_name" {
   type        = string
-  description = "firehose_msg_history_v2_stream_name"
+  description = "message_history_v2_stream_name"
 }
 
 variable "internet_delivery_sqs_queue_name" {
@@ -71,6 +71,11 @@ variable "notifier_request_sqs_queue" {
 variable "policy_bucket" {
   type        = string
   description = "policy_bucket"
+}
+
+variable "station_account_role_arn" {
+  type        = string
+  description = "station_account_role_arn"
 }
 
 variable "station_vpc_id" {

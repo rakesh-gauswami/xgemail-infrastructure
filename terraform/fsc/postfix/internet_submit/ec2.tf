@@ -318,11 +318,11 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     HealthCheckGracePeriod           = local.health_check_grace_period
     InstanceProfile                  = local.input_param_iam_instance_profile_arn
     InstanceType                     = local.instance_size
-    JilterHeloTelemetryStreamName    = var.firehose_jilter_helo_telemetry_stream_name
+    JilterHeloTelemetryStreamName    = var.jilter_helo_telemetry_stream_name
     LifecycleHookTerminating         = local.input_param_lifecycle_hook_terminating
     LoadBalancerName                 = aws_elb.elb.id
     MsgHistoryV2BucketName           = var.message_history_ms_bucket
-    MsgHistoryV2StreamName           = var.firehose_msg_history_v2_stream_name
+    MsgHistoryV2StreamName           = var.message_history_v2_stream_name
     MessageHistoryEventsTopicArn     = var.message_history_events_sns_topic
     ParentAccountName                = local.input_param_parent_account_name
     PolicyTargetValue                = local.as_policy_target_value
@@ -336,6 +336,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     ScaleOutOnWeekdaysCron           = local.as_cron_scale_out
     SecurityGroups                   = aws_security_group.security_group_ec2.id
     SpotPrice                        = "-1"
+    StationAccountRoleArn            = var.station_account_role_arn
     StationVpcId                     = var.station_vpc_id
     StationVpcName                   = "station"
     Vpc                              = local.input_param_vpc_id

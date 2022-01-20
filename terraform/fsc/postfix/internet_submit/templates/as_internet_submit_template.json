@@ -219,6 +219,11 @@
       "Type": "String",
       "Default": "-1"
     },
+    "StationAccountRoleArn": {
+      "Description": "Arn of the Station Account Role",
+      "Type": "String",
+      "Default": "none"
+    },
     "StationVpcId" : {
       "Description" : "Cloud Station VPC id ",
       "Type" : "String",
@@ -809,7 +814,9 @@
                     "    \"branch\"                                 : \"{{branch}}\",\n",
                     "    \"cluster\"                                : \"{{cluster}}\",\n",
                     "    \"client-endpoint\"                        : \"{{region}}\",\n",
+                    "    \"parent_account_name\"                    : \"{{parent_account_name}}\",\n",
                     "    \"region\"                                 : \"{{region}}\",\n",
+                    "    \"station_account_role_arn\"               : \"{{station_account_role_arn}}\",\n",
                     "    \"vpc_id\"                                 : \"{{vpc_id}}\",\n",
                     "    \"vpc_name\"                               : \"{{vpc_name}}\"\n",
                     "  },\n",
@@ -827,7 +834,6 @@
                     "    \"msg_history_queue_url\"                  : \"{{msg_history_queue_url}}\",\n",
                     "    \"msg_history_v2_bucket_name\"             : \"{{msg_history_v2_bucket_name}}\",\n",
                     "    \"msg_history_v2_stream_name\"             : \"{{msg_history_v2_stream_name}}\",\n",
-                    "    \"parent_account_name\"                    : \"{{parent_account_name}}\",\n",
                     "    \"policy_efs_file_system_id\"              : \"{{policy_efs_file_system_id}}\",\n",
                     "    \"station_vpc_id\"                         : \"{{station_vpc_id}}\",\n",
                     "    \"station_vpc_name\"                       : \"{{station_vpc_name}}\",\n",
@@ -864,6 +870,7 @@
                   "policy_efs_file_system_id":                      { "Ref": "XgemailPolicyEfsFileSystemId" },
                   "region":                                         { "Ref": "AWS::Region" },
                   "stack":                                          { "Ref": "AWS::StackName" },
+                  "station_account_role_arn":                       { "Ref": "StationAccountRoleArn" },
                   "station_vpc_id":                                 { "Ref": "StationVpcId" },
                   "station_vpc_name":                               { "Ref": "StationVpcName" },
                   "sxl_dbl":                                        { "Ref": "XgemailSxlDbl" },
