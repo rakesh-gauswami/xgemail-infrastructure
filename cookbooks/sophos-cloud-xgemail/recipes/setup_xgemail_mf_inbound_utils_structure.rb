@@ -55,7 +55,7 @@ self.sts_client = boto3.client('sts').assume_role(
               aws_access_key_id=self.sts_client["Credentials"]["AccessKeyId"],
               aws_secret_access_key=self.sts_client["Credentials"]["SecretAccessKey"],
               aws_session_token=self.sts_client["Credentials"]["SessionToken"],
-              aws_region=aws_region
+              region_name=aws_region
             )
     HEREDOC
 end
