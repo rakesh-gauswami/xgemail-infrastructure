@@ -46,7 +46,7 @@ if ACCOUNT_NAME == 'legacy'
   SETUP_BOTO_CLIENT = "self.session = boto3.session.Session(region_name=aws_region)"
 else
   SETUP_BOTO_CLIENT =
-    <<-HEREDOC
+    <<-HEREDOC.chomp
 self.sts_client = boto3.client('sts').assume_role(
               RoleArn="#{node['sophos_cloud']['station_account_role_arn']}",
               RoleSessionName='station'
