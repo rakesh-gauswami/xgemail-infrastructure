@@ -46,38 +46,6 @@ bash 'edit_etc_hosts' do
   EOH
 end
 
-# Install Oracle JDK
-#bash "Install Oracle JDK" do
-#  user "root"
-#  cwd "/tmp"
-#  code <<-EOH
-#    set -e
-
-#    mkdir -p /usr/lib/tmp /usr/lib/jvm/
-#    aws --region us-west-2 s3 cp s3:#{node['sophos_cloud']['java']}/#{node['sophos_cloud']['jdk_version']}.tar.gz /usr/lib/tmp
-#    tar -xvf /usr/lib/tmp/#{node['sophos_cloud']['jdk_version']}.tar.gz -C /usr/lib/jvm/
-
-#    rm -rf /usr/lib/tmp
-
-#    # Items after keytool are not strictly required but may be helpful for debugging.
-#    for CMD in java javac keytool jar jcmd jdb jhat jinfo jmap jps jstack jstat; do
-#      update-alternatives --install "/usr/bin/${CMD}" "${CMD}" "/usr/lib/jvm/java-#{java_version}-oracle/bin/${CMD}" 20000
-#      chmod a+x "/usr/bin/${CMD}"
-#    done
-#  EOH
-#end
-
-# Uninstall OpenJDK.
-bash 'remove_openjdk' do
-  user 'root'
-  cwd '/tmp'
-  code <<-EOH
-    for p in $(yum list installed | awk '/openjdk/ {print $1}'); do
-      yum remove -y $p
-    done
-  EOH
-end
-
 # Install OpenJDK 8
 yum_package 'java-1.8.0-openjdk-devel' do
   action :install
