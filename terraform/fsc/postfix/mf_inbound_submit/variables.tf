@@ -18,7 +18,7 @@ variable "build_url" {
   description = "Build URL"
 }
 
-variable "mf_inbound_submit_sqs_queue" {
+variable "mf_inbound_submit_sqs_queue_name" {
   type        = string
   description = "mf_inbound_submit_sqs_queue"
 }
@@ -48,9 +48,9 @@ variable "message_history_sqs_queue" {
   description = "msg_history_sqs_queue"
 }
 
-variable "outbound_submit_bucket" {
+variable "mf_inbound_submit_bucket" {
   type        = string
-  description = "outbound_submit_bucket"
+  description = "mf_inbound_submit_bucket"
 }
 
 variable "policy_bucket" {

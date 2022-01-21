@@ -349,7 +349,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     Vpc                               = local.input_param_vpc_id
     VpcZoneIdentifiers                = join(",", local.input_param_public_subnet_ids)
     VpcName                           = local.input_param_vpc_name
-    XgemailBucketName                 = var.outbound_submit_bucket
+    XgemailBucketName                 = var.mf_inbound_submit_bucket
     XgemailMinSizeDataGB              = local.volume_size_gibs
     XgemailMsgHistoryBucketName       = var.message_history_bucket
     XgemailMsgHistoryMsBucketName     = var.message_history_ms_bucket
@@ -357,7 +357,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     XgemailPolicyArn                  = var.relay_control_sns_topic
     XgemailPolicyBucketName           = var.policy_bucket
     XgemailPolicyEfsFileSystemId      = local.input_param_policy_efs_volume_id
-    XgemailQueueUrl                   = var.mf_inbound_submit_sqs_queue
+    XgemailQueueUrl                   = var.mf_inbound_submit_sqs_queue_name
     XgemailScanEventsTopicArn         = var.scan_events_sns_topic
     XgemailServiceType                = local.instance_type
     XgemailSxlDbl                     = local.sxl_dbl
