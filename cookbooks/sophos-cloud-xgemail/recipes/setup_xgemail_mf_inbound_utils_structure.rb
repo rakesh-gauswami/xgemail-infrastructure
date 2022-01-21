@@ -63,7 +63,7 @@ end
 template 'awshandler' do
   path "#{XGEMAIL_UTILS_DIR}/awshandler.py"
   source 'awshandler.py.erb'
-  mode '0600'
+  mode '0644'
   owner 'root'
   group 'root'
   variables(
