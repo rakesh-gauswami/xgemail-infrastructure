@@ -51,16 +51,6 @@ yum_package 'java-1.8.0-openjdk-devel' do
   action :install
 end
 
-# Replace default-java symlink.
-bash 'replace_java_symlink' do
-  user 'root'
-  cwd '/tmp'
-  code <<-EOH
-    rm -rf /usr/lib/jvm/default-java
-    ln -s /usr/lib/jvm/java-#{java_version}-oracle /usr/lib/jvm/default-java
-  EOH
-end
-
 cron 'logrotate_cron' do
   minute '0,15,30,45'
   user 'root'
