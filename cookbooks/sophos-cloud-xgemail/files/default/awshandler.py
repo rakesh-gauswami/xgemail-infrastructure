@@ -14,7 +14,7 @@ import os
 import boto3
 import json
 from uuid import uuid4
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta
 from botocore.exceptions import ClientError
 from botocore.credentials import RefreshableCredentials
 from botocore.session import get_session
@@ -65,7 +65,7 @@ class AwsHandler(object):
         "access_key": session_credentials.get("access_key"),
         "secret_key": session_credentials.get("secret_key"),
         "token": session_credentials.get("token"),
-        "expiry_time": (datetime.now(tz=timezone.utc) + timedelta(seconds=self.session_ttl)).isoformat(),
+        "expiry_time": (datetime.now() + timedelta(seconds=self.session_ttl)).isoformat(),
       }
 
     return credentials
