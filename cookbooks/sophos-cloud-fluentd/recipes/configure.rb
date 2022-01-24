@@ -711,9 +711,9 @@ end
 ### Fluentd Customized Configuration Files ###
 #
 # Only internet-submit  - Start Order: 60
-template 'fluentd-match-msg-stats-reject' do
-  path "#{CONF_DIR}/60-match-msg-stats-reject.conf"
-  source 'fluentd-match-msg-stats-reject.conf.erb'
+template 'fluentd-match-postfix-maillog' do
+  path "#{CONF_DIR}/60-match-postfix-maillog.conf"
+  source 'fluentd-match-postfix-maillog.conf.erb'
   mode '0644'
   owner 'root'
   group 'root'
@@ -757,19 +757,6 @@ template 'fluentd-match-msg-delivery' do
     NODE_TYPE == 'beta-xdelivery' ||
     NODE_TYPE == 'delta-delivery' ||
     NODE_TYPE == 'delta-xdelivery'
-  }
-end
-
-#  - Start Order: 60
-template 'fluentd-match-telemetry-log' do
-  path "#{CONF_DIR}/60-match-telemetry-log.conf"
-  source 'fluentd-match-telemetry-log.conf.erb'
-  mode '0644'
-  owner 'root'
-  group 'root'
-  only_if {
-     NODE_TYPE == 'internet-submit' ||
-     NODE_TYPE == 'mf-inbound-submit'
   }
 end
 
