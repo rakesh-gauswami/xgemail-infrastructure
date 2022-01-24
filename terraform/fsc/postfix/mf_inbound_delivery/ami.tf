@@ -1,4 +1,5 @@
 locals {
+  build_branch = "develop"
   ami_owner_account = 843638552935
   ami_data          = regex("^hmr-core-(?P<branch>[\\S+]+)-(?P<type>[xgemail]+)-(?P<build>[\\d+]+)-(?P<uuid>[\\d+]+)", data.aws_ami.ami.name)
   ami_build         = local.ami_data.build
