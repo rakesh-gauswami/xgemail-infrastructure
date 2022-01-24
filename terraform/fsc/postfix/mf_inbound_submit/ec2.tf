@@ -17,7 +17,7 @@ locals {
   DEFAULT_AS_SCALE_IN_ON_WEEKENDS       = false
   DEFAULT_INSTANCE_SIZE                 = "t3.medium"
   DEFAULT_INSTANCE_COUNT                = 1
-  DEFAULT_VOLUME_SIZE_GIBS              = 40
+  DEFAULT_XGEMAIL_SIZE_DATA_GB          = 40
   DEFAULT_SXL_DBL                       = "uri.vir1.sophosxl.com"
   DEFAULT_SXL_RBL                       = "fur.vir1.sophosxl.com"
 
@@ -65,6 +65,9 @@ locals {
 
   AS_MAX_BATCH_SIZE_BY_ENVIRONMENT = {
     inf  = 1
+    dev  = 1
+    qa   = 3
+    prod = 3
   }
 
   AS_CRON_SCALE_DOWN_BY_ENVIRONMENT = {
@@ -120,7 +123,7 @@ locals {
     inf  = false
     dev  = false
     qa   = false
-    prod = false
+    prod = true
   }
 
   AS_SCALE_IN_ON_WEEKENDS_BY_ENVIRONMENT = {
@@ -137,16 +140,16 @@ locals {
     prod = "m5.2xlarge"
   }
 
-  VOLUME_SIZE_GIBS_BY_ENVIRONMENT = {
-    prod = 300
+  XGEMAIL_SIZE_DATA_GB_BY_ENVIRONMENT = {
     inf  = 40
+    dev  = 40
+    qa   = 70
+    prod = 100
   }
 
-  VOLUME_SIZE_GIBS_BY_POP = {
+  VOLUME_SIZE_GB_BY_POP = {
     # This is a most granular setting, if you need adjustments in particular PoP set it here
-
     stn000cmh = 40
-
   }
 
   SXL_DBL_BY_ENVIRONMENT = {
@@ -273,10 +276,10 @@ locals {
   local.DEFAULT_INSTANCE_SIZE
   )
 
-  volume_size_gibs = lookup(
-  local.VOLUME_SIZE_GIBS_BY_ENVIRONMENT,
+  xgemail_size_data_gb = lookup(
+  local.XGEMAIL_SIZE_DATA_GB_BY_ENVIRONMENT,
   local.input_param_deployment_environment,
-  local.DEFAULT_VOLUME_SIZE_GIBS
+  local.DEFAULT_XGEMAIL_SIZE_DATA_GB
   )
 
   sxl_dbl = lookup(
@@ -303,7 +306,6 @@ locals {
 resource "aws_cloudformation_stack" "cloudformation_stack" {
   name          = local.instance_type
   template_body = file("${path.module}/templates/as_mf_outbound_submit_template.json")
-
   parameters = {
     AccountName                       = local.input_param_account_name
     AlarmScalingEnabled               = local.alarm_scaling_enabled
@@ -324,7 +326,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     DeployMinInstancesInService       = local.as_min_service
     Environment                       = local.input_param_deployment_environment
     HealthCheckGracePeriod            = local.health_check_grace_period
-    InstanceProfile                   = local.input_param_iam_instance_profile_name
+    InstanceProfile                   = local.input_param_iam_instance_profile_arn
     InstanceType                      = local.instance_size
     JilterHeloTelemetryStreamName     = var.jilter_helo_telemetry_stream_name
     LifecycleHookTerminating          = local.input_param_lifecycle_hook_terminating
@@ -332,6 +334,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     MsgHistoryV2BucketName            = var.message_history_ms_bucket
     MsgHistoryV2StreamName            = var.message_history_v2_stream_name
     MessageHistoryEventsTopicArn      = var.message_history_events_sns_topic
+    ParentAccountName                 = local.input_param_parent_account_name
     PolicyTargetValue                 = local.as_policy_target_value
     S3CookbookRepositoryURL           = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/${var.build_number}/cookbooks.tar.gz"
     ScaleInOnWeekends                 = local.as_scale_in_on_weekends
@@ -345,12 +348,12 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     SpotPrice                         = "-1"
     StationAccountRoleArn             = var.station_account_role_arn
     StationVpcId                      = var.station_vpc_id
-    StationVpcName                    = replace(var.station_name, "/-.*/", "")
+    StationVpcName                    = "station"
     Vpc                               = local.input_param_vpc_id
     VpcZoneIdentifiers                = join(",", local.input_param_public_subnet_ids)
-    VpcName                           = local.input_param_vpc_name
+    VpcName                           = "email"
     XgemailBucketName                 = var.mf_inbound_submit_bucket
-    XgemailMinSizeDataGB              = local.volume_size_gibs
+    XgemailMinSizeDataGB              = local.xgemail_size_data_gb
     XgemailMsgHistoryBucketName       = var.message_history_bucket
     XgemailMsgHistoryMsBucketName     = var.message_history_ms_bucket
     XgemailMsgHistoryQueueUrl         = var.message_history_sqs_queue
@@ -364,4 +367,3 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     XgemailSxlRbl                     = local.sxl_rbl
   }
 }
-

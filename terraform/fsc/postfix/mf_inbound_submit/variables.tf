@@ -18,19 +18,28 @@ variable "build_url" {
   description = "Build URL"
 }
 
+variable "mf_inbound_submit_bucket" {
+  type        = string
+  description = "mf_inbound_submit_bucket"
+}
 variable "mf_inbound_submit_sqs_queue_name" {
   type        = string
   description = "mf_inbound_submit_sqs_queue"
 }
 
+variable "scan_events_sns_topic" {
+  type        = string
+  description = "scan_events_sns_topic name"
+}
+
+variable "jilter_helo_telemetry_stream_name" {
+  type        = string
+  description = "jilter_helo_telemetry_stream_name"
+}
+
 variable "message_history_v2_stream_name" {
   type        = string
   description = "message_history_v2_stream_name"
-}
-
-variable "message_history_events_sns_topic" {
-  type        = string
-  description = "msg_history_events_sns_topic"
 }
 
 variable "message_history_bucket" {
@@ -48,9 +57,9 @@ variable "message_history_sqs_queue" {
   description = "msg_history_sqs_queue"
 }
 
-variable "mf_inbound_submit_bucket" {
+variable "message_history_events_sns_topic" {
   type        = string
-  description = "mf_inbound_submit_bucket"
+  description = "message_history_events_sns_topic name"
 }
 
 variable "policy_bucket" {
@@ -61,16 +70,6 @@ variable "policy_bucket" {
 variable "relay_control_sns_topic" {
   type        = string
   description = "relay_control_sns_topic"
-}
-
-variable "scan_events_sns_topic" {
-  type        = string
-  description = "scan_events_sns_topic"
-}
-
-variable "jilter_helo_telemetry_stream_name" {
-  type        = string
-  description = "jilter_helo_telemetry_stream_name"
 }
 
 variable "station_account_role_arn" {
