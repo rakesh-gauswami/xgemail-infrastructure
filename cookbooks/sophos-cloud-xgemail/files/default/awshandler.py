@@ -70,10 +70,10 @@ class AwsHandler(object):
 
     return credentials
 
-  def refreshable_session(self) -> Session:
+  def refreshable_session(self):
     """
-        Get refreshable boto3 session.
-        """
+    Get refreshable boto3 session.
+    """
     # get refreshable credentials
     refreshable_credentials = RefreshableCredentials.create_from_metadata(
       metadata=self.__get_session_credentials(),
