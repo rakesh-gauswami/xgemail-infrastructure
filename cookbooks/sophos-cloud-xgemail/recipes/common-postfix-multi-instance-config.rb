@@ -47,6 +47,13 @@ if ACCOUNT_NAME == 'legacy'
   INSTANCE_HOST_NAME = get_hostname(NODE_TYPE)
 else
   INSTANCE_HOST_NAME = get_fsc_hostname(NODE_TYPE)
+
+  bash 'set_env_var_station_account_role_arn' do
+    code <<-EOH
+      echo export STATION_ACCOUNT_ROLE_ARN="#{node['xgemail']['station_account_role_arn']}" >> /etc/environment
+      source /etc/environment
+    EOH
+    end
 end
 
 POSTFIX_DEFAULT_PROCESS_LIMIT = node["xgemail"]["postfix_default_process_limit"]
