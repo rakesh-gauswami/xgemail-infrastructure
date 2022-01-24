@@ -158,6 +158,11 @@
       "Description" : "Message History firehose stream name",
       "Type": "String"
     },
+    "ParentAccountName" : {
+      "Description" : "FSC Parent Account Name",
+      "Type": "String",
+      "Default": ""
+    },
     "PolicyTargetValue": {
       "Description": "The target value for the metric.",
       "Type": "Number",
@@ -627,7 +632,7 @@
       "Condition": "EnableScaleInOutOnWeekdays",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "DesiredCapacity": {"Ref": "ScheduledASOffHourDesiredCapacity"},
+        "DesiredCapacity": {"Ref": "AutoScalingMinSize"},
         "Recurrence": { "Ref": "ScaleInOnWeekdaysCron" }
       }
     },
@@ -809,6 +814,7 @@
                     "    \"branch\"                                 : \"{{branch}}\",\n",
                     "    \"cluster\"                                : \"{{cluster}}\",\n",
                     "    \"client-endpoint\"                        : \"{{region}}\",\n",
+                    "    \"parent_account_name\"                    : \"{{parent_account_name}}\",\n",
                     "    \"region\"                                 : \"{{region}}\",\n",
                     "    \"station_account_role_arn\"               : \"{{station_account_role_arn}}\",\n",
                     "    \"vpc_id\"                                 : \"{{vpc_id}}\",\n",
@@ -860,6 +866,7 @@
                   "msg_history_queue_url":                          { "Ref": "XgemailMsgHistoryQueueUrl" },
                   "msg_history_v2_bucket_name":                     { "Ref": "MsgHistoryV2BucketName" },
                   "msg_history_v2_stream_name":                     { "Ref": "MsgHistoryV2StreamName" },
+                  "parent_account_name":                            { "Ref": "ParentAccountName" },
                   "policy_efs_file_system_id":                      { "Ref": "XgemailPolicyEfsFileSystemId" },
                   "region":                                         { "Ref": "AWS::Region" },
                   "stack":                                          { "Ref": "AWS::StackName" },
@@ -1123,14 +1130,15 @@
                   "  else\n",
                   "    /opt/sophos/bin/set_instance_tag.py LastHealth UserDataFailure\n",
                   "    # Upload logs before reporting failure to avoid race against termination.\n",
-                  "    /opt/sophos/bin/upload_deployment_logs.py -a ${ACCOUNT} -b ${BRANCH} ${DEPLOYMENT_NAME}\n",
+                  "    /opt/sophos/bin/upload_deployment_logs.py -a ${ACCOUNT} -b ${BRANCH} ${DEPLOYMENT_NAME} -c netstat_tuna.out='netstat -tuna'\n",
                   "  fi\n",
                   "\n",
 
                   "  /opt/aws/bin/cfn-signal -e $exit_code",
                   " --stack ", { "Ref": "AWS::StackName" },
                   " --resource XgemailAutoScalingGroup",
-                  " --region ", { "Ref": "AWS::Region" }, "\n",
+                  " --region ", { "Ref": "AWS::Region" },
+                  "\n",
                   "}\n",
                   "\n",
 
