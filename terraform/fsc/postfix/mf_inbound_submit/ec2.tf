@@ -39,7 +39,7 @@ locals {
     inf  = 50
     dev  = 50
     qa   = 50
-    prod = 500
+    prod = 5000
   }
 
   AS_MIN_SIZE_BY_ENVIRONMENT = {
@@ -308,9 +308,6 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
   template_body = file("${path.module}/templates/as_mf_inbound_submit_template.json")
   parameters = {
     AccountName                       = local.input_param_account_name
-    AlarmScalingEnabled               = local.alarm_scaling_enabled
-    AlarmScaleInThreshold             = local.alarm_scale_in_threshold
-    AlarmScaleOutThreshold            = local.alarm_scale_out_threshold
     AlarmTopicArn                     = local.input_param_alarm_topic_arn
     AmiId                             = data.aws_ami.ami.id
     AutoScalingInstanceRoleArn        = local.input_param_autoscaling_role_arn
