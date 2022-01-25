@@ -24,7 +24,9 @@ class AwsHandler(object):
     def __init__(self, aws_region):
         self.aws_region = aws_region
         self.role_arn = os.environ.get('STATION_ACCOUNT_ROLE_ARN')
-        if self.role_arn != 'none':
+        if self.role_arn == 'none':
+            self.session = boto3.session.Session(region_name=self.aws_region)
+        else:
             if self.session is None:
                 self.session_name = uuid4().hex
                 self.session = Session()
@@ -36,8 +38,6 @@ class AwsHandler(object):
             s.get_config_variable("region")
             s.set_config_variable("region", self.aws_region)
             self.session = Session(botocore_session=s)
-        else:
-            self.session = boto3.session.Session(region_name=self.aws_region)
         self.s3_client = self.session.client("s3")
         self.sqs_client = self.session.client("sqs")
         self.sns_client = self.session.client("sns")
