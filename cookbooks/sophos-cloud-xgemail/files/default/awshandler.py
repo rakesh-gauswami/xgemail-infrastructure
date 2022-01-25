@@ -19,18 +19,16 @@ from botocore.session import get_session
 from boto3 import Session
 from uuid import uuid4
 
-station_account_role_arn = os.environ.get('STATION_ACCOUNT_ROLE_ARN')
-
 
 class AwsHandler(object):
     def __init__(self, aws_region):
         self.aws_region = aws_region
-        if station_account_role_arn == 'none':
+        self.role_arn = os.environ.get('STATION_ACCOUNT_ROLE_ARN')
+        if self.role_arn == 'none':
             self.session = boto3.session.Session(region_name=self.aws_region)
         else:
-            self.role_arn = station_account_role_arn
-            self.session_name = uuid4().hex
             if self.session is None:
+                self.session_name = uuid4().hex
                 self.session = Session()
             self.session_credentials = RefreshableCredentials.create_from_metadata(
                 metadata=self.refresh_session(), refresh_using=self.refresh_session, method="sts-assume-role"
