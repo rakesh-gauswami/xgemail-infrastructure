@@ -24,9 +24,9 @@ station_account_role_arn = os.environ.get('STATION_ACCOUNT_ROLE_ARN')
 
 class AwsHandler(object):
     def __init__(self, aws_region):
-        self.region_name = aws_region
+        self.aws_region = aws_region
         if station_account_role_arn == 'none':
-            self.session = boto3.session.Session(region_name=aws_region)
+            self.session = boto3.session.Session(region_name=self.aws_region)
         else:
             self.role_arn = station_account_role_arn
             self.session_name = uuid4().hex
@@ -38,7 +38,7 @@ class AwsHandler(object):
             s = get_session()
             s._credentials = self.session_credentials
             s.get_config_variable("region")
-            s.set_config_variable("region", self.region_name)
+            s.set_config_variable("region", self.aws_region)
             self.session = Session(botocore_session=s)
         self.s3_client = self.session.client("s3")
         self.sqs_client = self.session.client("sqs")
@@ -112,9 +112,7 @@ class AwsHandler(object):
         sqs_queue_arn = response['Attributes']['QueueArn']
         dead_letter_queue_name = queue_name + '-DLQ'
         dead_letter_queue_url = self.sqs_client.create_queue(QueueName=dead_letter_queue_name)['QueueUrl']
-        dead_letter_queue_arn = \
-            self.sqs_client.get_queue_attributes(QueueUrl=dead_letter_queue_url, AttributeNames=['QueueArn'])['Attributes'][
-                'QueueArn']
+        dead_letter_queue_arn = self.sqs_client.get_queue_attributes(QueueUrl=dead_letter_queue_url, AttributeNames=['QueueArn'])['Attributes']['QueueArn']
         sqs_policy = {
             "Version": "2012-10-17",
             "Statement": [
@@ -150,7 +148,7 @@ class AwsHandler(object):
             AttributeNames=['QueueArn']
         )['Attributes']['QueueArn']
 
-        sns_client = boto3.client('sns', region_name=self.region_name)
+        sns_client = boto3.client('sns', region_name=self.aws_region)
         return sns_client.subscribe(
             TopicArn=sns_policy_arn,
             Protocol="sqs",
