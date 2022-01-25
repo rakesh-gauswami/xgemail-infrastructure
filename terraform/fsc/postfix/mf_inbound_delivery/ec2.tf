@@ -340,10 +340,10 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     SpotPrice                        = "-1"
     StationAccountRoleArn            = var.station_account_role_arn
     StationVpcId                     = var.station_vpc_id
-    StationVpcName                   = "station"
+    StationVpcName                   = replace(var.station_name, "/-.*/", "")
     Vpc                              = local.input_param_vpc_id
     VpcZoneIdentifiers               = join(",", local.input_param_public_subnet_ids)
-    VpcName                          = "email"
+    VpcName                          = local.input_param_vpc_name
     XgemailBucketName                = var.inbound_submit_bucket
     XgemailMinSizeDataGB             = local.xgemail_size_data_gb
     XgemailMsgHistoryBucketName      = var.message_history_bucket
