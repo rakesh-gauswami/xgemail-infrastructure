@@ -53,7 +53,7 @@ else
       echo export STATION_ACCOUNT_ROLE_ARN="#{node['xgemail']['station_account_role_arn']}" >> /etc/environment
       source /etc/environment
     EOH
-    end
+  end
 end
 
 POSTFIX_DEFAULT_PROCESS_LIMIT = node["xgemail"]["postfix_default_process_limit"]
