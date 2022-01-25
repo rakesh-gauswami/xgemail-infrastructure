@@ -50,7 +50,7 @@ else
 
   bash 'set_env_var_station_account_role_arn' do
     code <<-EOH
-      echo export STATION_ACCOUNT_ROLE_ARN="#{node['xgemail']['station_account_role_arn']}" >> /etc/environment
+      echo export STATION_ACCOUNT_ROLE_ARN="#{node['sophos_cloud']['station_account_role_arn']}" >> /etc/environment
       source /etc/environment
     EOH
   end
