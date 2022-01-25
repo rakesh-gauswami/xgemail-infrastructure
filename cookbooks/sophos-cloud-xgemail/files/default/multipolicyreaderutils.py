@@ -14,6 +14,7 @@ import logging
 import base64
 import traceback
 import hashlib
+import boto3
 from awshandler import AwsHandler
 import policyformatter
 from recipientsplitconfig import RecipientSplitConfig
