@@ -33,7 +33,7 @@ class AwsHandler(object):
             if self.session is None:
                 self.session = Session()
             self.session_credentials = RefreshableCredentials.create_from_metadata(
-                metadata=self.refresh_session(), refresh_using=refresh, method="sts-assume-role"
+                metadata=self.refresh_session(), refresh_using=self.refresh_session, method="sts-assume-role"
             )
             s = get_session()
             s._credentials = self.session_credentials
