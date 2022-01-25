@@ -26,9 +26,8 @@ class AwsHandler(object):
         if self.role_arn == 'none':
             self.session = boto3.session.Session(region_name=self.aws_region)
         else:
-            if self.session is None:
-                self.session_name = uuid4().hex
-                self.session = Session()
+            self.session_name = uuid4().hex
+            self.session = Session()
             self.session_credentials = RefreshableCredentials.create_from_metadata(
                 metadata=self.refresh_session(), refresh_using=self.refresh_session, method="sts-assume-role"
             )
