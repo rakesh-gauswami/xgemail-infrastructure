@@ -9,8 +9,6 @@
 # Common configuration for python scripts used by different xgemail components
 # like submit, delivery and policy etc.
 
-ACCOUNT_NAME = node['sophos_cloud']['account_name']
-
 NODE_TYPE = node['xgemail']['cluster_type']
 
 XGEMAIL_FILES_DIR = node['xgemail']['xgemail_files_dir']
@@ -22,10 +20,11 @@ BULKSENDER_FORMATTER = 'bulksenderformatter.py'
 BULK_SENDER_ACTION = "bulk_sender_action.py"
 DELIVERY_DIRECTOR_FORMATTER = "deliverydirectorthreshold.py"
 TELEMETRY_DATA_FORMATTER = "telemetrydataformatter.py"
+STATION_ACCOUNT_ROLE_ARN = node['sophos_cloud']['station_account_role_arn']
 
 [
-    XGEMAIL_FILES_DIR,
-    XGEMAIL_UTILS_DIR
+  XGEMAIL_FILES_DIR,
+  XGEMAIL_UTILS_DIR
 ].each do | cur |
   directory cur do
     mode '0755'
@@ -42,24 +41,6 @@ file "#{XGEMAIL_UTILS_DIR}/__init__.py" do
   group 'root'
 end
 
-if ACCOUNT_NAME == 'legacy'
-  SETUP_BOTO_CLIENT = "self.session = boto3.session.Session(region_name=aws_region)"
-else
-  SETUP_BOTO_CLIENT =
-    <<-HEREDOC.chomp
-self.sts_client = boto3.client('sts').assume_role(
-              RoleArn="#{node['sophos_cloud']['station_account_role_arn']}",
-              RoleSessionName='station'
-            )
-            self.session = boto3.session.Session(
-              aws_access_key_id=self.sts_client["Credentials"]["AccessKeyId"],
-              aws_secret_access_key=self.sts_client["Credentials"]["SecretAccessKey"],
-              aws_session_token=self.sts_client["Credentials"]["SessionToken"],
-              region_name=aws_region
-            )
-    HEREDOC
-end
-
 template 'awshandler' do
   path "#{XGEMAIL_UTILS_DIR}/awshandler.py"
   source 'awshandler.py.erb'
@@ -67,33 +48,33 @@ template 'awshandler' do
   owner 'root'
   group 'root'
   variables(
-    :setup_boto_client => SETUP_BOTO_CLIENT
+    :station_account_role_arn => STATION_ACCOUNT_ROLE_ARN
   )
 end
 
 [
-    'allowblockimporter.py',
-    'configformatter.py',
-    'diskutils.py',
-    'formatterutils.py',
-    'gziputils.py',
-    'impersonation_updater.py',
-    'mailinfoformatter.py',
-    'messageformatter.py',
-    'messagehistory.py',
-    'messagehistoryformatter.py',
-    'metadataformatter.py',
-    'multipolicyreaderutils.py',
-    'nonrecoverableexception.py',
-    'notadirectoryexception.py',
-    'recipientsplitconfig.py',
-    'recoverableexception.py',
-    'routingmanager.py',
-    'scaneventattributes.py',
-    'uuidutils.py',
-    'rfxrecoveryutils.py',
-    'toggle_flag_s3.py',
-    'get_metadata_from_msghistory_config.py'
+  'allowblockimporter.py',
+  'configformatter.py',
+  'diskutils.py',
+  'formatterutils.py',
+  'gziputils.py',
+  'impersonation_updater.py',
+  'mailinfoformatter.py',
+  'messageformatter.py',
+  'messagehistory.py',
+  'messagehistoryformatter.py',
+  'metadataformatter.py',
+  'multipolicyreaderutils.py',
+  'nonrecoverableexception.py',
+  'notadirectoryexception.py',
+  'recipientsplitconfig.py',
+  'recoverableexception.py',
+  'routingmanager.py',
+  'scaneventattributes.py',
+  'uuidutils.py',
+  'rfxrecoveryutils.py',
+  'toggle_flag_s3.py',
+  'get_metadata_from_msghistory_config.py'
 ].each do | cur |
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{cur}" do
     source cur
