@@ -760,19 +760,6 @@ template 'fluentd-match-msg-delivery' do
   }
 end
 
-#  - Start Order: 60
-template 'fluentd-match-telemetry-log' do
-  path "#{CONF_DIR}/60-match-telemetry-log.conf"
-  source 'fluentd-match-telemetry-log.conf.erb'
-  mode '0644'
-  owner 'root'
-  group 'root'
-  only_if {
-     NODE_TYPE == 'internet-submit' ||
-     NODE_TYPE == 'mf-inbound-submit'
-  }
-end
-
 #  Start Order: 70
 #  Remove this when we shift completely to SQS type match
 template 'fluentd-filter-msg-delivery' do
