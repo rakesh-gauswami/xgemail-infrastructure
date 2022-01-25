@@ -168,131 +168,131 @@ locals {
   }
 
   alarm_scaling_enabled = lookup(
-  local.AS_ALARM_SCALING_ENABLED_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_ALARM_SCALING_ENABLED
+    local.AS_ALARM_SCALING_ENABLED_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_ALARM_SCALING_ENABLED
   )
 
   alarm_scale_in_threshold = lookup(
-  local.AS_ALARM_SCALE_IN_THRESHOLD_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_ALARM_SCALE_IN_THRESHOLD
+    local.AS_ALARM_SCALE_IN_THRESHOLD_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_ALARM_SCALE_IN_THRESHOLD
   )
 
   alarm_scale_out_threshold = lookup(
-  local.AS_ALARM_SCALE_OUT_THRESHOLD_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_ALARM_SCALE_OUT_THRESHOLD
+    local.AS_ALARM_SCALE_OUT_THRESHOLD_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_ALARM_SCALE_OUT_THRESHOLD
   )
 
   as_min_size = lookup(
-  local.AS_MIN_SIZE_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_MIN_SIZE
+    local.AS_MIN_SIZE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_MIN_SIZE
   )
 
   as_max_size = lookup(
-  local.AS_MAX_SIZE_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_MAX_SIZE
+    local.AS_MAX_SIZE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_MAX_SIZE
   )
 
   as_min_service = lookup(
-  local.AS_MIN_SERVICE_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_MIN_SERVICE
+    local.AS_MIN_SERVICE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_MIN_SERVICE
   )
 
   as_max_batch_size = lookup(
-  local.AS_MAX_BATCH_SIZE_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_MAX_BATCH_SIZE
+    local.AS_MAX_BATCH_SIZE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_MAX_BATCH_SIZE
   )
 
   as_cron_scale_down = lookup(
-  local.AS_CRON_SCALE_DOWN_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_CRON_SCALE_DOWN
+    local.AS_CRON_SCALE_DOWN_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_CRON_SCALE_DOWN
   )
 
   as_cron_scale_up = lookup(
-  local.AS_CRON_SCALE_UP_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_CRON_SCALE_UP
+    local.AS_CRON_SCALE_UP_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_CRON_SCALE_UP
   )
 
   as_cron_scale_in = lookup(
-  local.AS_CRON_SCALE_IN_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_CRON_SCALE_IN
+    local.AS_CRON_SCALE_IN_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_CRON_SCALE_IN
   )
 
   as_cron_scale_out = lookup(
-  local.AS_CRON_SCALE_OUT_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_CRON_SCALE_OUT
+    local.AS_CRON_SCALE_OUT_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_CRON_SCALE_OUT
   )
 
   health_check_grace_period = lookup(
-  local.AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD
+    local.AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD
   )
 
   as_policy_target_value = lookup(
-  local.AS_POLICY_TARGET_VALUE_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_POLICY_TARGET_VALUE
+    local.AS_POLICY_TARGET_VALUE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_POLICY_TARGET_VALUE
   )
 
   as_on_hour_desired = lookup(
-  local.AS_ON_HOUR_DESIRED_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_ON_HOUR_DESIRED
+    local.AS_ON_HOUR_DESIRED_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_ON_HOUR_DESIRED
   )
 
   as_scale_in_out_weekdays = lookup(
-  local.AS_SCALE_IN_OUT_WEEKDAYS_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_SCALE_IN_OUT_WEEKDAYS
+    local.AS_SCALE_IN_OUT_WEEKDAYS_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_SCALE_IN_OUT_WEEKDAYS
   )
 
   as_scale_in_on_weekends = lookup(
-  local.AS_SCALE_IN_ON_WEEKENDS_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_AS_SCALE_IN_ON_WEEKENDS
+    local.AS_SCALE_IN_ON_WEEKENDS_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_SCALE_IN_ON_WEEKENDS
   )
 
   instance_size = lookup(
-  local.INSTANCE_SIZE_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_INSTANCE_SIZE
+    local.INSTANCE_SIZE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_INSTANCE_SIZE
   )
 
   xgemail_size_data_gb = lookup(
-  local.XGEMAIL_SIZE_DATA_GB_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_XGEMAIL_SIZE_DATA_GB
+    local.XGEMAIL_SIZE_DATA_GB_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_XGEMAIL_SIZE_DATA_GB
   )
 
   sxl_dbl = lookup(
-  local.SXL_DBL_BY_POP,
-  local.input_param_account_name,
-  lookup(
-  local.SXL_DBL_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_SXL_DBL
-  )
+    local.SXL_DBL_BY_POP,
+    local.input_param_account_name,
+    lookup(
+      local.SXL_DBL_BY_ENVIRONMENT,
+      local.input_param_deployment_environment,
+      local.DEFAULT_SXL_DBL
+    )
   )
 
   sxl_rbl = lookup(
-  local.SXL_RBL_BY_POP,
-  local.input_param_account_name,
-  lookup(
-  local.SXL_RBL_BY_ENVIRONMENT,
-  local.input_param_deployment_environment,
-  local.DEFAULT_SXL_RBL
-  )
+    local.SXL_RBL_BY_POP,
+    local.input_param_account_name,
+    lookup(
+      local.SXL_RBL_BY_ENVIRONMENT,
+      local.input_param_deployment_environment,
+      local.DEFAULT_SXL_RBL
+    )
   )
 }
 
