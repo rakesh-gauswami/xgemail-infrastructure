@@ -49,13 +49,6 @@ else
   INSTANCE_HOST_NAME = get_fsc_hostname(NODE_TYPE)
 end
 
-bash 'set_env_var_station_account_role_arn' do
-  code <<-EOH
-    echo export STATION_ACCOUNT_ROLE_ARN="#{node['sophos_cloud']['station_account_role_arn']}" >> /etc/environment
-    source /etc/environment
-  EOH
-end
-
 POSTFIX_DEFAULT_PROCESS_LIMIT = node["xgemail"]["postfix_default_process_limit"]
 
 CONFIGURATION_COMMANDS =

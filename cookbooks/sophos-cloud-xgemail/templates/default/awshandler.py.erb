@@ -10,7 +10,6 @@
 #
 # This script is responsible for communicating with AWS.
 
-import os
 import boto3
 import json
 from botocore.exceptions import ClientError
@@ -23,7 +22,7 @@ from uuid import uuid4
 class AwsHandler(object):
     def __init__(self, aws_region):
         self.aws_region = aws_region
-        self.role_arn = os.environ.get('STATION_ACCOUNT_ROLE_ARN')
+        self.role_arn = "<%= @station_account_role_arn %>"
         if self.role_arn == 'none':
             self.session = boto3.session.Session(region_name=self.aws_region)
         else:

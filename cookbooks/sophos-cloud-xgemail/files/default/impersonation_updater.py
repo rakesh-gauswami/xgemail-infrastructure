@@ -29,9 +29,7 @@ sys.path.append("/opt/sophos/xgemail/utils")
 
 import argparse
 import json
-import os
 import pip
-import sys
 import formatterutils
 
 from awshandler import AwsHandler
