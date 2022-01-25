@@ -24,7 +24,7 @@ resource "aws_elb" "elb" {
   connection_draining_timeout = 300
 
   tags = {
-    Application = "customer-delivery"
+    Application = "mf-inbound-delivery"
   }
 }
 

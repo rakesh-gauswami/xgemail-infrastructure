@@ -1,7 +1,7 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
 
-  "Description": "Sophos Email AutoScaling Group template for Sophos Cloud used for customer-delivery EC2 Instances.",
+  "Description": "Sophos Email AutoScaling Group template for Sophos Cloud used for mf-inbound-delivery EC2 Instances.",
 
   "Metadata": {
     "Copyright": [
@@ -14,7 +14,7 @@
     ],
 
     "Comments": [
-      "Sophos Email AutoScaling Group template for Sophos Cloud used for customer-delivery EC2 Instances."
+      "Sophos Email AutoScaling Group template for Sophos Cloud used for mf-inbound-delivery EC2 Instances."
     ]
   },
 
@@ -1074,11 +1074,7 @@
                   "# Install the files and packages from the metadata\n",
                   "\n",
                   "# Force replacement of the LaunchConfiguration object by changing this value.\n",
-                  "# ",
-                  {
-                    "Ref": "BuildTag"
-                  },
-                  "\n",
+                  "# ",  { "Ref": "BuildTag" }, "\n",
                   "# Make sure we call cfn-signal before exiting, otherwise we have to\n",
                   "# wait for the CreationPolicy timeout to detect failed initialization.\n",
                   "# That's because of using the bash -e option, which makes the script\n",
@@ -1091,26 +1087,11 @@
                   "  # Disable errexit so errors below don't prevent the call to cfn-signal.\n",
                   "  set +o errexit\n",
                   "\n",
-                  "  ACCOUNT='",
-                  {
-                    "Ref": "AccountName"
-                  },
-                  "'\n",
-                  "  BRANCH='",
-                  {
-                    "Ref": "Branch"
-                  },
-                  "'\n",
-                  "  DEPLOYMENT_NAME='",
-                  {
-                    "Ref": "XgemailServiceType"
-                  },
-                  "'\n",
-                  "  ENVIRONMENT='",
-                  {
-                    "Ref": "Environment"
-                  },
-                  "'\n",                  "  # Set LastHealth tag so cloud list command shows progress.\n",
+                  "  ACCOUNT='", {"Ref": "AccountName"}, "'\n",
+                  "  BRANCH='", {"Ref": "Branch"}, "'\n",
+                  "  DEPLOYMENT_NAME='", {"Ref": "XgemailServiceType"}, "'\n",
+                  "  ENVIRONMENT='", {"Ref": "Environment"}, "'\n",
+                  "  # Set LastHealth tag so cloud list command shows progress.\n",
                   "  if [ \"$exit_code\" == 0 ]; then\n",
                   "    /opt/sophos/bin/set_instance_tag.py LastHealth UserDataSuccess\n",
                   "    if [ \"$ENVIRONMENT\" == \"prod\" ]; then\n",
@@ -1125,16 +1106,9 @@
                   "  fi\n",
                   "\n",
                   "  /opt/aws/bin/cfn-signal -e $exit_code",
-                  " --stack ",
-                  {
-                    "Ref": "AWS::StackName"
-                  },
+                  " --stack ", {"Ref": "AWS::StackName"},
                   " --resource XgemailAutoScalingGroup",
-                  " --region ",
-                  {
-                    "Ref": "AWS::Region"
-                  },
-                  "\n",
+                  " --region ", {"Ref": "AWS::Region"}, "\n",
                   "}\n",
                   "\n",
                   "trap onexit EXIT\n",
@@ -1146,17 +1120,10 @@
                   "/opt/sophos/bin/set_instance_tag.py LastHealth UserDataStarted\n",
                   "\n",
                   "/opt/aws/bin/cfn-init --verbose ",
-                  " --stack ",
-                  {
-                    "Ref": "AWS::StackName"
-                  },
+                  " --stack ", {"Ref": "AWS::StackName"},
                   " --resource XgemailAutoScalingLaunchTemplate ",
                   " --configsets xgemail_install ",
-                  " --region ",
-                  {
-                    "Ref": "AWS::Region"
-                  },
-                  "\n",
+                  " --region ", {"Ref": "AWS::Region"}, "\n",
                   "\n",
                   "# Disable errexit so errors below don't prevent the call to cfn-signal.\n",
                   "# This is NOT redundant with the call to disable errexit inside onexit,\n",
