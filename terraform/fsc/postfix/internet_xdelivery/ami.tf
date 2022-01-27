@@ -7,8 +7,8 @@ locals {
 }
 
 data "aws_ami" "ami" {
-  most_recent      = true
-  owners           = [local.ami_owner_account]
+  most_recent = true
+  owners      = [local.ami_owner_account]
 
   filter {
     name   = "name"
