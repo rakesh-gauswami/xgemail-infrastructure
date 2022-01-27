@@ -9,5 +9,3 @@
 
 default[:mount][:luks_password_dir] = "/root/etc"
 default[:mount][:volumes] = []
-
-default['sophos_cloud']['sdb_region'] = 'us-west-2'
