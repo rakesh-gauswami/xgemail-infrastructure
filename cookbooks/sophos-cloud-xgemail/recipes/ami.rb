@@ -46,6 +46,17 @@ bash 'edit_etc_hosts' do
   EOH
 end
 
+# Uninstall OpenJDK Older Version
+bash 'remove_openjdk' do
+  user 'root'
+  cwd '/tmp'
+  code <<-EOH
+    for p in $(yum list installed | awk '/openjdk/ {print $1}'); do
+      yum remove -y $p
+    done
+  EOH
+end
+
 # Install OpenJDK 8
 yum_package 'java-1.8.0-openjdk-devel' do
   action :install
