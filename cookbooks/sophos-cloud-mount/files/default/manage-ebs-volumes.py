@@ -211,12 +211,8 @@ class InstanceSettings(object):
         self.availability_zone          = sophos_attrs["availability_zone"]
         self.environment                = sophos_attrs["environment"]
         self.region                     = sophos_attrs["region"]
+        self.sdb_region                 = sophos_attrs.get("sdb_region", "us-west-2")
         self.vpc_name                   = sophos_attrs["vpc_name"]
-
-        if 'sdb_region' in sophos_attrs:
-            self.sdb_region = sophos_attrs["sdb_region"]
-        else:
-            self.sdb_region = 'us-west-2'
 
         volume_attrs = attributes["volumes"]
         self.volume_min_iops            = int(volume_attrs["volume_min_iops"])
