@@ -181,7 +181,7 @@ class InstanceSettings(object):
         self.availability_zone  = None
         self.environment        = None
         self.region             = None
-        self.sdb_region         = None
+        self.sdb_region         = "us-west-2"
         self.vpc_name           = None
 
         # volumes attributes
