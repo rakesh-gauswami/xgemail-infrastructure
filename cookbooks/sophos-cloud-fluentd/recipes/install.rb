@@ -126,9 +126,9 @@ execute 'install td-agent fluent-plugin-out-http' do
 end
 
 # fluentd output plugin for SNS
-cookbook_file 'fluentd_plugin_msg_out_sns' do
+cookbook_file 'fluent_plugin_msg_out_sns' do
   path "#{PLUGIN_DIR}/out_sns.rb"
-  source 'fluentd_plugin_msg_out_sns.rb'
+  source 'fluent_plugin_msg_out_sns.rb'
   mode '0644'
   owner 'root'
   group 'root'
@@ -136,9 +136,9 @@ cookbook_file 'fluentd_plugin_msg_out_sns' do
 end
 
 # fluentd output plugin for SQS
-cookbook_file 'fluentd_plugin_msg_out_sqs' do
+cookbook_file 'fluent_plugin_msg_out_sqs' do
   path "#{PLUGIN_DIR}/out_sqs.rb"
-  source 'fluentd_plugin_msg_out_sqs.rb'
+  source 'fluent_plugin_msg_out_sqs.rb'
   mode '0644'
   owner 'root'
   group 'root'
