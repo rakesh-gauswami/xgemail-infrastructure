@@ -1138,16 +1138,6 @@ cookbook_file 'sns_msg_to_xdelivery_template' do
   action :create
 end
 
-# fluentd plugin for mhv2 mail info file check
-cookbook_file 'fluentd_plugin_msg_history_v2_mailinfo_filecheck' do
-  path "#{PLUGIN_DIR}/filter_mhv2filecheck.rb"
-  source 'fluentd_plugin_msg_history_v2_mailinfo_filecheck.rb'
-  mode '0644'
-  owner 'root'
-  group 'root'
-  action :create
-end
-
 service 'td-agent' do
   supports :restart => true, :start => true, :stop => true, :reload => true
   action [ :enable, :restart ]

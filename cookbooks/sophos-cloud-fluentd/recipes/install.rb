@@ -111,20 +111,6 @@ template 'td-agent.conf' do
   )
 end
 
-execute 'install td-agent fluent-plugin-sns' do
-  user 'root'
-  command <<-EOH
-      td-agent-gem install fluent-plugin-sns -v 3.2.0
-  EOH
-end
-
-execute 'install td-agent fluent-plugin-sqs' do
-  user 'root'
-  command <<-EOH
-      td-agent-gem install fluent-plugin-sqs -v 3.0.0
-  EOH
-end
-
 execute 'install td-agent fluent-plugin-grok-parser' do
   user 'root'
   command <<-EOH
@@ -137,6 +123,36 @@ execute 'install td-agent fluent-plugin-out-http' do
   command <<-EOH
       td-agent-gem install fluent-plugin-out-http -v 1.3.3
   EOH
+end
+
+# fluentd output plugin for SNS
+cookbook_file 'fluentd_plugin_msg_out_sns' do
+  path "#{PLUGIN_DIR}/out_sns.rb"
+  source 'fluentd_plugin_msg_out_sns.rb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  action :create
+end
+
+# fluentd output plugin for SQS
+cookbook_file 'fluentd_plugin_msg_out_sqs' do
+  path "#{PLUGIN_DIR}/out_sqs.rb"
+  source 'fluentd_plugin_msg_out_sqs.rb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  action :create
+end
+
+# fluentd filter plugin for mhv2 mail info file check
+cookbook_file 'fluentd_plugin_msg_history_v2_mailinfo_filecheck' do
+  path "#{PLUGIN_DIR}/filter_mhv2filecheck.rb"
+  source 'fluentd_plugin_msg_history_v2_mailinfo_filecheck.rb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  action :create
 end
 
 if ACCOUNT != 'sandbox'
