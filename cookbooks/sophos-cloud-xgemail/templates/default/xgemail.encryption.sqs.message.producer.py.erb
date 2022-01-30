@@ -538,6 +538,24 @@ def update_msghistory_event_and_get_message_context(msghistory_events, s3_file_p
     except Exception as ex:
         logger.warning("Queue Id [{0}]. Error in processing message history event [{1}]".format(policy_metadata.get_queue_id(), ex))
 
+def get_s3_prefix_path(queue_id, mailbox_id, domain):
+    root_dir = None
+
+    if get_email_product_type() == MAILFLOW:
+        root_dir = MAIL_FLOW_ROOT_DIR
+    else:
+        root_dir = ROOT_DIR
+
+    s3_file_path = formatterutils.get_s3_prefix_file_path(
+        root_dir,
+        queue_id,
+        mailbox_id,
+        SUBMIT_HOST_IP,
+        domain
+    )
+
+    return s3_file_path
+
 def base_policy_flow(metadata, direction, is_reply, domain, sender, message, rfx_submit, is_mh_parent, msghistory_events):
     queue_id = metadata.get_queue_id()
 
@@ -548,6 +566,9 @@ def base_policy_flow(metadata, direction, is_reply, domain, sender, message, rfx
         queue_id,
         domain
     )
+
+    if multipolicyreaderutils.prefix_messages_path_enabled(get_customer_id(queue_id, msghistory_events), SUBMIT_HOST_IP):
+        tmp_file_path = get_s3_prefix_path(queue_id, policy_id, domain)
 
     if (direction == OUTBOUND_MESSAGE_DIRECTION and is_reply == True) or direction == INBOUND_MESSAGE_DIRECTION \
         or rfx_submit is True:
