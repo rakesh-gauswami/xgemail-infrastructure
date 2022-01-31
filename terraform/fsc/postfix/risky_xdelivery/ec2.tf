@@ -1,6 +1,6 @@
 locals {
   DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD = 600
-  DEFAULT_INSTANCE_SIZE                = "t3a.medium"
+  DEFAULT_INSTANCE_SIZE                = "t3.medium"
   DEFAULT_XGEMAIL_SIZE_DATA_GB         = 10
   DEFAULT_ZONE_INDEX = {
     1 = 0
@@ -21,10 +21,10 @@ locals {
   }
 
   INSTANCE_SIZE_BY_ENVIRONMENT = {
-    inf  = "t3a.medium"
-    dev  = "t3a.medium"
-    qa   = "t3a.medium"
-    prod = "c5a.large"
+    inf  = "t3.medium"
+    dev  = "t3.medium"
+    qa   = "t3.medium"
+    prod = "c5.large"
   }
 
   XGEMAIL_SIZE_DATA_GB_BY_ENVIRONMENT = {
