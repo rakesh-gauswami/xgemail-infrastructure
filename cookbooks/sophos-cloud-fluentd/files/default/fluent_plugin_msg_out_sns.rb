@@ -5,17 +5,17 @@ module Fluent::Plugin
 
   require 'aws-sdk'
 
-  class SNSOutput < Fluent::Plugin::Output
+  class SNSOutput < Output
 
     Fluent::Plugin.register_output('sns', self)
 
     helpers :compat_parameters
 
 
-    include SetTagKeyMixin
+    include Fluent::SetTagKeyMixin
     config_set_default :include_tag_key, false
 
-    include SetTimeKeyMixin
+    include Fluent::SetTimeKeyMixin
     config_set_default :include_time_key, true
 
     config_param :aws_key_id, :string, :default => nil, :secret => true
