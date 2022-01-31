@@ -125,26 +125,6 @@ execute 'install td-agent fluent-plugin-out-http' do
   EOH
 end
 
-# fluentd output plugin for SNS
-cookbook_file 'fluent_plugin_msg_out_sns' do
-  path "#{PLUGIN_DIR}/out_sns.rb"
-  source 'fluent_plugin_msg_out_sns.rb'
-  mode '0644'
-  owner 'root'
-  group 'root'
-  action :create
-end
-
-# fluentd output plugin for SQS
-cookbook_file 'fluent_plugin_msg_out_sqs' do
-  path "#{PLUGIN_DIR}/out_sqs.rb"
-  source 'fluent_plugin_msg_out_sqs.rb'
-  mode '0644'
-  owner 'root'
-  group 'root'
-  action :create
-end
-
 # fluentd filter plugin for mhv2 mail info file check
 cookbook_file 'fluentd_plugin_msg_history_v2_mailinfo_filecheck' do
   path "#{PLUGIN_DIR}/filter_mhv2filecheck.rb"
@@ -168,8 +148,28 @@ end
 execute 'Update aws-sdk' do
   user 'root'
   command <<-EOH
-      td-agent-gem update aws-sdk --no-document
+      td-agent-gem install aws-sdk --no-document
   EOH
+end
+
+# fluentd output plugin for SNS
+cookbook_file 'fluent_plugin_msg_out_sns' do
+  path "#{PLUGIN_DIR}/out_sns.rb"
+  source 'fluent_plugin_msg_out_sns.rb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  action :create
+end
+
+# fluentd output plugin for SQS
+cookbook_file 'fluent_plugin_msg_out_sqs' do
+  path "#{PLUGIN_DIR}/out_sqs.rb"
+  source 'fluent_plugin_msg_out_sqs.rb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  action :create
 end
 
 # End Temporary block
