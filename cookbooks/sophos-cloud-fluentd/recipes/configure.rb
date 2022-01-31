@@ -1111,7 +1111,8 @@ template 'fluentd-match-firehose' do
   owner 'root'
   group 'root'
   variables(
-    :region => REGION
+    :region => REGION,
+    :delivery_stream_name => DELIVERY_STREAM_NAME
   )
 end
 
