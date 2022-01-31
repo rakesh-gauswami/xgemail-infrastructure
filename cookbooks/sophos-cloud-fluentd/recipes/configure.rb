@@ -21,6 +21,7 @@ REGION                           = node['sophos_cloud']['region']
 MSG_STATS_REJECT_SNS_TOPIC       = node['xgemail']['msg_statistics_rejection_sns_topic']
 DELIVERY_STATUS_SQS              = node['xgemail']['msg_history_delivery_status_sqs']
 DELIVERY_STATUS_SNS_TOPIC        = node['xgemail']['msg_history_status_sns_topic']
+TELEMETRY_LOG_SQS                = node['xgemail']['telemetry_log_sqs']
 SERVER_IP                        = node['ipaddress']
 MAILLOG_FILTER_PATTERNS          = "(\\.#{REGION}\\.compute\\.internal|:\\sdisconnect\\sfrom\\s|\\swarning:\\shostname\\s|:\\sremoved\\s|table\\shash:|sm-msp-queue|:\\sstatistics:\\s)"
 JILTER_FILTER_PATTERNS           = "(com\\.launchdarkly\\.client\\.LDClient|com\\.launchdarkly\\.client\\.LDUser)"
@@ -710,9 +711,9 @@ end
 ### Fluentd Customized Configuration Files ###
 #
 # Only internet-submit  - Start Order: 60
-template 'fluentd-match-msg-stats-reject' do
-  path "#{CONF_DIR}/60-match-msg-stats-reject.conf"
-  source 'fluentd-match-msg-stats-reject.conf.erb'
+template 'fluentd-match-postfix-maillog' do
+  path "#{CONF_DIR}/60-match-postfix-maillog.conf"
+  source 'fluentd-match-postfix-maillog.conf.erb'
   mode '0644'
   owner 'root'
   group 'root'
@@ -818,6 +819,19 @@ template 'fluentd-filter-transform' do
   )
 end
 
+# Start Order: 70
+template 'fluentd-filter-transform-sqs-telemetry-log' do
+  path "#{CONF_DIR}/70-filter-transform-sqs-telemetry-log.conf"
+  source 'fluentd-filter-transform-sqs-telemetry-log.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  only_if {
+      NODE_TYPE == 'internet-submit' ||
+      NODE_TYPE == 'mf-inbound-submit'
+    }
+end
+
 # Start Order: 75
 template 'fluentd-filter-transform-msg-delivery' do
   path "#{CONF_DIR}/75-filter-transform-msg-delivery.conf"
@@ -881,7 +895,6 @@ template 'fluentd-filter-transform-sqs-msg' do
     NODE_TYPE == 'delta-xdelivery'
   }
 end
-
 # Start Order: 78
 template 'fluentd-filter-transform-msg-history-v2' do
   path "#{CONF_DIR}/78-filter-transform-msg-history-v2.conf"
@@ -979,7 +992,6 @@ template 'fluentd-match-sqs-msg-delivery' do
     NODE_TYPE == 'delta-xdelivery'
   }
 end
-
 # Start Order: 98 - MHv2
 template 'fluentd-match-http-output-msg-history-v2' do
   path "#{CONF_DIR}/98-match-http-output-msg-history-v2.conf"
@@ -1035,6 +1047,22 @@ template 'fluentd-match-sns-msg-stats-reject' do
     NODE_TYPE == 'internet-submit' ||
     NODE_TYPE == 'mf-inbound-submit'
   }
+end
+
+template 'fluentd-match-sqs-telemetry-log' do
+  path "#{CONF_DIR}/99-match-sqs-telemetry-log.conf"
+  source 'fluentd-match-sqs-telemetry-log.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+      :region => REGION,
+      :telemetry_log_queue => TELEMETRY_LOG_SQS
+  )
+  only_if {
+      NODE_TYPE == 'internet-submit' ||
+      NODE_TYPE == 'mf-inbound-submit'
+    }
 end
 
 cookbook_file 'maillog grok patterns' do

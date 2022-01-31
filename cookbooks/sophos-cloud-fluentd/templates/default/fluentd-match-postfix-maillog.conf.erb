@@ -5,6 +5,10 @@
 # XGEMAIL_0005
 # Mar  9 03:59:43 ip-172-20-0-4 postfix-is/smtpd[1237]: NOQUEUE: reject: SOPHOS_UUID_ba19915c-4973-4504-a1c9-aea5d1931d99: RCPT from unknown[192.210.213.76]: 554 5.7.1 Service unavailable; Sender address [badguy@bad-domain.com] blocked using uri.ire1.sophosxl.com; from=<badguy@bad-domain.com> to=<recipient@sophos-email-customer.com> proto=ESMTP helo=<bad-domain.com>
 #
+# sqs.telemetry.log
+# Jan 18 21:53:35 ip-172-21-0-123 postfix-is/smtpd[19485]: client_ip=91.216.61.22,helo=bad-domain.com,arrival_time=1632565736,mail_from=badguy@bad-domain.com,rcpt_to=recipient@sophos-email-customer.com,client_hostname=bad-server.com,rhsbl_sender=127.0.1.4,rhsbl_reverse_client=DNS_NOTFOUND,rhsbl_client=127.0.1.3,rbl_client=127.0.4.3,nrcpt=5,bad_rcpt=1,reject_rcpt=0,data_sent=1,data_accepted=1,data_size=4077,starttls=0
+#
+
 
 <match raw.maillog.log>
   @type copy
@@ -34,6 +38,14 @@
       tag sns.msg_stats_reject.XGEMAIL_0005
     </rule>
   </store>
+  <store>
+    @type rewrite_tag_filter
+    <rule>
+      key message
+      pattern ([^ ]+) ([^ ]+): client_ip=([^ ]+),helo=([^ ]*),arrival_time=([^ ]+),mail_from=([^ ]*),rcpt_to=([^ ]*),client_hostname=([^ ]+),rhsbl_sender=([^ ]*),rhsbl_reverse_client=([^ ]*),rhsbl_client=([^ ]*),rbl_client=([^ ]*),nrcpt=([^ ]+),bad_rcpt=([^ ]+),reject_rcpt=([^ ]+),data_sent=([^ ]+),data_accepted=([^ ]+),data_size=([^ ]+),starttls=([^ ]+)
+      tag sqs.telemetry.log
+    </rule>
+    </store>
 </match>
 
 <match clear>
