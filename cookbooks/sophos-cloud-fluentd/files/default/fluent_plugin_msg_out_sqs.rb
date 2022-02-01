@@ -50,9 +50,11 @@ module Fluent::Plugin
       end
       if @assume_role_arn
         @sts_credentials_region ||= @region
-        options[:credentials] = Aws::AssumeRoleCredentials.new(role_arn: @assume_role_arn,
-                              role_session_name: @assume_role_session_name,
-                              region: @sts_credentials_region)
+        credential_options = {}
+        credentials_options[:role_arn] = @assume_role_arn
+        credentials_options[:role_session_name] = @assume_role_session_name
+        credentials_options[:client] = Aws::STS::Client.new(region: @sts_credentials_region)
+        options[:credentials] = Aws::AssumeRoleCredentials.new(credentials_options)
       end
 
       Aws.config.update(options)
