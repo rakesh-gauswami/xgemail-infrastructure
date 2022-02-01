@@ -179,7 +179,7 @@
       "Type": "String",
       "Default": "2"
     },
-    "ScheduledASOnHourDesiredCapacity": {
+    "ScheduledAsOnHourDesiredCapacity": {
       "Description": "DesiredCapacity of instances in the Auto Scaling Group inside of business hour.",
       "Type": "String",
       "Default": "3"
@@ -655,7 +655,7 @@
       "Condition": "EnableScaleInOutOnWeekdays",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "DesiredCapacity": {"Ref": "ScheduledASOnHourDesiredCapacity"},
+        "DesiredCapacity": {"Ref": "ScheduledAsOnHourDesiredCapacity"},
         "Recurrence": { "Ref": "ScaleOutOnWeekdaysCron" }
       }
     },

@@ -290,7 +290,6 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     MsgHistoryV2BucketName           = var.message_history_ms_bucket
     MsgHistoryV2StreamName           = var.message_history_v2_stream_name
     MessageHistoryEventsTopicArn     = var.message_history_events_sns_topic
-    ParentAccountName                = local.input_param_parent_account_name
     PolicyTargetValue                = local.as_policy_target_value
     S3CookbookRepositoryURL          = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/${var.build_number}/cookbooks.tar.gz"
     ScaleInOnWeekends                = local.as_scale_in_on_weekends
