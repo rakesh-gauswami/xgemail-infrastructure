@@ -2,6 +2,7 @@ locals {
   cidr_block_world       = "0.0.0.0/0"
   efs_tcp_port           = 2049
   smtp_tcp_port          = 25
+  smtps_tcp_port         = 587
   security_group_name_lb = "${local.instance_type}-lb"
 }
 
@@ -47,19 +48,19 @@ resource "aws_security_group_rule" "lb_egress_world" {
   security_group_id = aws_security_group.security_group_lb.id
 }
 
-resource "aws_security_group_rule" "lb_ingress_world_smtp" {
-  type              = "ingress"
-  from_port         = local.smtp_tcp_port
-  to_port           = local.smtp_tcp_port
-  protocol          = "tcp"
-  cidr_blocks       = [local.cidr_block_world]
-  security_group_id = aws_security_group.security_group_lb.id
-}
-
 resource "aws_security_group_rule" "ec2_ingress_lb_smtp" {
   type                     = "ingress"
   from_port                = local.smtp_tcp_port
   to_port                  = local.smtp_tcp_port
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.security_group_ec2.id
+  source_security_group_id = aws_security_group.security_group_lb.id
+}
+
+resource "aws_security_group_rule" "ec2_ingress_lb_smtps" {
+  type                     = "ingress"
+  from_port                = local.smtps_tcp_port
+  to_port                  = local.smtps_tcp_port
   protocol                 = "tcp"
   security_group_id        = aws_security_group.security_group_ec2.id
   source_security_group_id = aws_security_group.security_group_lb.id
