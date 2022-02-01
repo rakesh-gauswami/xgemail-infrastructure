@@ -70,6 +70,7 @@ DEFAULT_LOG_COMMANDS = {
     "mount.out":        "/bin/mount -l",
     "netstat-r.out":    "/bin/netstat -rn",
     "top.out":          "/usr/bin/top -b -n 1",
+    "journalctl.out":   "/bin/journalctl -xe",
     "uname.out":        "/bin/uname -a",
 }
 
