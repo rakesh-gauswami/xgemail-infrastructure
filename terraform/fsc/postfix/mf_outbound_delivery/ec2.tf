@@ -243,7 +243,7 @@ locals {
 
 resource "aws_cloudformation_stack" "cloudformation_stack" {
   name          = local.instance_type
-  template_body = file("${path.module}/templates/as_internet_delivery_template.json")
+  template_body = file("${path.module}/templates/as_mf_outbound_delivery_template.json")
   parameters = {
     AccountName                     = local.input_param_account_name
     AlarmScalingEnabled             = local.alarm_scaling_enabled
