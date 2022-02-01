@@ -666,6 +666,13 @@ aws:
       template_parameters:
         TagApplication:                                           "atr-index"
         QueueName:                                                "{{sqs.atr_reindex_sqs_queue_sns_listener}}"
+    snd_live_backup_reindex_sqs_queue_sns_listener:
+      stack_name:                                                 "{{stack.sqs.snd_live_backup_reindex_sqs_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        TagApplication:                                           "atr-index"
+        QueueName:                                                "{{sqs.snd_live_backup_reindex_sqs_queue_sns_listener}}"
     beta_delivery_sqs_queue_sns_listener:
       stack_name:                                                 "{{stack.sqs.beta_delivery_sqs_queue_sns_listener}}"
       state:                                                      present
