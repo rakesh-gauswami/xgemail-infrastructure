@@ -13,8 +13,8 @@ locals {
   DEFAULT_AS_SCALE_IN_ON_WEEKENDS      = false
   DEFAULT_INSTANCE_SIZE                = "t3.medium"
   DEFAULT_XGEMAIL_SIZE_DATA_GB         = 10
-  DEFAULT_SXL_DBL                      = "uri.cal1.sophosxl.com"
-  DEFAULT_SXL_RBL                      = "fur.cal1.sophosxl.com"
+  DEFAULT_SXL_DBL                      = "uri.vir1.sophosxl.com"
+  DEFAULT_SXL_RBL                      = "fur.vir1.sophosxl.com"
 
   AS_ALARM_SCALING_ENABLED_BY_ENVIRONMENT = {
     inf  = false
@@ -114,10 +114,10 @@ locals {
   }
 
   SXL_DBL_BY_ENVIRONMENT = {
-    inf  = "uri.cal1.sophosxl.com"
-    dev  = "uri.cal1.sophosxl.com"
-    qa   = "uri.cal1.sophosxl.com"
-    prod = "uri.cal1.sophosxl.com"
+    inf  = "uri.vir1.sophosxl.com"
+    dev  = "uri.vir1.sophosxl.com"
+    qa   = "uri.vir1.sophosxl.com"
+    prod = "uri.vir1.sophosxl.com"
   }
 
   SXL_DBL_BY_POP = {
@@ -125,10 +125,10 @@ locals {
   }
 
   SXL_RBL_BY_ENVIRONMENT = {
-    inf  = "fur.cal1.sophosxl.com"
-    dev  = "fur.cal1.sophosxl.com"
-    qa   = "fur.cal1.sophosxl.com"
-    prod = "fur.cal1.sophosxl.com"
+    inf  = "fur.vir1.sophosxl.com"
+    dev  = "fur.vir1.sophosxl.com"
+    qa   = "fur.vir1.sophosxl.com"
+    prod = "fur.vir1.sophosxl.com"
   }
 
   SXL_RBL_BY_POP = {
