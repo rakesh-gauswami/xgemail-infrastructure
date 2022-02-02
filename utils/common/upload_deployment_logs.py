@@ -43,6 +43,8 @@ DEFAULT_LOG_SOURCES = """
 /etc/resolv.conf
 /etc/system-release
 
+/etc/td-agent.d/
+
 /proc/cpuinfo
 /proc/diskstats
 /proc/meminfo
