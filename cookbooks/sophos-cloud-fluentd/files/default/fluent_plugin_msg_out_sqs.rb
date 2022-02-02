@@ -19,13 +19,13 @@ module Fluent::Plugin
     config_param :aws_sec_key, :string, default: nil, secret: true
 
     config_param :assume_role_arn, :string, :default => nil
-    config_param :assume_role_session_name, :string, :default => "fluentd"
+    config_param :assume_role_session_name, :string, :default => "fluentd_sqs"
     config_param :sts_credentials_region, :string, :default => nil
 
     config_param :queue_name, :string, default: nil
     config_param :sqs_url, :string, default: nil
     config_param :create_queue, :bool, default: true
-    config_param :region, :string, default: 'ap-northeast-1'
+    config_param :region, :string, default: 'us-east-1'
     config_param :delay_seconds, :integer, default: 0
     config_param :include_tag, :bool, default: true
     config_param :tag_property_name, :string, default: '__tag'

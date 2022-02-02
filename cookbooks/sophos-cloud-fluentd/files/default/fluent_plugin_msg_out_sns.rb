@@ -22,7 +22,7 @@ module Fluent::Plugin
     config_param :aws_sec_key, :string, :default => nil, :secret => true
 
     config_param :assume_role_arn, :string, :default => nil
-    config_param :assume_role_session_name, :string, :default => "fluentd"
+    config_param :assume_role_session_name, :string, :default => "fluentd_sns"
     config_param :sts_credentials_region, :string, :default => nil
 
     config_param :sns_topic_name, :string
@@ -34,9 +34,9 @@ module Fluent::Plugin
     config_param :sns_body, :string, :default => nil
     config_param :sns_message_attributes, :hash, :default => nil
     config_param :sns_message_attributes_keys, :hash, :default => nil
-    config_param :sns_endpoint, :string, :default => 'sns.ap-northeast-1.amazonaws.com',
+    config_param :sns_endpoint, :string, :default => 'sns.us-east-1.amazonaws.com',
                  :obsoleted => 'Use sns_region instead'
-    config_param :sns_region, :string, :default => 'ap-northeast-1'
+    config_param :sns_region, :string, :default => 'us-east-1'
     config_param :proxy, :string, :default => ENV['HTTP_PROXY']
 
     def configure(conf)
@@ -53,7 +53,7 @@ module Fluent::Plugin
         options[:credentials] = Aws::Credentials.new(@aws_key_id, @aws_sec_key)
       end
       if @assume_role_arn
-        @sts_credentials_region ||= @region
+        @sts_credentials_region ||= @sns_region
         credentials_options = {}
         credentials_options[:role_arn] = @assume_role_arn
         credentials_options[:role_session_name] = @assume_role_session_name
