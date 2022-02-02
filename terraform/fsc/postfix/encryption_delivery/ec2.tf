@@ -12,8 +12,8 @@ locals {
   DEFAULT_INSTANCE_SIZE                = "t3.medium"
   DEFAULT_INSTANCE_COUNT               = 1
   DEFAULT_VOLUME_SIZE_GIBS             = 40
-  DEFAULT_SXL_DBL                      = "uri.cal1.sophosxl.com"
-  DEFAULT_SXL_RBL                      = "fur.cal1.sophosxl.com"
+  DEFAULT_SXL_DBL                      = "uri.vir1.sophosxl.com"
+  DEFAULT_SXL_RBL                      = "fur.vir1.sophosxl.com"
 
   AS_MIN_SIZE_BY_ENVIRONMENT = {
     inf  = 1
@@ -95,25 +95,25 @@ locals {
   }
 
   SXL_DBL_BY_ENVIRONMENT = {
-    inf  = "uri.cal1.sophosxl.com"
-    dev  = "uri.cal1.sophosxl.com"
-    qa   = "uri.cal1.sophosxl.com"
-    prod = "uri.cal1.sophosxl.com"
+    inf  = "uri.vir1.sophosxl.com"
+    dev  = "uri.vir1.sophosxl.com"
+    qa   = "uri.vir1.sophosxl.com"
+    prod = "uri.vir1.sophosxl.com"
   }
 
   SXL_DBL_BY_POP = {
-    stn000cmh = "uri.cal1.sophosxl.com"
+    stn000cmh = "uri.vir1.sophosxl.com"
   }
 
   SXL_RBL_BY_ENVIRONMENT = {
-    inf  = "fur.cal1.sophosxl.com"
-    dev  = "fur.cal1.sophosxl.com"
-    qa   = "fur.cal1.sophosxl.com"
-    prod = "fur.cal1.sophosxl.com"
+    inf  = "fur.vir1.sophosxl.com"
+    dev  = "fur.vir1.sophosxl.com"
+    qa   = "fur.vir1.sophosxl.com"
+    prod = "fur.vir1.sophosxl.com"
   }
 
   SXL_RBL_BY_POP = {
-    stn000cmh = "fur.cal1.sophosxl.com"
+    stn000cmh = "fur.vir1.sophosxl.com"
   }
 
   as_min_size = lookup(
@@ -230,6 +230,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     MsgHistoryV2BucketName          = var.msg_history_v2_bucket_name
     MsgHistoryV2DynamoDbTableName   = var.msg_history_v2_dynamodb
     MsgHistoryV2StreamName          = var.message_history_v2_stream_name
+    ParentAccountName               = local.input_param_parent_account_name
     PolicyTargetValue               = local.as_policy_target_value
     S3CookbookRepositoryURL         = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/${var.build_number}/cookbooks.tar.gz"
     ScaleInOnWeekends               = local.as_scale_in_on_weekends
