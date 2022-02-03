@@ -1,6 +1,7 @@
 locals {
   DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD = 600
   DEFAULT_INSTANCE_SIZE                = "t3.medium"
+  DEFAULT_EIP_COUNT                    = 1
   DEFAULT_XGEMAIL_SIZE_DATA_GB         = 10
   DEFAULT_ZONE_INDEX = {
     1 = 0
@@ -57,6 +58,13 @@ locals {
     }
   }
 
+  EIP_COUNT_BY_ENVIRONMENT = {
+    inf  = 1
+    dev  = 1
+    qa   = 1
+    prod = 9
+  }
+
   ZONE_INDEX_BY_ENVIRONMENT = {
     inf = {
       1 = 0
@@ -83,6 +91,12 @@ locals {
     local.AS_MIN_SIZE_BY_ENVIRONMENT,
     local.input_param_deployment_environment,
     local.DEFAULT_AS_MIN_SIZE
+  )
+
+  eip_count = lookup(
+    local.EIP_COUNT_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_EIP_COUNT
   )
 
   zone_index = lookup(
@@ -129,6 +143,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     BuildUrl                        = var.build_url
     BundleVersion                   = local.ami_build
     EbsMinIops                      = 0
+    EipCount                        = local.eip_count
     Environment                     = local.input_param_deployment_environment
     HealthCheckGracePeriod          = local.health_check_grace_period
     InstanceProfile                 = local.input_param_iam_instance_profile_name
