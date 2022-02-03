@@ -53,17 +53,14 @@ module Fluent::Plugin
         options[:credentials] = Aws::Credentials.new(@aws_key_id, @aws_sec_key)
       end
       if @assume_role_arn
-        @sts_credentials_region ||= @sns_region
         credentials_options = {}
         credentials_options[:role_arn] = @assume_role_arn
         credentials_options[:role_session_name] = @assume_role_session_name
-        credentials_options[:client] = Aws::STS::Client.new(region: @sts_credentials_region)
+        credentials_options[:client] = Aws::STS::Client.new(region: @sns_region)
         options[:credentials] = Aws::AssumeRoleCredentials.new(credentials_options)
       end
 
-      Aws.config.update(options)
-
-      @sns = Aws::SNS::Resource.new
+      @sns = Aws::SNS::Resource.new(options)
       @topic = @sns.topics.find{|topic| @sns_topic_name == topic.arn.split(":")[-1]}
       if @topic.nil?
         raise ConfigError, "No topic found for topic name #{@sns_topic_name}."
