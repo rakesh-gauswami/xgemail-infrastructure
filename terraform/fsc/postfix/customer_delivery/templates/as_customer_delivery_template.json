@@ -559,6 +559,11 @@
             "Key": "ServiceType",
             "Value": { "Fn::Sub": "${VpcName}:${XgemailServiceType}" },
             "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "SSMSessionRunAs",
+            "Value": "ec2-user",
+            "PropagateAtLaunch": "true"
           }
         ]
       },

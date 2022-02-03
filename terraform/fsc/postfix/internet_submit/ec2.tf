@@ -18,8 +18,8 @@ locals {
   DEFAULT_INSTANCE_SIZE                = "t3.medium"
   DEFAULT_INSTANCE_COUNT               = 1
   DEFAULT_XGEMAIL_SIZE_DATA_GB         = 35
-  DEFAULT_SXL_DBL                      = "uri.cal1.sophosxl.com"
-  DEFAULT_SXL_RBL                      = "fur.cal1.sophosxl.com"
+  DEFAULT_SXL_DBL                      = "uri.vir1.sophosxl.com"
+  DEFAULT_SXL_RBL                      = "fur.vir1.sophosxl.com"
 
   AS_ALARM_SCALING_ENABLED_BY_ENVIRONMENT = {
     inf  = false
@@ -146,25 +146,25 @@ locals {
   }
 
   SXL_DBL_BY_ENVIRONMENT = {
-    inf  = "uri.cal1.sophosxl.com"
-    dev  = "uri.cal1.sophosxl.com"
-    qa   = "uri.cal1.sophosxl.com"
-    prod = "uri.cal1.sophosxl.com"
+    inf  = "uri.vir1.sophosxl.com"
+    dev  = "uri.vir1.sophosxl.com"
+    qa   = "uri.vir1.sophosxl.com"
+    prod = "uri.vir1.sophosxl.com"
   }
 
   SXL_DBL_BY_POP = {
-    stn000cmh = "uri.cal1.sophosxl.com"
+    stn000cmh = "uri.vir1.sophosxl.com"
   }
 
   SXL_RBL_BY_ENVIRONMENT = {
-    inf  = "fur.cal1.sophosxl.com"
-    dev  = "fur.cal1.sophosxl.com"
-    qa   = "fur.cal1.sophosxl.com"
-    prod = "fur.cal1.sophosxl.com"
+    inf  = "fur.vir1.sophosxl.com"
+    dev  = "fur.vir1.sophosxl.com"
+    qa   = "fur.vir1.sophosxl.com"
+    prod = "fur.vir1.sophosxl.com"
   }
 
   SXL_RBL_BY_POP = {
-    stn000cmh = "fur.cal1.sophosxl.com"
+    stn000cmh = "fur.vir1.sophosxl.com"
   }
 
   alarm_scaling_enabled = lookup(
@@ -318,11 +318,11 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     HealthCheckGracePeriod           = local.health_check_grace_period
     InstanceProfile                  = local.input_param_iam_instance_profile_arn
     InstanceType                     = local.instance_size
-    JilterHeloTelemetryStreamName    = var.firehose_jilter_helo_telemetry_stream_name
+    JilterHeloTelemetryStreamName    = var.jilter_helo_telemetry_stream_name
     LifecycleHookTerminating         = local.input_param_lifecycle_hook_terminating
     LoadBalancerName                 = aws_elb.elb.id
     MsgHistoryV2BucketName           = var.message_history_ms_bucket
-    MsgHistoryV2StreamName           = var.firehose_msg_history_v2_stream_name
+    MsgHistoryV2StreamName           = var.message_history_v2_stream_name
     MessageHistoryEventsTopicArn     = var.message_history_events_sns_topic
     ParentAccountName                = local.input_param_parent_account_name
     PolicyTargetValue                = local.as_policy_target_value

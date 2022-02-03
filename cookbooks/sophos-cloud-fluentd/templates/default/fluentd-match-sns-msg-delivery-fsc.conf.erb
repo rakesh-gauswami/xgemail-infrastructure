@@ -1,0 +1,31 @@
+<match sns.msg.delivery.succeeded>
+  @type sns
+  sns_topic_name <%= @sns_topic %>
+  sns_region <%= @region %>
+  sns_body_template <%= @main_dir %>/sns_msg_delivery_template.erb
+  assume_role_arn <%= @assume_role_arn %>
+</match>
+
+<match sns.msg.delivery.failed>
+  @type sns
+  sns_topic_name <%= @sns_topic %>
+  sns_region <%= @region %>
+  sns_body_template <%= @main_dir %>/sns_msg_delivery_template.erb
+  assume_role_arn <%= @assume_role_arn %>
+</match>
+
+<match sns.msg.delivery.redirected>
+  @type sns
+  sns_topic_name <%= @sns_topic %>
+  sns_region <%= @region %>
+  sns_body_template <%= @main_dir %>/sns_msg_to_xdelivery_template.erb
+  assume_role_arn <%= @assume_role_arn %>
+</match>
+
+<match sns.msg.returned>
+  @type sns
+  sns_topic_name <%= @sns_topic %>
+  sns_region <%= @region %>
+  sns_body_template <%= @main_dir %>/sns_msg_delivery_template.erb
+  assume_role_arn <%= @assume_role_arn %>
+</match>

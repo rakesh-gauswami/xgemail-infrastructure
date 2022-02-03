@@ -136,6 +136,11 @@
       "Description" : "Message History firehose stream name",
       "Type": "String"
     },
+    "ParentAccountName" : {
+      "Description" : "FSC Parent Account Name",
+      "Type": "String",
+      "Default": ""
+    },
     "PolicyTargetValue": {
       "Description": "The target value for the metric.",
       "Type": "Number",
@@ -607,6 +612,7 @@
                     "    \"branch\"                                 : \"{{branch}}\",\n",
                     "    \"cluster\"                                : \"{{cluster}}\",\n",
                     "    \"client-endpoint\"                        : \"{{region}}\",\n",
+                    "    \"parent_account_name\"                    : \"{{parent_account_name}}\",\n",
                     "    \"region\"                                 : \"{{region}}\",\n",
                     "    \"station_account_role_arn\"               : \"{{station_account_role_arn}}\",\n",
                     "    \"vpc_id\"                                 : \"{{vpc_id}}\",\n",
@@ -646,6 +652,7 @@
                   "msg_history_v2_bucket_name":                     { "Ref": "MsgHistoryV2BucketName" },
                   "msg_history_v2_dynamodb_table_name":             { "Ref": "MsgHistoryV2DynamoDbTableName"},
                   "msg_history_v2_stream_name":                     { "Ref": "MsgHistoryV2StreamName" },
+                  "parent_account_name":                            { "Ref": "ParentAccountName" },
                   "region":                                         { "Ref": "AWS::Region" },
                   "stack":                                          { "Ref": "AWS::StackName" },
                   "station_account_role_arn":                       { "Ref": "StationAccountRoleArn" },
