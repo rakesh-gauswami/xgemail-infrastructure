@@ -210,6 +210,11 @@
       "Description": "The security group that allows communication within the VPC.",
       "Type": "List<AWS::EC2::SecurityGroup::Id>"
     },
+    "SmtpdAuthorizedXclientHosts": {
+      "Description": "Smtpd Authorized XClient Hosts",
+      "Type": "String",
+      "Default": ""
+    },
     "SpotPrice": {
       "Description": "Spot price",
       "Type": "String",
@@ -814,6 +819,7 @@
                     "    \"msg_history_v2_bucket_name\"             : \"{{msg_history_v2_bucket_name}}\",\n",
                     "    \"msg_history_v2_stream_name\"             : \"{{msg_history_v2_stream_name}}\",\n",
                     "    \"policy_efs_file_system_id\"              : \"{{policy_efs_file_system_id}}\",\n",
+                    "    \"smtpd_authorized_xclient_hosts\"         : \"{{smtpd_authorized_xclient_hosts}}\",\n",
                     "    \"station_vpc_id\"                         : \"{{station_vpc_id}}\",\n",
                     "    \"station_vpc_name\"                       : \"{{station_vpc_name}}\",\n",
                     "    \"sxl_dbl\"                                : \"{{sxl_dbl}}\",\n",
@@ -846,6 +852,7 @@
                   "msg_history_v2_stream_name":                     { "Ref": "MsgHistoryV2StreamName" },
                   "policy_efs_file_system_id":                      { "Ref": "XgemailPolicyEfsFileSystemId" },
                   "region":                                         { "Ref": "AWS::Region" },
+                  "smtpd_authorized_xclient_hosts":                 { "Ref": "SmtpdAuthorizedXclientHosts" },
                   "stack":                                          { "Ref": "AWS::StackName" },
                   "station_vpc_id":                                 { "Ref": "StationVpcId" },
                   "station_vpc_name":                               { "Ref": "StationVpcName" },
