@@ -15,6 +15,7 @@ locals {
   DEFAULT_AS_ON_HOUR_DESIRED           = 2
   DEFAULT_AS_SCALE_IN_OUT_WEEKDAYS     = false
   DEFAULT_AS_SCALE_IN_ON_WEEKENDS      = false
+  DEFAULT_EIP_COUNT                    = 1
   DEFAULT_INSTANCE_SIZE                = "t3.medium"
   DEFAULT_INSTANCE_COUNT               = 1
   DEFAULT_XGEMAIL_SIZE_DATA_GB         = 35
@@ -131,6 +132,13 @@ locals {
     prod = false
   }
 
+  EIP_COUNT_BY_ENVIRONMENT = {
+    inf  = 1
+    dev  = 1
+    qa   = 1
+    prod = 9
+  }
+
   INSTANCE_SIZE_BY_ENVIRONMENT = {
     inf  = "t3.small"
     dev  = "t3.small"
@@ -233,6 +241,12 @@ locals {
     local.DEFAULT_AS_CRON_SCALE_OUT
   )
 
+  eip_count = lookup(
+    local.EIP_COUNT_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_EIP_COUNT
+  )
+
   health_check_grace_period = lookup(
     local.AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT,
     local.input_param_deployment_environment,
@@ -317,6 +331,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     BundleVersion                    = local.ami_build
     DeployMaxBatchSize               = local.as_max_batch_size
     DeployMinInstancesInService      = local.as_min_service
+    EipCount                         = local.eip_count
     Environment                      = local.input_param_deployment_environment
     HealthCheckGracePeriod           = local.health_check_grace_period
     InstanceProfile                  = local.input_param_iam_instance_profile_arn
