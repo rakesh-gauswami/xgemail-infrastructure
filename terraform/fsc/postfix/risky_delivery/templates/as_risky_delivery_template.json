@@ -103,6 +103,12 @@
         "standard"
       ]
     },
+    "EipCount": {
+      "Description": "The number of Eips to use in Multi-Eip rotation",
+      "Type": "Number",
+      "Default": "1",
+      "MinValue": "1"
+    },
     "Environment": {
       "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
       "Type": "String"
@@ -578,6 +584,13 @@
             "Key": "ServiceType",
             "Value": {
               "Fn::Sub": "${VpcName}:${XgemailServiceType}"
+            },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "EipCount",
+            "Value": {
+              "Ref": "EipCount"
             },
             "PropagateAtLaunch": "true"
           }
