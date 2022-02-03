@@ -173,10 +173,7 @@ def get_instances_by_name():
             },
             {
                 'Name': 'tag:Name',
-                'Values': [
-                    'CloudEmail:beta-delivery:*',
-                    'CloudEmail:beta-xdelivery:*'
-                ]
+                'Values': []
             }
         ]
     )
