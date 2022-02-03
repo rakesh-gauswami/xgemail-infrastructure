@@ -20,6 +20,7 @@ BULKSENDER_FORMATTER = 'bulksenderformatter.py'
 BULK_SENDER_ACTION = "bulk_sender_action.py"
 DELIVERY_DIRECTOR_FORMATTER = "deliverydirectorthreshold.py"
 TELEMETRY_DATA_FORMATTER = "telemetrydataformatter.py"
+STATION_ACCOUNT_ROLE_ARN = node['sophos_cloud']['station_account_role_arn']
 
 [
   XGEMAIL_FILES_DIR,
@@ -40,9 +41,19 @@ file "#{XGEMAIL_UTILS_DIR}/__init__.py" do
   group 'root'
 end
 
+template 'awshandler' do
+  path "#{XGEMAIL_UTILS_DIR}/awshandler.py"
+  source 'awshandler.py.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :station_account_role_arn => STATION_ACCOUNT_ROLE_ARN
+  )
+end
+
 [
   'allowblockimporter.py',
-  'awshandler.py',
   'configformatter.py',
   'diskutils.py',
   'formatterutils.py',

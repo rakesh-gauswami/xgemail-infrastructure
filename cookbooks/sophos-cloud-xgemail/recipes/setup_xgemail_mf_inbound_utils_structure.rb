@@ -20,10 +20,11 @@ BULKSENDER_FORMATTER = 'bulksenderformatter.py'
 BULK_SENDER_ACTION = "bulk_sender_action.py"
 DELIVERY_DIRECTOR_FORMATTER = "deliverydirectorthreshold.py"
 TELEMETRY_DATA_FORMATTER = "telemetrydataformatter.py"
+STATION_ACCOUNT_ROLE_ARN = node['sophos_cloud']['station_account_role_arn']
 
 [
-    XGEMAIL_FILES_DIR,
-    XGEMAIL_UTILS_DIR
+  XGEMAIL_FILES_DIR,
+  XGEMAIL_UTILS_DIR
 ].each do | cur |
   directory cur do
     mode '0755'
@@ -40,30 +41,40 @@ file "#{XGEMAIL_UTILS_DIR}/__init__.py" do
   group 'root'
 end
 
+template 'awshandler' do
+  path "#{XGEMAIL_UTILS_DIR}/awshandler.py"
+  source 'awshandler.py.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :station_account_role_arn => STATION_ACCOUNT_ROLE_ARN
+  )
+end
+
 [
-    'allowblockimporter.py',
-    'awshandler.py',
-    'configformatter.py',
-    'diskutils.py',
-    'formatterutils.py',
-    'gziputils.py',
-    'impersonation_updater.py',
-    'mailinfoformatter.py',
-    'messageformatter.py',
-    'messagehistory.py',
-    'messagehistoryformatter.py',
-    'metadataformatter.py',
-    'multipolicyreaderutils.py',
-    'nonrecoverableexception.py',
-    'notadirectoryexception.py',
-    'recipientsplitconfig.py',
-    'recoverableexception.py',
-    'routingmanager.py',
-    'scaneventattributes.py',
-    'uuidutils.py',
-    'rfxrecoveryutils.py',
-    'get_metadata_from_msghistory_config.py',
-    'toggle_flag_s3.py'
+  'allowblockimporter.py',
+  'configformatter.py',
+  'diskutils.py',
+  'formatterutils.py',
+  'gziputils.py',
+  'impersonation_updater.py',
+  'mailinfoformatter.py',
+  'messageformatter.py',
+  'messagehistory.py',
+  'messagehistoryformatter.py',
+  'metadataformatter.py',
+  'multipolicyreaderutils.py',
+  'nonrecoverableexception.py',
+  'notadirectoryexception.py',
+  'recipientsplitconfig.py',
+  'recoverableexception.py',
+  'routingmanager.py',
+  'scaneventattributes.py',
+  'uuidutils.py',
+  'rfxrecoveryutils.py',
+  'get_metadata_from_msghistory_config.py',
+  'toggle_flag_s3.py'
 ].each do | cur |
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{cur}" do
     source cur

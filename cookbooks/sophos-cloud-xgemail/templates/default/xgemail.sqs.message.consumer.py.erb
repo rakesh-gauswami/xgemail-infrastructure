@@ -652,13 +652,6 @@ def deliver_messages():
                             headers
                         )
     
-                # Add the transport route header to the existing headers if it's an INBOUND message
-                if MESSAGE_DIRECTION == 'INBOUND':
-                    add_transport_route_header(
-                        recipients,
-                        headers
-                    )
-
                 if NODE_TYPE == 'mf-outbound-delivery':
                     headers[X_SOPHOS_MAILFLOW_PROCESSING_ID] = str(uuid.uuid4()).replace('-','')
 

@@ -10,31 +10,56 @@
 #
 # This script is responsible for communicating with AWS.
 
-import os
 import boto3
 import json
 from botocore.exceptions import ClientError
+from botocore.credentials import RefreshableCredentials
+from botocore.session import get_session
+from boto3 import Session
+from uuid import uuid4
 
-if os.environ.get('STATION_PROFILE') is None:
-    aws_profile = None
-else:
-    aws_profile = os.environ.get('STATION_PROFILE')
 
 class AwsHandler(object):
-    def __init__(self, aws_region, aws_profile=None):
+    def __init__(self, aws_region):
         self.aws_region = aws_region
-        self.aws_profile = aws_profile
-        if aws_region != 'local':
-            self.session = boto3.session.Session(profile_name=aws_profile, region_name=aws_region)
-            self.s3_client = self.session.client("s3")
-            self.sqs_client = self.session.client("sqs")
-            self.sns_client = self.session.client("sns")
-            self.firehose_client = self.session.client('firehose')
+        self.role_arn = "<%= @station_account_role_arn %>"
+        if self.role_arn == 'none':
+            self.session = boto3.session.Session(region_name=self.aws_region)
         else:
-            self.s3_client  = boto3.client("s3", region_name='us-east-1', aws_access_key_id='', aws_secret_access_key='', endpoint_url='http://localstack:4572')
-            self.sqs_client = boto3.client("sqs", region_name='us-east-1', aws_access_key_id='', aws_secret_access_key='', endpoint_url='http://localstack:4576')
-            self.sns_client = boto3.client("sns", region_name='us-east-1', aws_access_key_id='', aws_secret_access_key='', endpoint_url='http://localstack:4575')
-            self.firehose_client = boto3.client('firehose', region_name='us-east-1', aws_access_key_id='', aws_secret_access_key='', endpoint_url='http://localstack:4575')
+            self.session = self.refreshable_session()
+        self.s3_client = self.session.client("s3")
+        self.sqs_client = self.session.client("sqs")
+        self.sns_client = self.session.client("sns")
+        self.firehose_client = self.session.client('firehose')
+
+    def __get_session_credentials(self):
+        session = Session(region_name=self.aws_region)
+        sts_client = session.client("sts", region_name=self.aws_region)
+        response = sts_client.assume_role(
+            RoleArn=self.role_arn,
+            RoleSessionName=uuid4().hex,
+            DurationSeconds=3000,
+        ).get("Credentials")
+        credentials = {
+            "access_key": response.get("AccessKeyId"),
+            "secret_key": response.get("SecretAccessKey"),
+            "token": response.get("SessionToken"),
+            "expiry_time": response.get("Expiration").isoformat(),
+        }
+        return credentials
+
+    def refreshable_session(self):
+        refreshable_credentials = RefreshableCredentials.create_from_metadata(
+            metadata=self.__get_session_credentials(),
+            refresh_using=self.__get_session_credentials,
+            method="sts-assume-role",
+        )
+        session = get_session()
+        session._credentials = refreshable_credentials
+        session.set_config_variable("region", self.aws_region)
+        autorefresh_session = Session(botocore_session=session)
+        return autorefresh_session
+
     # puts data into S3 bucket
     def upload_data_in_s3(self, bucket, key, data, expires, encryption):
         params = {
@@ -53,12 +78,12 @@ class AwsHandler(object):
             MessageBody=message_body)
 
     # publishes data to sns topic
-    def publish_to_sns_topic(self, topic_arn, message_body, message_attributes = {}):
+    def publish_to_sns_topic(self, topic_arn, message_body, message_attributes={}):
         return self.sns_client.publish(
-                TargetArn=topic_arn,
-                Message=message_body,
-                MessageAttributes=message_attributes
-            )
+            TargetArn=topic_arn,
+            Message=message_body,
+            MessageAttributes=message_attributes
+        )
 
     def download_message_from_s3(self, bucket, sqs_message):
         # remove leading slash and append proper data type
