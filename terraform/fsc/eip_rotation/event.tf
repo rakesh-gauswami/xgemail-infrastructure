@@ -7,16 +7,16 @@ locals {
       "aws.autoscaling"
     ],
     "account": [
-      "${local.account_id}"
+      local.account_id
     ],
     "region": [
-      "${local.input_param_primary_region}"
+      local.input_param_primary_region
     ],
     "detail-type": [
       "EC2 Instance-launch Lifecycle Action"
     ],
     "detail": {
-      "LifecycleHookName": [],
+      "LifecycleHookName": [""],
       "LifecycleTransition": [
         "autoscaling:EC2_INSTANCE_LAUNCHING"
       ]
