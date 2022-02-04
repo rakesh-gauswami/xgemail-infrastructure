@@ -15,6 +15,7 @@ import base64
 import traceback
 import hashlib
 import boto3
+import re
 from awshandler import AwsHandler
 import policyformatter
 from recipientsplitconfig import RecipientSplitConfig
@@ -53,6 +54,8 @@ OUTBOUND_SPLIT_BY_RECIPIENTS_CONFIG_PATH = OUTBOUND_RELAY_CONTROL_PATH + 'msg_ou
 
 OUTBOUND_METADATA_FROM_MESSAGE_HISTORY_CONFIG_PATH = OUTBOUND_RELAY_CONTROL_PATH + 'get_outbound_metadata_from_msghistory.CONFIG'
 INBOUND_METADATA_FROM_MESSAGE_HISTORY_CONFIG_PATH  = INBOUND_RELAY_CONTROL_PATH + 'get_inbound_metadata_from_msghistory.CONFIG'
+
+PLUS_SIGN = "+"
 
 logger = logging.getLogger('multi-policy-reader-utils')
 logger.setLevel(logging.INFO)
@@ -163,6 +166,12 @@ def build_policy_map(recipients, aws_region = None, policy_bucket_name = None, p
 
             if (is_toc_enabled != True): #Not to read endpoint policy for ToC config if found enabled for processed recipients
                 endpoint_policy = read_policy_endpoint(recipient, customer_policy['userId'], aws_region, policy_bucket_name, read_from_s3)
+                if endpoint_policy is None and PLUS_SIGN in recipient:
+                    match = re.search('(.*?)\+(.*?)', recipient)
+                    if match:
+                        recipient_mailbox_name = match.group(1)
+                        endpoint_policy = read_policy_endpoint(recipient_mailbox_name, customer_policy['userId'], aws_region, policy_bucket_name, read_from_s3)
+
                 if not endpoint_policy:
                     return None, None
 
@@ -183,6 +192,11 @@ def build_policy_map(recipients, aws_region = None, policy_bucket_name = None, p
             begin_time = time.time()
 
             customer_policy = read_policy_from_S3(recipient, aws_region, policy_bucket_name)
+            if customer_policy is None and PLUS_SIGN in recipient:
+                match = re.search('(.*?)\+(.*?)', recipient)
+                if match:
+                    recipient_mailbox_name = match.group(1)
+                    customer_policy = read_policy_from_S3(recipient_mailbox_name, aws_region, policy_bucket_name)
 
             elapsed_time = time.time() - begin_time
             elapsed_time = elapsed_time * 1000
@@ -203,6 +217,11 @@ def build_policy_map(recipients, aws_region = None, policy_bucket_name = None, p
             begin_time = time.time()
 
             customer_policy = read_policy_from_EFS(recipient)
+            if customer_policy is None and PLUS_SIGN in recipient:
+                match = re.search('(.*?)\+(.*?)', recipient)
+                if match:
+                    recipient_mailbox_name = match.group(1)
+                    customer_policy = read_policy_from_EFS(recipient_mailbox_name)
 
             elapsed_time = time.time() - begin_time
             elapsed_time = elapsed_time * 1000
@@ -243,7 +262,7 @@ def read_policy_from_S3(recipient, aws_region, policy_bucket_name):
         # Try old location
         file_name = build_recipient_file_path(recipient, MULTI_POLICY_DOMAINS_PATH)
         policy_file = load_multi_policy_file_from_S3(aws_region, policy_bucket_name, file_name)
-    return policy_file    
+    return policy_file
 
 
 def policy_file_exists_in_S3(recipient, aws_region, policy_bucket_name):
@@ -395,6 +414,11 @@ def read_policy(recipient, aws_region, policy_bucket_name, read_from_s3):
         logger.debug("ToC user based split, Reading policy for {0} directly from s3".format(recipient))
         begin_time = time.time()
         customer_policy = read_policy_from_S3(recipient, aws_region, policy_bucket_name)
+        if customer_policy is None and PLUS_SIGN in recipient:
+            match = re.search('(.*?)\+(.*?)', recipient)
+            if match:
+                recipient_mailbox_name = match.group(1)
+                customer_policy = read_policy_from_S3(recipient_mailbox_name, aws_region, policy_bucket_name)
     else:
         logger.debug("ToC user based split, Reading policy for {0} from EFS".format(recipient))
         begin_time = time.time()
