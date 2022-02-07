@@ -11,10 +11,11 @@ locals {
   DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD = 2400
   DEFAULT_AS_POLICY_TARGET_VALUE       = 90
   DEFAULT_AS_SCALE_IN_ON_WEEKENDS      = false
+  DEFAULT_EIP_COUNT                    = 1
   DEFAULT_INSTANCE_SIZE                = "t3.medium"
   DEFAULT_XGEMAIL_SIZE_DATA_GB         = 10
-  DEFAULT_SXL_DBL                      = "uri.cal1.sophosxl.com"
-  DEFAULT_SXL_RBL                      = "fur.cal1.sophosxl.com"
+  DEFAULT_SXL_DBL                      = "uri.vir1.sophosxl.com"
+  DEFAULT_SXL_RBL                      = "fur.vir1.sophosxl.com"
 
   AS_ALARM_SCALING_ENABLED_BY_ENVIRONMENT = {
     inf  = false
@@ -99,6 +100,13 @@ locals {
     prod = false
   }
 
+  EIP_COUNT_BY_ENVIRONMENT = {
+    inf  = 1
+    dev  = 1
+    qa   = 1
+    prod = 9
+  }
+
   INSTANCE_SIZE_BY_ENVIRONMENT = {
     inf  = "t3.medium"
     dev  = "t3.medium"
@@ -114,25 +122,25 @@ locals {
   }
 
   SXL_DBL_BY_ENVIRONMENT = {
-    inf  = "uri.cal1.sophosxl.com"
-    dev  = "uri.cal1.sophosxl.com"
-    qa   = "uri.cal1.sophosxl.com"
-    prod = "uri.cal1.sophosxl.com"
+    inf  = "uri.vir1.sophosxl.com"
+    dev  = "uri.vir1.sophosxl.com"
+    qa   = "uri.vir1.sophosxl.com"
+    prod = "uri.vir1.sophosxl.com"
   }
 
   SXL_DBL_BY_POP = {
-    stn000cmh = "uri.cal1.sophosxl.com"
+    stn000cmh = "uri.vir1.sophosxl.com"
   }
 
   SXL_RBL_BY_ENVIRONMENT = {
-    inf  = "fur.cal1.sophosxl.com"
-    dev  = "fur.cal1.sophosxl.com"
-    qa   = "fur.cal1.sophosxl.com"
-    prod = "fur.cal1.sophosxl.com"
+    inf  = "fur.vir1.sophosxl.com"
+    dev  = "fur.vir1.sophosxl.com"
+    qa   = "fur.vir1.sophosxl.com"
+    prod = "fur.vir1.sophosxl.com"
   }
 
   SXL_RBL_BY_POP = {
-    stn000cmh = "fur.cal1.sophosxl.com"
+    stn000cmh = "fur.vir1.sophosxl.com"
   }
 
   alarm_scaling_enabled = lookup(
@@ -187,6 +195,12 @@ locals {
     local.AS_CRON_SCALE_UP_BY_ENVIRONMENT,
     local.input_param_deployment_environment,
     local.DEFAULT_AS_CRON_SCALE_UP
+  )
+
+  eip_count = lookup(
+    local.EIP_COUNT_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_EIP_COUNT
   )
 
   health_check_grace_period = lookup(
@@ -262,6 +276,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     BundleVersion                   = local.ami_build
     DeployMaxBatchSize              = local.as_max_batch_size
     DeployMinInstancesInService     = local.as_min_service
+    EipCount                        = local.eip_count
     Environment                     = local.input_param_deployment_environment
     HealthCheckGracePeriod          = local.health_check_grace_period
     InstanceProfile                 = local.input_param_iam_instance_profile_name

@@ -22,6 +22,10 @@ output "postfix_sxl_update_automation_role_name" {
   value = aws_iam_role.postfix_sxl_update_automation_role.id
 }
 
+output "session_manager_runshell_name" {
+  value = aws_ssm_document.session_manager_runshell.name
+}
+
 output "ssm_postconf_command_name" {
   value = aws_ssm_document.ssm_postconf_command.name
 }
