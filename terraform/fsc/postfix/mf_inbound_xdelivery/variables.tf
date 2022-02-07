@@ -33,11 +33,6 @@ variable "message_history_v2_stream_name" {
   description = "message_history_v2_stream_name"
 }
 
-variable "message_history_bucket" {
-  type        = string
-  description = "msg_history_bucket"
-}
-
 variable "message_history_status_sqs_queue" {
   type        = string
   description = "msg_history_status_sqs_queue"

@@ -18,29 +18,24 @@ variable "build_url" {
   description = "Build URL"
 }
 
-variable "message_history_dynamodb_table_name" {
-  type        = string
-  description = "message_history_dynamodb_table_name"
-}
-
-variable "message_history_ms_bucket" {
-  type        = string
-  description = "msg_history_ms_bucket"
-}
-
-variable "message_history_v2_stream_name" {
-  type        = string
-  description = "message_history_v2_stream_name"
-}
-
 variable "message_history_bucket" {
   type        = string
   description = "msg_history_bucket"
 }
 
+variable "message_history_dynamodb_table_name" {
+  type        = string
+  description = "message_history_dynamodb_table_name"
+}
+
 variable "message_history_status_sns_topic" {
   type        = string
   description = "msg_history_status_sns_topic"
+}
+
+variable "message_history_v2_stream_name" {
+  type        = string
+  description = "message_history_v2_stream_name"
 }
 
 variable "notifier_request_sqs_queue" {
