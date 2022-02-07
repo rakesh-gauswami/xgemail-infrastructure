@@ -16,7 +16,7 @@ data "aws_iam_policy_document" "mf_elb_o365_ip_sync_lambda_trust_policy" {
 }
 
 resource "aws_iam_role" "mf_elb_o365_ip_sync_lambda_execution_role" {
-  name               = "eip-monitor-lambda-execution-role"
+  name               = "mf_elb_o365_ip_sync_lambda_execution_role"
   assume_role_policy = data.aws_iam_policy_document.mf_elb_o365_ip_sync_lambda_trust_policy.json
 }
 
@@ -32,12 +32,21 @@ data "aws_iam_policy_document" "mf_elb_o365_ip_sync_lambda_role_policy" {
     ]
     effect    = "Allow"
     resources = ["arn:aws:logs:*:*:*"]
-  }
+  },
   statement {
     sid = "Ec2Permissions"
     actions = [
-      "ec2:CreateTags",
-      "ec2:DescribeAddresses",
+      "ec2:AuthorizeSecurityGroupIngress",
+      "ec2:DescribeSecurityGroups",
+      "ec2:RevokeSecurityGroupIngress"
+    ]
+    effect    = "Allow"
+    resources = ["*"]
+  },
+  statement {
+    sid = "SsmPermissions"
+    actions = [
+      "ssm:GetParameter"
     ]
     effect    = "Allow"
     resources = ["*"]
