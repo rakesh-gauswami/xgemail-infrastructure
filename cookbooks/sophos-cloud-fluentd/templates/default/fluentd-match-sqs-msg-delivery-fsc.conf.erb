@@ -1,0 +1,36 @@
+<match sqs.msg.delivery.succeeded>
+  @type sqs
+  queue_name <%= @delivery_status_queue %>
+  create_queue false
+  region <%= @region %>
+  delay_seconds <%= @sqs_delivery_delay %>
+  include_tag false
+  assume_role_arn <%= @assume_role_arn %>
+</match>
+<match sqs.msg.delivery.failed>
+  @type sqs
+  queue_name <%= @delivery_status_queue %>
+  create_queue false
+  region <%= @region %>
+  delay_seconds <%= @sqs_delivery_delay %>
+  include_tag false
+  assume_role_arn <%= @assume_role_arn %>
+</match>
+<match sqs.msg.delivery.redirected>
+  @type sqs
+  queue_name <%= @delivery_status_queue %>
+  create_queue false
+  region <%= @region %>
+  delay_seconds <%= @sqs_delivery_delay %>
+  include_tag false
+  assume_role_arn <%= @assume_role_arn %>
+</match>
+<match sqs.msg.returned>
+  @type sqs
+  queue_name <%= @delivery_status_queue %>
+  create_queue false
+  region <%= @region %>
+  delay_seconds <%= @sqs_delivery_delay %>
+  include_tag false
+  assume_role_arn <%= @assume_role_arn %>
+</match>
