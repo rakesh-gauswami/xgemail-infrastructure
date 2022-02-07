@@ -396,6 +396,12 @@ aws:
       template_parameters:
         TagApplication:                                           "atr-index"
         TopicName:                                                "{{sns.atr_reindex_sns_topic}}"
+    snd_live_backup_reindex_sns_topic:
+      stack_name:                                                 "{{stack.sns.snd_live_backup_reindex_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TagApplication:                                           "snd-sxl"
+        TopicName:                                                "{{sns.snd_live_backup_reindex_sns_topic}}"
     alarm_sns_topic:
       stack_name:                                                 "{{stack.sns.alarm_sns_topic}}"
       template:                                                   "{{template.sns.sns_template}}"
