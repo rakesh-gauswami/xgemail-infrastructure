@@ -138,11 +138,12 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     KmsKeyAlias                     = module.kms_key.key_alias_name
     LifecycleHookLaunching          = local.input_param_lifecycle_hook_launching
     LoadBalancerName                = aws_elb.elb.id
-    MsgHistoryStatusQueueUrl        = var.message_history_status_sqs_queue
     MsgHistoryStatusSnsArn          = var.message_history_status_sns_topic
     MsgHistoryV2BucketName          = var.message_history_bucket
     MsgHistoryV2DynamoDbTableName   = var.message_history_dynamodb_table_name
     MsgHistoryV2StreamName          = var.message_history_v2_stream_name
+    NotifierQueueUrl                = var.notifier_request_sqs_queue
+    PolicyBucketName                = var.policy_bucket
     S3CookbookRepositoryURL         = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/${var.build_number}/cookbooks.tar.gz"
     ScaleDownOnWeekends             = "true"
     SdbRegion                       = "us-east-1"
@@ -156,8 +157,6 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     Vpc                             = local.input_param_vpc_id
     VpcName                         = local.input_param_vpc_name
     VpcZoneIdentifiers              = join(",", local.input_param_public_subnet_ids)
-    XgemailNotifierQueueUrl         = var.notifier_request_sqs_queue
-    XgemailPolicyBucketName         = var.policy_bucket
     XgemailServiceType              = local.instance_type
   }
 }

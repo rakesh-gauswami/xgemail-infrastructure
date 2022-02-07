@@ -86,6 +86,12 @@
       "MinValue": "0",
       "MaxValue": "4000"
     },
+    "EbsMinSizeDataGB": {
+      "Description": "Total GB to reserve for storing data files",
+      "Type": "Number",
+      "MinValue": "1",
+      "MaxValue": "16384"
+    },
     "Environment": {
       "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
       "Type": "String"
@@ -116,6 +122,11 @@
       "Description": "Name for the ELB to attach to the Auto Scaling Group",
       "Type": "List<String>"
     },
+    "MsgHistoryStatusSnsArn": {
+      "Description" : "ARN for the SNS Topic where Message History delivery status events are published",
+      "Type" : "String",
+      "Default": ""
+    },
     "MsgHistoryV2BucketName" : {
       "Description" : "Message History s3 bucket name for writing failure records",
       "Type": "String"
@@ -128,9 +139,9 @@
       "Description" : "Message History firehose stream name",
       "Type": "String"
     },
-    "ParentAccountName" : {
-      "Description" : "FSC Parent Account Name",
-      "Type": "String",
+    "NotifierQueueUrl" : {
+      "Description" : "URL for the SQS Queue where XGEMAIL notification messages are sent",
+      "Type" : "String",
       "Default": ""
     },
     "PolicyBucketName" : {
@@ -497,7 +508,6 @@
                       "  },\n",
                       "  \"xgemail\" : {\n",
                       "    \"cluster_type\"                       : \"{{cluster_type}}\",\n",
-                      "    \"msg_history_status_queue_url\"       : \"{{msg_history_status_queue_url}}\",\n",
                       "    \"msg_history_status_sns_arn\"         : \"{{msg_history_delivery_status_sns_arn}}\",\n",
                       "    \"msg_history_v2_bucket_name\"         : \"{{msg_history_v2_bucket_name}}\",\n",
                       "    \"msg_history_v2_dynamodb_table_name\" : \"{{msg_history_v2_dynamodb_table_name}}\",\n",
@@ -522,11 +532,11 @@
                   "cluster_type":                             { "Ref": "XgemailServiceType" },
                   "environment":                              { "Ref": "Environment" },
                   "kms_alias":                                { "Ref": "KmsKeyAlias" },
-                  "msg_history_status_queue_url":             { "Ref": "MsgHistoryStatusQueueUrl" },
                   "msg_history_delivery_status_sns_arn":      { "Ref": "MsgHistoryStatusSnsArn"},
                   "msg_history_v2_bucket_name":               { "Ref": "MsgHistoryV2BucketName" },
                   "msg_history_v2_dynamodb_table_name":       { "Ref": "MsgHistoryV2DynamoDbTableName"},
                   "msg_history_v2_stream_name":               { "Ref": "MsgHistoryV2StreamName" },
+                  "msg_notifier_queue_url":                   { "Ref": "NotifierQueueUrl" },
                   "region":                                   { "Ref": "AWS::Region" },
                   "sdb_region":                               { "Ref": "SdbRegion" },
                   "station_account_role_arn":                 { "Ref": "StationAccountRoleArn" },
@@ -534,7 +544,7 @@
                   "stack":                                    { "Ref": "AWS::StackName" },
                   "station_vpc_name":                         { "Ref": "StationVpcName" },
                   "volume_min_iops":                          { "Ref": "EbsMinIops" },
-                  "volume_min_size_data_gb":                  { "Ref": "XgemailMinSizeDataGB" },
+                  "volume_min_size_data_gb":                  { "Ref": "EbsMinSizeDataGB" },
                   "volume_set_id":                            { "Ref": "VolumeSetId" },
                   "volume_tracker_sdb_domain":                { "Ref": "VolumeTrackerSimpleDbDomain" },
                   "vpc_id":                                   { "Ref": "Vpc" },
