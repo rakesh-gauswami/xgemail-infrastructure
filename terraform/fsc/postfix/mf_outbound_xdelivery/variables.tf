@@ -18,6 +18,16 @@ variable "build_url" {
   description = "Build URL"
 }
 
+variable "message_history_dynamodb_table_name" {
+  type        = string
+  description = "message_history_dynamodb_table_name"
+}
+
+variable "message_history_ms_bucket" {
+  type        = string
+  description = "msg_history_ms_bucket"
+}
+
 variable "message_history_v2_stream_name" {
   type        = string
   description = "message_history_v2_stream_name"
@@ -28,24 +38,14 @@ variable "message_history_bucket" {
   description = "msg_history_bucket"
 }
 
-variable "message_history_ms_bucket" {
+variable "message_history_status_sqs_queue" {
   type        = string
-  description = "msg_history_ms_bucket"
+  description = "msg_history_status_sqs_queue"
 }
 
-variable "message_history_dynamodb_table_name" {
+variable "message_history_status_sns_topic" {
   type        = string
-  description = "msg_history_dynamodb_table_name"
-}
-
-variable "message_history_sqs_queue" {
-  type        = string
-  description = "msg_history_sqs_queue"
-}
-
-variable "notifier_request_sqs_queue" {
-  type        = string
-  description = "notifier_request_sqs_queue"
+  description = "msg_history_status_sns_topic"
 }
 
 variable "policy_bucket" {

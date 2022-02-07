@@ -1,7 +1,7 @@
 locals {
   DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD = 2400
   DEFAULT_INSTANCE_SIZE                = "t3.medium"
-  DEFAULT_XGEMAIL_SIZE_DATA_GB         = 10
+  DEFAULT_EBS_SIZE_DATA_GB             = 10
   DEFAULT_ZONE_INDEX = {
     1 = 0
     2 = 1
@@ -27,7 +27,7 @@ locals {
     prod = "m5.2xlarge"
   }
 
-  XGEMAIL_SIZE_DATA_GB_BY_ENVIRONMENT = {
+  EBS_SIZE_DATA_GB_BY_ENVIRONMENT = {
     inf  = 10
     dev  = 40
     qa   = 70
@@ -85,6 +85,12 @@ locals {
     local.DEFAULT_AS_MIN_SIZE
   )
 
+  ebs_size_data_gb = lookup(
+    local.EBS_SIZE_DATA_GB_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_EBS_SIZE_DATA_GB
+  )
+
   zone_index = lookup(
     local.ZONE_INDEX_BY_ENVIRONMENT,
     local.input_param_deployment_environment,
@@ -103,18 +109,13 @@ locals {
     local.DEFAULT_INSTANCE_SIZE
   )
 
-  xgemail_size_data_gb = lookup(
-    local.XGEMAIL_SIZE_DATA_GB_BY_ENVIRONMENT,
-    local.input_param_deployment_environment,
-    local.DEFAULT_XGEMAIL_SIZE_DATA_GB
-  )
 }
 
 
 resource "aws_cloudformation_stack" "cloudformation_stack" {
   for_each      = local.zone_index
   name          = "${local.instance_type}-${each.key}"
-  template_body = file("${path.module}/templates/as_internet_xdelivery_template.json")
+  template_body = file("${path.module}/templates/as_${path.module}_template.json")
   parameters = {
     AccountName                     = local.input_param_account_name
     AmiId                           = data.aws_ami.ami.id
@@ -129,6 +130,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     BuildUrl                        = var.build_url
     BundleVersion                   = local.ami_build
     EbsMinIops                      = 0
+    EbsMinSizeDataGB                = local.ebs_size_data_gb
     Environment                     = local.input_param_deployment_environment
     HealthCheckGracePeriod          = local.health_check_grace_period
     InstanceProfile                 = local.input_param_iam_instance_profile_name
@@ -136,6 +138,8 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     KmsKeyAlias                     = module.kms_key.key_alias_name
     LifecycleHookLaunching          = local.input_param_lifecycle_hook_launching
     LoadBalancerName                = aws_elb.elb.id
+    MsgHistoryStatusQueueUrl        = var.message_history_status_sqs_queue
+    MsgHistoryStatusSnsArn          = var.message_history_status_sns_topic
     MsgHistoryV2BucketName          = var.message_history_bucket
     MsgHistoryV2DynamoDbTableName   = var.message_history_dynamodb_table_name
     MsgHistoryV2StreamName          = var.message_history_v2_stream_name
@@ -152,7 +156,6 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     Vpc                             = local.input_param_vpc_id
     VpcName                         = local.input_param_vpc_name
     VpcZoneIdentifiers              = join(",", local.input_param_public_subnet_ids)
-    XgemailMinSizeDataGB            = local.xgemail_size_data_gb
     XgemailNotifierQueueUrl         = var.notifier_request_sqs_queue
     XgemailPolicyBucketName         = var.policy_bucket
     XgemailServiceType              = local.instance_type

@@ -120,6 +120,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
   parameters = {
     AccountName                       = local.input_param_account_name
     AmiId                             = data.aws_ami.ami.id
+    AutoScalingInstanceRoleArn        = local.input_param_autoscaling_role_arn
     AutoScalingMinSize                = local.as_min_size[each.key]
     AutoScalingMaxSize                = 1
     AutoScalingNotificationTopicARN   = local.input_param_lifecycle_topic_arn

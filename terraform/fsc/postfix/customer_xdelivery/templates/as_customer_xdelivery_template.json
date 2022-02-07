@@ -36,6 +36,10 @@
       "Description": "AMI ID to use as a base for the stack",
       "Type": "String"
     },
+    "AutoScalingInstanceRoleArn": {
+      "Description": "Arn of the AutoScaling Role.",
+      "Type": "String"
+    },
     "AutoScalingMaxSize": {
       "Description": "Maximum number of instances in the Auto Scaling Group",
       "Type": "String",
@@ -195,9 +199,9 @@
       "Default": ""
     },
     "StationVpcName": {
-      "Description": "Name of the CloudStation VPC",
+      "Description": "Name of the Station VPC",
       "Type": "String",
-      "Default": "CloudStation"
+      "Default": "station"
     },
     "UpdateInterval": {
       "Description": "The interval in minutes cfn-hup watches stack modifications.",
@@ -222,7 +226,7 @@
     "VpcName": {
       "Description": "Name of an existing VPC",
       "Type": "String",
-      "Default": "CloudStation"
+      "Default": "email"
     },
     "VpcZoneIdentifiers": {
       "Description": "The list of Public Subnets for your VPC",
@@ -372,6 +376,15 @@
           },
           "Version": {"Fn::GetAtt": ["XgemailAutoScalingLaunchTemplate", "LatestVersionNumber"]}
         },
+        "LifecycleHookSpecificationList" : [
+          {
+            "LifecycleHookName": { "Ref": "LifecycleHookLaunching" },
+            "HeartbeatTimeout" : "300",
+            "LifecycleTransition" : "autoscaling:EC2_INSTANCE_LAUNCHING",
+            "NotificationTargetARN" : { "Ref": "AutoScalingNotificationTopicARN" },
+            "RoleARN" : { "Ref": "AutoScalingInstanceRoleArn" }
+          }
+        ],
         "LoadBalancerNames": { "Ref": "LoadBalancerName" },
         "MaxSize": { "Ref": "AutoScalingMaxSize" },
         "MinSize": { "Ref": "AutoScalingMinSize" },

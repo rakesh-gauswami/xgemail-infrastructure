@@ -1,7 +1,7 @@
 locals {
-  DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD  = 900
-  DEFAULT_INSTANCE_SIZE                 = "t3.medium"
-  DEFAULT_EBS_SIZE_DATA_GB          = 10
+  DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD = 900
+  DEFAULT_INSTANCE_SIZE                = "t3.medium"
+  DEFAULT_EBS_SIZE_DATA_GB             = 10
   DEFAULT_ZONE_INDEX = {
     1 = 0
     2 = 1
@@ -115,11 +115,12 @@ locals {
 resource "aws_cloudformation_stack" "cloudformation_stack" {
   for_each      = local.zone_index
   name          = "${local.instance_type}-${each.key}"
-  template_body = file("${path.module}/templates/as_customer_xdelivery_template.json")
+  template_body = file("${path.module}/templates/as_${path.module}_template.json")
 
   parameters = {
     AccountName                       = local.input_param_account_name
     AmiId                             = data.aws_ami.ami.id
+    AutoScalingInstanceRoleArn        = local.input_param_autoscaling_role_arn
     AutoScalingMinSize                = local.as_min_size[each.key]
     AutoScalingMaxSize                = 1
     AutoScalingNotificationTopicARN   = local.input_param_lifecycle_topic_arn
