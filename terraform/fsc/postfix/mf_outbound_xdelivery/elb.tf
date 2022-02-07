@@ -11,7 +11,7 @@ resource "aws_elb" "elb" {
   }
 
   health_check {
-    healthy_threshold   = 3
+    healthy_threshold   = 2
     unhealthy_threshold = 5
     timeout             = 25
     target              = "TCP:8025"
@@ -26,5 +26,5 @@ resource "aws_elb" "elb" {
 
 resource "aws_proxy_protocol_policy" "smtp" {
   load_balancer  = aws_elb.elb.name
-  instance_ports = ["25"]
+  instance_ports = ["8025"]
 }
