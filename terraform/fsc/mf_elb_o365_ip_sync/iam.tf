@@ -32,7 +32,8 @@ data "aws_iam_policy_document" "mf_elb_o365_ip_sync_lambda_role_policy" {
     ]
     effect    = "Allow"
     resources = ["arn:aws:logs:*:*:*"]
-  },
+  }
+
   statement {
     sid = "Ec2Permissions"
     actions = [
@@ -42,7 +43,8 @@ data "aws_iam_policy_document" "mf_elb_o365_ip_sync_lambda_role_policy" {
     ]
     effect    = "Allow"
     resources = ["*"]
-  },
+  }
+
   statement {
     sid = "SsmPermissions"
     actions = [
