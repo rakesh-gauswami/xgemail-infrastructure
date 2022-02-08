@@ -26,7 +26,7 @@ region = os.environ['AWS_REGION']
 account = os.environ['ACCOUNT']
 mf_security_group_keys = [os.environ['MF_IS_LB_SG_SSM_KEY'], os.environ['MF_OS_LB_SG_SSM_KEY']]
 ec2 = boto3.client('ec2')
-ssm = boto3.client('ssm')
+ssm = boto3.client('ssm', region_name='us-east-1')
 
 logger.info("Starting MF ELB O365 IP Sync function")
 
