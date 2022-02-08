@@ -33,6 +33,11 @@ variable "message_history_events_sns_topic" {
   description = "msg_history_events_sns_topic"
 }
 
+variable "malware_submissions_labs_sns_topic" {
+  type        = string
+  description = "xgemail_malware_submissions_labs_sns_topic"
+}
+
 variable "message_history_bucket" {
   type        = string
   description = "msg_history_bucket"
