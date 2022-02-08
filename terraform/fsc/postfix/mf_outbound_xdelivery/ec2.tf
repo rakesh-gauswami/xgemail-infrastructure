@@ -115,7 +115,7 @@ locals {
 resource "aws_cloudformation_stack" "cloudformation_stack" {
   for_each      = local.zone_index
   name          = "${local.instance_type}-${each.key}"
-  template_body = file("${path.module}/templates/as_${path.module}_template.json")
+  template_body = file("${path.module}/templates/as_mf_outbound_xdelivery_template.json")
   parameters = {
     AccountName                     = local.input_param_account_name
     AmiId                           = data.aws_ami.ami.id
