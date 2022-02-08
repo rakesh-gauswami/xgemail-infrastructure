@@ -23,6 +23,11 @@ variable "customer_submit_sqs_queue" {
   description = "customer_submit_sqs_queue"
 }
 
+variable "malware_submissions_labs_sns_topic" {
+  type        = string
+  description = "xgemail_malware_submissions_labs_sns_topic"
+}
+
 variable "message_history_v2_stream_name" {
   type        = string
   description = "message_history_v2_stream_name"
@@ -33,10 +38,6 @@ variable "message_history_events_sns_topic" {
   description = "msg_history_events_sns_topic"
 }
 
-variable "malware_submissions_labs_sns_topic" {
-  type        = string
-  description = "xgemail_malware_submissions_labs_sns_topic"
-}
 
 variable "message_history_bucket" {
   type        = string
