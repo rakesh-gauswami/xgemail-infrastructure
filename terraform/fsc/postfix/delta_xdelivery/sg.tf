@@ -21,6 +21,15 @@ resource "aws_security_group_rule" "lb_egress_world" {
   cidr_blocks       = [local.cidr_block_world]
 }
 
+resource "aws_security_group_rule" "lb_ingress_ec2_smtp" {
+  type                     = "ingress"
+  from_port                = local.smtp_tcp_port
+  to_port                  = local.smtp_tcp_port
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.security_group_lb.id
+  source_security_group_id = local.input_param_sg_delivery_instance_id
+}
+
 resource "aws_security_group" "security_group_ec2" {
   name        = local.instance_type
   description = "Security group controlling access to ${local.instance_type}."
