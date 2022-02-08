@@ -26,5 +26,5 @@ resource "aws_elb" "elb" {
 
 resource "aws_proxy_protocol_policy" "smtp" {
   load_balancer  = aws_elb.elb.name
-  instance_ports = ["25"]
+  instance_ports = ["8025"]
 }
