@@ -165,7 +165,6 @@ sns:
   mf_outbound_delivery_sns_topic:                       "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-mf-outbound-delivery-SNS"
   mf_success_events_sns_topic:                          "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-mf-success-events-SNS"
   msg_history_events_sns_topic:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-msg-history-events-SNS"
-  xgemail_malware_submissions_labs_sns_topic:           "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-malware-submissions-labs-SNS"
   msg_history_status_sns_topic:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-msg-history-delivery-status-SNS"
   msg_history_status_retry_sns_topic:                   "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-msg-history-delivery-status-retry-SNS"
   msg_statistics_reindex_sns_topic:                     "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-msg-statistics-reindex-SNS"
@@ -192,6 +191,7 @@ sns:
   # SNS for the xdr-o365 integration
   xdr_o365_start_subscription_events_sns_topic:         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xdr-o365-start-subscription-events-SNS"
   xdr_o365_disconnect_events_sns_topic:                 "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xdr-o365-disconnect-events-SNS"
+  xgemail_malware_submissions_labs_sns_topic:           "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-malware-submissions-labs-SNS"
 sdb:
   volume_tracker_sdb:                                   "{{volume_tracker_sdb_output.ansible_facts.cloudformation[stack.sdb.volume_tracker_sdb].stack_outputs.SimpleDbDomain}}"
 dynamodb:
