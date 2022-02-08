@@ -16,6 +16,7 @@ locals {
   input_param_lifecycle_hook_launching     = nonsensitive(data.aws_ssm_parameter.lifecycle_hook_launching_name.value)
   input_param_iam_instance_profile_name    = nonsensitive(data.aws_ssm_parameter.iam_instance_profile_name.value)
   input_param_volume_tracker_simpledb_name = nonsensitive(data.aws_ssm_parameter.volume_tracker_simpledb_name.value)
+  input_param_sg_delivery_instance_id      = nonsensitive(data.aws_ssm_parameter.sg_delivery_instance_id)
 }
 
 data "aws_ssm_parameter" "account_name" {
@@ -55,6 +56,11 @@ data "aws_ssm_parameter" "primary_region" {
 
 data "aws_ssm_parameter" "public_subnet_ids" {
   name     = "/central/vpc/public-subnet-ids"
+  provider = aws.parameters
+}
+
+data "aws_ssm_parameter" "sg_delivery_instance_id" {
+  name     = "/central/sg/risky-delivery/id"
   provider = aws.parameters
 }
 
