@@ -36,6 +36,10 @@
       "Description": "AMI ID to use as a base for the stack",
       "Type": "String"
     },
+    "AutoScalingInstanceRoleArn": {
+      "Description": "Arn of the AutoScaling Role.",
+      "Type": "String"
+    },
     "AutoScalingMaxSize": {
       "Description": "Maximum number of instances in the Auto Scaling Group",
       "Type": "String",
@@ -378,6 +382,21 @@
           },
           "Version": {"Fn::GetAtt": ["XgemailAutoScalingLaunchTemplate", "LatestVersionNumber"]}
         },
+        "LifecycleHookSpecificationList": [
+          {
+            "LifecycleHookName": {
+              "Ref": "LifecycleHookLaunching"
+            },
+            "HeartbeatTimeout": "300",
+            "LifecycleTransition": "autoscaling:EC2_INSTANCE_LAUNCHING",
+            "NotificationTargetARN": {
+              "Ref": "AutoScalingNotificationTopicARN"
+            },
+            "RoleARN": {
+              "Ref": "AutoScalingInstanceRoleArn"
+            }
+          }
+        ],
         "LoadBalancerNames": { "Ref": "LoadBalancerName" },
         "MaxSize": { "Ref": "AutoScalingMaxSize" },
         "MinSize": { "Ref": "AutoScalingMinSize" },
