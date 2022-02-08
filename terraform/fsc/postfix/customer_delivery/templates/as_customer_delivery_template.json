@@ -229,7 +229,7 @@
       "Default": ""
     },
     "StationVpcName": {
-      "Description": "Name of the CloudStation VPC",
+      "Description": "Name of the Station VPC",
       "Type": "String",
       "Default": "station"
     },
@@ -542,8 +542,18 @@
             "PropagateAtLaunch": "true"
           },
           {
+            "Key": "Branch",
+            "Value": { "Ref": "Branch" },
+            "PropagateAtLaunch": "true"
+          },
+          {
             "Key": "BusinessUnit",
             "Value": "MSG",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "EipCount",
+            "Value": { "Ref": "EipCount" },
             "PropagateAtLaunch": "true"
           },
           {
@@ -569,16 +579,6 @@
           {
             "Key": "SSMSessionRunAs",
             "Value": "ec2-user",
-            "PropagateAtLaunch": "true"
-          },
-          {
-            "Key": "Branch",
-            "Value": { "Ref": "Branch" },
-            "PropagateAtLaunch": "true"
-          },
-          {
-            "Key": "EipCount",
-            "Value": { "Ref": "EipCount" },
             "PropagateAtLaunch": "true"
           }
         ]

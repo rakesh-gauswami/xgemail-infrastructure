@@ -1,7 +1,7 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
 
-  "Description": "Sophos Email AutoScaling Group template for Sophos Cloud used for internet-delivery EC2 Instances.",
+  "Description": "Sophos Email AutoScaling Group template for Sophos Cloud used for delta-delivery EC2 Instances.",
 
   "Metadata": {
     "Copyright": [
@@ -14,7 +14,7 @@
     ],
 
     "Comments": [
-      "Sophos Email AutoScaling Group template for Sophos Cloud used for internet-delivery EC2 Instances."
+      "Sophos Email AutoScaling Group template for Sophos Cloud used for delta-delivery EC2 Instances."
     ]
   },
 
@@ -32,12 +32,12 @@
     "AlarmScaleInThreshold": {
       "Description": "The value against which the specified statistic is compared.",
       "Type": "Number",
-      "Default": "10"
+      "Default": "1000"
     },
     "AlarmScaleOutThreshold": {
       "Description": "The value against which the specified statistic is compared.",
       "Type": "Number",
-      "Default": "50"
+      "Default": "5000"
     },
     "AlarmTopicArn": {
       "Description": "ARN for SNS Topic that should receive alarm notifications",
@@ -175,7 +175,7 @@
     "ScaleInOnWeekends": {
       "Description": "Enable scale in to zero on Saturday at midnight and scale out on Monday morning. (Times are UTC, NON PROD/QA ENVIRONMENT ONLY)",
       "Type": "String",
-      "Default": "true",
+      "Default": "false",
       "AllowedValues": [ "true", "false" ]
     },
     "ScaleInCron": {
@@ -208,7 +208,7 @@
       "Default": ""
     },
     "StationVpcName": {
-      "Description": "Name of the Station VPC",
+      "Description": "Name of the CloudStation VPC",
       "Type": "String",
       "Default": "station"
     },
@@ -961,12 +961,8 @@
               "DeviceName": "/dev/xvdi",
               "Ebs": {
                 "DeleteOnTermination": "true",
-                "VolumeSize": {
-                  "Ref": "XgemailMinSizeDataGB"
-                },
-                "VolumeType": {
-                  "Ref": "EbsVolumeType"
-                }
+                "VolumeSize": { "Ref": "XgemailMinSizeDataGB" },
+                "VolumeType": { "Ref": "EbsVolumeType" }
               }
             }
           ],
@@ -979,12 +975,8 @@
               }
             }
           ],
-          "ImageId": {
-            "Ref": "AmiId"
-          },
-          "InstanceType": {
-            "Ref": "InstanceType"
-          },
+          "ImageId": { "Ref": "AmiId" },
+          "InstanceType": { "Ref": "InstanceType" },
           "IamInstanceProfile": {
             "Name": { "Ref": "InstanceProfile" }
           },
@@ -1015,105 +1007,80 @@
           },
           "UserData": {
             "Fn::Base64": {
-              "Fn::Join": [
-                "",
-                [
-                  "#!/bin/bash -xe\n",
-                  "# Install the files and packages from the metadata\n",
-                  "\n",
-                  "# Force replacement of the LaunchConfiguration object by changing this value.\n",
-                  "# ",
-                  {
-                    "Ref": "BuildTag"
-                  },
-                  "\n",
-                  "# Make sure we call cfn-signal before exiting, otherwise we have to\n",
-                  "# wait for the CreationPolicy timeout to detect failed initialization.\n",
-                  "# That's because of using the bash -e option, which makes the script\n",
-                  "# exit immediately as soon as any command, e.g. cfn-init, fails.\n",
-                  "\n",
-                  "onexit() {\n",
-                  "  # Save exit code for call to cfn-signal below.\n",
-                  "  exit_code=$?\n",
-                  "\n",
-                  "  # Disable errexit so errors below don't prevent the call to cfn-signal.\n",
-                  "  set +o errexit\n",
-                  "\n",
-                  "  ACCOUNT='",
-                  {
-                    "Ref": "AccountName"
-                  },
-                  "'\n",
-                  "  BRANCH='",
-                  {
-                    "Ref": "Branch"
-                  },
-                  "'\n",
-                  "  DEPLOYMENT_NAME='",
-                  {
-                    "Ref": "XgemailServiceType"
-                  },
-                  "'\n",
-                  "  ENVIRONMENT='",
-                  {
-                    "Ref": "Environment"
-                  },
-                  "'\n",
-                  "  # Set LastHealth tag so cloud list command shows progress.\n",
-                  "  if [ \"$exit_code\" == 0 ]; then\n",
-                  "    /opt/sophos/bin/set_instance_tag.py LastHealth UserDataSuccess\n",
-                  "    if [ \"$ENVIRONMENT\" == \"prod\" ]; then\n",
-                  "      /opt/sophos/bin/ebs-delete-on-termination.py\n",
-                  "    fi\n",
-                  "    /sbin/service monit start\n",
-                  "  else\n",
-                  "    /opt/sophos/bin/set_instance_tag.py LastHealth UserDataFailure\n",
-                  "    # Upload logs before reporting failure to avoid race against termination.\n",
-                  "    /opt/sophos/bin/upload_deployment_logs.py -a ${ACCOUNT} -b ${BRANCH} ${DEPLOYMENT_NAME} -c netstat_tuna.out='netstat -tuna'\n",
-                  "  fi\n",
-                  "\n",
-                  "  /opt/aws/bin/cfn-signal -e $exit_code",
-                  " --stack ",
-                  {
-                    "Ref": "AWS::StackName"
-                  },
-                  " --resource XgemailAutoScalingGroup",
-                  " --region ",
-                  {
-                    "Ref": "AWS::Region"
-                  },
-                  "\n",
-                  "}\n",
-                  "\n",
-                  "trap onexit EXIT\n",
-                  "\n",
-                  "# Wait for network access.\n",
-                  "/usr/bin/nc -v -z -w 60 www.google.com 80\n",
-                  "\n",
-                  "# Set LastHealth tag so cloud list command shows progress.\n",
-                  "/opt/sophos/bin/set_instance_tag.py LastHealth UserDataStarted\n",
-                  "\n",
-                  "/opt/aws/bin/cfn-init --verbose ",
-                  " --stack ",
-                  {
-                    "Ref": "AWS::StackName"
-                  },
-                  " --resource XgemailAutoScalingLaunchTemplate ",
-                  " --configsets xgemail_install ",
-                  " --region ",
-                  {
-                    "Ref": "AWS::Region"
-                  },
-                  "\n",
-                  "\n",
-                  "# Disable errexit so errors below don't prevent the call to cfn-signal.\n",
-                  "# This is NOT redundant with the call to disable errexit inside onexit,\n",
-                  "# because an error that happens earlier than this point will be trapped\n",
-                  "# and generate a call to onexit before this code is reached.\n",
-                  "set +o errexit\n",
-                  "\n",
-                  "# Now the onexit function will get called.\n"
-                ]
+              "Fn::Join": [ "", [
+                "#!/bin/bash -xe\n",
+                "# Install the files and packages from the metadata\n",
+                "\n",
+
+                "# Force replacement of the LaunchConfiguration object by changing this value.\n",
+                "# ", { "Ref": "BuildTag" }, "\n",
+
+                "# Make sure we call cfn-signal before exiting, otherwise we have to\n",
+                "# wait for the CreationPolicy timeout to detect failed initialization.\n",
+                "# That's because of using the bash -e option, which makes the script\n",
+                "# exit immediately as soon as any command, e.g. cfn-init, fails.\n",
+                "\n",
+
+                "onexit() {\n",
+                "  # Save exit code for call to cfn-signal below.\n",
+                "  exit_code=$?\n",
+                "\n",
+                "  # Disable errexit so errors below don't prevent the call to cfn-signal.\n",
+                "  set +o errexit\n",
+                "\n",
+                "  ACCOUNT='", { "Ref" : "AccountName" }, "'\n",
+                "  BRANCH='", { "Ref": "Branch" }, "'\n",
+                "  DEPLOYMENT_NAME='", { "Ref": "XgemailServiceType" }, "'\n",
+                "  ENVIRONMENT='", { "Ref" : "Environment" }, "'\n",
+                "  # Set LastHealth tag so cloud list command shows progress.\n",
+                "  if [ \"$exit_code\" == 0 ]; then\n",
+                "    /opt/sophos/bin/set_instance_tag.py LastHealth UserDataSuccess\n",
+                "    if [ \"$ENVIRONMENT\" == \"prod\" ]; then\n",
+                "      /opt/sophos/bin/ebs-delete-on-termination.py\n",
+                "    fi\n",
+                "    /sbin/service monit start\n",
+                "  else\n",
+                "    /opt/sophos/bin/set_instance_tag.py LastHealth UserDataFailure\n",
+                "    # Upload logs before reporting failure to avoid race against termination.\n",
+                "    /opt/sophos/bin/upload_deployment_logs.py -a ${ACCOUNT} -b ${BRANCH} ${DEPLOYMENT_NAME} -c netstat_tuna.out='netstat -tuna'\n",
+                "  fi\n",
+                "\n",
+
+                "  /opt/aws/bin/cfn-signal -e $exit_code",
+                " --stack ", { "Ref": "AWS::StackName" },
+                " --resource XgemailAutoScalingGroup",
+                " --region ", { "Ref": "AWS::Region" },
+                "\n",
+                "}\n",
+                "\n",
+
+                "trap onexit EXIT\n",
+                "\n",
+
+                "# Wait for network access.\n",
+                "/usr/bin/nc -v -z -w 60 www.google.com 80\n",
+                "\n",
+
+                "# Set LastHealth tag so cloud list command shows progress.\n",
+                "/opt/sophos/bin/set_instance_tag.py LastHealth UserDataStarted\n",
+                "\n",
+
+                "/opt/aws/bin/cfn-init --verbose ",
+                " --stack ", { "Ref": "AWS::StackName" },
+                " --resource XgemailAutoScalingLaunchTemplate ",
+                " --configsets xgemail_install ",
+                " --region ", { "Ref": "AWS::Region" }, "\n",
+                "\n",
+
+                "# Disable errexit so errors below don't prevent the call to cfn-signal.\n",
+                "# This is NOT redundant with the call to disable errexit inside onexit,\n",
+                "# because an error that happens earlier than this point will be trapped\n",
+                "# and generate a call to onexit before this code is reached.\n",
+                "set +o errexit\n",
+                "\n",
+
+                "# Now the onexit function will get called.\n"
+              ]
               ]
             }
           }
