@@ -250,18 +250,19 @@ def get_instances_by_name():
             {
                 'Name': 'tag:Name',
                 'Values': [
-                    'CloudEmail:customer-delivery:*',
-                    'CloudEmail:customer-xdelivery:*',
-                    'CloudEmail:delta-delivery:*',
-                    'CloudEmail:delta-xdelivery:*',
                     'CloudEmail:internet-delivery:*',
-                    'CloudEmail:internet-xdelivery:*',
+                    'CloudEmail:customer-delivery:*',
                     'CloudEmail:mf-inbound-delivery:*',
-                    'CloudEmail:mf-inbound-xdelivery:*',
                     'CloudEmail:mf-outbound-delivery:*',
+                    'CloudEmail:mf-inbound-xdelivery:*',
                     'CloudEmail:mf-outbound-xdelivery:*',
+                    'CloudEmail:internet-xdelivery:*',
                     'CloudEmail:risky-delivery:*',
-                    'CloudEmail:risky-xdelivery:*'
+                    'CloudEmail:risky-xdelivery:*',
+                    'CloudEmail:beta-delivery:*',
+                    'CloudEmail:beta-xdelivery:*',
+                    'CloudEmail:delta-delivery:*',
+                    'CloudEmail:delta-xdelivery:*'
                 ]
             }
         ]
