@@ -175,7 +175,6 @@ default['xgemail']['enc_config_key'] = 'config/outbound-relay-control/encryption
 default['xgemail']['enc_config_prefix_key'] = 'outbound-relay-control/encryption/'
 default['xgemail']['inbound_tls_config_key'] = 'config/inbound-relay-control/tls/'
 default['xgemail']['custom_route_transport_path'] = 'config/inbound-relay-control/custom-routes/'
-default['xgemail']['custom_route_transport_prefix_path'] = 'inbound-relay-control/custom-routes/'
 
 default['xgemail']['temp_failure_code'] = 75
 
