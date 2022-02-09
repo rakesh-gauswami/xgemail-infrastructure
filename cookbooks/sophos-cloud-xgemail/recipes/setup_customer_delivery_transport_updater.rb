@@ -39,6 +39,7 @@ ENC_CONFIG_KEY        = node['xgemail']['enc_config_key']
 ENC_CONFIG_PREFIX_KEY = node['xgemail']['enc_config_prefix_key']
 INBOUND_TLS_CONFIG_KEY = node['xgemail']['inbound_tls_config_key']
 XGEMAIL_UTILS_DIR      = node['xgemail']['xgemail_utils_files_dir']
+CUSTOM_ROUTE_TRANSPORT_PATH  = node['xgemail']['custom_route_transport_path']
 
 CONFIGURATION_COMMANDS =
   [
