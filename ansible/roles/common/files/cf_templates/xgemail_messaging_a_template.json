@@ -27,10 +27,6 @@
       "Description": "Endpoint for Atr reindex  arn",
       "Type": "String"
     },
-    "SndLiveBackupReindexTopicArn": {
-      "Description": "Endpoint for SnD live backup reindex arn",
-      "Type": "String"
-    },
     "BounceEventTopicArn": {
       "Description": "Endpoint for scan Bounce events arn",
       "Type": "String"
@@ -145,10 +141,6 @@
     },
     "AtrReindexQueue": {
       "Description": "Endpoint ARN for Atr Reindex SQS Queue",
-      "Type": "String"
-    },
-    "SndLiveBackupReindexQueue": {
-      "Description": "Endpoint ARN for SnD live backup Reindex SQS Queue",
       "Type": "String"
     },
     "BounceEventQueue": {
@@ -579,15 +571,6 @@
         "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "AtrReindexQueue"}]]},
         "Protocol": "sqs",
         "TopicArn": { "Ref": "AtrReindexTopicArn"},
-        "RawMessageDelivery": "true"
-      }
-    },
-    "SndLiveBackupReindexSNSListenerQueueToSndLiveBackupReindexSnsSubscription": {
-      "Type" : "AWS::SNS::Subscription",
-      "Properties": {
-        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "SndLiveBackupReindexQueue"}]]},
-        "Protocol": "sqs",
-        "TopicArn": { "Ref": "SndLiveBackupReindexTopicArn"},
         "RawMessageDelivery": "true"
       }
     },
@@ -1742,30 +1725,6 @@
           ]
         },
         "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "AtrReindexQueue" }]]}]
-      }
-    },
-    "AtrReindexQueuePolicy": {
-      "Type": "AWS::SQS::QueuePolicy",
-      "Properties": {
-        "PolicyDocument": {
-          "Version": "2012-10-17",
-          "Id": "SndLiveBackupReindexQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
-          "Statement": [
-            {
-              "Sid": "Allow-SndLiveBackupReindexTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "SndLiveBackupReindexTopicArn"}
-                }
-              }
-            }
-          ]
-        },
-        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "SndLiveBackupReindexQueue" }]]}]
       }
     },
     "EncryptionSettingsUpdateQueuePolicy": {
