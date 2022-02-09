@@ -30,7 +30,7 @@ class S3Accessor:
         self.s3 = boto3.client('s3', region_name=region)
         self.max_keys = max_keys
 
-    def get_object(self, bucket, newlocationkey, oldlocationkey):
+    def migrate_object(self, bucket, newlocationkey, oldlocationkey):
         try:
             self.s3.head_object(Bucket=bucket, Key=newlocationkey)
         except ClientError as e:
@@ -136,7 +136,7 @@ def migrate_dlppolicy_object(key, entry):
             base64userid = base64_bytes.decode('utf-8')
             hashvalue = get_hash(base64userid + '.POLICY')
             newlocationkey = "policies/dlp/{}/{}.POLICY".format(hashvalue, base64userid)
-            s3_accessor.get_object(bucket, newlocationkey,key)
+            s3_accessor.migrate_object(bucket, newlocationkey,key)
 
 def get_hash(s):
     hasher = hashlib.md5()
@@ -144,12 +144,12 @@ def get_hash(s):
     digest = hasher.hexdigest()
     return digest[:4]
 
-def get_file_prefix(prefix):
+def get_method_visitor(prefix):
     if prefix == 'config/policies/dlp':
         return MethodVisitor(migrate_dlppolicy_object)
     else:
         print("Incorrect prefix location")
         exit()
 
-v = get_file_prefix(prefix)
+v = get_method_visitor(prefix)
 s3_accessor.for_each_object(bucket, prefix, v, maxkeys)
