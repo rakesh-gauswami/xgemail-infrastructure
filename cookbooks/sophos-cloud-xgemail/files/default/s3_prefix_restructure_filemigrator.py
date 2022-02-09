@@ -1,8 +1,7 @@
 # vim: autoindent expandtab tabstop=4 softtabstop=4 shiftwidth=4 filetype=python
 #
 # Usage:
-# python3 filemigrator.py -r eu-west-1 -e dev -l config/policies/dlp -m 10
-#
+# python3 filemigrator.py -r region -e env -l oldlocationfilepath -m keycount -d dryrun
 #
 import argparse
 import boto3
@@ -106,7 +105,6 @@ parser.add_argument("-e", "--environment", default="dev", help="One of dev, qa, 
 parser.add_argument("-l", "--legacylocation", help="Old location for config files")
 parser.add_argument("-m", "--maxkeys", type=int, default=10, help="Maximum number of keys to return from S3")
 parser.add_argument("-r", "--region", required=True, help="AWS region name")
-parser.add_argument("-s", "--newprefixlocation", help="New location for config files")
 parser.add_argument("-d", "--dryrun", required=False, help="dry run to get the files to be created to the new prefix location")
 
 args = parser.parse_args()
@@ -120,15 +118,16 @@ prefix = args.legacylocation
 s3_accessor = S3Accessor(region, maxkeys)
 
 #############################################################################################
-# Below method is to migrate dlp policy object
-# Prefix - config/policies/dlp
+# Below method is to migrate Endpoint dlp policy object
+# prefixoldlocation - config/policies/dlp/userid.POLICY
+# prefixnewlocation - policies/dlp/hashvalue/base64ofuserid.POLICY
 #############################################################################################
 
-def migrate_dlppolicy_object(key, entry):
+def migrate_endpointdlppolicy_object(key, entry):
     parts = key.split('/')
     if len(parts) > 3:
-        useridandpolicy = parts[3]
-        useridparts = useridandpolicy.split('.')
+        userid_with_policy = parts[3]
+        useridparts = userid_with_policy.split('.')
         if len(useridparts) == 2:
             userid = useridparts[0]
             message_bytes = userid.encode('utf-8')
@@ -138,6 +137,47 @@ def migrate_dlppolicy_object(key, entry):
             newlocationkey = "policies/dlp/{}/{}.POLICY".format(hashvalue, base64userid)
             s3_accessor.migrate_object(bucket, newlocationkey,key)
 
+#############################################################################################
+# Below method is to migrate Customer allow-block file objects
+# prefixoldlocation - config/inbound-relay-control/allow-block/customers/customerid
+# prefixnewlocation - inbound-relay-control/allow-block/customers/hashvalue/customerid
+#############################################################################################
+def migrate_customerallowblock_object(key, entry):
+    parts = key.split('/')
+    if len(parts) > 4:
+        customerid = parts[4]
+        hashvalue = get_hash(customerid)
+        newlocationkey = "inbound-relay-control/allow-block/customers/{}/{}".format(hashvalue,customerid)
+        s3_accessor.migrate_object(bucket, newlocationkey, key)
+
+#############################################################################################
+# Below method is to migrate User allow-block file objects
+# prefixoldlocation -  config/inbound-relay-control/allow-block/users/userid
+# prefixnewlocation - inbound-relay-control/allow-block/users/hashvalue/userid
+#############################################################################################
+def migrate_userallowblock_object(key, entry):
+    parts = key.split('/')
+    if len(parts) > 4:
+        userid = parts[4]
+        hashvalue = get_hash(userid)
+        newlocationkey = "inbound-relay-control/allow-block/users/{}/{}".format(hashvalue,userid)
+        s3_accessor.migrate_object(bucket, newlocationkey, key)
+
+#############################################################################################
+# Below method is to migrate Endpoint policy file objects
+# prefixoldlocation - config/policies/endpoints/userid.POLICY
+# prefixnewlocation - policies/endpoints/<hashchars>/<user-id>.POLICY
+#############################################################################################
+def migrate_endpointpolicy_object(key, entry):
+    parts = key.split('/')
+    if len(parts) > 3:
+        userid_with_policy = parts[3]
+        if len(userid_with_policy) > 36:
+            return
+        hashvalue = get_hash(userid_with_policy)
+        newlocationkey = "policies/endpoints/{}/{}".format(hashvalue,userid_with_policy)
+        s3_accessor.migrate_object(bucket, newlocationkey, key)
+
 def get_hash(s):
     hasher = hashlib.md5()
     hasher.update(s.encode('utf-8'))
@@ -146,7 +186,13 @@ def get_hash(s):
 
 def get_method_visitor(prefix):
     if prefix == 'config/policies/dlp':
-        return MethodVisitor(migrate_dlppolicy_object)
+        return MethodVisitor(migrate_endpointdlppolicy_object)
+    elif prefix == 'config/inbound-relay-control/allow-block/customers':
+        return MethodVisitor(migrate_customerallowblock_object)
+    elif prefix == 'config/inbound-relay-control/allow-block/users':
+        return MethodVisitor(migrate_userallowblock_object)
+    elif prefix == 'config/policies/endpoints':
+        return MethodVisitor(migrate_endpointpolicy_object)
     else:
         print("Incorrect prefix location")
         exit()
