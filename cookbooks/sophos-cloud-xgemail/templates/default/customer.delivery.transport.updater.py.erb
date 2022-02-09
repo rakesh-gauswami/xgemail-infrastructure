@@ -74,7 +74,7 @@ def get_smtp_transport_tag(s3, domain_name, customer_id):
 
   #Check new location.
   key_path = get_enc_config_path_with_prefix(domain_name)
-  logger.info('Checking new location' + key_path)
+  logger.debug('Checking new location' + key_path)
   if encryption_config_exists(s3, key_path):
     return TLS_SMTP_TRANSPORT_TAG
   
