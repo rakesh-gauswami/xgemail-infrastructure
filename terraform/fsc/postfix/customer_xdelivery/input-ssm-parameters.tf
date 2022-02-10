@@ -15,7 +15,7 @@ locals {
   input_param_public_subnet_ids               = split(",", nonsensitive(data.aws_ssm_parameter.public_subnet_ids.value))
   input_param_sdb_volume_tracker_name         = nonsensitive(data.aws_ssm_parameter.sdb_volume_tracker_name.value)
   input_param_sg_base_id                      = nonsensitive(data.aws_ssm_parameter.sg_base_id.value)
-  input_param_sg_delivery_instance_id         = nonsensitive(data.aws_ssm_parameter.sg_delivery_instance_id)
+  input_param_sg_delivery_instance_id         = nonsensitive(data.aws_ssm_parameter.sg_delivery_instance_id.value)
   input_param_vpc_id                          = nonsensitive(data.aws_ssm_parameter.vpc_id.value)
   input_param_vpc_name                        = replace(nonsensitive(data.aws_ssm_parameter.vpc_name.value), "/-.*/", "")
   input_param_zone_fqdn                       = nonsensitive(data.aws_ssm_parameter.zone_fqdn.value)

@@ -16,7 +16,7 @@ locals {
   input_param_lifecycle_hook_launching     = nonsensitive(data.aws_ssm_parameter.lifecycle_hook_launching_name.value)
   input_param_iam_instance_profile_name    = nonsensitive(data.aws_ssm_parameter.iam_instance_profile_name.value)
   input_param_volume_tracker_simpledb_name = nonsensitive(data.aws_ssm_parameter.volume_tracker_simpledb_name.value)
-  input_param_sg_delivery_instance_id      = nonsensitive(data.aws_ssm_parameter.sg_delivery_instance_id)
+  input_param_sg_delivery_instance_id      = nonsensitive(data.aws_ssm_parameter.sg_delivery_instance_id.value)
 }
 
 data "aws_ssm_parameter" "account_name" {
