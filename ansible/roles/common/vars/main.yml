@@ -397,6 +397,12 @@ aws:
       template_parameters:
         TagApplication:                                           "atr-index"
         TopicName:                                                "{{sns.atr_reindex_sns_topic}}"
+    snd_live_backup_reindex_sns_topic:
+      stack_name:                                                 "{{stack.sns.snd_live_backup_reindex_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TagApplication:                                           "snd-sxl"
+        TopicName:                                                "{{sns.snd_live_backup_reindex_sns_topic}}"
     alarm_sns_topic:
       stack_name:                                                 "{{stack.sns.alarm_sns_topic}}"
       template:                                                   "{{template.sns.sns_template}}"
@@ -644,6 +650,12 @@ aws:
       template_parameters:
         TagApplication:                                           "xgemail-mail"
         TopicName:                                                "{{sns.xdr_o365_disconnect_events_sns_topic}}"
+    xgemail_malware_submissions_labs_sns_topic:
+      stack_name:                                                 "{{stack.sns.xgemail_malware_submissions_labs_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TagApplication:                                           "xgemail-mail"
+        TopicName:                                                "{{sns.xgemail_malware_submissions_labs_sns_topic}}"
   sqs:
     additional_action_sqs_queue_sns_listener:
       stack_name:                                                 "{{stack.sqs.additional_action_sqs_queue_sns_listener}}"
@@ -667,6 +679,13 @@ aws:
       template_parameters:
         TagApplication:                                           "atr-index"
         QueueName:                                                "{{sqs.atr_reindex_sqs_queue_sns_listener}}"
+    snd_live_backup_reindex_sqs_queue_sns_listener:
+      stack_name:                                                 "{{stack.sqs.snd_live_backup_reindex_sqs_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        TagApplication:                                           "atr-index"
+        QueueName:                                                "{{sqs.snd_live_backup_reindex_sqs_queue_sns_listener}}"
     beta_delivery_sqs_queue_sns_listener:
       stack_name:                                                 "{{stack.sqs.beta_delivery_sqs_queue_sns_listener}}"
       state:                                                      present

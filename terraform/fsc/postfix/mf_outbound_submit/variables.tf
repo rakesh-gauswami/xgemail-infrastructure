@@ -33,6 +33,7 @@ variable "message_history_events_sns_topic" {
   description = "msg_history_events_sns_topic"
 }
 
+
 variable "message_history_bucket" {
   type        = string
   description = "msg_history_bucket"

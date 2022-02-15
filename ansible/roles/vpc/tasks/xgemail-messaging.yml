@@ -125,6 +125,8 @@
       EncryptEventsTopicArn:          "{{sns.arn_prefix}}{{sns.encrypt_events_sns_topic}}"
       XdrO365DisconnectEventTopicArn:         "{{sns.arn_prefix}}{{sns.xdr_o365_disconnect_events_sns_topic}}"
       XdrO365StartSubscriptionEventTopicArn:  "{{sns.arn_prefix}}{{sns.xdr_o365_start_subscription_events_sns_topic}}"
+      SndLiveBackupReindexQueue:      "{{sqs.snd_live_backup_reindex_sqs_queue_sns_listener}}"
+      SndLiveBackupReindexTopicArn:   "{{sns.arn_prefix}}{{sns.snd_live_backup_reindex_sns_topic}}"
   register: messaging_b_stack
 
 - debug:
