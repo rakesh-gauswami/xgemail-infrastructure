@@ -19,6 +19,7 @@ from awshandler import AwsHandler
 import policyformatter
 from recipientsplitconfig import RecipientSplitConfig
 from get_metadata_from_msghistory_config import GetMetadataFromMsgHistoryConfig
+from get_prefix_restructure_config import GetPrefixRestructureConfig
 import time
 from logging.handlers import SysLogHandler
 from botocore.exceptions import ClientError
