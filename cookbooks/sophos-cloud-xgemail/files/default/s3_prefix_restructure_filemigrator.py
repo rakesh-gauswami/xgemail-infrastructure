@@ -40,7 +40,7 @@ class S3Accessor:
                 else:
                     self.copy_and_replace_filename_to_newlocation(bucket,newlocationkey,oldlocationkey)
             else:
-                logging.error("Error occurred..")
+                logging.error("Error occurred -  %s", e.message, exc_info=1)
             pass
     def copy_and_replace_filename_to_newlocation(self,bucket,newlocationkey,oldlocationkey):
         try:
@@ -49,7 +49,7 @@ class S3Accessor:
             self.s3.copy_object(CopySource = copy_source, Bucket = bucket, Key = newlocationkey)
             self.sourceFile.write("\n {}".format(oldlocationkey))
         except Exception as e:
-            logging.error("An Exception occurred - <%s>".format(e))
+            logging.error("An Exception occurred - %s",e.message, exc_info=1)
 
     def list_objects(self, bucket, prefix, continuation_token=None):
         if continuation_token:
