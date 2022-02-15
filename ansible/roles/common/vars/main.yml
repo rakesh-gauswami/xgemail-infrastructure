@@ -650,6 +650,12 @@ aws:
       template_parameters:
         TagApplication:                                           "xgemail-mail"
         TopicName:                                                "{{sns.xdr_o365_disconnect_events_sns_topic}}"
+    xgemail_malware_submissions_labs_sns_topic:
+      stack_name:                                                 "{{stack.sns.xgemail_malware_submissions_labs_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TagApplication:                                           "xgemail-mail"
+        TopicName:                                                "{{sns.xgemail_malware_submissions_labs_sns_topic}}"
   sqs:
     additional_action_sqs_queue_sns_listener:
       stack_name:                                                 "{{stack.sqs.additional_action_sqs_queue_sns_listener}}"

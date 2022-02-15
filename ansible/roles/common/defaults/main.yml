@@ -193,6 +193,7 @@ sns:
   # SNS for the xdr-o365 integration
   xdr_o365_start_subscription_events_sns_topic:         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xdr-o365-start-subscription-events-SNS"
   xdr_o365_disconnect_events_sns_topic:                 "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xdr-o365-disconnect-events-SNS"
+  xgemail_malware_submissions_labs_sns_topic:           "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}-xgemail-malware-submissions-labs-SNS"
 sdb:
   volume_tracker_sdb:                                   "{{volume_tracker_sdb_output.ansible_facts.cloudformation[stack.sdb.volume_tracker_sdb].stack_outputs.SimpleDbDomain}}"
 dynamodb:
@@ -435,6 +436,7 @@ stack:
     # SNS for the xdr-o365 integration
     xdr_o365_start_subscription_events_sns_topic:       "{{vpc.cloud_email.name}}-xdr-o365-start-subscription-events-SNS"
     xdr_o365_disconnect_events_sns_topic:               "{{vpc.cloud_email.name}}-xdr-o365-disconnect-events-SNS"
+    xgemail_malware_submissions_labs_sns_topic:         "{{vpc.cloud_email.name}}-xgemail-malware-submissions-labs-SNS"
   ssm:
     ssm_documents:                                      "{{vpc.cloud_email.name}}-SSM-Documents"
     ssm_postfix_documents:                              "{{vpc.cloud_email.name}}-SSM-Postfix-Documents"
