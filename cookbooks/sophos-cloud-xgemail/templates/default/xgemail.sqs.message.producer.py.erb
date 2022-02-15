@@ -806,7 +806,7 @@ def outbound_split_by_recipients(metadata, sender, domain, message, direction, m
                                                 "/" + str(hashlib.sha256(str(recipient)).hexdigest()) + "/")
 
         if multipolicyreaderutils.prefix_messages_path_enabled(get_customer_id(queue_id, msghistory_events), SUBMIT_HOST_IP):
-            s3_file_path = get_s3_prefix_path(queue_id, str(hashlib.sha256(str(recipient)).hexdigest()), domain)
+            new_s3_file_path = get_s3_prefix_path(queue_id, str(hashlib.sha256(str(recipient)).hexdigest()), domain)
                                             
 
         if msghistory_events is not None:
