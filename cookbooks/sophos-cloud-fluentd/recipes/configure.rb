@@ -22,7 +22,7 @@ REGION                           = node['sophos_cloud']['region']
 MSG_STATS_REJECT_SNS_TOPIC       = node['xgemail']['msg_statistics_rejection_sns_topic']
 DELIVERY_STATUS_SQS              = node['xgemail']['msg_history_delivery_status_sqs']
 DELIVERY_STATUS_SNS_TOPIC        = node['xgemail']['msg_history_status_sns_topic']
-TELEMETRY_LOG_SQS                = node['xgemail']['telemetry_log_sqs']
+TRACE_TELEMETRY_SQS              = node['xgemail']['trace_telemetry_sqs']
 SERVER_IP                        = node['ipaddress']
 MAILLOG_FILTER_PATTERNS          = "(\\.#{REGION}\\.compute\\.internal|:\\sdisconnect\\sfrom\\s|\\swarning:\\shostname\\s|:\\sremoved\\s|table\\shash:|sm-msp-queue|:\\sstatistics:\\s)"
 JILTER_FILTER_PATTERNS           = "(com\\.launchdarkly\\.client\\.LDClient|com\\.launchdarkly\\.client\\.LDUser)"
@@ -1181,7 +1181,7 @@ template 'fluentd-match-sqs-telemetry-log-legacy' do
   group 'root'
   variables(
       :region => REGION,
-      :telemetry_log_queue => TELEMETRY_LOG_SQS
+      :trace_telemetry_queue => TRACE_TELEMETRY_SQS
   )
   only_if {
       ACCOUNT_NAME == 'legacy' &&
@@ -1198,7 +1198,7 @@ template 'fluentd-match-sqs-telemetry-log-fsc' do
   group 'root'
   variables(
       :region => REGION,
-      :telemetry_log_queue => TELEMETRY_LOG_SQS,
+      :trace_telemetry_queue => TRACE_TELEMETRY_SQS,
       :assume_role_arn => STATION_ACCOUNT_ROLE_ARN
   )
   only_if {
