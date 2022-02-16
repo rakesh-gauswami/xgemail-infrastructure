@@ -971,7 +971,6 @@ template 'fluentd-match-sns-msg-delivery-legacy' do
     :sns_topic => DELIVERY_STATUS_SNS_TOPIC
   )
   only_if {
-    ACCOUNT_NAME == 'legacy' &&
     NODE_TYPE == 'customer-delivery' ||
     NODE_TYPE == 'xdelivery' ||
     NODE_TYPE == 'customer-xdelivery' ||
@@ -989,6 +988,9 @@ template 'fluentd-match-sns-msg-delivery-legacy' do
     NODE_TYPE == 'beta-xdelivery' ||
     NODE_TYPE == 'delta-delivery' ||
     NODE_TYPE == 'delta-xdelivery'
+  }
+  not_if {
+    ACCOUNT_NAME != 'legacy'
   }
 end
 
@@ -1005,7 +1007,6 @@ template 'fluentd-match-sns-msg-delivery-fsc' do
     :assume_role_arn => STATION_ACCOUNT_ROLE_ARN
   )
   only_if {
-    ACCOUNT_NAME != 'legacy' &&
     NODE_TYPE == 'customer-delivery' ||
     NODE_TYPE == 'xdelivery' ||
     NODE_TYPE == 'customer-xdelivery' ||
@@ -1023,6 +1024,9 @@ template 'fluentd-match-sns-msg-delivery-fsc' do
     NODE_TYPE == 'beta-xdelivery' ||
     NODE_TYPE == 'delta-delivery' ||
     NODE_TYPE == 'delta-xdelivery'
+  }
+  not_if {
+    ACCOUNT_NAME == 'legacy'
   }
 end
 
@@ -1039,7 +1043,6 @@ template 'fluentd-match-sqs-msg-delivery-legacy' do
       :delivery_status_queue => DELIVERY_STATUS_SQS
   )
   only_if {
-    ACCOUNT_NAME == 'legacy' &&
     NODE_TYPE == 'customer-delivery' ||
     NODE_TYPE == 'xdelivery' ||
     NODE_TYPE == 'customer-xdelivery' ||
@@ -1058,6 +1061,9 @@ template 'fluentd-match-sqs-msg-delivery-legacy' do
     NODE_TYPE == 'delta-delivery' ||
     NODE_TYPE == 'delta-xdelivery'
   }
+  not_if {
+    ACCOUNT_NAME != 'legacy'
+  }
 end
 
 template 'fluentd-match-sqs-msg-delivery-fsc' do
@@ -1073,7 +1079,6 @@ template 'fluentd-match-sqs-msg-delivery-fsc' do
       :assume_role_arn => STATION_ACCOUNT_ROLE_ARN
   )
   only_if {
-    ACCOUNT_NAME != 'legacy' &&
     NODE_TYPE == 'customer-delivery' ||
     NODE_TYPE == 'xdelivery' ||
     NODE_TYPE == 'customer-xdelivery' ||
@@ -1091,6 +1096,9 @@ template 'fluentd-match-sqs-msg-delivery-fsc' do
     NODE_TYPE == 'beta-xdelivery' ||
     NODE_TYPE == 'delta-delivery' ||
     NODE_TYPE == 'delta-xdelivery'
+  }
+  not_if {
+    ACCOUNT_NAME == 'legacy'
   }
 end
 
@@ -1148,9 +1156,11 @@ template 'fluentd-match-sns-msg-stats-reject-legacy' do
     :sns_topic => MSG_STATS_REJECT_SNS_TOPIC
   )
   only_if {
-    ACCOUNT_NAME == 'legacy' &&
     NODE_TYPE == 'internet-submit' ||
     NODE_TYPE == 'mf-inbound-submit'
+  }
+  not_if {
+    ACCOUNT_NAME != 'legacy'
   }
 end
 
@@ -1167,9 +1177,11 @@ template 'fluentd-match-sns-msg-stats-reject-fsc' do
     :assume_role_arn => STATION_ACCOUNT_ROLE_ARN
   )
   only_if {
-    ACCOUNT_NAME != 'legacy' &&
     NODE_TYPE == 'internet-submit' ||
     NODE_TYPE == 'mf-inbound-submit'
+  }
+  not_if {
+    ACCOUNT_NAME == 'legacy'
   }
 end
 
@@ -1184,10 +1196,12 @@ template 'fluentd-match-sqs-telemetry-log-legacy' do
       :telemetry_log_queue => TELEMETRY_LOG_SQS
   )
   only_if {
-      ACCOUNT_NAME == 'legacy' &&
       NODE_TYPE == 'internet-submit' ||
       NODE_TYPE == 'mf-inbound-submit'
     }
+  not_if {
+    ACCOUNT_NAME != 'legacy'
+  }
 end
 
 template 'fluentd-match-sqs-telemetry-log-fsc' do
@@ -1202,10 +1216,12 @@ template 'fluentd-match-sqs-telemetry-log-fsc' do
       :assume_role_arn => STATION_ACCOUNT_ROLE_ARN
   )
   only_if {
-      ACCOUNT_NAME != 'legacy' &&
       NODE_TYPE == 'internet-submit' ||
       NODE_TYPE == 'mf-inbound-submit'
     }
+  not_if {
+    ACCOUNT_NAME == 'legacy'
+  }
 end
 
 cookbook_file 'maillog grok patterns' do
