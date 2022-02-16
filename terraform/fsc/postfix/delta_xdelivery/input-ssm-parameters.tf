@@ -6,6 +6,7 @@ locals {
   input_param_cloud_templates_bucket_name  = nonsensitive(data.aws_ssm_parameter.cloud_templates_bucket_name.value)
   input_param_deployment_environment       = nonsensitive(data.aws_ssm_parameter.deployment_environment.value)
   input_param_primary_region               = nonsensitive(data.aws_ssm_parameter.primary_region.value)
+  input_param_private_subnet_ids           = split(",", nonsensitive(data.aws_ssm_parameter.private_subnet_ids.value))
   input_param_public_subnet_ids            = split(",", nonsensitive(data.aws_ssm_parameter.public_subnet_ids.value))
   input_param_vpc_id                       = nonsensitive(data.aws_ssm_parameter.vpc_id.value)
   input_param_vpc_name                     = replace(nonsensitive(data.aws_ssm_parameter.vpc_name.value), "/-.*/", "")
@@ -51,6 +52,11 @@ data "aws_ssm_parameter" "deployment_environment" {
 
 data "aws_ssm_parameter" "primary_region" {
   name     = "/central/account/primary-region"
+  provider = aws.parameters
+}
+
+data "aws_ssm_parameter" "private_subnet_ids" {
+  name     = "/central/vpc/private-subnet-ids"
   provider = aws.parameters
 }
 
