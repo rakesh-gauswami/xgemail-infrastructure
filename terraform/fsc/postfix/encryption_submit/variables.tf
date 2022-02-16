@@ -68,9 +68,9 @@ variable "policy_bucket" {
   description = "policy_bucket"
 }
 
-variable "firehose_msg_history_v2_stream_name" {
+variable "message_history_v2_stream_name" {
   type        = string
-  description = "firehose_msg_history_v2_stream_name"
+  description = "message_history_v2_stream_name"
 }
 
 variable "relay_control_sns_topic" {

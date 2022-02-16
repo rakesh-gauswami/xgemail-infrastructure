@@ -28,7 +28,7 @@ data "aws_iam_policy_document" "firehose_lambda_policy" {
     ]
     effect    = "Allow"
     resources = [
-      aws_lambda_function.firehose_transformation_lambda.arn
+      "${aws_lambda_function.firehose_transformation_lambda.arn}:*"
     ]
   }
 }

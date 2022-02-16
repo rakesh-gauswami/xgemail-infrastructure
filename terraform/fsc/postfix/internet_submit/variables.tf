@@ -33,14 +33,14 @@ variable "scan_events_sns_topic" {
   description = "scan_events_sns_topic name"
 }
 
-variable "firehose_jilter_helo_telemetry_stream_name" {
+variable "jilter_helo_telemetry_stream_name" {
   type        = string
-  description = "firehose_jilter_helo_telemetry_stream_name"
+  description = "jilter_helo_telemetry_stream_name"
 }
 
-variable "firehose_msg_history_v2_stream_name" {
+variable "message_history_v2_stream_name" {
   type        = string
-  description = "firehose_msg_history_v2_stream_name"
+  description = "message_history_v2_stream_name"
 }
 
 variable "message_history_bucket" {

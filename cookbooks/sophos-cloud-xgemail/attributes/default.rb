@@ -39,9 +39,8 @@ default['sophos_cloud']['local_key_path']               = '/etc/ssl/private'
 default['sophos_cloud']['script_path']                  = '/var/sophos/scripts'
 default['sophos_cloud']['thirdparty']                   = '//cloud-dev-3rdparty'
 default['sophos_cloud']['tmp']                          = '/tmp/sophos'
-default['sophos_cloud']['sdb_region']                   = 'us-west-2'
 default['sophos_cloud']['station_account_role_arn']     = 'none'
-
+default['sophos_cloud']['sdb_region']                   = 'us-west-2'
 
 # XGEmail-specific settings
 default['xgemail']['station_vpc_name'] = nil
@@ -157,6 +156,7 @@ default['xgemail']['scan_events_sns_topic'] = "#{node['xgemail']['station_vpc_id
 
 # SQS Names
 default['xgemail']['msg_history_delivery_status_sqs'] = "#{node['xgemail']['station_vpc_id']}-Xgemail_MessageHistory_Delivery_Status"
+default['xgemail']['telemetry_log_sqs'] = "#{node['xgemail']['station_vpc_id']}-Xgemail_telemetry_log"
 
 ## Policy service/poller settings
 default['xgemail']['sqs_policy_poller_visibility_timeout'] = '10'
@@ -172,6 +172,7 @@ default['xgemail']['sqs_lifecycle_poller_message_retention_period'] = '3600'
 default['xgemail']['xgemail_utils_files_dir'] = "#{XGEMAIL_FILES_DIR}/utils"
 
 default['xgemail']['enc_config_key'] = 'config/outbound-relay-control/encryption/'
+default['xgemail']['enc_config_prefix_key'] = 'outbound-relay-control/encryption/'
 default['xgemail']['inbound_tls_config_key'] = 'config/inbound-relay-control/tls/'
 default['xgemail']['custom_route_transport_path'] = 'config/inbound-relay-control/custom-routes/'
 

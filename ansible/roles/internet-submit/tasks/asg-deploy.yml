@@ -46,6 +46,7 @@
       ScaleInOnWeekdaysCron:                "{{aws.asg.is.cron_scale_in}}"
       ScaleOutOnWeekdaysCron:               "{{aws.asg.is.cron_scale_out}}"
       SecurityGroups:                       "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.XgemailInternetSubmitSecurityGroup}},{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.SecurityGroupBase}}"
+      SmtpdAuthorizedXclientHosts:          "{{aws.asg.is.smtpd_auth_xcli_hosts}}"
       SpotPrice:                            "{{spot_price}}"
       StationVpcId:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}"
       StationVpcName:                       "{{vpc.cloud_station.name}}"

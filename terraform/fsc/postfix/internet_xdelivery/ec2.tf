@@ -1,5 +1,6 @@
 locals {
   DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD = 2400
+  DEFAULT_EIP_COUNT                    = 1
   DEFAULT_INSTANCE_SIZE                = "t3.medium"
   DEFAULT_XGEMAIL_SIZE_DATA_GB         = 10
   DEFAULT_ZONE_INDEX = {
@@ -11,6 +12,13 @@ locals {
     1 = 1
     2 = 0
     3 = 0
+  }
+
+  EIP_COUNT_BY_ENVIRONMENT = {
+    inf  = 1
+    dev  = 1
+    qa   = 1
+    prod = 9
   }
 
   AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT = {
@@ -85,6 +93,12 @@ locals {
     local.DEFAULT_AS_MIN_SIZE
   )
 
+  eip_count = lookup(
+    local.EIP_COUNT_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_EIP_COUNT
+  )
+
   zone_index = lookup(
     local.ZONE_INDEX_BY_ENVIRONMENT,
     local.input_param_deployment_environment,
@@ -129,6 +143,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     BuildUrl                        = var.build_url
     BundleVersion                   = local.ami_build
     EbsMinIops                      = 0
+    EipCount                        = local.eip_count
     Environment                     = local.input_param_deployment_environment
     HealthCheckGracePeriod          = local.health_check_grace_period
     InstanceProfile                 = local.input_param_iam_instance_profile_name
@@ -138,7 +153,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     LoadBalancerName                = aws_elb.elb.id
     MsgHistoryV2BucketName          = var.message_history_bucket
     MsgHistoryV2DynamoDbTableName   = var.message_history_dynamodb_table_name
-    MsgHistoryV2StreamName          = var.firehose_msg_history_v2_stream_name
+    MsgHistoryV2StreamName          = var.message_history_v2_stream_name
     S3CookbookRepositoryURL         = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/${var.build_number}/cookbooks.tar.gz"
     ScaleDownOnWeekends             = "true"
     SdbRegion                       = "us-east-1"

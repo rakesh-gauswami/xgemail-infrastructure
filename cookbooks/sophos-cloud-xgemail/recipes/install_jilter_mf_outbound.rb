@@ -51,6 +51,7 @@ MSG_HISTORY_EVENT_PROCESSOR_PORT = node['xgemail']['mh_event_processor_port']
 LIBOPENDKIM_VERSION = node['xgemail']['libopendkim_version']
 LIBOPENDKIM_PACKAGE_NAME = "libopendkim-#{LIBOPENDKIM_VERSION}"
 
+STATION_ACCOUNT_ROLE_ARN = node['sophos_cloud']['station_account_role_arn']
 SERVICE_USER = node['xgemail']['jilter_user']
 POLICY_BUCKET_NAME   = node['xgemail']['xgemail_policy_bucket_name']
 ACTIVE_PROFILE = node['xgemail']['xgemail_active_profile']
@@ -212,7 +213,8 @@ if ACCOUNT != 'sandbox'
         :msg_history_v2_bucket_name => MSG_HISTORY_V2_BUCKET_NAME,
         :msg_history_event_dir => MSG_HISTORY_EVENT_DIR,
         :msg_history_event_processor_pool_size => MSG_HISTORY_EVENT_PROCESSOR_POOL_SIZE,
-        :msg_history_event_processor_port => MSG_HISTORY_EVENT_PROCESSOR_PORT
+        :msg_history_event_processor_port => MSG_HISTORY_EVENT_PROCESSOR_PORT,
+        :station_account_role_arn => STATION_ACCOUNT_ROLE_ARN
     )
   end
 
