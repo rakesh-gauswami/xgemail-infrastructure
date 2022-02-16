@@ -922,11 +922,7 @@ def main():
             sender = metadata.get_sender_address()
             domain = get_from_sender_domain(metadata)
 
-            outbound_split = multipolicyreaderutils.outbound_split_by_recipient_enabled(metadata, get_customer_id(metadata.get_queue_id(), msghistory_events))
-            logger.debug("Outbound split flag is set to {0} for metadata {1} ".format(outbound_split,metadata));
-
-            if outbound_split:
-                return outbound_split_by_recipients(metadata,sender,domain,plaintext_message,direction, msghistory_events)
+            return outbound_split_by_recipients(metadata,sender,domain,plaintext_message,direction, msghistory_events)
 
         elif MF_OUTBOUND == SUBMIT_TYPE:
             direction = OUTBOUND_MESSAGE_DIRECTION
@@ -934,11 +930,7 @@ def main():
             sender = metadata.get_sender_address()
             domain = get_from_sender_domain(metadata)
 
-            outbound_split = multipolicyreaderutils.outbound_split_by_recipient_enabled(metadata, get_customer_id(metadata.get_queue_id(), msghistory_events))
-            logger.debug("Outbound split flag is set to {0} for metadata {1} ".format(outbound_split,metadata));
-
-            if outbound_split:
-                return outbound_split_by_recipients(metadata,sender,domain,plaintext_message,direction, msghistory_events)
+            return outbound_split_by_recipients(metadata,sender,domain,plaintext_message,direction, msghistory_events)
 
         else:
             raise ("Wrong submit type [{0}]".format(SUBMIT_TYPE))
