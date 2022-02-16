@@ -45,28 +45,28 @@ locals {
     inf  = 1
     dev  = 1
     qa   = 1
-    prod = 6
+    prod = 3
   }
 
   AS_MAX_SIZE_BY_ENVIRONMENT = {
-    inf  = 6
-    dev  = 6
-    qa   = 6
-    prod = 12
+    inf  = 3
+    dev  = 3
+    qa   = 3
+    prod = 4
   }
 
   AS_MIN_SERVICE_BY_ENVIRONMENT = {
     inf  = 1
     dev  = 1
-    qa   = 3
-    prod = 3
+    qa   = 1
+    prod = 2
   }
 
   AS_MAX_BATCH_SIZE_BY_ENVIRONMENT = {
     inf  = 1
     dev  = 1
-    qa   = 3
-    prod = 3
+    qa   = 2
+    prod = 2
   }
 
   AS_CRON_SCALE_DOWN_BY_ENVIRONMENT = {
