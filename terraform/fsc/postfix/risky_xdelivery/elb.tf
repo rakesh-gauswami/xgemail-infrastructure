@@ -25,7 +25,13 @@ resource "aws_elb" "elb" {
   connection_draining_timeout = 120
 }
 
-resource "aws_proxy_protocol_policy" "smtp" {
-  load_balancer  = aws_elb.elb.name
-  instance_ports = ["8025"]
+resource "aws_load_balancer_policy" "elb_policy" {
+  load_balancer_name = aws_elb.elb.name
+  policy_name        = "ELBSSLNegotiationPolicy"
+  policy_type_name   = "SSLNegotiationPolicyType"
+
+  policy_attribute {
+    name  = "Reference-Security-Policy"
+    value = "ELBSecurityPolicy-2016-08"
+  }
 }
