@@ -35,12 +35,3 @@ resource "aws_load_balancer_policy" "elb_policy" {
     value = "ELBSecurityPolicy-2016-08"
   }
 }
-
-resource "aws_load_balancer_listener_policy" "elb_listener_policy" {
-  load_balancer_name = aws_elb.elb.name
-  load_balancer_port = 8025
-
-  policy_names = [
-    aws_load_balancer_policy.elb_policy.policy_name,
-  ]
-}
