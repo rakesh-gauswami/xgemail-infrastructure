@@ -12,6 +12,7 @@ locals {
   input_param_lifecycle_hook_launching        = nonsensitive(data.aws_ssm_parameter.lifecycle_hook_launching_name.value)
   input_param_parent_account_name             = nonsensitive(data.aws_ssm_parameter.parent_account_name.value)
   input_param_primary_region                  = nonsensitive(data.aws_ssm_parameter.primary_region.value)
+  input_param_private_subnet_ids              = split(",", nonsensitive(data.aws_ssm_parameter.private_subnet_ids.value))
   input_param_public_subnet_ids               = split(",", nonsensitive(data.aws_ssm_parameter.public_subnet_ids.value))
   input_param_sdb_volume_tracker_name         = nonsensitive(data.aws_ssm_parameter.sdb_volume_tracker_name.value)
   input_param_sg_base_id                      = nonsensitive(data.aws_ssm_parameter.sg_base_id.value)
@@ -84,6 +85,11 @@ data "aws_ssm_parameter" "parent_account_name" {
 
 data "aws_ssm_parameter" "primary_region" {
   name     = "/central/account/primary-region"
+  provider = aws.parameters
+}
+
+data "aws_ssm_parameter" "private_subnet_ids" {
+  name     = "/central/vpc/private-subnet-ids"
   provider = aws.parameters
 }
 
