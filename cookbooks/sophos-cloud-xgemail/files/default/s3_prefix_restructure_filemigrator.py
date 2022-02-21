@@ -339,6 +339,16 @@ def get_method_visitor(prefix):
         return MethodVisitor(migrate_emailaddresspolicy_object)
     elif prefix == 'config/outbound-relay-control/domains':
         return MethodVisitor(migrate_outboundgatewayconfigandlocalpart_object)
+    elif prefix == 'config/inbound-relay-control/impersonation/vips':
+        return MethodVisitor(migrate_impersonationvip_object)
+    elif prefix == 'config/outbound-relay-control/encryption':
+        return MethodVisitor(migrate_encryptionsettingconfig_object)
+    elif prefix == 'config/inbound-relay-control/domains':
+        return MethodVisitor(migrate_customerdomain_object)
+    elif prefix == 'config/inbound-relay-control/delivery-routes':
+        return MethodVisitor(migrate_deliveryroute_object)
+    elif prefix == 'config/inbound-relay-control/toc/allow-list/customers':
+        return MethodVisitor(migrate_allowtoc_object)
     else:
         print("Incorrect prefix location")
         exit()
