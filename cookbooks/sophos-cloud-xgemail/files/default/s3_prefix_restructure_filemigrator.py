@@ -269,7 +269,52 @@ def migrate_encryptionsettingconfig_object(key, entry):
         if len(domain_with_extension.split('.')) != 2:
             return
         hashvalue = get_hash(domain_with_extension)
-        newlocationkey = "outbound-relay-control/encryption/{}/{}".format(hashvalue, domain_with_config)
+        newlocationkey = "outbound-relay-control/encryption/{}/{}".format(hashvalue, domain_with_extension)
+        s3_accessor.migrate_object(bucket, newlocationkey, key)
+
+#############################################################################################
+# Below method is to migrate customer domain file objects
+# prefixoldlocation - config/inbound-relay-control/domains/<customer_id>.DOMAINS
+# prefixnewlocation - inbound-relay-control/domains/<hashchars>/<customer_id>.DOMAINS
+#############################################################################################
+def migrate_customerdomain_object(key, entry):
+    parts = key.split('/')
+    if len(parts) > 3:
+        customerid_with_extension = parts[3]
+        if len(customerid_with_extension.split('.')) != 2:
+            return
+        hashvalue = get_hash(customerid_with_extension)
+        newlocationkey = "inbound-relay-control/domains/{}/{}".format(hashvalue, customerid_with_extension)
+        s3_accessor.migrate_object(bucket, newlocationkey, key)
+
+#############################################################################################
+# Below method is to migrate customer delivery route file objects
+# prefixoldlocation - config/inbound-relay-control/delivery-routes/<domain>.ROUTE
+# prefixnewlocation - inbound-relay-control/delivery-routes/<hashcars>/<domain>.ROUTE
+#############################################################################################
+def migrate_deliveryroute_object(key, entry):
+    parts = key.split('/')
+    if len(parts) > 3:
+        domain_with_extension = parts[3]
+        if len(domain_with_extension.split('.')) != 2:
+            return
+        hashvalue = get_hash(domain_with_extension)
+        newlocationkey = "inbound-relay-control/delivery-routes/{}/{}".format(hashvalue, domain_with_extension)
+        s3_accessor.migrate_object(bucket, newlocationkey, key)
+
+#############################################################################################
+# Below method is to migrate allow toc file objects
+# prefixoldlocation - config/inbound-relay-control/toc/allow-list/customers/<customer_id>.ALLOWTOC
+# prefixnewlocation - inbound-relay-control/toc/allow-list/customers/<hashcars>/<customer_id>.ALLOWTOC
+#############################################################################################
+def migrate_allowtoc_object(key, entry):
+    parts = key.split('/')
+    if len(parts) > 5:
+        customerid_with_extension = parts[5]
+        if len(customerid_with_extension.split('.')) != 2:
+            return
+        hashvalue = get_hash(customerid_with_extension)
+        newlocationkey = "inbound-relay-control/toc/allow-list/customers/{}/{}".format(hashvalue, customerid_with_extension)
         s3_accessor.migrate_object(bucket, newlocationkey, key)
 
 
