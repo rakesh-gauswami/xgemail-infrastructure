@@ -143,3 +143,29 @@ template METADATA_FROM_MSGHISTORY_TOGGLE_SCRIPT_PATH do
       :policy_storage_path => POLICY_STORAGE_PATH
   )
 end
+
+
+=begin
+setup script used to specify S3 prefix restructure is enabled for messages.
+=end
+
+PREFIX_MESSAGES_PATH_PACKAGE_DIR = "#{XGEMAIL_FILES_DIR}/prefix-messages-path-flag-toggle"
+PREFIX_MESSAGES_PATH_TOGGLE_SCRIPT_NAME = 'xgemail.get.prefix.restructure.py'
+PREFIX_MESSAGES_PATH_TOGGLE_SCRIPT_PATH = "#{PREFIX_MESSAGES_PATH_PACKAGE_DIR}/#{PREFIX_MESSAGES_PATH_TOGGLE_SCRIPT_NAME}"
+
+directory PREFIX_MESSAGES_PATH_PACKAGE_DIR do
+  mode '0755'
+  owner 'root'
+  group 'root'
+  recursive true
+end
+
+template PREFIX_MESSAGES_PATH_TOGGLE_SCRIPT_PATH do
+  source "#{PREFIX_MESSAGES_PATH_TOGGLE_SCRIPT_NAME}.erb"
+  mode '0750'
+  owner 'root'
+  group 'root'
+  variables(
+      :policy_storage_path => POLICY_STORAGE_PATH
+  )
+end

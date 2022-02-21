@@ -19,6 +19,7 @@ from awshandler import AwsHandler
 import policyformatter
 from recipientsplitconfig import RecipientSplitConfig
 from get_metadata_from_msghistory_config import GetMetadataFromMsgHistoryConfig
+from get_prefix_restructure_config import GetPrefixRestructureConfig
 import time
 from logging.handlers import SysLogHandler
 from botocore.exceptions import ClientError
@@ -53,6 +54,7 @@ OUTBOUND_SPLIT_BY_RECIPIENTS_CONFIG_PATH = OUTBOUND_RELAY_CONTROL_PATH + 'msg_ou
 
 OUTBOUND_METADATA_FROM_MESSAGE_HISTORY_CONFIG_PATH = OUTBOUND_RELAY_CONTROL_PATH + 'get_outbound_metadata_from_msghistory.CONFIG'
 INBOUND_METADATA_FROM_MESSAGE_HISTORY_CONFIG_PATH  = INBOUND_RELAY_CONTROL_PATH + 'get_inbound_metadata_from_msghistory.CONFIG'
+PREFIX_RESTRUCTURE_CONFIG_PATH =  EFS_POLICY_STORAGE_PATH + 'config/prefix_restructure.CONFIG'
 
 logger = logging.getLogger('multi-policy-reader-utils')
 logger.setLevel(logging.INFO)
@@ -458,4 +460,21 @@ def build_recipient_map_from_msghistory_enabled(customer_id, server_ip):
         return config.is_get_from_message_history_enabled(customer_id, server_ip)
     except Exception:
         logger.warn('Unable to read config file {0} Error {1}'.format(INBOUND_METADATA_FROM_MESSAGE_HISTORY_CONFIG_PATH, traceback.format_exc()))
+        return False
+
+def prefix_messages_path_enabled(customer_id, server_ip):
+    """
+        Determines if 'S3 prefix' changes is enabled. 
+    """
+    # Read config
+    prefix_config = GetPrefixRestructureConfig(PREFIX_RESTRUCTURE_CONFIG_PATH)
+
+    # No need to read policy to get customerId if globally enabled
+    if prefix_config.is_globally_enabled:
+        return True
+
+    try:
+        return prefix_config.is_prefix_messages_path_enabled(customer_id, server_ip)
+    except Exception:
+        logger.warn('Unable to read config file {0} Error {1}'.format(PREFIX_RESTRUCTURE_CONFIG_PATH, traceback.format_exc()))
         return False

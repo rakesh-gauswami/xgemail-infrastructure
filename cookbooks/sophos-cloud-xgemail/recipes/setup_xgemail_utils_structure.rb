@@ -75,7 +75,8 @@ end
   'rfxrecoveryutils.py',
   'toggle_flag_s3.py',
   'get_metadata_from_msghistory_config.py',
-  's3_prefix_restructure_filemigrator.py'
+  's3_prefix_restructure_filemigrator.py',
+  'get_prefix_restructure_config.py'
 ].each do | cur |
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{cur}" do
     source cur

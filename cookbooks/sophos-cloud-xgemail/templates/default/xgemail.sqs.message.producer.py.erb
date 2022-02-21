@@ -604,10 +604,32 @@ def get_s3_path(queue_id, domain):
     )
     return s3_file_path
 
+def get_s3_prefix_path(queue_id, mailbox_id, domain):
+    root_dir = None
+
+    if get_email_product_type() == MAILFLOW:
+        root_dir = MAIL_FLOW_ROOT_DIR
+    else:
+        root_dir = ROOT_DIR
+
+    s3_file_path = formatterutils.get_s3_prefix_file_path(
+        root_dir,
+        queue_id,
+        mailbox_id,
+        SUBMIT_HOST_IP,
+        domain
+    )
+
+    return s3_file_path
+
+
 def base_policy_flow(metadata, direction, domain, sender, message, msghistory_events, message_attributes = None):
     queue_id = metadata.get_queue_id()
 
+    
     s3_file_path = get_s3_path(queue_id, domain)
+    if multipolicyreaderutils.prefix_messages_path_enabled(get_customer_id(metadata.get_queue_id(), msghistory_events), SUBMIT_HOST_IP):
+        s3_file_path = get_s3_prefix_path(queue_id, '00', domain)
    
     message_context = None
     if msghistory_events is not None:
@@ -704,6 +726,8 @@ def multi_policy_flow(metadata, direction, domain, sender, message, msghistory_e
 
         policy_id_path = "/" + policy_id + "/"
         new_s3_file_path = s3_file_path.replace(POLICY_ID_PATH_VALUE, policy_id_path)
+        if multipolicyreaderutils.prefix_messages_path_enabled(get_customer_id(queue_id, msghistory_events), SUBMIT_HOST_IP):
+            new_s3_file_path = get_s3_prefix_path(queue_id, policy_id, domain)
 
         if msghistory_events is not None:
           message_context = update_msghistory_event_and_get_message_context(msghistory_events, new_s3_file_path, this_policy_metadata, direction, value, sender)
@@ -780,6 +804,10 @@ def outbound_split_by_recipients(metadata, sender, domain, message, direction, m
 
         new_s3_file_path = s3_file_path.replace(POLICY_ID_PATH_VALUE,
                                                 "/" + str(hashlib.sha256(str(recipient)).hexdigest()) + "/")
+
+        if multipolicyreaderutils.prefix_messages_path_enabled(get_customer_id(queue_id, msghistory_events), SUBMIT_HOST_IP):
+            new_s3_file_path = get_s3_prefix_path(queue_id, str(hashlib.sha256(str(recipient)).hexdigest()), domain)
+                                            
 
         if msghistory_events is not None:
             message_context = update_msghistory_event_and_get_message_context(msghistory_events, new_s3_file_path, this_recipient_metadata, direction, this_recipient_metadata.get_recipients(), sender)
@@ -894,11 +922,7 @@ def main():
             sender = metadata.get_sender_address()
             domain = get_from_sender_domain(metadata)
 
-            outbound_split = multipolicyreaderutils.outbound_split_by_recipient_enabled(metadata, get_customer_id(metadata.get_queue_id(), msghistory_events))
-            logger.debug("Outbound split flag is set to {0} for metadata {1} ".format(outbound_split,metadata));
-
-            if outbound_split:
-                return outbound_split_by_recipients(metadata,sender,domain,plaintext_message,direction, msghistory_events)
+            return outbound_split_by_recipients(metadata,sender,domain,plaintext_message,direction, msghistory_events)
 
         elif MF_OUTBOUND == SUBMIT_TYPE:
             direction = OUTBOUND_MESSAGE_DIRECTION
@@ -906,11 +930,7 @@ def main():
             sender = metadata.get_sender_address()
             domain = get_from_sender_domain(metadata)
 
-            outbound_split = multipolicyreaderutils.outbound_split_by_recipient_enabled(metadata, get_customer_id(metadata.get_queue_id(), msghistory_events))
-            logger.debug("Outbound split flag is set to {0} for metadata {1} ".format(outbound_split,metadata));
-
-            if outbound_split:
-                return outbound_split_by_recipients(metadata,sender,domain,plaintext_message,direction, msghistory_events)
+            return outbound_split_by_recipients(metadata,sender,domain,plaintext_message,direction, msghistory_events)
 
         else:
             raise ("Wrong submit type [{0}]".format(SUBMIT_TYPE))
