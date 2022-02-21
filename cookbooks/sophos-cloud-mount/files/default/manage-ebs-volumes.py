@@ -211,7 +211,7 @@ class InstanceSettings(object):
         self.availability_zone          = sophos_attrs["availability_zone"]
         self.environment                = sophos_attrs["environment"]
         self.region                     = sophos_attrs["region"]
-        self.sdb_region                 = sophos_attrs["sdb_region"]
+        self.sdb_region                 = sophos_attrs.get("sdb_region", "us-west-2")
         self.vpc_name                   = sophos_attrs["vpc_name"]
 
         volume_attrs = attributes["volumes"]

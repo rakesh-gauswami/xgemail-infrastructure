@@ -183,9 +183,9 @@
       "Default": ""
     },
     "StationVpcName": {
-      "Description": "Name of the CloudStation VPC",
+      "Description": "Name of the Station VPC",
       "Type": "String",
-      "Default": "Station"
+      "Default": "station"
     },
     "Vpc": {
       "Description": "ID of an existing VPC",
@@ -512,6 +512,16 @@
           {
             "Key": "ServiceType",
             "Value": { "Fn::Sub": "${VpcName}:${XgemailServiceType}" },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "Branch",
+            "Value": { "Ref": "Branch" },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "SSMSessionRunAs",
+            "Value": "ec2-user",
             "PropagateAtLaunch": "true"
           }
         ]

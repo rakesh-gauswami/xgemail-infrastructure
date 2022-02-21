@@ -26,31 +26,39 @@ class AwsHandler(object):
         if self.role_arn == 'none':
             self.session = boto3.session.Session(region_name=self.aws_region)
         else:
-            self.session_name = uuid4().hex
-            self.session = Session()
-            self.session_credentials = RefreshableCredentials.create_from_metadata(
-                metadata=self.refresh_session(), refresh_using=self.refresh_session, method="sts-assume-role"
-            )
-            s = get_session()
-            s._credentials = self.session_credentials
-            s.get_config_variable("region")
-            s.set_config_variable("region", self.aws_region)
-            self.session = Session(botocore_session=s)
+            self.session = self.refreshable_session()
         self.s3_client = self.session.client("s3")
         self.sqs_client = self.session.client("sqs")
         self.sns_client = self.session.client("sns")
         self.firehose_client = self.session.client('firehose')
 
-    def refresh_session(self):
-        credentials = self.session.client("sts").assume_role(
-            RoleArn=self.role_arn, RoleSessionName=self.session_name
-        )["Credentials"]
-        return dict(
-            access_key=credentials["AccessKeyId"],
-            secret_key=credentials["SecretAccessKey"],
-            token=credentials["SessionToken"],
-            expiry_time=credentials["Expiration"].isoformat(),
+    def __get_session_credentials(self):
+        session = Session(region_name=self.aws_region)
+        sts_client = session.client("sts", region_name=self.aws_region)
+        response = sts_client.assume_role(
+            RoleArn=self.role_arn,
+            RoleSessionName=uuid4().hex,
+            DurationSeconds=3000,
+        ).get("Credentials")
+        credentials = {
+            "access_key": response.get("AccessKeyId"),
+            "secret_key": response.get("SecretAccessKey"),
+            "token": response.get("SessionToken"),
+            "expiry_time": response.get("Expiration").isoformat(),
+        }
+        return credentials
+
+    def refreshable_session(self):
+        refreshable_credentials = RefreshableCredentials.create_from_metadata(
+            metadata=self.__get_session_credentials(),
+            refresh_using=self.__get_session_credentials,
+            method="sts-assume-role",
         )
+        session = get_session()
+        session._credentials = refreshable_credentials
+        session.set_config_variable("region", self.aws_region)
+        autorefresh_session = Session(botocore_session=session)
+        return autorefresh_session
 
     # puts data into S3 bucket
     def upload_data_in_s3(self, bucket, key, data, expires, encryption):

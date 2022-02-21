@@ -1,5 +1,6 @@
 locals {
   DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD  = 900
+  DEFAULT_EIP_COUNT                     = 1
   DEFAULT_INSTANCE_SIZE                 = "t3.medium"
   DEFAULT_EBS_SIZE_DATA_GB          = 10
   DEFAULT_ZONE_INDEX = {
@@ -12,6 +13,13 @@ locals {
     1 = 1
     2 = 0
     3 = 0
+  }
+
+  EIP_COUNT_BY_ENVIRONMENT = {
+    inf  = 1
+    dev  = 1
+    qa   = 1
+    prod = 1
   }
 
   AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT = {
@@ -53,8 +61,8 @@ locals {
     }
     prod = {
       1 = 1
-      2 = 0
-      3 = 0
+      2 = 1
+      3 = 1
     }
   }
 
@@ -93,6 +101,12 @@ locals {
     local.DEFAULT_EBS_SIZE_DATA_GB
   )
 
+  eip_count = lookup(
+    local.EIP_COUNT_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_EIP_COUNT
+  )
+
   health_check_grace_period = lookup(
     local.AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT,
     local.input_param_deployment_environment,
@@ -120,6 +134,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
   parameters = {
     AccountName                       = local.input_param_account_name
     AmiId                             = data.aws_ami.ami.id
+    AutoScalingInstanceRoleArn        = local.input_param_autoscaling_role_arn
     AutoScalingMinSize                = local.as_min_size[each.key]
     AutoScalingMaxSize                = 1
     AutoScalingNotificationTopicARN   = local.input_param_lifecycle_topic_arn
@@ -131,6 +146,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     BundleVersion                     = local.ami_build
     EbsMinIops                        = 0
     EbsMinSizeDataGB                  = local.ebs_size_data_gb
+    EipCount                          = local.eip_count
     Environment                       = local.input_param_deployment_environment
     HealthCheckGracePeriod            = local.health_check_grace_period
     InstanceProfile                   = local.input_param_iam_instance_profile_arn

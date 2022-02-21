@@ -36,6 +36,10 @@
       "Description": "AMI ID to use as a base for the stack",
       "Type": "String"
     },
+    "AutoScalingInstanceRoleArn": {
+      "Description": "Arn of the AutoScaling Role.",
+      "Type": "String"
+    },
     "AutoScalingMaxSize": {
       "Description": "Maximum number of instances in the Auto Scaling Group",
       "Type": "String",
@@ -93,6 +97,12 @@
       "Type": "Number",
       "MinValue": "1",
       "MaxValue": "16384"
+    },
+    "EipCount": {
+      "Description": "The number of Eips to use in Multi-Eip rotation",
+      "Type": "Number",
+      "Default": "1",
+      "MinValue": "1"
     },
     "Environment": {
       "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
@@ -195,9 +205,9 @@
       "Default": ""
     },
     "StationVpcName": {
-      "Description": "Name of the CloudStation VPC",
+      "Description": "Name of the Station VPC",
       "Type": "String",
-      "Default": "CloudStation"
+      "Default": "station"
     },
     "UpdateInterval": {
       "Description": "The interval in minutes cfn-hup watches stack modifications.",
@@ -222,7 +232,7 @@
     "VpcName": {
       "Description": "Name of an existing VPC",
       "Type": "String",
-      "Default": "CloudStation"
+      "Default": "email"
     },
     "VpcZoneIdentifiers": {
       "Description": "The list of Public Subnets for your VPC",
@@ -372,6 +382,15 @@
           },
           "Version": {"Fn::GetAtt": ["XgemailAutoScalingLaunchTemplate", "LatestVersionNumber"]}
         },
+        "LifecycleHookSpecificationList" : [
+          {
+            "LifecycleHookName": { "Ref": "LifecycleHookLaunching" },
+            "HeartbeatTimeout" : "300",
+            "LifecycleTransition" : "autoscaling:EC2_INSTANCE_LAUNCHING",
+            "NotificationTargetARN" : { "Ref": "AutoScalingNotificationTopicARN" },
+            "RoleARN" : { "Ref": "AutoScalingInstanceRoleArn" }
+          }
+        ],
         "LoadBalancerNames": { "Ref": "LoadBalancerName" },
         "MaxSize": { "Ref": "AutoScalingMaxSize" },
         "MinSize": { "Ref": "AutoScalingMinSize" },
@@ -389,6 +408,11 @@
               ]
             },
             "PropagateAtLaunch": true
+          },
+          {
+            "Key": "Branch",
+            "Value": { "Ref": "Branch" },
+            "PropagateAtLaunch": "true"
           },
           {
             "Key": "BuildTag",
@@ -438,6 +462,16 @@
           {
             "Key": "ServiceType",
             "Value": { "Fn::Sub": "${VpcName}:${XgemailServiceType}" },
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "SSMSessionRunAs",
+            "Value": "ec2-user",
+            "PropagateAtLaunch": "true"
+          },
+          {
+            "Key": "EipCount",
+            "Value": { "Ref": "EipCount" },
             "PropagateAtLaunch": "true"
           }
         ],
