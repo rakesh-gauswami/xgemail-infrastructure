@@ -42,6 +42,7 @@ PACKAGE_DIR                            = "#{XGEMAIL_FILES_DIR}/delivery-director
 DELIVERY_DIRECTOR_SCRIPT               = 'xgemail.deliverydirector.config.updater.py'
 DELIVERY_DIRECTOR_SCRIPT_PATH          = "#{PACKAGE_DIR}/#{DELIVERY_DIRECTOR_SCRIPT}"
 
+STATION_ACCOUNT_ROLE_ARN = node['sophos_cloud']['station_account_role_arn']
 
 #directory for delivery director services
 directory PACKAGE_DIR do
@@ -65,6 +66,7 @@ template DELIVERY_DIRECTOR_SCRIPT_PATH do
     :aws_region => AWS_REGION,
     :xgemail_utils_path => XGEMAIL_UTILS_DIR,
     :account => ACCOUNT,
-    :delivery_director_config_filename => DD_CONFIG_FILE_NAME
+    :delivery_director_config_filename => DD_CONFIG_FILE_NAME,
+    :station_account_role_arn => STATION_ACCOUNT_ROLE_ARN
   )
 end

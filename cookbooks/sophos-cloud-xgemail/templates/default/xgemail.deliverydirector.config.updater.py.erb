@@ -8,15 +8,43 @@ import json
 import sys
 from botocore.exceptions import ClientError
 from deliverydirectorthreshold import DeliveryDirectorThreshold
+from uuid import uuid4
 
 AWS_REGION = "<%= @aws_region %>"
-ACCOUNT =  "<%= @account %>"
+ACCOUNT = "<%= @account %>"
 DD_CONFIG_FILE_NAME = "<%= @delivery_director_config_filename %>"
-
+STATION_ACCOUNT_ROLE_ARN = "<%= @station_account_role_arn %>"
 DOMAIN_THRESHOLD_DEFAULT = 50
 EMAIL_THRESHOLD_DEFAULT = 10
 WARMUP_PERCENTAGE_DEFAULT = 0
 
+if STATION_ACCOUNT_ROLE_ARN == 'none':
+    # Legacy session
+    session = boto3.session.Session(region_name=AWS_REGION)
+    dynamoDb = session.resource('dynamodb')
+    s3 = session.resource('s3')
+else:
+    # FSC session
+    sts_client = boto3.client("sts")
+    response = sts_client.assume_role(
+        RoleArn=STATION_ACCOUNT_ROLE_ARN,
+        RoleSessionName=uuid4().hex,
+    )
+    credentials = response['Credentials']
+    dynamoDb = boto3.resource(
+        'dynamodb',
+        AWS_REGION,
+        aws_access_key_id=credentials['AccessKeyId'],
+        aws_secret_access_key=credentials['SecretAccessKey'],
+        aws_session_token=credentials['SessionToken'],
+    )
+    s3 = boto3.resource(
+        's3',
+        AWS_REGION,
+        aws_access_key_id=credentials['AccessKeyId'],
+        aws_secret_access_key=credentials['SecretAccessKey'],
+        aws_session_token=credentials['SessionToken'],
+    )
 
 def print_record(record):
     print"==============================================================================="
@@ -124,7 +152,6 @@ if __name__ == "__main__":
             else:
                 is_sub_domain = False
 
-    dynamoDb = boto3.resource('dynamodb', AWS_REGION)
     table = dynamoDb.Table('tf-delivery-director')
 
     if command == "CONFIG":
@@ -138,7 +165,6 @@ if __name__ == "__main__":
         dd_current_config_object = dict()
         bucket_name = 'private-cloud-{}-{}-cloudemail-xgemail-deliverydir'.format(ACCOUNT, AWS_REGION)
         try:
-            s3 = boto3.resource('s3')
             dd_current_config = s3.Object(bucket_name, DD_CONFIG_FILE_NAME)
             dd_current_config_object = json.loads(dd_current_config.get()['Body'].read())
         except ClientError as ex:
