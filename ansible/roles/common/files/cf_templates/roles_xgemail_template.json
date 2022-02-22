@@ -3658,6 +3658,18 @@
                 "s3:PutObject"
               ],
               "Effect" : "Allow",
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailCustomerSubmitBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailCustomerSubmitBucketName" }]]}]
+            },
+            {
+              "Action" : [
+                "s3:DeleteObject",
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObject"
+              ],
+              "Effect" : "Allow",
               "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailInternetSubmitBucketName" }, "/*"]]},
                 { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailInternetSubmitBucketName" }]]}]
             },
