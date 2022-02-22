@@ -53,8 +53,8 @@ locals {
     }
     prod = {
       1 = 1
-      2 = 0
-      3 = 0
+      2 = 1
+      3 = 1
     }
   }
 
@@ -62,7 +62,7 @@ locals {
     inf  = 1
     dev  = 1
     qa   = 1
-    prod = 9
+    prod = 1
   }
 
   ZONE_INDEX_BY_ENVIRONMENT = {

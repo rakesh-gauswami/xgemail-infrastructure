@@ -56,6 +56,9 @@ OUTBOUND_METADATA_FROM_MESSAGE_HISTORY_CONFIG_PATH = OUTBOUND_RELAY_CONTROL_PATH
 INBOUND_METADATA_FROM_MESSAGE_HISTORY_CONFIG_PATH  = INBOUND_RELAY_CONTROL_PATH + 'get_inbound_metadata_from_msghistory.CONFIG'
 PREFIX_RESTRUCTURE_CONFIG_PATH =  EFS_POLICY_STORAGE_PATH + 'config/prefix_restructure.CONFIG'
 
+PLUS_SIGN = "+"
+AT_SIGN = "@"
+
 logger = logging.getLogger('multi-policy-reader-utils')
 logger.setLevel(logging.INFO)
 syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
@@ -165,6 +168,10 @@ def build_policy_map(recipients, aws_region = None, policy_bucket_name = None, p
 
             if (is_toc_enabled != True): #Not to read endpoint policy for ToC config if found enabled for processed recipients
                 endpoint_policy = read_policy_endpoint(recipient, customer_policy['userId'], aws_region, policy_bucket_name, read_from_s3)
+                if endpoint_policy is None and PLUS_SIGN in recipient:
+                    recipient_without_plus = get_email_without_plus_sign(recipient)
+                    endpoint_policy = read_policy_endpoint(recipient_without_plus, customer_policy['userId'], aws_region, policy_bucket_name, read_from_s3)
+
                 if not endpoint_policy:
                     return None, None
 
@@ -185,6 +192,9 @@ def build_policy_map(recipients, aws_region = None, policy_bucket_name = None, p
             begin_time = time.time()
 
             customer_policy = read_policy_from_S3(recipient, aws_region, policy_bucket_name)
+            if customer_policy is None and PLUS_SIGN in recipient:
+                recipient_without_plus = get_email_without_plus_sign(recipient)
+                customer_policy = read_policy_from_S3(recipient_without_plus, aws_region, policy_bucket_name)
 
             elapsed_time = time.time() - begin_time
             elapsed_time = elapsed_time * 1000
@@ -205,6 +215,9 @@ def build_policy_map(recipients, aws_region = None, policy_bucket_name = None, p
             begin_time = time.time()
 
             customer_policy = read_policy_from_EFS(recipient)
+            if customer_policy is None and PLUS_SIGN in recipient:
+                recipient_without_plus = get_email_without_plus_sign(recipient)
+                customer_policy = read_policy_from_EFS(recipient_without_plus)
 
             elapsed_time = time.time() - begin_time
             elapsed_time = elapsed_time * 1000
@@ -245,7 +258,7 @@ def read_policy_from_S3(recipient, aws_region, policy_bucket_name):
         # Try old location
         file_name = build_recipient_file_path(recipient, MULTI_POLICY_DOMAINS_PATH)
         policy_file = load_multi_policy_file_from_S3(aws_region, policy_bucket_name, file_name)
-    return policy_file    
+    return policy_file
 
 
 def policy_file_exists_in_S3(recipient, aws_region, policy_bucket_name):
@@ -397,6 +410,9 @@ def read_policy(recipient, aws_region, policy_bucket_name, read_from_s3):
         logger.debug("ToC user based split, Reading policy for {0} directly from s3".format(recipient))
         begin_time = time.time()
         customer_policy = read_policy_from_S3(recipient, aws_region, policy_bucket_name)
+        if customer_policy is None and PLUS_SIGN in recipient:
+            recipient_without_plus = get_email_without_plus_sign(recipient)
+            customer_policy = read_policy_from_S3(recipient_without_plus, aws_region, policy_bucket_name)
     else:
         logger.debug("ToC user based split, Reading policy for {0} from EFS".format(recipient))
         begin_time = time.time()
@@ -478,3 +494,11 @@ def prefix_messages_path_enabled(customer_id, server_ip):
     except Exception:
         logger.warn('Unable to read config file {0} Error {1}'.format(PREFIX_RESTRUCTURE_CONFIG_PATH, traceback.format_exc()))
         return False
+
+def get_email_without_plus_sign(email_address):
+    if PLUS_SIGN not in email_address:
+        return email_address
+
+    domain = email_address.split(AT_SIGN, 1)[1]
+    mailbox = email_address.split(PLUS_SIGN, 1)[0]
+    return mailbox + AT_SIGN + domain

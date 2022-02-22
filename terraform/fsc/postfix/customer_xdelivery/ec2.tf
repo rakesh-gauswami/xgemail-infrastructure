@@ -19,7 +19,7 @@ locals {
     inf  = 1
     dev  = 1
     qa   = 1
-    prod = 9
+    prod = 1
   }
 
   AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT = {
@@ -61,8 +61,8 @@ locals {
     }
     prod = {
       1 = 1
-      2 = 0
-      3 = 0
+      2 = 1
+      3 = 1
     }
   }
 
