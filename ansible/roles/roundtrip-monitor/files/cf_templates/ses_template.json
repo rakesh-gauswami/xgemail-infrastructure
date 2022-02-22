@@ -592,6 +592,30 @@
         "Principal": "ses.amazonaws.com",
         "SourceAccount": { "Ref": "AWS::AccountId" }
       }
+    },
+
+    "PermissionForSesToInvokeMfLambda": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "SesInvokeInboundMfLambdaFunctionArn"
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "ses.amazonaws.com",
+        "SourceAccount": { "Ref": "AWS::AccountId" }
+      }
+    },
+
+    "PermissionForSesToInvokeMfOutboundLambda": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "SesInvokeMfOutboundLambdaFunctionArn"
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "ses.amazonaws.com",
+        "SourceAccount": { "Ref": "AWS::AccountId" }
+      }
     }
   },
 
@@ -619,6 +643,14 @@
     "EncryptionOutboundReceiptRule": {
       "Description": "Ses Receipt Rules.",
       "Value": { "Ref": "EncryptionOutboundReceiptRule" }
+    },
+    "InboundMfReceiptRule": {
+      "Description": "Ses Receipt Rules.",
+      "Value": { "Ref": "InboundMfReceiptRule" }
+    },
+    "MfOutboundReceiptRule": {
+      "Description": "Ses Receipt Rules.",
+      "Value": { "Ref": "MfOutboundReceiptRule" }
     }
   }
 }

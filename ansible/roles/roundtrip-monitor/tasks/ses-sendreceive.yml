@@ -23,6 +23,18 @@
     var: inbound_ms_monitor_receive_lambda_output
     verbosity: 3
 
+# Inbound MailFlow Monitor receive lambda function output
+- name: "Gather {{stack.lambda.inbound_mf_monitor_receive_lambda_function}} CloudFormation Stack Output"
+  cloudformation_facts:
+    stack_name: "{{stack.lambda.inbound_mf_monitor_receive_lambda_function}}"
+    region: "{{account.region}}"
+  register: inbound_mf_monitor_receive_lambda_output
+
+- name: "Print {{stack.lambda.inbound_mf_monitor_receive_lambda_function}} CloudFormation Stack Output"
+  debug:
+    var: inbound_mf_monitor_receive_lambda_output
+    verbosity: 3
+
 # Outbound Monitor receive lambda function output
 - name: "Gather {{stack.lambda.outbound_monitor_receive_lambda_function}} CloudFormation Stack Output"
   cloudformation_facts:
@@ -47,6 +59,18 @@
     var: encryption_outbound_monitor_receive_lambda_output
     verbosity: 3
 
+# MailFlow Outbound Monitor receive lambda function output
+- name: "Gather {{stack.lambda.mf_outbound_monitor_receive_lambda_function}} CloudFormation Stack Output"
+  cloudformation_facts:
+    stack_name: "{{stack.lambda.mf_outbound_monitor_receive_lambda_function}}"
+    region: "{{account.region}}"
+  register: mf_outbound_monitor_receive_lambda_output
+
+- name: "Print {{stack.lambda.mf_outbound_monitor_receive_lambda_function}} CloudFormation Stack Output"
+  debug:
+    var: mf_outbound_monitor_receive_lambda_output
+    verbosity: 3
+
 - name: "Deploy SES  {{stack.ses.email_monitor_ses}} to {{account.name}}-{{account.region}}"
   cloudformation:
     stack_name:                                       "{{stack.ses.email_monitor_ses}}"
@@ -59,6 +83,8 @@
       OutboundRuleName:                               "xgemail-outbound-monitor-rule"
       EncryptionOutboundRuleName:                     "xgemail-encryption-outbound-monitor-rule"
       InboundMsRuleName:                              "xgemail-inbound-ms-monitor-rule"
+      InboundMfRuleName:                              "xgemail-inbound-mf-monitor-rule"
+      MfOutboundRuleName:                             "xgemail-mf-outbound-monitor-rule"
       RuleSetName:                                    "{{ses_rule_set_name}}"
       UsWest2aCidrRange:                              "{{us_west_2a_cidr}}"
       UsWest2bCidrRange:                              "{{us_west_2b_cidr}}"
@@ -72,10 +98,14 @@
       SesInvokeOutboundLambdaFunctionArn:             "{{outbound_monitor_receive_lambda_output.ansible_facts.cloudformation[stack.lambda.outbound_monitor_receive_lambda_function].stack_outputs.LambdaFunctionArn}}"
       SesInvokeEncryptionOutboundLambdaFunctionArn:   "{{encryption_outbound_monitor_receive_lambda_output.ansible_facts.cloudformation[stack.lambda.enc_outbound_monitor_receive_lambda_function].stack_outputs.LambdaFunctionArn}}"
       SesInvokeInboundMsLambdaFunctionArn:            "{{inbound_ms_monitor_receive_lambda_output.ansible_facts.cloudformation[stack.lambda.inbound_ms_monitor_receive_lambda_function].stack_outputs.LambdaFunctionArn}}"
+      SesInvokeMfOutboundLambdaFunctionArn:           "{{mf_outbound_monitor_receive_lambda_output.ansible_facts.cloudformation[stack.lambda.mf_outbound_monitor_receive_lambda_function].stack_outputs.LambdaFunctionArn}}"
+      SesInvokeInboundMfLambdaFunctionArn:            "{{inbound_mf_monitor_receive_lambda_output.ansible_facts.cloudformation[stack.lambda.inbound_mf_monitor_receive_lambda_function].stack_outputs.LambdaFunctionArn}}"
       InboundMailRecipients:                          "{{inbound_mail_recipients}}"
       OutboundMailRecipients:                         "{{outbound_mail_recipients}}"
       EncryptionOutboundMailRecipients:               "{{enc.encryption_outbound_mail_recipients}}"
       InboundMsMailRecipients:                        "{{ms.inbound_ms_mail_recipients}}"
+      MfOutboundMailRecipients:                       "{{mf.mf_outbound_mail_recipients}}"
+      InboundMfMailRecipients:                        "{{mf.inbound_mf_mail_recipients}}"
       Domains:                                        "{{domains}}"
   register: ses_stack_output
 
