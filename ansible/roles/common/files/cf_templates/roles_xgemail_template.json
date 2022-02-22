@@ -3664,6 +3664,17 @@
             {
               "Action" : [
                 "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:GetObjectMetadataRequest",
+                "s3:ListBucket"
+              ],
+              "Effect" : "Allow",
+              "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailPolicyBucketName" }, "/*"]]},
+                { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailPolicyBucketName" }]]}]
+            },
+            {
+              "Action" : [
+                "s3:GetBucketLocation",
                 "s3:ListBucket"
               ],
               "Effect" : "Allow",
