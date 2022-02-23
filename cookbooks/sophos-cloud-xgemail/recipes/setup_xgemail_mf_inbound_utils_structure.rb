@@ -74,7 +74,8 @@ end
   'uuidutils.py',
   'rfxrecoveryutils.py',
   'get_metadata_from_msghistory_config.py',
-  'toggle_flag_s3.py'
+  'toggle_flag_s3.py',
+  'get_prefix_restructure_config.py'
 ].each do | cur |
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{cur}" do
     source cur
