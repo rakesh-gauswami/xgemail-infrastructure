@@ -67,6 +67,10 @@
       "Description": "Version of the AMI bundle",
       "Type": "Number"
     },
+    "DeliveryDirectorBucketName": {
+      "Description": "Name of the delivery director bucket",
+      "Type": "String"
+    },
     "DeployIgnoreUnmodifiedGroupSize": {
       "Description": "During a stack update, indicates whether AWS CloudFormation ignores any group size property differences between your current Auto Scaling group and the Auto Scaling group that is described in the update.",
       "Type": "String",
@@ -637,6 +641,7 @@
                     "  \"xgemail\" : {\n",
                     "    \"alarm_topic_arn\"                        : \"{{alarm_topic_arn}}\",\n",
                     "    \"cluster_type\"                           : \"{{cluster_type}}\",\n",
+                    "    \"delivery_director_bucket_name\"          : \"{{delivery_director_bucket_name}}\",\n",
                     "    \"lifecycle_topic_arn\"                    : \"{{lifecycle_topic_arn}}\",\n",
                     "    \"msg_history_bucket_name\"                : \"{{msg_history_bucket_name}}\",\n",
                     "    \"msg_history_ms_bucket_name\"             : \"{{msg_history_ms_bucket_name}}\",\n",
@@ -664,6 +669,7 @@
                   "branch":                                         { "Ref": "Branch" },
                   "cluster":                                        { "Ref": "XgemailServiceType" },
                   "cluster_type":                                   { "Ref": "XgemailServiceType" },
+                  "delivery_director_bucket_name":                  { "Ref": "DeliveryDirectorBucketName" },
                   "environment":                                    { "Ref": "Environment" },
                   "lifecycle_topic_arn":                            { "Ref": "AutoScalingNotificationTopicARN" },
                   "msg_history_bucket_name":                        { "Ref": "XgemailMsgHistoryBucketName" },
