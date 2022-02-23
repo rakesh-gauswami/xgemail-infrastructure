@@ -36,7 +36,7 @@ class S3Accessor:
             if e.response['Error']['Code'] == "404":
                 if dryrun:
                     self.counter += 1
-                    self.sourceFile.write("\n {} >> {}".format(oldlocationkey, newlocationkey))
+                    self.sourceFile.write("\n {}".format(oldlocationkey))
                 else:
                     self.copy_and_replace_filename_to_newlocation(bucket,newlocationkey,oldlocationkey)
             else:
