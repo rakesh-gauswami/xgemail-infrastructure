@@ -23,6 +23,11 @@ variable "customer_submit_sqs_queue" {
   description = "customer_submit_sqs_queue"
 }
 
+variable "delivery_director_bucket_name" {
+  type        = string
+  description = "delivery_director_bucket_name"
+}
+
 variable "message_history_v2_stream_name" {
   type        = string
   description = "message_history_v2_stream_name"
