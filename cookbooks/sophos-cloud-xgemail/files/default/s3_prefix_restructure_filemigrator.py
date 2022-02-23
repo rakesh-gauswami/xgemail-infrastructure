@@ -178,6 +178,146 @@ def migrate_endpointpolicy_object(key, entry):
         newlocationkey = "policies/endpoints/{}/{}".format(hashvalue,userid_with_policy)
         s3_accessor.migrate_object(bucket, newlocationkey, key)
 
+#############################################################################################
+# Below method is to migrate Bulk sender action files objects
+# prefixoldlocation - config/outbound-relay-control/bulksenders/<customer_id>/<userid>.<ACTION>
+# prefixnewlocation - outbound-relay-control/bulksenders/<customer_id>/<hashchars>/<userid>.<ACTION>
+#############################################################################################
+def migrate_bulksendersaction_object(key, entry):
+    parts = key.split('/')
+    if len(parts) > 4:
+        customer_id = parts[3]
+        userid_with_action = parts[4]
+        if len(userid_with_action) > 38:
+            return
+        hashvalue = get_hash(userid_with_action)
+        newlocationkey = "outbound-relay-control/bulksenders/{}/{}/{}".format(customer_id, hashvalue, userid_with_action)
+        s3_accessor.migrate_object(bucket, newlocationkey, key)
+
+#############################################################################################
+# Below method is to migrate email address policy object
+# prefixoldlocation - config/policies/domains/<domain>/<b64-encoded-localpart>
+# prefixnewlocation - policies/domains/<hashchars>/<domain>/<b64-encoded-localpart>
+#############################################################################################
+
+def migrate_emailaddresspolicy_object(key, entry):
+    parts = key.split('/')
+    if len(parts) > 4:
+        domain = parts[3]
+        email_address = parts[4]
+        message_bytes = email_address.encode('utf-8')
+        base64_bytes = base64.b64encode(message_bytes)
+        base64_email_address = base64_bytes.decode('utf-8')
+        hashvalue = get_hash(base64_email_address)
+        newlocationkey = "policies/domains/{}/{}/{}".format(hashvalue, domain, base64_email_address)
+        s3_accessor.migrate_object(bucket, newlocationkey, key)
+
+#############################################################################################
+# Below method is to migrate outbound gateway config file and localpart objects
+# prefixoldlocation - config/outbound-relay-control/domains/<domain>/<b64-encoded-localpart>
+# prefixnewlocation - outbound-relay-control/domains/<hashchars>/<domain>/<b64-encoded-localpart>
+
+# prefixoldlocation - config/outbound-relay-control/domains/<domain>.CONFIG
+# prefixnewlocation - outbound-relay-control/domains/<hashcars>/<domain>.CONFIG
+
+#############################################################################################
+def migrate_outboundgatewayconfigandlocalpart_object(key, entry):
+    parts = key.split('/')
+    if len(parts) > 4:
+        domain = parts[3]
+        email_address = parts[4]
+        if len(email_address.split('.')) > 1:
+            return
+        message_bytes = email_address.encode('utf-8')
+        base64_bytes = base64.b64encode(message_bytes)
+        base64_email_address = base64_bytes.decode('utf-8')
+        hashvalue = get_hash(base64_email_address)
+        newlocationkey = "outbound-relay-control/domains/{}/{}/{}".format(hashvalue, domain, base64_email_address)
+        s3_accessor.migrate_object(bucket, newlocationkey, key)
+    elif len(parts) > 3:
+        domain_with_config = parts[3]
+        if len(domain_with_config.split('.')) != 2:
+            return
+        hashvalue = get_hash(domain_with_config)
+        newlocationkey = "outbound-relay-control/domains/{}/{}".format(hashvalue, domain_with_config)
+        s3_accessor.migrate_object(bucket, newlocationkey, key)
+
+#############################################################################################
+# Below method is to migrate impersonation vip file objects
+# prefixoldlocation - config/inbound-relay-control/impersonation/vips/<customer_id>.VIP
+# prefixnewlocation - inbound-relay-control/impersonation/vips/<hashcars>/<customer_id>.VIP
+#############################################################################################
+def migrate_impersonationvip_object(key, entry):
+    parts = key.split('/')
+    if len(parts) > 4:
+        customerid_with_extension = parts[4]
+        if len(customerid_with_extension.split('.')) != 2:
+            return
+        hashvalue = get_hash(customerid_with_extension)
+        newlocationkey = "inbound-relay-control/impersonation/vips/{}/{}".format(hashvalue, customerid_with_extension)
+        s3_accessor.migrate_object(bucket, newlocationkey, key)
+
+#############################################################################################
+# Below method is to migrate encryption setting config file objects
+# prefixoldlocation - config/outbound-relay-control/encryption/<domain>.ENC_CONFIG
+# prefixnewlocation - outbound-relay-control/encryption/<hashcars>/<domain>.ENC_CONFIG
+#############################################################################################
+def migrate_encryptionsettingconfig_object(key, entry):
+    parts = key.split('/')
+    if len(parts) > 3:
+        domain_with_extension = parts[3]
+        if len(domain_with_extension.split('.')) != 2:
+            return
+        hashvalue = get_hash(domain_with_extension)
+        newlocationkey = "outbound-relay-control/encryption/{}/{}".format(hashvalue, domain_with_extension)
+        s3_accessor.migrate_object(bucket, newlocationkey, key)
+
+#############################################################################################
+# Below method is to migrate customer domain file objects
+# prefixoldlocation - config/inbound-relay-control/domains/<customer_id>.DOMAINS
+# prefixnewlocation - inbound-relay-control/domains/<hashchars>/<customer_id>.DOMAINS
+#############################################################################################
+def migrate_customerdomain_object(key, entry):
+    parts = key.split('/')
+    if len(parts) > 3:
+        customerid_with_extension = parts[3]
+        if len(customerid_with_extension.split('.')) != 2:
+            return
+        hashvalue = get_hash(customerid_with_extension)
+        newlocationkey = "inbound-relay-control/domains/{}/{}".format(hashvalue, customerid_with_extension)
+        s3_accessor.migrate_object(bucket, newlocationkey, key)
+
+#############################################################################################
+# Below method is to migrate customer delivery route file objects
+# prefixoldlocation - config/inbound-relay-control/delivery-routes/<domain>.ROUTE
+# prefixnewlocation - inbound-relay-control/delivery-routes/<hashcars>/<domain>.ROUTE
+#############################################################################################
+def migrate_deliveryroute_object(key, entry):
+    parts = key.split('/')
+    if len(parts) > 3:
+        domain_with_extension = parts[3]
+        if len(domain_with_extension.split('.')) != 2:
+            return
+        hashvalue = get_hash(domain_with_extension)
+        newlocationkey = "inbound-relay-control/delivery-routes/{}/{}".format(hashvalue, domain_with_extension)
+        s3_accessor.migrate_object(bucket, newlocationkey, key)
+
+#############################################################################################
+# Below method is to migrate allow toc file objects
+# prefixoldlocation - config/inbound-relay-control/toc/allow-list/customers/<customer_id>.ALLOWTOC
+# prefixnewlocation - inbound-relay-control/toc/allow-list/customers/<hashcars>/<customer_id>.ALLOWTOC
+#############################################################################################
+def migrate_allowtoc_object(key, entry):
+    parts = key.split('/')
+    if len(parts) > 5:
+        customerid_with_extension = parts[5]
+        if len(customerid_with_extension.split('.')) != 2:
+            return
+        hashvalue = get_hash(customerid_with_extension)
+        newlocationkey = "inbound-relay-control/toc/allow-list/customers/{}/{}".format(hashvalue, customerid_with_extension)
+        s3_accessor.migrate_object(bucket, newlocationkey, key)
+
+
 def get_hash(s):
     hasher = hashlib.md5()
     hasher.update(s.encode('utf-8'))
@@ -193,6 +333,22 @@ def get_method_visitor(prefix):
         return MethodVisitor(migrate_userallowblock_object)
     elif prefix == 'config/policies/endpoints':
         return MethodVisitor(migrate_endpointpolicy_object)
+    elif prefix == 'config/outbound-relay-control/bulksenders':
+        return MethodVisitor(migrate_bulksendersaction_object)
+    elif prefix == 'config/policies/domains':
+        return MethodVisitor(migrate_emailaddresspolicy_object)
+    elif prefix == 'config/outbound-relay-control/domains':
+        return MethodVisitor(migrate_outboundgatewayconfigandlocalpart_object)
+    elif prefix == 'config/inbound-relay-control/impersonation/vips':
+        return MethodVisitor(migrate_impersonationvip_object)
+    elif prefix == 'config/outbound-relay-control/encryption':
+        return MethodVisitor(migrate_encryptionsettingconfig_object)
+    elif prefix == 'config/inbound-relay-control/domains':
+        return MethodVisitor(migrate_customerdomain_object)
+    elif prefix == 'config/inbound-relay-control/delivery-routes':
+        return MethodVisitor(migrate_deliveryroute_object)
+    elif prefix == 'config/inbound-relay-control/toc/allow-list/customers':
+        return MethodVisitor(migrate_allowtoc_object)
     else:
         print("Incorrect prefix location")
         exit()

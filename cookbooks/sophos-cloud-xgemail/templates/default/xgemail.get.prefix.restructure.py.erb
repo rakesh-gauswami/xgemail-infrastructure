@@ -1,0 +1,212 @@
+#!/usr/bin/env python
+# vim: autoindent expandtab filetype=python shiftwidth=4 softtabstop=4 tabstop=4
+#
+# Copyright 2021, Sophos Limited. All rights reserved.
+#
+# 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
+# Sophos Limited and Sophos Group.  All other product and company
+# names mentioned are trademarks or registered trademarks of their
+# respective owners.
+#
+#
+#  This script is used to modify which messages, required metadata should be get from message history accepted event
+#  There are two available options:
+#    - Enable/disable get metadata from message history globally
+#    - Add/remove customers for a per customer configuration
+#    - Add/remove submit server ip's for per server configuration
+#
+
+import argparse
+import json
+import os
+import sys
+from uuid import UUID
+
+# Constants
+POLICY_STORAGE_PATH = "<%= @policy_storage_path %>"
+
+PREFIX_RESTRUCTURE_CONFIG_PATH =  POLICY_STORAGE_PATH + '/config/prefix_restructure.CONFIG'
+
+
+default_config = {'is_globally_enabled': False, 'customer_ids_enabled': [], 'submit_servers_enabled' : []}
+
+def validate_uuid(uuid_string):
+    '''
+        Verifies that the provided string is a valid UUID Version 4.
+        Returns True if uuid is valid, False otherwise
+    '''
+    try:
+        val = UUID(uuid_string, version=4)
+    except ValueError:
+        # If it's a value error, then the string
+        # is not a valid hex code for a UUID.
+        return False
+    return True
+
+def get_config():
+    '''
+        Returns the current prefix messages path configuration.
+        If no CONFIG file currently exists, print out the default config
+    '''
+    prefix_messages_path_config_file = PREFIX_RESTRUCTURE_CONFIG_PATH
+    if os.path.isfile(prefix_messages_path_config_file):
+        with open(prefix_messages_path_config_file) as config_file:
+            config_data = json.load(config_file)
+            print 'prefix messages path enabled globally: {0}'.format(config_data['is_globally_enabled'])
+            print 'prefix messages path enabled for these {0} customer ids:'.format(len(config_data['customer_ids_enabled']))
+            for customer_id in config_data['customer_ids_enabled']:
+                print '\t{0}'.format(customer_id)
+            print 'prefix messages path enabled for these {0} server ips:'.format(len(config_data['submit_servers_enabled']))
+            for server_ip in config_data['submit_servers_enabled']:
+                print '\t{0}'.format(server_ip)
+    else:
+        print 'config file does not exist at location {0}'.format(prefix_messages_path_config_file)
+        print '[DEFAULT_CONFIG]: prefix messages path enabled globally: {0}'.format(default_config['is_globally_enabled'])
+        print '[DEFAULT_CONFIG]: prefix messages path enabled for these customer ids: {0}'.format(default_config['customer_ids_enabled'])
+        print '[DEFAULT_CONFIG]: prefix messages path enabled for these server ips: {0}'.format(default_config['submit_servers_enabled'])
+
+def update_global_config(updated_value):
+    '''
+        Updates the global configuration setting depending on the provided value.
+    '''
+    config_location = PREFIX_RESTRUCTURE_CONFIG_PATH
+    config = get_current_config(config_location)
+
+    config['is_globally_enabled'] = updated_value
+
+    write_config(config, config_location)
+
+    print 'Set is_globally_enabled to {0} in file {1}'.format(updated_value, config_location)
+
+def add_customer(customer_id):
+    '''
+        Adds the provided customer_id to the list of customers for whom we should get metadata from message history.
+        If the customer_id already exists, this method does nothing.
+    '''
+    config_location = PREFIX_RESTRUCTURE_CONFIG_PATH
+    config = get_current_config(config_location)
+
+    if customer_id in config['customer_ids_enabled']:
+        print 'Customer with id {0} already exists in file {1}'.format(customer_id, config_location)
+        return
+
+    config['customer_ids_enabled'].append(customer_id)
+
+    write_config(config, config_location)
+
+    print 'Added customer_id {0} in file {1}'.format(customer_id, config_location)
+
+def remove_customer(customer_id):
+    '''
+        Removes the provided customer_id from the list of customers for whom we should get metadata from message history.
+        If the customer_id does not exist, this method does nothing.
+    '''
+    config_location = PREFIX_RESTRUCTURE_CONFIG_PATH
+    config = get_current_config(config_location)
+
+    if not customer_id in config['customer_ids_enabled']:
+        print 'Customer with id {0} does not exist in file {1}'.format(customer_id, config_location)
+        return
+
+    config['customer_ids_enabled'].remove(customer_id)
+
+    write_config(config, config_location)
+
+    print 'Removed customer_id {0} from file {1}'.format(customer_id, config_location)
+
+def add_server(server_ip):
+    '''
+        Adds the provided server_ip to the list of servers for which we should get metadata from message history.
+        If the server_ip already exists, this method does nothing.
+    '''
+    config_location = PREFIX_RESTRUCTURE_CONFIG_PATH
+    config = get_current_config(config_location)
+
+    if server_ip in config['submit_servers_enabled']:
+        print 'Server with ip {0} already exists in file {1}'.format(server_ip, config_location)
+        return
+
+    config['submit_servers_enabled'].append(server_ip)
+
+    write_config(config, config_location)
+
+    print 'Added server_ip {0} in file {1}'.format(server_ip, config_location)
+
+def remove_server(server_ip):
+    '''
+        Removes the provided server_ip from the list of servers for which we should get metadata from message history.
+        If the server_ip does not exist, this method does nothing.
+    '''
+    config_location = PREFIX_RESTRUCTURE_CONFIG_PATH
+    config = get_current_config(config_location)
+
+    if not server_ip in config['submit_servers_enabled']:
+        print 'Server with ip {0} does not exist in file {1}'.format(server_ip, config_location)
+        return
+
+    config['submit_servers_enabled'].remove(server_ip)
+
+    write_config(config, config_location)
+
+    print 'Removed server_ip {0} from file {1}'.format(server_ip, config_location)
+
+def get_current_config(config_location):
+    '''
+        Reads the current configuration. If the config file does not yet exist,
+        then this method returns the default config.
+    '''
+    config_dir = os.path.dirname(config_location)
+
+    if not os.path.exists(config_dir):
+        os.makedirs(config_dir)
+
+    if os.path.isfile(config_location):
+        with open(config_location) as config_file:
+            return json.load(config_file)
+    return default_config
+
+def write_config(config, config_location):
+    '''
+        Overwrites any existing config file with the updated configuration.
+    '''
+    temp_file = config_location + '.tmp'
+
+    with open(temp_file, 'w') as config_file:
+        json.dump(config, config_file)
+
+    os.rename(temp_file, config_location)
+
+if __name__ == "__main__":
+    pefix_messages_path_parser = argparse.ArgumentParser(description='Used to modify for which customers/servers we use message history events to get metadata')
+    pefix_messages_path_parser.add_argument('--get', action='store_true', help='Get current  configuration')
+    pefix_messages_path_parser.add_argument('--enableglobal', action='store_true', help='Enable feature on a global level')
+    pefix_messages_path_parser.add_argument('--disableglobal', action='store_true', help='Disable feature on a global level (customer level still applies)')
+    pefix_messages_path_parser.add_argument('--addcustomer', help='Add a customer id (UUID4 format) for which feature should be enabled')
+    pefix_messages_path_parser.add_argument('--removecustomer', help='Removes a customer id (UUID4 format) from enabled list')
+    pefix_messages_path_parser.add_argument('--addserver', help='Add a server ip for which  feature should be enabled')
+    pefix_messages_path_parser.add_argument('--removeserver', help='Removes a server ip from enabled list')
+
+    pefix_messages_path_args = pefix_messages_path_parser.parse_args()
+
+    if pefix_messages_path_args.get:
+        get_config()
+    elif pefix_messages_path_args.enableglobal:
+        update_global_config(True)
+    elif pefix_messages_path_args.disableglobal:
+        update_global_config(False)
+    elif pefix_messages_path_args.addcustomer:
+        if not validate_uuid(pefix_messages_path_args.addcustomer):
+            print 'Invalid UUID {0}'.format(pefix_messages_path_args.addcustomer)
+            sys.exit(1)
+        add_customer(pefix_messages_path_args.addcustomer)
+    elif pefix_messages_path_args.removecustomer:
+        if not validate_uuid(pefix_messages_path_args.removecustomer):
+            print 'Invalid UUID {0}'.format(pefix_messages_path_args.addcustomer)
+            sys.exit(1)
+        remove_customer(pefix_messages_path_args.removecustomer)
+    elif pefix_messages_path_args.addserver:
+        add_server(pefix_messages_path_args.addserver)
+    elif pefix_messages_path_args.removeserver:
+        remove_server(pefix_messages_path_args.removeserver)
+    else:
+        pefix_messages_path_parser.print_help()
