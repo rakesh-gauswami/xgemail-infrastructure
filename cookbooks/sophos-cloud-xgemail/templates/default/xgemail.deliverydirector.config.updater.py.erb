@@ -13,6 +13,7 @@ from uuid import uuid4
 AWS_REGION = "<%= @aws_region %>"
 ACCOUNT = "<%= @account %>"
 DD_CONFIG_FILE_NAME = "<%= @delivery_director_config_filename %>"
+DD_BUCKET_NAME = "<%= @delivery_director_bucket_name %>"
 STATION_ACCOUNT_ROLE_ARN = "<%= @station_account_role_arn %>"
 DOMAIN_THRESHOLD_DEFAULT = 50
 EMAIL_THRESHOLD_DEFAULT = 10
@@ -163,9 +164,8 @@ if __name__ == "__main__":
 
         # Read Existing Config file
         dd_current_config_object = dict()
-        bucket_name = 'private-cloud-{}-{}-cloudemail-xgemail-deliverydir'.format(ACCOUNT, AWS_REGION)
         try:
-            dd_current_config = s3.Object(bucket_name, DD_CONFIG_FILE_NAME)
+            dd_current_config = s3.Object(DD_BUCKET_NAME, DD_CONFIG_FILE_NAME)
             dd_current_config_object = json.loads(dd_current_config.get()['Body'].read())
         except ClientError as ex:
             if ex.response['Error']['Code'] == 'NoSuchKey':
@@ -208,7 +208,7 @@ if __name__ == "__main__":
         update_confirmation = raw_input("Are you sure you want to update config [Y/N] ? :")
         if update_confirmation.upper() == 'Y':
             # Writer Update config object to S3 bucket
-            bucket = s3.Bucket(bucket_name)
+            bucket = s3.Bucket(DD_BUCKET_NAME)
             bucket.put_object(Key=DD_CONFIG_FILE_NAME,
                               Body=json.dumps(dd_updated_threshold.get_deliverdirector_threshold_json()),
                               ServerSideEncryption= "AES256")
