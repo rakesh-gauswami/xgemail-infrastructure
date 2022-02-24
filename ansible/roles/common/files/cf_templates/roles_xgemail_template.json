@@ -3693,8 +3693,8 @@
               ],
               "Effect": "Allow",
               "Resource": [
-                { "Fn::Join" : ["-", ["arn:aws:s3:::tf-o365-xgemail-infra-da-settings", "${AWS::Region}", { "Ref": "Environment" }, "bucket", "/*"]]},
-                { "Fn::Join" : ["-", ["arn:aws:s3:::tf-o365-xgemail-infra-da-settings", "${AWS::Region}", { "Ref": "Environment" }, "bucket" ]]}]
+                { "Fn::Join" : ["-", ["arn:aws:s3:::tf-o365-xgemail-infra-da-settings", { "Ref": "Region" }, { "Ref": "Environment" }, "bucket/*"]]},
+                { "Fn::Join" : ["-", ["arn:aws:s3:::tf-o365-xgemail-infra-da-settings", { "Ref": "Region" }, { "Ref": "Environment" }, "bucket" ]]}]
             },
             {
               "Action" : [
