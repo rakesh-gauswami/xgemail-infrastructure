@@ -3685,6 +3685,18 @@
                 { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailPolicyBucketName" }]]}]
             },
             {
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:GetObjectMetadataRequest",
+                "s3:ListBucket"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                { "Fn::Join" : ["-", ["arn:aws:s3:::tf-o365-xgemail-infra-da-settings", { "Ref": "AWS::Region" }, { "Ref": "Environment" }, "bucket/*"]]},
+                { "Fn::Join" : ["-", ["arn:aws:s3:::tf-o365-xgemail-infra-da-settings", { "Ref": "AWS::Region" }, { "Ref": "Environment" }, "bucket" ]]}]
+            },
+            {
               "Action" : [
                 "s3:GetBucketLocation",
                 "s3:ListBucket"
