@@ -188,7 +188,7 @@ def migrate_bulksendersaction_object(key, entry):
     if len(parts) > 4:
         customer_id = parts[3]
         userid_with_action = parts[4]
-        if len(userid_with_action) > 38:
+        if len(userid_with_action.split('.')) != 2:
             return
         hashvalue = get_hash(userid_with_action)
         newlocationkey = "outbound-relay-control/bulksenders/{}/{}/{}".format(customer_id, hashvalue, userid_with_action)
@@ -204,12 +204,9 @@ def migrate_emailaddresspolicy_object(key, entry):
     parts = key.split('/')
     if len(parts) > 4:
         domain = parts[3]
-        email_address = parts[4]
-        message_bytes = email_address.encode('utf-8')
-        base64_bytes = base64.b64encode(message_bytes)
-        base64_email_address = base64_bytes.decode('utf-8')
-        hashvalue = get_hash(base64_email_address)
-        newlocationkey = "policies/domains/{}/{}/{}".format(hashvalue, domain, base64_email_address)
+        email_address_user_name_encoded_localpart = parts[4]
+        hashvalue = get_hash(email_address_user_name_encoded_localpart)
+        newlocationkey = "policies/domains/{}/{}/{}".format(hashvalue, domain, email_address_user_name_encoded_localpart)
         s3_accessor.migrate_object(bucket, newlocationkey, key)
 
 #############################################################################################
@@ -225,19 +222,12 @@ def migrate_outboundgatewayconfigandlocalpart_object(key, entry):
     parts = key.split('/')
     if len(parts) > 4:
         domain = parts[3]
-        email_address = parts[4]
-        if len(email_address.split('.')) > 1:
-            return
-        message_bytes = email_address.encode('utf-8')
-        base64_bytes = base64.b64encode(message_bytes)
-        base64_email_address = base64_bytes.decode('utf-8')
-        hashvalue = get_hash(base64_email_address)
-        newlocationkey = "outbound-relay-control/domains/{}/{}/{}".format(hashvalue, domain, base64_email_address)
+        email_address_user_name_encoded_localpart = parts[4]
+        hashvalue = get_hash(email_address_user_name_encoded_localpart)
+        newlocationkey = "outbound-relay-control/domains/{}/{}/{}".format(hashvalue, domain, email_address_user_name_encoded_localpart)
         s3_accessor.migrate_object(bucket, newlocationkey, key)
     elif len(parts) > 3:
         domain_with_config = parts[3]
-        if len(domain_with_config.split('.')) != 2:
-            return
         hashvalue = get_hash(domain_with_config)
         newlocationkey = "outbound-relay-control/domains/{}/{}".format(hashvalue, domain_with_config)
         s3_accessor.migrate_object(bucket, newlocationkey, key)
@@ -266,8 +256,6 @@ def migrate_encryptionsettingconfig_object(key, entry):
     parts = key.split('/')
     if len(parts) > 3:
         domain_with_extension = parts[3]
-        if len(domain_with_extension.split('.')) != 2:
-            return
         hashvalue = get_hash(domain_with_extension)
         newlocationkey = "outbound-relay-control/encryption/{}/{}".format(hashvalue, domain_with_extension)
         s3_accessor.migrate_object(bucket, newlocationkey, key)
@@ -296,8 +284,6 @@ def migrate_deliveryroute_object(key, entry):
     parts = key.split('/')
     if len(parts) > 3:
         domain_with_extension = parts[3]
-        if len(domain_with_extension.split('.')) != 2:
-            return
         hashvalue = get_hash(domain_with_extension)
         newlocationkey = "inbound-relay-control/delivery-routes/{}/{}".format(hashvalue, domain_with_extension)
         s3_accessor.migrate_object(bucket, newlocationkey, key)
