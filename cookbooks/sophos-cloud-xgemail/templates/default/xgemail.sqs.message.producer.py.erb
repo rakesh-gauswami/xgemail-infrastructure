@@ -678,7 +678,11 @@ def build_recipient_map_from_msghistory_enabled(queue_id, recipients, msghistory
     for recipient in recipients:
         recipient = recipient.lower()
         if recipient in msghistory_events:
-          recipient_map[msghistory_events[recipient]['mail_info']['mailbox_id']] = [recipient]
+            #if alias exist for any email address then adding it in list for corresponding key
+            if msghistory_events[recipient]['mail_info']['mailbox_id'] in recipient_map:
+                recipient_map[msghistory_events[recipient]['mail_info']['mailbox_id']].append(recipient)
+            else:
+                recipient_map[msghistory_events[recipient]['mail_info']['mailbox_id']] = [recipient]
         else:
           # This should never happen
           logger.info("Queue Id [{0}] Accepted event not found for recipent [{1}]".format(queue_id, recipient))
