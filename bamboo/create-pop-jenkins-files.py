@@ -40,7 +40,8 @@ PIPELINES = [
     ('mf-inbound-xdelivery-deploy',     'mfInboundXdeliveryDeployPipeline',      NO_CRON),
     ('mf-outbound-submit-deploy',       'mfOutboundSubmitDeployPipeline',        NO_CRON),
     ('mf-outbound-delivery-deploy',     'mfOutboundDeliveryDeployPipeline',      NO_CRON),
-    ('mf-outbound-xdelivery-deploy',    'mfOutboundXdeliveryDeployPipeline',     NO_CRON)
+    ('mf-outbound-xdelivery-deploy',    'mfOutboundXdeliveryDeployPipeline',     NO_CRON),
+    ('xdelivery-instances-cycle',       'xdeliveryInstancesCyclePipeline',       NO_CRON)
 ]
 
 CRON_MINUTE_OFFSETS = {
