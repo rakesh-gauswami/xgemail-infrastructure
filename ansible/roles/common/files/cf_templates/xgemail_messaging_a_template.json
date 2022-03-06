@@ -370,6 +370,15 @@
         "TopicArn": { "Ref": "SuccessEventsTopicArn"}
       }
     },
+    "CidrDeliveryQueueToSuccessSnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "CidrDeliveryQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "SuccessEventsTopicArn"},
+        "FilterPolicy" : { "delivery_ip_type" : ["CIDR_RANGE"]}
+      }
+    },
     "EncryptionDeliveryQueueToEncryptionDeliverySnsSubscription": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {

@@ -735,6 +735,13 @@ aws:
       template_parameters:
         QueueName:                                                "{{sqs.customer_delivery_sqs_queue_sns_listener}}"
         TagApplication:                                           "customer-delivery"
+    cidr_customer_delivery_sqs_queue_sns_listener:
+      stack_name:                                                 "{{stack.sqs.cidr_customer_delivery_sqs_queue_sns_listener}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.cidr_customer_delivery_sqs_queue_sns_listener}}"
+        TagApplication:                                           "cidr-customer-delivery"
     dqs_sqs_queue:
       stack_name:                                                 "{{stack.sqs.dqs_sqs_queue}}"
       state:                                                      present
