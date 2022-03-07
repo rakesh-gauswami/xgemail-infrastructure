@@ -75,7 +75,7 @@ class XgemailInstance(object):
         """
         Compares the tags of the EC2 instance to the values from the deployment.
         """
-        if self.current_ami not in self.image_id or self.current_build_tag not in self.build_result_key:
+        if self.current_ami not in self.image_id or self.current_build_tag not in self.build_tag:
             return True
         else:
             return False
