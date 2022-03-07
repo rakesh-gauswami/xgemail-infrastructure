@@ -134,6 +134,10 @@ elsif NODE_TYPE == 'mf-outbound-xdelivery'
   SERVER_TYPE_XDELIVERY = 'UNKNOWN'
   DIRECTION             = 'OUTBOUND'
   NON_DELIVERY_DSN      = '5.4.7'
+elsif NODE_TYPE == 'mf-inbound-submit'
+  DIRECTION             = 'INBOUND'
+elsif NODE_TYPE == 'internet-submit'
+  DIRECTION             = 'INBOUND'
 else
   SERVER_TYPE           = 'UNKNOWN'
   SERVER_TYPE_XDELIVERY = 'UNKNOWN'
@@ -852,6 +856,10 @@ template 'fluentd-filter-transform-sqs-telemetry-log' do
   mode '0644'
   owner 'root'
   group 'root'
+  variables(
+      :direction => DIRECTION,
+      :email_product_type => EMAIL_PRODUCT_TYPE
+    )
   only_if {
       NODE_TYPE == 'internet-submit' ||
       NODE_TYPE == 'mf-inbound-submit'
