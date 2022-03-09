@@ -75,6 +75,8 @@ class XgemailInstance(object):
         """
         Compares the tags of the EC2 instance to the values from the deployment.
         """
+        logger.debug("current_ami: {}, image_id: {}, current_build_tag: {}, build_tag: {}"
+                     .format(self.current_ami, self.image_id, self.current_build_tag, self.build_tag))
         if self.current_ami not in self.image_id or self.current_build_tag not in self.build_tag:
             return True
         else:
@@ -239,36 +241,38 @@ if __name__ == "__main__":
 
     while True:
         instances = get_instances(name=instance_type)
+        logger.debug("instances: {}".format(instances))
         xinstances = list()
         for i in instances:
             xi = XgemailInstance(instance=i, ami=args.ami_id, build_tag=args.build_tag, build_number=args.build_number)
             xinstances.append(xi)
         termination_queue = [x for x in xinstances if x.terminate]
+        logger.debug("termination_queue: {}".format(instances))
         while len(termination_queue) != 0:
             for tq in list(termination_control(termination_queue, args.termination_control)):
                 for x in tq:
                     x.terminate_asg_instance()
                 if wait_for_instance_terminated(tq):
-                    logger.info('===>    Instances terminated')
+                    logger.info("===>    Instances terminated")
                     for x in tq:
                         x.get_new_instance()
                     elb_name = tq[0].elb
                     if wait_for_instance_running(tq):
-                        logger.info('===>    Instances running')
+                        logger.info("===>    Instances running")
                         if wait_for_instance_status_ok(tq):
-                            logger.info('===>    Instances status OK')
+                            logger.info("===>    Instances status OK")
                             if wait_for_instance_in_service(tq):
-                                logger.info('===>    Instances in service')
+                                logger.info("===>    Instances in service")
                             else:
-                                logger.error('===>    Instances NOT in service')
+                                logger.error("===>    Instances NOT in service")
                                 exit(1)
                         else:
-                            logger.error('===>    Instances status NOT OK')
+                            logger.error("===>    Instances status NOT OK")
                             exit(1)
                     else:
-                        logger.error('===>    Instances NOT running')
+                        logger.error("===>    Instances NOT running")
                         exit(1)
 
             break
         break
-    logger.info('Cycling Xdelivery Instances Complete!')
+    logger.info("Cycling Xdelivery Instances Complete!")
