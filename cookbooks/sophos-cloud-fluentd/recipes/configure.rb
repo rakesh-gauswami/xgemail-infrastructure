@@ -881,7 +881,7 @@ template 'fluentd-filter-transform-sqs-telemetry-log' do
   group 'root'
   variables(
       :direction => DIRECTION,
-      :product => EMAIL_PRODUCT_TYPE
+      :email_product_type => EMAIL_PRODUCT_TYPE
     )
   only_if {
       NODE_TYPE == 'internet-submit' ||
