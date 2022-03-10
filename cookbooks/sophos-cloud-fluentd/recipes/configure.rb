@@ -157,7 +157,7 @@ elsif NODE_TYPE == 'customer-submit'
 elsif NODE_TYPE == 'encryption-submit'
   SERVER_TYPE           = 'ENCRYPTION_SUBMIT'
   SERVER_TYPE_XDELIVERY = 'UNKNOWN'
-  DIRECTION             = 'INBOUND'
+  DIRECTION             = 'OUTBOUND'
   NON_DELIVERY_DSN      = '5.4.7'
 else
   SERVER_TYPE           = 'UNKNOWN'
@@ -168,7 +168,7 @@ end
 
 case NODE_TYPE
 when 'mf-inbound-submit', 'mf-outbound-submit', 'mf-inbound-delivery', 'mf-inbound-xdelivery', 'mf-outbound-delivery',
-'mf-outbound-delivery'
+'mf-outbound-xdelivery'
     EMAIL_PRODUCT_TYPE = 'Mailflow'
 else
     EMAIL_PRODUCT_TYPE = 'Gateway'
