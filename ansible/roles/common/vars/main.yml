@@ -742,6 +742,7 @@ aws:
       template_parameters:
         QueueName:                                                "{{sqs.cidr_customer_delivery_sqs_queue_sns_listener}}"
         TagApplication:                                           "cidr-customer-delivery"
+        VisibilityTimeout:                                        "900"
     dqs_sqs_queue:
       stack_name:                                                 "{{stack.sqs.dqs_sqs_queue}}"
       state:                                                      present
