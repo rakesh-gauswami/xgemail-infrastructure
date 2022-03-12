@@ -371,7 +371,8 @@
       "Properties": {
         "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "DeliveryQueue"}]]},
         "Protocol": "sqs",
-        "TopicArn": { "Ref": "SuccessEventsTopicArn"}
+        "TopicArn": { "Ref": "SuccessEventsTopicArn"},
+        "FilterPolicy" : { "delivery_ip_type" : ["LEGACY"]}
       }
     },
     "CidrDeliveryQueueToSuccessSnsSubscription": {
