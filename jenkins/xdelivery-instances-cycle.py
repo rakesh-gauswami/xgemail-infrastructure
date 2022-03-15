@@ -35,7 +35,7 @@ from botocore.exceptions import ClientError, WaiterError
 
 # logging to console setup
 logger = logging.getLogger('xdelivery-instance-cycle')
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 console_handler = logging.StreamHandler()
 formatter = logging.Formatter(
     '[%(name)s] %(process)d %(levelname)s %(message)s'
