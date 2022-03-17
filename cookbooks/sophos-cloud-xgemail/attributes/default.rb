@@ -285,7 +285,7 @@ default['xgemail']['sysctl_tcp_window_scaling'] = 1
 
 ## Postfix configuration
 SUBMIT_MESSAGE_SIZE_LIMIT_BYTES = 52428800
-default['xgemail']['postfix3_version'] = '3.6.2.1-1'
+default['xgemail']['postfix3_version'] = '3.6.2.2-1'
 
 POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST = 500
 POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST = 500
