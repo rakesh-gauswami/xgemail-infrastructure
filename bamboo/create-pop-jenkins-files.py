@@ -29,8 +29,6 @@ PIPELINES = [
     ('internet-xdelivery-deploy',       'internetXdeliveryDeployPipeline',       NO_CRON),
     ('risky-delivery-deploy',           'riskyDeliveryDeployPipeline',           NO_CRON),
     ('risky-xdelivery-deploy',          'riskyXdeliveryDeployPipeline',          NO_CRON),
-    ('warmup-delivery-deploy',          'warmupDeliveryDeployPipeline',          NO_CRON),
-    ('warmup-xdelivery-deploy',         'warmupXdeliveryDeployPipeline',         NO_CRON),
     ('delta-delivery-deploy',           'deltaDeliveryDeployPipeline',           NO_CRON),
     ('delta-xdelivery-deploy',          'deltaXdeliveryDeployPipeline',          NO_CRON),
     ('encryption-submit-deploy',        'encryptionSubmitDeployPipeline',        NO_CRON),
