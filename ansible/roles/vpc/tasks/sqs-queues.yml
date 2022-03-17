@@ -5,7 +5,7 @@
   with_dict: "{{aws.sqs}}"
 
 - name: "Create SQS Queue Stacks in AWS"
-  async: 100
+  async: 200
   poll: 0
   cloudformation:
     stack_name:           "{{item.value.stack_name}}"
