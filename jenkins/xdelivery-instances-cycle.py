@@ -91,20 +91,19 @@ class XgemailInstance(object):
             terminate_response = asg_client.terminate_instance_in_auto_scaling_group(InstanceId=self.instance_id, ShouldDecrementDesiredCapacity=False)
             logger.info(terminate_response)
         except ClientError as ce:
-            logger.info("Client Error terminating the ASG Instance. {}".format(ce))
+            logger.exception("Client Error terminating the ASG Instance. {}".format(ce))
 
     def get_new_instance(self):
         """
         After termination this is run to get the new EC2 Instance Id from the AutoScaling Group.
         """
-        logger.info('===>    New Instance IDs')
         try:
             for asg in asg_client.describe_auto_scaling_groups(AutoScalingGroupNames=[self.asg], MaxRecords=1)['AutoScalingGroups']:
                 self.instance_id = asg['Instances'][0]['InstanceId']
                 self.elb = asg['LoadBalancerNames'][0]
                 logger.info('===>    New Instance ID: {}'.format(self.instance_id))
         except ClientError as ce:
-            logger.info("Client Error describing AutoScaling Groups. {}".format(ce))
+            logger.exception("Client Error describing AutoScaling Groups. {}".format(ce))
 
 
 def get_instances(name):
@@ -144,7 +143,7 @@ def wait_for_instance_terminated(instance_list):
                 'MaxAttempts': max_attempts_default
             })
     except WaiterError as we:
-        logger.info("Waiter Error instance_terminated. {}".format(we))
+        logger.exception("Waiter Error instance_terminated. {}".format(we))
         return False
 
     return True
@@ -164,7 +163,7 @@ def wait_for_instance_running(instance_list):
             }
         )
     except WaiterError as we:
-        logger.info("Waiter Error instance_running. {}".format(we))
+        logger.exception("Waiter Error instance_running. {}".format(we))
         return False
 
     return True
@@ -184,7 +183,7 @@ def wait_for_instance_status_ok(instance_list):
             }
         )
     except WaiterError as we:
-        logger.info("Waiter Error instance_status_ok. {}".format(we))
+        logger.exception("Waiter Error instance_status_ok. {}".format(we))
         return False
 
     return True
@@ -205,7 +204,7 @@ def wait_for_instance_in_service(instance_list):
             }
         )
     except WaiterError as we:
-        logger.info("Waiter Error instance_in_service. {}".format(we))
+        logger.exception("Waiter Error instance_in_service. {}".format(we))
         return False
 
     return True
@@ -241,7 +240,6 @@ if __name__ == "__main__":
 
     while True:
         instances = get_instances(name=instance_type)
-        logger.debug("instances: {}".format(instances))
         xinstances = list()
         for i in instances:
             xi = XgemailInstance(instance=i, ami=args.ami_id, build_tag=args.build_tag, build_number=args.build_number)
