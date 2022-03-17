@@ -1,11 +1,11 @@
-variable "ami_id" {
-  type        = string
-  description = "SophosEmail Base AMI ID"
-}
-
 variable "ami_build" {
   type        = string
   description = "SophosEmail Base AMI Build Number"
+}
+
+variable "ami_id" {
+  type        = string
+  description = "SophosEmail Base AMI ID"
 }
 
 variable "build_branch" {
