@@ -261,7 +261,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
   parameters = {
     AccountName                     = local.input_param_account_name
     AlarmTopicArn                   = local.input_param_alarm_topic_arn
-    AmiId                           = data.aws_ami.ami.id
+    AmiId                           = var.ami_id
     AutoScalingInstanceRoleArn      = local.input_param_autoscaling_role_arn
     AutoScalingMinSize              = local.as_min_size
     AutoScalingMaxSize              = local.as_max_size
@@ -270,7 +270,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     Branch                          = var.build_branch
     BuildTag                        = var.build_tag
     BuildUrl                        = var.build_url
-    BundleVersion                   = local.ami_build
+    BundleVersion                   = var.ami_build
     DeployMaxBatchSize              = local.as_max_batch_size
     DeployMinInstancesInService     = local.as_min_service
     EipCount                        = local.eip_count
