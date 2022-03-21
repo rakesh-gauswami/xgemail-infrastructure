@@ -97,13 +97,19 @@ class XgemailInstance(object):
         """
         After termination this is run to get the new EC2 Instance Id from the AutoScaling Group.
         """
-        try:
-            for asg in asg_client.describe_auto_scaling_groups(AutoScalingGroupNames=[self.asg], MaxRecords=1)['AutoScalingGroups']:
-                self.instance_id = asg['Instances'][0]['InstanceId']
-                self.elb = asg['LoadBalancerNames'][0]
-                logger.info('===>    New Instance ID: {}'.format(self.instance_id))
-        except ClientError as ce:
-            logger.exception("Client Error describing AutoScaling Groups. {}".format(ce))
+        terminated = self.instance_id
+
+        while self.instance_id == terminated:
+            try:
+                for asg in asg_client.describe_auto_scaling_groups(AutoScalingGroupNames=[self.asg], MaxRecords=1)['AutoScalingGroups']:
+                    for i in asg['Instances']:
+                        if i['InstanceId'] != self.instance_id:
+                            self.instance_id = i['InstanceId']
+                            break
+                    self.elb = asg['LoadBalancerNames'][0]
+                    logger.info('===>    New Instance ID: {}'.format(self.instance_id))
+            except ClientError as ce:
+                logger.exception("Client Error describing AutoScaling Groups. {}".format(ce))
 
 
 def get_instances(name):
@@ -213,13 +219,6 @@ def wait_for_instance_in_service(instance_list):
 if __name__ == "__main__":
     args = parse_command_line()
     # Set your AWS creds if you aren't using a dotfile or some other boto auth method
-    #aws_access_key_id = os.environ['bamboo_custom_aws_accessKeyId']
-    #aws_secret_access_key = os.environ['bamboo_custom_aws_secretAccessKey_password']
-    #aws_session_token = os.environ['bamboo_custom_aws_sessionToken_password']
-    #region = os.environ['REGION']
-    #build_tag = os.environ['bamboo_planKey']
-    #build_number = os.environ['bamboo_buildNumber']
-    #ami_id = os.environ['bamboo_xgemail_ami_id']
     session = boto3.Session(region_name=args.region)
 
     ec2 = session.resource('ec2')
@@ -243,10 +242,11 @@ if __name__ == "__main__":
         xinstances = list()
         for i in instances:
             xi = XgemailInstance(instance=i, ami=args.ami_id, build_tag=args.build_tag, build_number=args.build_number)
+            logger.debug("Found Instance: {}".format(xi.instance_id))
             xinstances.append(xi)
         termination_queue = [x for x in xinstances if x.terminate]
-        logger.debug("termination_queue: {}".format(instances))
         while len(termination_queue) != 0:
+            logger.debug("Instances in termination queue: {}".format(len(termination_queue)))
             for tq in list(termination_control(termination_queue, args.termination_control)):
                 for x in tq:
                     x.terminate_asg_instance()
