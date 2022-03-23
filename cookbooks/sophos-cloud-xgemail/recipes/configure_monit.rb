@@ -34,13 +34,13 @@ if ACCOUNT_NAME == "legacy"
 
 else
   template '/etc/monit.d/postfix.conf' do
-  source 'monit-postfix-fsc.conf.erb'
-  mode '0755'
-  owner 'root'
-  group 'root'
-  variables(
-    :instance_name => INSTANCE_NAME
-  )
+    source 'monit-postfix-fsc.conf.erb'
+    mode '0755'
+    owner 'root'
+    group 'root'
+    variables(
+      :instance_name => INSTANCE_NAME
+    )
   end
 end
 
