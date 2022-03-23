@@ -112,7 +112,7 @@ def main():
                     header_key = arg.split(':', 1)[0].strip().lower();
                     if header_key.startswith('subject'):
                         subject_header = arg.split(':', 1)
-                        subject = subject_header[1].strip() if subject_header.length == 2 else subject = ''
+                        subject = subject_header[1].strip() if len(subject_header) == 2 else ''
                         try:
                             subject, encoding = decode_header(subject)[0]
                             if encoding is not None:

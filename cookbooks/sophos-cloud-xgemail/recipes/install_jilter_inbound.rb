@@ -51,7 +51,7 @@ MSG_HISTORY_EVENT_DIR = node['xgemail']['mh_event_storage_dir']
 MSG_HISTORY_EVENT_PROCESSOR_POOL_SIZE = node['xgemail']['mh_event_processor_pool_size']
 MSG_HISTORY_EVENT_PROCESSOR_PORT = node['xgemail']['mh_event_processor_port']
 
-
+STATION_ACCOUNT_ROLE_ARN = node['sophos_cloud']['station_account_role_arn']
 SERVICE_USER = node['xgemail']['jilter_user']
 POLICY_BUCKET_NAME   = node['xgemail']['xgemail_policy_bucket_name']
 ACTIVE_PROFILE = node['xgemail']['xgemail_active_profile']
@@ -180,11 +180,21 @@ template 'xgemail.jilter.properties' do
       :msg_history_v2_bucket_name => MSG_HISTORY_V2_BUCKET_NAME,
       :msg_history_event_dir => MSG_HISTORY_EVENT_DIR,
       :msg_history_event_processor_pool_size => MSG_HISTORY_EVENT_PROCESSOR_POOL_SIZE,
-      :msg_history_event_processor_port => MSG_HISTORY_EVENT_PROCESSOR_PORT
+      :msg_history_event_processor_port => MSG_HISTORY_EVENT_PROCESSOR_PORT,
+      :station_account_role_arn => STATION_ACCOUNT_ROLE_ARN
   )
 end
 
 if ACCOUNT != 'sandbox'
+
+  # configure logrotate for jilter
+  template 'xgemail-jilter-logrotate' do
+    path "/etc/logrotate.d/jilter"
+    source 'xgemail.jilter.logrotate.erb'
+    mode '0644'
+    owner 'root'
+    group 'root'
+  end
 
   # Create the Jilter service
   template 'xgemail.jilter.service.sh' do

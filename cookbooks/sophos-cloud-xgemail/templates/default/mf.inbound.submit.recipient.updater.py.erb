@@ -1,0 +1,138 @@
+#!/usr/bin/env python
+# vim: autoindent expandtab filetype=python shiftwidth=4 softtabstop=4 tabstop=4
+#
+# Polls XGEMAIL PIC for a list of recipients
+#
+# Copyright: Copyright (c) 1997-2016. All rights reserved.
+# Company: Sophos Limited or one of its affiliates.
+
+import boto3
+import base64
+import json
+import os
+import requests
+import subprocess
+import logging
+import sys
+from logging.handlers import SysLogHandler
+
+# Constants
+PIC_FQDN = '<%= @xgemail_pic_fqdn %>'
+POSTFIX_INSTANCE_NAME = '<%= @postfix_instance_name %>'
+RECIPIENT_ACCESS_FILENAME = '<%= @recipient_access_filename %>'
+RECIPIENT_ACCESS_EXTRA_FILENAME = '<%= @recipient_access_extra_filename %>'
+RELAY_DOMAINS_FILENAME = '<%= @relay_domains_filename %>'
+MAIL_PIC_API_AUTH = '<%= @mail_pic_api_auth %>'
+CONNECTIONS_BUCKET = '<%= @connections_bucket %>'
+MAIL_PIC_RESPONSE_TIMEOUT = <%= @mail_pic_api_response_timeout %>
+
+# logging to syslog setup
+logging.getLogger("botocore").setLevel(logging.WARNING)
+logger = logging.getLogger('is-recipient-updater')
+logger.setLevel(logging.INFO)
+handler = logging.handlers.SysLogHandler('/dev/log')
+formatter = logging.Formatter(
+    '[%(name)s] %(process)d %(levelname)s %(message)s'
+)
+handler.formatter = formatter
+logger.addHandler(handler)
+
+ACCOUNT = '<%= @account %>'
+
+if ACCOUNT != 'sandbox':
+  def get_passphrase():
+    s3 = boto3.client('s3')
+    passphrase = s3.get_object(Bucket=CONNECTIONS_BUCKET, Key=MAIL_PIC_API_AUTH)
+    return base64.b64encode('mail:' + passphrase['Body'].read())
+
+  auth = get_passphrase()
+
+  HEADERS = {
+    'Content-type': 'application/json',
+    'Authorization': 'Basic ' + auth
+  }
+  PIC_XGEMAIL_API_URL = 'https://%s/mail/api/xgemail' % (PIC_FQDN)
+else:
+  HEADERS = {
+    'Content-type': 'application/json',
+    'Authorization': 'Basic'
+  }
+  PIC_XGEMAIL_API_URL = 'http://%s/mail-services/api/xgemail' % (PIC_FQDN)
+
+logger.info('mf inbound submit recipients cron - pic url [%s]', PIC_XGEMAIL_API_URL)
+PIC_ADDRESSES_URL = PIC_XGEMAIL_API_URL + '/addresses'
+
+POSTFIX_CONFIG_DIR = subprocess.check_output(
+    [
+      'postmulti', '-i', POSTFIX_INSTANCE_NAME, '-x',
+      'postconf','-h','config_directory'
+    ]
+  ).rstrip()
+
+RELAY_DOMAINS_FILE = POSTFIX_CONFIG_DIR + '/' + RELAY_DOMAINS_FILENAME
+
+domains = []
+with open(RELAY_DOMAINS_FILE, 'r') as f:
+  for domain in f.readlines():
+    # file is formatted like so:
+    #   example1.com OK
+    #   example2.com OK
+    #   ...
+    # but we only need the domain name
+    domains.append(domain.split(' ')[0])
+
+recipients = set()
+for domain in domains:
+  response = requests.post(
+      PIC_ADDRESSES_URL,
+      json.dumps({'domain': domain}),
+      headers=HEADERS,
+      timeout=MAIL_PIC_RESPONSE_TIMEOUT
+  )
+  response.raise_for_status()
+  recipients.update(response.json()['addresses'])
+
+RECIPIENT_ACCESS_FILE = POSTFIX_CONFIG_DIR + '/' + RECIPIENT_ACCESS_FILENAME
+RECIPIENT_ACCESS_FILE_TMP = RECIPIENT_ACCESS_FILE + '.tmp'
+
+with open(RECIPIENT_ACCESS_FILE_TMP, 'w') as f:
+  for recipient in recipients:
+    f.write('{0} OK\n'.format(recipient.encode("utf-8")))
+
+subprocess.call(['postmap', 'hash:{0}'.format(RECIPIENT_ACCESS_FILE_TMP)])
+os.rename(RECIPIENT_ACCESS_FILE_TMP, RECIPIENT_ACCESS_FILE)
+os.rename(RECIPIENT_ACCESS_FILE_TMP + '.db', RECIPIENT_ACCESS_FILE + '.db')
+
+logger.info('recipient access file [%s.db] successfully updated', RECIPIENT_ACCESS_FILE)
+
+RECIPIENT_ACCESS_EXTRA_FILE = POSTFIX_CONFIG_DIR + "/" +RECIPIENT_ACCESS_EXTRA_FILENAME
+RECIPIENT_ACCESS_EXTRA_FILE_TMP = RECIPIENT_ACCESS_EXTRA_FILE + '.tmp'
+
+# Writes a new file at /etc/postfix-is containing all the recipient email addresses starting with '#' character
+#
+# File format would be:
+# #abc@xyz.com
+# OK
+# #rk@emaild2.info
+# OK
+#
+# This file is loaded into a new berkeley DB file which is used by POSTFIX
+#
+with open(RECIPIENT_ACCESS_EXTRA_FILE_TMP, 'w') as f:
+  position = None
+  for recipient in recipients:
+    position =  recipient.find('#')
+    if position == 0:
+      f.write('{0}\nOK\n'.format(recipient))
+
+try:
+
+  return_code = subprocess.call(['db_load', '-T', '-t', 'hash', '-f', RECIPIENT_ACCESS_EXTRA_FILE_TMP, RECIPIENT_ACCESS_EXTRA_FILE_TMP + '.db'])
+
+  if return_code == 0:
+    os.rename(RECIPIENT_ACCESS_EXTRA_FILE_TMP, RECIPIENT_ACCESS_EXTRA_FILE)
+    os.rename(RECIPIENT_ACCESS_EXTRA_FILE_TMP + '.db', RECIPIENT_ACCESS_EXTRA_FILE + '.db')
+    logger.info('recipient access extra file [%s.db] successfully updated', RECIPIENT_ACCESS_EXTRA_FILE)
+
+except Exception as e:
+  logger.info('Failed creating recipient_access_extra file using db_load, error: [%s]', e)

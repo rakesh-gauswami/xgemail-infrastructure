@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: install_jilter_delivery
 #
-# Copyright 2018, Sophos
+# Copyright 2021, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -17,13 +17,15 @@ NODE_TYPE = node['xgemail']['cluster_type']
 ACCOUNT = node['sophos_cloud']['environment']
 
 # Make sure we're on a delivery node
-if NODE_TYPE != 'customer-delivery' && NODE_TYPE != 'xdelivery' &&
-  NODE_TYPE != 'internet-delivery' && NODE_TYPE != 'internet-xdelivery' && NODE_TYPE != 'mf-outbound-delivery' &&
+if NODE_TYPE != 'customer-delivery' && NODE_TYPE != 'xdelivery' && NODE_TYPE != 'customer-xdelivery' &&
+  NODE_TYPE != 'internet-delivery' && NODE_TYPE != 'internet-xdelivery' &&
   NODE_TYPE != 'risky-delivery' && NODE_TYPE != 'risky-xdelivery' &&
   NODE_TYPE != 'warmup-delivery' && NODE_TYPE != 'warmup-xdelivery' &&
   NODE_TYPE != 'beta-delivery' && NODE_TYPE != 'beta-xdelivery' &&
   NODE_TYPE != 'delta-delivery' && NODE_TYPE != 'delta-xdelivery' &&
-  NODE_TYPE != 'encryption-delivery' && NODE_TYPE != 'mf-inbound-delivery'
+  NODE_TYPE != 'encryption-delivery' && NODE_TYPE != 'mf-inbound-delivery' &&
+  NODE_TYPE != 'mf-outbound-delivery' && NODE_TYPE != 'mf-inbound-xdelivery' &&
+  NODE_TYPE != 'mf-outbound-xdelivery'
   return
 end
 
@@ -56,6 +58,7 @@ MSG_HISTORY_V2_BUCKET_NAME = node['xgemail']['msg_history_v2_bucket_name']
 MSG_HISTORY_V2_DYNAMODB_TABLE_NAME = node['xgemail']['msg_history_v2_dynamodb_table_name']
 
 AWS_REGION = node['sophos_cloud']['region']
+STATION_ACCOUNT_ROLE_ARN = node['sophos_cloud']['station_account_role_arn']
 SERVICE_USER = node['xgemail']['jilter_user']
 POLICY_BUCKET_NAME   = node['xgemail']['xgemail_policy_bucket_name']
 ACTIVE_PROFILE = node['xgemail']['xgemail_active_profile']
@@ -143,8 +146,18 @@ template 'xgemail.jilter.properties' do
       :msg_history_event_processor_port => MSG_HISTORY_EVENT_PROCESSOR_PORT,
       :policy_bucket => POLICY_BUCKET_NAME,
       :region => REGION,
-      :station_vpc_id => STATION_VPC_ID
+      :station_vpc_id => STATION_VPC_ID,
+      :station_account_role_arn => STATION_ACCOUNT_ROLE_ARN
   )
+end
+
+# configure logrotate for jilter
+template 'xgemail-jilter-logrotate' do
+  path "/etc/logrotate.d/jilter"
+  source 'xgemail.jilter.logrotate.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
 end
 
 template 'xgemail-jilter-service' do

@@ -1,0 +1,16 @@
+#!/bin/bash
+
+export IPADDRESS=`hostname -i`
+
+exec java -Dcom.sun.management.jmxremote.port=6007 \
+    -Dcom.sun.management.jmxremote.authenticate=false \
+    -Dcom.sun.management.jmxremote.ssl=false \
+    -Djava.library.path=<%= @deployment_dir %>/xgemail-jilter-mf-<%= @direction %>/lib \
+    -Dconf.dir=<%= @deployment_dir %>/xgemail-jilter-mf-<%= @direction %>/conf \
+    -Dspring.profiles.active=<%= @active_profile %> \
+    -Dlog4j2.formatMsgNoLookups=true \
+    -Djilter.host=${IPADDRESS} \
+    -Xms256m \
+    -Xmx256m \
+    -cp "<%= @deployment_dir %>/xgemail-jilter-mf-<%= @direction %>/lib/*" \
+    com.sophos.xgemail.jilter.<%= @application %>Application &

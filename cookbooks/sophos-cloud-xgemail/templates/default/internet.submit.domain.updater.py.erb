@@ -60,9 +60,14 @@ else:
 logger.info('internet submit domains cron - pic url [%s]', PIC_XGEMAIL_API_URL)
 PIC_DOMAINS_URL = PIC_XGEMAIL_API_URL + '/domains'
 
+query_parameters = {
+'productType':'Gateway'
+}
+
 response = requests.get(
     PIC_DOMAINS_URL,
     headers=HEADERS,
+    params=query_parameters,
     timeout=MAIL_PIC_RESPONSE_TIMEOUT
 )
 response.raise_for_status()

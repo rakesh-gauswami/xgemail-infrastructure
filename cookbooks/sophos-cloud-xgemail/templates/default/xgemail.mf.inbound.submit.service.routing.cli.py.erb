@@ -1,0 +1,57 @@
+#!/usr/bin/env python
+# vim: autoindent expandtab filetype=python shiftwidth=4 softtabstop=4 tabstop=4
+#
+# Copyright 2021, Sophos Limited. All rights reserved.
+#
+# 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
+# Sophos Limited and Sophos Group.  All other product and company
+# names mentioned are trademarks or registered trademarks of their
+# respective owners.
+#
+#
+# This script is used to configure customer traffic flowing to the old mailinbound-services PIC
+# and the new mailinbound microservice. Traffic can be directed on a per customer basis, allowing
+# all traffic for a customer to be diverted to the the microservice, or as a percentage of all
+# traffic. The percentage routing can be set to 0.00 to prevent traffic from being directed
+# to the microservice
+#
+
+import sys
+sys.path.append("<%= @xgemail_utils_path %>")
+
+import argparse
+from routingmanager import RoutingManager
+
+#Constants
+POLICY_STORAGE_PATH = "<%= @policy_storage_path %>"
+
+routing_manager = RoutingManager(
+  POLICY_STORAGE_PATH,
+  'INTERNET-SUBMIT',
+)
+
+parser = argparse.ArgumentParser(description='Used to set or get the percentage of traffic to route to the mailinbound microservice. Or to turn microservice routing on or off for a specific customer')
+parser.add_argument('-g', '--get', action='store_true', help='Get the mailinbound microservice traffic routing %%')
+parser.add_argument('-s', '--set', nargs=1, metavar='<value>',  type=routing_manager.valid_float, help='Set the mailinbound microservice traffic routing %%, between 0.00 - 1.00')
+parser.add_argument('-sc', '--setcustomer', metavar='<customer UUID>', nargs=1, help='Set customer with the supplied id to be routed to the mailinbound microservice')
+parser.add_argument('-rc', '--removecustomer', metavar='<customer UUID>', nargs=1, help='Stop customer with the supplied id from being routed to the mailinbound microservice')
+
+args = parser.parse_args()
+
+if args.get:
+  routing_percent = routing_manager.get_routing_percent()
+  print 'Current routing % for all traffic: {0}'.format(routing_percent)
+elif args.set:
+  new_routing_percent = args.set[0]
+  routing_manager.set_routing_percent(new_routing_percent)
+  print 'Routing % for all traffic set to: {0}'.format(new_routing_percent)
+elif args.setcustomer:
+  customer_id = args.setcustomer[0]
+  routing_manager.set_customer(customer_id)
+  print 'Customer %s set to use mailinbound microservice' % customer_id
+elif args.removecustomer:
+  customer_id = args.removecustomer[0]
+  routing_manager.remove_customer(customer_id)
+  print 'Customer %s removed from mailinbound microservice' % customer_id
+else:
+  parser.print_help()

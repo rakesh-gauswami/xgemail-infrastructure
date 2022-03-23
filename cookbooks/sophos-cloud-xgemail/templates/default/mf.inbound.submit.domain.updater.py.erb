@@ -1,0 +1,93 @@
+#!/usr/bin/env python
+# vim: autoindent expandtab filetype=python shiftwidth=4 softtabstop=4 tabstop=4
+#
+# Polls XGEMAIL PIC for a list of customer domains
+#
+# Copyright: Copyright (c) 1997-2021. All rights reserved.
+# Company: Sophos Limited or one of its affiliates.
+
+import boto3
+import base64
+import json
+import os
+import requests
+import subprocess
+import sys
+import logging
+from logging.handlers import SysLogHandler
+
+# Constants
+PIC_FQDN = '<%= @xgemail_pic_fqdn %>'
+POSTFIX_INSTANCE_NAME = '<%= @postfix_instance_name %>'
+RELAY_DOMAINS_FILENAME = '<%= @relay_domains_filename %>'
+MAIL_PIC_RESPONSE_TIMEOUT = <%= @mail_pic_api_response_timeout %>
+MAIL_PIC_API_AUTH = '<%= @mail_pic_api_auth %>'
+CONNECTIONS_BUCKET = '<%= @connections_bucket %>'
+
+# logging to syslog setup
+logging.getLogger("botocore").setLevel(logging.WARNING)
+logger = logging.getLogger('mfis-domain-updater')
+logger.setLevel(logging.INFO)
+handler = logging.handlers.SysLogHandler('/dev/log')
+formatter = logging.Formatter(
+    '[%(name)s] %(process)d %(levelname)s %(message)s'
+)
+handler.formatter = formatter
+logger.addHandler(handler)
+
+ACCOUNT = '<%= @account %>'
+
+if ACCOUNT != 'sandbox':
+  def get_passphrase():
+    s3 = boto3.client('s3')
+    passphrase = s3.get_object(Bucket=CONNECTIONS_BUCKET, Key=MAIL_PIC_API_AUTH)
+    return base64.b64encode('mail:' + passphrase['Body'].read())
+
+  auth = get_passphrase()
+
+  HEADERS = {
+    'Content-type': 'application/json',
+    'Authorization': 'Basic ' + auth
+  }
+  PIC_XGEMAIL_API_URL = 'https://%s/mail/api/xgemail' % (PIC_FQDN)
+else:
+  HEADERS = {
+    'Content-type': 'application/json',
+    'Authorization': 'Basic'
+  }
+  PIC_XGEMAIL_API_URL = 'http://%s/mail-services/api/xgemail' % (PIC_FQDN)
+
+logger.info('mf inbound submit domains cron - pic url [%s]', PIC_XGEMAIL_API_URL)
+PIC_DOMAINS_URL = PIC_XGEMAIL_API_URL + '/domains'
+
+query_parameters = {
+'productType':'Mailflow'
+}
+
+response = requests.get(
+    PIC_DOMAINS_URL,
+    headers=HEADERS,
+    params=query_parameters,
+    timeout=MAIL_PIC_RESPONSE_TIMEOUT
+)
+response.raise_for_status()
+
+POSTFIX_CONFIG_DIR = subprocess.check_output(
+    [
+      'postmulti', '-i', POSTFIX_INSTANCE_NAME, '-x',
+      'postconf','-h','config_directory'
+    ]
+  ).rstrip()
+
+RELAY_DOMAINS_FILE = POSTFIX_CONFIG_DIR + '/' + RELAY_DOMAINS_FILENAME
+RELAY_DOMAINS_FILE_TMP = RELAY_DOMAINS_FILE + '.tmp'
+
+with open(RELAY_DOMAINS_FILE_TMP, 'w') as f:
+  for domain in response.json()['domains'] :
+    f.write('{0} OK\n'.format(domain))
+
+subprocess.call(['postmap', 'hash:{0}'.format(RELAY_DOMAINS_FILE_TMP)])
+os.rename(RELAY_DOMAINS_FILE_TMP, RELAY_DOMAINS_FILE);
+os.rename(RELAY_DOMAINS_FILE_TMP + '.db', RELAY_DOMAINS_FILE + '.db');
+
+logger.info('relay domains file [%s.db] successfully updated', RELAY_DOMAINS_FILE)

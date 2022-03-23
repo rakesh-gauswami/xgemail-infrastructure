@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: ami
 #
-# Copyright 2018, Sophos
+# Copyright 2021, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -46,28 +46,7 @@ bash 'edit_etc_hosts' do
   EOH
 end
 
-# Install Oracle JDK
-bash "Install Oracle JDK" do
-  user "root"
-  cwd "/tmp"
-  code <<-EOH
-    set -e
-
-    mkdir -p /usr/lib/tmp /usr/lib/jvm/
-    aws --region us-west-2 s3 cp s3:#{node['sophos_cloud']['java']}/#{node['sophos_cloud']['jdk_version']}.tar.gz /usr/lib/tmp
-    tar -xvf /usr/lib/tmp/#{node['sophos_cloud']['jdk_version']}.tar.gz -C /usr/lib/jvm/
-
-    rm -rf /usr/lib/tmp
-
-    # Items after keytool are not strictly required but may be helpful for debugging.
-    for CMD in java javac keytool jar jcmd jdb jhat jinfo jmap jps jstack jstat; do
-      update-alternatives --install "/usr/bin/${CMD}" "${CMD}" "/usr/lib/jvm/java-#{java_version}-oracle/bin/${CMD}" 20000
-      chmod a+x "/usr/bin/${CMD}"
-    done
-  EOH
-end
-
-# Uninstall OpenJDK.
+# Uninstall OpenJDK Older Version
 bash 'remove_openjdk' do
   user 'root'
   cwd '/tmp'
@@ -78,14 +57,9 @@ bash 'remove_openjdk' do
   EOH
 end
 
-# Replace default-java symlink.
-bash 'replace_java_symlink' do
-  user 'root'
-  cwd '/tmp'
-  code <<-EOH
-    rm -rf /usr/lib/jvm/default-java
-    ln -s /usr/lib/jvm/java-#{java_version}-oracle /usr/lib/jvm/default-java
-  EOH
+# Install OpenJDK 8
+yum_package 'java-1.8.0-openjdk-devel' do
+  action :install
 end
 
 cron 'logrotate_cron' do
@@ -109,10 +83,14 @@ yum_package 'amazon-ssm-agent' do
   action :upgrade
 end
 
-# Packages required by postfix 2.4.1.2:
+# Packages required by postfix 3.6.2.1-1:
 
 yum_package 'libuuid' do
   action :upgrade
+end
+
+yum_package 'openssl11' do
+  action :install
 end
 
 SOPHOS_BIN_DIR = '/opt/sophos/bin'
@@ -121,6 +99,12 @@ DEPLOYMENT_DIR = '/opt/sophos/xgemail'
 
 JILTER_INBOUND_VERSION = node['xgemail']['jilter_inbound_version']
 JILTER_INBOUND_PACKAGE_NAME = "xgemail-jilter-inbound-#{JILTER_INBOUND_VERSION}"
+
+JILTER_MF_INBOUND_VERSION = node['xgemail']['jilter_mf_inbound_version']
+JILTER_MF_INBOUND_PACKAGE_NAME = "xgemail-jilter-mf-inbound-#{JILTER_MF_INBOUND_VERSION}"
+
+JILTER_MF_OUTBOUND_VERSION = node['xgemail']['jilter_mf_outbound_version']
+JILTER_MF_OUTBOUND_PACKAGE_NAME = "xgemail-jilter-mf-outbound-#{JILTER_MF_OUTBOUND_VERSION}"
 
 JILTER_OUTBOUND_VERSION = node['xgemail']['jilter_outbound_version']
 JILTER_OUTBOUND_PACKAGE_NAME = "xgemail-jilter-outbound-#{JILTER_OUTBOUND_VERSION}"
@@ -131,7 +115,7 @@ JILTER_ENCRYPTION_PACKAGE_NAME = "xgemail-jilter-encryption-#{JILTER_ENCRYPTION_
 JILTER_DELIVERY_VERSION = node['xgemail']['jilter_delivery_version']
 JILTER_DELIVERY_PACKAGE_NAME = "xgemail-jilter-delivery-#{JILTER_DELIVERY_VERSION}"
 
-POSTFIX3_RPM = "postfix3-sophos-#{node['xgemail']['postfix3_version']}.el7.x86_64.rpm"
+POSTFIX3_RPM = "postfix3-sophos-#{node['xgemail']['postfix3_version']}.amzn2.x86_64.rpm"
 
 directory SOPHOS_BIN_DIR do
   mode '0755'
@@ -203,6 +187,48 @@ link "#{DEPLOYMENT_DIR}/xgemail-jilter-outbound" do
   to "#{DEPLOYMENT_DIR}/#{JILTER_OUTBOUND_PACKAGE_NAME}"
 end
 
+execute 'download_jilter_mf_inbound' do
+  user 'root'
+  cwd "#{PACKAGES_DIR}"
+  command <<-EOH
+      aws --region us-west-2 s3 cp s3:#{sophos_thirdparty}/xgemail/#{JILTER_MF_INBOUND_PACKAGE_NAME}.tar .
+  EOH
+end
+
+execute 'extract_jilter_mf_inbound_package' do
+  user 'root'
+  cwd "#{PACKAGES_DIR}"
+  command <<-EOH
+      tar xf #{JILTER_MF_INBOUND_PACKAGE_NAME}.tar -C #{DEPLOYMENT_DIR}
+  EOH
+end
+
+# Create a sym link to xgemail-jilter-mf-inbound
+link "#{DEPLOYMENT_DIR}/xgemail-jilter-mf-inbound" do
+  to "#{DEPLOYMENT_DIR}/#{JILTER_MF_INBOUND_PACKAGE_NAME}"
+end
+
+execute 'download_jilter_mf_outbound' do
+  user 'root'
+  cwd "#{PACKAGES_DIR}"
+  command <<-EOH
+      aws --region us-west-2 s3 cp s3:#{sophos_thirdparty}/xgemail/#{JILTER_MF_OUTBOUND_PACKAGE_NAME}.tar .
+  EOH
+end
+
+execute 'extract_jilter_mf_outbound_package' do
+  user 'root'
+  cwd "#{PACKAGES_DIR}"
+  command <<-EOH
+      tar xf #{JILTER_MF_OUTBOUND_PACKAGE_NAME}.tar -C #{DEPLOYMENT_DIR}
+  EOH
+end
+
+# Create a sym link to xgemail-jilter-mf-outbound
+link "#{DEPLOYMENT_DIR}/xgemail-jilter-mf-outbound" do
+  to "#{DEPLOYMENT_DIR}/#{JILTER_MF_OUTBOUND_PACKAGE_NAME}"
+end
+
 execute 'download_jilter_encryption' do
   user 'root'
   cwd "#{PACKAGES_DIR}"
@@ -259,6 +285,20 @@ directory "#{DEPLOYMENT_DIR}/#{JILTER_OUTBOUND_PACKAGE_NAME}/conf" do
   recursive true
 end
 
+directory "#{DEPLOYMENT_DIR}/#{JILTER_MF_INBOUND_PACKAGE_NAME}/conf" do
+  mode '0755'
+  owner 'root'
+  group 'root'
+  recursive true
+end
+
+directory "#{DEPLOYMENT_DIR}/#{JILTER_MF_OUTBOUND_PACKAGE_NAME}/conf" do
+  mode '0755'
+  owner 'root'
+  group 'root'
+  recursive true
+end
+
 directory "#{DEPLOYMENT_DIR}/#{JILTER_ENCRYPTION_PACKAGE_NAME}/conf" do
   mode '0755'
   owner 'root'
@@ -291,6 +331,24 @@ end
     mode '0700'
     variables(
         :launch_darkly_key => node['xgemail']["launch_darkly_#{cur}"]
+    )
+  end
+
+  template "launch_darkly_#{cur}.properties" do
+    path "#{DEPLOYMENT_DIR}/#{JILTER_MF_INBOUND_PACKAGE_NAME}/conf/launch_darkly_#{cur}.properties"
+    source 'jilter-launch-darkly.properties.erb'
+    mode '0700'
+    variables(
+      :launch_darkly_key => node['xgemail']["launch_darkly_#{cur}"]
+    )
+  end
+
+  template "launch_darkly_#{cur}.properties" do
+    path "#{DEPLOYMENT_DIR}/#{JILTER_MF_OUTBOUND_PACKAGE_NAME}/conf/launch_darkly_#{cur}.properties"
+    source 'jilter-launch-darkly.properties.erb'
+    mode '0700'
+    variables(
+      :launch_darkly_key => node['xgemail']["launch_darkly_#{cur}"]
     )
   end
 

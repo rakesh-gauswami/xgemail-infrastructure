@@ -9,7 +9,7 @@ aws:
       as_min_size:                              "12"
       as_max_size:                              "24"
       cron_scale_in:                            "00 02 * * 1-5"
-      cron_scale_out:                           "30 14 * * 1-5"
+      cron_scale_out:                           "30 13 * * 1-5"
       on_hour_desired:                          "18"
       scale_in_out_weekdays:                    "true"
     cs:
@@ -25,3 +25,7 @@ aws:
       cron_scale_out:                           "30 14 * * 1-5"
       on_hour_desired:                          "18"
       scale_in_out_weekdays:                    "true"
+  efs:
+    policy_efs_volume:
+      provisioned_throughput_in_mibps:          "10"
+      throughput_mode:                          "provisioned"

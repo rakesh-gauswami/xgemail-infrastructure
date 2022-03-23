@@ -13,6 +13,7 @@ package 'tar'
 
 NODE_TYPE = node['xgemail']['cluster_type']
 ACCOUNT = node['sophos_cloud']['environment']
+REGION = node['sophos_cloud']['region']
 
 # Make sure we're on an encryption submit node
 if NODE_TYPE != 'encryption-submit'
@@ -43,6 +44,7 @@ MSG_HISTORY_EVENT_PROCESSOR_POOL_SIZE = node['xgemail']['mh_event_processor_pool
 MSG_HISTORY_EVENT_PROCESSOR_PORT = node['xgemail']['mh_event_processor_port']
 MSG_HISTORY_V2_DYNAMODB_TABLE_NAME = node['xgemail']['msg_history_v2_dynamodb_table_name']
 
+STATION_ACCOUNT_ROLE_ARN = node['sophos_cloud']['station_account_role_arn']
 SERVICE_USER = node['xgemail']['jilter_user']
 POLICY_BUCKET_NAME   = node['xgemail']['xgemail_policy_bucket_name']
 ACTIVE_PROFILE = node['xgemail']['xgemail_active_profile']
@@ -105,6 +107,15 @@ file "#{JILTER_CONF_DIR}/launch_darkly_#{ACCOUNT}.properties" do
   action :touch
 end
 
+# configure logrotate for jilter
+template 'xgemail-jilter-logrotate' do
+  path "/etc/logrotate.d/jilter"
+  source 'xgemail.jilter.logrotate.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+end
+
 # Create the Jilter service
 template 'xgemail.jilter.service.sh' do
   path JILTER_SCRIPT_PATH
@@ -128,6 +139,7 @@ template 'xgemail.jilter.properties' do
   variables(
       :policy_bucket => POLICY_BUCKET_NAME,
       :account => ACCOUNT,
+      :region => REGION,
       :customer_submit_bucket => CUSTOMER_SUBMIT_BUCKET_NAME,
       :node_ip => NODE_IP,
       :msg_history_v2_stream_name => MSG_HISTORY_V2_STREAM_NAME,
@@ -135,7 +147,8 @@ template 'xgemail.jilter.properties' do
       :msg_history_v2_dynamodb_table_name =>  MSG_HISTORY_V2_DYNAMODB_TABLE_NAME,
       :msg_history_event_dir => MSG_HISTORY_EVENT_DIR,
       :msg_history_event_processor_pool_size => MSG_HISTORY_EVENT_PROCESSOR_POOL_SIZE,
-      :msg_history_event_processor_port => MSG_HISTORY_EVENT_PROCESSOR_PORT
+      :msg_history_event_processor_port => MSG_HISTORY_EVENT_PROCESSOR_PORT,
+      :station_account_role_arn => STATION_ACCOUNT_ROLE_ARN
   )
 end
 

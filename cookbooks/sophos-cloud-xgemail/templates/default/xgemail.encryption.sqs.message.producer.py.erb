@@ -298,12 +298,12 @@ def get_plaintext_message():
     finally:
         plaintext_email_bytes.close()
 
-def get_metadata_for_outbound(metadata, message_headers):
+def get_metadata_for_outbound(metadata, message_headers, msghistory_events):
     effective_sender_value = message_headers['x-sophos-effective-sender']
     effective_sender_header = 'x-sophos-effective-sender'
 
     if effective_sender_value is not None:
-        return get_metadata_for_outbound_effective_sender(metadata, effective_sender_header, effective_sender_value)
+        return get_metadata_for_outbound_effective_sender(metadata, effective_sender_header, effective_sender_value, msghistory_events)
 
     from_header = message_headers['from']
     if from_header is None:
@@ -338,11 +338,24 @@ def get_metadata_for_outbound(metadata, message_headers):
         metadata.get_email_product_type()
     )
 
+def get_customer_id(queue_id, msghistory_events):
+    try:
+        if msghistory_events is not None and len(msghistory_events) > 0:
+            accepted_event = msghistory_events.itervalues().next()
+            return accepted_event['mail_info']['customer_id']
+    except Exception as ex:
+        logger.warning("Queue Id [{0}]. Error in getting customer id [{1}]".format(queue_id, ex))
+
 # if get_metadata_for_outbound method finds x-sophos-effective-sender then this method returns the metadata
-def get_metadata_for_outbound_effective_sender(metadata, header, header_value):
+def get_metadata_for_outbound_effective_sender(metadata, header, header_value, msghistory_events):
 
     header_sender = get_address_from_header(header_value)
-    is_valid_sender = is_valid_outbound_sender(header_sender, header)
+    customer_id = get_customer_id(metadata.get_queue_id(), msghistory_events)
+    is_valid_sender = False
+    if multipolicyreaderutils.get_valid_sender_from_msghistory_enabled(customer_id, SUBMIT_HOST_IP) and msghistory_events is not None and len(msghistory_events) > 0:
+        is_valid_sender = (header_value == list(msghistory_events.keys())[0])
+    else:
+        is_valid_sender = is_valid_outbound_sender(header_sender, header)
 
     if is_valid_sender:
         return Metadata(
@@ -525,7 +538,25 @@ def update_msghistory_event_and_get_message_context(msghistory_events, s3_file_p
     except Exception as ex:
         logger.warning("Queue Id [{0}]. Error in processing message history event [{1}]".format(policy_metadata.get_queue_id(), ex))
 
-def base_policy_flow(metadata, direction, is_reply, domain, sender, message, rfx_submit, is_mh_parent):
+def get_s3_prefix_path(queue_id, mailbox_id, domain):
+    root_dir = None
+
+    if get_email_product_type() == MAILFLOW:
+        root_dir = MAIL_FLOW_ROOT_DIR
+    else:
+        root_dir = ROOT_DIR
+
+    s3_file_path = formatterutils.get_s3_prefix_file_path(
+        root_dir,
+        queue_id,
+        mailbox_id,
+        SUBMIT_HOST_IP,
+        domain
+    )
+
+    return s3_file_path
+
+def base_policy_flow(metadata, direction, is_reply, domain, sender, message, rfx_submit, is_mh_parent, msghistory_events):
     queue_id = metadata.get_queue_id()
 
     tmp_file_path = formatterutils.get_s3_path(
@@ -535,6 +566,9 @@ def base_policy_flow(metadata, direction, is_reply, domain, sender, message, rfx
         queue_id,
         domain
     )
+
+    if multipolicyreaderutils.prefix_messages_path_enabled(get_customer_id(queue_id, msghistory_events), SUBMIT_HOST_IP):
+        tmp_file_path = get_s3_prefix_path(queue_id, policy_id, domain)
 
     if (direction == OUTBOUND_MESSAGE_DIRECTION and is_reply == True) or direction == INBOUND_MESSAGE_DIRECTION \
         or rfx_submit is True:
@@ -546,8 +580,6 @@ def base_policy_flow(metadata, direction, is_reply, domain, sender, message, rfx
 
     upload_msg_history = should_upload_msg_history(direction, rfx_submit)
 
-    #A dict where key is mailbox address and value is the 'accepted' event record.
-    msghistory_events = messagehistory.read_msghistory_accepted_events(queue_id, MSG_HISTORY_EVENT_DIR)
     message_context = None
     if msghistory_events is not None:
       message_context = update_msghistory_event_and_get_message_context(msghistory_events, s3_file_path, metadata, direction, metadata.get_recipients(), sender, upload_msg_history, is_mh_parent)
@@ -584,6 +616,8 @@ def base_policy_flow(metadata, direction, is_reply, domain, sender, message, rfx
     if upload_msg_history:
         if msghistory_events is not None:
             messagehistory.handle_msghistory_events(queue_id, msghistory_events, MSG_HISTORY_EVENT_PROCESSOR_URL, MSG_HISTORY_EVENT_DIR)
+        else:
+            logger.warning("MH events not generated for Queue ID [{0}]".format(queue_id))
 
 
 def get_direction(message):
@@ -622,6 +656,9 @@ def main():
         plaintext_message = get_plaintext_message()
         message_headers = get_message_headers(plaintext_message)
         metadata = get_metadata(message_headers)
+        queue_id = metadata.get_queue_id()
+        #A dict where key is mailbox address and value is the 'accepted' event record.
+        msghistory_events = messagehistory.read_msghistory_accepted_events(queue_id, MSG_HISTORY_EVENT_DIR)
 
         if rfxrecoveryutils.is_reflexion_ip(metadata.get_sender_ip()):
             rfx_submit = True
@@ -637,7 +674,7 @@ def main():
 
         sender = metadata.get_sender_address()
         if direction == OUTBOUND_MESSAGE_DIRECTION:
-          metadata = get_metadata_for_outbound(metadata, message_headers)
+          metadata = get_metadata_for_outbound(metadata, message_headers, msghistory_events)
           domain = get_from_sender_domain(metadata)
         else:
           domain = metadata.get_recipient_domain()
@@ -645,7 +682,7 @@ def main():
         # required logging for XgemailTestBase automation test
         logger.info("Metadata json info [{0}]".format(metadata))
 
-        base_policy_flow(metadata, direction, is_reply, domain, sender, plaintext_message, rfx_submit, is_mh_parent)
+        base_policy_flow(metadata, direction, is_reply, domain, sender, plaintext_message, rfx_submit, is_mh_parent, msghistory_events)
 
     except BaseException as e:
         logger.exception("Failed in processing email [{0}]".format(e))

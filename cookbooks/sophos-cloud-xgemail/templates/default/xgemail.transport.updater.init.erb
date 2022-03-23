@@ -1,0 +1,105 @@
+#!/bin/sh
+#
+# <%= @service %>               Start/Stop the <%= @service %>
+#
+# chkconfig: 2345 70 50
+# description: <%= @service %>
+#
+### BEGIN INIT INFO
+# Provides:          <%= @service %>
+# Required-Stop:     $network postfix $mail-transfer-agent
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: XGEMAIL Transport Updater
+# Description:       XGEMAIL Transport Updater
+### END INIT INFO
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+retval=0
+
+prog=<%= @service %>
+exec_path=<%= @script_path %>
+lockfile=/var/lock/subsys/${prog}
+pidfile=/var/run/${prog}.pid
+user=<%= @user %>
+args="--daemon True"
+
+start() {
+    [ "$EUID" != "0" ] && exit 4
+    [ -x ${exec_path} ] || exit 5
+
+    touch ${pidfile}
+    chown ${user} ${pidfile}
+
+    # Start Daemon
+    echo -n $"Starting ${prog}: "
+    daemon --user=${user} --pidfile=${pidfile} "{ ${exec_path} ${args} & } ; echo \$! >| ${pidfile} "
+    retval=$?
+    echo
+    [ ${retval} -eq 0 ] && touch ${lockfile}
+    return ${retval}
+}
+
+stop() {
+    # Stop Daemon
+    echo -n $"Stopping ${prog}: "
+    killproc -p ${pidfile} ${exec_path}
+    retval=$?
+    echo
+    [ ${retval} -eq 0 ] && rm -f ${lockfile}
+    return ${retval}
+}
+
+restart() {
+    stop
+    start
+}
+
+force_restart() {
+    # Force Restarting Daemon
+    stop
+    echo $"Removing pidfile ${pidfile}: "
+    rm -fv ${pidfile}
+    echo $"Removing lockfile ${lockfile}: "
+    rm -fv ${lockfile}
+    start
+}
+
+rh_status() {
+    status -p "${pidfile}" -l ${prog} ${exec_path}
+}
+
+rh_status_q() {
+    rh_status >/dev/null 2>&1
+}
+
+
+case "$1" in
+    start)
+        rh_status_q && exit 0
+        $1
+        ;;
+    stop)
+        rh_status_q || exit 0
+        $1
+        ;;
+    restart)
+        $1
+        ;;
+    force-restart)
+        force_restart
+        ;;
+    status)
+        rh_status
+        ;;
+    condrestart|try-restart)
+        rh_status_q || exit 0
+        restart
+        ;;
+    *)
+        echo $"Usage: $0 {start|stop|status|restart|force-restart|condrestart|try-restart}"
+        exit 2
+esac
+exit $?

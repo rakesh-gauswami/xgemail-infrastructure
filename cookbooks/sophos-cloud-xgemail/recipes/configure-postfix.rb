@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: configure-postfix
 #
-# Copyright 2020, Sophos
+# Copyright 2021, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -80,6 +80,10 @@ include_recipe 'sophos-cloud-xgemail::configure-risky-delivery-queue'
 include_recipe 'sophos-cloud-xgemail::configure-warmup-delivery-queue'
 include_recipe 'sophos-cloud-xgemail::configure-beta-delivery-queue'
 include_recipe 'sophos-cloud-xgemail::configure-delta-delivery-queue'
+include_recipe 'sophos-cloud-xgemail::configure-mf-inbound-submit-queue'
+include_recipe 'sophos-cloud-xgemail::configure-mf-outbound-submit-queue'
+include_recipe 'sophos-cloud-xgemail::configure-mf-outbound-delivery-queue'
+include_recipe 'sophos-cloud-xgemail::configure-mf-inbound-delivery-queue'
 
 if ACCOUNT == 'sandbox'
   include_recipe 'sophos-cloud-xgemail::configure-extended-delivery-queue'
@@ -92,12 +96,12 @@ MANAGED_SERVICES_IN_START_ORDER =
 
 NODE_TYPE = node['xgemail']['cluster_type']
 
-if NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'mf-inbound-delivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'encryption-delivery' || NODE_TYPE == 'risky-delivery' || NODE_TYPE == 'warmup-delivery' || NODE_TYPE == 'beta-delivery' || NODE_TYPE == 'delta-delivery'
+if NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'encryption-delivery' || NODE_TYPE == 'risky-delivery' || NODE_TYPE == 'warmup-delivery' || NODE_TYPE == 'beta-delivery' || NODE_TYPE == 'delta-delivery' || NODE_TYPE == 'mf-inbound-delivery' || NODE_TYPE == 'mf-outbound-delivery'
   MANAGED_SERVICES_IN_START_ORDER = [
   'postfix'
 ]
 else
-  if NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit' || NODE_TYPE == 'encryption-submit' || NODE_TYPE == 'mf-inbound-submit'
+  if NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit' || NODE_TYPE == 'encryption-submit' || NODE_TYPE == 'mf-inbound-submit' || NODE_TYPE == 'mf-outbound-submit'
     if ACCOUNT != 'sandbox'
        MANAGED_SERVICES_IN_START_ORDER = [
           JILTER_SERVICE_NAME,
@@ -111,7 +115,7 @@ else
   end
 end
 
-if NODE_TYPE == 'xdelivery'
+if NODE_TYPE == 'xdelivery' || NODE_TYPE == 'customer-xdelivery' || NODE_TYPE == 'mf-inbound-xdelivery'
   MANAGED_SERVICES_IN_START_ORDER = [
       'postfix'
   ]

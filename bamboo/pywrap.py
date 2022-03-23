@@ -33,7 +33,7 @@ import sys
 PYTHONPATH_ENTRIES_TO_ADD = [
     # Common python code shared between Bamboo and EC2 instances.
     "cookbooks/sophos-central-python/files/default/common",
-    "cookbooks/sophos-central-border-patrol/files/borderpatrol",
+    "cookbooks/sophos-central-xgemail/files/default",
 
     # Bamboo-specific code.
     "bamboo",

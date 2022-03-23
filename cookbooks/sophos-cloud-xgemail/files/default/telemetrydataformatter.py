@@ -17,11 +17,14 @@ class E2ETelemetryData:
                  submit_queue_id,
                  direction,
                  latency,
-                 timestamp):
+                 timestamp,
+                 email_product_type):
         self.submit_queue_id = submit_queue_id
         self.direction = direction
         self.latency = latency
         self.timestamp = timestamp
+        self.email_product_type = email_product_type
+
 
     def get_e2e_telemetry_data_json(self):
         return self.__dict__
@@ -50,11 +53,15 @@ class E2ETelemetryData:
     def set_timestamp(self, timestamp):
         self.timestamp = timestamp
 
+    def set_email_product_type(self, email_product_type):
+        self.email_product_type = email_product_type
+
     def get_delivery_stream_json(self):
         delivery_stream_json = {
             'submit_queue_id': self.submit_queue_id,
             'direction': self.direction,
             'latency': self.latency,
-            'timestamp': self.timestamp
+            'timestamp': self.timestamp,
+            'email_product_type': self.email_product_type
         }
         return delivery_stream_json

@@ -1,0 +1,14 @@
+#!/bin/sh
+
+exec java -Dlogback.configurationFile=./logback.xml \
+    -Dcom.sun.management.jmxremote.port=6007 \
+    -Dcom.sun.management.jmxremote.authenticate=false \
+    -Dcom.sun.management.jmxremote.ssl=false \
+    -Djava.library.path=<%= @deployment_dir %>/xgemail-jilter-mf-outbound/lib \
+    -Dconf.dir=<%= @deployment_dir %>/xgemail-jilter-mf-outbound/conf \
+    -Dlog4j2.formatMsgNoLookups=true \
+    -Dspring.profiles.active=<%= @active_profile %> \
+    -Xms256m \
+    -Xmx256m \
+    -cp "<%= @deployment_dir %>/xgemail-jilter-mf-outbound/lib/*" \
+    com.sophos.xgemail.jilter.OutboundApplication

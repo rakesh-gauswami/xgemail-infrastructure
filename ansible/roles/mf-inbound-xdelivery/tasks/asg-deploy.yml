@@ -1,0 +1,66 @@
+---
+#- name: Debug
+#  debug:
+#    msg: "{{item.value.stack_name}} {{item.value.AutoScalingMinSize}} {{item.value.AvailabilityZoneIndex}} {{item.value.VolumeSetId}} {{cloud_email_iam_output.stack_outputs.AutoScalingInstanceRoleArn}}"
+#  with_dict: "{{aws.ec2.asg.mfix}}"
+
+- name: "Create ASG Stacks in AWS"
+  async: 100
+  poll: 0
+  cloudformation:
+    stack_name: "{{vpc.cloud_email.name}}-xgemail-mf-inbound-xdelivery-0000-{{item.0}}"
+    state: present
+    region:  "{{account.region}}"
+    disable_rollback: true
+    template: "{{template.ec2.asg.as_mf_inbound_xdelivery_template}}"
+    template_parameters:
+      AesDecryptionKey:                     "{{aes_decryption_key}}"
+      AmiId:                                "{{ami_parent_id}}"
+      AutoScalingInstanceRoleArn:           "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.AutoScalingInstanceRoleArn}}"
+      AutoScalingMinSize:                   "{{item.1}}"
+      AutoScalingMaxSize:                   "1"
+      AutoScalingNotificationTopicARN:      "{{sns.arn_prefix}}{{sns.lifecycle_sqs_sns}}"
+      AvailabilityZoneIndex:                "{{item.2}}"
+      AvailabilityZones:                    "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.AvailabilityZoneA}},{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.AvailabilityZoneB}},{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.AvailabilityZoneC}}"
+      Branch:                               "{{build.branch}}"
+      BuildVersion:                         "{{build.result_key}}"
+      BundleVersion:                        "{{ami_build}}"
+      EbsMinIops:                           "{{xgemail_iops_data_gb}}"
+      Environment:                          "{{account.name}}"
+      HealthCheckGracePeriod:               "{{aws.asg.mfix.health_check_grace_period}}"
+      InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.XgemailMfInboundXdeliveryInstanceProfile}}"
+      InstanceType:                         "{{aws.asg.mfix.instance_size}}"
+      KeyName:                              "public-{{account.region}}"
+      LoadBalancerName:                     "{{elb_stack_output.stack_outputs.LoadBalancerId}}"
+      LifecycleHookLaunching:               "{{aws.asg.mfix.lifecycle_hook_launching}}"
+      MsgHistoryV2BucketName:               "{{s3.msg_history_v2_bucket_name}}"
+      MsgHistoryV2DynamoDbTableName:        "{{dynamodb.msg_history_v2_dynamodb}}"
+      MsgHistoryV2StreamName:               "{{kinesis.firehose.msg_history_v2_stream_name}}"
+      S3CookbookRepositoryURL:              "//cloud-{{account.name}}-templates/{{build.branch}}/xgemail-infrastructure/cookbooks.enc"
+      ScaleDownOnWeekends:                  "{{weekend_scale_down}}"
+      SecurityGroups:                       "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.XgemailMfInboundXdeliverySecurityGroup}},{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.SecurityGroupBase}}"
+      SpotPrice:                            "{{spot_price}}"
+      StationVpcName:                       "{{vpc.cloud_station.name}}"
+      StationVpcId:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}"
+      VolumeSetId:                          "mf-inbound-xdelivery-{{item.0}}"
+      VolumeTrackerSimpleDbDomain:          "{{volume_tracker_sdb_output.ansible_facts.cloudformation[stack.sdb.volume_tracker_sdb].stack_outputs.SimpleDbDomain}}"
+      Vpc:                                  "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.Vpc}}"
+      VpcZoneIdentifiers:                   "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PublicSubnetA}},{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PublicSubnetB}},{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PublicSubnetC}}"
+      VpcName:                              "{{vpc.cloud_email.name}}"
+      XgemailMinSizeDataGB:                 "{{xgemail_size_data_gb}}"
+      XgemailMsgHistoryStatusQueueUrl:      "{{sqs.url_prefix}}{{sqs.msg_history_status_sqs_queue_sns_listener}}"
+      XgemailMsgHistoryStatusSnsArn:        "{{sns.arn_prefix}}{{sns.msg_history_status_sns_topic}}"
+      XgemailPolicyBucketName:              "{{s3.policy_bucket}}"
+      XgemailServiceType:                   "mf-inbound-xdelivery"
+  with_together:
+    - "{{aws.asg.mfix.stack_number}}"
+    - "{{aws.asg.mfix.asg_min_size}}"
+    - "{{aws.asg.mfix.zone_index}}"
+  register: mfix_stack_async_results
+
+- async_status:
+    jid: "{{item.ansible_job_id}}"
+  with_items: "{{mfix_stack_async_results.results}}"
+  register: mfix_stack_async_poll_results
+  until: "{{mfix_stack_async_poll_results.finished}}"
+  retries: 50

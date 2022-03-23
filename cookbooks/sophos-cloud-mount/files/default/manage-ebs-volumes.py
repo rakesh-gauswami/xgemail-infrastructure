@@ -82,7 +82,7 @@ def parse_command_line():
 
 
 class AWSWrapper(object):
-    def __init__(self, region):
+    def __init__(self, region, sdb_region):
         self._print_responses = False
 
         self._ec2_client = boto3.client("ec2", region_name=region)
@@ -90,7 +90,7 @@ class AWSWrapper(object):
 
         self._kms_client = boto3.client("kms", region_name=region)
 
-        self._sdb_client = boto3.client("sdb", region_name="us-west-2")
+        self._sdb_client = boto3.client("sdb", region_name=sdb_region)
 
     def set_logging_level(self, level):
         logging.getLogger("boto3").setLevel(level)
@@ -181,6 +181,7 @@ class InstanceSettings(object):
         self.availability_zone  = None
         self.environment        = None
         self.region             = None
+        self.sdb_region         = None
         self.vpc_name           = None
 
         # volumes attributes
@@ -210,6 +211,7 @@ class InstanceSettings(object):
         self.availability_zone          = sophos_attrs["availability_zone"]
         self.environment                = sophos_attrs["environment"]
         self.region                     = sophos_attrs["region"]
+        self.sdb_region                 = sophos_attrs.get("sdb_region", "us-west-2")
         self.vpc_name                   = sophos_attrs["vpc_name"]
 
         volume_attrs = attributes["volumes"]
@@ -258,7 +260,7 @@ class App(object):
         self.settings = InstanceSettings()
         self.settings.load("/var/sophos/cookbooks/attributes.json")
 
-        self.aws_wrapper = AWSWrapper(self.settings.region)
+        self.aws_wrapper = AWSWrapper(self.settings.region, self.settings.sdb_region)
         self.aws_wrapper.set_logging_level(logging.DEBUG if options.debug else logging.ERROR)
         self.aws_wrapper.set_print_responses(options.verbose)
 

@@ -91,9 +91,14 @@ HEADERS = {
 
 PIC_DESTINATION_URL = PIC_XGEMAIL_API_URL + '/destination'
 
+query_parameters = {
+  'productType':'Mailflow',
+}
+
 response = requests.get(
   PIC_DOMAINS_URL,
   headers=HEADERS,
+  params=query_parameters,
   timeout=MAIL_PIC_RESPONSE_TIMEOUT
 )
 response.raise_for_status()
@@ -114,8 +119,13 @@ with open(SENDER_BY_RELAY_FILE_TMP, 'w') as f:
     domain_response = requests.post(
       PIC_DESTINATION_URL,
       headers=HEADERS,
-      data=json.dumps({'domain':domain}),
-      timeout=MAIL_PIC_RESPONSE_TIMEOUT
+      data = json.dumps(
+        {
+          'domain' : domain,
+          'productType': 'Mailflow'
+        }
+      ),
+  timeout=MAIL_PIC_RESPONSE_TIMEOUT
     )
     domain_response.raise_for_status()
     transport_line = parse_domain_response(domain, domain_response.json())

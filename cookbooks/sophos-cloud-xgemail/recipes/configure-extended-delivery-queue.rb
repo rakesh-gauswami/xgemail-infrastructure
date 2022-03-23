@@ -12,7 +12,7 @@
 NODE_TYPE = node['xgemail']['cluster_type']
 ACCOUNT =  node['sophos_cloud']['environment']
 
-if NODE_TYPE != 'xdelivery' && NODE_TYPE != 'internet-xdelivery' && NODE_TYPE != 'risky-xdelivery' && NODE_TYPE != 'warmup-xdelivery' && NODE_TYPE != 'beta-xdelivery' && NODE_TYPE != 'delta-xdelivery'
+if NODE_TYPE != 'xdelivery' && NODE_TYPE != 'customer-xdelivery' && NODE_TYPE != 'internet-xdelivery' && NODE_TYPE != 'risky-xdelivery' && NODE_TYPE != 'warmup-xdelivery' && NODE_TYPE != 'beta-xdelivery' && NODE_TYPE != 'delta-xdelivery' && NODE_TYPE != 'mf-inbound-xdelivery' && NODE_TYPE != 'mf-outbound-xdelivery'
   return
 end
 
@@ -147,29 +147,56 @@ end
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf -P '#{cur}'" )
 end
 
-[
-  # Server side TLS configuration
-  'smtpd_tls_security_level = may',
-  'smtpd_tls_ciphers = high',
-  'smtpd_tls_mandatory_ciphers = high',
-  'smtpd_tls_loglevel = 1',
-  'smtpd_tls_received_header = yes',
-  "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
-  "smtpd_tls_key_file = #{KEY_FILE}",
-  'bounce_queue_lifetime=0',
-  "hopcount_limit = #{HOP_COUNT_DELIVERY_INSTANCE}",
-  'mynetworks = 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16',
-  'smtp_tls_security_level=may',
-  'smtp_tls_ciphers=high',
-  'smtp_tls_mandatory_ciphers=high',
-  'smtp_tls_mandatory_protocols = TLSv1.2',
-  'smtp_tls_loglevel=1',
-  'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache'
-].each do | cur |
-  execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
+if NODE_TYPE == 'mf-inbound-xdelivery' || NODE_TYPE == 'mf-outbound-xdelivery'
+  [
+      # Server side TLS configuration
+      'smtpd_tls_security_level = may',
+      'smtpd_tls_ciphers = high',
+      'smtpd_tls_mandatory_ciphers = high',
+      'smtpd_tls_loglevel = 1',
+      'smtpd_tls_received_header = yes',
+      "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
+      "smtpd_tls_key_file = #{KEY_FILE}",
+      'bounce_queue_lifetime=0',
+      "hopcount_limit = #{HOP_COUNT_DELIVERY_INSTANCE}",
+      'mynetworks = 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16',
+      'smtp_tls_security_level = encrypt',
+      'smtp_tls_ciphers=high',
+      'smtp_tls_mandatory_ciphers = high',
+      'smtp_tls_mandatory_protocols = !SSLv2,!SSLv3,!TLSv1,!TLSv1.1,TLSv1.2',
+      'smtp_tls_protocols = !SSLv2,!SSLv3,!TLSv1,!TLSv1.1,TLSv1.2',
+      'smtp_tls_loglevel=1',
+      'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache',
+      'soft_bounce=yes'
+  ].each do |cur|
+    execute print_postmulti_cmd(INSTANCE_NAME, "postconf '#{cur}'")
+  end
+else
+  [
+      # Server side TLS configuration
+      'smtpd_tls_security_level = may',
+      'smtpd_tls_ciphers = high',
+      'smtpd_tls_mandatory_ciphers = high',
+      'smtpd_tls_loglevel = 1',
+      'smtpd_tls_received_header = yes',
+      "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
+      "smtpd_tls_key_file = #{KEY_FILE}",
+      'bounce_queue_lifetime=0',
+      "hopcount_limit = #{HOP_COUNT_DELIVERY_INSTANCE}",
+      'mynetworks = 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16',
+      'smtp_tls_security_level=may',
+      'smtp_tls_ciphers=high',
+      'smtp_tls_mandatory_ciphers=high',
+      'smtp_tls_mandatory_protocols = TLSv1.2',
+      'smtp_tls_loglevel=1',
+      'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache'
+  ].each do |cur|
+    execute print_postmulti_cmd(INSTANCE_NAME, "postconf '#{cur}'")
+  end
 end
 
-if NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery' || NODE_TYPE == 'warmup-xdelivery' || NODE_TYPE == 'beta-xdelivery' || NODE_TYPE == 'delta-xdelivery'
+
+if NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery' || NODE_TYPE == 'warmup-xdelivery' || NODE_TYPE == 'beta-xdelivery' || NODE_TYPE == 'delta-xdelivery' || NODE_TYPE == 'mf-outbound-xdelivery'
 
   HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
 
@@ -187,7 +214,7 @@ if NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery' || NODE_T
   end
 end
 
-if NODE_TYPE == 'xdelivery'
+if NODE_TYPE == 'xdelivery' || NODE_TYPE == 'customer-xdelivery'
 
   TRANSPORT_ROUTE_HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
 
@@ -200,7 +227,7 @@ if NODE_TYPE == 'xdelivery'
   end
 
   include_recipe 'sophos-cloud-xgemail::configure-bounce-message-customer-delivery-queue'
-  include_recipe 'sophos-cloud-xgemail::setup_customer_delivery_transport_updater_cron'
+  include_recipe 'sophos-cloud-xgemail::setup_customer_delivery_transport_updater'
   include_recipe 'sophos-cloud-xgemail::setup_push_policy_delivery_toggle'
 else
   if NODE_TYPE == 'internet-xdelivery'
@@ -218,7 +245,29 @@ else
   if NODE_TYPE == 'delta-xdelivery'
     include_recipe 'sophos-cloud-xgemail::configure-bounce-message-delta-delivery-queue'
   end
+  if NODE_TYPE == 'mf-inbound-xdelivery'
+
+    TRANSPORT_ROUTE_HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
+
+    # Add the header checks config file
+    file "#{TRANSPORT_ROUTE_HEADER_CHECKS_PATH}" do
+      content "/^X-Sophos-Email-Transport-Route: (smtp|smtp_encrypt):(.*)$/i FILTER $1:$2"
+      mode '0644'
+      owner 'root'
+      group 'root'
+    end
+    include_recipe 'sophos-cloud-xgemail::configure-bounce-message-customer-delivery-queue'
+    include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_delivery_transport_updater_cron'
+    include_recipe 'sophos-cloud-xgemail::setup_push_policy_delivery_toggle'
+  end
+  if NODE_TYPE == 'mf-outbound-xdelivery'
+    include_recipe 'sophos-cloud-xgemail::configure-bounce-message-mf-outbound-delivery-queue'
+    include_recipe 'sophos-cloud-xgemail::setup_mf_outbound_delivery_relay_by_sender_updater_cron'
+  end
 end
+
+# Setup multi IP NAT rules in IPTABLES if IP_COUNT > 1 for all xdelivery types
+include_recipe 'sophos-cloud-xgemail::setup_iptables_nat_rules'
 
 # recipes to be run in all x-delivery servers for Mhv2
 include_recipe 'sophos-cloud-xgemail::setup_message_history_storage_dir'

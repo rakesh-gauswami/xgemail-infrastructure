@@ -4,7 +4,7 @@
 """
 Processes CloudWatch Event generated from Lifecycle Hook in order to perform an orderly shutdown of EC2 Instance.
 
-Copyright 2018, Sophos Limited. All rights reserved.
+Copyright 2021, Sophos Limited. All rights reserved.
 
 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
 Sophos Limited and Sophos Group.  All other product and company
@@ -35,7 +35,17 @@ formatter = logging.Formatter(
 )
 syslog_handler.formatter = formatter
 logger.addHandler(syslog_handler)
-
+delivery_instances = [
+  'postfix-cd',
+  'postfix-id',
+  'postfix-ed',
+  'postfix-rd',
+  'postfix-wd',
+  'postfix-bd',
+  'postfix-dd',
+  'postfix-mfid',
+  'postfix-mfod'
+]
 
 class Terminator(object):
 
@@ -185,7 +195,7 @@ class Terminator(object):
 
         # Now perform all necessary logic to make sure the postfix server has empty queues before terminating.
         self.postfix_instance = self.get_postfix_instance()
-        if self.postfix_instance == 'postfix-cd' or self.postfix_instance == 'postfix-id' or self.postfix_instance == 'postfix-ed' or self.postfix_instance == 'postfix-rd' or self.postfix_instance == 'postfix-wd' or self.postfix_instance == 'postfix-bd' or self.postfix_instance == 'postfix-dd':
+        if self.postfix_instance in delivery_instances:
             if self.stop_sqs_consumer() is False:
                 self.logger.error("Unable to continue. There is a problem with the Xgemail SQS Consumer Service.")
                 sys.exit(1)

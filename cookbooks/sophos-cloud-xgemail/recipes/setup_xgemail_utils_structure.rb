@@ -20,10 +20,11 @@ BULKSENDER_FORMATTER = 'bulksenderformatter.py'
 BULK_SENDER_ACTION = "bulk_sender_action.py"
 DELIVERY_DIRECTOR_FORMATTER = "deliverydirectorthreshold.py"
 TELEMETRY_DATA_FORMATTER = "telemetrydataformatter.py"
+STATION_ACCOUNT_ROLE_ARN = node['sophos_cloud']['station_account_role_arn']
 
 [
-    XGEMAIL_FILES_DIR,
-    XGEMAIL_UTILS_DIR
+  XGEMAIL_FILES_DIR,
+  XGEMAIL_UTILS_DIR
 ].each do | cur |
   directory cur do
     mode '0755'
@@ -40,29 +41,42 @@ file "#{XGEMAIL_UTILS_DIR}/__init__.py" do
   group 'root'
 end
 
+template 'awshandler' do
+  path "#{XGEMAIL_UTILS_DIR}/awshandler.py"
+  source 'awshandler.py.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :station_account_role_arn => STATION_ACCOUNT_ROLE_ARN
+  )
+end
+
 [
-    'allowblockimporter.py',
-    'awshandler.py',
-    'configformatter.py',
-    'diskutils.py',
-    'formatterutils.py',
-    'gziputils.py',
-    'impersonation_updater.py',
-    'mailinfoformatter.py',
-    'messageformatter.py',
-    'messagehistory.py',
-    'messagehistoryformatter.py',
-    'metadataformatter.py',
-    'multipolicyreaderutils.py',
-    'nonrecoverableexception.py',
-    'notadirectoryexception.py',
-    'recipientsplitconfig.py',
-    'recoverableexception.py',
-    'routingmanager.py',
-    'scaneventattributes.py',
-    'uuidutils.py',
-    'rfxrecoveryutils.py',
-    'toggle_flag_s3.py'
+  'allowblockimporter.py',
+  'configformatter.py',
+  'diskutils.py',
+  'formatterutils.py',
+  'gziputils.py',
+  'impersonation_updater.py',
+  'mailinfoformatter.py',
+  'messageformatter.py',
+  'messagehistory.py',
+  'messagehistoryformatter.py',
+  'metadataformatter.py',
+  'multipolicyreaderutils.py',
+  'nonrecoverableexception.py',
+  'notadirectoryexception.py',
+  'recipientsplitconfig.py',
+  'recoverableexception.py',
+  'routingmanager.py',
+  'scaneventattributes.py',
+  'uuidutils.py',
+  'rfxrecoveryutils.py',
+  'toggle_flag_s3.py',
+  'get_metadata_from_msghistory_config.py',
+  's3_prefix_restructure_filemigrator.py',
+  'get_prefix_restructure_config.py'
 ].each do | cur |
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{cur}" do
     source cur
@@ -72,7 +86,7 @@ end
   end
 end
 
-if NODE_TYPE == 'internet-submit' or NODE_TYPE == 'encryption-submit' or NODE_TYPE == 'mf-inbound-submit'
+if NODE_TYPE == 'internet-submit' or NODE_TYPE == 'encryption-submit'
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{POLICY_FORMATTER}" do
     source 'policyformatter.py'
     mode '0644'
@@ -85,7 +99,7 @@ if NODE_TYPE == 'internet-submit' or NODE_TYPE == 'encryption-submit' or NODE_TY
     owner 'root'
     group 'root'
   end
-elsif NODE_TYPE == 'customer-submit' or NODE_TYPE == 'mf-outbound-submit'
+elsif NODE_TYPE == 'customer-submit'
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{POLICY_FORMATTER}" do
     source 'policyformatter.py'
     mode '0644'
@@ -119,7 +133,7 @@ elsif NODE_TYPE == 'customer-submit' or NODE_TYPE == 'mf-outbound-submit'
 elsif NODE_TYPE == 'customer-delivery' or NODE_TYPE == 'internet-delivery' or
        NODE_TYPE == 'risky-delivery' or NODE_TYPE == 'encryption-delivery' or
        NODE_TYPE == 'warmup-delivery' or NODE_TYPE == 'beta-delivery' or
-       NODE_TYPE == 'delta-delivery' or NODE_TYPE == 'mf-inbound-delivery' or NODE_TYPE == 'mf-outbound-delivery'
+       NODE_TYPE == 'delta-delivery'
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{TRANSPORT_ROUTE_CONFIG}" do
     source 'transportrouteconfig.py'
     mode '0644'
@@ -142,7 +156,7 @@ if NODE_TYPE == 'customer-delivery' or NODE_TYPE == 'internet-delivery' or
     NODE_TYPE == 'risky-xdelivery' or NODE_TYPE == 'warmup-delivery' or
     NODE_TYPE == 'warmup-xdelivery' or NODE_TYPE == 'beta-delivery' or
     NODE_TYPE == 'beta-xdelivery' or NODE_TYPE == 'delta-delivery' or
-    NODE_TYPE == 'delta-xdelivery' or NODE_TYPE == 'mf-inbound-delivery' or NODE_TYPE == 'mf-outbound-delivery'
+    NODE_TYPE == 'delta-xdelivery' or NODE_TYPE == 'customer-xdelivery'
   [
       'postfix_injection_response.py',
       'queue_log.py',

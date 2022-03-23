@@ -1,0 +1,50 @@
+# Xgemail Outbound Jilter Application Properties
+
+aws.region=<%= @aws_region %>
+central.vpcId=<%= @central_vpc_id %>
+
+application.name=xgemail-jilter-mf-outbound
+
+global.rate.limit.refresh=PT05M
+outbound.relay.config.root=/opt/sophos/xgemail/config/outbound-relay-control/
+hosted.provider.config.refresh=PT05M
+outbound.relay.config.local_part_silent_discard=o365connectorvalidation
+
+bucket.storage.root=s3://<%= @policy_bucket %>/config/outbound-relay-control/
+use.s3.policy.storage=true
+
+POLICY_STORAGE_ROOT=s3://<%= @policy_bucket %>
+MAILBOX_POLICY_FILE_PATH=config/policies/endpoints/
+MAILBOX_LOCAL_PART_FILE_PATH=config/policies/domains/
+MAILBOX_DLP_POLICY_FILE_PATH=config/policies/dlp/
+
+CUSTOMER_SUBMIT_STORAGE_ROOT=s3://<%= @customer_submit_bucket %>
+INTERNET_SUBMIT_STORAGE_ROOT=s3://no-access
+
+ACCOUNT=<%= @account %>
+station.account.role.arn=<%= @station_account_role_arn %>
+
+# Need to explicitly ignore redis auto configuration
+spring.data.redis.repositories.enabled=false
+spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+
+#Exclude elasticsearch autoconfiguration
+management.health.elasticsearch.enabled=false
+
+#Active Data Refresh Cache TTL
+xgemail.active.data.refresh.local.cache.ttl = 900000
+
+#Active Data Refresh Flag
+xgemail.active.data.refresh.enabled = true
+
+# Following property represents allowed ips on central outbound flow from reflexion archive recovery delivery instances
+reflexion.allow.relay.ips=<%= @reflexion_relay_allow_ips %>
+
+NODE_IP=<%= @node_ip %>
+MSG_HISTORY_KINESIS_STREAM_NAME=<%= @msg_history_v2_stream_name %>
+
+MSG_HISTORY_EVENT_DIR=<%= @msg_history_event_dir %>
+MSG_HISTORY_EVENT_PROCESSOR_POOL_SIZE=<%= @msg_history_event_processor_pool_size %>
+MSG_HISTORY_EVENT_PROCESSOR_PORT=<%= @msg_history_event_processor_port %>
+
+MSG_HISTORY_BUCKET_ROOT=s3://<%= @msg_history_v2_bucket_name %>

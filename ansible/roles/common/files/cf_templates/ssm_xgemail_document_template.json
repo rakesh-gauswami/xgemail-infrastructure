@@ -26,6 +26,10 @@
     "EipRotationLambdaFunction": {
       "Description": "The name of the EIP Rotation Lambda Function",
       "Type": "String"
+    },
+    "MultiEipRotationLambdaFunction": {
+      "Description": "The name of the Multi EIP Rotation Lambda Function",
+      "Type": "String"
     }
   },
 
@@ -642,6 +646,67 @@
           {
             "Key": "Name",
             "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "EipRotation" ] ] }
+          },
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
+      }
+    },
+
+    "MultiEipRotation": {
+      "Type": "AWS::SSM::Document",
+      "Properties": {
+        "DocumentType": "Automation",
+        "Content": {
+          "schemaVersion": "0.3",
+          "assumeRole": { "Fn::GetAtt" : [ "EipRotationAutomationRole", "Arn" ] },
+          "description": "Rotate all EIPs on an EC2 instance in an AutoScaling Group",
+          "parameters": {
+            "InstanceId": {
+              "type": "String",
+              "description": "(Required) The instance-id for the instance.",
+              "allowedPattern": "^i-[a-z0-9]{8,17}$"
+            }
+          },
+          "mainSteps":[
+            {
+              "name": "multiEipRotation",
+              "action": "aws:invokeLambdaFunction",
+              "timeoutSeconds": 300,
+              "maxAttempts": 3,
+              "onFailure": "Abort",
+              "inputs": {
+                "InvocationType": "RequestResponse",
+                "LogType": "Tail",
+                "FunctionName":{ "Ref": "MultiEipRotationLambdaFunction" },
+                "Payload":"{\"EC2InstanceId\":\"{{InstanceId}}\"}"
+              }
+            }
+          ],
+          "outputs": [
+            "multiEipRotation.StatusCode",
+            "multiEipRotation.FunctionError",
+            "multiEipRotation.LogResult"
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "MultiEipRotation" ] ] }
           },
           {
             "Key": "Application",
@@ -1376,6 +1441,18 @@
                       { "Ref": "AWS::AccountId" },
                       "function",
                       { "Ref": "EipRotationLambdaFunction" }
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    ":",
+                    [
+                      "arn:aws:lambda",
+                      { "Ref": "AWS::Region" },
+                      { "Ref": "AWS::AccountId" },
+                      "function",
+                      { "Ref": "MultiEipRotationLambdaFunction" }
                     ]
                   ]
                 }

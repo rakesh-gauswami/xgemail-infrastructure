@@ -114,6 +114,22 @@
     "XgemailSuccessEventTopicArn":{
       "Description": "Topic Arn of Xgemail success Events SNS",
       "Type": "String"
+    },
+    "XdrO365DisconnectEventTopicArn":{
+      "Description": "Topic Arn of office 365 disconnect Events SNS for XDR",
+      "Type": "String"
+    },
+    "XdrO365StartSubscriptionEventTopicArn":{
+      "Description": "Topic Arn of office 365 start subscription Events SNS for XDR",
+      "Type": "String"
+    },
+    "SndLiveBackupReindexQueue": {
+      "Description": "Endpoint ARN for SnD live backup Reindex SQS Queue",
+      "Type": "String"
+    },
+    "SndLiveBackupReindexTopicArn": {
+      "Description": "Endpoint for SnD live backup reindex arn",
+      "Type": "String"
     }
   },
 
@@ -253,6 +269,15 @@
         "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "SenderCheckRejectQueue"}]]},
         "Protocol": "sqs",
         "TopicArn": { "Ref": "SenderCheckRejectTopicArn"},
+        "RawMessageDelivery": "true"
+      }
+    },
+    "SndLiveBackupReindexSNSListenerQueueToSndLiveBackupReindexSnsSubscription": {
+      "Type" : "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "SndLiveBackupReindexQueue"}]]},
+        "Protocol": "sqs",
+        "TopicArn": { "Ref": "SndLiveBackupReindexTopicArn"},
         "RawMessageDelivery": "true"
       }
     },
@@ -401,6 +426,30 @@
         "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "MfOutboundDeliveryQueue" }]]}]
       }
     },
+    "SndLiveBackupReindexQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "SndLiveBackupReindexQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-SndLiveBackupReindexTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": ["sqs:SendMessage"],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {"Ref": "SndLiveBackupReindexTopicArn"}
+                }
+              }
+            }
+          ]
+        },
+        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "SndLiveBackupReindexQueue" }]]}]
+      }
+    },
     "O365DisconnectTopicPolicy": {
       "Type": "AWS::SNS::TopicPolicy",
       "Properties": {
@@ -534,6 +583,99 @@
           ]
         },
         "Topics": [{"Ref": "O365MailFlowConnectorTopicArn"}]
+      }
+    },
+    "XdrO365DisconnectTopicPolicy": {
+      "Type": "AWS::SNS::TopicPolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "XdrO365DisconnectTopicPolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-XdrO365DisconnectEventTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": [
+                "SNS:GetTopicAttributes",
+                "SNS:SetTopicAttributes",
+                "SNS:AddPermission",
+                "SNS:RemovePermission",
+                "SNS:DeleteTopic",
+                "SNS:Subscribe",
+                "SNS:ListSubscriptionsByTopic",
+                "SNS:Publish",
+                "SNS:Receive"
+              ],
+              "Resource": {"Ref": "XdrO365DisconnectEventTopicArn"},
+              "Condition": {
+                "StringEquals": {
+                  "AWS:SourceOwner": { "Ref" : "AWS::AccountId" }
+                }
+              }
+            },
+            {
+              "Sid": "Allow-XdrO365DisconnectEventQueueArnSubscription",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::Sub": "arn:aws:iam::${O365AccountNumber}:root"
+                }
+              },
+              "Action": ["sns:Subscribe"],
+              "Resource": {"Ref": "XdrO365DisconnectEventTopicArn"}
+            }
+          ]
+        },
+        "Topics": [{"Ref": "XdrO365DisconnectEventTopicArn"}]
+      }
+    },
+    "XdrO365StartSubscriptionTopicPolicy": {
+      "Type": "AWS::SNS::TopicPolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "XdrO365StartSubscriptionTopicPolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
+          "Statement": [
+            {
+              "Sid": "Allow-XdrO365StartSubscriptionEventTopicArn",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": [
+                "SNS:GetTopicAttributes",
+                "SNS:SetTopicAttributes",
+                "SNS:AddPermission",
+                "SNS:RemovePermission",
+                "SNS:DeleteTopic",
+                "SNS:Subscribe",
+                "SNS:ListSubscriptionsByTopic",
+                "SNS:Publish",
+                "SNS:Receive"
+              ],
+              "Resource": {"Ref": "XdrO365StartSubscriptionEventTopicArn"},
+              "Condition": {
+                "StringEquals": {
+                  "AWS:SourceOwner": { "Ref" : "AWS::AccountId" }
+                }
+              }
+            },
+            {
+              "Sid": "Allow-XdrO365StartSubscriptionEventQueueArnSubscription",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::Sub": "arn:aws:iam::${O365AccountNumber}:root"
+                }
+              },
+              "Action": [
+                "sns:Subscribe",
+                "SNS:Publish"
+              ],
+              "Resource": {"Ref": "XdrO365StartSubscriptionEventTopicArn"}
+            }
+          ]
+        },
+        "Topics": [{"Ref": "XdrO365StartSubscriptionEventTopicArn"}]
       }
     }
   }

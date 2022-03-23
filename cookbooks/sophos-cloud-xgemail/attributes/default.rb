@@ -25,6 +25,7 @@
 # cookbooks are running; e.g. do not add the name of the "next host".
 
 # Sophos
+default['sophos_cloud']['account_name']                 = 'legacy'
 default['sophos_cloud']['application']                  = '//cloud-applications/develop/core-services.war'
 default['sophos_cloud']['configs']                      = '//cloud-dev-configs'
 default['sophos_cloud']['connections']                  = '//cloud-dev-connections'
@@ -38,7 +39,8 @@ default['sophos_cloud']['local_key_path']               = '/etc/ssl/private'
 default['sophos_cloud']['script_path']                  = '/var/sophos/scripts'
 default['sophos_cloud']['thirdparty']                   = '//cloud-dev-3rdparty'
 default['sophos_cloud']['tmp']                          = '/tmp/sophos'
-
+default['sophos_cloud']['station_account_role_arn']     = 'none'
+default['sophos_cloud']['sdb_region']                   = 'us-west-2'
 
 # XGEmail-specific settings
 default['xgemail']['station_vpc_name'] = nil
@@ -154,6 +156,7 @@ default['xgemail']['scan_events_sns_topic'] = "#{node['xgemail']['station_vpc_id
 
 # SQS Names
 default['xgemail']['msg_history_delivery_status_sqs'] = "#{node['xgemail']['station_vpc_id']}-Xgemail_MessageHistory_Delivery_Status"
+default['xgemail']['trace_telemetry_sqs'] = "tf-trace-telemetry-#{node['xgemail']['station_vpc_id']}-Xgemail_Trace_Telemetry-#{node['sophos_cloud']['region']}-sqs"
 
 ## Policy service/poller settings
 default['xgemail']['sqs_policy_poller_visibility_timeout'] = '10'
@@ -169,6 +172,7 @@ default['xgemail']['sqs_lifecycle_poller_message_retention_period'] = '3600'
 default['xgemail']['xgemail_utils_files_dir'] = "#{XGEMAIL_FILES_DIR}/utils"
 
 default['xgemail']['enc_config_key'] = 'config/outbound-relay-control/encryption/'
+default['xgemail']['enc_config_prefix_key'] = 'outbound-relay-control/encryption/'
 default['xgemail']['inbound_tls_config_key'] = 'config/inbound-relay-control/tls/'
 default['xgemail']['custom_route_transport_path'] = 'config/inbound-relay-control/custom-routes/'
 
@@ -199,6 +203,9 @@ default['xgemail']['sqs_message_consumer_wait_time_seconds'] = 10
 ## Mail Pic Api settings
 default['xgemail']['mail_pic_apis_response_timeout_seconds'] = 60
 default['xgemail']['mail_pic_api_auth'] = "xgemail-#{node['sophos_cloud']['region']}-mail"
+
+## Customer delivery settings
+default['xgemail']['transport_updater'] = 'xgemail-transport-updater'
 
 ## Internet delivery DSN/NDR settings
 XGEMAIL_SQS_MESSAGE_BOUNCER_DIR ="#{XGEMAIL_FILES_DIR}/message-bouncer"
@@ -236,12 +243,14 @@ default['xgemail']['delta_delivery_bounce_message_processor_user'] = 'bouncer'
 default['xgemail']['cron_job_timeout'] = '10m'
 default['xgemail']['mail_flow_cron_job_timeout'] = '10m'
 default['xgemail']['customer_delivery_transport_cron_minute_frequency'] = 10
-default['xgemail']['mail_flow_sender_by_relay_cron_minute_frequency'] = 10
+default['xgemail']['mail_flow_sender_by_relay_cron_minute_frequency'] = 4
 default['xgemail']['savdid_cron_job_timeout_vdl'] = '30m'
 default['xgemail']['savdid_ide_cron_minute_frequency'] = 15
 default['xgemail']['submit_destination_concurrency_limit'] = 10
 default['xgemail']['internet_submit_domain_cron_minute_frequency'] = 10
 default['xgemail']['internet_submit_recipient_cron_minute_frequency'] = 10
+default['xgemail']['mf_inbound_submit_domain_cron_minute_frequency'] = 4
+default['xgemail']['mf_inbound_submit_recipient_cron_minute_frequency'] = 4
 default['xgemail']['xgemail_sqs_lifecycle_poller_cron_minute_frequency'] = 1
 
 default['xgemail']['recipient_access_filename'] = 'recipient_access'
@@ -276,7 +285,7 @@ default['xgemail']['sysctl_tcp_window_scaling'] = 1
 
 ## Postfix configuration
 SUBMIT_MESSAGE_SIZE_LIMIT_BYTES = 52428800
-default['xgemail']['postfix3_version'] = '3.2.4.2-1'
+default['xgemail']['postfix3_version'] = '3.6.2.1-1'
 
 POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST = 500
 POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST = 500
@@ -326,6 +335,15 @@ default['xgemail']['postfix_instance_data'] = {
     :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
     :server_type => 'CUSTOMER_XDELIVERY'
   },
+  # customer-xdelivery
+  'customer-xdelivery' => {
+    :instance_name => 'cx',
+    :port => 8025,
+    # Give delivery queues extra padding because extra content may be created during processing
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 409600 + 5242880),
+    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+    :server_type => 'CUSTOMER_XDELIVERY'
+  },
   # internet-extended-delivery
   'internet-xdelivery' => {
     :instance_name => 'ix',
@@ -362,6 +380,15 @@ default['xgemail']['postfix_instance_data'] = {
     :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
     :server_type => 'MF_INBOUND_DELIVERY'
   },
+  # mf-inbound-xdelivery
+  'mf-inbound-xdelivery' => {
+    :instance_name => 'mfix',
+    :port => 8025,
+    # Give delivery queues extra padding because extra content may be created during processing
+    :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800 + 5242880),
+    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+    :server_type => 'MF_INBOUND_XDELIVERY'
+  },
   # mf-inbound-submit
   'mf-inbound-submit' => {
     :instance_name => 'mfis',
@@ -378,6 +405,15 @@ default['xgemail']['postfix_instance_data'] = {
       :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800 + 5242880),
       :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
       :server_type => 'MF_OUTBOUND_DELIVERY'
+  },
+  # mf-outbound-xdelivery
+  'mf-outbound-xdelivery' => {
+      :instance_name => 'mfox',
+      :port => 8025,
+      # Give delivery queues extra padding because extra content may be created during processing
+      :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800 + 5242880),
+      :rcpt_size_limit => POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+      :server_type => 'MF_OUTBOUND_XDELIVERY'
   },
   # mf-outbound-submit
   'mf-outbound-submit' => {

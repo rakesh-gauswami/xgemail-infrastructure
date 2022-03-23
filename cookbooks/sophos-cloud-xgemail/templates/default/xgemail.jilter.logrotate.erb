@@ -1,0 +1,17 @@
+/var/log/xgemail/jilter.log {
+
+# rotate log files daily
+daily
+
+# keep three weeks worth of backlogs
+rotate 21
+
+compress
+
+delaycompress
+
+postrotate
+/bin/kill -HUP `cat /var/run/syslogd.pid 2> /dev/null` 2> /dev/null || true
+endscript
+
+}

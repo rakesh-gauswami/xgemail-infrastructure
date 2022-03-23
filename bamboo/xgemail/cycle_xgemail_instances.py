@@ -50,7 +50,7 @@ logger.addHandler(console_handler)
 def parse_command_line():
     parser = argparse.ArgumentParser(description="Terminate Ec2 Instances for given Instance type.")
     parser.add_argument("--term", "-t", dest='termination_control', type=int, default=2, help="Enter the max number of instances to terminate at once.")
-    parser.add_argument("--itype", "-i", dest='itype', choices=['xdelivery', 'internet-xdelivery', 'risky-xdelivery', 'warmup-xdelivery', 'beta-xdelivery', 'delta-xdelivery'], help="Enter the Instance type.")
+    parser.add_argument("--itype", "-i", dest='itype', choices=['xdelivery', 'internet-xdelivery', 'risky-xdelivery', 'warmup-xdelivery', 'beta-xdelivery', 'delta-xdelivery', 'mf-inbound-xdelivery', 'mf-outbound-xdelivery' ], help="Enter the Instance type.")
     return parser.parse_args()
 
 

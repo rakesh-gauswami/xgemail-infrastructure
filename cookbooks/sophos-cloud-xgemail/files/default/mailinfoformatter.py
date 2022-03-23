@@ -54,9 +54,6 @@ def get_mh_mail_info(formatted_mail_info):
     if not is_mh_mail_info_file(formatted_mail_info[0:9]):
         raise ValueError("Mail Info file format error: invalid mail info magic bytes!")
 
-    if not formatterutils.is_correct_version(SCHEMA_VERSION, formatted_mail_info[9:17]):
-        raise ValueError("Message history file format error: invalid msg history version bytes!")
-
     if not formatterutils.is_unencypted_data(formatted_mail_info[17:21]):
         raise ValueError("Message history file format error: invalid msg history nonce length bytes!")
 

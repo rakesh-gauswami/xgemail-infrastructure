@@ -18,6 +18,7 @@ SMTPD_PORT = INSTANCE_DATA[:port]
 raise "Invalid smtpd port for node type [#{NODE_TYPE}]" if SMTPD_PORT.nil?
 
 ACCOUNT = node['sophos_cloud']['context']
+ACCOUNT_NAME = node['sophos_cloud']['account_name']
 AWS_REGION = node['sophos_cloud']['region']
 LOCAL_CERT_PATH = node['sophos_cloud']['local_cert_path']
 STATION_VPC_NAME = node['xgemail']['station_vpc_name']
@@ -55,7 +56,11 @@ THREAD_COUNT_CONFIG_KEY                 = 'config/delivery/multi.thread.count.' 
 if ACCOUNT == 'sandbox'
   XGEMAIL_PIC_FQDN = 'mail-service:8080'
 else
-  XGEMAIL_PIC_FQDN = "mail-#{STATION_VPC_NAME.downcase}-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com"
+  if ACCOUNT_NAME == 'legacy'
+    XGEMAIL_PIC_FQDN = "mail-#{STATION_VPC_NAME.downcase}-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com"
+  else
+    XGEMAIL_PIC_FQDN = "mail.#{node['sophos_cloud']['parent_account_name']}.ctr.sophos.com"
+  end
 end
 
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_processors_structure'
@@ -69,14 +74,15 @@ SERVICE_USER = node['xgemail']['sqs_message_processor_user']
 
 # TODO : We shouldn't need sqsconsumer on any XDelivery or encryption submit right?
 # Configs use by sqsmsgconsumer
-if NODE_TYPE == 'customer-delivery' or NODE_TYPE == 'mf-inbound-delivery' or NODE_TYPE == 'xdelivery' or NODE_TYPE == 'encryption-submit'
+if NODE_TYPE == 'customer-delivery' or NODE_TYPE == 'customer-xdelivery' or NODE_TYPE == 'xdelivery' or NODE_TYPE == 'encryption-submit' or NODE_TYPE == 'mf-inbound-delivery' or NODE_TYPE == 'mf-inbound-xdelivery'
   MESSAGE_DIRECTION = 'INBOUND'
 elsif NODE_TYPE == 'internet-delivery' or NODE_TYPE == 'internet-xdelivery' or
        NODE_TYPE == 'encryption-delivery' or NODE_TYPE == 'risky-delivery' or
        NODE_TYPE == 'risky-xdelivery' or NODE_TYPE == 'warmup-delivery' or
        NODE_TYPE == 'warmup-xdelivery' or NODE_TYPE == 'beta-delivery' or
        NODE_TYPE == 'beta-xdelivery' or NODE_TYPE == 'delta-delivery' or
-       NODE_TYPE == 'delta-xdelivery' or NODE_TYPE == 'mf-outbound-delivery'
+       NODE_TYPE == 'delta-xdelivery' or NODE_TYPE == 'mf-outbound-delivery' or
+       NODE_TYPE == 'mf-outbound-xdelivery'
   MESSAGE_DIRECTION = 'OUTBOUND'
 else
   raise "Unsupported node type to setup sqsmsgproducer [#{NODE_TYPE}]"

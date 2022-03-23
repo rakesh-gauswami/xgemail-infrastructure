@@ -12,7 +12,7 @@
 ACCOUNT =   node['sophos_cloud']['environment']
 NODE_TYPE = node['xgemail']['cluster_type']
 
-if NODE_TYPE != 'internet-submit' && NODE_TYPE != 'mf-inbound-submit'
+if NODE_TYPE != 'internet-submit'
   return
 end
 
@@ -247,94 +247,54 @@ if ACCOUNT != 'sandbox'
     }
   end
 
-  if NODE_TYPE == "mf-inbound-submit"
-    #when node type is mf-inbound-submit
-    [
-        "hopcount_limit = #{HOP_COUNT_SUBMIT_INSTANCE}",
+  [
+    "hopcount_limit = #{HOP_COUNT_SUBMIT_INSTANCE}",
 
-        'smtpd_upstream_proxy_protocol = haproxy',
+    'smtpd_upstream_proxy_protocol = haproxy',
 
-        # Server side TLS configuration
-        'smtpd_tls_security_level = encrypt',
-        'smtpd_tls_ciphers = high',
-        'smtpd_tls_mandatory_ciphers = high',
-        'smtpd_tls_loglevel = 1',
-        'smtpd_tls_mandatory_protocols = !SSLv2,!SSLv3,!TLSv1,!TLSv1.1,TLSv1.2',
-        'smtpd_tls_protocols = !SSLv2,!SSLv3,!TLSv1,!TLSv1.1,TLSv1.2',
-        'smtpd_tls_received_header = yes',
-        "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
-        "smtpd_tls_key_file = #{KEY_FILE}",
-        "tls_preempt_cipherlist = yes",
+    # Server side TLS configuration
+    'smtpd_tls_security_level = may',
+    'smtpd_tls_ciphers = high',
+    'smtpd_tls_mandatory_ciphers = high',
+    'smtpd_tls_loglevel = 1',
+    'smtpd_tls_received_header = yes',
+    "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
+    "smtpd_tls_key_file = #{KEY_FILE}",
+    "tls_preempt_cipherlist = yes",
 
-        # Recipient restrictions
-        'smtpd_recipient_restrictions = ' +
-          "check_recipient_access hash:$config_directory/#{RECIPIENT_ACCESS_FILENAME} " +
-          "hash:$config_directory/#{RECIPIENT_ACCESS_EXTRA_FILENAME}, " +
-          "check_sender_access hash:$config_directory/#{SOFT_RETRY_SENDERS_MAP_FILENAME}, " +
-          'reject',
+    # Recipient restrictions
+    "reject_rbl_client_a = #{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES_A}",
+    "reject_rbl_client_b = #{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES_B}",
+    'reject_rbl_client = $reject_rbl_client_b',
+    'smtpd_recipient_restrictions = ' +
+      "reject_rhsbl_reverse_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
+      "reject_rhsbl_sender #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
+      "reject_rhsbl_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
+      'reject_rbl_client $reject_rbl_client, ' +
+      "check_recipient_access hash:$config_directory/#{RECIPIENT_ACCESS_FILENAME} " +
+      "hash:$config_directory/#{RECIPIENT_ACCESS_EXTRA_FILENAME}, " +
+      "check_sender_access hash:$config_directory/#{SOFT_RETRY_SENDERS_MAP_FILENAME}, " +
+      'reject',
 
-        # Sender restrictions
-        'smtpd_sender_restrictions = ' +
-            "reject_non_fqdn_sender",
+    # Sender restrictions
+    'smtpd_sender_restrictions = ' +
+      "reject_non_fqdn_sender",
 
-        'smtpd_relay_restrictions = ' +
-            'permit_auth_destination, ' +
-            "check_sender_access hash:$config_directory/#{SOFT_RETRY_SENDERS_MAP_FILENAME}, " +
-            'reject',
+    # RBL response configuration
+    "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_B_FILENAME}",
 
-        "smtpd_authorized_xclient_hosts = #{SMTPD_AUTHORIZED_XCLIENT_HOSTS}",
-        "recipient_bcc_maps=hash:#{RECIPIENT_BCC_MAPS_PATH}",
-    ].each do | cur |
-      execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
-    end
-  else
-     [
-        "hopcount_limit = #{HOP_COUNT_SUBMIT_INSTANCE}",
+    'smtpd_relay_restrictions = ' +
+      'permit_auth_destination, ' +
+      "check_sender_access hash:$config_directory/#{SOFT_RETRY_SENDERS_MAP_FILENAME}, " +
+      'reject',
 
-        'smtpd_upstream_proxy_protocol = haproxy',
-
-        # Server side TLS configuration
-        'smtpd_tls_security_level = may',
-        'smtpd_tls_ciphers = high',
-        'smtpd_tls_mandatory_ciphers = high',
-        'smtpd_tls_loglevel = 1',
-        'smtpd_tls_received_header = yes',
-        "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
-        "smtpd_tls_key_file = #{KEY_FILE}",
-        "tls_preempt_cipherlist = yes",
-
-        # Recipient restrictions
-        "reject_rbl_client_a = #{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES_A}",
-        "reject_rbl_client_b = #{SXL_RBL}=#{SXL_RBL_RESPONSE_CODES_B}",
-        'reject_rbl_client = $reject_rbl_client_b',
-        'smtpd_recipient_restrictions = ' +
-          "reject_rhsbl_reverse_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
-          "reject_rhsbl_sender #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
-          "reject_rhsbl_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
-          'reject_rbl_client $reject_rbl_client, ' +
-          "check_recipient_access hash:$config_directory/#{RECIPIENT_ACCESS_FILENAME} " +
-          "hash:$config_directory/#{RECIPIENT_ACCESS_EXTRA_FILENAME}, " +
-          "check_sender_access hash:$config_directory/#{SOFT_RETRY_SENDERS_MAP_FILENAME}, " +
-          'reject',
-
-         # Sender restrictions
-         'smtpd_sender_restrictions = ' +
-            "reject_non_fqdn_sender",
-
-         # RBL response configuration
-         "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_B_FILENAME}",
-
-         'smtpd_relay_restrictions = ' +
-            'permit_auth_destination, ' +
-            "check_sender_access hash:$config_directory/#{SOFT_RETRY_SENDERS_MAP_FILENAME}, " +
-            'reject',
-
-         "smtpd_authorized_xclient_hosts = #{SMTPD_AUTHORIZED_XCLIENT_HOSTS}",
-         "recipient_bcc_maps=hash:#{RECIPIENT_BCC_MAPS_PATH}",
-         "transport_maps=hash:#{TRANSPORT_MAPS_PATH}"
-      ].each do | cur |
-        execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
-      end
+    "smtpd_authorized_xclient_hosts = #{SMTPD_AUTHORIZED_XCLIENT_HOSTS}",
+    "recipient_bcc_maps=hash:#{RECIPIENT_BCC_MAPS_PATH}",
+    "transport_maps=hash:#{TRANSPORT_MAPS_PATH}",
+    # To allow plus sign within recipient's email address
+    "recipient_delimiter = +"
+  ].each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
   end
 
   include_recipe 'sophos-cloud-xgemail::setup_dh_params'

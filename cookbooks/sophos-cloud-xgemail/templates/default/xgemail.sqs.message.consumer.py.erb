@@ -256,6 +256,7 @@ def attempt_to_retrieve_transport_route(domain, persist_if_missing):
             data = json.dumps(
                 {
                     'domain' : domain,
+                    'productType': get_email_product_type(NODE_TYPE),
                     'persistIfMissing': persist_if_missing
                 }
             ),
@@ -562,6 +563,18 @@ def wait_for_jilter():
         logger.error("jilter process not found on port 9876. Exiting")
         exit(1)
 
+
+def get_email_product_type(node_type):
+    """
+    Based on node type returns product type Mailflow or Gateway
+    """
+    if node_type in ['mf-inbound-delivery','mf-outbound-delivery']:
+        return "Mailflow"
+    elif node_type in ['customer-delivery']:
+        return "All"
+    else:
+        return "Gateway"
+
 def deliver_messages():
     while True:
         try:
@@ -627,7 +640,7 @@ def deliver_messages():
                 queue_id = metadata["queue_id"]
                 sender = metadata["sender_address"]
                 recipients = metadata["recipients"]
-    
+
                 # required logging for EncryptionServiceTest automation test
                 logger.info(
                     "Email and metadata retrieved from S3. "
@@ -659,13 +672,6 @@ def deliver_messages():
                             headers
                         )
     
-                # Add the transport route header to the existing headers if it's an INBOUND message
-                if MESSAGE_DIRECTION == 'INBOUND':
-                    add_transport_route_header(
-                        recipients,
-                        headers
-                    )
-
                 if NODE_TYPE == 'mf-outbound-delivery':
                     headers[X_SOPHOS_MAILFLOW_PROCESSING_ID] = str(uuid.uuid4()).replace('-','')
 
@@ -697,7 +703,8 @@ def deliver_messages():
                             e2e_telemetry_data = E2ETelemetryData(queue_id,
                                                                   MESSAGE_DIRECTION,
                                                                   float(round(time.time() * 1000)) - float(timestamp_header),
-                                                                  datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+                                                                  datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                                                  get_email_product_type(NODE_TYPE))
                             #put data to Kinesis firehose delivery stream
                             response = awshandler.put_data_to_kinesis_delivery_stream(
                                 E2E_LATENCY_TELEMETRY_DELIVERY_STREAM,

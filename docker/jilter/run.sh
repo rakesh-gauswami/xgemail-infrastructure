@@ -15,6 +15,14 @@ instance_type=`echo $INSTANCE_TYPE`
     cd /opt/sophos/xgemail/cookbooks
     chef-client --local-mode -o "recipe[sophos-cloud-xgemail::install_jilter_outbound]"
     /opt/sophos/xgemail/xgemail-jilter-outbound/scripts/xgemail.jilter.service.sh > /dev/null 2>&1
+  elif [[ "$instance_type" == mf-jilter-inbound ]]; then
+    cd /opt/sophos/xgemail/cookbooks
+    chef-client --local-mode -o "recipe[sophos-cloud-xgemail::install_jilter_mf_inbound]"
+    /opt/sophos/xgemail/xgemail-jilter-mf-inbound/scripts/xgemail.jilter.service.sh > /dev/null 2>&1
+  elif [[ "$instance_type" == mf-jilter-outbound ]]; then
+    cd /opt/sophos/xgemail/cookbooks
+    chef-client --local-mode -o "recipe[sophos-cloud-xgemail::install_jilter_mf_outbound]"
+    /opt/sophos/xgemail/xgemail-jilter-mf-outbound/scripts/xgemail.jilter.service.sh > /dev/null 2>&1
   else
     echo "Incorrect instance type $INSTANCE_TYPE"
   fi

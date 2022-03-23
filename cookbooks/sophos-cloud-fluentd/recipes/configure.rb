@@ -2,34 +2,46 @@
 # Cookbook Name:: sophos-cloud-fluentd
 # Recipe:: configure
 #
-# Copyright 2018, Sophos
+# Copyright 2021, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
 # This recipe configures fluentd (td-agent)
 #
 
-ACCOUNT                         = node['sophos_cloud']['environment']
-CONF_DIR                        = node['fluentd']['conf_dir']
-INSTANCE_ID                     = node['ec2']['instance_id']
-MAIN_DIR                        = node['fluentd']['main_dir']
-NODE_TYPE                       = node['xgemail']['cluster_type']
-PATTERNS_DIR                    = node['fluentd']['patterns_dir']
-PLUGIN_DIR                      = node['fluentd']['plugin_dir']
-SQS_DELIVERY_DELAY              = node['fluentd']['sqs_delivery_delay']
-REGION                          = node['sophos_cloud']['region']
-MSG_STATS_REJECT_SNS_TOPIC      = node['xgemail']['msg_statistics_rejection_sns_topic']
-DELIVERY_STATUS_SQS             = node['xgemail']['msg_history_delivery_status_sqs']
-DELIVERY_STATUS_SNS_TOPIC       = node['xgemail']['msg_history_status_sns_topic']
-SERVER_IP                       = node['ipaddress']
-MAILLOG_FILTER_PATTERNS         = "(\\.#{REGION}\\.compute\\.internal|:\\sdisconnect\\sfrom\\s|\\swarning:\\shostname\\s|:\\sremoved\\s|table\\shash:|sm-msp-queue|:\\sstatistics:\\s)"
-JILTER_FILTER_PATTERNS          = "(com\\.launchdarkly\\.client\\.LDClient|com\\.launchdarkly\\.client\\.LDUser)"
-LIFECYCLE_FILTER_PATTERNS       = "(?!.*)"
-MESSAGEBOUNCER_FILTER_PATTERNS  = "(?!.*)"
-MULTIPOLICY_FILTER_PATTERNS     = "(?!.*)"
-SQSMSGCONSUMER_FILTER_PATTERNS  = "(?!.*)"
-SQSMSGPRODUCER_FILTER_PATTERNS  = "(?!.*)"
-MH_MAIL_INFO_STORAGE_DIR        = node['xgemail']['mh_mail_info_storage_dir']
+ACCOUNT                          = node['sophos_cloud']['environment']
+ACCOUNT_NAME                     = node['sophos_cloud']['account_name']
+CONF_DIR                         = node['fluentd']['conf_dir']
+INSTANCE_ID                      = node['ec2']['instance_id']
+MAIN_DIR                         = node['fluentd']['main_dir']
+NODE_TYPE                        = node['xgemail']['cluster_type']
+PATTERNS_DIR                     = node['fluentd']['patterns_dir']
+PLUGIN_DIR                       = node['fluentd']['plugin_dir']
+SQS_DELIVERY_DELAY               = node['fluentd']['sqs_delivery_delay']
+REGION                           = node['sophos_cloud']['region']
+MSG_STATS_REJECT_SNS_TOPIC       = node['xgemail']['msg_statistics_rejection_sns_topic']
+DELIVERY_STATUS_SQS              = node['xgemail']['msg_history_delivery_status_sqs']
+DELIVERY_STATUS_SNS_TOPIC        = node['xgemail']['msg_history_status_sns_topic']
+TRACE_TELEMETRY_SQS              = node['xgemail']['trace_telemetry_sqs']
+SERVER_IP                        = node['ipaddress']
+MAILLOG_FILTER_PATTERNS          = "(\\.#{REGION}\\.compute\\.internal|:\\sdisconnect\\sfrom\\s|\\swarning:\\shostname\\s|:\\sremoved\\s|table\\shash:|sm-msp-queue|:\\sstatistics:\\s)"
+JILTER_FILTER_PATTERNS           = "(com\\.launchdarkly\\.client\\.LDClient|com\\.launchdarkly\\.client\\.LDUser)"
+LIFECYCLE_FILTER_PATTERNS        = "(?!.*)"
+MESSAGEBOUNCER_FILTER_PATTERNS   = "(?!.*)"
+MULTIPOLICY_FILTER_PATTERNS      = "(?!.*)"
+SQSMSGCONSUMER_FILTER_PATTERNS   = "(?!.*)"
+SQSMSGPRODUCER_FILTER_PATTERNS   = "(?!.*)"
+TRANSPORTUPDATER_FILTER_PATTERNS = "(?!.*)"
+MH_MAIL_INFO_STORAGE_DIR         = node['xgemail']['mh_mail_info_storage_dir']
+
+STATION_ACCOUNT_ROLE_ARN         = node['sophos_cloud']['station_account_role_arn']
+
+if ACCOUNT_NAME == 'legacy'
+  DELIVERY_STREAM_NAME           = "firehose-log-shipper-stream-#{REGION}-CloudEmail"
+else
+  DELIVERY_STREAM_NAME           = "log-shipping-firehose-stream-#{REGION}-email"
+end
+
 
 # Configs
 if NODE_TYPE == 'customer-delivery'
@@ -38,6 +50,11 @@ if NODE_TYPE == 'customer-delivery'
   DIRECTION             = 'INBOUND'
   NON_DELIVERY_DSN      = '5.4.7'
 elsif NODE_TYPE == 'xdelivery'
+  SERVER_TYPE           = 'CUSTOMER_XDELIVERY'
+  SERVER_TYPE_XDELIVERY = 'UNKNOWN'
+  DIRECTION             = 'INBOUND'
+  NON_DELIVERY_DSN      = '5.4.7'
+elsif NODE_TYPE == 'customer-xdelivery'
   SERVER_TYPE           = 'CUSTOMER_XDELIVERY'
   SERVER_TYPE_XDELIVERY = 'UNKNOWN'
   DIRECTION             = 'INBOUND'
@@ -99,11 +116,46 @@ elsif NODE_TYPE == 'delta-xdelivery'
   NON_DELIVERY_DSN      = '5.4.7'
 elsif NODE_TYPE == 'mf-inbound-delivery'
   SERVER_TYPE           = 'MF_INBOUND_DELIVERY'
-  SERVER_TYPE_XDELIVERY = 'UNKNOWN'
+  SERVER_TYPE_XDELIVERY = 'MF_INBOUND_XDELIVERY'
   DIRECTION             = 'INBOUND'
   NON_DELIVERY_DSN      = '5.4.7'
 elsif NODE_TYPE == 'mf-outbound-delivery'
   SERVER_TYPE           = 'MF_OUTBOUND_DELIVERY'
+  SERVER_TYPE_XDELIVERY = 'MF_OUTBOUND_XDELIVERY'
+  DIRECTION             = 'OUTBOUND'
+  NON_DELIVERY_DSN      = '5.4.7'
+elsif NODE_TYPE == 'mf-inbound-xdelivery'
+  SERVER_TYPE           = 'MF_INBOUND_DELIVERY'
+  SERVER_TYPE_XDELIVERY = 'UNKNOWN'
+  DIRECTION             = 'INBOUND'
+  NON_DELIVERY_DSN      = '5.4.7'
+elsif NODE_TYPE == 'mf-outbound-xdelivery'
+  SERVER_TYPE           = 'MF_OUTBOUND_DELIVERY'
+  SERVER_TYPE_XDELIVERY = 'UNKNOWN'
+  DIRECTION             = 'OUTBOUND'
+  NON_DELIVERY_DSN      = '5.4.7'
+elsif NODE_TYPE == 'mf-inbound-submit'
+  SERVER_TYPE           = 'MF_INBOUND_SUBMIT'
+  SERVER_TYPE_XDELIVERY = 'UNKNOWN'
+  DIRECTION             = 'INBOUND'
+  NON_DELIVERY_DSN      = '5.4.7'
+elsif NODE_TYPE == 'mf-outbound-submit'
+  SERVER_TYPE           = 'MF_OUTBOUND_SUBMIT'
+  SERVER_TYPE_XDELIVERY = 'UNKNOWN'
+  DIRECTION             = 'OUTBOUND'
+  NON_DELIVERY_DSN      = '5.4.7'
+elsif NODE_TYPE == 'internet-submit'
+  SERVER_TYPE           = 'INTERNET_SUBMIT'
+  SERVER_TYPE_XDELIVERY = 'UNKNOWN'
+  DIRECTION             = 'INBOUND'
+  NON_DELIVERY_DSN      = '5.4.7'
+elsif NODE_TYPE == 'customer-submit'
+  SERVER_TYPE           = 'CUSTOMER_SUBMIT'
+  SERVER_TYPE_XDELIVERY = 'UNKNOWN'
+  DIRECTION             = 'OUTBOUND'
+  NON_DELIVERY_DSN      = '5.4.7'
+elsif NODE_TYPE == 'encryption-submit'
+  SERVER_TYPE           = 'ENCRYPTION_SUBMIT'
   SERVER_TYPE_XDELIVERY = 'UNKNOWN'
   DIRECTION             = 'OUTBOUND'
   NON_DELIVERY_DSN      = '5.4.7'
@@ -112,6 +164,14 @@ else
   SERVER_TYPE_XDELIVERY = 'UNKNOWN'
   DIRECTION             = 'UNKNOWN'
   NON_DELIVERY_DSN      = 'UNKNOWN'
+end
+
+case NODE_TYPE
+when 'mf-inbound-submit', 'mf-outbound-submit', 'mf-inbound-delivery', 'mf-inbound-xdelivery', 'mf-outbound-delivery',
+'mf-outbound-xdelivery'
+    EMAIL_PRODUCT_TYPE = 'Mailflow'
+else
+    EMAIL_PRODUCT_TYPE = 'Gateway'
 end
 
 ### Fluentd Source Configuration Files ###
@@ -145,6 +205,8 @@ template 'fluentd-source-jilter' do
     NODE_TYPE == 'customer-submit' ||
     NODE_TYPE == 'encryption-submit' ||
     NODE_TYPE == 'customer-delivery' ||
+    NODE_TYPE == 'customer-xdelivery' ||
+    NODE_TYPE == 'xdelivery' ||
     NODE_TYPE == 'internet-delivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'warmup-delivery' ||
@@ -154,7 +216,8 @@ template 'fluentd-source-jilter' do
     NODE_TYPE == 'mf-outbound-submit' ||
     NODE_TYPE == 'mf-inbound-delivery' ||
     NODE_TYPE == 'mf-outbound-delivery' ||
-    NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery' ||
     NODE_TYPE == 'internet-xdelivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-xdelivery' ||
@@ -177,11 +240,14 @@ template 'fluentd-source-lifecycle' do
   )
   not_if {
     NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'customer-xdelivery' ||
     NODE_TYPE == 'internet-xdelivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-xdelivery' ||
     NODE_TYPE == 'beta-xdelivery' ||
-    NODE_TYPE == 'delta-xdelivery'
+    NODE_TYPE == 'delta-xdelivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery'
   }
 end
 
@@ -200,9 +266,9 @@ end
      NODE_TYPE == 'internet-delivery' ||
      NODE_TYPE == 'risky-delivery' ||
      NODE_TYPE == 'warmup-delivery' ||
-     NODE_TYPE == 'beta-delivery'||
-     NODE_TYPE == 'mf-outbound-delivery' ||
-     NODE_TYPE == 'delta-delivery'
+     NODE_TYPE == 'beta-delivery' ||
+     NODE_TYPE == 'delta-delivery' ||
+     NODE_TYPE == 'mf-outbound-delivery'
    }
  end
 
@@ -244,6 +310,26 @@ template 'fluentd-source-sqsmsgconsumer' do
     NODE_TYPE == 'warmup-delivery' ||
     NODE_TYPE == 'beta-delivery' ||
     NODE_TYPE == 'delta-delivery'
+  }
+end
+
+# Customer delivery and xdelivery instances - Start Order: 10
+template 'fluentd-source-transportupdater' do
+  path "#{CONF_DIR}/10-source-transportupdater.conf"
+  source 'fluentd-source-generic.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :log_name => 'transportupdater',
+    :log_path => '/var/log/xgemail/transportupdater.log'
+  )
+  only_if {
+    NODE_TYPE == 'customer-delivery' ||
+    NODE_TYPE == 'customer-xdelivery' ||
+    NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'mf-inbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery'
   }
 end
 
@@ -323,11 +409,14 @@ template 'fluentd-match-jilter' do
     NODE_TYPE == 'mf-outbound-submit' ||
     NODE_TYPE == 'mf-inbound-delivery' ||
     NODE_TYPE == 'mf-outbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'warmup-delivery' ||
     NODE_TYPE == 'beta-delivery' ||
     NODE_TYPE == 'delta-delivery' ||
     NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'customer-xdelivery' ||
     NODE_TYPE == 'internet-xdelivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-xdelivery' ||
@@ -351,11 +440,14 @@ template 'fluentd-match-lifecycle' do
   )
   not_if {
     NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'customer-xdelivery' ||
     NODE_TYPE == 'internet-xdelivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-xdelivery' ||
     NODE_TYPE == 'beta-xdelivery' ||
-    NODE_TYPE == 'delta-xdelivery'
+    NODE_TYPE == 'delta-xdelivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery'
   }
 end
 
@@ -421,11 +513,14 @@ template 'fluentd-match-sqsmsgproducer' do
     NODE_TYPE == 'mf-outbound-submit' ||
     NODE_TYPE == 'mf-inbound-delivery' ||
     NODE_TYPE == 'mf-outbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'warmup-delivery' ||
     NODE_TYPE == 'beta-delivery' ||
     NODE_TYPE == 'delta-delivery' ||
     NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'customer-xdelivery' ||
     NODE_TYPE == 'internet-xdelivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-xdelivery' ||
@@ -457,6 +552,26 @@ template 'fluentd-match-sqsmsgconsumer' do
     NODE_TYPE == 'warmup-delivery' ||
     NODE_TYPE == 'beta-delivery' ||
     NODE_TYPE == 'delta-delivery'
+  }
+end
+
+template 'fluentd-match-transportupdater' do
+  path "#{CONF_DIR}/20-match-transportupdater.conf"
+  source 'fluentd-match-generic.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :application_name => NODE_TYPE,
+    :log_name => 'transportupdater',
+    :filter_patterns => TRANSPORTUPDATER_FILTER_PATTERNS
+  )
+  only_if {
+    NODE_TYPE == 'customer-delivery' ||
+    NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'customer-xdelivery' ||
+    NODE_TYPE == 'mf-inbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery'
   }
 end
 
@@ -517,11 +632,14 @@ template 'fluentd-filter-lifecycle' do
   )
   not_if {
     NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'customer-xdelivery' ||
     NODE_TYPE == 'internet-xdelivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-xdelivery' ||
     NODE_TYPE == 'beta-xdelivery' ||
-    NODE_TYPE == 'delta-xdelivery'
+    NODE_TYPE == 'delta-xdelivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery'
   }
 end
 
@@ -541,11 +659,10 @@ end
   )
    only_if {
      NODE_TYPE == 'internet-delivery' ||
+     NODE_TYPE == 'mf-outbound-delivery' ||
      NODE_TYPE == 'risky-delivery' ||
      NODE_TYPE == 'warmup-delivery' ||
      NODE_TYPE == 'beta-delivery'||
-     NODE_TYPE == 'mf-inbound-delivery' ||
-     NODE_TYPE == 'mf-outbound-delivery' ||
      NODE_TYPE == 'delta-delivery'
    }
  end
@@ -620,12 +737,34 @@ template 'fluentd-filter-sqsmsgconsumer' do
   }
 end
 
+template 'fluentd-filter-transportupdater' do
+  path "#{CONF_DIR}/50-filter-transportupdater.conf"
+  source 'fluentd-filter-generic.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :application_name => NODE_TYPE,
+    :log_name => 'transportupdater',
+    :grok_pattern => 'TRANSPORTUPDATER',
+    :reserve_data => 'true',
+    :patterns_dir => PATTERNS_DIR
+  )
+  only_if {
+    NODE_TYPE == 'customer-delivery' ||
+    NODE_TYPE == 'xdelivery'
+    NODE_TYPE == 'customer-xdelivery' ||
+    NODE_TYPE == 'mf-inbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery'
+  }
+end
+
 ### Fluentd Customized Configuration Files ###
 #
 # Only internet-submit  - Start Order: 60
-template 'fluentd-match-msg-stats-reject' do
-  path "#{CONF_DIR}/60-match-msg-stats-reject.conf"
-  source 'fluentd-match-msg-stats-reject.conf.erb'
+template 'fluentd-match-postfix-maillog' do
+  path "#{CONF_DIR}/60-match-postfix-maillog.conf"
+  source 'fluentd-match-postfix-maillog.conf.erb'
   mode '0644'
   owner 'root'
   group 'root'
@@ -655,10 +794,13 @@ template 'fluentd-match-msg-delivery' do
   only_if {
     NODE_TYPE == 'customer-delivery' ||
     NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'customer-xdelivery' ||
     NODE_TYPE == 'internet-delivery' ||
     NODE_TYPE == 'internet-xdelivery' ||
     NODE_TYPE == 'mf-inbound-delivery' ||
     NODE_TYPE == 'mf-outbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-delivery' ||
@@ -681,10 +823,13 @@ template 'fluentd-filter-msg-delivery' do
   only_if {
     NODE_TYPE == 'customer-delivery' ||
     NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'customer-xdelivery' ||
     NODE_TYPE == 'internet-delivery' ||
     NODE_TYPE == 'internet-xdelivery' ||
     NODE_TYPE == 'mf-inbound-delivery' ||
     NODE_TYPE == 'mf-outbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-delivery' ||
@@ -707,6 +852,9 @@ template 'fluentd-filter-msg-stats-reject' do
     NODE_TYPE == 'internet-submit' ||
     NODE_TYPE == 'mf-inbound-submit'
   }
+  variables(
+    :email_product_type => EMAIL_PRODUCT_TYPE
+  )
 end
 
 # All instances - Start Order: 70
@@ -722,6 +870,23 @@ template 'fluentd-filter-transform' do
     :instance_id => INSTANCE_ID,
     :region => REGION
   )
+end
+
+# Start Order: 70
+template 'fluentd-filter-transform-sqs-telemetry-log' do
+  path "#{CONF_DIR}/70-filter-transform-sqs-telemetry-log.conf"
+  source 'fluentd-filter-transform-sqs-telemetry-log.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+      :direction => DIRECTION,
+      :email_product_type => EMAIL_PRODUCT_TYPE
+    )
+  only_if {
+      NODE_TYPE == 'internet-submit' ||
+      NODE_TYPE == 'mf-inbound-submit'
+    }
 end
 
 # Start Order: 75
@@ -741,10 +906,13 @@ template 'fluentd-filter-transform-msg-delivery' do
   only_if {
     NODE_TYPE == 'customer-delivery' ||
     NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'customer-xdelivery' ||
     NODE_TYPE == 'internet-delivery' ||
     NODE_TYPE == 'internet-xdelivery' ||
     NODE_TYPE == 'mf-inbound-delivery' ||
     NODE_TYPE == 'mf-outbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-delivery' ||
@@ -769,10 +937,13 @@ template 'fluentd-filter-transform-sqs-msg' do
   only_if {
     NODE_TYPE == 'customer-delivery' ||
     NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'customer-xdelivery' ||
     NODE_TYPE == 'internet-delivery' ||
     NODE_TYPE == 'internet-xdelivery' ||
     NODE_TYPE == 'mf-inbound-delivery' ||
     NODE_TYPE == 'mf-outbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-delivery' ||
@@ -783,7 +954,6 @@ template 'fluentd-filter-transform-sqs-msg' do
     NODE_TYPE == 'delta-xdelivery'
   }
 end
-
 # Start Order: 78
 template 'fluentd-filter-transform-msg-history-v2' do
   path "#{CONF_DIR}/78-filter-transform-msg-history-v2.conf"
@@ -800,10 +970,13 @@ template 'fluentd-filter-transform-msg-history-v2' do
   only_if {
     NODE_TYPE == 'customer-delivery' ||
     NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'customer-xdelivery' ||
     NODE_TYPE == 'internet-delivery' ||
     NODE_TYPE == 'internet-xdelivery' ||
     NODE_TYPE == 'mf-inbound-delivery' ||
     NODE_TYPE == 'mf-outbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-delivery' ||
@@ -817,9 +990,9 @@ end
 
 # Message delivery status on all delivery and x delivery servers
 # Remove this when we shift completely to SQS type match
-template 'fluentd-match-sns-msg-delivery' do
+template 'fluentd-match-sns-msg-delivery-legacy' do
   path "#{CONF_DIR}/97-match-sns-msg-delivery.conf"
-  source 'fluentd-match-sns-msg-delivery.conf.erb'
+  source 'fluentd-match-sns-msg-delivery-legacy.conf.erb'
   mode '0644'
   owner 'root'
   group 'root'
@@ -831,10 +1004,13 @@ template 'fluentd-match-sns-msg-delivery' do
   only_if {
     NODE_TYPE == 'customer-delivery' ||
     NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'customer-xdelivery' ||
     NODE_TYPE == 'internet-delivery' ||
     NODE_TYPE == 'internet-xdelivery' ||
     NODE_TYPE == 'mf-inbound-delivery' ||
     NODE_TYPE == 'mf-outbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-delivery' ||
@@ -844,12 +1020,51 @@ template 'fluentd-match-sns-msg-delivery' do
     NODE_TYPE == 'delta-delivery' ||
     NODE_TYPE == 'delta-xdelivery'
   }
+  not_if {
+    ACCOUNT_NAME != 'legacy'
+  }
+end
+
+template 'fluentd-match-sns-msg-delivery-fsc' do
+  path "#{CONF_DIR}/97-match-sns-msg-delivery.conf"
+  source 'fluentd-match-sns-msg-delivery-fsc.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :main_dir => MAIN_DIR,
+    :region => REGION,
+    :sns_topic => DELIVERY_STATUS_SNS_TOPIC,
+    :assume_role_arn => STATION_ACCOUNT_ROLE_ARN
+  )
+  only_if {
+    NODE_TYPE == 'customer-delivery' ||
+    NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'customer-xdelivery' ||
+    NODE_TYPE == 'internet-delivery' ||
+    NODE_TYPE == 'internet-xdelivery' ||
+    NODE_TYPE == 'mf-inbound-delivery' ||
+    NODE_TYPE == 'mf-outbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery' ||
+    NODE_TYPE == 'risky-delivery' ||
+    NODE_TYPE == 'risky-xdelivery' ||
+    NODE_TYPE == 'warmup-delivery' ||
+    NODE_TYPE == 'warmup-xdelivery' ||
+    NODE_TYPE == 'beta-delivery' ||
+    NODE_TYPE == 'beta-xdelivery' ||
+    NODE_TYPE == 'delta-delivery' ||
+    NODE_TYPE == 'delta-xdelivery'
+  }
+  not_if {
+    ACCOUNT_NAME == 'legacy'
+  }
 end
 
 # Message delivery status on all delivery and x delivery servers
-template 'fluentd-match-sqs-msg-delivery' do
+template 'fluentd-match-sqs-msg-delivery-legacy' do
   path "#{CONF_DIR}/97-match-sqs-msg-delivery.conf"
-  source 'fluentd-match-sqs-msg-delivery.conf.erb'
+  source 'fluentd-match-sqs-msg-delivery-legacy.conf.erb'
   mode '0644'
   owner 'root'
   group 'root'
@@ -861,10 +1076,13 @@ template 'fluentd-match-sqs-msg-delivery' do
   only_if {
     NODE_TYPE == 'customer-delivery' ||
     NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'customer-xdelivery' ||
     NODE_TYPE == 'internet-delivery' ||
     NODE_TYPE == 'internet-xdelivery' ||
     NODE_TYPE == 'mf-inbound-delivery' ||
     NODE_TYPE == 'mf-outbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-delivery' ||
@@ -873,6 +1091,45 @@ template 'fluentd-match-sqs-msg-delivery' do
     NODE_TYPE == 'beta-xdelivery' ||
     NODE_TYPE == 'delta-delivery' ||
     NODE_TYPE == 'delta-xdelivery'
+  }
+  not_if {
+    ACCOUNT_NAME != 'legacy'
+  }
+end
+
+template 'fluentd-match-sqs-msg-delivery-fsc' do
+  path "#{CONF_DIR}/97-match-sqs-msg-delivery.conf"
+  source 'fluentd-match-sqs-msg-delivery-fsc.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+      :region => REGION,
+      :sqs_delivery_delay => SQS_DELIVERY_DELAY,
+      :delivery_status_queue => DELIVERY_STATUS_SQS,
+      :assume_role_arn => STATION_ACCOUNT_ROLE_ARN
+  )
+  only_if {
+    NODE_TYPE == 'customer-delivery' ||
+    NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'customer-xdelivery' ||
+    NODE_TYPE == 'internet-delivery' ||
+    NODE_TYPE == 'internet-xdelivery' ||
+    NODE_TYPE == 'mf-inbound-delivery' ||
+    NODE_TYPE == 'mf-outbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery' ||
+    NODE_TYPE == 'risky-delivery' ||
+    NODE_TYPE == 'risky-xdelivery' ||
+    NODE_TYPE == 'warmup-delivery' ||
+    NODE_TYPE == 'warmup-xdelivery' ||
+    NODE_TYPE == 'beta-delivery' ||
+    NODE_TYPE == 'beta-xdelivery' ||
+    NODE_TYPE == 'delta-delivery' ||
+    NODE_TYPE == 'delta-xdelivery'
+  }
+  not_if {
+    ACCOUNT_NAME == 'legacy'
   }
 end
 
@@ -886,10 +1143,13 @@ template 'fluentd-match-http-output-msg-history-v2' do
   only_if {
     NODE_TYPE == 'customer-delivery' ||
     NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'customer-xdelivery' ||
     NODE_TYPE == 'internet-delivery' ||
     NODE_TYPE == 'internet-xdelivery' ||
     NODE_TYPE == 'mf-inbound-delivery' ||
     NODE_TYPE == 'mf-outbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery' ||
     NODE_TYPE == 'risky-delivery' ||
     NODE_TYPE == 'risky-xdelivery' ||
     NODE_TYPE == 'warmup-delivery' ||
@@ -909,14 +1169,15 @@ template 'fluentd-match-firehose' do
   owner 'root'
   group 'root'
   variables(
-    :region => REGION
+    :region => REGION,
+    :delivery_stream_name => DELIVERY_STREAM_NAME
   )
 end
 
 # Only internet-submit - Start Order: 99
-template 'fluentd-match-sns-msg-stats-reject' do
+template 'fluentd-match-sns-msg-stats-reject-legacy' do
   path "#{CONF_DIR}/99-match-sns-msg-stats-reject.conf"
-  source 'fluentd-match-sns-msg-stats-reject.conf.erb'
+  source 'fluentd-match-sns-msg-stats-reject-legacy.conf.erb'
   mode '0644'
   owner 'root'
   group 'root'
@@ -928,6 +1189,69 @@ template 'fluentd-match-sns-msg-stats-reject' do
   only_if {
     NODE_TYPE == 'internet-submit' ||
     NODE_TYPE == 'mf-inbound-submit'
+  }
+  not_if {
+    ACCOUNT_NAME != 'legacy'
+  }
+end
+
+template 'fluentd-match-sns-msg-stats-reject-fsc' do
+  path "#{CONF_DIR}/99-match-sns-msg-stats-reject.conf"
+  source 'fluentd-match-sns-msg-stats-reject-fsc.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :main_dir => MAIN_DIR,
+    :region => REGION,
+    :sns_topic => MSG_STATS_REJECT_SNS_TOPIC,
+    :assume_role_arn => STATION_ACCOUNT_ROLE_ARN
+  )
+  only_if {
+    NODE_TYPE == 'internet-submit' ||
+    NODE_TYPE == 'mf-inbound-submit'
+  }
+  not_if {
+    ACCOUNT_NAME == 'legacy'
+  }
+end
+
+template 'fluentd-match-sqs-telemetry-log-legacy' do
+  path "#{CONF_DIR}/99-match-sqs-telemetry-log.conf"
+  source 'fluentd-match-sqs-telemetry-log-legacy.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+      :region => REGION,
+      :trace_telemetry_queue => TRACE_TELEMETRY_SQS
+  )
+  only_if {
+      NODE_TYPE == 'internet-submit' ||
+      NODE_TYPE == 'mf-inbound-submit'
+    }
+  not_if {
+    ACCOUNT_NAME != 'legacy'
+  }
+end
+
+template 'fluentd-match-sqs-telemetry-log-fsc' do
+  path "#{CONF_DIR}/99-match-sqs-telemetry-log.conf"
+  source 'fluentd-match-sqs-telemetry-log-fsc.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+      :region => REGION,
+      :trace_telemetry_queue => TRACE_TELEMETRY_SQS,
+      :assume_role_arn => STATION_ACCOUNT_ROLE_ARN
+  )
+  only_if {
+      NODE_TYPE == 'internet-submit' ||
+      NODE_TYPE == 'mf-inbound-submit'
+    }
+  not_if {
+    ACCOUNT_NAME == 'legacy'
   }
 end
 
@@ -985,6 +1309,15 @@ cookbook_file 'sqsmsgconsumer grok patterns' do
   action :create
 end
 
+cookbook_file 'transportupdater grok patterns' do
+  path "#{PATTERNS_DIR}/transportupdater"
+  source 'transportupdater.grok'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  action :create
+end
+
 cookbook_file 'sqsmsgproducer grok patterns' do
   path "#{PATTERNS_DIR}/sqsmsgproducer"
   source 'sqsmsgproducer.grok'
@@ -1017,16 +1350,6 @@ end
 cookbook_file 'sns_msg_to_xdelivery_template' do
   path "#{MAIN_DIR}/sns_msg_to_xdelivery_template.erb"
   source 'fluentd_sns_msg_to_xdelivery_template.erb'
-  mode '0644'
-  owner 'root'
-  group 'root'
-  action :create
-end
-
-# fluentd plugin for mhv2 mail info file check
-cookbook_file 'fluentd_plugin_msg_history_v2_mailinfo_filecheck' do
-  path "#{PLUGIN_DIR}/filter_mhv2filecheck.rb"
-  source 'fluentd_plugin_msg_history_v2_mailinfo_filecheck.rb'
   mode '0644'
   owner 'root'
   group 'root'

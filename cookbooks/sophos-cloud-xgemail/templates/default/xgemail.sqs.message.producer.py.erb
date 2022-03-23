@@ -150,17 +150,25 @@ def get_metadata(message_headers):
         recipient_domain = sys.argv[5]
         # TODO: see if we can pipe arrival date from postfix
         date_recorded = datetime.utcnow().strftime(DATETIME_FORMAT)
+        # load rejected recipients from the file written by Jilter based on queue id
+        rejected_recipients = get_rejected_recipients(queue_id, MSG_HISTORY_EVENT_DIR)
         recipient_list = [ ]
         for i in range (6,len(sys.argv)):
-            recipient_list.append(strip_dot_at_end(sys.argv[i]))
+            recipient = strip_dot_at_end(sys.argv[i])
+            if recipient.lower() in rejected_recipients:
+                logger.info("silent dropping recipient [{0}] for queue id [{1}] due to rejection by jilter".format(recipient, queue_id))
+            else:
+                recipient_list.append(recipient)
 
         if (sender_address == null_sender):
             sender_address = None
 
+        email_product_type = get_email_product_type()
+        final_sender_ip = get_sender_ip_from_header(message_headers['X-Sophos-Sender-IP'], sender_ip, queue_id, email_product_type)
         x_sophos_header = uuidutils.get_x_sophos_email_id(message_headers['X-Sophos-Email-ID'], queue_id)
 
         metadata = Metadata(metadataformatter.SCHEMA_VERSION,
-                            sender_ip,
+                            final_sender_ip,
                             sender_address,
                             SUBMIT_HOST_IP,
                             queue_id,
@@ -169,7 +177,7 @@ def get_metadata(message_headers):
                             recipient_list,
                             x_sophos_header,
                             False,
-                            get_email_product_type())
+                            email_product_type)
 
         logger.debug("Created metadata info [{0}]".format(metadata))
 
@@ -187,6 +195,14 @@ def publish_to_topic(topic_arn, message_json, message_attributes = {}):
         json.dumps(message_json),
         attributes_json
     )
+
+def get_sender_ip_from_header(ip_from_header, ip_from_postfix, queue_id, x_sophos_email_product_type):
+    if x_sophos_email_product_type == GATEWAY:
+        return ip_from_postfix
+    if ip_from_header is None:
+        logger.warning("Empty X-Sophos-Sender-IP header in message with queue_id: [{0}]".format(queue_id))
+        return ip_from_postfix
+    return ip_from_header
 
 def add_to_sqs(sqs_url, sqs_json):
     return awshandler.add_to_sqs(
@@ -312,6 +328,14 @@ def get_plaintext_message():
     finally:
         plaintext_email_bytes.close()
 
+def get_customer_id(queue_id, msghistory_events):
+    try:
+        if msghistory_events is not None and len(msghistory_events) > 0:
+            accepted_event = msghistory_events.itervalues().next()
+            return accepted_event['mail_info']['customer_id']
+    except Exception as ex:
+        logger.warning("Queue Id [{0}]. Error in getting customer id [{1}]".format(queue_id, ex))
+
 # Inspects the headers of an outbound message and attempts to find the validated
 # sender address by looking for policy data in S3.
 #
@@ -323,39 +347,47 @@ def get_plaintext_message():
 # x-sophos-effective-sender header first to check Google groups or O365 auto-forward possibility
 # if a validated sender cannot be found, we try the from header and then the Reply-To header.
 # If a validated sender *still* cannot be found, we're forced to fail.
-def get_metadata_for_outbound(metadata, headers):
-
-    effective_sender_value = headers['x-sophos-effective-sender']
-    effective_sender_header = 'x-sophos-effective-sender'
-
-    if effective_sender_value is not None:
-        return get_metadata_for_outbound_effective_sender(metadata, effective_sender_header, effective_sender_value)
-
-    # Order is important as we want to evaluate the Sender, From and Reply-To headers in order
-    headers_to_validate = OrderedDict()
-    headers_to_validate['sender'] = headers['sender']
-    headers_to_validate['from'] = headers['from']
-    headers_to_validate['reply-to'] = headers['reply-to']
+def get_metadata_for_outbound(metadata, headers, msghistory_events):
 
     validated_sender = None
+    customer_id = get_customer_id(metadata.get_queue_id(), msghistory_events)
+    if msghistory_events is not None and len(msghistory_events) > 0:
+        # Get validated sender using MH accepted event file.
+        logger.debug("Using message history to get sender for customer {0}".format(customer_id))
+        validated_sender = list(msghistory_events.keys())[0]
+    else:
+        effective_sender_value = headers['x-sophos-effective-sender']
+        effective_sender_header = 'x-sophos-effective-sender'
 
-    for header_name, header_value in headers_to_validate.items():
+        if effective_sender_value is not None:
+            return get_metadata_for_outbound_effective_sender(metadata, effective_sender_header, effective_sender_value)
 
-        if header_value is not None:
-            header_sender = get_address_from_header(header_value)
+ 
+        # Order is important as we want to evaluate the Sender, From and Reply-To headers in order
+        headers_to_validate = OrderedDict()
+        headers_to_validate['sender'] = headers['sender']
+        headers_to_validate['from'] = headers['from']
+        headers_to_validate['reply-to'] = headers['reply-to']
 
-            is_valid_sender = is_valid_outbound_sender(header_sender, header_name)
+        
 
-            if is_valid_sender:
-                validated_sender = header_sender
-                break
-            else:
-                logger.info("Invalid {0}:{1} in message with queue_id: [{2}]".format(
-                    header_name,
-                    header_value,
-                    metadata.get_queue_id()
+        for header_name, header_value in headers_to_validate.items():
+
+            if header_value is not None:
+                header_sender = get_address_from_header(header_value)
+
+                is_valid_sender = is_valid_outbound_sender(header_sender, header_name)
+
+                if is_valid_sender:
+                    validated_sender = header_sender
+                    break
+                else:
+                    logger.info("Invalid {0}:{1} in message with queue_id: [{2}]".format(
+                        header_name,
+                        header_value,
+                        metadata.get_queue_id()
+                        )
                     )
-                )
 
     if validated_sender is None:
         raise Exception(
@@ -525,6 +557,10 @@ def prepare_message_context(s3_file_path, mail_info):
            message_context = {'mh_context' : { 'mail_info_s3_path' :  mail_info_path } }
     else:
         message_context = { 'mh_context' : { 'mail_info' : mail_info } }
+
+    product_type = { 'email_product_type' : get_email_product_type() }
+    message_context.update(product_type)
+
     return message_context
 
 #The accepted events written by Jilter needs to be updated with 's3_file_path' and 'decorated_queue_id'
@@ -552,7 +588,6 @@ def update_msghistory_event_and_get_message_context(msghistory_events, s3_file_p
     except Exception as ex:
         logger.warning("Queue Id [{0}]. Error in processing message history event [{1}]".format(policy_metadata.get_queue_id(), ex))
 
-
 def get_s3_path(queue_id, domain):
     root_dir = None
     if get_email_product_type() == MAILFLOW:
@@ -569,13 +604,33 @@ def get_s3_path(queue_id, domain):
     )
     return s3_file_path
 
-def base_policy_flow(metadata, direction, domain, sender, message, message_attributes = None):
+def get_s3_prefix_path(queue_id, mailbox_id, domain):
+    root_dir = None
+
+    if get_email_product_type() == MAILFLOW:
+        root_dir = MAIL_FLOW_ROOT_DIR
+    else:
+        root_dir = ROOT_DIR
+
+    s3_file_path = formatterutils.get_s3_prefix_file_path(
+        root_dir,
+        queue_id,
+        mailbox_id,
+        SUBMIT_HOST_IP,
+        domain
+    )
+
+    return s3_file_path
+
+
+def base_policy_flow(metadata, direction, domain, sender, message, msghistory_events, message_attributes = None):
     queue_id = metadata.get_queue_id()
 
+    
     s3_file_path = get_s3_path(queue_id, domain)
+    if multipolicyreaderutils.prefix_messages_path_enabled(get_customer_id(metadata.get_queue_id(), msghistory_events), SUBMIT_HOST_IP):
+        s3_file_path = get_s3_prefix_path(queue_id, '00', domain)
    
-    #A dict where key is mailbox address and value is the 'accepted' event record. 
-    msghistory_events = messagehistory.read_msghistory_accepted_events(queue_id, MSG_HISTORY_EVENT_DIR)
     message_context = None
     if msghistory_events is not None:
       message_context = update_msghistory_event_and_get_message_context(msghistory_events, s3_file_path, metadata, direction, metadata.get_recipients(), sender)
@@ -612,16 +667,47 @@ def base_policy_flow(metadata, direction, domain, sender, message, message_attri
 
     if msghistory_events is not None:
         messagehistory.handle_msghistory_events(queue_id, msghistory_events, MSG_HISTORY_EVENT_PROCESSOR_URL, MSG_HISTORY_EVENT_DIR)
+    else:
+        logger.warning("MH events not generated for Queue ID [{0}]".format(queue_id))
+
+def build_recipient_map_from_msghistory_enabled(queue_id, recipients, msghistory_events):
+    """
+        This method returns a map with <mailbox_id> as key and recipient address as value.
+    """
+    recipient_map = {}
+    for recipient in recipients:
+        recipient = recipient.lower()
+        if recipient in msghistory_events:
+            #if alias exist for any email address then adding it in list for corresponding key
+            if msghistory_events[recipient]['mail_info']['mailbox_id'] in recipient_map:
+                recipient_map[msghistory_events[recipient]['mail_info']['mailbox_id']].append(recipient)
+            else:
+                recipient_map[msghistory_events[recipient]['mail_info']['mailbox_id']] = [recipient]
+        else:
+          # This should never happen
+          logger.info("Queue Id [{0}] Accepted event not found for recipent [{1}]".format(queue_id, recipient))
+          return None
+    return recipient_map
 
 # Mail flow goes through multi_policy_flow if multi-policy flag is enabled
 # but if there are error conditions such as file read error etc, the mail
 # fall back to base_policy_flow.
-def multi_policy_flow(metadata, direction, domain, sender, message, message_attributes = None):
+def multi_policy_flow(metadata, direction, domain, sender, message, msghistory_events, message_attributes = None):
     recipients = metadata.get_recipients()
-    (policy_list, customer_id) = multipolicyreaderutils.build_policy_map(recipients, AWS_REGION, POLICY_S3_BUCKET_NAME)
+    customer_id = get_customer_id(metadata.get_queue_id(), msghistory_events)
+    policy_list = None
+    if customer_id is not None and msghistory_events is not None and len(msghistory_events) > 0:
+        logger.debug("Using message history to build recipient map for customer {0}".format(customer_id))
+        policy_list = build_recipient_map_from_msghistory_enabled(metadata.get_queue_id(), recipients, msghistory_events)
+
+    if customer_id is None or policy_list is None:
+        logger.debug("Queue Id [{0}] Reading customer id from policy bucket".format(metadata.get_queue_id()))
+        (policy_list, customer_id) = multipolicyreaderutils.build_policy_map(recipients, AWS_REGION, POLICY_S3_BUCKET_NAME)
 
     # Message routing information in metadata pertaining to micro-service
-    metadata.set_microservice_request(routingmanager.perform_routing(customer_id))
+    # We are no longer planning to use mail-inbound micro-service.
+    # So setting this to false by default. Saves two EFS reads.
+    metadata.set_microservice_request(False)
 
     # required logging for EncryptionServiceTest automation test
     logger.info("Input email metadata info [{0}]".format(metadata))
@@ -635,8 +721,6 @@ def multi_policy_flow(metadata, direction, domain, sender, message, message_attr
     sqs_message_json_queue = []
     history_json_queue = []
 
-    #A dict where key is mailbox address and value is the 'accepted' event record. 
-    msghistory_events = messagehistory.read_msghistory_accepted_events(queue_id, MSG_HISTORY_EVENT_DIR)
     message_context = None
 
     for policy_id, value in policy_list.items():
@@ -646,6 +730,8 @@ def multi_policy_flow(metadata, direction, domain, sender, message, message_attr
 
         policy_id_path = "/" + policy_id + "/"
         new_s3_file_path = s3_file_path.replace(POLICY_ID_PATH_VALUE, policy_id_path)
+        if multipolicyreaderutils.prefix_messages_path_enabled(get_customer_id(queue_id, msghistory_events), SUBMIT_HOST_IP):
+            new_s3_file_path = get_s3_prefix_path(queue_id, policy_id, domain)
 
         if msghistory_events is not None:
           message_context = update_msghistory_event_and_get_message_context(msghistory_events, new_s3_file_path, this_policy_metadata, direction, value, sender)
@@ -693,12 +779,14 @@ def multi_policy_flow(metadata, direction, domain, sender, message, message_attr
 
     if msghistory_events is not None:
         messagehistory.handle_msghistory_events(queue_id, msghistory_events, MSG_HISTORY_EVENT_PROCESSOR_URL, MSG_HISTORY_EVENT_DIR)
+    else:
+        logger.warning("MH events not generated for Queue ID [{0}]".format(queue_id))
 
 def get_message_headers(message):
     return Parser().parsestr(message, headersonly=True)
 
 
-def outbound_split_by_recipients(metadata, sender, domain, message, direction, message_attributes=None):
+def outbound_split_by_recipients(metadata, sender, domain, message, direction, msghistory_events, message_attributes=None):
 
     # required logging for XgemailTestBase automation test
     logger.info("Metadata json info [{0}]".format(metadata))
@@ -710,8 +798,6 @@ def outbound_split_by_recipients(metadata, sender, domain, message, direction, m
     sqs_message_json_queue = []
     history_json_queue = []
 
-    #A dict where key is mailbox address and value is the 'accepted' event record. 
-    msghistory_events = messagehistory.read_msghistory_accepted_events(queue_id, MSG_HISTORY_EVENT_DIR)
     message_context = None
 
     for recipient in recipients:
@@ -722,6 +808,10 @@ def outbound_split_by_recipients(metadata, sender, domain, message, direction, m
 
         new_s3_file_path = s3_file_path.replace(POLICY_ID_PATH_VALUE,
                                                 "/" + str(hashlib.sha256(str(recipient)).hexdigest()) + "/")
+
+        if multipolicyreaderutils.prefix_messages_path_enabled(get_customer_id(queue_id, msghistory_events), SUBMIT_HOST_IP):
+            new_s3_file_path = get_s3_prefix_path(queue_id, str(hashlib.sha256(str(recipient)).hexdigest()), domain)
+                                            
 
         if msghistory_events is not None:
             message_context = update_msghistory_event_and_get_message_context(msghistory_events, new_s3_file_path, this_recipient_metadata, direction, this_recipient_metadata.get_recipients(), sender)
@@ -769,7 +859,23 @@ def outbound_split_by_recipients(metadata, sender, domain, message, direction, m
 
     if msghistory_events is not None:
         messagehistory.handle_msghistory_events(queue_id, msghistory_events, MSG_HISTORY_EVENT_PROCESSOR_URL, MSG_HISTORY_EVENT_DIR)
+    else:
+        logger.warning("MH events not generated for Queue ID [{0}]".format(queue_id))
 
+def get_rejected_recipients(queue_id, directory):
+    """
+    Reads the rejected recipients information written by Jilter
+    """
+    file_path = directory + '/' + queue_id + '.rejected'
+
+    if not os.path.exists(file_path):
+        return set()
+
+    try:
+        return set(line.strip().lower() for line in io.open(file_path, encoding='utf8'))
+    except Exception as ex:
+        logger.error("File path [{0}]. Error reading rejected recipients: [{1}]".format(file_path, ex))
+        return set()
 
 # accepts data from postfix and send message and metadata to S3 and
 # a json object to SQS which provides pointer to the message in S3
@@ -782,6 +888,13 @@ def main():
         plaintext_message = get_plaintext_message()
         message_headers = get_message_headers(plaintext_message)
         metadata = get_metadata(message_headers)
+        queue_id = metadata.get_queue_id()
+        #A dict where key is mailbox address and value is the 'accepted' event record.
+        msghistory_events = messagehistory.read_msghistory_accepted_events(queue_id, MSG_HISTORY_EVENT_DIR)
+
+        if len(metadata.get_recipients()) == 0:
+            logger.info("all recipients rejected by jilter for multiple reasons for metadata [{0}]".format(metadata))
+            return
 
         if INTERNET == SUBMIT_TYPE:
             domain = metadata.get_recipient_domain()
@@ -792,8 +905,8 @@ def main():
                 "ACCEPTED",
                 "v1"
             )
-            if multipolicyreaderutils.get_multi_policy_enabled():
-                return multi_policy_flow(metadata, direction, domain, sender, plaintext_message, message_attributes)
+            
+            return multi_policy_flow(metadata, direction, domain, sender, plaintext_message, msghistory_events, message_attributes)
 
         elif MF_INBOUND == SUBMIT_TYPE:
             domain = metadata.get_recipient_domain()
@@ -804,32 +917,24 @@ def main():
                 "ACCEPTED",
                 "v1"
             )
-            if multipolicyreaderutils.get_multi_policy_enabled():
-                return multi_policy_flow(metadata, direction, domain, sender, plaintext_message, message_attributes)
+            
+            return multi_policy_flow(metadata, direction, domain, sender, plaintext_message, msghistory_events, message_attributes)
 
         elif CUSTOMER == SUBMIT_TYPE:
             direction = OUTBOUND_MESSAGE_DIRECTION
-            metadata = get_metadata_for_outbound(metadata, message_headers)
+            metadata = get_metadata_for_outbound(metadata, message_headers, msghistory_events)
             sender = metadata.get_sender_address()
             domain = get_from_sender_domain(metadata)
 
-            outbound_split = multipolicyreaderutils.outbound_split_by_recipient_enabled(metadata ,AWS_REGION, POLICY_S3_BUCKET_NAME)
-            logger.debug("Outbound split flag is set to {0} for metadata {1} ".format(outbound_split,metadata));
-
-            if outbound_split:
-                return outbound_split_by_recipients(metadata,sender,domain,plaintext_message,direction)
+            return outbound_split_by_recipients(metadata,sender,domain,plaintext_message,direction, msghistory_events)
 
         elif MF_OUTBOUND == SUBMIT_TYPE:
             direction = OUTBOUND_MESSAGE_DIRECTION
-            metadata = get_metadata_for_outbound(metadata, message_headers)
+            metadata = get_metadata_for_outbound(metadata, message_headers, msghistory_events)
             sender = metadata.get_sender_address()
             domain = get_from_sender_domain(metadata)
 
-            outbound_split = multipolicyreaderutils.outbound_split_by_recipient_enabled(metadata ,AWS_REGION, POLICY_S3_BUCKET_NAME)
-            logger.debug("Outbound split flag is set to {0} for metadata {1} ".format(outbound_split,metadata));
-
-            if outbound_split:
-                return outbound_split_by_recipients(metadata,domain,plaintext_message,direction)
+            return outbound_split_by_recipients(metadata,sender,domain,plaintext_message,direction, msghistory_events)
 
         else:
             raise ("Wrong submit type [{0}]".format(SUBMIT_TYPE))
@@ -837,7 +942,7 @@ def main():
         # required logging for XgemailTestBase automation test
         logger.info("Metadata json info [{0}]".format(metadata))
 
-        base_policy_flow(metadata, direction, domain, sender, plaintext_message, message_attributes)
+        base_policy_flow(metadata, direction, domain, sender, plaintext_message, msghistory_events, message_attributes)
     except BaseException as e:
         logger.exception("Failed in processing email [{0}]".format(e))
         exit(EX_TEMPFAIL)

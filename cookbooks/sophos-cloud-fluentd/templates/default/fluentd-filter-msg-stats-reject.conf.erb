@@ -1,32 +1,12 @@
 #
 # Example logs for the different rejections
 #
-# XGEMAIL_0001
-# ip-172-19-2-144 postfix-is/cleanup[31251]: 43w9lW0lw2z7t88: milter-reject: END-OF-MESSAGE from unknown[198.144.101.58]: 5.7.1 XGEMAIL_0001 Command rejected; from=<msgs_api_dkim_action_rejectvw79ab907j@emailq3.info> to=<recipient-dkim-reject@xgemail-at-qa-eu-west-1.com> proto=ESMTP helo=<submit-relay-dev-06.rfx.sophos>
-#
-# XGEMAIL_0002
-# ip-172-19-1-146 postfix-is/smtpd[1965]: NOQUEUE: milter-reject: RCPT from unknown[198.144.101.58]: 550 5.7.1 XGEMAIL_0002 Command rejected; from=<automation-test2vbgl1peb5i@emailp2.info> to=<mbsuqppakr@jlx4rc3c8b.example.com> proto=ESMTP helo=<submit-relay-dev-05.localdomain>
-#
-# XGEMAIL_0003
-# ip-172-19-1-146 postfix-is/cleanup[1520]: 43wmxK3kTnz3wZ0: milter-reject: END-OF-MESSAGE from unknown[198.144.101.58]: 5.7.1 XGEMAIL_0003 Command rejected; from=<automation-test-dkim_fail_action_rejecti4sq2she72@emaild2.info> to=<jmsjd6dpjh@r0xcgulp9i.example.com> proto=ESMTP helo=<submit-relay-dev-05.localdomain>
-#
 # XGEMAIL_0004
 # Mar  9 03:59:43 ip-172-20-0-4 postfix-is/smtpd[1237]: NOQUEUE: reject: SOPHOS_UUID_24f65175-4398-421d-8f59-831ab6d7b5e6: RCPT from unknown[91.216.61.22]: 554 5.7.1 Service unavailable; Client host [91.216.61.22] is blacklisted. Visit https://www.sophos.com/en-us/threat-center/ip-lookup.aspx?ip=91.216.61.22 to request delisting; from=<badguy@bad-domain.com> to=<recipient@sophos-email-customer.com> proto=ESMTP helo=<[91.216.61.22]>
 #
 # XGEMAIL_0005
 # Mar  9 03:59:43 ip-172-20-0-4 postfix-is/smtpd[1237]: NOQUEUE: reject: SOPHOS_UUID_24f65175-4398-421d-8f59-831ab6d7b5e6: RCPT from unknown[192.210.213.76]: 554 5.7.1 Service unavailable; Sender address [badguy@bad-domain.com] blocked using uri.ire1.sophosxl.com; from=<badguy@bad-domain.com> to=<recipient@sophos-email-customer.com> proto=ESMTP helo=<bad-domain.com>
 #
-
-<filter sns.msg_stats_reject.XGEMAIL_0001 sns.msg_stats_reject.XGEMAIL_0002 sns.msg_stats_reject.XGEMAIL_0003>
-  @type parser
-  key_name message
-  reserve_data true
-  reserve_time true
-  <parse>
-    @type regexp
-    expression /^(?<host>[^ ]+) (?<process>[^ ]+): (?<qid>[^ ]+): (?<action>[^ ]+): (?<msg>[^ ]+ from (?<sender_host>[^ ]+)\[(?<sender_ip>[^ ]+)\]: (?<code>[^;]+); from=<(?<sender_address>((?<sender>[^>]+)@(?<sender_domain>\S*))|.*)> to=<(?<rcpt_address>(?<rcpt>[^>]+)@(?<rcpt_domain>\S*))> proto=(?<proto>[^ ]+))/
-  </parse>
-</filter>
 
 <filter sns.msg_stats_reject.XGEMAIL_0004>
   @type parser
@@ -56,5 +36,6 @@
   <record>
     timestamp ${time.strftime("%Y-%m-%dT%H:%M:%S%z")}
     message_rejection_code ${tag_suffix[2]}
+    email_product_type <%= @email_product_type %>
   </record>
 </filter>

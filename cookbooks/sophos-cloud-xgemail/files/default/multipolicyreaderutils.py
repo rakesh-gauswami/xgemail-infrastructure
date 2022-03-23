@@ -13,10 +13,13 @@ import json
 import logging
 import base64
 import traceback
+import hashlib
 import boto3
 from awshandler import AwsHandler
 import policyformatter
 from recipientsplitconfig import RecipientSplitConfig
+from get_metadata_from_msghistory_config import GetMetadataFromMsgHistoryConfig
+from get_prefix_restructure_config import GetPrefixRestructureConfig
 import time
 from logging.handlers import SysLogHandler
 from botocore.exceptions import ClientError
@@ -26,14 +29,18 @@ from botocore.exceptions import ClientError
 EFS_POLICY_STORAGE_PATH = '/policy-storage/'
 
 MULTI_POLICY_DOMAINS_PATH = 'config/policies/domains/'
+MULTI_POLICY_DOMAINS_PATH_WITH_PREFIX = 'policies/domains/'
 EFS_MULTI_POLICY_DOMAINS_PATH = EFS_POLICY_STORAGE_PATH + MULTI_POLICY_DOMAINS_PATH
 
 MULTI_POLICY_ENDPOINTS_PATH = 'config/policies/endpoints/'
+MULTI_POLICY_PREFIX_ENDPOINTS_PATH = 'policies/endpoints/'
+
 EFS_MULTI_POLICY_ENDPOINTS_PATH = EFS_POLICY_STORAGE_PATH + MULTI_POLICY_ENDPOINTS_PATH
 
 INBOUND_RELAY_CONTROL_PATH = EFS_POLICY_STORAGE_PATH + 'config/inbound-relay-control/'
 OUTBOUND_RELAY_CONTROL_PATH = EFS_POLICY_STORAGE_PATH + 'config/outbound-relay-control/'
 OUTBOUND_RELAY_CONTROL_DOMAIN_PATH = 'config/outbound-relay-control/domains/'
+OUTBOUND_RELAY_CONTROL_DOMAIN_PATH_WITH_PREFIX = 'outbound-relay-control/domains/'
 EFS_MULTI_POLICY_CONFIG_PATH = INBOUND_RELAY_CONTROL_PATH + 'multi-policy/'
 EFS_MULTI_POLICY_CONFIG_FILE = EFS_MULTI_POLICY_CONFIG_PATH + 'global.CONFIG'
 FLAG_TO_READ_POLICY_FROM_S3_FILE = EFS_MULTI_POLICY_CONFIG_PATH + 'msg_producer_read_policy_from_s3_global.CONFIG'
@@ -44,6 +51,13 @@ INBOUND_SPLIT_BY_RECIPIENTS_CONFIG_PATH = INBOUND_RELAY_CONTROL_PATH + 'msg_prod
 
 # Outbound split by recipient config file path
 OUTBOUND_SPLIT_BY_RECIPIENTS_CONFIG_PATH = OUTBOUND_RELAY_CONTROL_PATH + 'msg_outbound_split_by_recipients.CONFIG'
+
+OUTBOUND_METADATA_FROM_MESSAGE_HISTORY_CONFIG_PATH = OUTBOUND_RELAY_CONTROL_PATH + 'get_outbound_metadata_from_msghistory.CONFIG'
+INBOUND_METADATA_FROM_MESSAGE_HISTORY_CONFIG_PATH  = INBOUND_RELAY_CONTROL_PATH + 'get_inbound_metadata_from_msghistory.CONFIG'
+PREFIX_RESTRUCTURE_CONFIG_PATH =  EFS_POLICY_STORAGE_PATH + 'config/prefix_restructure.CONFIG'
+
+PLUS_SIGN = "+"
+AT_SIGN = "@"
 
 logger = logging.getLogger('multi-policy-reader-utils')
 logger.setLevel(logging.INFO)
@@ -79,7 +93,7 @@ def split_by_recipient(split_config, recipients, aws_region, policy_bucket_name,
         return False
 
 
-def outbound_split_by_recipient_enabled(metadata, aws_region, policy_bucket_name):
+def outbound_split_by_recipient_enabled(metadata, customer_id):
     """
         Determines if the current message must be split by recipients for outbound.
         Returns True if split by recipient required, False otherwise.
@@ -95,16 +109,9 @@ def outbound_split_by_recipient_enabled(metadata, aws_region, policy_bucket_name
     if split_config.is_globally_enabled:
         return True
 
+    if customer_id is None:
+        return False
     try:
-        # For outbound we need to read sender policy to get customer id
-        customer_policy = read_policy(
-            metadata.get_sender_address().lower(),
-            aws_region,
-            policy_bucket_name,
-            get_read_from_s3_enabled()
-        )
-        customer_id = customer_policy['customerId']
-
         return split_config.is_split_by_recipient_enabled(customer_id)
     except Exception:
         logger.warn('Unable to split by recipients For outbound. Proceeding without splitting. Error {0}'.format(traceback.format_exc()))
@@ -121,7 +128,7 @@ def build_policy_map(recipients, aws_region = None, policy_bucket_name = None, p
         The second is the id of the customer to which all recipients belong
     """
     user_list = policies.copy()
-    read_from_s3 = get_read_from_s3_enabled()
+    read_from_s3 = True 
     split_config = RecipientSplitConfig(INBOUND_SPLIT_BY_RECIPIENTS_CONFIG_PATH)
     customer_id = None
 
@@ -161,6 +168,10 @@ def build_policy_map(recipients, aws_region = None, policy_bucket_name = None, p
 
             if (is_toc_enabled != True): #Not to read endpoint policy for ToC config if found enabled for processed recipients
                 endpoint_policy = read_policy_endpoint(recipient, customer_policy['userId'], aws_region, policy_bucket_name, read_from_s3)
+                if endpoint_policy is None and PLUS_SIGN in recipient:
+                    recipient_without_plus = get_email_without_plus_sign(recipient)
+                    endpoint_policy = read_policy_endpoint(recipient_without_plus, customer_policy['userId'], aws_region, policy_bucket_name, read_from_s3)
+
                 if not endpoint_policy:
                     return None, None
 
@@ -181,6 +192,9 @@ def build_policy_map(recipients, aws_region = None, policy_bucket_name = None, p
             begin_time = time.time()
 
             customer_policy = read_policy_from_S3(recipient, aws_region, policy_bucket_name)
+            if customer_policy is None and PLUS_SIGN in recipient:
+                recipient_without_plus = get_email_without_plus_sign(recipient)
+                customer_policy = read_policy_from_S3(recipient_without_plus, aws_region, policy_bucket_name)
 
             elapsed_time = time.time() - begin_time
             elapsed_time = elapsed_time * 1000
@@ -201,6 +215,9 @@ def build_policy_map(recipients, aws_region = None, policy_bucket_name = None, p
             begin_time = time.time()
 
             customer_policy = read_policy_from_EFS(recipient)
+            if customer_policy is None and PLUS_SIGN in recipient:
+                recipient_without_plus = get_email_without_plus_sign(recipient)
+                customer_policy = read_policy_from_EFS(recipient_without_plus)
 
             elapsed_time = time.time() - begin_time
             elapsed_time = elapsed_time * 1000
@@ -233,47 +250,54 @@ def read_endpoint_policy_from_EFS(userid):
     return load_multi_policy_file_locally(file_name)
 
 def read_policy_from_S3(recipient, aws_region, policy_bucket_name):
-    file_name = build_recipient_file_path(recipient, MULTI_POLICY_DOMAINS_PATH)
-    if not file_name:
-        return None
+    file_name = build_recipient_file_path_with_prefix(recipient, MULTI_POLICY_DOMAINS_PATH_WITH_PREFIX)
 
-    return load_multi_policy_file_from_S3(aws_region, policy_bucket_name, file_name)
+    policy_file = load_multi_policy_file_from_S3(aws_region, policy_bucket_name, file_name)
+
+    if policy_file is None:
+        # Try old location
+        file_name = build_recipient_file_path(recipient, MULTI_POLICY_DOMAINS_PATH)
+        policy_file = load_multi_policy_file_from_S3(aws_region, policy_bucket_name, file_name)
+    return policy_file
 
 
 def policy_file_exists_in_S3(recipient, aws_region, policy_bucket_name):
-    file_name = build_recipient_file_path(recipient, MULTI_POLICY_DOMAINS_PATH)
-    if not file_name:
-        return False
 
-    try:
-        awshandler = AwsHandler(aws_region)
-        policy_data = awshandler.download_data_from_s3(policy_bucket_name, file_name)
-        return policy_data is not None
-    except (IOError, ClientError):
-        logger.warn("File [{0}] does not exist or failed to read".format(file_name))
-        return False
+    file_name = build_recipient_file_path_with_prefix(recipient, MULTI_POLICY_DOMAINS_PATH_WITH_PREFIX)
+
+    policy_exists = check_file_exists_in_S3(aws_region, policy_bucket_name, file_name)
+
+    if policy_exists is False:
+        #Try old location
+        file_name = build_recipient_file_path(recipient, MULTI_POLICY_DOMAINS_PATH)
+        policy_exists = check_file_exists_in_S3(aws_region, policy_bucket_name, file_name)
+    return policy_exists
+
 
 
 def outbound_relay_policy_file_exists_in_S3(recipient, aws_region, policy_bucket_name):
-    file_name = build_recipient_file_path(recipient, OUTBOUND_RELAY_CONTROL_DOMAIN_PATH)
-    if not file_name:
-        return False
+    file_name = build_recipient_file_path_with_prefix(recipient, OUTBOUND_RELAY_CONTROL_DOMAIN_PATH_WITH_PREFIX)
 
-    try:
-        awshandler = AwsHandler(aws_region)
-        policy_data = awshandler.download_data_from_s3(policy_bucket_name, file_name)
-        return policy_data is not None
-    except (IOError, ClientError):
-        logger.warn("Outbound relay control mailbox File [{0}] does not exist or failed to read".format(file_name))
-        return False
+    policy_exists = check_file_exists_in_S3(aws_region, policy_bucket_name, file_name)
+
+    if policy_exists is False:
+        #Try old location
+        file_name = build_recipient_file_path(recipient, OUTBOUND_RELAY_CONTROL_DOMAIN_PATH)
+        policy_exists = check_file_exists_in_S3(aws_region, policy_bucket_name, file_name)
+    return policy_exists
+
 
 
 def read_endpoint_policy_from_S3(userid, aws_region, policy_bucket_name):
-    file_name = MULTI_POLICY_ENDPOINTS_PATH + userid + ".POLICY"
-    if not file_name:
-        return None
+    file_name = build_endpoint_file_path_with_prefix(userid, MULTI_POLICY_PREFIX_ENDPOINTS_PATH)
 
-    return load_multi_policy_file_from_S3(aws_region, policy_bucket_name, file_name)
+    policy_file = load_multi_policy_file_from_S3(aws_region, policy_bucket_name, file_name)
+
+    if policy_file is None:
+        # Try old location
+        file_name = MULTI_POLICY_ENDPOINTS_PATH + userid + ".POLICY"
+        policy_file = load_multi_policy_file_from_S3(aws_region, policy_bucket_name, file_name)
+    return policy_file
 
 def load_multi_policy_file_locally(filename):
     try:
@@ -286,6 +310,8 @@ def load_multi_policy_file_locally(filename):
         )
 
 def load_multi_policy_file_from_S3(aws_region, policy_bucket_name, file_name):
+    if not file_name:
+        return False
     try:
         awshandler = AwsHandler(aws_region)
         s3_data = awshandler.download_data_from_s3(policy_bucket_name, file_name)
@@ -299,11 +325,41 @@ def load_multi_policy_file_from_S3(aws_region, policy_bucket_name, file_name):
     except (IOError, ClientError):
         logger.error("File [{0}] does not exist or failed to read".format(file_name))
 
+def check_file_exists_in_S3(aws_region, policy_bucket_name, file_name):
+    if not file_name:
+        return False
+    try:
+        awshandler = AwsHandler(aws_region)
+        return awshandler.s3_key_exists(policy_bucket_name, file_name)
+    except (IOError, ClientError):
+        logger.error("File [{0}] does not exist or failed to check".format(file_name))
+        return False
+
+def build_recipient_file_path_with_prefix(recipient, root_path):
+    try:
+        user_part, domain_part = recipient.split("@")
+        s3_object = base64.urlsafe_b64encode(user_part)
+        prefix_chars = hashlib.md5(s3_object).hexdigest().lower()[0:4]
+        return root_path + prefix_chars + "/" + domain_part + "/" + s3_object
+    except ValueError:
+        logger.info("Invalid recipient address. [{0}]".format(
+            recipient)
+        )
 
 def build_recipient_file_path(recipient, root_path):
     try:
         user_part, domain_part = recipient.split("@")
         return root_path + domain_part + "/" + base64.b64encode(user_part)
+    except ValueError:
+        logger.info("Invalid recipient address. [{0}]".format(
+            recipient)
+        )
+
+def build_endpoint_file_path_with_prefix(userid, root_path):
+    try:
+        s3_object = userid + ".POLICY"
+        prefix_chars = hashlib.md5(s3_object).hexdigest().lower()[0:4]
+        return root_path + prefix_chars + "/" + s3_object
     except ValueError:
         logger.info("Invalid recipient address. [{0}]".format(
             recipient)
@@ -354,6 +410,9 @@ def read_policy(recipient, aws_region, policy_bucket_name, read_from_s3):
         logger.debug("ToC user based split, Reading policy for {0} directly from s3".format(recipient))
         begin_time = time.time()
         customer_policy = read_policy_from_S3(recipient, aws_region, policy_bucket_name)
+        if customer_policy is None and PLUS_SIGN in recipient:
+            recipient_without_plus = get_email_without_plus_sign(recipient)
+            customer_policy = read_policy_from_S3(recipient_without_plus, aws_region, policy_bucket_name)
     else:
         logger.debug("ToC user based split, Reading policy for {0} from EFS".format(recipient))
         begin_time = time.time()
@@ -382,3 +441,64 @@ def read_toc_config(recipient, endpoint_policy):
     except (IOError, KeyError, ValueError), e:
         logger.error("endpoint json parse / read error : {0}".format(e))
         return False
+
+def get_valid_sender_from_msghistory_enabled(customer_id, server_ip):
+    """
+        Determines if the sender can be determined from MH accepted event instead 
+        of reading policy files from policy bucket.
+    """
+    # Read config
+    outbound_config = GetMetadataFromMsgHistoryConfig(OUTBOUND_METADATA_FROM_MESSAGE_HISTORY_CONFIG_PATH)
+
+    # No need to read policy to get customerId if globally enabled
+    if outbound_config.is_globally_enabled:
+        return True
+
+    try:
+        return outbound_config.is_get_from_message_history_enabled(customer_id, server_ip)
+    except Exception:
+        logger.warn('Unable to read config file {0} Error {1}'.format(OUTBOUND_METADATA_FROM_MESSAGE_HISTORY_CONFIG_PATH, traceback.format_exc()))
+        return False
+
+def build_recipient_map_from_msghistory_enabled(customer_id, server_ip):
+    """
+        Determines if the recipients map can be determined from MH accepted event instead 
+        of reading policy files from policy bucket.
+    """
+    # Read config
+    config = GetMetadataFromMsgHistoryConfig(INBOUND_METADATA_FROM_MESSAGE_HISTORY_CONFIG_PATH)
+
+    # No need to read policy to get customerId if globally enabled
+    if config.is_globally_enabled:
+        return True
+
+    try:
+        return config.is_get_from_message_history_enabled(customer_id, server_ip)
+    except Exception:
+        logger.warn('Unable to read config file {0} Error {1}'.format(INBOUND_METADATA_FROM_MESSAGE_HISTORY_CONFIG_PATH, traceback.format_exc()))
+        return False
+
+def prefix_messages_path_enabled(customer_id, server_ip):
+    """
+        Determines if 'S3 prefix' changes is enabled. 
+    """
+    # Read config
+    prefix_config = GetPrefixRestructureConfig(PREFIX_RESTRUCTURE_CONFIG_PATH)
+
+    # No need to read policy to get customerId if globally enabled
+    if prefix_config.is_globally_enabled:
+        return True
+
+    try:
+        return prefix_config.is_prefix_messages_path_enabled(customer_id, server_ip)
+    except Exception:
+        logger.warn('Unable to read config file {0} Error {1}'.format(PREFIX_RESTRUCTURE_CONFIG_PATH, traceback.format_exc()))
+        return False
+
+def get_email_without_plus_sign(email_address):
+    if PLUS_SIGN not in email_address:
+        return email_address
+
+    domain = email_address.split(AT_SIGN, 1)[1]
+    mailbox = email_address.split(PLUS_SIGN, 1)[0]
+    return mailbox + AT_SIGN + domain

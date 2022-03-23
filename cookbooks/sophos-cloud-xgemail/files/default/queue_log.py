@@ -1,7 +1,7 @@
     #!/usr/bin/env python
 # vim: autoindent expandtab filetype=python shiftwidth=4 softtabstop=4 tabstop=4
 #
-# Copyright 2018, Sophos Limited. All rights reserved.
+# Copyright 2021, Sophos Limited. All rights reserved.
 #
 # 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
 # Sophos Limited and Sophos Group.  All other product and company
@@ -22,6 +22,8 @@ class QueueLog:
         'mf-inbound-submit': 'MF_INBOUND_SUBMIT',
         'mf-outbound-delivery': 'MF_OUTBOUND_DELIVERY',
         'mf-outbound-submit': 'MF_OUTBOUND_SUBMIT',
+        'mf-inbound-xdelivery': 'MF_INBOUND_XDELIVERY',
+        'mf-outbound-xdelivery': 'MF_OUTBOUND_XDELIVERY',
         'risky-delivery': 'RISKY_DELIVERY',
         'risky-xdelivery': 'RISKY_XDELIVERY',
         'warmup-delivery': 'WARMUP_DELIVERY',

@@ -7,9 +7,11 @@
 # Copyright: Copyright (c) 1997-2016. All rights reserved.
 # Company: Sophos Limited or one of its affiliates.
 
+import argparse
 import sys
 sys.path.append("<%= @xgemail_utils_path %>")
 import botocore
+import time
 import boto3
 import base64
 import json
@@ -19,6 +21,7 @@ import subprocess
 import logging
 import traceback
 import configformatter
+import hashlib
 from logging.handlers import SysLogHandler
 
 
@@ -31,6 +34,7 @@ MAIL_PIC_API_AUTH = '<%= @mail_pic_api_auth %>'
 CONNECTIONS_BUCKET = '<%= @connections_bucket %>'
 POLICY_BUCKET = '<%= @policy_bucket %>'
 ENC_CONFIG_KEY = '<%= @enc_config_key %>'
+ENC_CONFIG_PREFIX_KEY = '<%= @enc_config_prefix_key %>'
 INBOUND_TLS_CONFIG_KEY = '<%= @inbound_tls_config_key %>'
 TLS_SMTP_TRANSPORT_TAG = ' smtp_encrypt:'
 DEFAULT_SMTP_TRANSPORT_TAG = ' smtp:'
@@ -52,34 +56,31 @@ PIC_XGEMAIL_API_URL = 'https://%s/mail/api/xgemail' % (PIC_FQDN)
 PIC_DOMAINS_URL = PIC_XGEMAIL_API_URL + '/domains'
 PIC_TLS_DOMAINS_URL = PIC_XGEMAIL_API_URL +'/tls-domain-exists/'
 
-logger.info('customer delivery transport cron - pic url [%s]', PIC_XGEMAIL_API_URL)
+logger.debug('customer delivery transport updater - pic url [%s]', PIC_XGEMAIL_API_URL)
 
 def get_passphrase():
     s3 = boto3.client('s3')
     passphrase = s3.get_object(Bucket=CONNECTIONS_BUCKET, Key=MAIL_PIC_API_AUTH)
     return base64.b64encode('mail:' + passphrase['Body'].read())
 
-auth = get_passphrase()
-
-HEADERS = {
-    'Content-type': 'application/json',
-    'Authorization': 'Basic ' + auth
-}
-
-PIC_DESTINATION_URL = PIC_XGEMAIL_API_URL + '/destination'
-
-response = requests.get(
-    PIC_DOMAINS_URL,
-    headers=HEADERS,
-    timeout=MAIL_PIC_RESPONSE_TIMEOUT
-)
-response.raise_for_status()
+def get_enc_config_path_with_prefix(domain_name):
+  s3_object = domain_name + '.ENC_CONFIG'
+  prefix_chars = hashlib.md5(s3_object).hexdigest().lower()[0:4]
+  return ENC_CONFIG_PREFIX_KEY + prefix_chars + "/" + s3_object
 
 # Returns the smtp transport tag to be used for the customer
 # with the given id
 def get_smtp_transport_tag(s3, domain_name, customer_id):
 
-  if encryption_config_exists(s3, domain_name):
+  #Check new location.
+  key_path = get_enc_config_path_with_prefix(domain_name)
+  logger.debug('Checking new location' + key_path)
+  if encryption_config_exists(s3, key_path):
+    return TLS_SMTP_TRANSPORT_TAG
+  
+  #Check old location.
+  key_path = ENC_CONFIG_KEY + domain_name + '.ENC_CONFIG'
+  if encryption_config_exists(s3, key_path):
     return TLS_SMTP_TRANSPORT_TAG
 
   if tls_config_exists_in_api_response(customer_id):
@@ -117,13 +118,11 @@ def tls_config_exists_in_api_response(customer_id):
     return False
 
 # Checks if encryption config exists for the given domain
-def encryption_config_exists(s3_client, domain_name):
+def encryption_config_exists(s3_client, key_path):
 
   if not POLICY_BUCKET:
     return False
-
-  key_path = ENC_CONFIG_KEY + domain_name + '.ENC_CONFIG'
-
+  
   try:
     s3_client.head_object(Bucket = POLICY_BUCKET, Key = key_path)
     logger.debug("key (%s) exists!", key_path)
@@ -173,61 +172,111 @@ def parse_domain_response(domain_name, destinations_json, s3_client,is_custom) :
   return ret_val
 
 def custom_route_file_exist():
+  s3 = boto3.client('s3')
+  try:
+      s3.head_object(Bucket=POLICY_BUCKET,Key=CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
+      # custom route file found return true
+      return True
+  except botocore.exceptions.ClientError as e:
+      trace = traceback.format_exc()
+      logger.debug("Custom route file not Exist." + trace)
+      return False
+
+transport_updater_parser = argparse.ArgumentParser(description='Used to update postfix transport files')
+transport_updater_parser.add_argument('--daemon', choices=['True', 'False'], help='Whether to run script as daemon', default='False')
+transport_updater_parser_args = transport_updater_parser.parse_args()
+
+if transport_updater_parser_args.daemon == 'True':
+  logger.debug('daemon argument is true')
+
+auth = get_passphrase()
+
+HEADERS = {
+    'Content-type': 'application/json',
+    'Authorization': 'Basic ' + auth
+}
+
+PIC_DESTINATION_URL = PIC_XGEMAIL_API_URL + '/destination'
+
+while True:
+
+  timestamp_start=time.time() * 1000
+
+  POSTFIX_CONFIG_DIR = subprocess.check_output(
+      [
+        'postmulti', '-i', POSTFIX_INSTANCE_NAME, '-x',
+        'postconf','-h','config_directory'
+      ]
+    ).rstrip()
+
+  TRANSPORT_FILE = POSTFIX_CONFIG_DIR + '/' + TRANSPORT_FILENAME
+  TRANSPORT_FILE_TMP = TRANSPORT_FILE + '.tmp'
+
+  logger.debug('starting to update transport map file [%s.db]', TRANSPORT_FILE)
+
+  query_parameters = {
+  'productType':'All',
+  }
+
+  response = requests.get(
+      PIC_DOMAINS_URL,
+      headers=HEADERS,
+      params = query_parameters,
+      timeout=MAIL_PIC_RESPONSE_TIMEOUT
+  )
+
+  if response.status_code != 200:
+    logger.warn("Got response code [{}] from mail pic".format(response.status_code));
+
+  response.raise_for_status()
+
+  with open(TRANSPORT_FILE_TMP, 'w') as f:
+
     s3 = boto3.client('s3')
-    try:
-        s3.head_object(Bucket=POLICY_BUCKET,Key=CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
-        # custom route file found return true
-        return True
-    except botocore.exceptions.ClientError as e:
-        trace = traceback.format_exc()
-        logger.debug("Custom route file not Exist." + trace)
-        return False
 
-POSTFIX_CONFIG_DIR = subprocess.check_output(
-    [
-      'postmulti', '-i', POSTFIX_INSTANCE_NAME, '-x',
-      'postconf','-h','config_directory'
-    ]
-  ).rstrip()
-
-TRANSPORT_FILE = POSTFIX_CONFIG_DIR + '/' + TRANSPORT_FILENAME
-TRANSPORT_FILE_TMP = TRANSPORT_FILE + '.tmp'
-
-with open(TRANSPORT_FILE_TMP, 'w') as f:
-
-    s3 = boto3.client('s3')
     if custom_route_file_exist():
-        try:
-            current_config = s3.get_object(Bucket=POLICY_BUCKET,Key= CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
-            raw_config_data= current_config['Body'].read()
-            config_data = configformatter.get_config_binary(raw_config_data)
-            record = json.loads(config_data)
+      try:
+          current_config = s3.get_object(Bucket=POLICY_BUCKET,Key= CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
+          raw_config_data= current_config['Body'].read()
+          config_data = configformatter.get_config_binary(raw_config_data)
+          record = json.loads(config_data)
 
-            sorted_record_keys=sort_record_key(record)
-            for domain_or_email in sorted_record_keys :
-                transport_line = parse_domain_response(domain_or_email,record[domain_or_email] , s3, True)
-                f.write('{0}\n'.format(transport_line))
-        except Exception as e:
-            trace = traceback.format_exc()
-            for line in trace.splitlines():
-                logger.debug("Error loading custom Transport " + line)
+          sorted_record_keys=sort_record_key(record)
+          for domain_or_email in sorted_record_keys :
+              transport_line = parse_domain_response(domain_or_email,record[domain_or_email] , s3, True)
+              f.write('{0}\n'.format(transport_line))
+      except Exception as e:
+          trace = traceback.format_exc()
+          for line in trace.splitlines():
+              logger.debug("Error loading custom Transport " + line)
 
     for domain in response.json()['domains'] :
-        domain_response = requests.post(
-            PIC_DESTINATION_URL,
-            headers=HEADERS,
-            data=json.dumps({'domain':domain}),
-            timeout=MAIL_PIC_RESPONSE_TIMEOUT
-          )
-        domain_response.raise_for_status()
-        transport_line = parse_domain_response(domain, domain_response.json(), s3,False)
-        f.write('{0}\n'.format(transport_line))
+      domain_response = requests.post(
+          PIC_DESTINATION_URL,
+          headers=HEADERS,
+          data=json.dumps(
+            {
+              'domain':domain,
+              'productType':'All'
+            }
+          ),
+          timeout=MAIL_PIC_RESPONSE_TIMEOUT
+        )
+      domain_response.raise_for_status()
+      transport_line = parse_domain_response(domain, domain_response.json(), s3, False)
+      f.write('{0}\n'.format(transport_line))
+      if (float(round(time.time() * 1000)) - float(timestamp_start)) > 15 * 60 * 1000:
+        logger.warn('transport map file updater taken more than 15 mins')
 
     # Add catch-all to retry any unknown domain
     f.write('* retry: domain is unknown\n')
 
-subprocess.call(['postmap', 'hash:{0}'.format(TRANSPORT_FILE_TMP)])
-os.rename(TRANSPORT_FILE_TMP, TRANSPORT_FILE);
-os.rename(TRANSPORT_FILE_TMP + '.db', TRANSPORT_FILE + '.db');
+  subprocess.call(['postmap', 'hash:{0}'.format(TRANSPORT_FILE_TMP)])
+  os.rename(TRANSPORT_FILE_TMP, TRANSPORT_FILE);
+  os.rename(TRANSPORT_FILE_TMP + '.db', TRANSPORT_FILE + '.db');
 
-logger.info('transport map file [%s.db] successfully updated', TRANSPORT_FILE)
+  logger.debug('transport map file [%s.db] successfully updated. Time taken [%s]', TRANSPORT_FILE, float(round(time.time() * 1000)) - float(timestamp_start))
+
+  if transport_updater_parser_args.daemon == 'False':
+    logger.debug('daemon argument is false')
+    break

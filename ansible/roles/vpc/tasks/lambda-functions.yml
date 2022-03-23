@@ -115,12 +115,14 @@
     disable_rollback:                       true
     template:                               "{{template.lambda.lambda_xgemail_multi_eip_rotation_template}}"
     template_parameters:
-      Environment:                          "{{account.name}}"
       FunctionName:                         "{{lambda.multi_eip_rotation_lambda_function}}"
       HandlerName:                          xgemail_multi_eip_rotation.multi_eip_rotation_handler
       IAMRoleArn:                           "{{iam_stack.stack_outputs.MultiEipRotationLambdaExecutionRoleArn}}"
       S3Bucket:                             "{{s3.lambda_bucket}}"
       S3Key:                                "lambda/{{build.number}}/xgemail_multi_eip_rotation.zip"
+      ScheduleExpression:                   rate(45 minutes)
+      SsmPostfixService:                    "{{ssm_stack.stack_outputs.PostfixService}}"
+      ScheduleState:                        DISABLED
   register: multi_eip_rotation_stack
 
 - debug:

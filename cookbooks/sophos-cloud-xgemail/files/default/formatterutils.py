@@ -13,6 +13,7 @@
 
 import struct
 import gziputils
+import hashlib
 from datetime import datetime
 
 #constants
@@ -34,6 +35,18 @@ def get_s3_file_path(s3_path, extension):
         extension
     )
     return file_path
+
+def get_s3_prefix_file_path(root_dir, queue_id, mailbox_id, submit_host_ip, domain):
+    prefix_chars = hashlib.md5(queue_id).hexdigest().lower()[0:4]
+    dir_path = '%s/%s/%s/%s-%s-%s' %(
+        root_dir,
+        prefix_chars,
+        mailbox_id,
+        submit_host_ip,
+        queue_id,
+        domain
+    )
+    return dir_path
 
 # Binary file format with Big Endian byte order except encryption
 def get_formatted_object(magic_number, schema_version, nonce_length, gzip_data):

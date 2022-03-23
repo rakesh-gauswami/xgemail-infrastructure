@@ -1,0 +1,8 @@
+<match sqs.telemetry.log>
+  @type sqs
+  queue_name <%= @trace_telemetry_queue %>
+  create_queue false
+  region <%= @region %>
+  include_tag false
+  assume_role_arn <%= @assume_role_arn %>
+</match>
