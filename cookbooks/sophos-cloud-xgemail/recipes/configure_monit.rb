@@ -13,7 +13,8 @@
 ::Chef::Recipe.send(:include, ::SophosCloudXgemail::Helper)
 ::Chef::Resource.send(:include, ::SophosCloudXgemail::Helper)
 
-NODE_TYPE = node['xgemail']['cluster_type']
+ACCOUNT_NAME = node['sophos_cloud']['account_name']
+NODE_TYPE    = node['xgemail']['cluster_type']
 
 INSTANCE_DATA = node['xgemail']['postfix_instance_data'][NODE_TYPE]
 raise "Unsupported node type [#{NODE_TYPE}]" if INSTANCE_DATA.nil?
