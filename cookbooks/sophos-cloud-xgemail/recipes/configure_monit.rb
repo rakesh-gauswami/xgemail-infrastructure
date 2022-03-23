@@ -21,14 +21,27 @@ raise "Unsupported node type [#{NODE_TYPE}]" if INSTANCE_DATA.nil?
 INSTANCE_NAME = INSTANCE_DATA[:instance_name]
 raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 
-template '/etc/monit.d/postfix.conf' do
+if ACCOUNT_NAME == "legacy"
+  template '/etc/monit.d/postfix.conf' do
     source 'monit-postfix.conf.erb'
     mode '0755'
     owner 'root'
     group 'root'
     variables(
-            :instance_name => INSTANCE_NAME
+      :instance_name => INSTANCE_NAME
     )
+  end
+
+else
+  template '/etc/monit.d/postfix.conf' do
+  source 'monit-postfix-fsc.conf.erb'
+  mode '0755'
+  owner 'root'
+  group 'root'
+  variables(
+    :instance_name => INSTANCE_NAME
+  )
+  end
 end
 
 template '/etc/monit.d/submit.conf' do
