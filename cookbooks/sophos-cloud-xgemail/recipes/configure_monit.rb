@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: configure_monit
 #
-# Copyright 2021, Sophos
+# Copyright 2022, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
