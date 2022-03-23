@@ -15,7 +15,6 @@ import requests
 import sys
 import urllib3
 import json
-import pip
 import os
 import logging
 
@@ -28,14 +27,8 @@ logging.basicConfig(
     level=logging.INFO,
     stream=sys.stdout)
 
-try:
-    from prettytable import PrettyTable
-except ImportError:
-    pip.main(['install', 'PrettyTable'])
-    from prettytable import PrettyTable
-
 def get_parsed_args(parser):
-    parser.add_argument('--region', default = 'eu-west-1', choices=['eu-central-1', 'eu-west-1', 'us-west-2', 'us-east-2','ap-northeast-1','ap-southeast-2','ca-central-1'], help = 'AWS region', required = True)
+    parser.add_argument('--region', default = 'eu-west-1', choices=['eu-central-1', 'eu-west-1', 'us-west-2', 'us-east-2'], help = 'AWS region', required = True)
     parser.add_argument('--env', default = 'DEV', choices=['DEV', 'QA', 'PROD','INF'], help = 'AWS environment', required = True)
     parser.add_argument('--perform_probe', required=False, help="This option is to fetch the existing domains")
     parser.add_argument('--update_ip_type', required=False, help="This option is to call update delivery ip type API")
@@ -100,19 +93,12 @@ def update_delivery_ip_type_request_api(domain_and_iptype_dict,args):
 
 def write_error_file(failed_result):
 
-    t = PrettyTable(['Update Failed Domains'])
-    t.align = 'l'
-
-    for cur_entry in failed_result:
-        t.add_row([cur_entry])
-
+    json_string = json.dumps(failed_result, indent=4)
     with open(ERROR_ENTRIES_PATH, 'w') as write_file:
-        write_file.write(t.get_string())
-
+        write_file.write(json_string)
 
 def get_domains(last_domain, no_of_domains):
     pass
-
 
 if __name__ == '__main__':
     try:
