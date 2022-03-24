@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: configure_monit
 #
-# Copyright 2021, Sophos
+# Copyright 2022, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -13,7 +13,8 @@
 ::Chef::Recipe.send(:include, ::SophosCloudXgemail::Helper)
 ::Chef::Resource.send(:include, ::SophosCloudXgemail::Helper)
 
-NODE_TYPE = node['xgemail']['cluster_type']
+ACCOUNT_NAME = node['sophos_cloud']['account_name']
+NODE_TYPE    = node['xgemail']['cluster_type']
 
 INSTANCE_DATA = node['xgemail']['postfix_instance_data'][NODE_TYPE]
 raise "Unsupported node type [#{NODE_TYPE}]" if INSTANCE_DATA.nil?
@@ -21,14 +22,31 @@ raise "Unsupported node type [#{NODE_TYPE}]" if INSTANCE_DATA.nil?
 INSTANCE_NAME = INSTANCE_DATA[:instance_name]
 raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 
+
 template '/etc/monit.d/postfix.conf' do
-    source 'monit-postfix.conf.erb'
-    mode '0755'
-    owner 'root'
-    group 'root'
-    variables(
-            :instance_name => INSTANCE_NAME
-    )
+  source 'monit-postfix.conf.erb'
+  mode '0755'
+  owner 'root'
+  group 'root'
+  variables(
+    :instance_name => INSTANCE_NAME
+  )
+  only_if {
+    ACCOUNT_NAME == 'legacy'
+  }
+end
+
+template '/etc/monit.d/postfix.conf' do
+  source 'monit-postfix-fsc.conf.erb'
+  mode '0755'
+  owner 'root'
+  group 'root'
+  variables(
+    :instance_name => INSTANCE_NAME
+  )
+  not_if {
+    ACCOUNT_NAME != 'legacy'
+  }
 end
 
 template '/etc/monit.d/submit.conf' do
