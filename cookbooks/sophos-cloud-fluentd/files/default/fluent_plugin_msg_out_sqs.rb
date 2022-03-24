@@ -43,19 +43,6 @@ module Fluent::Plugin
         raise Fluent::ConfigError, 'message_group_id parameter is required for FIFO queue' if @message_group_id.nil?
       end
 
-      options = {}
-      options[:region] = @region
-      if @aws_key_id && @aws_sec_key
-        options[:credentials] = Aws::Credentials.new(@aws_key_id, @aws_sec_key)
-      end
-      if @assume_role_arn
-        credentials_options = {}
-        credentials_options[:role_arn] = @assume_role_arn
-        credentials_options[:role_session_name] = @assume_role_session_name
-        credentials_options[:client] = Aws::STS::Client.new(region: @region)
-        options[:credentials] = Aws::AssumeRoleCredentials.new(credentials_options)
-      end
-
     end
 
     def client
