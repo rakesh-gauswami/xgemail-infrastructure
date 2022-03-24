@@ -31,18 +31,6 @@
       "MinLength": "3",
       "MaxLength": "63"
     },
-    "SnsPolicyTopic": {
-      "Description": "The Policy SNS Topic Notification ARN",
-      "Type": "String"
-    },
-    "SnsRelayControlTopic": {
-      "Description": "The Relay Control Topic Notification ARN",
-      "Type": "String"
-    },
-    "SnsMultiPolicyTopic": {
-      "Description": "The Multi policy Topic Notification ARN",
-      "Type": "String"
-    },
     "TagApplication": {
       "Description": "Tag for the Application being deployed",
       "Type": "String",
@@ -55,94 +43,6 @@
       "Type": "AWS::S3::Bucket",
       "Properties": {
         "BucketName": { "Ref": "S3BucketName" },
-        "NotificationConfiguration": {
-          "TopicConfigurations": [
-            {
-              "Topic": { "Ref": "SnsPolicyTopic" },
-              "Event": "s3:ObjectCreated:*",
-              "Filter": {
-                "S3Key": {
-                  "Rules": [
-                    {
-                      "Name": "prefix",
-                      "Value": "spf/"
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              "Topic": { "Ref": "SnsPolicyTopic" },
-              "Event": "s3:ObjectRemoved:*",
-              "Filter": {
-                "S3Key": {
-                  "Rules": [
-                    {
-                      "Name": "prefix",
-                      "Value": "spf/"
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              "Topic": { "Ref": "SnsRelayControlTopic" },
-              "Event": "s3:ObjectCreated:*",
-              "Filter": {
-                "S3Key": {
-                  "Rules": [
-                    {
-                      "Name": "prefix",
-                      "Value": "config/outbound-relay-control/"
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              "Topic": { "Ref": "SnsRelayControlTopic" },
-              "Event": "s3:ObjectRemoved:*",
-              "Filter": {
-                "S3Key": {
-                  "Rules": [
-                    {
-                      "Name": "prefix",
-                      "Value": "config/outbound-relay-control/"
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              "Topic": { "Ref": "SnsMultiPolicyTopic" },
-              "Event": "s3:ObjectCreated:*",
-              "Filter": {
-                "S3Key": {
-                  "Rules": [
-                    {
-                      "Name": "prefix",
-                      "Value": "config/policies/"
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              "Topic": { "Ref": "SnsMultiPolicyTopic" },
-              "Event": "s3:ObjectRemoved:*",
-              "Filter": {
-                "S3Key": {
-                  "Rules": [
-                    {
-                      "Name": "prefix",
-                      "Value": "config/policies/"
-                    }
-                  ]
-                }
-              }
-            }
-          ]
-        },
         "Tags": [
           {
             "Key": "Name",
