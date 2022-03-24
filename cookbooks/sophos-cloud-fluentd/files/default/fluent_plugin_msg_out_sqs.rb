@@ -1,5 +1,5 @@
 require 'fluent/plugin/output'
-require 'aws-sdk-sqs'
+require 'aws-sdk'
 
 module Fluent::Plugin
   SQS_BATCH_SEND_MAX_MSGS = 10
@@ -19,7 +19,7 @@ module Fluent::Plugin
     config_param :aws_sec_key, :string, default: nil, secret: true
 
     config_param :assume_role_arn, :string, :default => nil
-    config_param :assume_role_session_name, :string, :default => "fluentd_sqs"
+    config_param :assume_role_session_name, :string, :default => 'fluentd_sqs'
     config_param :sts_credentials_region, :string, :default => nil
 
     config_param :queue_name, :string, default: nil
@@ -59,6 +59,18 @@ module Fluent::Plugin
     end
 
     def client
+      options = {}
+      options[:region] = @region
+      if @aws_key_id && @aws_sec_key
+        options[:credentials] = Aws::Credentials.new(@aws_key_id, @aws_sec_key)
+      end
+      if @assume_role_arn
+        credentials_options = {}
+        credentials_options[:role_arn] = @assume_role_arn
+        credentials_options[:role_session_name] = @assume_role_session_name
+        credentials_options[:client] = Aws::STS::Client.new(region: @region)
+        options[:credentials] = Aws::AssumeRoleCredentials.new(credentials_options)
+      end
       @client ||= Aws::SQS::Client.new(options)
     end
 
