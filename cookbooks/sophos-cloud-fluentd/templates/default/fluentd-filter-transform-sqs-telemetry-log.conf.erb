@@ -1,5 +1,5 @@
 # sqs.telemetry.log
-#Jan 18 21:53:35 ip-172-21-0-123 postfix-is/smtpd[19485]: 4DZ3yR47lmzsR4d: client_ip=91.216.61.22,helo=bad-domain.com,arrival_time=1632565736,mail_from=badguy@bad-domain.com,rcpt_to=recipient@sophos-email-customer.com,client_hostname=bad-server.com,rhsbl_sender=127.0.1.4,rhsbl_reverse_client=DNS_NOTFOUND,rhsbl_client=127.0.1.3,rbl_client=127.0.4.3,nrcpt=5,bad_rcpt=1,reject_rcpt=0,data_sent=1,data_accepted=1,data_size=4077,starttls=0
+#Jan 18 21:53:35 ip-172-21-0-123 postfix-is/smtpd[19485]: 4DZ3yR47lmzsR4d: client_ip=91.216.61.22,helo=bad-domain.com,arrival_time=1632565736,mail_from=badguy@bad-domain.com,rcpt_to=recipient@sophos-email-customer.com,client_hostname=bad-server.com,rhsbl_sender=127.0.1.4,rhsbl_reverse_client=DNS_NOTFOUND,rhsbl_client=127.0.1.3,rbl_client=127.0.4.3,nrcpt=5,bad_rcpt=1,reject_rcpt=0,data_sent=1,data_size=4077,starttls=0,tls_version=TLSv1.2,action=ACCEPTED,processing_time=32322
 #
 
 
@@ -10,6 +10,15 @@
   reserve_time true
   <parse>
     @type regexp
-    expression /(?<host>[^ ]+) (?<process>[^ ]+): (?<queue_id>[^ ]+): client_ip=(?<client_ip>[^ ]+),helo=(?<helo>[^ ]*),arrival_time=(?<arrival_time>[^ ]+),mail_from=(?<mail_from>[^ ]*),rcpt_to=(?<rcpt_to>[^ ]*),client_hostname=(?<client_hostname>[^ ]+),rhsbl_sender=(?<rhsbl_sender>[^ ]*),rhsbl_reverse_client=(?<rhsbl_reverse_client>[^ ]*),rhsbl_client=(?<rhsbl_client>[^ ]*),rbl_client=(?<rbl_client>[^ ]*),nrcpt=(?<nrcpt>[^ ]+),bad_rcpt=(?<bad_rcpt>[^ ]+),reject_rcpt=(?<reject_rcpt>[^ ]+),data_sent=(?<data_sent>[^ ]+),data_accepted=(?<data_accepted>[^ ]+),data_size=(?<data_size>[^ ]+),starttls=(?<starttls>[^ ]+)/
+    expression /(?<host>[^ ]+) (?<process>[^ ]+): (?<queue_id>[^ ]+): client_ip=(?<client_ip>[^ ]+),helo=(?<helo>[^ ]*),arrival_time=(?<arrival_time>[^ ]+),mail_from=(?<mail_from>[^ ]*),rcpt_to=(?<rcpt_to>[^ ]*),client_hostname=(?<client_hostname>[^ ]+),rhsbl_sender=(?<rhsbl_sender>[^ ]*),rhsbl_reverse_client=(?<rhsbl_reverse_client>[^ ]*),rhsbl_client=(?<rhsbl_client>[^ ]*),rbl_client=(?<rbl_client>[^ ]*),nrcpt=(?<nrcpt>[^ ]+),bad_rcpt=(?<bad_rcpt>[^ ]+),reject_rcpt=(?<reject_rcpt>[^ ]+),data_sent=(?<data_sent>[^ ]+),data_size=(?<data_size>[^ ]+),starttls=(?<starttls>[^ ]+),tls_version=(?<tls_version>[^ ]*),action=(?<action>[^ ]+),processing_time=(?<processing_time>[^ ]+)/
   </parse>
+</filter>
+
+<filter sqs.telemetry.log>
+  @type record_transformer
+  enable_ruby true
+  <record>
+    direction <%= @direction %>
+    product <%= @email_product_type %>
+  </record>
 </filter>

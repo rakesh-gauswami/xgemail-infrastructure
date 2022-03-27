@@ -134,6 +134,31 @@ elsif NODE_TYPE == 'mf-outbound-xdelivery'
   SERVER_TYPE_XDELIVERY = 'UNKNOWN'
   DIRECTION             = 'OUTBOUND'
   NON_DELIVERY_DSN      = '5.4.7'
+elsif NODE_TYPE == 'mf-inbound-submit'
+  SERVER_TYPE           = 'MF_INBOUND_SUBMIT'
+  SERVER_TYPE_XDELIVERY = 'UNKNOWN'
+  DIRECTION             = 'INBOUND'
+  NON_DELIVERY_DSN      = '5.4.7'
+elsif NODE_TYPE == 'mf-outbound-submit'
+  SERVER_TYPE           = 'MF_OUTBOUND_SUBMIT'
+  SERVER_TYPE_XDELIVERY = 'UNKNOWN'
+  DIRECTION             = 'OUTBOUND'
+  NON_DELIVERY_DSN      = '5.4.7'
+elsif NODE_TYPE == 'internet-submit'
+  SERVER_TYPE           = 'INTERNET_SUBMIT'
+  SERVER_TYPE_XDELIVERY = 'UNKNOWN'
+  DIRECTION             = 'INBOUND'
+  NON_DELIVERY_DSN      = '5.4.7'
+elsif NODE_TYPE == 'customer-submit'
+  SERVER_TYPE           = 'CUSTOMER_SUBMIT'
+  SERVER_TYPE_XDELIVERY = 'UNKNOWN'
+  DIRECTION             = 'OUTBOUND'
+  NON_DELIVERY_DSN      = '5.4.7'
+elsif NODE_TYPE == 'encryption-submit'
+  SERVER_TYPE           = 'ENCRYPTION_SUBMIT'
+  SERVER_TYPE_XDELIVERY = 'UNKNOWN'
+  DIRECTION             = 'OUTBOUND'
+  NON_DELIVERY_DSN      = '5.4.7'
 else
   SERVER_TYPE           = 'UNKNOWN'
   SERVER_TYPE_XDELIVERY = 'UNKNOWN'
@@ -141,7 +166,9 @@ else
   NON_DELIVERY_DSN      = 'UNKNOWN'
 end
 
-if NODE_TYPE == 'mf-inbound-submit'
+case NODE_TYPE
+when 'mf-inbound-submit', 'mf-outbound-submit', 'mf-inbound-delivery', 'mf-inbound-xdelivery', 'mf-outbound-delivery',
+'mf-outbound-xdelivery'
     EMAIL_PRODUCT_TYPE = 'Mailflow'
 else
     EMAIL_PRODUCT_TYPE = 'Gateway'
@@ -852,6 +879,10 @@ template 'fluentd-filter-transform-sqs-telemetry-log' do
   mode '0644'
   owner 'root'
   group 'root'
+  variables(
+      :direction => DIRECTION,
+      :email_product_type => EMAIL_PRODUCT_TYPE
+    )
   only_if {
       NODE_TYPE == 'internet-submit' ||
       NODE_TYPE == 'mf-inbound-submit'
