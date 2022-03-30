@@ -100,8 +100,16 @@
       "Description": "The ARN of the Lambda Function SES will invoke.",
       "Type": "String"
     },
+    "SesInvokeMfInboundLambdaFunctionArn": {
+      "Description": "The ARN of the Lambda Function SES will invoke.",
+      "Type": "String"
+    },
     "SesInvokeInboundMsLambdaFunctionArn": {
       "Description": "The ARN of the Lambda Function SES will invoke.",
+      "Type": "String"
+    },
+    "SesInvokeMfOutboundLambdaFunctionArn": {
+      "Description": "The ARN of the Outbound Lambda Function SES will invoke.",
       "Type": "String"
     },
     "SesInvokeOutboundLambdaFunctionArn": {
@@ -391,6 +399,49 @@
       }
     },
 
+    "MfInboundReceiptRule": {
+      "Type": "AWS::SES::ReceiptRule",
+      "Properties": {
+        "RuleSetName": { "Ref": "RuleSetName" },
+        "Rule": {
+          "Name": { "Ref": "MfInboundRuleName" },
+          "Recipients": { "Ref": "MfInboundMailRecipients" },
+          "Enabled": "True",
+          "ScanEnabled": "False",
+          "Actions": [
+            {
+              "LambdaAction": {
+                "FunctionArn": { "Ref": "SesInvokeMfInboundLambdaFunctionArn" },
+                "InvocationType": "Event"
+              }
+            }
+          ]
+        }
+      }
+    },
+
+    "MfOutboundReceiptRule": {
+      "Type": "AWS::SES::ReceiptRule",
+      "Properties": {
+        "RuleSetName": { "Ref": "RuleSetName" },
+        "After": { "Ref": "MfInboundReceiptRule" },
+        "Rule": {
+          "Name": { "Ref": "MfOutboundRuleName" },
+          "Recipients": { "Ref": "MfOutboundMailRecipients" },
+          "Enabled": "True",
+          "ScanEnabled": "False",
+          "Actions": [
+            {
+              "LambdaAction": {
+                "FunctionArn": { "Ref": "SesInvokeMfOutboundLambdaFunctionArn" },
+                "InvocationType": "Event"
+              }
+            }
+          ]
+        }
+      }
+    },
+
     "OutboundReceiptRule": {
       "Type": "AWS::SES::ReceiptRule",
       "Properties": {
@@ -594,11 +645,11 @@
       }
     },
 
-    "PermissionForSesToInvokeMfLambda": {
+    "PermissionForSesToInvokeMfInboundLambda": {
       "Type": "AWS::Lambda::Permission",
       "Properties": {
         "FunctionName": {
-          "Ref": "SesInvokeInboundMfLambdaFunctionArn"
+          "Ref": "SesInvokeMfInboundLambdaFunctionArn"
         },
         "Action": "lambda:InvokeFunction",
         "Principal": "ses.amazonaws.com",
@@ -644,9 +695,9 @@
       "Description": "Ses Receipt Rules.",
       "Value": { "Ref": "EncryptionOutboundReceiptRule" }
     },
-    "InboundMfReceiptRule": {
+    "MfInboundReceiptRule": {
       "Description": "Ses Receipt Rules.",
-      "Value": { "Ref": "InboundMfReceiptRule" }
+      "Value": { "Ref": "MfInboundReceiptRule" }
     },
     "MfOutboundReceiptRule": {
       "Description": "Ses Receipt Rules.",
