@@ -132,6 +132,12 @@
       "Description": "Message History firehose stream name",
       "Type": "String"
     },
+    "NewRelicEnabled": {
+      "Description": "Enable New Relic Infrastructure Monitoring",
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [ "true", "false" ]
+    },
     "S3CookbookRepositoryURL": {
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
       "Type": "String"
@@ -611,6 +617,9 @@
                       "  \"cert\" : {\n",
                       "    \"should_install_mx\"              : \"true\"\n",
                       "  },\n",
+                      "  \"newrelic\" : {\n",
+                      "    \"enabled\"                        : \"{{newrelic_enabled}}\"\n",
+                      "  },\n",
                       "  \"volumes\" : {\n",
                       "    \"kms_alias\"                      : \"{{kms_alias}}\",\n",
                       "    \"volume_min_iops\"                : \"{{volume_min_iops}}\",\n",
@@ -638,91 +647,35 @@
                   ]
                 },
                 "context": {
-                  "account_name": {
-                    "Ref": "AccountName"
-                  },
-                  "availability_zone": {
-                    "Fn::Select": [
-                      {
-                        "Ref": "AvailabilityZoneIndex"
-                      },
-                      {
-                        "Ref": "AvailabilityZones"
-                      }
-                    ]
-                  },
-                  "branch": {
-                    "Ref": "Branch"
-                  },
-                  "cluster": {
-                    "Ref": "XgemailServiceType"
-                  },
-                  "cluster_type": {
-                    "Ref": "XgemailServiceType"
-                  },
-                  "environment": {
-                    "Ref": "Environment"
-                  },
-                  "kms_alias": {
-                    "Ref": "KmsKeyAlias"
-                  },
-                  "msg_history_status_queue_url": {
-                    "Ref": "XgemailMsgHistoryStatusQueueUrl"
-                  },
-                  "msg_history_delivery_status_sns_arn": {
-                    "Ref": "XgemailMsgHistoryStatusSnsArn"
-                  },
-                  "msg_history_v2_bucket_name": {
-                    "Ref": "MsgHistoryV2BucketName"
-                  },
-                  "msg_history_v2_dynamodb_table_name": {
-                    "Ref": "MsgHistoryV2DynamoDbTableName"
-                  },
-                  "msg_history_v2_stream_name": {
-                    "Ref": "MsgHistoryV2StreamName"
-                  },
-                  "msg_notifier_queue_url": {
-                    "Ref": "XgemailNotifierQueueUrl"
-                  },
-                  "region": {
-                    "Ref": "AWS::Region"
-                  },
-                  "sdb_region": {
-                    "Ref": "SdbRegion"
-                  },
-                  "station_account_role_arn": {
-                    "Ref": "StationAccountRoleArn"
-                  },
-                  "station_vpc_id": {
-                    "Ref": "StationVpcId"
-                  },
-                  "stack": {
-                    "Ref": "AWS::StackName"
-                  },
-                  "station_vpc_name": {
-                    "Ref": "StationVpcName"
-                  },
-                  "volume_min_iops": {
-                    "Ref": "EbsMinIops"
-                  },
-                  "volume_min_size_data_gb": {
-                    "Ref": "XgemailMinSizeDataGB"
-                  },
-                  "volume_set_id": {
-                    "Ref": "VolumeSetId"
-                  },
-                  "volume_tracker_sdb_domain": {
-                    "Ref": "VolumeTrackerSimpleDbDomain"
-                  },
-                  "vpc_id": {
-                    "Ref": "Vpc"
-                  },
-                  "vpc_name": {
-                    "Ref": "VpcName"
-                  },
-                  "xgemail_policy_bucket_name": {
-                    "Ref": "XgemailPolicyBucketName"
-                  }
+                  "account_name":                             { "Ref": "AccountName" },
+                  "availability_zone":                        { "Fn::Select": [
+                                                                { "Ref": "AvailabilityZoneIndex" },
+                                                                { "Ref": "AvailabilityZones" }
+                                                              ] },
+                  "branch":                                   { "Ref": "Branch" },
+                  "cluster":                                  { "Ref": "XgemailServiceType" },
+                  "cluster_type":                             { "Ref": "XgemailServiceType" },
+                  "environment":                              { "Ref": "Environment" },
+                  "kms_alias":                                { "Ref": "KmsKeyAlias" },
+                  "msg_history_status_queue_url":             { "Ref": "XgemailMsgHistoryStatusQueueUrl" },
+                  "msg_history_delivery_status_sns_arn":      { "Ref": "XgemailMsgHistoryStatusSnsArn"},
+                  "msg_history_v2_bucket_name":               { "Ref": "MsgHistoryV2BucketName" },
+                  "msg_history_v2_dynamodb_table_name":       { "Ref": "MsgHistoryV2DynamoDbTableName"},
+                  "msg_history_v2_stream_name":               { "Ref": "MsgHistoryV2StreamName" },
+                  "msg_notifier_queue_url":                   { "Ref": "XgemailNotifierQueueUrl" },
+                  "region":                                   { "Ref": "AWS::Region" },
+                  "sdb_region":                               { "Ref": "SdbRegion" },
+                  "station_account_role_arn":                 { "Ref": "StationAccountRoleArn" },
+                  "station_vpc_id":                           { "Ref": "StationVpcId" },
+                  "stack":                                    { "Ref": "AWS::StackName" },
+                  "station_vpc_name":                         { "Ref": "StationVpcName" },
+                  "volume_min_iops":                          { "Ref": "EbsMinIops" },
+                  "volume_min_size_data_gb":                  { "Ref": "XgemailMinSizeDataGB" },
+                  "volume_set_id":                            { "Ref": "VolumeSetId" },
+                  "volume_tracker_sdb_domain":                { "Ref": "VolumeTrackerSimpleDbDomain" },
+                  "vpc_id":                                   { "Ref": "Vpc" },
+                  "vpc_name":                                 { "Ref": "VpcName" },
+                  "xgemail_policy_bucket_name":               { "Ref": "XgemailPolicyBucketName" }
                 },
                 "owner": "root",
                 "mode": "000444"
@@ -796,21 +749,9 @@
                     "",
                     [
                       "[main]\n",
-                      "stack=",
-                      {
-                        "Ref": "AWS::StackName"
-                      },
-                      "\n",
-                      "region=",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      "\n",
-                      "interval=",
-                      {
-                        "Ref": "UpdateInterval"
-                      },
-                      "\n"
+                      "stack=", { "Ref": "AWS::StackName" }, "\n",
+                      "region=", { "Ref": "AWS::Region" }, "\n",
+                      "interval=", { "Ref": "UpdateInterval" }, "\n"
                     ]
                   ]
                 }
@@ -823,17 +764,10 @@
                       "[cfn-auto-reloader-hook]\n",
                       "triggers=post.update\n",
                       "path=Resources.XgemailAutoScalingLaunchTemplate.Metadata.AWS::CloudFormation::Init\n",
-                      "action=/opt/aws/bin/cfn-init -v -s ",
-                      {
-                        "Ref": "AWS::StackName"
-                      },
+                      "action=/opt/aws/bin/cfn-init -v -s ", { "Ref": "AWS::StackName" },
                       " -r XgemailAutoScalingLaunchTemplate",
                       " --configsets xgemail_update",
-                      " --region ",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      "\n",
+                      " --region ", { "Ref": "AWS::Region" }, "\n",
                       "runas=root\n"
                     ]
                   ]
@@ -852,29 +786,9 @@
                       "echo 127.0.0.1 $host_name localhost >> /etc/hosts\n",
                       "echo $host_entry >> /etc/hosts\n",
                       "echo >> /etc/dhcp/dhclient.conf\n",
-                      "echo 'supersede domain-name \"",
-                      {
-                        "Fn::FindInMap": [
-                          "RegionConfigMap",
-                          {
-                            "Ref": "AWS::Region"
-                          },
-                          "PrivateDns"
-                        ]
-                      },
-                      "\";' >> /etc/dhcp/dhclient.conf\n",
+                      "echo 'supersede domain-name \"", { "Fn::FindInMap": [ "RegionConfigMap", { "Ref": "AWS::Region" }, "PrivateDns" ] }, "\";' >> /etc/dhcp/dhclient.conf\n",
                       "echo >> /etc/resolv.conf\n",
-                      "echo 'search ",
-                      {
-                        "Fn::FindInMap": [
-                          "RegionConfigMap",
-                          {
-                            "Ref": "AWS::Region"
-                          },
-                          "PrivateDns"
-                        ]
-                      },
-                      "' >> /etc/resolv.conf\n"
+                      "echo 'search ", { "Fn::FindInMap": [ "RegionConfigMap", { "Ref": "AWS::Region" }, "PrivateDns" ] }, "' >> /etc/resolv.conf\n"
                     ]
                   ]
                 },
@@ -972,42 +886,14 @@
                     "",
                     [
                       "#!/bin/bash\n",
-                      "export AWS_AMI_ID='",
-                      {
-                        "Ref": "AmiId"
-                      },
-                      "'\n",
-                      "export AWS_APPLICATION='",
-                      {
-                        "Ref": "XgemailServiceType"
-                      },
-                      "'\n",
-                      "export AWS_BRANCH='",
-                      {
-                        "Ref": "Branch"
-                      },
-                      "'\n",
-                      "export AWS_BUILD_TAG='",
-                      {
-                        "Ref": "BuildTag"
-                      },
-                      "'\n",
-                      "export AWS_BUNDLE_VERSION='",
-                      {
-                        "Ref": "BundleVersion"
-                      },
-                      "'\n",
+                      "export AWS_AMI_ID='", { "Ref": "AmiId" }, "'\n",
+                      "export AWS_APPLICATION='", { "Ref": "XgemailServiceType" }, "'\n",
+                      "export AWS_BRANCH='", { "Ref": "Branch" }, "'\n",
+                      "export AWS_BUILD_TAG='", { "Ref": "BuildTag" }, "'\n",
+                      "export AWS_BUNDLE_VERSION='", { "Ref": "BundleVersion" }, "'\n",
                       "export AWS_INSTANCE_ID=$(curl -f http://169.254.169.254/latest/meta-data/instance-id)\n",
-                      "export AWS_REGION='",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      "'\n",
-                      "export AWS_VPC_NAME='",
-                      {
-                        "Ref": "VpcName"
-                      },
-                      "'\n",
+                      "export AWS_REGION='", { "Ref": "AWS::Region" }, "'\n",
+                      "export AWS_VPC_NAME='", { "Ref": "VpcName" }, "'\n",
                       "for i in $(aws ec2 describe-volumes --region $AWS_REGION --filters Name=attachment.instance-id,Values=$AWS_INSTANCE_ID --query Volumes[*].VolumeId --output text); do aws ec2 create-tags --resources $i --tags Key=Application,Value=\"$AWS_APPLICATION\" Key=BaseAmi,Value=\"$AWS_AMI_ID\" Key=BuildTag,Value=\"$AWS_BUILD_TAG\" Key=BundleVersion,Value=\"$AWS_BUNDLE_VERSION\" Key=BusinessUnit,Value=MSG Key=Name,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION:$AWS_BRANCH:$AWS_BUNDLE_VERSION\" Key=OwnerEmail,Value=sophosmailops@sophos.com Key=Project,Value=xgemail Key=ServiceCategory,Value=\"$AWS_VPC_NAME:email\" Key=ServiceType,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION\" --region $AWS_REGION; done \n",
                       "for i in $(aws ec2 describe-network-interfaces --region $AWS_REGION --filters Name=attachment.instance-id,Values=$AWS_INSTANCE_ID --query NetworkInterfaces[0].NetworkInterfaceId --output text); do aws ec2 create-tags --resources $i --tags Key=Application,Value=\"$AWS_APPLICATION\" Key=BaseAmi,Value=\"$AWS_AMI_ID\" Key=BuildTag,Value=\"$AWS_BUILD_TAG\" Key=BundleVersion,Value=\"$AWS_BUNDLE_VERSION\" Key=BusinessUnit,Value=MSG Key=Name,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION:$AWS_BRANCH:$AWS_BUNDLE_VERSION\" Key=OwnerEmail,Value=sophosmailops@sophos.com Key=Project,Value=xgemail Key=ServiceCategory,Value=\"$AWS_VPC_NAME:email\" Key=ServiceType,Value=\"$AWS_VPC_NAME:$AWS_APPLICATION\" --region $AWS_REGION; done \n"
                     ]
