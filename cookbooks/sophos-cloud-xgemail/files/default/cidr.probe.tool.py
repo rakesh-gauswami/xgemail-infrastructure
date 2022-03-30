@@ -24,7 +24,7 @@ from smtplib import SMTPException
 from smtplib import SMTPSenderRefused
 from smtplib import SMTPRecipientsRefused
 
-MAIL_FROM = "no-reply@ca.emailencryption.sophosemail.com"
+MAIL_FROM = "do-not-reply@cloud.sophos.com"
 MAIL_PIC_RESPONSE_TIMEOUT = 30
 ERROR_ENTRIES_PATH = '/tmp/cidr.probe.tool.errors.txt'
 PROBE_RESPONSE_FILE = '/tmp/cidr.probe.response.json'
