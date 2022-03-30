@@ -156,6 +156,12 @@
       "Description" : "Message History firehose stream name",
       "Type": "String"
     },
+    "NewRelicEnabled": {
+      "Description": "Enable New Relic Infrastructure Monitoring",
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [ "true", "false" ]
+    },
     "ParentAccountName" : {
       "Description" : "FSC Parent Account Name",
       "Type": "String",
@@ -536,6 +542,9 @@
                       "  \"cert\" : {\n",
                       "    \"should_install_mx\"              : \"true\"\n",
                       "  },\n",
+                      "  \"newrelic\" : {\n",
+                      "    \"enabled\"                        : \"{{newrelic_enabled}}\"\n",
+                      "  },\n",
                       "  \"volumes\" : {\n",
                       "    \"kms_alias\"                      : \"{{kms_alias}}\",\n",
                       "    \"volume_min_iops\"                : \"{{volume_min_iops}}\",\n",
@@ -579,6 +588,7 @@
                   "msg_history_v2_bucket_name":               { "Ref": "MsgHistoryV2BucketName" },
                   "msg_history_v2_dynamodb_table_name":       { "Ref": "MsgHistoryV2DynamoDbTableName"},
                   "msg_history_v2_stream_name":               { "Ref": "MsgHistoryV2StreamName" },
+                  "newrelic_enabled":                               { "Ref": "NewRelicEnabled" },
                   "parent_account_name":                      { "Ref": "ParentAccountName" },
                   "region":                                   { "Ref": "AWS::Region" },
                   "sdb_region":                               { "Ref": "SdbRegion" },
