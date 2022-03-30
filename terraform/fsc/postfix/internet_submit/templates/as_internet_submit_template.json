@@ -158,6 +158,12 @@
       "Description" : "Message History firehose stream name",
       "Type": "String"
     },
+    "NewRelicEnabled": {
+      "Description": "Enable New Relic Infrastructure Monitoring",
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [ "true", "false" ]
+    },
     "ParentAccountName" : {
       "Description" : "FSC Parent Account Name",
       "Type": "String",
@@ -834,6 +840,9 @@
                     "    \"mx\"                                     : \"mx\",\n",
                     "    \"should_install_mx\"                      : \"true\"\n",
                     "  },\n",
+                    "  \"newrelic\" : {\n",
+                    "    \"enabled\"                                : \"{{newrelic_enabled}}\"\n",
+                    "  },\n",
                     "  \"xgemail\" : {\n",
                     "    \"alarm_topic_arn\"                        : \"{{alarm_topic_arn}}\",\n",
                     "    \"cluster_type\"                           : \"{{cluster_type}}\",\n",
@@ -876,6 +885,7 @@
                   "msg_history_queue_url":                          { "Ref": "XgemailMsgHistoryQueueUrl" },
                   "msg_history_v2_bucket_name":                     { "Ref": "MsgHistoryV2BucketName" },
                   "msg_history_v2_stream_name":                     { "Ref": "MsgHistoryV2StreamName" },
+                  "newrelic_enabled":                               { "Ref": "NewRelicEnabled" },
                   "parent_account_name":                            { "Ref": "ParentAccountName" },
                   "policy_efs_file_system_id":                      { "Ref": "XgemailPolicyEfsFileSystemId" },
                   "region":                                         { "Ref": "AWS::Region" },

@@ -17,6 +17,7 @@ locals {
   DEFAULT_AS_SCALE_IN_ON_WEEKENDS      = false
   DEFAULT_INSTANCE_SIZE                = "t3.medium"
   DEFAULT_INSTANCE_COUNT               = 1
+  DEFAULT_NEWRELIC_ENABLED             = false
   DEFAULT_XGEMAIL_SIZE_DATA_GB         = 35
   DEFAULT_SXL_DBL                      = "uri.vir1.sophosxl.com"
   DEFAULT_SXL_RBL                      = "fur.vir1.sophosxl.com"
@@ -136,6 +137,13 @@ locals {
     dev  = "t3.medium"
     qa   = "t3.medium"
     prod = "m5.2xlarge"
+  }
+
+  NEWRELIC_ENABLED_BY_ENVIRONMENT = {
+    inf  = false
+    dev  = false
+    qa   = false
+    prod = true
   }
 
   XGEMAIL_SIZE_DATA_GB_BY_ENVIRONMENT = {
@@ -269,6 +277,12 @@ locals {
     local.DEFAULT_INSTANCE_SIZE
   )
 
+  newrelic_enabled = lookup(
+    local.NEWRELIC_ENABLED_BY_ENVIRONMENT,
+    local.input_param_newrelic_enabled,
+    local.DEFAULT_NEWRELIC_ENABLED
+  )
+
   xgemail_size_data_gb = lookup(
     local.XGEMAIL_SIZE_DATA_GB_BY_ENVIRONMENT,
     local.input_param_deployment_environment,
@@ -324,6 +338,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     MsgHistoryV2BucketName           = var.message_history_ms_bucket
     MsgHistoryV2StreamName           = var.message_history_v2_stream_name
     MessageHistoryEventsTopicArn     = var.message_history_events_sns_topic
+    NewRelicEnabled                  = local.newrelic_enabled
     ParentAccountName                = local.input_param_parent_account_name
     PolicyTargetValue                = local.as_policy_target_value
     S3CookbookRepositoryURL          = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/${var.build_number}/cookbooks.tar.gz"
