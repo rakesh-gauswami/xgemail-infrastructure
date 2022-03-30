@@ -139,6 +139,12 @@
       "Description" : "Message History firehose stream name",
       "Type": "String"
     },
+    "NewRelicEnabled": {
+      "Description": "Enable New Relic Infrastructure Monitoring",
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [ "true", "false" ]
+    },
     "NotifierQueueUrl" : {
       "Description" : "URL for the SQS Queue where XGEMAIL notification messages are sent",
       "Type" : "String",
@@ -505,6 +511,9 @@
                       "  },\n",
                       "  \"cert\" : {\n",
                       "    \"should_install_mx\"              : \"true\"\n",
+                      "  },\n",
+                      "  \"newrelic\" : {\n",
+                      "    \"enabled\"                        : \"{{newrelic_enabled}}\"\n",
                       "  },\n",
                       "  \"volumes\" : {\n",
                       "    \"kms_alias\"                      : \"{{kms_alias}}\",\n",
