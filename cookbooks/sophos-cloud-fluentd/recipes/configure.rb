@@ -370,13 +370,12 @@ end
 # customer-submit, encryption-submit, and encryption-delivery - Start Order: 20
 template 'fluentd-match-maillog' do
   path "#{CONF_DIR}/20-match-maillog.conf"
-  source 'fluentd-match-generic.conf.erb'
+  source 'fluentd-match-maillog.conf.erb'
   mode '0644'
   owner 'root'
   group 'root'
   variables(
     :application_name => NODE_TYPE,
-    :log_name => 'maillog',
     :filter_patterns => MAILLOG_FILTER_PATTERNS
   )
   only_if {
@@ -885,8 +884,11 @@ template 'fluentd-filter-transform-sqs-telemetry-log' do
     )
   only_if {
       NODE_TYPE == 'internet-submit' ||
-      NODE_TYPE == 'mf-inbound-submit'
-    }
+      NODE_TYPE == 'mf-inbound-submit' ||
+      NODE_TYPE == 'mf-outbound-submit' ||
+      NODE_TYPE == 'customer-submit' ||
+      NODE_TYPE == 'encryption-submit'
+  }
 end
 
 # Start Order: 75
@@ -1227,9 +1229,12 @@ template 'fluentd-match-sqs-telemetry-log-legacy' do
       :trace_telemetry_queue => TRACE_TELEMETRY_SQS
   )
   only_if {
-      NODE_TYPE == 'internet-submit' ||
-      NODE_TYPE == 'mf-inbound-submit'
-    }
+    NODE_TYPE == 'internet-submit' ||
+    NODE_TYPE == 'mf-inbound-submit' ||
+    NODE_TYPE == 'mf-outbound-submit' ||
+    NODE_TYPE == 'customer-submit' ||
+    NODE_TYPE == 'encryption-submit'
+  }
   not_if {
     ACCOUNT_NAME != 'legacy'
   }
@@ -1247,9 +1252,12 @@ template 'fluentd-match-sqs-telemetry-log-fsc' do
       :assume_role_arn => STATION_ACCOUNT_ROLE_ARN
   )
   only_if {
-      NODE_TYPE == 'internet-submit' ||
-      NODE_TYPE == 'mf-inbound-submit'
-    }
+    NODE_TYPE == 'internet-submit' ||
+    NODE_TYPE == 'mf-inbound-submit' ||
+    NODE_TYPE == 'mf-outbound-submit' ||
+    NODE_TYPE == 'customer-submit' ||
+    NODE_TYPE == 'encryption-submit'
+  }
   not_if {
     ACCOUNT_NAME == 'legacy'
   }
