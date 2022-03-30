@@ -1057,8 +1057,8 @@
                   "\n",
                   "  ACCOUNT='", { "Ref": "AccountName" }, "'\n",
                   "  BRANCH='", { "Ref": "Branch" }, "'\n",
-                  "  ENVIRONMENT='", { "Ref": "Environment" }, "'\n",
                   "  DEPLOYMENT_NAME='", { "Ref": "XgemailServiceType" }, "'\n",
+                  "  ENVIRONMENT='", { "Ref": "Environment" }, "'\n",
                   "  # Set LastHealth tag so cloud list command shows progress.\n",
                   "  if [ \"$exit_code\" == 0 ]; then\n",
                   "    /opt/sophos/bin/set_instance_tag.py LastHealth UserDataSuccess\n",
@@ -1072,20 +1072,25 @@
                   "    /opt/sophos/bin/upload_deployment_logs.py -a ${ACCOUNT} -b ${BRANCH} ${DEPLOYMENT_NAME}\n",
                   "  fi\n",
                   "\n",
+
                   "  /opt/aws/bin/cfn-signal -e $exit_code",
                   " --stack ", { "Ref": "AWS::StackName" },
                   " --resource XgemailAutoScalingGroup",
                   " --region ", { "Ref": "AWS::Region" }, "\n",
                   "}\n",
                   "\n",
+
                   "trap onexit EXIT\n",
                   "\n",
+
                   "# Wait for network access.\n",
                   "/usr/bin/nc -v -z -w 60 www.google.com 80\n",
                   "\n",
+
                   "# Set LastHealth tag so cloud list command shows progress.\n",
                   "/opt/sophos/bin/set_instance_tag.py LastHealth UserDataStarted\n",
                   "\n",
+
                   "/opt/aws/bin/cfn-init --verbose ",
                   " --stack ", { "Ref": "AWS::StackName" },
                   " --resource XgemailAutoScalingLaunchTemplate ",
@@ -1099,6 +1104,7 @@
                   "# and generate a call to onexit before this code is reached.\n",
                   "set +o errexit\n",
                   "\n",
+
                   "# Now the onexit function will get called.\n"
                 ]
               ]
