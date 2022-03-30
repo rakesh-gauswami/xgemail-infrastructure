@@ -163,6 +163,12 @@
       "Description" : "Message History firehose stream name",
       "Type": "String"
     },
+    "NewRelicEnabled": {
+      "Description": "Enable New Relic Infrastructure Monitoring",
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [ "true", "false" ]
+    },
     "ParentAccountName" : {
       "Description" : "FSC Parent Account Name",
       "Type": "String",
@@ -742,6 +748,9 @@
                     "    \"mx\"                                     : \"mx\",\n",
                     "    \"should_install_mx\"                      : \"true\"\n",
                     "  },\n",
+                    "  \"newrelic\" : {\n",
+                    "    \"enabled\"                                : \"{{newrelic_enabled}}\"\n",
+                    "  },\n",
                     "  \"xgemail\" : {\n",
                     "    \"alarm_topic_arn\"                        : \"{{alarm_topic_arn}}\",\n",
                     "    \"cluster_type\"                           : \"{{cluster_type}}\",\n",
@@ -776,6 +785,7 @@
                   "msg_history_v2_dynamodb_table_name":             { "Ref": "MsgHistoryV2DynamoDbTableName"},
                   "msg_history_v2_stream_name":                     { "Ref": "MsgHistoryV2StreamName" },
                   "msg_notifier_queue_url":                         { "Ref": "XgemailNotifierQueueUrl" },
+                  "newrelic_enabled":                               { "Ref": "NewRelicEnabled" },
                   "parent_account_name":                            { "Ref": "ParentAccountName" },
                   "region":                                         { "Ref": "AWS::Region" },
                   "stack":                                          { "Ref": "AWS::StackName" },
