@@ -150,6 +150,12 @@
       "Description" : "Message History firehose stream name",
       "Type": "String"
     },
+    "NewRelicEnabled": {
+      "Description": "Enable New Relic Infrastructure Monitoring",
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [ "true", "false" ]
+    },
     "ParentAccountName" : {
       "Description" : "FSC Parent Account Name",
       "Type": "String",
@@ -524,6 +530,9 @@
                       "  },\n",
                       "  \"cert\" : {\n",
                       "    \"should_install_mx\"              : \"true\"\n",
+                      "  },\n",
+                      "  \"newrelic\" : {\n",
+                      "    \"enabled\"                        : \"{{newrelic_enabled}}\"\n",
                       "  },\n",
                       "  \"volumes\" : {\n",
                       "    \"kms_alias\"                      : \"{{kms_alias}}\",\n",
