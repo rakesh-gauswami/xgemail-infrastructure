@@ -102,3 +102,6 @@ module SophosCentral
 
   end
 end
+
+Chef::Recipe.include( SophosCentral::SophosNewrelicHelper )
+Chef::Resource.include( SophosCentral::SophosNewrelicHelper )
