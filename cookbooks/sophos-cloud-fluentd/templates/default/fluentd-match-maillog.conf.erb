@@ -1,0 +1,32 @@
+# sqs.telemetry.log
+# Jan 18 21:53:35 ip-172-21-0-123 postfix-is/smtpd[19485]: 4DZ3yR47lmzsR4d: client_ip=91.216.61.22,helo=bad-domain.com,arrival_time=1632565736,mail_from=badguy@bad-domain.com,rcpt_to=recipient@sophos-email-customer.com,client_hostname=bad-server.com,sxl_fur_query=91.216.61.22.fur.ire1.sophosxl.com,sxl_fur_response=127.0.4.3,sxl_uri_query=bad-domain.com.uri.ire1.sophosxl.com,sxl_uri_response=127.0.1.4,nrcpt=5,bad_rcpt=1,reject_rcpt=0,data_sent=1,data_size=4077,starttls=0,tls_version=TLSv1.2,action=ACCEPTED,processing_time=32322
+#
+
+<match raw.maillog.log>
+  @type copy
+  <store>
+    @type rewrite_tag_filter
+    <rule>
+      key message
+      pattern  <%= @filter_patterns %>
+      tag clear
+    </rule>
+    <rule>
+      key message
+      pattern .+
+      tag sophos.xgemail.<%= @application_name %>.maillog
+    </rule>
+  </store>
+  <store>
+    @type rewrite_tag_filter
+    <rule>
+      key message
+      pattern ([^ ]+) ([^ ]+): ([^ ]*): client_ip=([^ ]+),helo=([^ ]*),arrival_time=([^ ]+),mail_from=([^ ]*),rcpt_to=([^ ]*),client_hostname=([^ ]+),sxl_fur_query=([^ ]*),sxl_fur_response=([^ ]*),sxl_uri_query=([^ ]*),sxl_uri_response=([^ ]*),nrcpt=([^ ]+),bad_rcpt=([^ ]+),reject_rcpt=([^ ]+),data_sent=([^ ]+),data_size=([^ ]+),starttls=([^ ]+),tls_version=([^ ]*),action=([^ ]+),processing_time=([^ ]+)
+      tag sqs.telemetry.log
+    </rule>
+  </store>
+</match>
+
+<match clear>
+  @type null
+</match>

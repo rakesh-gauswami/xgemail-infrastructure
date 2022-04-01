@@ -26,6 +26,8 @@ DSN %{NONNEGINT}.%{NONNEGINT}.%{NONNEGINT}
 STATUS sent|deferred|bounced|expired
 PERMERROR 5[0-9]{2}
 MESSAGELEVEL reject|warning|error|fatal|panic
+ACTION ACCEPTED|REJECTED
+STARTTLS 0|1
 
 # Sophos stuff
 SOPHOS_UUID SOPHOS_UUID_%{UUID}
@@ -44,7 +46,7 @@ POSTFIXSMTPLOSTCONNECTION %{QUEUEID:queue_id}: lost connection with %{RELAY} whi
 POSTFIXSMTPTIMEOUT %{QUEUEID:queue_id}: conversation with %{RELAY} timed out while %{GREEDYDATA:reason}
 
 # postfix/smtpd
-POSTFIXSMTPD %{POSTFIXSMTPDCONNECTS}|%{POSTFIXSMTPDMILTER}|%{POSTFIXSMTPDACTIONSUUID}|%{POSTFIXSMTPDACTIONS}|%{POSTFIXSMTPDTIMEOUTS}|%{POSTFIXSMTPDLOGIN}|%{POSTFIXSMTPDCLIENT}|%{POSTFIXSMTPDNOQUEUEUUID}|%{POSTFIXSMTPDNOQUEUE}|%{POSTFIXSMTPDWARNING}|%{POSTFIXSMTPDLOSTCONNECTION}|%{POSTFIXSMTPDSSLERROR}
+POSTFIXSMTPD %{POSTFIXSMTPDCONNECTS}|%{POSTFIXSMTPDMILTER}|%{POSTFIXSMTPDACTIONSUUID}|%{POSTFIXSMTPDACTIONS}|%{POSTFIXSMTPDTIMEOUTS}|%{POSTFIXSMTPDLOGIN}|%{POSTFIXSMTPDCLIENT}|%{POSTFIXSMTPDNOQUEUEUUID}|%{POSTFIXSMTPDNOQUEUE}|%{POSTFIXSMTPDWARNING}|%{POSTFIXSMTPDLOSTCONNECTION}|%{POSTFIXSMTPDSSLERROR}|%{POSTFIXSMTPTIMELOG}
 POSTFIXSMTPDCONNECTS (?:dis)?connect from %{RELAY}
 POSTFIXSMTPDMILTER %{MILTERCONNECT}|%{MILTERUNKNOWN}|%{MILTEREHLO}|%{MILTERMAIL}|%{MILTERHELO}|%{MILTERRCPT}
 POSTFIXSMTPDACTIONSUUID %{QUEUEID:queue_id}: %{POSTFIXACTION:postfix_action}: %{SOPHOS_UUID:sophos_uuid}: %{DATA:command} from %{RELAY}: %{PERMERROR:response_code} %{DSN:dsn} %{DATA}: %{DATA:reason}; from=<%{SENDERADDRESS:sender}> to=<%{RECIPIENTADDRESS:recipient}> proto=%{DATA:proto} helo=<%{HELO}>
@@ -57,6 +59,7 @@ POSTFIXSMTPDNOQUEUE NOQUEUE: %{POSTFIXACTION:postfix_action}: %{DATA:command} fr
 POSTFIXSMTPDWARNING warning:( %{IP}: | hostname %{HOSTNAME} )?%{GREEDYDATA:reason}
 POSTFIXSMTPDLOSTCONNECTION (?:lost connection after %{DATA:smtp_response} from %{RELAY}|improper command pipelining after HELO from %{GREEDYDATA:reason})
 POSTFIXSMTPDSSLERROR SSL_accept error from %{RELAY}: %{DATA}
+POSTFIXSMTPTIMELOG %{QUEUEID:queue_id}: client_ip=%{IP:client},helo=%{HELO:helo},arrival_time=%{NUMBER:arrival_time},mail_from=%{SENDERADDRESS:mail_from},rcpt_to=%{RECIPIENTADDRESS:rcpt_to},client_hostname=%{HOSTNAME:client_hostname},sxl_fur_query=%{DATA:sxl_fur_query},sxl_fur_response=%{IP:sxl_fur_response},sxl_uri_query=%{DATA:sxl_uri_query},sxl_uri_response=%{IP:sxl_uri_response},nrcpt=%{NUMBER:nrcpt},bad_rcpt=%{NUMBER:bad_rcpt},reject_rcpt=%{NUMBER:reject_rcpt},data_sent=%{NUMBER:data_sent},data_size=%{NUMBER:data_size},starttls=%{STARTTLS:starttls},tls_version=%{DATA:tls_version},action=%{ACTION:action},processing_time=%{NUMBER:processing_time}
 
 # postfix/cleanup
 POSTFIXCLEANUP %{POSTFIXCLEANUPMESSAGE}|%{POSTFIXCLEANUPMILTER}
