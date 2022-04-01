@@ -1,26 +1,27 @@
 locals {
-  DEFAULT_AS_ALARM_SCALING_ENABLED     = false
-  DEFAULT_AS_ALARM_SCALE_IN_THRESHOLD  = 10
-  DEFAULT_AS_ALARM_SCALE_OUT_THRESHOLD = 50
-  DEFAULT_AS_MIN_SIZE                  = 1
-  DEFAULT_AS_MAX_SIZE                  = 6
-  DEFAULT_AS_MIN_SERVICE               = 1
-  DEFAULT_AS_MAX_BATCH_SIZE            = 1
-  DEFAULT_AS_CRON_SCALE_DOWN           = "0 1 * * 6"
-  DEFAULT_AS_CRON_SCALE_UP             = "0 4 * * 1"
-  DEFAULT_AS_CRON_SCALE_IN             = "00 02 * * 1-5"
-  DEFAULT_AS_CRON_SCALE_OUT            = "30 14 * * 1-5"
-  DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD = 900
-  DEFAULT_AS_POLICY_TARGET_VALUE       = 90
-  DEFAULT_AS_ON_HOUR_DESIRED           = 2
-  DEFAULT_AS_SCALE_IN_OUT_WEEKDAYS     = false
-  DEFAULT_AS_SCALE_IN_ON_WEEKENDS      = false
-  DEFAULT_EIP_COUNT                    = 1
-  DEFAULT_INSTANCE_SIZE                = "t3.medium"
-  DEFAULT_INSTANCE_COUNT               = 1
-  DEFAULT_XGEMAIL_SIZE_DATA_GB         = 35
-  DEFAULT_SXL_DBL                      = "uri.vir1.sophosxl.com"
-  DEFAULT_SXL_RBL                      = "fur.vir1.sophosxl.com"
+  DEFAULT_AS_ALARM_SCALING_ENABLED          = false
+  DEFAULT_AS_ALARM_SCALE_IN_THRESHOLD       = 10
+  DEFAULT_AS_ALARM_SCALE_OUT_THRESHOLD      = 50
+  DEFAULT_AS_MIN_SIZE                       = 1
+  DEFAULT_AS_MAX_SIZE                       = 6
+  DEFAULT_AS_MIN_SERVICE                    = 1
+  DEFAULT_AS_MAX_BATCH_SIZE                 = 1
+  DEFAULT_AS_CRON_SCALE_DOWN                = "0 1 * * 6"
+  DEFAULT_AS_CRON_SCALE_UP                  = "0 4 * * 1"
+  DEFAULT_AS_CRON_SCALE_IN                  = "00 02 * * 1-5"
+  DEFAULT_AS_CRON_SCALE_OUT                 = "30 14 * * 1-5"
+  DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD      = 900
+  DEFAULT_AS_POLICY_TARGET_VALUE            = 90
+  DEFAULT_AS_ON_HOUR_DESIRED                = 2
+  DEFAULT_AS_SCALE_IN_OUT_WEEKDAYS          = false
+  DEFAULT_AS_SCALE_IN_ON_WEEKENDS           = false
+  DEFAULT_EIP_COUNT                         = 1
+  DEFAULT_INSTANCE_SIZE                     = "t3.medium"
+  DEFAULT_INSTANCE_COUNT                    = 1
+  DEFAULT_NEWRELIC_ENABLED                  = false
+  DEFAULT_XGEMAIL_SIZE_DATA_GB              = 35
+  DEFAULT_SXL_DBL                           = "uri.vir1.sophosxl.com"
+  DEFAULT_SXL_RBL                           = "fur.vir1.sophosxl.com"
 
   AS_ALARM_SCALING_ENABLED_BY_ENVIRONMENT = {
     inf  = false
@@ -28,6 +29,7 @@ locals {
     qa   = false
     prod = true
   }
+
   AS_ALARM_SCALE_IN_THRESHOLD_BY_ENVIRONMENT = {
     inf  = 10
     dev  = 10
@@ -41,6 +43,7 @@ locals {
     qa   = 50
     prod = 500
   }
+
   AS_MIN_SIZE_BY_ENVIRONMENT = {
     inf  = 1
     dev  = 1
@@ -144,6 +147,13 @@ locals {
     dev  = "t3.small"
     qa   = "t3.small"
     prod = "m5a.large"
+  }
+
+  NEWRELIC_ENABLED_BY_ENVIRONMENT = {
+    inf  = false
+    dev  = false
+    qa   = false
+    prod = true
   }
 
   XGEMAIL_SIZE_DATA_GB_BY_ENVIRONMENT = {
@@ -283,6 +293,12 @@ locals {
     local.DEFAULT_INSTANCE_SIZE
   )
 
+  newrelic_enabled = lookup(
+    local.NEWRELIC_ENABLED_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_NEWRELIC_ENABLED
+  )
+
   xgemail_size_data_gb = lookup(
     local.XGEMAIL_SIZE_DATA_GB_BY_ENVIRONMENT,
     local.input_param_deployment_environment,
@@ -342,6 +358,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     MsgHistoryV2BucketName           = var.message_history_ms_bucket
     MsgHistoryV2DynamoDbTableName    = var.message_history_dynamodb_table_name
     MsgHistoryV2StreamName           = var.message_history_v2_stream_name
+    NewRelicEnabled                  = local.newrelic_enabled
     ParentAccountName                = local.input_param_parent_account_name
     S3CookbookRepositoryURL          = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/${var.build_number}/cookbooks.tar.gz"
     ScaleInOnWeekends                = local.as_scale_in_on_weekends
