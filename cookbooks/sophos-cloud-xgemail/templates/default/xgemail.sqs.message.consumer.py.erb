@@ -620,17 +620,6 @@ def deliver_messages():
                 queue_id = metadata["queue_id"]
                 sender = metadata["sender_address"]
                 recipients = metadata["recipients"]
-
-                # required logging for EncryptionServiceTest automation test
-                logger.info(
-                    "Email and metadata retrieved from S3. "
-                    "QueueId: {0} - sender: {1} - recipients: [<{2}>]"
-                        .format(
-                        queue_id.encode('utf-8'),
-                        None if sender is None else sender.encode('utf-8'),
-                        '>, <'.join(r.encode('utf-8') for r in recipients)
-                    )
-                )
     
                 mh_mail_info, can_generate_mh_event = messagehistory.get_mail_info(sqs_message, AWS_REGION, MSG_HISTORY_V2_BUCKET)
                 if can_generate_mh_event:
