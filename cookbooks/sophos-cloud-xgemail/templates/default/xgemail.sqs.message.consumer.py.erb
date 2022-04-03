@@ -376,8 +376,12 @@ def sendmail_to_postfix(server, from_addr, to_addrs, msg, mail_options=[], rcpt_
             esmtp_opts.append('smtputf8')
         for option in mail_options:
             esmtp_opts.append(option)
+    try:
+      (code, resp) = server.mail(from_addr, esmtp_opts)
+    except UnicodeEncodeError:
+      # if encoding error, try encoding from into utf8
+      (code, resp) = server.mail(encode_as_utf8(from_addr), esmtp_opts)
 
-    (code, resp) = server.mail(encode_as_utf8(from_addr), esmtp_opts)
     if code != 250:
         server.rset()
         raise SMTPSenderRefused(code, resp, from_addr)
@@ -387,7 +391,12 @@ def sendmail_to_postfix(server, from_addr, to_addrs, msg, mail_options=[], rcpt_
         to_addrs = [to_addrs]
 
     for each in to_addrs:
-        (code, resp) = server.rcpt(encode_as_utf8(each), rcpt_options)
+        try:
+          (code, resp) = server.rcpt(each, rcpt_options)
+        except UnicodeEncodeError:
+          # if encoding error, try encoding recipient into utf8
+          (code, resp) = server.rcpt(encode_as_utf8(each), rcpt_options)
+
         if (code != 250) and (code != 251):
             senderrs[each] = (code, resp)
 
