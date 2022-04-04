@@ -111,7 +111,7 @@ JILTER_ENCRYPTION_PACKAGE_NAME = "xgemail-jilter-encryption-#{JILTER_ENCRYPTION_
 JILTER_DELIVERY_VERSION = node['xgemail']['jilter_delivery_version']
 JILTER_DELIVERY_PACKAGE_NAME = "xgemail-jilter-delivery-#{JILTER_DELIVERY_VERSION}"
 
-POSTFIX3_RPM = "postfix3-sophos-#{node['xgemail']['postfix3_version']}.amzn2.x86_64.rpm"
+POSTFIX3_RPM = "postfix3-sophos-#{node['xgemail']['postfix3_version']}.el7.x86_64.rpm"
 
 directory SOPHOS_BIN_DIR do
   mode '0755'
