@@ -119,7 +119,7 @@ locals {
   }
 
   NEWRELIC_ENABLED_BY_ENVIRONMENT = {
-    inf  = false
+    inf  = true
     dev  = false
     qa   = false
     prod = true
