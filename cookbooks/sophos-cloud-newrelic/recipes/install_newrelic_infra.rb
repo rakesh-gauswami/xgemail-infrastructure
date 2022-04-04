@@ -37,8 +37,9 @@ directory NEWRELIC_INFRA_BIN_LOCATION do
   recursive true
 end
 
-yum_package NEWRELIC_INFRA_AGENT_RPM_NAME do
+yum_package NEWRELIC_INFRA_SERVICE do
   action :install
+  version NEWRELIC_INFRA_VERSION
   notifies :stop, SYSTEMD_UNIT_RESOURCE, :immediately
   notifies :disable, SYSTEMD_UNIT_RESOURCE, :immediately
   notifies :create, "file[#{NEWRELIC_INFRA_INSTALL_STATUS}]", :immediately
