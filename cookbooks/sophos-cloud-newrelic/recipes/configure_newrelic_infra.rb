@@ -25,6 +25,12 @@ ruby_block 'Get New Relic License' do
   end
 end
 
+
+# Note that the NewRelic yum installation by default sets up the newrelic-infra agent with systemd
+systemd_unit NEWRELIC_INFRA_SERVICE do
+  action :nothing
+end
+
 template NEWRELIC_INFRA_CONF_FILE do
   source 'newrelic-infra.yml.erb'
   mode '0640'
@@ -57,9 +63,4 @@ template NEWRELIC_INFRA_CONF_FILE do
   only_if {
     newrelic_infra_enabled()
   }
-end
-
-# Note that the NewRelic yum installation by default sets up the newrelic-infra agent with systemd
-systemd_unit NEWRELIC_INFRA_SERVICE do
-  action :nothing
 end
