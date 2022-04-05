@@ -16,7 +16,7 @@ MILTERENDOFMESSAGE %{QUEUEID:queue_id}: milter-reject: END-OF-MESSAGE from %{REL
 
 # Postfix stuff
 HELO (?:\[%{IP:helo}\]|%{HOSTNAME:helo}|%{DATA:helo})
-QUEUEID ([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE)
+QUEUEID ([0-9A-F]{6,}|[0-9a-zA-Z]{12,}|NOQUEUE|%{SPACE})
 EMAILADDRESSPART [a-zA-Z0-9_.+-=:~]+
 SENDERADDRESS (?:%{EMAILLOCALPART:sender_name}@%{HOSTNAME:sender_domain}|%{DATA})
 RECIPIENTADDRESS (?:%{EMAILLOCALPART:recipient_name}@%{HOSTNAME:recipient_domain}|%{DATA})
