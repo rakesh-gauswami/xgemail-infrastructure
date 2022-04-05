@@ -495,7 +495,7 @@
     var: mf_outbound_monitor_send_stack
     verbosity: 3
 
-- name: "Display Outbound Monitor Send Lambda Function Stack Output"
+- name: "Display MF Outbound Monitor Send Lambda Function Stack Output"
   debug:
     msg: "{{mf_outbound_monitor_send_stack.stack_outputs}}"
     verbosity: 2
@@ -577,7 +577,7 @@
     dest: "{{role_path}}/xgemail_inbound_mf_monitor_send.zip"
     format: zip
 
-- name: "Upload inbound monitor send lambda function for {{stack.lambda.inbound_mf_monitor_send_lambda_function}} to the config bucket {{s3.lambda_bucket}}"
+- name: "Upload MF inbound monitor send lambda function for {{stack.lambda.inbound_mf_monitor_send_lambda_function}} to the config bucket {{s3.lambda_bucket}}"
   s3:
     mode:               put
     region:             "{{account.region}}"
@@ -597,7 +597,7 @@
     var: cloud_email_monitor_iam_output
     verbosity: 3
 
-- name: "Deploy inbound monitor send lambda function {{stack.lambda.inbound_mf_monitor_send_lambda_function}} to {{account.name}}-{{account.region}}"
+- name: "Deploy MF inbound monitor send lambda function {{stack.lambda.inbound_mf_monitor_send_lambda_function}} to {{account.name}}-{{account.region}}"
   cloudformation:
     stack_name:                             "{{stack.lambda.inbound_mf_monitor_send_lambda_function}}"
     state:                                  present
@@ -623,20 +623,20 @@
     var: inbound_mf_monitor_send_stack
     verbosity: 3
 
-- name: "Display inbound mailflow monitor send lambda function stack output"
+- name: "Display MF inbound mailflow monitor send lambda function stack output"
   debug:
     msg: "{{inbound_mf_monitor_send_stack.stack_outputs}}"
     verbosity: 2
 
 # Inbound MailFlow Monitor Receive Lambda Function
-- name: "Create a zip archive of inbound monitor receive lambda function"
+- name: "Create a zip archive of MF inbound monitor receive lambda function"
   archive:
     path:
       - /work/lambda/xgemail_inbound_mf_monitor_receive.js
     dest: "{{role_path}}/xgemail_inbound_mf_monitor_receive.zip"
     format: zip
 
-- name: "Upload the Inbound mailflow monitor receive lambda function for {{stack.lambda.inbound_mf_monitor_receive_lambda_function}} to the config bucket {{s3.lambda_bucket}}"
+- name: "Upload the MF Inbound mailflow monitor receive lambda function for {{stack.lambda.inbound_mf_monitor_receive_lambda_function}} to the config bucket {{s3.lambda_bucket}}"
   s3:
     mode:               put
     region:             "{{account.region}}"
