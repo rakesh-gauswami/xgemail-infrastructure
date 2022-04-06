@@ -1,13 +1,13 @@
 default['newrelic']['enabled'] = 'false'
+
+default['newrelic']['version'] = '8.5.69'
+
 default['newrelic']['owner'] = 'newrelic'
 default['newrelic']['group'] = 'newrelic'
 
 # The newrelic-infra.yml has to be located either at '/etc/newrelic-infra.yml' or '/etc/newrelic-infra/newrelic-infra.yml'
 # There is no way to override this location without manually installing a tarball and doing a lot more configuration work
-default['newrelic']['infra']['service'] = 'newrelic-infra'
-default['newrelic']['infra']['version'] = '1.24.0-1'
-default['newrelic']['infra']['platform'] = 'amazonlinux-2'
-default['newrelic']['infra']['arch'] = 'x86_64'
+default['newrelic']['infra']['version'] = '1.24.0-1.amazonlinux-2'
 default['newrelic']['infra']['bin_location'] = '/etc/newrelic-infra/bin'
 default['newrelic']['infra']['log_location'] = '/var/log/newrelic-infra'
 default['newrelic']['infra']['conf_location'] = '/etc/newrelic-infra'

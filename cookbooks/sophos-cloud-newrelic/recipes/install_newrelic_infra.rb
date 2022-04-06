@@ -8,27 +8,28 @@ LOGS_OWNER = 'root'
 
 NEWRELIC_INFRA_LOG_LOCATION = newrelic_infra_log_location()
 NEWRELIC_INFRA_BIN_LOCATION = newrelic_infra_bin_location()
-NEWRELIC_INFRA_SERVICE = node['newrelic']['infra']['service']
 NEWRELIC_INFRA_VERSION = node['newrelic']['infra']['version']
-NEWRELIC_INFRA_ARCH = node['newrelic']['infra']['arch']
-NEWRELIC_INFRA_AGENT_RPM_NAME = newrelic_infra_agent_rpm_name()
+NEWRELIC_INFRA_SERVICE = "newrelic-infra"
 NEWRELIC_INFRA_INSTALL_STATUS = "#{Chef::Config['file_cache_path']}/newrelic-infra-install.status"
+NEWRELIC_INFRA_AGENT_RPM_NAME = newrelic_infra_agent_rpm_name()
 
 SYSTEMD_UNIT_RESOURCE = "systemd_unit[#{NEWRELIC_INFRA_SERVICE}]"
 
 NEWRELIC_GROUP = node['newrelic']['group']
 
-yum_repository NEWRELIC_INFRA_SERVICE do
-  description       'New Relic Infrastructure'
-  enabled           true
-  baseurl           'https://download.newrelic.com/infrastructure_agent/linux/yum/amazonlinux/2/x86_64/'
-  gpgkey            'https://download.newrelic.com/infrastructure_agent/gpg/newrelic-infra.gpg'
-  gpgcheck          true
-  repo_gpgcheck     true
-  make_cache        true
+cookbook_file "/etc/yum.repos.d/#{NEWRELIC_INFRA_SERVICE}.repo" do
+  path "/etc/yum.repos.d/#{NEWRELIC_INFRA_SERVICE}.repo"
+  source "#{NEWRELIC_INFRA_SERVICE}.repo"
   mode '0644'
+  owner 'root'
+  group 'root'
+end
 
-  action            :create
+execute 'yum makecache' do
+  user 'root'
+  command <<-EOH
+      yum -q makecache -y --disablerepo='*' --enablerepo='#{NEWRELIC_INFRA_SERVICE}'
+  EOH
 end
 
 directory NEWRELIC_INFRA_BIN_LOCATION do
@@ -37,13 +38,11 @@ directory NEWRELIC_INFRA_BIN_LOCATION do
 end
 
 yum_package NEWRELIC_INFRA_SERVICE do
-  version   NEWRELIC_INFRA_VERSION
-  arch      NEWRELIC_INFRA_ARCH
+  action :install
+  version NEWRELIC_INFRA_VERSION
   notifies :stop, SYSTEMD_UNIT_RESOURCE, :immediately
   notifies :disable, SYSTEMD_UNIT_RESOURCE, :immediately
   notifies :create, "file[#{NEWRELIC_INFRA_INSTALL_STATUS}]", :immediately
-
-  action   :install
 
   not_if { ::File.exist?("#{NEWRELIC_INFRA_INSTALL_STATUS}") }
 end
