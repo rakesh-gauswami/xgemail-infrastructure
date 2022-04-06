@@ -97,7 +97,7 @@ module SophosCentral
     end
 
     def newrelic_infra_agent_rpm_name ()
-      return "#{node['newrelic']['infra']['service']}-#{node['newrelic']['infra']['version']}.#{node['newrelic']['infra']['platform']}.#{node['newrelic']['infra']['arch']}.rpm"
+      return "#{node['newrelic']['infra']['service']}-#{node['newrelic']['infra']['version']}.#{node['newrelic']['infra']['platform']}.#{node['newrelic']['infra']['arch']}"
     end
 
   end
