@@ -38,6 +38,7 @@ yum_package NEWRELIC_INFRA_AGENT_RPM_NAME do
   notifies :stop, SYSTEMD_UNIT_RESOURCE, :immediately
   notifies :disable, SYSTEMD_UNIT_RESOURCE, :immediately
   notifies :create, "file[#{NEWRELIC_INFRA_INSTALL_STATUS}]", :immediately
+  flush_cache [ :before ]
 
   action   :install
 
