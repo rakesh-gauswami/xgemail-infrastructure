@@ -4,6 +4,8 @@
 #
 # Copyright:: 2022, Sophos 2022, All Rights Reserved.
 
+require 'open3'
+
 module SophosCentral
   module SophosNewrelicHelper
 
@@ -26,9 +28,7 @@ module SophosCentral
     end
 
     def newrelic_license ()
-
       license_key = newrelic_aws_secret_string('/central/newrelic/license')
-
       return license_key.nil? ? "" : license_key
     end
 
@@ -97,7 +97,7 @@ module SophosCentral
     end
 
     def newrelic_infra_agent_rpm_name ()
-      return "newrelic-infra-#{node['newrelic']['infra']['version']}.x86_64"
+      return "#{node['newrelic']['infra']['service']}-#{node['newrelic']['infra']['version']}.#{node['newrelic']['infra']['platform']}.#{node['newrelic']['infra']['arch']}"
     end
 
   end
