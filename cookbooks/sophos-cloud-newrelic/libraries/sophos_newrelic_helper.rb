@@ -64,10 +64,6 @@ module SophosCentral
       return "#{node['newrelic']['enabled']}"
     end
 
-    def newrelic_infra_version ()
-      return "#{node['newrelic']['infra']['version']}.#{node['newrelic']['infra']['platform']}"
-    end
-
     def newrelic_infra_log_file ()
       return "#{newrelic_infra_log_location()}/newrelic-infra.log"
     end
