@@ -1,7 +1,4 @@
 default['newrelic']['enabled'] = 'false'
-
-default['newrelic']['version'] = '8.5.69'
-
 default['newrelic']['owner'] = 'newrelic'
 default['newrelic']['group'] = 'newrelic'
 

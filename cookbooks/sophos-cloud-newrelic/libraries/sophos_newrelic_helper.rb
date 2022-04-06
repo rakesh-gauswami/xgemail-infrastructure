@@ -4,6 +4,8 @@
 #
 # Copyright:: 2022, Sophos 2022, All Rights Reserved.
 
+require 'open3'
+
 module SophosCentral
   module SophosNewrelicHelper
 
@@ -26,9 +28,7 @@ module SophosCentral
     end
 
     def newrelic_license ()
-
       license_key = newrelic_aws_secret_string('/central/newrelic/license')
-
       return license_key.nil? ? "" : license_key
     end
 
