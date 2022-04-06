@@ -9,6 +9,7 @@ LOGS_OWNER = 'root'
 NEWRELIC_INFRA_LOG_LOCATION = newrelic_infra_log_location()
 NEWRELIC_INFRA_BIN_LOCATION = newrelic_infra_bin_location()
 NEWRELIC_INFRA_SERVICE = node['newrelic']['infra']['service']
+NEWRELIC_INFRA_VERSION = newrelic_infra_version()
 NEWRELIC_INFRA_AGENT_RPM_NAME = newrelic_infra_agent_rpm_name()
 NEWRELIC_INFRA_INSTALL_STATUS = "#{Chef::Config['file_cache_path']}/newrelic-infra-install.status"
 
@@ -34,7 +35,8 @@ directory NEWRELIC_INFRA_BIN_LOCATION do
   recursive true
 end
 
-yum_package NEWRELIC_INFRA_AGENT_RPM_NAME do
+yum_package NEWRELIC_INFRA_SERVICE do
+  version NEWRELIC_INFRA_VERSION
   notifies :stop, SYSTEMD_UNIT_RESOURCE, :immediately
   notifies :disable, SYSTEMD_UNIT_RESOURCE, :immediately
   notifies :create, "file[#{NEWRELIC_INFRA_INSTALL_STATUS}]", :immediately
