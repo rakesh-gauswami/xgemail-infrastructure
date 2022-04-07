@@ -15,14 +15,3 @@ default['newrelic']['infra']['system_metrics']['sample_rate'] = 120
 default['newrelic']['infra']['network_metrics']['sample_rate'] = 120
 default['newrelic']['infra']['process_metrics']['enable'] = 'true'
 default['newrelic']['infra']['process_metrics']['sample_rate'] = 120
-default['newrelic']['infra']['process_metrics']['naming_patterns'] = [
-    "^newrelic@sophos$",
-    "^savdid$",
-    "^systemd$",
-    "^td-agent",
-    "^java",
-    "^postfix",
-    "^jilter",
-    "^sqsmsgproducer",
-    "^sqsmsgconsumer"
-]

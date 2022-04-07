@@ -80,10 +80,6 @@ module SophosCentral
       return "#{node['newrelic']['infra']['process_metrics']['enable']}"
     end
 
-    def newrelic_infra_process_metrics_naming_patterns ()
-      return "#{node['newrelic']['infra']['process_metrics']['naming_patterns']}"
-    end
-
     def newrelic_infra_process_metrics_sample_rate ()
       return "#{node['newrelic']['infra']['process_metrics']['sample_rate']}"
     end

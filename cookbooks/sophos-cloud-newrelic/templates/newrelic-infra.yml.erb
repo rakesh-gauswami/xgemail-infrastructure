@@ -106,9 +106,16 @@ enable_process_metrics: <%= @enable_process_metrics %>
 #
 include_matching_metrics:
   process.name:
-    <% @processing_metrics_naming_patterns.each  do |naming_pattern| -%>
-    - regex "<%= naming_pattern %>"
-    <% end -%>
+    - regex '^newrelic@sophos$'
+    - regex '^savdid$'
+    - regex '^systemd$'
+    - regex '^td-agent$'
+    - regex '^fluentd$'
+    - regex '^java'
+    - regex '^postfix'
+    - regex '^jilter$'
+    - regex '^sqsmsgproducer$'
+    - regex '^sqsmsgconsumer$'
 
 #
 # Option   : log_file

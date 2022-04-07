@@ -45,7 +45,6 @@ template NEWRELIC_INFRA_CONF_FILE do
           log_file_path: NEWRELIC_INFRA_LOG_FILE,
           license_key: node.run_state['new_relic_license_key'],
           enable_process_metrics: newrelic_infra_process_metrics_enabled(),
-          processing_metrics_naming_patterns: newrelic_infra_process_metrics_naming_patterns(),
           metrics_process_sample_rate: newrelic_infra_process_metrics_sample_rate(),
           metrics_network_sample_rate: newrelic_infra_network_metrics_sample_rate(),
           metrics_storage_sample_rate: newrelic_infra_storage_metrics_sample_rate(),

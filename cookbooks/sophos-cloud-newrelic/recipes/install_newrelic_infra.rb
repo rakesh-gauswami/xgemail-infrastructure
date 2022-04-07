@@ -4,8 +4,6 @@
 #
 # Copyright:: 2022, Sophos 2022, All Rights Reserved.
 
-LOGS_OWNER = 'root'
-
 NEWRELIC_INFRA_LOG_LOCATION = newrelic_infra_log_location()
 NEWRELIC_INFRA_BIN_LOCATION = newrelic_infra_bin_location()
 NEWRELIC_INFRA_VERSION = node['newrelic']['infra']['version']
