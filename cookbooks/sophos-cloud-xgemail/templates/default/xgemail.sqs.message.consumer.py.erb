@@ -332,6 +332,24 @@ def parse_postfix_queue_id_from_response(full_postfix_response):
     return re.sub('2.0.0\sOk:\squeued\sas\s', '', full_postfix_response)
 
 
+def encode_as_utf8(value):
+    try:
+        # https://docs.python.org/2.7/howto/unicode.html#the-unicode-type
+        return value.encode('utf-8')
+    except Exception as e:
+        # Any exception use original value
+        return value
+
+def is_smtputf8_required(from_addr, to_addrs):
+    try:
+        from_addr.encode('ascii')
+        for each in to_addrs:
+            each.encode('ascii')
+    except UnicodeEncodeError:
+        return True
+    except Exception:
+        return False
+
 # A recreation of the sendmail function from smtplib. This function does exactly the same thing
 # as the sendmail function, however it returns a tuple of (failed_recipients, postfix_response) instead
 # of just the failed recipients.
@@ -354,10 +372,16 @@ def sendmail_to_postfix(server, from_addr, to_addrs, msg, mail_options=[], rcpt_
     if server.does_esmtp:
         if server.has_extn('size'):
             esmtp_opts.append("size=%d" % len(msg))
+        if server.has_extn('smtputf8') and is_smtputf8_required(from_addr, to_addrs):
+            esmtp_opts.append('smtputf8')
         for option in mail_options:
             esmtp_opts.append(option)
+    try:
+      (code, resp) = server.mail(from_addr, esmtp_opts)
+    except UnicodeEncodeError:
+      # if encoding error, try encoding from into utf8
+      (code, resp) = server.mail(encode_as_utf8(from_addr), esmtp_opts)
 
-    (code, resp) = server.mail(from_addr, esmtp_opts)
     if code != 250:
         server.rset()
         raise SMTPSenderRefused(code, resp, from_addr)
@@ -367,7 +391,12 @@ def sendmail_to_postfix(server, from_addr, to_addrs, msg, mail_options=[], rcpt_
         to_addrs = [to_addrs]
 
     for each in to_addrs:
-        (code, resp) = server.rcpt(each, rcpt_options)
+        try:
+          (code, resp) = server.rcpt(each, rcpt_options)
+        except UnicodeEncodeError:
+          # if encoding error, try encoding recipient into utf8
+          (code, resp) = server.rcpt(encode_as_utf8(each), rcpt_options)
+
         if (code != 250) and (code != 251):
             senderrs[each] = (code, resp)
 
@@ -620,17 +649,6 @@ def deliver_messages():
                 queue_id = metadata["queue_id"]
                 sender = metadata["sender_address"]
                 recipients = metadata["recipients"]
-
-                # required logging for EncryptionServiceTest automation test
-                logger.info(
-                    "Email and metadata retrieved from S3. "
-                    "QueueId: {0} - sender: {1} - recipients: [<{2}>]"
-                        .format(
-                        queue_id.encode('utf-8'),
-                        None if sender is None else sender.encode('utf-8'),
-                        '>, <'.join(r.encode('utf-8') for r in recipients)
-                    )
-                )
     
                 mh_mail_info, can_generate_mh_event = messagehistory.get_mail_info(sqs_message, AWS_REGION, MSG_HISTORY_V2_BUCKET)
                 if can_generate_mh_event:
