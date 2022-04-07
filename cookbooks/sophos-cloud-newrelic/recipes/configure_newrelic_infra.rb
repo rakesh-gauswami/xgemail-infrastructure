@@ -9,8 +9,6 @@ AWS_ACCOUNT = newrelic_sophos_account_name()
 AWS_REGION = newrelic_sophos_region()
 DISPLAY_NAME = newrelic_display_name()
 
-CONFIG_OWNER = 'root'
-
 NEWRELIC_INFRA_CONF_FILE = newrelic_infra_conf_file()
 NEWRELIC_INFRA_LOG_FILE = newrelic_infra_log_file()
 NEWRELIC_INFRA_SERVICE = 'newrelic-infra'
@@ -25,7 +23,6 @@ ruby_block 'Get New Relic License' do
   end
 end
 
-
 # Note that the NewRelic yum installation by default sets up the newrelic-infra agent with systemd
 systemd_unit NEWRELIC_INFRA_SERVICE do
   action :nothing
@@ -34,8 +31,8 @@ end
 template NEWRELIC_INFRA_CONF_FILE do
   source 'newrelic-infra.yml.erb'
   mode '0640'
-  owner CONFIG_OWNER
-  group NEWRELIC_GROUP
+  owner 'root'
+  group 'root'
 
   variables (
       lazy {
