@@ -226,6 +226,45 @@ resource "aws_iam_policy" "ec2_policy" {
 }
 
 # ----------------------------------------------------
+# SecretsManager
+# ----------------------------------------------------
+
+data "aws_iam_policy_document" "secretsmanager_policy" {
+  policy_id = "secretsmanager_policy"
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "secretsmanager:GetResourcePolicy",
+      "secretsmanager:GetSecretValue",
+      "secretsmanager:DescribeSecret",
+      "secretsmanager:ListSecretVersionIds"
+    ]
+    resources = ["arn:aws:secretsmanager:${local.input_param_primary_region}:${local.input_param_account_id}:secret:/central/newrelic/license*"]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "secretsmanager:ListSecrets",
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "secretsmanager_policy" {
+  name_prefix = "SecretsManagerPolicy-"
+  path        = "/"
+  description = "Policy for managing/accessing Secrets"
+  policy      = data.aws_iam_policy_document.secretsmanager_policy.json
+
+  tags = { Name = "SecretsManagerPolicy" }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+# ----------------------------------------------------
 # SQS
 # ----------------------------------------------------
 

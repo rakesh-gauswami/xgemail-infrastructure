@@ -1,8 +1,10 @@
 locals {
-  DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD  = 900
-  DEFAULT_EIP_COUNT                     = 1
-  DEFAULT_INSTANCE_SIZE                 = "t3.medium"
-  DEFAULT_EBS_SIZE_DATA_GB          = 10
+  DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD      = 900
+  DEFAULT_EIP_COUNT                         = 1
+  DEFAULT_INSTANCE_SIZE                     = "t3.medium"
+  DEFAULT_NEWRELIC_ENABLED                  = false
+  DEFAULT_EBS_SIZE_DATA_GB                  = 10
+
   DEFAULT_ZONE_INDEX = {
     1 = 0
     2 = 1
@@ -13,13 +15,6 @@ locals {
     1 = 1
     2 = 0
     3 = 0
-  }
-
-  EIP_COUNT_BY_ENVIRONMENT = {
-    inf  = 1
-    dev  = 1
-    qa   = 1
-    prod = 1
   }
 
   AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT = {
@@ -36,11 +31,25 @@ locals {
     prod = 100
   }
 
+  EIP_COUNT_BY_ENVIRONMENT = {
+    inf  = 1
+    dev  = 1
+    qa   = 1
+    prod = 1
+  }
+
   INSTANCE_SIZE_BY_ENVIRONMENT = {
     inf  = "t3.medium"
     dev  = "t3.medium"
     qa   = "t3.medium"
     prod = "m5.2xlarge"
+  }
+
+  NEWRELIC_ENABLED_BY_ENVIRONMENT = {
+    inf  = false
+    dev  = false
+    qa   = false
+    prod = true
   }
 
   AS_MIN_SIZE_BY_ENVIRONMENT = {
@@ -119,6 +128,12 @@ locals {
     local.DEFAULT_INSTANCE_SIZE
   )
 
+  newrelic_enabled = lookup(
+    local.NEWRELIC_ENABLED_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_NEWRELIC_ENABLED
+  )
+
   zone_index = lookup(
     local.ZONE_INDEX_BY_ENVIRONMENT,
     local.input_param_deployment_environment,
@@ -130,7 +145,6 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
   for_each      = local.zone_index
   name          = "${local.instance_type}-${each.key}"
   template_body = file("${path.module}/templates/as_customer_xdelivery_template.json")
-
   parameters = {
     AccountName                       = local.input_param_account_name
     AmiId                             = var.ami_id
@@ -159,6 +173,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     MsgHistoryV2BucketName            = var.message_history_ms_bucket
     MsgHistoryV2DynamoDbTableName     = var.message_history_dynamodb_table_name
     MsgHistoryV2StreamName            = var.message_history_v2_stream_name
+    NewRelicEnabled                  = local.newrelic_enabled
     ParentAccountName                 = local.input_param_parent_account_name
     PolicyBucketName                  = var.policy_bucket
     S3CookbookRepositoryURL           = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/${var.build_number}/cookbooks.tar.gz"
