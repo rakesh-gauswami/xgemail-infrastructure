@@ -63,3 +63,8 @@ resource "aws_iam_role_policy_attachment" "mf_inbound_submit_instance_role_sns_p
   role       = aws_iam_role.mf_inbound_submit_instance_role.id
   policy_arn = aws_iam_policy.sns_policy.arn
 }
+
+resource "aws_iam_role_policy_attachment" "mf_inbound_submit_instance_role_secretsmanager_policy" {
+  role       = aws_iam_role.mf_inbound_submit_instance_role.id
+  policy_arn = aws_iam_policy.secretsmanager_policy.arn
+}
