@@ -42,10 +42,15 @@
     create: yes
   when: ec2_ami_output.failed == false
 
-- blockinfile:
-    path: "{{playbook_dir}}/ec2_ami_output.json"
-    block: |
-      {{ec2_ami_output}}
+- copy:
+    content: "{{ec2_ami_output}}"
+    dest: "{{playbook_dir}}/ec2_ami_output.json"
+  when: ec2_ami_output.failed == false
+
+-  lineinfile:
+    path: "{{playbook_dir}}/ec2_ami_output_line.json"
+    line: '{{ item.key }}={{ item.value }}'
     state: present
     create: yes
+  with_dict: "{{ec2_ami_output}}"
   when: ec2_ami_output.failed == false
