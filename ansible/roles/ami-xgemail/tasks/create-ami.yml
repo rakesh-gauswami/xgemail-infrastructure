@@ -42,11 +42,6 @@
     create: yes
   when: ec2_ami_output.failed == false
 
-- copy:
-    content: "{{ec2_ami_output| to_json}}"
-    dest: "{{playbook_dir}}/ec2_ami_output.json"
-  when: ec2_ami_output.failed == false
-
 
 - lineinfile:
     path: "{{playbook_dir}}/ec2_ami_output_json.json"
@@ -55,3 +50,10 @@
     create: yes
   with_dict: "{{ec2_ami_output | from_json}}"
   when: ec2_ami_output.failed == false
+
+- copy:
+    content: "{{ec2_ami_output| to_json}}"
+    dest: "{{playbook_dir}}/ec2_ami_output.json"
+  when: ec2_ami_output.failed == false
+
+
