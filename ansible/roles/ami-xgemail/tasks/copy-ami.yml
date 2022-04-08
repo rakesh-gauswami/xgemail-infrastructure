@@ -10,13 +10,13 @@
 
 - name: "Copy AMI to Destination Regions {{ami.xgemail.ami_destination_regions}}"
   ec2_ami_copy:
-    description:          "{{ec2_ami_output.image_description}}"
+    description:          "{{image_description}}"
     source_region:        "{{ami.xgemail.region}}"
     region:               "{{item}}"
-    source_image_id:      "{{ec2_ami_output.image_id}}"
-    name:                 "{{ec2_ami_output.image_name}}"
+    source_image_id:      "{{image_id}}"
+    name:                 "{{image_name}}"
     tags:
-      Name:         "{{ec2_ami_output.image_name}}"
+      Name:         "{{image_name}}"
       branch:       "{{ami.xgemail.branch}}"
       build:        "{{ami.xgemail.build}}"
       build_id:     "{{ami.xgemail.build_id}}"
@@ -41,7 +41,7 @@
     state: present
     create: yes
   with_items:
-    - "Region: {{ami.xgemail.region}} AmiId: {{ec2_ami_output.image_id}}"
+    - "Region: {{ami.xgemail.region}} AmiId: {{image_id}}"
     #- "Region: {{ec2_ami_copy_output.results[0].item}} AmiId: {{ec2_ami_copy_output.results[0].image_id}}"
     #- "Region: {{ec2_ami_copy_output.results[1].item}} AmiId: {{ec2_ami_copy_output.results[1].image_id}}"
     #- "Region: {{ec2_ami_copy_output.results[2].item}} AmiId: {{ec2_ami_copy_output.results[2].image_id}}"
