@@ -47,7 +47,7 @@
     dest: "{{playbook_dir}}/ec2_ami_output.json"
   when: ec2_ami_output.failed == false
 
--  lineinfile:
+- lineinfile:
     path: "{{playbook_dir}}/ec2_ami_output_line.json"
     line: '{{ item.key }}={{ item.value }}'
     state: present
