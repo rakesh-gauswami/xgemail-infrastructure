@@ -43,6 +43,22 @@
   when: ec2_ami_output.failed == false
 
 - copy:
-    content: "{{ec2_ami_output}}"
+    content: "{{ec2_ami_output| to_json}}"
     dest: "{{playbook_dir}}/ec2_ami_output.json"
+  when: ec2_ami_output.failed == false
+
+- lineinfile:
+    path: "{{playbook_dir}}/ec2_ami_output_to.json"
+    line: '{{ item.key }}={{ item.value }}'
+    state: present
+    create: yes
+  with_dict: "{{ec2_ami_output | to_json}}"
+  when: ec2_ami_output.failed == false
+
+- lineinfile:
+    path: "{{playbook_dir}}/ec2_ami_output_from.json"
+    line: '{{ item.key }}={{ item.value }}'
+    state: present
+    create: yes
+  with_dict: "{{ec2_ami_output | from_json}}"
   when: ec2_ami_output.failed == false
