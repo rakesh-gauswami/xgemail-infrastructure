@@ -48,7 +48,7 @@
   when: ec2_ami_output.failed == false
 
 - lineinfile:
-    path: "{{playbook_dir}}/ec2_ami_output_to.json"
+    path: "{{playbook_dir}}/ec2_ami_output_json.json"
     line: '{{ item.key }}={{ item.value }}'
     state: present
     create: yes
@@ -56,7 +56,7 @@
   when: ec2_ami_output.failed == false
 
 - lineinfile:
-    path: "{{playbook_dir}}/ec2_ami_output_from.json"
+    path: "{{playbook_dir}}/ec2_ami_output_json.json"
     line: '{{ item.key }}={{ item.value }}'
     state: present
     create: yes
