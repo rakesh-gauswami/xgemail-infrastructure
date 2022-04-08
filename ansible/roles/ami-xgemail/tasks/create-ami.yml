@@ -42,18 +42,9 @@
     create: yes
   when: ec2_ami_output.failed == false
 
-
 - lineinfile:
-    path: "{{playbook_dir}}/ec2_ami_output_json.json"
-    line: '{{ item.key }}={{ item.value }}'
+    path: "{{playbook_dir}}/image_description.ini"
+    line: 'image_description={{ec2_ami_output.description}}'
     state: present
     create: yes
-  with_dict: "{{ec2_ami_output | from_json}}"
   when: ec2_ami_output.failed == false
-
-- copy:
-    content: "{{ec2_ami_output| to_json}}"
-    dest: "{{playbook_dir}}/ec2_ami_output.json"
-  when: ec2_ami_output.failed == false
-
-

@@ -10,12 +10,17 @@
 
 - name: "Copy AMI to Destination Regions {{ami.xgemail.ami_destination_regions}}"
   ec2_ami_copy:
-    description:          "{{ec2_ami_output.description}}"
+    description:          "{{ec2_ami_output.image_description}}"
     source_region:        "{{ami.xgemail.region}}"
     region:               "{{item}}"
     source_image_id:      "{{ec2_ami_output.image_id}}"
-    name:                 "{{ec2_ami_output.name}}"
-    tags:                 "{{ec2_ami_output.tags}}"
+    name:                 "{{ec2_ami_output.image_name}}"
+    tags:
+      Name:         "{{ec2_ami_output.image_name}}"
+      branch:       "{{ami.xgemail.branch}}"
+      build:        "{{ami.xgemail.build}}"
+      build_id:     "{{ami.xgemail.build_id}}"
+      ami_type:     xgemail
     wait:                 true
     wait_timeout:         1200
     launch_permissions:
