@@ -19,7 +19,8 @@ azoneid = {
     "eml100hnd": 'Z00959292MKFE2F8O3SVR',
     "eml100syd": 'Z1011819W5HGRZRGPENU',
     "eml100yul": 'Z1014554AERXECT6FME1',
-    "eml100bom": 'Z0317622WPHQXEY8RA1S'
+    "eml100bom": 'Z0317622WPHQXEY8RA1S',
+    "eml100gru": 'Z04474823GZ4M87DRPHJB'
 }
 
 # HostedZoneIDs for PTR records based on region
@@ -33,7 +34,8 @@ ptrzoneid = {
     "eml100hnd-ap-northeast-1": 'Z0082350LSQ96QL4AU36',
     "eml100syd-ap-southeast-2": 'Z089354717CN71A5M9BXE',
     "eml100yul-ca-central-1": 'Z03549533C0Q1VKM8ZL9I',
-    "eml100bom-ap-south-1": 'Z082182521MCSKZNM6SAW'
+    "eml100bom-ap-south-1": 'Z082182521MCSKZNM6SAW',
+    "eml100gru-sa-east-1": 'Z08364685K2G9Z3E6EAT'
 }
 
 
@@ -142,9 +144,9 @@ def update_byoip_tag(ip, eipname):
 
 
 parser = argparse.ArgumentParser(description='BYOIP automation of Route53 records and EIP tags.')
-parser.add_argument('account', choices=['inf', 'dev', 'qa', 'prod', 'eml100hnd', 'eml100syd', 'eml100yul', 'eml100bom'],
+parser.add_argument('account', choices=['inf', 'dev', 'qa', 'prod', 'eml100hnd', 'eml100syd', 'eml100yul', 'eml100bom', 'eml100gru'],
                     help='Account/Environment to run automation.')
-parser.add_argument('region', choices=['eu-west-1', 'eu-central-1', 'us-west-2', 'us-east-2', 'ap-northeast-1', 'ap-southeast-2', 'ca-central-1', 'ap-south-1', 'us-west-2-spare', 'us-east-2-spare'],
+parser.add_argument('region', choices=['eu-west-1', 'eu-central-1', 'us-west-2', 'us-east-2', 'ap-northeast-1', 'ap-southeast-2', 'ca-central-1', 'ap-south-1', 'sa-east-1', 'us-west-2-spare', 'us-east-2-spare'],
                     help='Region to run automation.')
 args = parser.parse_args()
 account = args.account
