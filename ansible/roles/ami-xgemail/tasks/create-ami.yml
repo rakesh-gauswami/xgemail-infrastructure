@@ -41,3 +41,11 @@
     state: present
     create: yes
   when: ec2_ami_output.failed == false
+
+- blockinfile:
+    path: "{{playbook_dir}}/ec2_ami_output.json"
+    block: |
+      {{ec2_ami_output}}
+    state: present
+    create: yes
+  when: ec2_ami_output.failed == false
