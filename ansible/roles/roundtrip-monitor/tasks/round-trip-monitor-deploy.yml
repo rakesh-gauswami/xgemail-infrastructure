@@ -569,21 +569,21 @@
     msg: "{{mf_outbound_monitor_receive_lambda_output.stack_outputs}}"
     verbosity: 2
 
-# Inbound MailFlow Monitor Send Lambda Function
-- name: "Create a zip archive of inbound mailflow monitor send lambda function"
+# MF Inbound Monitor Send Lambda Function
+- name: "Create a zip archive of MF inbound monitor send lambda function"
   archive:
     path:
-      - /work/lambda/xgemail_inbound_mf_monitor_send.js
-    dest: "{{role_path}}/xgemail_inbound_mf_monitor_send.zip"
+      - /work/lambda/xgemail_mf_inbound_monitor_send.js
+    dest: "{{role_path}}/xgemail_mf_inbound_monitor_send.zip"
     format: zip
 
-- name: "Upload MF inbound monitor send lambda function for {{stack.lambda.inbound_mf_monitor_send_lambda_function}} to the config bucket {{s3.lambda_bucket}}"
+- name: "Upload MF inbound monitor send lambda function for {{stack.lambda.mf_inbound_monitor_send_lambda_function}} to the config bucket {{s3.lambda_bucket}}"
   s3:
     mode:               put
     region:             "{{account.region}}"
     bucket:             "{{s3.lambda_bucket}}"
-    object:             "lambda/{{build.number}}/xgemail_inbound_mf_monitor_send.zip"
-    src:                "{{role_path}}/xgemail_inbound_mf_monitor_send.zip"
+    object:             "lambda/{{build.number}}/xgemail_mf_inbound_monitor_send.zip"
+    src:                "{{role_path}}/xgemail_mf_inbound_monitor_send.zip"
     overwrite:          always
 
 - name: "Gather {{stack.iam.role.cloud_email_monitor_roles}} CloudFormation Stack Output"
@@ -597,9 +597,9 @@
     var: cloud_email_monitor_iam_output
     verbosity: 3
 
-- name: "Deploy MF inbound monitor send lambda function {{stack.lambda.inbound_mf_monitor_send_lambda_function}} to {{account.name}}-{{account.region}}"
+- name: "Deploy MF inbound monitor send lambda function {{stack.lambda.mf_inbound_monitor_send_lambda_function}} to {{account.name}}-{{account.region}}"
   cloudformation:
-    stack_name:                             "{{stack.lambda.inbound_mf_monitor_send_lambda_function}}"
+    stack_name:                             "{{stack.lambda.mf_inbound_monitor_send_lambda_function}}"
     state:                                  present
     region:                                 "{{account.region}}"
     disable_rollback:                       true
@@ -607,47 +607,47 @@
     template_parameters:
       EuCentral1MailBoxName:                "{{mf.eu_central_1_mailbox_name}}"
       EuWest1MailBoxName:                   "{{mf.eu_west_1_mailbox_name}}"
-      FunctionName:                         "{{lambda.inbound_mf_monitor_send_lambda_function}}"
-      HandlerName:                          xgemail_inbound_mf_monitor_send.handler
+      FunctionName:                         "{{lambda.mf_inbound_monitor_send_lambda_function}}"
+      HandlerName:                          xgemail_mf_inbound_monitor_send.handler
       IAMRoleArn:                           "{{cloud_email_monitor_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_monitor_roles].stack_outputs.LambdaXgemailMonitorSendRoleArn}}"
       S3Bucket:                             "{{s3.lambda_bucket}}"
-      S3Key:                                "lambda/{{build.number}}/xgemail_inbound_mf_monitor_send.zip"
+      S3Key:                                "lambda/{{build.number}}/xgemail_mf_inbound_monitor_send.zip"
       ScheduleExpression:                   rate(1 minute)
       SesRegion:                            "{{ses_region}}"
       UsEast2MailBoxName:                   "{{mf.us_east_2_mailbox_name}}"
       UsWest2MailBoxName:                   "{{mf.us_west_2_mailbox_name}}"
       UsWest2SenderMailBoxName:             "{{mf.us_west_2_sender_mailbox_name}}"
-  register: inbound_mf_monitor_send_stack
+  register: mf_inbound_monitor_send_stack
 
 - debug:
-    var: inbound_mf_monitor_send_stack
+    var: mf_inbound_monitor_send_stack
     verbosity: 3
 
 - name: "Display MF inbound mailflow monitor send lambda function stack output"
   debug:
-    msg: "{{inbound_mf_monitor_send_stack.stack_outputs}}"
+    msg: "{{mf_inbound_monitor_send_stack.stack_outputs}}"
     verbosity: 2
 
 # Inbound MailFlow Monitor Receive Lambda Function
 - name: "Create a zip archive of MF inbound monitor receive lambda function"
   archive:
     path:
-      - /work/lambda/xgemail_inbound_mf_monitor_receive.js
-    dest: "{{role_path}}/xgemail_inbound_mf_monitor_receive.zip"
+      - /work/lambda/xgemail_mf_inbound_monitor_receive.js
+    dest: "{{role_path}}/xgemail_mf_inbound_monitor_receive.zip"
     format: zip
 
-- name: "Upload the MF Inbound mailflow monitor receive lambda function for {{stack.lambda.inbound_mf_monitor_receive_lambda_function}} to the config bucket {{s3.lambda_bucket}}"
+- name: "Upload the MF Inbound Monitor receive lambda function for {{stack.lambda.mf_inbound_monitor_receive_lambda_function}} to the config bucket {{s3.lambda_bucket}}"
   s3:
     mode:               put
     region:             "{{account.region}}"
     bucket:             "{{s3.lambda_bucket}}"
-    object:             "lambda/{{build.number}}/xgemail_inbound_mf_monitor_receive.zip"
-    src:                "{{role_path}}/xgemail_inbound_mf_monitor_receive.zip"
+    object:             "lambda/{{build.number}}/xgemail_mf_inbound_monitor_receive.zip"
+    src:                "{{role_path}}/xgemail_mf_inbound_monitor_receive.zip"
     overwrite:          always
 
-- name: "Deploy Inbound MailFlow Monitor Receive Lambda Function {{stack.lambda.inbound_mf_monitor_receive_lambda_function}} to {{account.name}}-{{account.region}}"
+- name: "Deploy MF Inbound Monitor Receive Lambda Function {{stack.lambda.mf_inbound_monitor_receive_lambda_function}} to {{account.name}}-{{account.region}}"
   cloudformation:
-    stack_name:                             "{{stack.lambda.inbound_mf_monitor_receive_lambda_function}}"
+    stack_name:                             "{{stack.lambda.mf_inbound_monitor_receive_lambda_function}}"
     state:                                  present
     region:                                 "{{account.region}}"
     disable_rollback:                       true
@@ -655,22 +655,22 @@
     template_parameters:
       EuCentral1MailBoxName:                "{{mf.eu_central_1_mailbox_name}}"
       EuWest1MailBoxName:                   "{{mf.eu_west_1_mailbox_name}}"
-      FunctionName:                         "{{lambda.inbound_mf_monitor_receive_lambda_function}}"
-      HandlerName:                          xgemail_inbound_mf_monitor_receive.handler
+      FunctionName:                         "{{lambda.mf_inbound_monitor_receive_lambda_function}}"
+      HandlerName:                          xgemail_mf_inbound_monitor_receive.handler
       IAMRoleArn:                           "{{cloud_email_monitor_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_monitor_roles].stack_outputs.LambdaXgemailMonitorReceiveRoleArn}}"
       S3Bucket:                             "{{s3.lambda_bucket}}"
-      S3Key:                                "lambda/{{build.number}}/xgemail_inbound_mf_monitor_receive.zip"
+      S3Key:                                "lambda/{{build.number}}/xgemail_mf_inbound_monitor_receive.zip"
       SesRegion:                            "{{ses_region}}"
       UsEast2MailBoxName:                   "{{mf.us_east_2_mailbox_name}}"
       UsWest2MailBoxName:                   "{{mf.us_west_2_mailbox_name}}"
       UsWest2SenderMailBoxName:             "{{mf.us_west_2_sender_mailbox_name}}"
-  register: inbound_mf_monitor_receive_lambda_output
+  register: mf_inbound_monitor_receive_lambda_output
 
 - debug:
-    var: inbound_mf_monitor_receive_lambda_output
+    var: mf_inbound_monitor_receive_lambda_output
     verbosity: 3
 
-- name: "Display Inbound MailFlow Monitor Receive Lambda Function Stack Output"
+- name: "Display MF Inbound Monitor Receive Lambda Function Stack Output"
   debug:
-    msg: "{{inbound_mf_monitor_receive_lambda_output.stack_outputs}}"
+    msg: "{{mf_inbound_monitor_receive_lambda_output.stack_outputs}}"
     verbosity: 2
