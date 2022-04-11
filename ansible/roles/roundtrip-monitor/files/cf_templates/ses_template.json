@@ -70,6 +70,16 @@
       "Description": "List of email addresses to add to SES",
       "ConstraintDescription": "must be a comma-separated list of valid email addresses."
     },
+    "MfInboundMailRecipients": {
+      "Type": "CommaDelimitedList",
+      "Description": "List of email addresses to add to SES",
+      "ConstraintDescription": "must be a comma-separated list of valid email addresses."
+    },
+    "MfOutboundMailRecipients": {
+      "Type": "CommaDelimitedList",
+      "Description": "List of email addresses to add to SES",
+      "ConstraintDescription": "must be a comma-separated list of valid email addresses."
+    },
     "EncryptionOutboundMailRecipients": {
       "Type": "CommaDelimitedList",
       "Description": "List of email addresses to add to SES",
@@ -80,6 +90,14 @@
       "Type": "String"
     },
     "OutboundRuleName": {
+      "Description": "The name of the SES receiving rule.",
+      "Type": "String"
+    },
+    "MfInboundRuleName": {
+      "Description": "The name of the SES receiving rule.",
+      "Type": "String"
+    },
+    "MfOutboundRuleName": {
       "Description": "The name of the SES receiving rule.",
       "Type": "String"
     },
@@ -100,8 +118,16 @@
       "Description": "The ARN of the Lambda Function SES will invoke.",
       "Type": "String"
     },
+    "SesInvokeMfInboundLambdaFunctionArn": {
+      "Description": "The ARN of the Lambda Function SES will invoke.",
+      "Type": "String"
+    },
     "SesInvokeInboundMsLambdaFunctionArn": {
       "Description": "The ARN of the Lambda Function SES will invoke.",
+      "Type": "String"
+    },
+    "SesInvokeMfOutboundLambdaFunctionArn": {
+      "Description": "The ARN of the Outbound Lambda Function SES will invoke.",
       "Type": "String"
     },
     "SesInvokeOutboundLambdaFunctionArn": {
@@ -185,28 +211,23 @@
         "Tags": [
           {
             "Key": "Application",
-            "Value": "roundtrip-monitor",
-            "PropagateAtLaunch": true
+            "Value": "roundtrip-monitor"
           },
           {
             "Key": "BusinessUnit",
-            "Value": "MSG",
-            "PropagateAtLaunch": true
+            "Value": "MSG"
           },
           {
             "Key": "Name",
-            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "LambdaExecutionRole" ] ] },
-            "PropagateAtLaunch": true
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "LambdaExecutionRole" ] ] }
           },
           {
             "Key": "Project",
-            "Value": "xgemail",
-            "PropagateAtLaunch": true
+            "Value": "xgemail"
           },
           {
             "Key": "OwnerEmail",
-            "Value": "sophosmailops@sophos.com",
-            "PropagateAtLaunch": true
+            "Value": "sophosmailops@sophos.com"
           }
         ]
       }
@@ -306,28 +327,23 @@
         "Tags": [
           {
             "Key": "Application",
-            "Value": "roundtrip-monitor",
-            "PropagateAtLaunch": true
+            "Value": "roundtrip-monitor"
           },
           {
             "Key": "BusinessUnit",
-            "Value": "MSG",
-            "PropagateAtLaunch": true
+            "Value": "MSG"
           },
           {
             "Key": "Name",
-            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "SesDomainLambdaFunction" ] ] },
-            "PropagateAtLaunch": true
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "SesDomainLambdaFunction" ] ] }
           },
           {
             "Key": "Project",
-            "Value": "xgemail",
-            "PropagateAtLaunch": true
+            "Value": "xgemail"
           },
           {
             "Key": "OwnerEmail",
-            "Value": "sophosmailops@sophos.com",
-            "PropagateAtLaunch": true
+            "Value": "sophosmailops@sophos.com"
           }
         ]
       }
@@ -383,6 +399,49 @@
             {
               "LambdaAction": {
                 "FunctionArn": { "Ref": "SesInvokeInboundMsLambdaFunctionArn" },
+                "InvocationType": "Event"
+              }
+            }
+          ]
+        }
+      }
+    },
+
+    "MfInboundReceiptRule": {
+      "Type": "AWS::SES::ReceiptRule",
+      "Properties": {
+        "RuleSetName": { "Ref": "RuleSetName" },
+        "Rule": {
+          "Name": { "Ref": "MfInboundRuleName" },
+          "Recipients": { "Ref": "MfInboundMailRecipients" },
+          "Enabled": "True",
+          "ScanEnabled": "False",
+          "Actions": [
+            {
+              "LambdaAction": {
+                "FunctionArn": { "Ref": "SesInvokeMfInboundLambdaFunctionArn" },
+                "InvocationType": "Event"
+              }
+            }
+          ]
+        }
+      }
+    },
+
+    "MfOutboundReceiptRule": {
+      "Type": "AWS::SES::ReceiptRule",
+      "Properties": {
+        "RuleSetName": { "Ref": "RuleSetName" },
+        "After": { "Ref": "MfInboundReceiptRule" },
+        "Rule": {
+          "Name": { "Ref": "MfOutboundRuleName" },
+          "Recipients": { "Ref": "MfOutboundMailRecipients" },
+          "Enabled": "True",
+          "ScanEnabled": "False",
+          "Actions": [
+            {
+              "LambdaAction": {
+                "FunctionArn": { "Ref": "SesInvokeMfOutboundLambdaFunctionArn" },
                 "InvocationType": "Event"
               }
             }
@@ -592,6 +651,30 @@
         "Principal": "ses.amazonaws.com",
         "SourceAccount": { "Ref": "AWS::AccountId" }
       }
+    },
+
+    "PermissionForSesToInvokeMfInboundLambda": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "SesInvokeMfInboundLambdaFunctionArn"
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "ses.amazonaws.com",
+        "SourceAccount": { "Ref": "AWS::AccountId" }
+      }
+    },
+
+    "PermissionForSesToInvokeMfOutboundLambda": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "SesInvokeMfOutboundLambdaFunctionArn"
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "ses.amazonaws.com",
+        "SourceAccount": { "Ref": "AWS::AccountId" }
+      }
     }
   },
 
@@ -619,6 +702,14 @@
     "EncryptionOutboundReceiptRule": {
       "Description": "Ses Receipt Rules.",
       "Value": { "Ref": "EncryptionOutboundReceiptRule" }
+    },
+    "MfInboundReceiptRule": {
+      "Description": "Ses Receipt Rules.",
+      "Value": { "Ref": "MfInboundReceiptRule" }
+    },
+    "MfOutboundReceiptRule": {
+      "Description": "Ses Receipt Rules.",
+      "Value": { "Ref": "MfOutboundReceiptRule" }
     }
   }
 }
