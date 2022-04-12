@@ -57,6 +57,6 @@ template NEWRELIC_INFRA_CONF_FILE do
   notifies :start, SYSTEMD_UNIT_RESOURCE, :immediately
 
   only_if {
-    newrelic_infra_enabled()
+    newrelic_infra_enabled() == 'true'
   }
 end
