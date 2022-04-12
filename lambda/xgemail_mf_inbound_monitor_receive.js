@@ -10,10 +10,10 @@ exports.handler = (event, context, callback) => {
     var sesNotification = event.Records[0].ses;
     var namespace = null;
 
-    const US_EAST_2_NAMESPACE = "xgemail-monitor-ms-us-east-2";
-    const US_WEST_2_NAMESPACE = "xgemail-monitor-ms-us-west-2";
-    const EU_CENTRAL_1_NAMESPACE = "xgemail-monitor-ms-eu-central-1";
-    const EU_WEST_1_NAMESPACE = "xgemail-monitor-ms-eu-west-1";
+    const US_EAST_2_NAMESPACE = "xgemail-mf-inbound-monitor-us-east-2";
+    const US_WEST_2_NAMESPACE = "xgemail-mf-inbound-monitor-us-west-2";
+    const EU_CENTRAL_1_NAMESPACE = "xgemail-mf-inbound-monitor-eu-central-1";
+    const EU_WEST_1_NAMESPACE = "xgemail-mf-inbound-monitor-eu-west-1";
 
     // obtain the time when it was received by SES
     var timeReceivedSes = new Date(sesNotification.mail.timestamp);
