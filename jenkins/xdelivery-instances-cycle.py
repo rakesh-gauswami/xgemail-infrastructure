@@ -34,8 +34,18 @@ import logging
 from botocore.exceptions import ClientError, WaiterError
 
 # logging to console setup
+if os.environ.get('BOTO_LOG_LEVEL') is None:
+    logging.getLogger('botocore').setLevel(logging.WARN)
+    logging.getLogger('boto3').setLevel(logging.WARN)
+else:
+    logging.getLogger('botocore').setLevel(logging.getLevelName(os.environ.get('BOTO_LOG_LEVEL').strip()))
+    logging.getLogger('boto3').setLevel(logging.getLevelName(os.environ.get('BOTO_LOG_LEVEL').strip()))
+
 logger = logging.getLogger('xdelivery-instance-cycle')
-logger.setLevel(logging.DEBUG)
+if os.environ.get('LOG_LEVEL') is None:
+    logger.setLevel('INFO')
+else:
+    logger.setLevel(logging.getLevelName(os.environ.get('LOG_LEVEL').strip()))
 console_handler = logging.StreamHandler()
 formatter = logging.Formatter(
     '[%(name)s] %(process)d %(levelname)s %(message)s'

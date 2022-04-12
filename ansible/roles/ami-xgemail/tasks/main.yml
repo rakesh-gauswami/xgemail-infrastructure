@@ -14,5 +14,8 @@
 
 - block:
     - import_tasks: create-ami.yml
-    - import_tasks: copy-ami.yml
   when: stage == '2'
+
+- block:
+    - import_tasks: copy-ami.yml
+  when: stage == '3'

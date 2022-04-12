@@ -41,3 +41,10 @@
     state: present
     create: yes
   when: ec2_ami_output.failed == false
+
+- lineinfile:
+    path: "{{playbook_dir}}/image_description.ini"
+    line: 'image_description={{ec2_ami_output.description}}'
+    state: present
+    create: yes
+  when: ec2_ami_output.failed == false

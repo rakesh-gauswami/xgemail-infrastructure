@@ -68,3 +68,8 @@ resource "aws_iam_role_policy_attachment" "risky_xdelivery_instance_role_volume_
   role       = aws_iam_role.risky_xdelivery_instance_role.id
   policy_arn = data.aws_iam_policy.volume_tracker_simpledb_policy.arn
 }
+
+resource "aws_iam_role_policy_attachment" "risky_xdelivery_instance_role_secretsmanager_policy" {
+  role       = aws_iam_role.risky_xdelivery_instance_role.id
+  policy_arn = aws_iam_policy.secretsmanager_policy.arn
+}
