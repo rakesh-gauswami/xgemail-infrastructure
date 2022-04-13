@@ -372,7 +372,7 @@ def sendmail_to_postfix(server, from_addr, to_addrs, msg, mail_options=[], rcpt_
     if server.does_esmtp:
         if server.has_extn('size'):
             esmtp_opts.append("size=%d" % len(msg))
-        if server.has_extn('smtputf8') and is_smtputf8_required(from_addr, to_addrs):
+        if NODE_TYPE != 'encryption-delivery' and server.has_extn('smtputf8') and is_smtputf8_required(from_addr, to_addrs):
             esmtp_opts.append('smtputf8')
         for option in mail_options:
             esmtp_opts.append(option)
