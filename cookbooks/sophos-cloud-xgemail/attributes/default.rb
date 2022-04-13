@@ -156,7 +156,7 @@ default['xgemail']['scan_events_sns_topic'] = "#{node['xgemail']['station_vpc_id
 
 # SQS Names
 default['xgemail']['msg_history_delivery_status_sqs'] = "#{node['xgemail']['station_vpc_id']}-Xgemail_MessageHistory_Delivery_Status"
-default['xgemail']['trace_telemetry_sqs'] = "tf-trace-telemetry-#{node['xgemail']['station_vpc_id']}-Xgemail_Trace_Telemetry-#{node['sophos_cloud']['region']}-sqs"
+default['xgemail']['SMTPD_sqs'] = "tf-trace-telemetry-#{node['xgemail']['station_vpc_id']}-Xgemail_SMTPD-#{node['sophos_cloud']['region']}-sqs"
 
 ## Policy service/poller settings
 default['xgemail']['sqs_policy_poller_visibility_timeout'] = '10'
@@ -285,7 +285,7 @@ default['xgemail']['sysctl_tcp_window_scaling'] = 1
 
 ## Postfix configuration
 SUBMIT_MESSAGE_SIZE_LIMIT_BYTES = 52428800
-default['xgemail']['postfix3_version'] = '3.2.4.2-1'
+default['xgemail']['postfix3_version'] = '3.6.2.1-1'
 
 POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST = 500
 POSTFIX_OUTBOUND_MAX_NO_OF_RCPT_PER_REQUEST = 500
