@@ -66,6 +66,7 @@ CONFIGURATION_COMMANDS =
     "default_destination_recipient_limit = #{RCPT_SIZE_LIMIT}",
     'mynetworks_style=subnet',
     'smtpd_discard_ehlo_keywords = silent-discard, dsn',
+    'disable_vrfy_command = yes',
     'notify_classes ='
   ]
 
