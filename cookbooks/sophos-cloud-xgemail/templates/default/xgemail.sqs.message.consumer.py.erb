@@ -43,6 +43,7 @@ from smtplib import SMTPSenderRefused
 from smtplib import SMTPRecipientsRefused
 from transportrouteconfig import TransportRouteConfig
 from telemetrydataformatter import E2ETelemetryData
+from cStringIO import StringIO
 
 # general constants
 AWS_REGION = "<%= @aws_region %>"
@@ -450,13 +451,27 @@ def add_headers(message, message_path, headers):
             header_keys
         )
 
-        return parsed_message.as_string(), timestamp_value
+        return as_string(parsed_message), timestamp_value
 
     except Exception:
         logger.exception("Unable to add headers for message [%s]", message_path)
         # return the original message without headers
         return message, None
 
+def as_string(msg, unixfrom=False):
+    """Return the entire formatted message as a string.
+    Optional `unixfrom' when True, means include the Unix From_ envelope
+    header.
+    This is a convenience method and may not generate the message exactly
+    as you intend because by default it mangles lines that begin with
+    "From ".  For more flexibility, use the flatten() method of a
+    Generator instance.
+    """
+    from email.generator import Generator
+    fp = StringIO()
+    g = Generator(fp,maxheaderlen=0)
+    g.flatten(msg, unixfrom=unixfrom)
+    return fp.getvalue()
 
 # attempts to inject email into Postfix and
 # returns True if successful, False otherwise.
