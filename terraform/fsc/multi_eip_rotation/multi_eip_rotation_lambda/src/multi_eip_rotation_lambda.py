@@ -156,7 +156,7 @@ class MultiEip:
                         'Values': [private_ip]
                     }
                 ]
-            )['Addresses'][0]
+            )['Addresses'][0]['PublicIp']
         except ClientError as e:
             logger.exception("Unable to get current elastic IP {}".format(e))
         else:
