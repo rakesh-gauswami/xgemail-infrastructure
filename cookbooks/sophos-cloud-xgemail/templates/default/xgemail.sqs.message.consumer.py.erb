@@ -71,6 +71,8 @@ MH_MAIL_INFO_STORAGE_DIR = "<%= @mh_mail_info_storage_dir %>"
 MSG_HISTORY_V2_BUCKET = "<%= @msg_history_v2_bucket_name %>"
 DEFAULT_NO_OF_THREADS = <%= @default_number_of_consumer_threads %>
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+XGEMAIL_WHITESPACE_REMOVE_CLIENTID_KEY = "xgemail.white.space.remove.from.header.client.ids"
+XGEMAIL_WHITESPACE_REMOVE_AWS_REGION = "xgemail.white.space.remove.from.header.aws.regions"
 
 THREAD_COUNT_CONFIG_KEY = "<%= @consumer_thread_count_key %>"
 X_SOPHOS_PROCESSING_START_TIME_HEADER = 'X-Sophos-Processing-Start-Time'
@@ -419,7 +421,7 @@ def sendmail_to_postfix(server, from_addr, to_addrs, msg, mail_options=[], rcpt_
 # Adds headers to the provided message object.
 # Returns the updated message object if successful. If any issues occurred with
 # retrieving or updating the headers, the original message object is returned.
-def add_headers(message, message_path, headers):
+def add_headers(message, message_path, headers, mh_mail_info):
     try:
         if headers is None:
             logger.warn("Unable to add headers for message [%s]: header object was None.", message_path)
@@ -450,8 +452,11 @@ def add_headers(message, message_path, headers):
             message_path,
             header_keys
         )
-
-        return as_string(parsed_message), timestamp_value
+        customerId = mh_mail_info.customer_id
+        if(AWS_REGION exists in regionList or customerId exists in customerIdList ):
+            return as_string(parsed_message), timestamp_value
+        else
+            return parsed_message.as_string(), timestamp_value
 
     except Exception:
         logger.exception("Unable to add headers for message [%s]", message_path)
@@ -459,13 +464,12 @@ def add_headers(message, message_path, headers):
         return message, None
 
 def as_string(msg, unixfrom=False):
-    """Return the entire formatted message as a string.
-    Optional `unixfrom' when True, means include the Unix From_ envelope
-    header.
-    This is a convenience method and may not generate the message exactly
-    as you intend because by default it mangles lines that begin with
-    "From ".  For more flexibility, use the flatten() method of a
-    Generator instance.
+    """Reimplemented the as_string method as the default maxheaderlen=78
+    hence during parsing it breaks the header after 78 chars and add space
+     in between them based on the availability splitchars(",; ")
+
+     After setting maxheaderlen=0, the headers which are in multiline
+     or singleline are unchanged.
     """
     from email.generator import Generator
     fp = StringIO()
@@ -566,6 +570,26 @@ def get_thread_count():
         logger.exception("Error in check thread count.[{0}]".format(e))
     # return default config.
     return DEFAULT_NO_OF_THREADS;
+
+def get_client_id_lists_for_ws_remove():
+    customerIdList = []
+    try:
+        response = awshandler.get_parameter_from_ssm(XGEMAIL_WHITESPACE_REMOVE_CLIENTID_KEY)
+        customerIds = response['Parameter']['Value']
+        customerIdList = customerIds.split(',')
+    except Exception as e:
+        logger.exception("Error while fetching key from ssm.[{0}]".format(e))
+    return customerIdList;
+
+def get_region_lists_for_ws_remove():
+    regionList = []
+    try:
+        response = awshandler.get_parameter_from_ssm(XGEMAIL_WHITESPACE_REMOVE_AWS_REGION)
+        regions = response['Parameter']['Value']
+        regionList = regions.split(',')
+    except Exception as e:
+        logger.exception("Error while fetching key from ssm.[{0}]".format(e))
+    return regionList;
 
 def wait_for_jilter():
     j = 0
@@ -692,7 +716,8 @@ def deliver_messages():
                 message_binary_with_headers, timestamp_header  = add_headers(
                     message_binary,
                     sqs_message.message_path,
-                    headers
+                    headers,
+                    mh_mail_info
                 )
     
                 postfix_injection_response = inject_email(
@@ -755,7 +780,9 @@ wait_for_jilter()
 
 # Start consumers
 i = 0;
-thread_count = get_thread_count();
+thread_count = get_thread_count()
+customerIdList = get_client_id_lists_for_ws_remove()
+regionList = get_region_lists_for_ws_remove();
 logger.info("Multi thread is enabled with thread count [{0}].".format(thread_count))
 while i < thread_count:
     logger.info("Starting thread [{0}]".format(i))
