@@ -30,6 +30,7 @@
       InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.XgemailCustomerDeliveryInstanceProfile}}"
       InstanceType:                         "{{aws.asg.cd.instance_size}}"
       KeyName:                              "public-{{account.region}}"
+      LifecycleHookLaunching:               "{{aws.asg.cd.lifecycle_hook_launching}}"
       LifecycleHookTerminating:             "{{aws.asg.cd.lifecycle_hook_terminating}}"
       LoadBalancerName:                     "{{elb_stack_output.stack_outputs.LoadBalancerId}}"
       MsgHistoryV2BucketName:               "{{s3.msg_history_v2_bucket_name}}"
