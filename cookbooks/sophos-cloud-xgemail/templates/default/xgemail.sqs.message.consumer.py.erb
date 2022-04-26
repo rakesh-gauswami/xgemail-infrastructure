@@ -452,8 +452,8 @@ def add_headers(message, message_path, headers, mh_mail_info):
             message_path,
             header_keys
         )
-        customerId = mh_mail_info.customer_id
-        if(AWS_REGION exists in regionList or customerId exists in customerIdList ):
+        customerId = mh_mail_info.get("mail_info").get("customer_id")
+        if AWS_REGION  in regionList or customerId in customerIdList:
             return as_string(parsed_message), timestamp_value
         else:
             return parsed_message.as_string(), timestamp_value
@@ -575,21 +575,20 @@ def get_client_id_lists_for_ws_remove():
     customerIdList = []
     try:
         response = awshandler.get_parameter_from_ssm(XGEMAIL_WHITESPACE_REMOVE_CLIENTID_KEY)
-        customerIds = response['Parameter']['Value']
-        customerIdList = customerIds.split(',')
+        customerIdList = response.split(',')
     except Exception as e:
         logger.exception("Error while fetching key from ssm.[{0}]".format(e))
-    return customerIdList;
+    return customerIdList
+
 
 def get_region_lists_for_ws_remove():
     regionList = []
     try:
         response = awshandler.get_parameter_from_ssm(XGEMAIL_WHITESPACE_REMOVE_AWS_REGION)
-        regions = response['Parameter']['Value']
-        regionList = regions.split(',')
+        regionList = response.split(',')
     except Exception as e:
         logger.exception("Error while fetching key from ssm.[{0}]".format(e))
-    return regionList;
+    return regionList
 
 def wait_for_jilter():
     j = 0
