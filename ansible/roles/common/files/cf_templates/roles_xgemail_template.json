@@ -1948,6 +1948,18 @@
                 { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailCustomerSubmitBucketName" }]]}]
             },
             {
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailPolicyBucketName" }, "/*" ] ] },
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailPolicyBucketName" } ] ] }
+              ]
+            },
+            {
               "Action" : [
                 "s3:GetBucketLocation",
                 "s3:ListBucket"
@@ -3446,6 +3458,18 @@
               "Effect" : "Allow",
               "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailCustomerSubmitBucketName" }, "/*"]]},
                 { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailCustomerSubmitBucketName" }]]}]
+            },
+            {
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailPolicyBucketName" }, "/*" ] ] },
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailPolicyBucketName" } ] ] }
+              ]
             },
             {
               "Action" : [
@@ -5092,6 +5116,18 @@
               "Effect" : "Allow",
               "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailCustomerSubmitBucketName" }, "/*"]]},
                 { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "XgemailCustomerSubmitBucketName" }]]}]
+            },
+            {
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailPolicyBucketName" }, "/*" ] ] },
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailPolicyBucketName" } ] ] }
+              ]
             },
             {
               "Action" : [
@@ -6815,30 +6851,8 @@
               ],
               "Effect": "Allow",
               "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailMsgHistoryBucketName"
-                      },
-                      "/*"
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailMsgHistoryBucketName"
-                      }
-                    ]
-                  ]
-                }
-              ]
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailMsgHistoryBucketName" }, "/*" ] ] },
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailMsgHistoryBucketName" } ] ] } ]
             },
             {
               "Action": [
@@ -6850,30 +6864,8 @@
               ],
               "Effect": "Allow",
               "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailMsgHistoryMsBucketName"
-                      },
-                      "/*"
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailMsgHistoryMsBucketName"
-                      }
-                    ]
-                  ]
-                }
-              ]
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailMsgHistoryMsBucketName" }, "/*" ] ] },
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailMsgHistoryMsBucketName" } ] ] } ]
             },
             {
               "Action" : [
@@ -6896,29 +6888,19 @@
               ],
               "Effect": "Allow",
               "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailCustomerSubmitBucketName"
-                      },
-                      "/*"
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailCustomerSubmitBucketName"
-                      }
-                    ]
-                  ]
-                }
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailCustomerSubmitBucketName" }, "/*" ] ] },
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailCustomerSubmitBucketName" } ] ] } ]
+            },
+            {
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailPolicyBucketName" }, "/*" ] ] },
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailPolicyBucketName" } ] ] }
               ]
             },
             {
@@ -7614,30 +7596,8 @@
               ],
               "Effect": "Allow",
               "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailMsgHistoryBucketName"
-                      },
-                      "/*"
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailMsgHistoryBucketName"
-                      }
-                    ]
-                  ]
-                }
-              ]
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailMsgHistoryBucketName" }, "/*" ] ] },
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailMsgHistoryBucketName" } ] ] } ]
             },
             {
               "Action": [
@@ -7649,30 +7609,8 @@
               ],
               "Effect": "Allow",
               "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailMsgHistoryMsBucketName"
-                      },
-                      "/*"
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailMsgHistoryMsBucketName"
-                      }
-                    ]
-                  ]
-                }
-              ]
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailMsgHistoryMsBucketName" }, "/*" ] ] },
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailMsgHistoryMsBucketName" } ] ] } ]
             },
             {
               "Action" : [
@@ -7695,29 +7633,19 @@
               ],
               "Effect": "Allow",
               "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailCustomerSubmitBucketName"
-                      },
-                      "/*"
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "XgemailCustomerSubmitBucketName"
-                      }
-                    ]
-                  ]
-                }
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailCustomerSubmitBucketName" }, "/*" ] ] },
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", {"Ref": "XgemailCustomerSubmitBucketName" } ] ] } ]
+            },
+            {
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailPolicyBucketName" }, "/*" ] ] },
+                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailPolicyBucketName" } ] ] }
               ]
             },
             {
