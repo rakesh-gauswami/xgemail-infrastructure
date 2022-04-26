@@ -455,7 +455,7 @@ def add_headers(message, message_path, headers, mh_mail_info):
         customerId = mh_mail_info.customer_id
         if(AWS_REGION exists in regionList or customerId exists in customerIdList ):
             return as_string(parsed_message), timestamp_value
-        else
+        else:
             return parsed_message.as_string(), timestamp_value
 
     except Exception:
