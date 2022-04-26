@@ -186,7 +186,8 @@ def get_instances_by_name():
                     'CloudEmail:beta-delivery:*',
                     'CloudEmail:beta-xdelivery:*',
                     'CloudEmail:delta-delivery:*',
-                    'CloudEmail:delta-xdelivery:*'
+                    'CloudEmail:delta-xdelivery:*',
+                    'CloudEmail:customer-delivery:*'
                 ]
             }
         ]
