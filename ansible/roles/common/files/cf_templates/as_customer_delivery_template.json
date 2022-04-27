@@ -477,13 +477,6 @@
         },
         "LifecycleHookSpecificationList" : [
           {
-            "LifecycleHookName": { "Ref": "LifecycleHookLaunching" },
-            "HeartbeatTimeout" : "300",
-            "LifecycleTransition" : "autoscaling:EC2_INSTANCE_LAUNCHING",
-            "NotificationTargetARN" : { "Ref": "AutoScalingNotificationTopicARN" },
-            "RoleARN" : { "Ref": "AutoScalingInstanceRoleArn" }
-          },
-          {
             "LifecycleHookName": { "Ref": "LifecycleHookTerminating" },
             "HeartbeatTimeout" : "300",
             "LifecycleTransition" : "autoscaling:EC2_INSTANCE_TERMINATING",
@@ -535,11 +528,6 @@
             "PropagateAtLaunch": "true"
           },
           {
-            "Key": "EipCount",
-            "Value": { "Ref": "EipCount" },
-            "PropagateAtLaunch": "true"
-          },
-          {
             "Key": "OwnerEmail",
             "Value": "sophosmailops@sophos.com",
             "PropagateAtLaunch": "true"
@@ -557,11 +545,6 @@
           {
             "Key": "ServiceType",
             "Value": { "Fn::Sub": "${VpcName}:${XgemailServiceType}" },
-            "PropagateAtLaunch": "true"
-          },
-          {
-            "Key": "SSMSessionRunAs",
-            "Value": "ec2-user",
             "PropagateAtLaunch": "true"
           }
         ]
@@ -1037,7 +1020,7 @@
           ],
           "NetworkInterfaces": [
             {
-              "AssociatePublicIpAddress": "true",
+              "AssociatePublicIpAddress": "false",
               "DeviceIndex": "0",
               "Groups": {
                 "Ref": "SecurityGroups"
