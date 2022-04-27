@@ -214,7 +214,8 @@ if ACCOUNT != 'sandbox'
           "reject_non_fqdn_sender",
 
       # RBL response configuration
-      "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_B_FILENAME}"
+      "rbl_reply_maps=hash:$config_directory/#{RBL_REPLY_MAPS_B_FILENAME}",
+      "xgemail_log_telemetry = yes"
     ]
 
   CONFIGURATION_COMMANDS.each do | cur |

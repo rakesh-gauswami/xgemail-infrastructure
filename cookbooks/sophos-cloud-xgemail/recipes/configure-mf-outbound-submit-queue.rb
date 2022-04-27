@@ -203,6 +203,7 @@ if ACCOUNT != 'sandbox'
       # Sender restrictions
       'smtpd_sender_restrictions = ' +
         "reject_non_fqdn_sender",
+      "xgemail_log_telemetry = yes",
     ]
 
   CONFIGURATION_COMMANDS.each do | cur |
