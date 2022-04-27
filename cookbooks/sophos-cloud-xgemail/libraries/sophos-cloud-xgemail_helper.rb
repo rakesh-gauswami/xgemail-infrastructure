@@ -116,7 +116,7 @@ module SophosCloudXgemail
         return "encryption-delivery.#{account_name}.ctr.sophos.com"
       when 'encryption-submit'
         return "encryption-submit.#{account_name}.ctr.sophos.com"
-      when 'internet-delivery', 'internet-xdelivery', 'customer-delivery', 'customer-xdelivery', 'risky-delivery', 'risky-xdelivery', 'warmup-delivery', 'warmup-xdelivery', 'beta-delivery', 'beta-xdelivery', 'delta-delivery', 'delta-xdelivery', 'mf-outbound-delivery', 'mf-inbound-delivery', 'mf-outbound-xdelivery', 'mf-inbound-xdelivery'
+      when 'internet-delivery', 'internet-xdelivery', 'customer-xdelivery', 'risky-delivery', 'risky-xdelivery', 'warmup-delivery', 'warmup-xdelivery', 'beta-delivery', 'beta-xdelivery', 'delta-delivery', 'delta-xdelivery', 'mf-outbound-delivery', 'mf-inbound-delivery', 'mf-outbound-xdelivery', 'mf-inbound-xdelivery'
         if account_name == 'sandbox'
           # Return docker instance fully qualified domain name
           return node['fqdn']
