@@ -1,11 +1,23 @@
 ---
+# Upload Files
+# Documentation: http://ansible-manual.readthedocs.io/en/latest/s3_module.html
+- name: "Upload the config file for {{stack.ec2.asg.cd}} to the config bucket {{cloud_applications}}"
+  s3:
+    mode:               put
+    region:             "{{account.region}}"
+    bucket:             "{{cloud_applications}}"
+    object:             "{{build.branch}}/xgemail-infrastructure/as_customer_delivery_template.json"
+    src:                "{{template.ec2.asg.as_customer_delivery_template}}"
+    overwrite:          always
 
+#CloudEmail Customer Delivery Instance
 - name: "Create ASG Stack in AWS"
   cloudformation:
     stack_name: "{{stack.ec2.asg.cd}}"
     state: present
     region:  "{{account.region}}"
     disable_rollback: no
+    template_url:  "https://s3.amazonaws.com/{{cloud_applications}}/{{build.branch}}/xgemail-infrastructure/as_customer_delivery_template.json"
     template: "{{template.ec2.asg.as_customer_delivery_template}}"
     template_parameters:
       AesDecryptionKey:                     "{{aes_decryption_key}}"
