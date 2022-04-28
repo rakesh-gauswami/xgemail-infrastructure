@@ -41,7 +41,8 @@ DESTINATION_HOST_US_WEST       = 'us-smtp.emailencryption.sophos.com'
 DESTINATION_HOST_US_EAST       = 'us-smtp.emailencryption.sophos.com'
 DESTINATION_HOST_AP_SOUTHEAST  = 'euw-smtp.emailencryption.sophos.com'
 DESTINATION_HOST_AP_NORTHEAST  = 'euc-smtp.emailencryption.sophos.com'
-DESTINATION_HOST_AP_SOUTH      = 'bom-smtp.emailencryption.sophos.com'
+DESTINATION_HOST_AP_SOUTH      = 'euc-smtp.emailencryption.sophos.com'
+DESTINATION_HOST_SA_EAST       = 'euw-smtp.emailencryption.sophos.com'
 
 if AWS_REGION == 'ca-central-1'
   DESTINATION_HOST = "#{DESTINATION_HOST_CA_CENTRAL}:#{DESTINATION_PORT}"
@@ -59,6 +60,8 @@ elsif AWS_REGION == 'ap-northeast-1'
   DESTINATION_HOST = "#{DESTINATION_HOST_AP_NORTHEAST}:#{DESTINATION_PORT}"
 elsif AWS_REGION == 'ap-south-1'
   DESTINATION_HOST = "#{DESTINATION_HOST_AP_SOUTH}:#{DESTINATION_PORT}"
+elsif AWS_REGION == 'sa-east-1'
+  DESTINATION_HOST = "#{DESTINATION_HOST_SA_EAST}:#{DESTINATION_PORT}"
 end
 
 HOP_COUNT_DELIVERY_INSTANCE = node['xgemail']['hop_count_delivery_instance']
