@@ -187,7 +187,7 @@ module SophosCloudXgemail
           instance_id = node['ec2']['instance_id']
           instance = Aws::EC2::Instance.new(instance_id, options={client: ec2})
           eip = instance.public_ip_address
-          if eip != ''
+          if eip != nil
             begin
               # Lookup the reverse DNS record of the EIP and use it as postfix hostname
               Chef::Log.info("Getting reverse DNS of EIP: #{eip}")
