@@ -452,8 +452,11 @@ def add_headers(message, message_path, headers, mh_mail_info):
             message_path,
             header_keys
         )
-        customerId = mh_mail_info.get("mail_info").get("customer_id")
-        if AWS_REGION  in regionList or customerId in customerIdList:
+        customerId = None
+        if mh_mail_info is not None:
+           customerId = mh_mail_info.get("mail_info", {}).get("customer_id", {})
+
+        if NODE_TYPE == 'customer-delivery' and (AWS_REGION  in regionList or customerId in customerIdList):
             return as_string(parsed_message), timestamp_value
         else:
             return parsed_message.as_string(), timestamp_value
