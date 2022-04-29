@@ -199,6 +199,28 @@ module SophosCloudXgemail
               Chef::Log.error("ERROR: Cannot resolve hostname from EIP <#{eip}>. Cannot Continue. Exiting")
               raise "ERROR: Cannot resolve hostname from EIP <#{eip}>. Cannot Continue."
             end
+          else
+            mac = node['macaddress'].downcase
+            subnet_id = node['ec2']['network_interfaces_macs'][mac]['subnet_id']
+            destination_cidr_block = '0.0.0.0/0'
+            begin
+              resp = ec2.describe_route_tables({
+                  filters:[{
+                      name:'association.subnet-id',
+                      values:[subnet_id]
+                  }]
+              })
+              resp.route_tables[0].routes.each do |r|
+                if destination_cidr_block == r.destination_cidr_block
+                  return "inbound-#{ec2.describe_nat_gateways({
+                      nat_gateway_ids: [r.nat_gateway_id],
+                  }).nat_gateways[0].nat_gateway_addresses[0].public_ip.gsub('.','-')}-#{region}.#{account}.hydra.sophos.com"
+                end
+              end
+            rescue Aws::EC2::Errors::ServiceError => e
+              Chef::Log.error("ERROR: Unknown error #{e.message}. Cannot Continue. Exiting")
+              raise "ERROR: Unknown error #{e.message}. Cannot Continue. Exiting"
+            end
           end
         when 'internet-delivery', 'internet-xdelivery', 'risky-delivery', 'risky-xdelivery', 'warmup-delivery', 'warmup-xdelivery', 'beta-delivery', 'beta-xdelivery', 'delta-delivery', 'delta-xdelivery', 'mf-outbound-delivery', 'mf-inbound-delivery', 'mf-outbound-xdelivery', 'mf-inbound-xdelivery'
           if account == 'sandbox'
