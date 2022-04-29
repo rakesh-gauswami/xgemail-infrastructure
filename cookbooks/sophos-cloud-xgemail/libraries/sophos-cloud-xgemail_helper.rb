@@ -199,21 +199,6 @@ module SophosCloudXgemail
               Chef::Log.error("ERROR: Cannot resolve hostname from EIP <#{eip}>. Cannot Continue. Exiting")
               raise "ERROR: Cannot resolve hostname from EIP <#{eip}>. Cannot Continue."
             end
-          else
-            instance_id = node['ec2']['instance_id']
-            instance = Aws::EC2::Instance.new(instance_id, options={client: ec2})
-            eip = instance.public_ip_address
-            begin
-              # Lookup the reverse DNS record of the EIP and use it as postfix hostname
-              Chef::Log.info("Getting reverse DNS of EIP: #{eip}")
-              hostname = Resolv.getname "#{eip}"
-              raise "Resolved hostname is empty for EIP <#{eip}>" if hostname.nil?
-              Chef::Log.info("Setting postfix hostname: #{hostname}")
-              return hostname
-            rescue
-              Chef::Log.error("ERROR: Cannot resolve hostname from EIP <#{eip}>. Cannot Continue. Exiting")
-              raise "ERROR: Cannot resolve hostname from EIP <#{eip}>. Cannot Continue."
-            end
           end
         when 'internet-delivery', 'internet-xdelivery', 'risky-delivery', 'risky-xdelivery', 'warmup-delivery', 'warmup-xdelivery', 'beta-delivery', 'beta-xdelivery', 'delta-delivery', 'delta-xdelivery', 'mf-outbound-delivery', 'mf-inbound-delivery', 'mf-outbound-xdelivery', 'mf-inbound-xdelivery'
           if account == 'sandbox'
