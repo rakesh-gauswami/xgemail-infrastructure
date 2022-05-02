@@ -157,6 +157,10 @@
       "Description": "Name for the ELB to attach to the Auto Scaling Group",
       "Type": "List<String>"
     },
+    "LoadBalancerNamePub": {
+      "Description": "Name for the ELB to attach to the Auto Scaling Group",
+      "Type": "List<String>"
+    },    
     "MsgHistoryV2BucketName" : {
       "Description" : "Message History s3 bucket name for writing failure records",
       "Type": "String"
@@ -608,7 +612,7 @@
             "RoleARN" : { "Ref": "AutoScalingInstanceRoleArn" }
           }
         ],
-        "LoadBalancerNames": { "Ref": "LoadBalancerName" },
+        "LoadBalancerNames": { "Ref": "LoadBalancerNamePub" },
         "MinSize": { "Ref": "AutoScalingMinSize" },
         "MaxSize": { "Ref": "AutoScalingMaxSize" },
         "TerminationPolicies": [ "Default" ],
