@@ -276,21 +276,6 @@
       "Type" : "String",
       "Default": ""
     },
-    "XgemailPolicyBucketName" : {
-      "Description" : "Name of the S3 Bucket where XGEMAIL policy docs are stored",
-      "Type" : "String",
-      "Default": ""
-    },
-    "CidrDeliveryQueue": {
-      "Description": "The SNS-SQS Queue where XGEMAIL messages are sent",
-      "Type": "String",
-      "Default": ""
-    },
-    "CidrDeliveryQueueUrl": {
-      "Description": "URL for the SNS-SQS Queue where XGEMAIL messages are sent",
-      "Type": "String",
-      "Default": ""
-    },
     "XgemailServiceType": {
       "Description": "Service type for the xgemail instance (Defaults to unknown so not to break builds)",
       "Type": "String",
@@ -848,7 +833,7 @@
         "Dimensions": [
           {
             "Name": "QueueName",
-            "Value": { "Ref": "CidrDeliveryQueue" }
+            "Value": "cidr_customer_delivery_sqs_queue_sns_listener"
           }
         ],
         "ComparisonOperator":"LessThanThreshold",
@@ -884,7 +869,7 @@
         "Dimensions": [
           {
             "Name": "QueueName",
-            "Value": { "Ref": "CidrDeliveryQueue" }
+            "Value": "cidr_customer_delivery_sqs_queue_sns_listener"
           }
         ],
         "ComparisonOperator":"LessThanThreshold",
@@ -919,7 +904,7 @@
         "Dimensions": [
           {
             "Name": "QueueName",
-            "Value": { "Ref": "CidrDeliveryQueue" }
+            "Value": "cidr_customer_delivery_sqs_queue_sns_listener"
           }
         ],
         "ComparisonOperator":"GreaterThanThreshold",
@@ -954,7 +939,7 @@
         "Dimensions": [
           {
             "Name": "QueueName",
-            "Value": { "Ref": "CidrDeliveryQueue" }
+            "Value":"cidr_customer_delivery_sqs_queue_sns_listener"
           }
         ],
         "ComparisonOperator":"GreaterThanThreshold",
@@ -1077,8 +1062,8 @@
                   "vpc_id":                                         { "Ref": "Vpc" },
                   "vpc_name":                                       { "Ref": "VpcName" },
                   "xgemail_bucket_name":                            { "Ref": "XgemailBucketName" },
-                  "xgemail_policy_bucket_name":                     { "Ref": "XgemailPolicyBucketName" },
-                  "xgemail_sns_sqs_url":                            { "Ref": "CidrDeliveryQueueUrl" }
+                  "xgemail_policy_bucket_name":                     "private-cloud-${Environmant}-${AWS::Region}-cloudemail-xgemail-policy",
+                  "xgemail_sns_sqs_url":                            "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${StationVpcId}-cidr_customer_delivery_sqs_queue_sns_listener"
                 },
                 "mode": "000444",
                 "owner": "root"
@@ -1545,8 +1530,8 @@
                   "vpc_id":                                         { "Ref": "Vpc" },
                   "vpc_name":                                       { "Ref": "VpcName" },
                   "xgemail_bucket_name":                            { "Ref": "XgemailBucketName" },
-                  "xgemail_policy_bucket_name":                     { "Ref": "XgemailPolicyBucketName" },
-                  "xgemail_sns_sqs_url":                            { "Ref": "CidrDeliveryQueueUrl" }
+                  "xgemail_policy_bucket_name":                     "private-cloud-${Environmant}-${AWS::Region}-cloudemail-xgemail-policy",
+                  "xgemail_sns_sqs_url":                            "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${StationVpcId}-cidr_customer_delivery_sqs_queue_sns_listener"
                 },
                 "mode": "000444",
                 "owner": "root"
