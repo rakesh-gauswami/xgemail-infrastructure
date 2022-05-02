@@ -141,6 +141,14 @@
       "Type": "String",
       "Default": "c3.large"
     },
+    "KeyName": {
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Description": "Key pair used to SSH to the instance"
+    },
+    "KeyNamePub": {
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Description": "Key pair used to SSH to the instance"
+    },
     "LifecycleHookTerminating": {
       "Description": "Name of the Lifecycle Hook.",
       "Type": "String"
@@ -274,6 +282,21 @@
     "XgemailMsgHistoryStatusSnsArn": {
       "Description" : "ARN for the SNS Topic where Message History delivery status events are published",
       "Type" : "String",
+      "Default": ""
+    },
+    "XgemailPolicyBucketName" : {
+      "Description" : "Name of the S3 Bucket where XGEMAIL policy docs are stored",
+      "Type" : "String",
+      "Default": ""
+    },
+    "XgemailSnsSqsQueue": {
+      "Description": "The SNS-SQS Queue where XGEMAIL messages are sent",
+      "Type": "String",
+      "Default": ""
+    },
+    "XgemailSnsSqsQueueUrl": {
+      "Description": "URL for the SNS-SQS Queue where XGEMAIL messages are sent",
+      "Type": "String",
       "Default": ""
     },
     "XgemailServiceType": {
@@ -833,7 +856,7 @@
         "Dimensions": [
           {
             "Name": "QueueName",
-            "Value": "cidr_customer_delivery_sqs_queue_sns_listener"
+            "Value": { "Ref": "XgemailSnsSqsQueue" }
           }
         ],
         "ComparisonOperator":"LessThanThreshold",
@@ -869,7 +892,7 @@
         "Dimensions": [
           {
             "Name": "QueueName",
-            "Value": "cidr_customer_delivery_sqs_queue_sns_listener"
+            "Value": { "Ref": "XgemailSnsSqsQueue" }
           }
         ],
         "ComparisonOperator":"LessThanThreshold",
@@ -904,7 +927,7 @@
         "Dimensions": [
           {
             "Name": "QueueName",
-            "Value": "cidr_customer_delivery_sqs_queue_sns_listener"
+            "Value": { "Ref": "XgemailSnsSqsQueue" }
           }
         ],
         "ComparisonOperator":"GreaterThanThreshold",
@@ -939,7 +962,7 @@
         "Dimensions": [
           {
             "Name": "QueueName",
-            "Value":"cidr_customer_delivery_sqs_queue_sns_listener"
+            "Value": { "Ref": "XgemailSnsSqsQueue" }
           }
         ],
         "ComparisonOperator":"GreaterThanThreshold",
@@ -1062,8 +1085,8 @@
                   "vpc_id":                                         { "Ref": "Vpc" },
                   "vpc_name":                                       { "Ref": "VpcName" },
                   "xgemail_bucket_name":                            { "Ref": "XgemailBucketName" },
-                  "xgemail_policy_bucket_name":                     "private-cloud-${Environmant}-${AWS::Region}-cloudemail-xgemail-policy",
-                  "xgemail_sns_sqs_url":                            "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${StationVpcId}-cidr_customer_delivery_sqs_queue_sns_listener"
+                  "xgemail_policy_bucket_name":                     { "Ref": "XgemailPolicyBucketName" },
+                  "xgemail_sns_sqs_url":                            { "Ref": "XgemailSnsSqsQueueUrl" }
                 },
                 "mode": "000444",
                 "owner": "root"
@@ -1277,12 +1300,7 @@
             "Ref": "InstanceType"
           },
           "KeyName": {
-            "Fn::Join": [
-              "private-",
-              {
-                "Ref": "AWS::Region"  
-              }
-            ]
+            "Ref": "KeyName"
           },
           "Monitoring": {
             "Enabled": {
@@ -1530,8 +1548,8 @@
                   "vpc_id":                                         { "Ref": "Vpc" },
                   "vpc_name":                                       { "Ref": "VpcName" },
                   "xgemail_bucket_name":                            { "Ref": "XgemailBucketName" },
-                  "xgemail_policy_bucket_name":                     "private-cloud-${Environmant}-${AWS::Region}-cloudemail-xgemail-policy",
-                  "xgemail_sns_sqs_url":                            "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${StationVpcId}-cidr_customer_delivery_sqs_queue_sns_listener"
+                  "xgemail_policy_bucket_name":                     { "Ref": "XgemailPolicyBucketName" },
+                  "xgemail_sns_sqs_url":                            { "Ref": "XgemailSnsSqsQueueUrl" }
                 },
                 "mode": "000444",
                 "owner": "root"
@@ -1745,12 +1763,7 @@
             "Ref": "InstanceType"
           },
           "KeyName": {
-            "Fn::Join": [
-              "public-",
-              {
-                "Ref": "AWS::Region"  
-              }
-            ]
+            "Ref": "KeyNamePub"
           },
           "Monitoring": {
             "Enabled": {
