@@ -18,6 +18,7 @@ ACTIVE_ACCOUNT = True
 DISABLED_ACCOUNT = False
 
 REGION_AP_NORTHEAST_1   = 'ap-northeast-1'
+REGION_AP_SOUTH_1       = 'ap-south-1'
 REGION_AP_SOUTHEAST_2   = 'ap-southeast-2'
 REGION_CA_CENTRAL_1     = 'ca-central-1'
 REGION_EU_CENTRAL_1     = 'eu-central-1'
@@ -49,6 +50,7 @@ AWS_CONNECTORS = {
 
 AWS_REGIONS = [
     REGION_AP_NORTHEAST_1,
+    REGION_AP_SOUTH_1,
     REGION_AP_SOUTHEAST_2,
     REGION_CA_CENTRAL_1,
     REGION_EU_CENTRAL_1,
@@ -60,18 +62,22 @@ AWS_REGIONS = [
 ]
 
 REGION_CODES = {
-    REGION_AP_NORTHEAST_1   : '0901',
-    REGION_AP_SOUTHEAST_2   : '1001',
-    REGION_CA_CENTRAL_1     : '1903',
-    REGION_EU_CENTRAL_1     : '0101',
-    REGION_EU_WEST_1        : '0001',
-    REGION_SA_EAST_1        : '2101',
-    REGION_US_EAST_1        : '1901',
-    REGION_US_EAST_2        : '1902',
-    REGION_US_WEST_2        : '1602'
+    REGION_AP_NORTHEAST_1: '0901',
+    REGION_AP_SOUTH_1: '0531',
+    REGION_AP_SOUTHEAST_2: '1001',
+    REGION_CA_CENTRAL_1: '1903',
+    REGION_EU_CENTRAL_1: '0101',
+    REGION_EU_WEST_1: '0001',
+    REGION_SA_EAST_1: '2101',
+    REGION_US_EAST_1: '1901',
+    REGION_US_EAST_2: '1902',
+    REGION_US_WEST_2: '1602'
 }
 
 REGION_TO_AIRPORT_CODES = {
+    # Chattrapathi Shivaji Airport: Mumbai, India
+    REGION_AP_SOUTH_1: 'bom',
+
     # Haneda Airport: Tokyo, Japan
     REGION_AP_NORTHEAST_1: 'hnd',
     # Sydney Airport
@@ -218,11 +224,23 @@ POP_ACCOUNTS = {
     'eml010yul': {
         'id': '331664993034'
     },
+    'eml030bom': {
+        'id': '265385962095'
+    },
+    'eml030gru': {
+        'id': '068701954430'
+    },
     'eml030hnd': {
         'id': '143378974272'
     },
     'eml030syd': {
         'id': '267679260514'
+    },
+    'eml100bom': {
+        'id': '390762413450'
+    },
+    'eml100gru': {
+        'id': '022066319197'
     },
     'eml100hnd': {
         'id': '114019105507'
