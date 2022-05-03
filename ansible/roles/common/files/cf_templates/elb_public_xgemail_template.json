@@ -87,10 +87,7 @@
       "Description": "Name for the ELB",
       "Type": "String"
     },
-    "LoadBalancerNamePub": {
-      "Description": "Name for the ELB",
-      "Type": "String"
-    },    
+ 
     "SecurityGroupLb": {
       "Description": "Security Group for the ELB",
       "Type": "String"
@@ -185,79 +182,6 @@
       "Type" : "AWS::ElasticLoadBalancing::LoadBalancer"
     },
 
-    "ElasticLoadBalancerPub" : {
-      "Properties" : {
-        "Tags": [
-          {
-            "Key": "Branch",
-            "Value": { "Ref" : "Branch" }
-
-          },
-          {
-            "Key": "Environment",
-            "Value": { "Ref" : "Environment" }
-          },
-          {
-            "Key": "Name",
-            "Value": { "Fn::Join": [ "", [ { "Ref" : "AWS::StackName" }, "/lb/", { "Ref" : "LoadBalancerNamePub" } ] ] }
-
-          },
-          {
-            "Key": "Application",
-            "Value": { "Ref": "TagApplication" }
-          },
-          {
-            "Key": "BusinessUnit",
-            "Value": "MSG"
-          },
-          {
-            "Key": "OwnerEmail",
-            "Value": "sophosmailops@sophos.com"
-          },
-          {
-            "Key": "Project",
-            "Value": "xgemail"
-          }
-        ],
-        "ConnectionDrainingPolicy": {
-          "Enabled": "true",
-          "Timeout": { "Ref": "ConnectionDrainingPolicyTimeoutSeconds" }
-        },
-        "CrossZone": "true",
-        "HealthCheck": {
-          "Target": { "Ref" : "HealthCheckTarget" },
-          "HealthyThreshold": { "Ref" : "HealthCheckHealthyThreshold" },
-          "UnhealthyThreshold": { "Ref" : "HealthCheckUnhealthyThreshold" },
-          "Interval": { "Ref" : "HealthCheckInterval" },
-          "Timeout": { "Ref" : "HealthCheckTimeout" }
-        },
-        "Listeners": [
-          {
-            "LoadBalancerPort": { "Ref" : "ExternalPort" },
-            "InstancePort": "25",
-            "Protocol": "TCP"
-          }
-        ],
-        "Policies" : [{
-          "PolicyName" : "EnableProxyProtocol",
-          "PolicyType" : "ProxyProtocolPolicyType",
-          "Attributes" : [{
-            "Name"  : "ProxyProtocol",
-            "Value" : "true"
-          }],
-          "InstancePorts" : [{"Ref" : "ExternalPort"}]
-        }],
-        "SecurityGroups": [
-          {
-            "Ref": "SecurityGroupLb"
-          }
-        ],
-        "Subnets": {
-          "Ref": "Subnets"
-        }
-      },
-      "Type" : "AWS::ElasticLoadBalancing::LoadBalancer"
-    },
 
     "HostAlarm": {
       "Type" : "AWS::CloudWatch::Alarm",
@@ -282,32 +206,8 @@
         }],
         "ComparisonOperator": "GreaterThanOrEqualToThreshold"
       }
-    },
-
-    "HostAlarmPub": {
-      "Type" : "AWS::CloudWatch::Alarm",
-      "DependsOn" : "ElasticLoadBalancerPub",
-      "Properties": {
-        "AlarmDescription": "The number of instances connected to the ELB that are unhealthy exceeds limit.",
-        "MetricName": "UnHealthyHostCount",
-        "Namespace": "AWS/ELB",
-        "Statistic": "Average",
-        "Period": { "Ref": "HostAlarmPeriod" },
-        "EvaluationPeriods": { "Ref": "HostAlarmEvaluationPeriods" },
-        "Threshold": { "Ref": "HostAlarmThreshold" },
-        "AlarmActions": [
-          { "Ref": "HostAlarmTopicARN" }
-        ],
-        "OKActions": [
-          { "Ref": "HostAlarmTopicARN" }
-        ],
-        "Dimensions": [{
-          "Name": "LoadBalancerNamePub",
-          "Value": { "Ref": "ElasticLoadBalancerPub" }
-        }],
-        "ComparisonOperator": "GreaterThanOrEqualToThreshold"
-      }
-    }    
+    }
+ 
   },
 
   "Outputs": {
@@ -329,24 +229,7 @@
         "Ref": "ElasticLoadBalancer"
       }
     },
-    "CanonicalHostedZoneNameIDPub": {
-      "Description": "The ID of the Amazon Route 53 hosted zone name that is associated with the load balancer.",
-      "Value": {
-        "Fn::GetAtt": [ "ElasticLoadBalancerPub", "CanonicalHostedZoneNameID" ]
-      }
-    },
-    "LoadBalancerDnsNamePub": {
-      "Description": "DNS name of the ELB",
-      "Value": {
-        "Fn::GetAtt": [ "ElasticLoadBalancerPub", "DNSName" ]
-      }
-    },
-    "LoadBalancerIdPub": {
-      "Description": "ID of the ELB",
-      "Value": {
-        "Ref": "ElasticLoadBalancerPub"
-      }
-    },    
+  
     "SecurityGroupLb": {
       "Description": "ID of the security group",
       "Value": {
