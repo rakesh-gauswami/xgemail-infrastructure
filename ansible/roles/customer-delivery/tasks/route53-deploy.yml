@@ -1,5 +1,31 @@
 ---
+#Route 53 for Private Customer Delivery Instance's ELB
+- name: "Deploy {{stack.route53.customer_delivery_route53}} to {{account.name}} {{account.region}}"
+  cloudformation:
+    stack_name: "{{stack.route53.customer_delivery_route53}}"
+    state: present
+    region: "{{account.region}}"
+    disable_rollback: true
+    template: "{{template.route53.route53_record_template}}"
+    template_parameters:
+      Environment:                   "{{account.name}}"
+      RecordType:                    "CNAME"
+      ResourceRecords:               "{{elb_stack_output.stack_outputs.LoadBalancerDnsName}}"
+      ServiceName:                   "delivery"
+      Vpc:                           "{{vpc.cloud_email.name}}"
+  register: route53_stack_output
 
+- debug:
+    var: route53_stack_output
+    verbosity: 3
+
+- name: "Display Route53 Stack Output"
+  debug:
+    msg: "{{route53_stack_output.stack_outputs}}"
+    verbosity: 2
+
+---
+#Route 53 for Public Customer Delivery Instance's ELB
 - name: "Deploy {{stack.route53.customer_delivery_route53}} to {{account.name}} {{account.region}}"
   cloudformation:
     stack_name: "{{stack.route53.customer_delivery_route53}}"
