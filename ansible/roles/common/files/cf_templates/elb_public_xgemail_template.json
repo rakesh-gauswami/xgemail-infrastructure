@@ -87,7 +87,6 @@
       "Description": "Name for the ELB",
       "Type": "String"
     },
- 
     "SecurityGroupLb": {
       "Description": "Security Group for the ELB",
       "Type": "String"
@@ -181,8 +180,6 @@
       },
       "Type" : "AWS::ElasticLoadBalancing::LoadBalancer"
     },
-
-
     "HostAlarm": {
       "Type" : "AWS::CloudWatch::Alarm",
       "DependsOn" : "ElasticLoadBalancer",
@@ -207,7 +204,6 @@
         "ComparisonOperator": "GreaterThanOrEqualToThreshold"
       }
     }
- 
   },
 
   "Outputs": {
@@ -229,7 +225,6 @@
         "Ref": "ElasticLoadBalancer"
       }
     },
-  
     "SecurityGroupLb": {
       "Description": "ID of the security group",
       "Value": {
