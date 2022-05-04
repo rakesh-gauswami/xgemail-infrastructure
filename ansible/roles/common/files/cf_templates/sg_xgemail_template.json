@@ -1140,7 +1140,7 @@
           },
           {
             "Key": "Role",
-            "Value": "svc-xgemail-customer-delivery-elb"
+            "Value": "svc-xgemail-customer-delivery-elb-pub"
           },
           {
             "Key": "Name",
@@ -1244,14 +1244,14 @@
     "XgemailCustomerDeliverySecurityGroupPub": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "GroupDescription": "Xgemail Submit security group.",
+        "GroupDescription": "Xgemail Delivery security group.",
         "Tags": [{
           "Key": "Name",
           "Value": {
             "Fn::Join": [ "", [
               { "Ref": "Environment" }, "-",
               { "Ref": "Branch" }, "-",
-              { "Ref": "AWS::StackName" }, "/sg/xgemail/customer/delivery"
+              { "Ref": "AWS::StackName" }, "/sg/xgemail/customer/delivery/pub"
             ]]
           }
         },
