@@ -85,6 +85,16 @@
       "Description": "Version of the AMI bundle",
       "Type": "Number"
     },
+    "CIDRSnsSqsQueue": {
+      "Description": "The SNS-SQS Queue where XGEMAIL messages are sent from public CD instance",
+      "Type": "String",
+      "Default": ""
+    },
+    "CIDRSnsSqsQueueUrl": {
+      "Description": "URL for the SNS-SQS Queue where XGEMAIL messages are sent from public CD instance",
+      "Type": "String",
+      "Default": ""
+    },    
     "DeployIgnoreUnmodifiedGroupSize": {
       "Description": "During a stack update, indicates whether AWS CloudFormation ignores any group size property differences between your current Auto Scaling group and the Auto Scaling group that is described in the update.",
       "Type": "String",
@@ -900,7 +910,7 @@
         "Dimensions": [
           {
             "Name": "QueueName",
-            "Value": { "Ref": "XgemailSnsSqsQueue" }
+            "Value": { "Ref": "CIDRSnsSqsQueue" }
           }
         ],
         "ComparisonOperator":"LessThanThreshold",
@@ -970,7 +980,7 @@
         "Dimensions": [
           {
             "Name": "QueueName",
-            "Value": { "Ref": "XgemailSnsSqsQueue" }
+            "Value": { "Ref": "CIDRSnsSqsQueue" }
           }
         ],
         "ComparisonOperator":"GreaterThanThreshold",
@@ -1531,7 +1541,7 @@
                   "vpc_name":                                       { "Ref": "VpcName" },
                   "xgemail_bucket_name":                            { "Ref": "XgemailBucketName" },
                   "xgemail_policy_bucket_name":                     { "Ref": "XgemailPolicyBucketName" },
-                  "xgemail_sns_sqs_url":                            { "Ref": "XgemailSnsSqsQueueUrl" }
+                  "xgemail_sns_sqs_url":                            { "Ref": "CIDRSnsSqsQueueUrl" }
                 },
                 "mode": "000444",
                 "owner": "root"
