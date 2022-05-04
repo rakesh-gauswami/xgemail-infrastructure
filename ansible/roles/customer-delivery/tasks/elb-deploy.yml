@@ -46,7 +46,7 @@
       HealthCheckTarget:             "TCP:25"
       HostAlarmTopicARN:             "{{sns.arn_prefix}}{{sns.alarm_sns_topic}}"
       LoadBalancerName:              "{{ec2.elb.cdp}}"
-      SecurityGroupLb:               "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.XgemailCustomerDeliverySecurityGroupLb}}"
+      SecurityGroupLb:               "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.XgemailCustomerDeliverySecurityGroupLbPub}}"
       Subnets:                       "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.VpcZoneIdentifiersPublic}}"
       TagApplication:                "customer-delivery"
       Vpc:                           "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.Vpc}}"
