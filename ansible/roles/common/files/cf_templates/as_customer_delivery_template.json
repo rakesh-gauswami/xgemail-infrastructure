@@ -218,7 +218,11 @@
     "SecurityGroups": {
       "Description": "The security group that allows communication within the VPC.",
       "Type": "List<AWS::EC2::SecurityGroup::Id>"
-    }, 
+    },
+    "SecurityGroupsPub": {
+      "Description": "The security group that allows communication within the VPC.",
+      "Type": "List<AWS::EC2::SecurityGroup::Id>"
+    },    
     "SpotPrice": {
       "Description": "Spot price",
       "Type": "String",
@@ -1730,7 +1734,7 @@
               "AssociatePublicIpAddress": "true",
               "DeviceIndex": "0",
               "Groups": {
-                "Ref": "SecurityGroups"
+                "Ref": "SecurityGroupsPub"
               }
             }
           ],
