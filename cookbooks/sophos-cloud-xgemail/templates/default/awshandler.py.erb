@@ -264,7 +264,7 @@ class AwsHandler(object):
         return self.s3_client.delete_object(**params)
 
     #get value from param stores
-     def get_parameter_from_ssm(self, key, withDecryption = True):
+    def get_parameter_from_ssm(self, key, withDecryption = True):
          params = {
                  'Name': key,
                  'WithDecryption': withDecryption
