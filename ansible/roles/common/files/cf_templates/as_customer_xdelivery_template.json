@@ -199,6 +199,11 @@
       "Type": "String",
       "Default": ""
     },
+    "VolumeSetIdPub": {
+      "Description": "Identifier to be combined with stack name and availability zone to associate volumes with an instance",
+      "Type": "String",
+      "Default": ""
+    },
     "VolumeTrackerSimpleDbDomain": {
       "Description": "Name of Simple DB Domain used to track persistent EBS volumes",
       "Type": "String"
@@ -1183,7 +1188,7 @@
                   "station_vpc_name":                         { "Ref": "StationVpcName" },
                   "volume_min_iops":                          { "Ref": "EbsMinIops" },
                   "volume_min_size_data_gb":                  { "Ref": "XgemailMinSizeDataGB" },
-                  "volume_set_id":                            { "Ref": "VolumeSetId" },
+                  "volume_set_id":                            { "Ref": "VolumeSetIdPub" },
                   "volume_tracker_sdb_domain":                { "Ref": "VolumeTrackerSimpleDbDomain" },
                   "vpc_id":                                   { "Ref": "Vpc" },
                   "vpc_name":                                 { "Ref": "VpcName" },
