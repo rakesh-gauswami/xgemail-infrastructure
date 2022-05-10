@@ -322,11 +322,6 @@
       "Type": "String",
       "Default": "unknown"
     },
-    "XgemailServiceTypePub": {
-      "Description": "Service type for the xgemail instance (Defaults to unknown so not to break builds)",
-      "Type": "String",
-      "Default": "unknown"
-    },
     "XgemailSxlDbl": {
       "Description": "SXL Domain Blacklist used by Xgemail Submit Servers",
       "Type": "String"
@@ -642,7 +637,7 @@
             "Value": {
               "Fn::Join":  [":",[
                 { "Ref": "VpcName"},
-                { "Ref": "XgemailServiceTypePub" },
+                { "Ref": "XgemailServiceType" },
                 { "Ref": "Branch" },
                 { "Ref": "BundleVersion" }
               ]]
@@ -661,7 +656,7 @@
           },
           {
             "Key": "Application",
-            "Value": { "Ref": "XgemailServiceTypePub" },
+            "Value": { "Ref": "XgemailServiceType" },
             "PropagateAtLaunch": "true"
           },
           {
@@ -696,7 +691,7 @@
           },
           {
             "Key": "ServiceType",
-            "Value": { "Fn::Sub": "${VpcName}:${XgemailServiceTypePub}" },
+            "Value": { "Fn::Sub": "${VpcName}:${XgemailServiceType}" },
             "PropagateAtLaunch": "true"
           },
           {
@@ -895,7 +890,7 @@
           "Fn::Join": [
             " ", [
               "Alarm when",
-              { "Ref": "XgemailServiceTypePub" },
+              { "Ref": "XgemailServiceType" },
               "visible SQS messages is below threshold of",
               { "Ref": "AlarmScaleInThreshold" },
               "for a duration of time"
@@ -966,7 +961,7 @@
           "Fn::Join": [
             " ", [
               "Alarm when",
-              { "Ref": "XgemailServiceTypePub" },
+              { "Ref": "XgemailServiceType" },
               "visible SQS messages exceeds a threshold of",
               { "Ref": "AlarmScaleOutThreshold" },
               "for a duration of time"
@@ -1524,8 +1519,8 @@
                   "alarm_topic_arn":                                { "Ref": "AlarmTopicArn" },
                   "availability_zone":                              { "Ref": "AvailabilityZones" },
                   "branch":                                         { "Ref": "Branch" },
-                  "cluster":                                        { "Ref": "XgemailServiceTypePub" },
-                  "cluster_type":                                   { "Ref": "XgemailServiceTypePub" },
+                  "cluster":                                        { "Ref": "XgemailServiceType" },
+                  "cluster_type":                                   { "Ref": "XgemailServiceType" },
                   "environment":                                    { "Ref": "Environment" },
                   "lifecycle_topic_arn":                            { "Ref": "AutoScalingNotificationTopicARN" },
                   "msg_history_bucket_name":                        { "Ref": "XgemailMsgHistoryBucketName" },
@@ -1705,7 +1700,7 @@
                     "", [
                       "#!/bin/bash\n",
                       "export AWS_AMI_ID='", { "Ref" : "AmiId" }, "'\n",
-                      "export AWS_APPLICATION='", { "Ref": "XgemailServiceTypePub" }, "'\n",
+                      "export AWS_APPLICATION='", { "Ref": "XgemailServiceType" }, "'\n",
                       "export AWS_BRANCH='", { "Ref" : "Branch" }, "'\n",
                       "export AWS_BUILD_RESULT_KEY='", { "Ref" : "BuildVersion" }, "'\n",
                       "export AWS_BUNDLE_VERSION='", { "Ref" : "BundleVersion" }, "'\n",
@@ -1817,7 +1812,7 @@
                   "  BRANCH='",
                   { "Ref": "Branch" }, "'\n",
                   "  DEPLOYMENT_NAME='",
-                  { "Ref": "XgemailServiceTypePub" }, "'\n",
+                  { "Ref": "XgemailServiceType" }, "'\n",
                   "  # Set LastHealth tag so cloud list command shows progress.\n",
                   "  if [ \"$exit_code\" == 0 ]; then\n",
                   "    /opt/sophos/bin/set_instance_tag.py LastHealth UserDataSuccess\n",
