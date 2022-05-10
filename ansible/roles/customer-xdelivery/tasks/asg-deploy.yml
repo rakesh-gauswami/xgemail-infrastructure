@@ -23,7 +23,7 @@
     state: present
     region:  "{{account.region}}"
     disable_rollback: true
-    template: "{{template.ec2.asg.as_customer_xdelivery_template}}"
+    template_url:  "https://s3.amazonaws.com/{{cloud_applications}}/{{build.branch}}/xgemail-infrastructure/as_customer_xdelivery_template.json"
     template_parameters:
       AesDecryptionKey:                     "{{aes_decryption_key}}"
       AmiId:                                "{{ami_parent_id}}"
