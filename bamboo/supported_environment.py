@@ -30,7 +30,7 @@ REGION_US_WEST_2        = 'us-west-2'
 
 DEPLOYMENT_ENVIRONMENT_DEV  = 'dev'
 DEPLOYMENT_ENVIRONMENT_INF  = 'inf'
-DEPLOYMENT_ENVIRONMENT_PERF = 'perf'
+#DEPLOYMENT_ENVIRONMENT_PERF = 'perf'
 DEPLOYMENT_ENVIRONMENT_PROD = 'prod'
 DEPLOYMENT_ENVIRONMENT_QA   = 'qa'
 
@@ -118,14 +118,14 @@ ACCOUNT_ABBREVIATION_TO_FULL_TYPE = { value: key for key, value in POP_ACCOUNT_T
 PREPROD_DEPLOYMENT_ENVIRONMENTS_INDEX = {
     '0': DEPLOYMENT_ENVIRONMENT_INF,
     '1': DEPLOYMENT_ENVIRONMENT_DEV,
-    '2': DEPLOYMENT_ENVIRONMENT_PERF,
+    #'2': DEPLOYMENT_ENVIRONMENT_PERF,
     '3': DEPLOYMENT_ENVIRONMENT_QA
 }
 
 DEPLOYMENT_ENVIRONMENTS = [
     DEPLOYMENT_ENVIRONMENT_DEV,
     DEPLOYMENT_ENVIRONMENT_INF,
-    DEPLOYMENT_ENVIRONMENT_PERF,
+    #DEPLOYMENT_ENVIRONMENT_PERF,
     DEPLOYMENT_ENVIRONMENT_PROD,
     DEPLOYMENT_ENVIRONMENT_QA
 ]
@@ -157,19 +157,19 @@ LEGACY_ACCOUNTS = {
         'hub-region': REGION_EU_WEST_1,
         'pop-name': 'hub010dub'
     },
-    'dev3': {
-        'id': '769208163330',
-        'connector': 'hammer-core/CloudDeployer-dev3',
-        'active': True,
-        'deployment_environment': DEPLOYMENT_ENVIRONMENT_PERF,
-        'station-regions': [
-            REGION_EU_WEST_1,
-            REGION_US_EAST_1,
-            REGION_US_WEST_2
-        ],
-        'hub-region': REGION_EU_WEST_1,
-        'pop-name': 'hub020dub'
-    },
+    # 'dev3': {
+    #     'id': '769208163330',
+    #     'connector': 'hammer-core/CloudDeployer-dev3',
+    #     'active': True,
+    #     'deployment_environment': DEPLOYMENT_ENVIRONMENT_PERF,
+    #     'station-regions': [
+    #         REGION_EU_WEST_1,
+    #         REGION_US_EAST_1,
+    #         REGION_US_WEST_2
+    #     ],
+    #     'hub-region': REGION_EU_WEST_1,
+    #     'pop-name': 'hub020dub'
+    # },
     'inf': {
         'id': '283871543274',
         'connector': 'hammer-core/CloudDeployer-inf',

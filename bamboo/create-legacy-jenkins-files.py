@@ -17,19 +17,13 @@ import supported_environment
 CRON = True
 NO_CRON = False
 
-ANSIBLE = True
-NO_ANSIBLE = False
-
-VPC_DEPLOY = True
-NO_VPC_DEPLOY = False
-
 STATION_TYPE = 'email'
 
 EMAIL_VPC_NAME   = 'CloudEmail'
 
 PIPELINES = [
     # pipeline_name, pipeline_function
-    #('full',    VPC_DEPLOY,     CRON),
+    #('full',        CRON),
     ('vpc',                             NO_CRON),
     ('internet-submit',                 NO_CRON),
     ('customer-delivery',               NO_CRON),
