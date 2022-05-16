@@ -183,7 +183,7 @@ module SophosCloudXgemail
           return "encryption-#{region}.#{account}.hydra.sophos.com"
         when 'encryption-submit'
           return "encryption-#{region}.#{account}.hydra.sophos.com"
-        when 'customer-delivery'
+        when 'customer-delivery', 'customer-xdelivery'
           instance_id = node['ec2']['instance_id']
           instance = Aws::EC2::Instance.new(instance_id, options={client: ec2})
           eip = instance.public_ip_address

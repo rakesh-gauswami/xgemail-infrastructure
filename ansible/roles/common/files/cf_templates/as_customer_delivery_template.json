@@ -85,12 +85,12 @@
       "Description": "Version of the AMI bundle",
       "Type": "Number"
     },
-    "CIDRSnsSqsQueue": {
+    "CidrSnsSqsQueue": {
       "Description": "The SNS-SQS Queue where XGEMAIL messages are sent from public CD instance",
       "Type": "String",
       "Default": ""
     },
-    "CIDRSnsSqsQueueUrl": {
+    "CidrSnsSqsQueueUrl": {
       "Description": "URL for the SNS-SQS Queue where XGEMAIL messages are sent from public CD instance",
       "Type": "String",
       "Default": ""
@@ -910,7 +910,7 @@
         "Dimensions": [
           {
             "Name": "QueueName",
-            "Value": { "Ref": "CIDRSnsSqsQueue" }
+            "Value": { "Ref": "CidrSnsSqsQueue" }
           }
         ],
         "ComparisonOperator":"LessThanThreshold",
@@ -980,7 +980,7 @@
         "Dimensions": [
           {
             "Name": "QueueName",
-            "Value": { "Ref": "CIDRSnsSqsQueue" }
+            "Value": { "Ref": "CidrSnsSqsQueue" }
           }
         ],
         "ComparisonOperator":"GreaterThanThreshold",
@@ -1541,7 +1541,7 @@
                   "vpc_name":                                       { "Ref": "VpcName" },
                   "xgemail_bucket_name":                            { "Ref": "XgemailBucketName" },
                   "xgemail_policy_bucket_name":                     { "Ref": "XgemailPolicyBucketName" },
-                  "xgemail_sns_sqs_url":                            { "Ref": "CIDRSnsSqsQueueUrl" }
+                  "xgemail_sns_sqs_url":                            { "Ref": "CidrSnsSqsQueueUrl" }
                 },
                 "mode": "000444",
                 "owner": "root"
