@@ -30,7 +30,7 @@ locals {
   asg_warmup_delivery_lifecycle_hook_terminating      = "warmup-delivery-terminating"
 
   msg_xgemail_white_space_remove_aws_regions  = "NA"
-  xgemail_white_space_remove_client_ids   = "NA"
+  msg_xgemail_white_space_remove_client_ids   = "NA"
 
   asg_instances_lifecycle_hook_launching = [
     local.asg_delta_delivery_lifecycle_hook_launching,
