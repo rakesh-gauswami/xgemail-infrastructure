@@ -1,0 +1,122 @@
+#!/usr/bin/env
+
+import sys
+sys.path.append("<%= @xgemail_utils_path %>")
+import argparse
+import boto3
+import json
+import os
+import sys
+import traceback
+import configformatter
+import formatterutils
+import gziputils
+from awshandler import AwsHandler
+
+AWS_REGION = "<%= @aws_region %>"
+ACCOUNT =  "<%= @account %>"
+INSTANCE_ID =  "<%= @instance_id %>"
+INSTANCE_LIST_PATH = "<%= @flat_file_instance_list_path %>"
+INSTANCE_LIST_FILE_NAME       =  INSTANCE_LIST_PATH + "flat-file-instance-list.CONFIG"
+
+POLICY_BUCKET_NAME = "<%= @policy_bucket %>"
+S3_ENCRYPTION_ALGORITHM = 'AES256'
+SERVER_NAME="is"
+awshandler = AwsHandler(AWS_REGION)
+default_config = {'instance_id_enabled' :[]}
+
+def upload_to_s3(fileName,config_object):
+  awshandler.upload_data_in_s3_without_expiration(
+    POLICY_BUCKET_NAME,
+    fileName,
+    json.dumps(config_object),
+    S3_ENCRYPTION_ALGORITHM
+  )
+
+def get_config():
+    '''
+        Returns the current flat file configuration.
+    '''
+    if os.path.isfile(INSTANCE_LIST_FILE_NAME):
+        with open(INSTANCE_LIST_FILE_NAME) as config_file:
+            config_data = json.load(config_file)
+            print 'flat file enabled for these {0} instance ids:'.format(len(config_data['instance_id_enabled']))
+            for instance_id in config_data['instance_id_enabled']:
+                print '\t{0}'.format(instance_id)
+
+def add_instance(instance_id):
+    '''
+        Adds the instance_id to the list of instances for which we enable flat file.
+        If the instance_id already exists, this method does nothing.
+    '''
+    config = get_current_config(INSTANCE_LIST_FILE_NAME)
+
+    if instance_id in config['instance_id_enabled']:
+        print 'Instance id {0} already exists in file {1}'.format(instance_id, INSTANCE_LIST_FILE_NAME)
+        return
+
+    config['instance_id_enabled'].append(instance_id)
+
+    write_config(config, INSTANCE_LIST_FILE_NAME)
+
+    print 'Added Instance id {0} in file {1}'.format(instance_id, INSTANCE_LIST_FILE_NAME)
+
+def remove_instance(instance_id):
+    '''
+        Remove the instance_id from the list of instances for which we disable flat file.
+        If the instance_id already exists, this method does nothing.
+    '''
+    config = get_current_config(INSTANCE_LIST_FILE_NAME)
+
+    if not instance_id in config['instance_id_enabled']:
+        print 'Instance id {0} does not exists in file {1}'.format(instance_id, INSTANCE_LIST_FILE_NAME)
+        return
+
+    config['instance_id_enabled'].remove(instance_id)
+
+    write_config(config, INSTANCE_LIST_FILE_NAME)
+
+    print 'removed Instance id {0} from file {1}'.format(instance_id, INSTANCE_LIST_FILE_NAME)
+
+def get_current_config(config_location):
+    '''
+        Reads the current configuration. If the config file does not yet exist,
+        then this method returns the default config.
+    '''
+    config_dir = os.path.dirname(config_location)
+
+    if not os.path.exists(config_dir):
+        os.makedirs(config_dir)
+
+    if os.path.isfile(config_location):
+        with open(config_location) as config_file:
+            return json.load(config_file)
+    return default_config
+
+def write_config(config, config_location):
+    '''
+        Overwrites any existing config file with the updated configuration.
+    '''
+    temp_file = config_location + '.tmp'
+    with open(temp_file, 'w') as config_file:
+        json.dump(config, config_file)
+    os.rename(temp_file, config_location)
+    upload_to_s3(config_location,config)
+
+if __name__ == "__main__":
+
+    flat_file_config_parser = argparse.ArgumentParser(description='ADD/Remove postfix ec2 instances for flat file')
+    flat_file_config_parser.add_argument('--get', action='store_true', help='Get current  configuration')
+    flat_file_config_parser.add_argument('--addinstance', help='Add a instance id for which feature should be enabled')
+    flat_file_config_parser.add_argument('--removeinstance', help='Removes a instance id from enabled list')
+
+    get_config_from_args = flat_file_config_parser.parse_args()
+    if get_config_from_args.get:
+        get_config()
+    elif get_config_from_args.addinstance:
+        add_instance(get_config_from_args.addinstance)
+    elif get_config_from_args.removeinstance:
+        remove_instance(get_config_from_args.removeinstance)
+    else:
+        flat_file_config_parser.print_help()
+

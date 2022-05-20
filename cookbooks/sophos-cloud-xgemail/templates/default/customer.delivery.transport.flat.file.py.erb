@@ -1,0 +1,166 @@
+#!/usr/bin/env python
+# vim: autoindent expandtab filetype=python shiftwidth=4 softtabstop=4 tabstop=4
+#
+# Load S3 transport file for a list of customer delivery destinations
+# and installs a new transport maps file for postfix
+#
+# Copyright: Copyright (c) 2022. All rights reserved.
+# Company: Sophos Limited or one of its affiliates.
+
+import sys
+sys.path.append("<%= @xgemail_utils_path %>")
+import botocore
+import time
+import boto3
+import json
+import os
+import subprocess
+import logging
+import traceback
+import configformatter
+import hashlib
+from logging.handlers import SysLogHandler
+
+# Constants
+POSTFIX_INSTANCE_NAME = '<%= @postfix_instance_name %>'
+TRANSPORT_FILENAME = '<%= @transport_filename %>'
+POLICY_BUCKET = '<%= @policy_bucket %>'
+TLS_SMTP_TRANSPORT_TAG = ' smtp_encrypt:'
+CUSTOM_ROUTE_TRANSPORT_PATH = "<%= @custom_route_transport_path %>"
+CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME = CUSTOM_ROUTE_TRANSPORT_PATH + "customer-delivery-custom-recipient-transport.CONFIG"
+TRANSPORT_S3_FILE_NAME = 'flat_files/gateway/transport'
+
+# logging to syslog setup
+logging.getLogger("botocore").setLevel(logging.WARNING)
+logger = logging.getLogger('cd-transport-updater')
+logger.setLevel(logging.INFO)
+handler = logging.handlers.SysLogHandler('/dev/log')
+formatter = logging.Formatter(
+    '[%(name)s] %(process)d %(levelname)s %(message)s'
+)
+handler.formatter = formatter
+logger.addHandler(handler)
+
+logger.debug('customer delivery transport updater - pic url [%s]', PIC_XGEMAIL_API_URL)
+
+# sort custom record so that email will prior to it domain
+def sort_record_key(unsorted_dict):
+    sorted_keys = unsorted_dict.keys()
+    list_of_email=[]
+    list_of_domain=[]
+    for key in sorted_keys:
+        if '@' in key:
+            list_of_email.append(key)
+        else:
+            list_of_domain.append(key)
+    return list_of_email + list_of_domain
+
+# Expecting JSON in this form
+#   {
+#     "destination": "10.11.12.13",
+#     "type": "IP",
+#     "port": 8080,
+#   }
+def parse_domain_response(domain_name, destinations_json) :
+  destination_json = destinations_json['delivery_destination']
+  route = destination_json['destination']
+  port = destination_json['port']
+  type = destination_json['type']
+  ret_val = domain_name + TLS_SMTP_TRANSPORT_TAG
+
+  if type != 'MX':
+    ret_val += '['
+
+  ret_val += route
+
+  if type != 'MX':
+    ret_val += ']'
+
+  if port != 25:
+    ret_val += ":" + str(port)
+
+  return ret_val
+
+def custom_route_file_exist():
+    if not POLICY_BUCKET:
+      return False
+
+    s3 = boto3.client('s3')
+    try:
+      s3.head_object(Bucket=POLICY_BUCKET,Key=CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
+      # custom route file found return true
+      return True
+    except botocore.exceptions.ClientError as e:
+      trace = traceback.format_exc()
+      logger.debug("Custom route file not Exist." + trace)
+      return False
+
+def transport_file_exist():
+    if not POLICY_BUCKET:
+      return False
+
+    s3 = boto3.client('s3')
+    try:
+      s3.head_object(Bucket=POLICY_BUCKET,Key=TRANSPORT_S3_FILE_NAME)
+      # transport file found return true
+      return True
+    except botocore.exceptions.ClientError as e:
+      trace = traceback.format_exc()
+      logger.debug("transport file not Exist." + trace)
+      return False
+
+timestamp_start=time.time() * 1000
+POSTFIX_CONFIG_DIR = subprocess.check_output(
+  [
+    'postmulti', '-i', POSTFIX_INSTANCE_NAME, '-x',
+    'postconf','-h','config_directory'
+  ]
+).rstrip()
+
+TRANSPORT_FILE = POSTFIX_CONFIG_DIR + '/' + TRANSPORT_FILENAME
+TRANSPORT_FILE_TMP = TRANSPORT_FILE + '.tmp'
+
+logger.debug('starting to update transport map file [%s.db]', TRANSPORT_FILE)
+
+with open(TRANSPORT_FILE_TMP, 'w') as f:
+
+    s3 = boto3.client('s3')
+    if custom_route_file_exist():
+      try:
+          current_config = s3.get_object(Bucket=POLICY_BUCKET,Key= CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
+          raw_config_data= current_config['Body'].read()
+          config_data = configformatter.get_config_binary(raw_config_data)
+          record = json.loads(config_data)
+
+          sorted_record_keys=sort_record_key(record)
+          for domain_or_email in sorted_record_keys :
+              transport_line = parse_domain_response(domain_or_email,record[domain_or_email] , s3)
+              f.write('{0}\n'.format(transport_line))
+      except Exception as e:
+          trace = traceback.format_exc()
+          for line in trace.splitlines():
+              logger.debug("Error loading custom Transport " + line)
+
+    if transport_file_exist():
+        try:
+            transport_file = s3.get_object(Bucket=POLICY_BUCKET,Key= TRANSPORT_S3_FILE_NAME)
+            transport_data= transport_file['Body'].read().decode("utf-8")
+            for transport_line in transport_data.splitlines():
+                print("Line: {}".format(transport_line.strip()))
+                f.write('{0}\n'.format(transport_line.strip()))
+        except Exception as e:
+            trace = traceback.format_exc()
+            for line in trace.splitlines():
+                logger.debug("Error loading Transport " + line)
+
+    if (float(round(time.time() * 1000)) - float(timestamp_start)) > 10 * 60 * 1000:
+        logger.warn('transport map file updater taken more than 10 mins')
+
+# Add catch-all to retry any unknown domain
+f.write('* retry: domain is unknown\n')
+
+#subprocess.call(['postmap', 'hash:{0}'.format(TRANSPORT_FILE_TMP)])
+#os.rename(TRANSPORT_FILE_TMP, TRANSPORT_FILE);
+#os.rename(TRANSPORT_FILE_TMP + '.db', TRANSPORT_FILE + '.db');
+
+logger.debug('transport map file [%s.db] successfully updated. Time taken [%s]', TRANSPORT_FILE, float(round(time.time() * 1000)) - float(timestamp_start))
