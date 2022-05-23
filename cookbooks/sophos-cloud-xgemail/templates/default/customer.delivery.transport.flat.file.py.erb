@@ -46,6 +46,7 @@ handler.formatter = formatter
 logger.addHandler(handler)
 
 logger.debug('customer delivery transport updater - pic url [%s]', PIC_XGEMAIL_API_URL)
+s3 = boto3.client('s3')
 
 # sort custom record so that email will prior to it domain
 def sort_record_key(unsorted_dict):
@@ -59,12 +60,6 @@ def sort_record_key(unsorted_dict):
             list_of_domain.append(key)
     return list_of_email + list_of_domain
 
-# Expecting JSON in this form
-#   {
-#     "destination": "10.11.12.13",
-#     "type": "IP",
-#     "port": 8080,
-#   }
 def parse_domain_response(domain_name, destinations_json) :
   destination_json = destinations_json['delivery_destination']
   route = destination_json['destination']
@@ -88,8 +83,7 @@ def parse_domain_response(domain_name, destinations_json) :
 def custom_route_file_exist():
     if not POLICY_BUCKET:
       return False
-
-    s3 = boto3.client('s3')
+      
     try:
       s3.head_object(Bucket=POLICY_BUCKET,Key=CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
       # custom route file found return true
@@ -103,7 +97,6 @@ def transport_file_exist():
     if not POLICY_BUCKET:
       return False
 
-    s3 = boto3.client('s3')
     try:
       s3.head_object(Bucket=POLICY_BUCKET,Key=TRANSPORT_S3_FILE_NAME)
       # transport file found return true
@@ -116,7 +109,6 @@ def transport_file_exist():
 def flat_file_enable_file_exist():
     if not POLICY_BUCKET:
       return False
-    s3 = boto3.client('s3')
     try:
       s3.head_object(Bucket=POLICY_BUCKET,Key=INSTANCE_LIST_FILE_NAME)
       # flat file instance list file found return true
@@ -152,7 +144,6 @@ logger.debug('starting to update transport map file [%s.db]', TRANSPORT_FILE)
 
 with open(TRANSPORT_FILE_TMP, 'w') as f:
 
-    s3 = boto3.client('s3')
     if custom_route_file_exist():
       try:
           current_config = s3.get_object(Bucket=POLICY_BUCKET,Key= CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
