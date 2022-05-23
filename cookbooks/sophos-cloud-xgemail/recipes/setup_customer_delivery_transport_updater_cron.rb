@@ -31,9 +31,11 @@ CRON_MINUTE_FREQUENCY = node['xgemail']['customer_delivery_transport_cron_minute
 STATION_VPC_NAME      = node['xgemail']['station_vpc_name']
 XGEMAIL_FILES_DIR     = node['xgemail']['xgemail_files_dir']
 TRANSPORT_FILENAME    = 'transport'
+INSTANCE_ID           = node['ec2']['instance_id']
 POLICY_BUCKET         = node['xgemail']['xgemail_policy_bucket_name']
 XGEMAIL_UTILS_DIR      = node['xgemail']['xgemail_utils_files_dir']
 CUSTOM_ROUTE_TRANSPORT_PATH  = node['xgemail']['custom_route_transport_path']
+FLAT_FILE_INSTANCE_LIST_PATH = node['xgemail']['flat_file_instance_path']
 
 CONFIGURATION_COMMANDS =
   [
@@ -91,7 +93,9 @@ template TRANSPORT_UPDATER_SCRIPT_PATH do
     :connections_bucket => CONNECTIONS_BUCKET,
     :policy_bucket => POLICY_BUCKET,
     :xgemail_utils_path => XGEMAIL_UTILS_DIR,
-    :custom_route_transport_path => CUSTOM_ROUTE_TRANSPORT_PATH
+    :custom_route_transport_path => CUSTOM_ROUTE_TRANSPORT_PATH,
+    :instance_id => INSTANCE_ID,
+    :flat_file_instance_list_path => FLAT_FILE_INSTANCE_LIST_PATH
   )
   notifies :run, "execute[#{TRANSPORT_UPDATER_SCRIPT_PATH}]", :immediately
 end
