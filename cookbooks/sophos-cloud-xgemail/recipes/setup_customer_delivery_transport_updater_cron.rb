@@ -65,7 +65,7 @@ if ACCOUNT == 'sandbox'
 
 end
 
-PACKAGE_DIR                    = "#{XGEMAIL_FILES_DIR}/customer-delivery-transport"
+PACKAGE_DIR                    = "#{XGEMAIL_FILES_DIR}/customer-delivery-transport-cron"
 TRANSPORT_UPDATER_SCRIPT       = 'customer.delivery.transport.flat.file.py'
 TRANSPORT_UPDATER_SCRIPT_PATH  = "#{PACKAGE_DIR}/#{TRANSPORT_UPDATER_SCRIPT}"
 
@@ -80,6 +80,13 @@ directory PACKAGE_DIR do
   mode '0755'
   owner 'root'
   group 'root'
+end
+
+# Setup cron script execution
+execute TRANSPORT_UPDATER_SCRIPT_PATH do
+  ignore_failure true
+  user 'root'
+  action :nothing
 end
 
 template TRANSPORT_UPDATER_SCRIPT_PATH do
@@ -108,6 +115,5 @@ cron "#{INSTANCE_NAME}-transport-cron" do
   minute "1-59/#{CRON_MINUTE_FREQUENCY}"
   user 'root'
   command "source /etc/profile && timeout #{CRON_JOB_TIMEOUT} flock --nb /var/lock/#{CRON_SCRIPT}.lock -c '#{CRON_SCRIPT_PATH}' >/dev/null 2>&1"
-  action :nothing
 end
 
