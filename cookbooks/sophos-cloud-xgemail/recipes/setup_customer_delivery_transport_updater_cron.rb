@@ -65,9 +65,9 @@ if ACCOUNT == 'sandbox'
 
 end
 
-PACKAGE_DIR                    = "#{XGEMAIL_FILES_DIR}/customer-delivery-transport-cron"
-TRANSPORT_UPDATER_SCRIPT       = 'customer.delivery.transport.flat.file.py'
-TRANSPORT_UPDATER_SCRIPT_PATH  = "#{PACKAGE_DIR}/#{TRANSPORT_UPDATER_SCRIPT}"
+PACKAGE_DIR       = "#{XGEMAIL_FILES_DIR}/customer-delivery-transport-cron"
+CRON_SCRIPT       = 'customer.delivery.transport.flat.file.py'
+CRON_SCRIPT_PATH  = "#{PACKAGE_DIR}/#{CRON_SCRIPT}"
 
 directory XGEMAIL_FILES_DIR do
   mode '0755'
@@ -83,14 +83,14 @@ directory PACKAGE_DIR do
 end
 
 # Setup cron script execution
-execute TRANSPORT_UPDATER_SCRIPT_PATH do
+execute CRON_SCRIPT_PATH do
   ignore_failure true
   user 'root'
   action :nothing
 end
 
-template TRANSPORT_UPDATER_SCRIPT_PATH do
-  source "#{TRANSPORT_UPDATER_SCRIPT}.erb"
+template CRON_SCRIPT_PATH do
+  source "#{CRON_SCRIPT}.erb"
   mode '0750'
   owner 'root'
   group 'root'
@@ -104,7 +104,7 @@ template TRANSPORT_UPDATER_SCRIPT_PATH do
     :instance_id => INSTANCE_ID,
     :flat_file_instance_list_path => FLAT_FILE_INSTANCE_LIST_PATH
   )
-  notifies :run, "execute[#{TRANSPORT_UPDATER_SCRIPT_PATH}]", :immediately
+  notifies :run, "execute[#{CRON_SCRIPT_PATH}]", :immediately
 end
 
 CONFIGURATION_COMMANDS.each do | cur |
