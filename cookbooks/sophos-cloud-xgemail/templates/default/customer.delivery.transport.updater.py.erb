@@ -224,7 +224,7 @@ while True:
         config = json.loads(enable_instance_data)
         if CURRENT_INSTANCE_ID in config['instance_id_enabled']:
             print 'Instance id {0} exists in file {1} will stop daemon'.format(instance_id, INSTANCE_LIST_FILE_NAME)
-            return
+            sys.exit(0)
     except Exception as e:
         logger.debug("Error in loading flat file Instance list file " + e.message)
 
