@@ -1,3 +1,15 @@
+- set_fact:
+  branch_destination_regions: [ 'us-east-2', 'eu-west-1' ]
+  when: {{ build.branch | regex_search('feature') }}
+
+- set_fact:
+  branch_destination_regions: [ 'us-east-2', 'eu-west-1', 'ca-central-1' ]
+  when: {{ build.branch | regex_search('develop') }}
+
+- set_fact:
+  branch_destination_regions: [ 'us-east-2', 'eu-west-1', 'eu-central-1', 'ca-central-1', 'ap-northeast-1', 'ap-southeast-2', 'ap-south-1', 'sa-east-1' ]
+  when: {{ build.branch | regex_search('release') }} or {{ build.branch | regex_search('bugfix') }} or {{ build.branch | regex_search('hotfix') }}
+
 ami:
   xgemail:
     stack_name:                                             "ami-build-xgemail-{{build.plan_key}}-{{build.number}}"
@@ -37,16 +49,3 @@ ami:
     vpc_security_group:                                     "{{lookup('env','VPC_SECURITYGROUPID') | default('sg-1b470e7e')}}"
     vpc_subnet_id:                                          "{{lookup('env','VPC_SUBNETID') | default('subnet-c5bb00a0')}}"
     image_name:                                             "hmr-core-{{build.branch}}-xgemail"
-
-
-set_fact:
-  branch_destination_regions: [ 'us-east-2', 'eu-west-1' ]
-  when: {{ build.branch | regex_search('(feature)') }}
-
-set_fact:
- branch_destination_regions: [ 'us-east-2', 'eu-west-1', 'ca-central-1' ]
- when: {{ build.branch | regex_search('(develop)') }}
-
-set_fact:
- branch_destination_regions: [ 'us-east-2', 'eu-west-1', 'eu-central-1', 'ca-central-1', 'ap-northeast-1', 'ap-southeast-2', 'ap-south-1', 'sa-east-1' ]
- when: { { build.branch | regex_search('(release)') } } or {{ build.branch | regex_search('(bugfix)') }} or {{ build.branch | regex_search('(hotfix)') }}
