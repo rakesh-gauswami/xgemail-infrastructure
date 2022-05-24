@@ -124,7 +124,7 @@ if flat_file_enable_file_exist():
       enable_instance_data= flat_file_enable['Body'].read()
       config = json.loads(enable_instance_data)
       if not CURRENT_INSTANCE_ID in config['instance_id_enabled']:
-          print 'Instance id {0} Not exists in file {1} will Continue daemon '.format(instance_id, INSTANCE_LIST_FILE_NAME)
+          print 'Instance id {0} Not exists in file {1} will Continue daemon '.format(CURRENT_INSTANCE_ID, INSTANCE_LIST_FILE_NAME)
           sys.exit(0)
   except Exception as e:
       logger.debug("Error loading flat file Instance list file " + e.message)
