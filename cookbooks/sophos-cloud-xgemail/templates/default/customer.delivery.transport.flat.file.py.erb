@@ -103,7 +103,7 @@ def transport_file_exist():
       return True
     except botocore.exceptions.ClientError as e:
       trace = traceback.format_exc()
-      logger.debug("transport file not Exist." + trace)
+      logger.error("transport file not Exist." + trace)
       return False
 
 def flat_file_enable_file_exist():
@@ -158,7 +158,7 @@ with open(TRANSPORT_FILE_TMP, 'w') as f:
       except Exception as e:
           trace = traceback.format_exc()
           for line in trace.splitlines():
-              logger.debug("Error loading custom Transport " + line)
+              logger.error("Error loading custom Transport " + line)
 
     if transport_file_exist():
         try:
@@ -170,7 +170,7 @@ with open(TRANSPORT_FILE_TMP, 'w') as f:
         except Exception as e:
             trace = traceback.format_exc()
             for line in trace.splitlines():
-                logger.debug("Error loading Transport " + line)
+                logger.error("Error loading Transport " + line)
 
     if (float(round(time.time() * 1000)) - float(timestamp_start)) > 10 * 60 * 1000:
         logger.warn('transport map file updater taken more than 10 mins')

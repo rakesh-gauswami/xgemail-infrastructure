@@ -4,6 +4,7 @@ import sys
 sys.path.append("<%= @xgemail_utils_path %>")
 import argparse
 import boto3
+import botocore
 import json
 import os
 import sys
@@ -11,6 +12,8 @@ import traceback
 import configformatter
 import formatterutils
 import gziputils
+import logging
+from logging.handlers import SysLogHandler
 from awshandler import AwsHandler
 
 AWS_REGION = "<%= @aws_region %>"
@@ -21,9 +24,21 @@ INSTANCE_LIST_FILE_NAME       =  INSTANCE_LIST_PATH + "flat-file-instance-list.C
 
 POLICY_BUCKET_NAME = "<%= @policy_bucket %>"
 S3_ENCRYPTION_ALGORITHM = 'AES256'
-SERVER_NAME="is"
 awshandler = AwsHandler(AWS_REGION)
+
 default_config = {'instance_id_enabled' :[]}
+s3 = boto3.client('s3')
+
+# logging to syslog setup
+logging.getLogger("botocore").setLevel(logging.WARNING)
+logger = logging.getLogger('flat-file-flag')
+logger.setLevel(logging.INFO)
+handler = logging.handlers.SysLogHandler('/dev/log')
+formatter = logging.Formatter(
+    '[%(name)s] %(process)d %(levelname)s %(message)s'
+)
+handler.formatter = formatter
+logger.addHandler(handler)
 
 def upload_to_s3(config_object, fileName):
   awshandler.upload_data_in_s3_without_expiration(
@@ -95,7 +110,7 @@ def get_current_config(config_location):
     '''
     if flat_file_enable_file_exist():
         try:
-          flat_file_enable = s3.get_object(Bucket=POLICY_BUCKET,Key= INSTANCE_LIST_FILE_NAME)
+          flat_file_enable = s3.get_object(Bucket=POLICY_BUCKET_NAME,Key= INSTANCE_LIST_FILE_NAME)
           enable_instance_data= flat_file_enable['Body'].read()
           return json.loads(enable_instance_data)
         except Exception as e:
