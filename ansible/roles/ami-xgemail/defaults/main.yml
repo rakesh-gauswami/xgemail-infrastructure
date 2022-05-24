@@ -40,11 +40,11 @@ ami:
 
 
 set_fact:
-  branch_destination_regions: ['us-east-2', 'eu-west-1']
+  branch_destination_regions: [ 'us-east-2', 'eu-west-1' ]
   when: {{ build.branch | regex_search('(feature)') }}
 
 set_fact:
- branch_destination_regions: ['us-east-2', 'eu-west-1', 'ca-central-1'
+ branch_destination_regions: [ 'us-east-2', 'eu-west-1', 'ca-central-1' ]
  when: {{ build.branch | regex_search('(develop)') }}
 
 set_fact:
