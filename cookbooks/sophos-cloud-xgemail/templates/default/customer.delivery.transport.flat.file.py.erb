@@ -45,7 +45,7 @@ formatter = logging.Formatter(
 handler.formatter = formatter
 logger.addHandler(handler)
 
-logger.debug('customer delivery transport updater - pic url [%s]', PIC_XGEMAIL_API_URL)
+logger.debug('customer delivery transport updater cron started')
 s3 = boto3.client('s3')
 
 # sort custom record so that email will prior to it domain
@@ -153,7 +153,7 @@ with open(TRANSPORT_FILE_TMP, 'w') as f:
 
           sorted_record_keys=sort_record_key(record)
           for domain_or_email in sorted_record_keys :
-              transport_line = parse_domain_response(domain_or_email,record[domain_or_email] , s3)
+              transport_line = parse_domain_response(domain_or_email,record[domain_or_email])
               f.write('{0}\n'.format(transport_line))
       except Exception as e:
           trace = traceback.format_exc()
@@ -175,8 +175,8 @@ with open(TRANSPORT_FILE_TMP, 'w') as f:
     if (float(round(time.time() * 1000)) - float(timestamp_start)) > 10 * 60 * 1000:
         logger.warn('transport map file updater taken more than 10 mins')
 
-# Add catch-all to retry any unknown domain
-f.write('* retry: domain is unknown\n')
+    # Add catch-all to retry any unknown domain
+    f.write('* retry: domain is unknown\n')
 
 #subprocess.call(['postmap', 'hash:{0}'.format(TRANSPORT_FILE_TMP)])
 #os.rename(TRANSPORT_FILE_TMP, TRANSPORT_FILE);

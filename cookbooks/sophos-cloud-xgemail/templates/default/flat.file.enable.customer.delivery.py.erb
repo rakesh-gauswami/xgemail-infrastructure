@@ -25,7 +25,7 @@ SERVER_NAME="is"
 awshandler = AwsHandler(AWS_REGION)
 default_config = {'instance_id_enabled' :[]}
 
-def upload_to_s3(fileName,config_object):
+def upload_to_s3(config_object, fileName):
   awshandler.upload_data_in_s3_without_expiration(
     POLICY_BUCKET_NAME,
     fileName,
@@ -33,16 +33,26 @@ def upload_to_s3(fileName,config_object):
     S3_ENCRYPTION_ALGORITHM
   )
 
+def flat_file_enable_file_exist():
+    if not POLICY_BUCKET_NAME:
+      return False
+    try:
+      s3.head_object(Bucket=POLICY_BUCKET_NAME,Key=INSTANCE_LIST_FILE_NAME)
+      # flat file instance list file found return true
+      return True
+    except botocore.exceptions.ClientError as e:
+      trace = traceback.format_exc()
+      logger.debug("flat file instance list file not Exist." + trace)
+      return False
+
 def get_config():
     '''
         Returns the current flat file configuration.
     '''
-    if os.path.isfile(INSTANCE_LIST_FILE_NAME):
-        with open(INSTANCE_LIST_FILE_NAME) as config_file:
-            config_data = json.load(config_file)
-            print 'flat file enabled for these {0} instance ids:'.format(len(config_data['instance_id_enabled']))
-            for instance_id in config_data['instance_id_enabled']:
-                print '\t{0}'.format(instance_id)
+    config = get_current_config(INSTANCE_LIST_FILE_NAME)
+    print 'flat file enabled for these {0} instance ids:'.format(len(config_data['instance_id_enabled']))
+    for instance_id in config_data['instance_id_enabled']:
+        print '\t{0}'.format(instance_id)
 
 def add_instance(instance_id):
     '''
@@ -57,7 +67,7 @@ def add_instance(instance_id):
 
     config['instance_id_enabled'].append(instance_id)
 
-    write_config(config, INSTANCE_LIST_FILE_NAME)
+    upload_to_s3(config, INSTANCE_LIST_FILE_NAME)
 
     print 'Added Instance id {0} in file {1}'.format(instance_id, INSTANCE_LIST_FILE_NAME)
 
@@ -74,7 +84,7 @@ def remove_instance(instance_id):
 
     config['instance_id_enabled'].remove(instance_id)
 
-    write_config(config, INSTANCE_LIST_FILE_NAME)
+    upload_to_s3(config, INSTANCE_LIST_FILE_NAME)
 
     print 'removed Instance id {0} from file {1}'.format(instance_id, INSTANCE_LIST_FILE_NAME)
 
@@ -83,25 +93,14 @@ def get_current_config(config_location):
         Reads the current configuration. If the config file does not yet exist,
         then this method returns the default config.
     '''
-    config_dir = os.path.dirname(config_location)
-
-    if not os.path.exists(config_dir):
-        os.makedirs(config_dir)
-
-    if os.path.isfile(config_location):
-        with open(config_location) as config_file:
-            return json.load(config_file)
+    if flat_file_enable_file_exist():
+        try:
+          flat_file_enable = s3.get_object(Bucket=POLICY_BUCKET,Key= INSTANCE_LIST_FILE_NAME)
+          enable_instance_data= flat_file_enable['Body'].read()
+          return json.loads(enable_instance_data)
+        except Exception as e:
+          logger.debug("Error loading flat file Instance list file " + e.message)
     return default_config
-
-def write_config(config, config_location):
-    '''
-        Overwrites any existing config file with the updated configuration.
-    '''
-    temp_file = config_location + '.tmp'
-    with open(temp_file, 'w') as config_file:
-        json.dump(config, config_file)
-    os.rename(temp_file, config_location)
-    upload_to_s3(config_location,config)
 
 if __name__ == "__main__":
 
