@@ -4,17 +4,17 @@
 - name: Regions for feature branches
   set_fact:
     branch_destination_regions: [ 'us-east-2', 'eu-west-1' ]
-  when: "{{ build.branch | regex_search('feature') }}"
+  when: build.branch | regex_search('feature')
 
 - name: Regions for develop branch
   set_fact:
     branch_destination_regions: [ 'us-east-2', 'eu-west-1', 'ca-central-1' ]
-  when: "{{ build.branch | regex_search('develop') }}"
+  when: build.branch | regex_search('develop')
 
 - name: Regions for release, bugfix, and hotfix branches
   set_fact:
     branch_destination_regions: [ 'us-east-2', 'eu-west-1', 'eu-central-1', 'ca-central-1', 'ap-northeast-1', 'ap-southeast-2', 'ap-south-1', 'sa-east-1' ]
-  when: "{{ build.branch | regex_search('release') }}"
+  when: build.branch | regex_search('release')
 
 - name: Set destination regions
   set_fact:
