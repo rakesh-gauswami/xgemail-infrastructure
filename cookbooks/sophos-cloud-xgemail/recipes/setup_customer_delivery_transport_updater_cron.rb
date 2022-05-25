@@ -41,6 +41,11 @@ CONFIGURATION_COMMANDS =
   [
     "transport_maps=hash:$config_directory/#{TRANSPORT_FILENAME}"
   ]
+if POSTFIX_INSTANCE_NAME == 'postfix-mfid'
+    TRANSPORT_S3_FILE_NAME   = 'flat_files/mailflow/transport'
+else
+    TRANSPORT_S3_FILE_NAME   = 'flat_files/gateway/transport'
+end
 
 if ACCOUNT == 'sandbox'
   TRANSPORT_FILE = "/etc/#{instance_name(INSTANCE_NAME)}/#{TRANSPORT_FILENAME}"
@@ -102,7 +107,8 @@ template CRON_SCRIPT_PATH do
     :xgemail_utils_path => XGEMAIL_UTILS_DIR,
     :custom_route_transport_path => CUSTOM_ROUTE_TRANSPORT_PATH,
     :instance_id => INSTANCE_ID,
-    :flat_file_instance_list_path => FLAT_FILE_INSTANCE_LIST_PATH
+    :flat_file_instance_list_path => FLAT_FILE_INSTANCE_LIST_PATH,
+    :transport_s3_file_name => TRANSPORT_S3_FILE_NAME
   )
   notifies :run, "execute[#{CRON_SCRIPT_PATH}]", :immediately
 end

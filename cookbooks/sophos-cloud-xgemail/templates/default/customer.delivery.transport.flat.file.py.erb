@@ -30,7 +30,7 @@ TLS_SMTP_TRANSPORT_TAG = ' smtp_encrypt:'
 CUSTOM_ROUTE_TRANSPORT_PATH = "<%= @custom_route_transport_path %>"
 CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME = CUSTOM_ROUTE_TRANSPORT_PATH + "customer-delivery-custom-recipient-transport.CONFIG"
 CURRENT_INSTANCE_ID             =  "<%= @instance_id %>"
-TRANSPORT_S3_FILE_NAME          = 'flat_files/gateway/transport'
+TRANSPORT_S3_FILE_NAME          = "<%= @transport_s3_file_name %>"
 INSTANCE_LIST_PATH              = "<%= @flat_file_instance_list_path %>"
 INSTANCE_LIST_FILE_NAME         =  INSTANCE_LIST_PATH + "flat-file-instance-list.CONFIG"
 
@@ -143,22 +143,22 @@ TRANSPORT_FILE_TMP = TRANSPORT_FILE + '.tmp'
 logger.debug('starting to update transport map file [%s.db]', TRANSPORT_FILE)
 
 with open(TRANSPORT_FILE_TMP, 'w') as f:
+    if POSTFIX_INSTANCE_NAME == 'postfix-cd':
+        if custom_route_file_exist():
+          try:
+              current_config = s3.get_object(Bucket=POLICY_BUCKET,Key= CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
+              raw_config_data= current_config['Body'].read()
+              config_data = configformatter.get_config_binary(raw_config_data)
+              record = json.loads(config_data)
 
-    if custom_route_file_exist():
-      try:
-          current_config = s3.get_object(Bucket=POLICY_BUCKET,Key= CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
-          raw_config_data= current_config['Body'].read()
-          config_data = configformatter.get_config_binary(raw_config_data)
-          record = json.loads(config_data)
-
-          sorted_record_keys=sort_record_key(record)
-          for domain_or_email in sorted_record_keys :
-              transport_line = parse_domain_response(domain_or_email,record[domain_or_email])
-              f.write('{0}\n'.format(transport_line))
-      except Exception as e:
-          trace = traceback.format_exc()
-          for line in trace.splitlines():
-              logger.error("Error loading custom Transport " + line)
+              sorted_record_keys=sort_record_key(record)
+              for domain_or_email in sorted_record_keys :
+                  transport_line = parse_domain_response(domain_or_email,record[domain_or_email])
+                  f.write('{0}\n'.format(transport_line))
+          except Exception as e:
+              trace = traceback.format_exc()
+              for line in trace.splitlines():
+                  logger.error("Error loading custom Transport " + line)
 
     if transport_file_exist():
         try:
