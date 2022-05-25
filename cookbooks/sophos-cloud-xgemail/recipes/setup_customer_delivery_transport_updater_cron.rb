@@ -27,7 +27,7 @@ REGION                = node['sophos_cloud']['region']
 CONNECTIONS_BUCKET    = node['sophos_cloud']['connections']
 
 CRON_JOB_TIMEOUT      = node['xgemail']['cron_job_timeout']
-CRON_MINUTE_FREQUENCY = node['xgemail']['customer_delivery_transport_cron_minute_frequency']
+CRON_MINUTE_FREQUENCY = node['xgemail']['flat_file_transport_cron_minute_frequency']
 STATION_VPC_NAME      = node['xgemail']['station_vpc_name']
 XGEMAIL_FILES_DIR     = node['xgemail']['xgemail_files_dir']
 TRANSPORT_FILENAME    = 'transport'
@@ -42,7 +42,7 @@ CONFIGURATION_COMMANDS =
     "transport_maps=hash:$config_directory/#{TRANSPORT_FILENAME}"
   ]
 
-if NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'mf-inbound-delivery'
+if NODE_TYPE == 'mf-inbound-xdelivery' || NODE_TYPE == 'mf-inbound-delivery'
     TRANSPORT_S3_FILE_NAME   = 'flat_files/mailflow/transport'
 end
 

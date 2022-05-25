@@ -1,12 +1,12 @@
 #
 # Cookbook Name:: sophos-cloud-xgemail
-# Recipe:: setup_customer_delivery_flat_file_flag
+# Recipe:: setup_flat_file_rollout_config
 #
 # Copyright 2022, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
-# This recipe installs a scripts that set configuration of flat file for customer delivery instance based on flag
+# This recipe installs a scripts that set/reset instance id of delivery for flat file rollout
 #
 
 
@@ -40,7 +40,7 @@ POLICY_BUCKET                   = node['xgemail']['xgemail_policy_bucket_name']
 INSTANCE_ID                     = node['ec2']['instance_id']
 
 PACKAGE_DIR                     = "#{XGEMAIL_FILES_DIR}/toggle-flat-file"
-TOGGLE_FLAT_FILE_SCRIPT      = 'flat.file.enable.customer.delivery.py'
+TOGGLE_FLAT_FILE_SCRIPT      = 'flat.file.rollout.config.py'
 TOGGLE_FLAT_FILE_SCRIPT_PATH = "#{PACKAGE_DIR}/#{TOGGLE_FLAT_FILE_SCRIPT}"
 
 #directory for customer delivery services

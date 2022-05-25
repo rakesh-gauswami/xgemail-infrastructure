@@ -185,7 +185,7 @@ def custom_route_file_exist():
       logger.debug("Custom route file not Exist." + trace)
       return False
 
-def flat_file_enable_file_exist():
+def flat_file_rollout_config_exist():
     if not POLICY_BUCKET:
       return False
     s3 = boto3.client('s3')
@@ -217,7 +217,7 @@ PIC_DESTINATION_URL = PIC_XGEMAIL_API_URL + '/destination'
 
 while True:
 
-  if flat_file_enable_file_exist():
+  if flat_file_rollout_config_exist():
     try:
         s3 = boto3.client('s3')
         flat_file_enable = s3.get_object(Bucket=POLICY_BUCKET,Key= INSTANCE_LIST_FILE_NAME)

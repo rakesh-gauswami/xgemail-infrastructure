@@ -49,7 +49,7 @@ PIC_DOMAINS_URL = PIC_XGEMAIL_API_URL + '/domains'
 PIC_TLS_DOMAINS_URL = PIC_XGEMAIL_API_URL +'/tls-domain-exists/'
 
 logger.info('customer delivery transport cron - pic url [%s]', PIC_XGEMAIL_API_URL)
-def flat_file_enable_file_exist():
+def flat_file_rollout_config_exist():
     if not POLICY_BUCKET:
       return False
     s3 = boto3.client('s3')
@@ -62,7 +62,7 @@ def flat_file_enable_file_exist():
       logger.debug("flat file instance list file not Exist." + trace)
       return False
 
-if flat_file_enable_file_exist():
+if flat_file_rollout_config_exist():
     try:
         s3 = boto3.client('s3')
         flat_file_enable = s3.get_object(Bucket=POLICY_BUCKET,Key= INSTANCE_LIST_FILE_NAME)
