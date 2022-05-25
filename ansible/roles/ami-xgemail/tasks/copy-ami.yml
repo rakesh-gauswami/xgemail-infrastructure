@@ -23,7 +23,7 @@
   delay: 10
   retries: 3
 
-- name: "Copy AMI to Destination Regions {{lookup('env','AMI_DESTINATION_REGIONS') | default(branch_destination_regions}}"
+- name: "Copy AMI to Destination Regions {{lookup('env','AMI_DESTINATION_REGIONS') | default(branch_destination_regions)}}"
   ec2_ami_copy:
     description:          "{{image_description}}"
     source_region:        "{{ami.xgemail.region}}"
@@ -40,7 +40,7 @@
     wait_timeout:         1200
     launch_permissions:
       user_ids: "{{ami.xgemail.ami_launch_permissions}}"
-  with_items:             "{{lookup('env','AMI_DESTINATION_REGIONS') | default(branch_destination_regions}}"
+  with_items:             "{{lookup('env','AMI_DESTINATION_REGIONS') | default(branch_destination_regions)}}"
   register: ec2_ami_copy_output
 
 - name: "Display Xgemail AMI IDs and their Region"
