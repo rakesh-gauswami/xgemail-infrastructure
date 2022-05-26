@@ -116,7 +116,7 @@ CONFIGURATION_COMMANDS.each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
 end
 
-cron "#{INSTANCE_NAME}-transport-cron" do
+cron "#{INSTANCE_NAME}-flatfile-transport-cron" do
   minute "1-59/#{CRON_MINUTE_FREQUENCY}"
   user 'root'
   command "source /etc/profile && timeout #{CRON_JOB_TIMEOUT} flock --nb /var/lock/#{CRON_SCRIPT}.lock -c '#{CRON_SCRIPT_PATH}' >/dev/null 2>&1"

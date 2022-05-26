@@ -224,10 +224,10 @@ while True:
         enable_instance_data= flat_file_enable['Body'].read()
         config = json.loads(enable_instance_data)
         if CURRENT_INSTANCE_ID in config['instance_id_enabled']:
-            print 'Instance id {0} exists in file {1} will stop daemon'.format(CURRENT_INSTANCE_ID, INSTANCE_LIST_FILE_NAME)
+            logger.warn('Instance id {0} exists in file {1} will stop the legacy code'.format(CURRENT_INSTANCE_ID, INSTANCE_LIST_FILE_NAME))
             sys.exit(0)
     except Exception as e:
-        logger.debug("Error in loading flat file Instance list file " + e.message)
+        logger.warn("Error in loading flat file Instance list file " + e.message)
 
   timestamp_start=time.time() * 1000
 
