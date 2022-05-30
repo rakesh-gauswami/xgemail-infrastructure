@@ -33,7 +33,8 @@ AWS_REGION              = node['sophos_cloud']['region']
 ACCOUNT                 = node['sophos_cloud']['environment']
 
 XGEMAIL_FILES_DIR               = node['xgemail']['xgemail_files_dir']
-FLAT_FILE_INSTANCE_LIST_PATH     = node['xgemail']['flat_file_instance_path']
+#FLAT_FILE_INSTANCE_LIST_PATH     = node['xgemail']['flat_file_instance_path']
+FLAT_FILE_INSTANCE_LIST_PATH     = 'config/inbound-relay-control/toggle-instance-list/'
 XGEMAIL_UTILS_DIR               = node['xgemail']['xgemail_utils_files_dir']
 POLICY_BUCKET                   = node['xgemail']['xgemail_policy_bucket_name']
 INSTANCE_ID                     = node['ec2']['instance_id']
@@ -65,6 +66,7 @@ template TOGGLE_FLAT_FILE_SCRIPT_PATH do
     :instance_id => INSTANCE_ID,
     :xgemail_utils_path => XGEMAIL_UTILS_DIR,
     :account => ACCOUNT,
+    :postfix_instance_name => instance_name( INSTANCE_NAME ),
     :policy_bucket => POLICY_BUCKET,
     :flat_file_instance_list_path => FLAT_FILE_INSTANCE_LIST_PATH
   )
