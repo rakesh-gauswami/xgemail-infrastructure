@@ -26,7 +26,6 @@ INSTANCE_NAME = INSTANCE_DATA[:instance_name]
 raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 
 include_recipe 'sophos-cloud-xgemail::common-postfix-multi-instance-config'
-include_recipe 'sophos-cloud-xgemail::configure_swaks'
 
 AWS_REGION = node['sophos_cloud']['region']
 
@@ -95,4 +94,5 @@ else
   include_recipe 'sophos-cloud-xgemail::configure-bounce-message-internet-delivery-queue'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_consumer'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_utils_structure'
+  include_recipe 'sophos-cloud-xgemail::configure_swaks'
 end
