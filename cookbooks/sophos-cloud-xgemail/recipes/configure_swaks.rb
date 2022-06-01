@@ -22,9 +22,18 @@ raise "Unsupported node type [#{NODE_TYPE}]" if INSTANCE_DATA.nil?
 INSTANCE_NAME = INSTANCE_DATA[:instance_name]
 raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 
+SOPHOS_SWAKS_DIR = '/opt/swaks'
+
+directory SOPHOS_SWAKS_DIR do
+  mode '0755'
+  owner 'root'
+  group 'root'
+  recursive true
+end
+
 bash 'download_swaks' do
   user 'root'
-  cwd '/tmp'
+  cwd '/opt/swaks'
   code <<-EOH
     echo "$(curl -O https://jetmore.org/john/code/swaks/files/swaks-20201014.0/swaks)"
   EOH
