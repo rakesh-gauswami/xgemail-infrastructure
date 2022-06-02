@@ -106,3 +106,9 @@ template 'send20emails.sh' do
     :sophos_swaks_dir => SOPHOS_SWAKS_DIR
   )
 end
+
+cron 'update_subjectline_every_10_min' do
+  minute '*/10'
+  user 'root'
+  command "/bin/bash #{SOPHOS_SWAKS_DIR}/update_subject.sh"
+end
