@@ -1,12 +1,12 @@
 #
 # Cookbook Name:: sophos-cloud-xgemail
-# Recipe:: setup_mf_inbound_delivery_transport_updater_cron
+# Recipe:: setup_customer_delivery_transport_updater_cron
 #
-# Copyright 2021, Sophos
+# Copyright 2022, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
-# This recipe installs cron job to pull domain routing information from PIC
+# This recipe installs cron job to pull domain routing information from S3 flat file
 #
 
 # Include Helper library
@@ -23,25 +23,28 @@ raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 
 ACCOUNT               = node['sophos_cloud']['environment']
 ACCOUNT_NAME          = node['sophos_cloud']['account_name']
-LOCAL_CERT_PATH       = node['sophos_cloud']['local_cert_path']
 REGION                = node['sophos_cloud']['region']
 CONNECTIONS_BUCKET    = node['sophos_cloud']['connections']
 
-CRON_JOB_TIMEOUT      = node['xgemail']['mail_flow_cron_job_timeout']
-CRON_MINUTE_FREQUENCY = node['xgemail']['mail_flow_sender_by_relay_cron_minute_frequency']
+CRON_JOB_TIMEOUT      = node['xgemail']['cron_job_timeout']
+CRON_MINUTE_FREQUENCY = node['xgemail']['flat_file_transport_cron_minute_frequency']
 STATION_VPC_NAME      = node['xgemail']['station_vpc_name']
 XGEMAIL_FILES_DIR     = node['xgemail']['xgemail_files_dir']
 TRANSPORT_FILENAME    = 'transport'
-MAIL_PIC_API_RESPONSE_TIMEOUT = node['xgemail']['mail_pic_apis_response_timeout_seconds']
-MAIL_PIC_API_AUTH     = node['xgemail']['mail_pic_api_auth']
+INSTANCE_ID           = node['ec2']['instance_id']
 POLICY_BUCKET         = node['xgemail']['xgemail_policy_bucket_name']
 XGEMAIL_UTILS_DIR      = node['xgemail']['xgemail_utils_files_dir']
-INSTANCE_ID           = node['ec2']['instance_id']
+CUSTOM_ROUTE_TRANSPORT_PATH  = node['xgemail']['custom_route_transport_path']
 FLAT_FILE_INSTANCE_LIST_PATH = node['xgemail']['flat_file_instance_path']
+TRANSPORT_S3_FILE_NAME   = 'flat_files/gateway/transport'
 CONFIGURATION_COMMANDS =
   [
     "transport_maps=hash:$config_directory/#{TRANSPORT_FILENAME}"
   ]
+
+if NODE_TYPE == 'mf-inbound-xdelivery' || NODE_TYPE == 'mf-inbound-delivery'
+    TRANSPORT_S3_FILE_NAME   = 'flat_files/mailflow/transport'
+end
 
 if ACCOUNT == 'sandbox'
   TRANSPORT_FILE = "/etc/#{instance_name(INSTANCE_NAME)}/#{TRANSPORT_FILENAME}"
@@ -66,14 +69,9 @@ if ACCOUNT == 'sandbox'
 
 end
 
-PACKAGE_DIR           = "#{XGEMAIL_FILES_DIR}/mf-inbound-delivery-transport-cron"
-CRON_SCRIPT           = 'mf.inbound.delivery.transport.updater.py'
-CRON_SCRIPT_PATH      = "#{PACKAGE_DIR}/#{CRON_SCRIPT}"
-if ACCOUNT_NAME == 'legacy'
-  XGEMAIL_PIC_FQDN = "mail-#{STATION_VPC_NAME.downcase}-#{REGION}.#{ACCOUNT}.hydra.sophos.com"
-else
-  XGEMAIL_PIC_FQDN = "mail.#{node['sophos_cloud']['parent_account_name']}.ctr.sophos.com"
-end
+PACKAGE_DIR       = "#{XGEMAIL_FILES_DIR}/customer-delivery-transport-cron"
+CRON_SCRIPT       = 'customer.delivery.transport.flat.file.py'
+CRON_SCRIPT_PATH  = "#{PACKAGE_DIR}/#{CRON_SCRIPT}"
 
 directory XGEMAIL_FILES_DIR do
   mode '0755'
@@ -101,17 +99,16 @@ template CRON_SCRIPT_PATH do
   owner 'root'
   group 'root'
   variables(
-    :xgemail_pic_fqdn => XGEMAIL_PIC_FQDN,
     :postfix_instance_name => instance_name( INSTANCE_NAME ),
     :transport_filename => TRANSPORT_FILENAME,
-    :mail_pic_api_response_timeout => MAIL_PIC_API_RESPONSE_TIMEOUT,
-    :mail_pic_api_auth => MAIL_PIC_API_AUTH,
     :connections_bucket => CONNECTIONS_BUCKET,
     :policy_bucket => POLICY_BUCKET,
     :xgemail_utils_path => XGEMAIL_UTILS_DIR,
+    :custom_route_transport_path => CUSTOM_ROUTE_TRANSPORT_PATH,
     :instance_id => INSTANCE_ID,
-    :flat_file_instance_list_path => FLAT_FILE_INSTANCE_LIST_PATH
-    )
+    :flat_file_instance_list_path => FLAT_FILE_INSTANCE_LIST_PATH,
+    :transport_s3_file_name => TRANSPORT_S3_FILE_NAME
+  )
   notifies :run, "execute[#{CRON_SCRIPT_PATH}]", :immediately
 end
 
@@ -119,8 +116,9 @@ CONFIGURATION_COMMANDS.each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
 end
 
-cron "#{INSTANCE_NAME}-transport-cron" do
+cron "#{INSTANCE_NAME}-flatfile-transport-cron" do
   minute "1-59/#{CRON_MINUTE_FREQUENCY}"
   user 'root'
   command "source /etc/profile && timeout #{CRON_JOB_TIMEOUT} flock --nb /var/lock/#{CRON_SCRIPT}.lock -c '#{CRON_SCRIPT_PATH}' >/dev/null 2>&1"
 end
+

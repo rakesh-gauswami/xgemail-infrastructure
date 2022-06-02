@@ -2,7 +2,7 @@
 import boto3
 from datetime import datetime
 
-session = boto3.session.Session(profile_name='eml100yul', region_name='ca-central-1')
+session = boto3.session.Session(profile_name='eml100gru', region_name='sa-east-1')
 ec2 = session.resource('ec2')
 ec2_client = session.client('ec2')
 """:type: pyboto3.ec2 """
@@ -30,7 +30,7 @@ def tag_eip(allocation_id):
                 },
                 {
                     'Key': 'last_reputation_checked',
-                    'Value': '2020-01-31 07:25:03.155328'
+                    'Value': '2022-05-01 07:25:03.155328'
                 },
                 {
                     'Key': 'last_month_volume',

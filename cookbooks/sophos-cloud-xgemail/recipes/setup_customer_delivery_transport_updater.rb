@@ -32,6 +32,7 @@ CRON_MINUTE_FREQUENCY = node['xgemail']['customer_delivery_transport_cron_minute
 STATION_VPC_NAME      = node['xgemail']['station_vpc_name']
 XGEMAIL_FILES_DIR     = node['xgemail']['xgemail_files_dir']
 TRANSPORT_FILENAME    = 'transport'
+INSTANCE_ID           = node['ec2']['instance_id']
 MAIL_PIC_API_RESPONSE_TIMEOUT = node['xgemail']['mail_pic_apis_response_timeout_seconds']
 MAIL_PIC_API_AUTH     = node['xgemail']['mail_pic_api_auth']
 POLICY_BUCKET         = node['xgemail']['xgemail_policy_bucket_name']
@@ -40,6 +41,7 @@ ENC_CONFIG_PREFIX_KEY = node['xgemail']['enc_config_prefix_key']
 INBOUND_TLS_CONFIG_KEY = node['xgemail']['inbound_tls_config_key']
 XGEMAIL_UTILS_DIR      = node['xgemail']['xgemail_utils_files_dir']
 CUSTOM_ROUTE_TRANSPORT_PATH  = node['xgemail']['custom_route_transport_path']
+FLAT_FILE_INSTANCE_LIST_PATH = node['xgemail']['flat_file_instance_path']
 
 CONFIGURATION_COMMANDS =
   [
@@ -111,7 +113,9 @@ template TRANSPORT_UPDATER_SCRIPT_PATH do
     :custom_route_transport_path => CUSTOM_ROUTE_TRANSPORT_PATH,
     :enc_config_key => ENC_CONFIG_KEY,
     :enc_config_prefix_key => ENC_CONFIG_PREFIX_KEY,
-    :inbound_tls_config_key => INBOUND_TLS_CONFIG_KEY
+    :inbound_tls_config_key => INBOUND_TLS_CONFIG_KEY,
+    :instance_id => INSTANCE_ID,
+    :flat_file_instance_list_path => FLAT_FILE_INSTANCE_LIST_PATH
   )
   notifies :run, "execute[#{TRANSPORT_UPDATER_SCRIPT_PATH}]", :immediately
 end
