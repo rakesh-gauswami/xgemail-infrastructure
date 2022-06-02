@@ -111,38 +111,328 @@ template SOPHOS_SWAKS_SEND_100_EMAILS do
   )
 end
 
-cron SOPHOS_SWAKS_UPDATE_SUBJECTS do
-  minute '*/10'
-  user 'root'
-  command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_UPDATE_SUBJECTS}"
-end
+if AWS_REGION == 'ca-central-1'
+  cron SOPHOS_SWAKS_UPDATE_SUBJECTS do
+    minute '*/10'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_UPDATE_SUBJECTS}"
+  end
 
-cron SOPHOS_SWAKS_SEND_WARMUP_EMAILS do
-  user 'root'
-  weekday '0,6'
-  command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_UPDATE_SUBJECTS}"
-end
+  cron SOPHOS_SWAKS_SEND_WARMUP_EMAILS do
+    user 'root'
+    weekday '0,6'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_UPDATE_SUBJECTS}"
+  end
 
-cron SOPHOS_SWAKS_SEND_20_EMAILS do
-  minute '*/5'
-  hour '00-12'
-  weekday '1-5'
-  user 'root'
-  command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_20_EMAILS}"
-end
+  cron SOPHOS_SWAKS_SEND_20_EMAILS do
+    minute '*/5'
+    hour '00-12'
+    weekday '1-5'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_20_EMAILS}"
+  end
 
-cron SOPHOS_SWAKS_SEND_50_EMAILS do
-  minute '*/5'
-  hour '13-14,21-23'
-  weekday '1-5'
-  user 'root'
-  command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_50_EMAILS}"
-end
+  cron SOPHOS_SWAKS_SEND_50_EMAILS do
+    minute '*/5'
+    hour '13-14,21-23'
+    weekday '1-5'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_50_EMAILS}"
+  end
 
-cron SOPHOS_SWAKS_SEND_100_EMAILS do
-  minute '*/5'
-  hour '15-20'
-  weekday '1-5'
-  user 'root'
-  command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_100_EMAILS}"
+  cron SOPHOS_SWAKS_SEND_100_EMAILS do
+    minute '*/5'
+    hour '15-20'
+    weekday '1-5'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_100_EMAILS}"
+  end
+elsif AWS_REGION == 'eu-west-1'
+  cron SOPHOS_SWAKS_UPDATE_SUBJECTS do
+    minute '*/10'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_UPDATE_SUBJECTS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_WARMUP_EMAILS do
+    user 'root'
+    weekday '0,6'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_UPDATE_SUBJECTS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_20_EMAILS do
+    minute '*/5'
+    hour '00-12'
+    weekday '1-5'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_20_EMAILS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_50_EMAILS do
+    minute '*/5'
+    hour '13-14,21-23'
+    weekday '1-5'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_50_EMAILS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_100_EMAILS do
+    minute '*/5'
+    hour '15-20'
+    weekday '1-5'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_100_EMAILS}"
+  end
+elsif AWS_REGION == 'eu-central-1'
+  cron SOPHOS_SWAKS_UPDATE_SUBJECTS do
+    minute '*/10'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_UPDATE_SUBJECTS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_WARMUP_EMAILS do
+    user 'root'
+    weekday '0,6'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_UPDATE_SUBJECTS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_20_EMAILS do
+    minute '*/5'
+    hour '00-12'
+    weekday '1-5'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_20_EMAILS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_50_EMAILS do
+    minute '*/5'
+    hour '13-14,21-23'
+    weekday '1-5'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_50_EMAILS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_100_EMAILS do
+    minute '*/5'
+    hour '15-20'
+    weekday '1-5'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_100_EMAILS}"
+  end
+elsif AWS_REGION == 'us-west-2'
+  cron SOPHOS_SWAKS_UPDATE_SUBJECTS do
+    minute '*/10'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_UPDATE_SUBJECTS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_WARMUP_EMAILS do
+    user 'root'
+    weekday '0,6'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_UPDATE_SUBJECTS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_20_EMAILS do
+    minute '*/5'
+    hour '00-12'
+    weekday '1-5'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_20_EMAILS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_50_EMAILS do
+    minute '*/5'
+    hour '13-14,21-23'
+    weekday '1-5'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_50_EMAILS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_100_EMAILS do
+    minute '*/5'
+    hour '15-20'
+    weekday '1-5'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_100_EMAILS}"
+  end
+elsif AWS_REGION == 'us-east-2'
+  cron SOPHOS_SWAKS_UPDATE_SUBJECTS do
+    minute '*/10'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_UPDATE_SUBJECTS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_WARMUP_EMAILS do
+    user 'root'
+    weekday '0,6'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_UPDATE_SUBJECTS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_20_EMAILS do
+    minute '*/5'
+    hour '00-12'
+    weekday '1-5'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_20_EMAILS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_50_EMAILS do
+    minute '*/5'
+    hour '13-14,21-23'
+    weekday '1-5'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_50_EMAILS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_100_EMAILS do
+    minute '*/5'
+    hour '15-20'
+    weekday '1-5'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_100_EMAILS}"
+  end
+elsif AWS_REGION == 'ap-southeast-2'
+  cron SOPHOS_SWAKS_UPDATE_SUBJECTS do
+    minute '*/10'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_UPDATE_SUBJECTS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_WARMUP_EMAILS do
+    user 'root'
+    weekday '0,6'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_UPDATE_SUBJECTS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_20_EMAILS do
+    minute '*/5'
+    hour '00-12'
+    weekday '1-5'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_20_EMAILS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_50_EMAILS do
+    minute '*/5'
+    hour '13-14,21-23'
+    weekday '1-5'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_50_EMAILS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_100_EMAILS do
+    minute '*/5'
+    hour '15-20'
+    weekday '1-5'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_100_EMAILS}"
+  end
+elsif AWS_REGION == 'ap-northeast-1'
+  cron SOPHOS_SWAKS_UPDATE_SUBJECTS do
+    minute '*/10'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_UPDATE_SUBJECTS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_WARMUP_EMAILS do
+    user 'root'
+    weekday '0,6'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_UPDATE_SUBJECTS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_20_EMAILS do
+    minute '*/5'
+    hour '00-12'
+    weekday '1-5'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_20_EMAILS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_50_EMAILS do
+    minute '*/5'
+    hour '13-14,21-23'
+    weekday '1-5'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_50_EMAILS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_100_EMAILS do
+    minute '*/5'
+    hour '15-20'
+    weekday '1-5'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_100_EMAILS}"
+  end
+elsif AWS_REGION == 'ap-south-1'
+  cron SOPHOS_SWAKS_UPDATE_SUBJECTS do
+    minute '*/10'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_UPDATE_SUBJECTS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_WARMUP_EMAILS do
+    user 'root'
+    weekday '0,6'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_UPDATE_SUBJECTS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_20_EMAILS do
+    minute '*/5'
+    hour '00-12'
+    weekday '1-5'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_20_EMAILS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_50_EMAILS do
+    minute '*/5'
+    hour '13-14,21-23'
+    weekday '1-5'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_50_EMAILS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_100_EMAILS do
+    minute '*/5'
+    hour '15-20'
+    weekday '1-5'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_100_EMAILS}"
+  end
+elsif AWS_REGION == 'sa-east-1'
+  cron SOPHOS_SWAKS_UPDATE_SUBJECTS do
+    minute '*/10'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_UPDATE_SUBJECTS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_WARMUP_EMAILS do
+    user 'root'
+    weekday '0,6'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_UPDATE_SUBJECTS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_20_EMAILS do
+    minute '*/5'
+    hour '00-12'
+    weekday '1-5'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_20_EMAILS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_50_EMAILS do
+    minute '*/5'
+    hour '13-14,21-23'
+    weekday '1-5'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_50_EMAILS}"
+  end
+
+  cron SOPHOS_SWAKS_SEND_100_EMAILS do
+    minute '*/5'
+    hour '15-20'
+    weekday '1-5'
+    user 'root'
+    command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_100_EMAILS}"
+  end
 end
