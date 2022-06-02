@@ -44,7 +44,7 @@ bash 'download_swaks' do
   user 'root'
   cwd SOPHOS_SWAKS_DIR
   code <<-EOH
-    mv #{PACKAGES_DIR}/swaks #{SOPHOS_SWAKS_DIR}
+    cp #{PACKAGES_DIR}/swaks #{SOPHOS_SWAKS_DIR}
     /bin/chmod +x #{SOPHOS_SWAKS_DIR}/swaks
   EOH
 end
