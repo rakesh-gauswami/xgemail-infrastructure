@@ -63,3 +63,36 @@ template 'update_subject.sh' do
   group 'root'
   mode '0644'
 end
+
+template 'send100emails.sh' do
+  path "#{SOPHOS_SWAKS_DIR}/send100emails.sh"
+  source 'xgemail.swaks.send100emails.sh.erb'
+  owner 'root'
+  group 'root'
+  mode '0644'
+  variables(
+    :sophos_swaks_dir => SOPHOS_SWAKS_DIR
+  )
+end
+
+template 'send50emails.sh' do
+  path "#{SOPHOS_SWAKS_DIR}/send50emails.sh"
+  source 'xgemail.swaks.send50emails.sh.erb'
+  owner 'root'
+  group 'root'
+  mode '0644'
+  variables(
+    :sophos_swaks_dir => SOPHOS_SWAKS_DIR
+  )
+end
+
+template 'send20emails.sh' do
+  path "#{SOPHOS_SWAKS_DIR}/send20emails.sh"
+  source 'xgemail.swaks.send20emails.sh.erb'
+  owner 'root'
+  group 'root'
+  mode '0644'
+  variables(
+    :sophos_swaks_dir => SOPHOS_SWAKS_DIR
+  )
+end
