@@ -147,6 +147,7 @@ if AWS_REGION == 'ca-central-1'
     user 'root'
     command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_100_EMAILS}"
   end
+
 elsif AWS_REGION == 'eu-west-1'
   cron SOPHOS_SWAKS_UPDATE_SUBJECTS do
     minute '*/10'
@@ -183,6 +184,7 @@ elsif AWS_REGION == 'eu-west-1'
     user 'root'
     command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_100_EMAILS}"
   end
+
 elsif AWS_REGION == 'eu-central-1'
   cron SOPHOS_SWAKS_UPDATE_SUBJECTS do
     minute '*/10'
@@ -219,6 +221,7 @@ elsif AWS_REGION == 'eu-central-1'
     user 'root'
     command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_100_EMAILS}"
   end
+
 elsif AWS_REGION == 'us-west-2'
   cron SOPHOS_SWAKS_UPDATE_SUBJECTS do
     minute '*/10'
@@ -255,6 +258,7 @@ elsif AWS_REGION == 'us-west-2'
     user 'root'
     command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_100_EMAILS}"
   end
+
 elsif AWS_REGION == 'us-east-2'
   cron SOPHOS_SWAKS_UPDATE_SUBJECTS do
     minute '*/10'
@@ -291,6 +295,7 @@ elsif AWS_REGION == 'us-east-2'
     user 'root'
     command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_100_EMAILS}"
   end
+
 elsif AWS_REGION == 'ap-southeast-2'
   cron SOPHOS_SWAKS_UPDATE_SUBJECTS do
     minute '*/10'
@@ -327,6 +332,7 @@ elsif AWS_REGION == 'ap-southeast-2'
     user 'root'
     command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_100_EMAILS}"
   end
+
 elsif AWS_REGION == 'ap-northeast-1'
   cron SOPHOS_SWAKS_UPDATE_SUBJECTS do
     minute '*/10'
@@ -363,6 +369,7 @@ elsif AWS_REGION == 'ap-northeast-1'
     user 'root'
     command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_100_EMAILS}"
   end
+
 elsif AWS_REGION == 'ap-south-1'
   cron SOPHOS_SWAKS_UPDATE_SUBJECTS do
     minute '*/10'
@@ -399,6 +406,7 @@ elsif AWS_REGION == 'ap-south-1'
     user 'root'
     command "/bin/bash #{SOPHOS_SWAKS_DIR}/#{SOPHOS_SWAKS_SEND_100_EMAILS}"
   end
+
 elsif AWS_REGION == 'sa-east-1'
   cron SOPHOS_SWAKS_UPDATE_SUBJECTS do
     minute '*/10'
