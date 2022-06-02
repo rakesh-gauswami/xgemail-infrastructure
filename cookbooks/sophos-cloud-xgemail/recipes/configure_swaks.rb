@@ -69,6 +69,9 @@ template 'update_subject.sh' do
   owner 'root'
   group 'root'
   mode '0644'
+  variables(
+    :sophos_swaks_dir => SOPHOS_SWAKS_DIR
+  )
 end
 
 template 'send100emails.sh' do
