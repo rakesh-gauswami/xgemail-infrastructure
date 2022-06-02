@@ -10,6 +10,8 @@
 import sys
 sys.path.append("<%= @xgemail_utils_path %>")
 import boto3
+import botocore
+import traceback
 import base64
 import json
 import os
@@ -28,6 +30,9 @@ MAIL_PIC_API_AUTH = '<%= @mail_pic_api_auth %>'
 CONNECTIONS_BUCKET = '<%= @connections_bucket %>'
 POLICY_BUCKET = '<%= @policy_bucket %>'
 TLS_SMTP_TRANSPORT_TAG = ' smtp_encrypt:'
+CURRENT_INSTANCE_ID    =  "<%= @instance_id %>"
+INSTANCE_LIST_PATH     = "<%= @flat_file_instance_list_path %>"
+INSTANCE_LIST_FILE_NAME       =  INSTANCE_LIST_PATH + "flat-file-instance-list.CONFIG"
 
 # logging to syslog setup
 logging.getLogger("botocore").setLevel(logging.WARNING)
@@ -45,6 +50,30 @@ PIC_DOMAINS_URL = PIC_XGEMAIL_API_URL + '/domains'
 PIC_TLS_DOMAINS_URL = PIC_XGEMAIL_API_URL +'/tls-domain-exists/'
 
 logger.info('customer delivery transport cron - pic url [%s]', PIC_XGEMAIL_API_URL)
+def flat_file_rollout_config_exist():
+    if not POLICY_BUCKET:
+      return False
+    s3 = boto3.client('s3')
+    try:
+      s3.head_object(Bucket=POLICY_BUCKET,Key=INSTANCE_LIST_FILE_NAME)
+      # flat file instance list file found return true
+      return True
+    except botocore.exceptions.ClientError as e:
+      trace = traceback.format_exc()
+      logger.debug("flat file instance list file not Exist." + trace)
+      return False
+
+if flat_file_rollout_config_exist():
+    try:
+        s3 = boto3.client('s3')
+        flat_file_enable = s3.get_object(Bucket=POLICY_BUCKET,Key= INSTANCE_LIST_FILE_NAME)
+        enable_instance_data= flat_file_enable['Body'].read()
+        config = json.loads(enable_instance_data)
+        if CURRENT_INSTANCE_ID in config['instance_id_enabled']:
+            logger.warn("Instance id {0} exists in file {1} , will stop the legacy ".format(CURRENT_INSTANCE_ID, INSTANCE_LIST_FILE_NAME))
+            sys.exit(0)
+    except Exception as e:
+        logger.warn("Error in loading flat file Instance list file " + e.message)
 
 def get_passphrase():
     s3 = boto3.client('s3')

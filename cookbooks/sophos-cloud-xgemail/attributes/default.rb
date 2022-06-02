@@ -175,6 +175,7 @@ default['xgemail']['enc_config_key'] = 'config/outbound-relay-control/encryption
 default['xgemail']['enc_config_prefix_key'] = 'outbound-relay-control/encryption/'
 default['xgemail']['inbound_tls_config_key'] = 'config/inbound-relay-control/tls/'
 default['xgemail']['custom_route_transport_path'] = 'config/inbound-relay-control/custom-routes/'
+default['xgemail']['flat_file_instance_path'] = 'config/inbound-relay-control/toggle-instance-list/'
 
 default['xgemail']['temp_failure_code'] = 75
 
@@ -243,6 +244,7 @@ default['xgemail']['delta_delivery_bounce_message_processor_user'] = 'bouncer'
 default['xgemail']['cron_job_timeout'] = '10m'
 default['xgemail']['mail_flow_cron_job_timeout'] = '10m'
 default['xgemail']['customer_delivery_transport_cron_minute_frequency'] = 10
+default['xgemail']['flat_file_transport_cron_minute_frequency'] = 5
 default['xgemail']['mail_flow_sender_by_relay_cron_minute_frequency'] = 4
 default['xgemail']['savdid_cron_job_timeout_vdl'] = '30m'
 default['xgemail']['savdid_ide_cron_minute_frequency'] = 15
