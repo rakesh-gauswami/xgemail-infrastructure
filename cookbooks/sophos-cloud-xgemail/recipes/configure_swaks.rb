@@ -36,7 +36,7 @@ end
 
 bash 'download_swaks' do
   user 'root'
-  cwd '/opt/swaks'
+  cwd SOPHOS_SWAKS_DIR
   code <<-EOH
     echo "$(curl -O https://jetmore.org/john/code/swaks/files/swaks-20201014.0/swaks)"
     /bin/chmod +x #{SOPHOS_SWAKS_DIR}/swaks
