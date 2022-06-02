@@ -13,6 +13,7 @@
 ::Chef::Recipe.send(:include, ::SophosCloudXgemail::Helper)
 ::Chef::Resource.send(:include, ::SophosCloudXgemail::Helper)
 
+AWS_REGION   = node['sophos_cloud']['region']
 ACCOUNT_NAME = node['sophos_cloud']['account_name']
 NODE_TYPE    = node['xgemail']['cluster_type']
 
@@ -46,6 +47,10 @@ template 'send_warmup_emails.sh' do
   owner 'root'
   group 'root'
   mode '0644'
+  variables(
+    :aws_region => AWS_REGION,
+    :sophos_swaks_dir => SOPHOS_SWAKS_DIR
+  )
 end
 
 template 'subjectline.txt' do
