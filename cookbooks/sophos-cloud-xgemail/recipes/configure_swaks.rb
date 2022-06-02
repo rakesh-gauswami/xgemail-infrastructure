@@ -40,9 +40,25 @@ bash 'download_swaks' do
   EOH
 end
 
+template 'send_warmup_emails.sh' do
+  path "#{SOPHOS_SWAKS_DIR}/send_warmup_emails.sh"
+  source 'xgemail.swaks.send.warmup.emails.sh.erb'
+  owner 'root'
+  group 'root'
+  mode '0644'
+end
+
 template 'subjectline.txt' do
   path "#{SOPHOS_SWAKS_DIR}/subjectline.txt"
   source 'xgemail.swaks.subjectline.txt.erb'
+  owner 'root'
+  group 'root'
+  mode '0644'
+end
+
+template 'update_subject.sh' do
+  path "#{SOPHOS_SWAKS_DIR}/update_subject.sh"
+  source 'xgemail.swaks.update.subject.sh.erb'
   owner 'root'
   group 'root'
   mode '0644'
