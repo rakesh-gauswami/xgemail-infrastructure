@@ -25,7 +25,7 @@ raise "Unsupported node type [#{NODE_TYPE}]" if INSTANCE_DATA.nil?
 INSTANCE_NAME = INSTANCE_DATA[:instance_name]
 raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 
-SOPHOS_SWAKS_DIR = '/opt/swaks/'
+SOPHOS_SWAKS_DIR = '/opt/swaks'
 SOPHOS_SWAKS_SEND_WARMUP_EMAILS = 'send_warmup_emails.sh'
 SOPHOS_SWAKS_UPDATE_SUBJECTS    = 'update_subjects.sh'
 SOPHOS_SWAKS_SUBJECT_LISTS      = 'subject_lists.txt'
