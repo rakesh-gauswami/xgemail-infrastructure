@@ -169,7 +169,7 @@ def modify_smtpd_recipient_restrictions(flag):
             cmd = [ 'postmulti', '-i' ,  postfix_instance_name, '-x', 'postconf', '-X', 'smtpd_recipient_restrictions' ]
             execute_postfix_cmd(cmd)
             cmd_add = [ 'postmulti', '-i' ,  postfix_instance_name, '-x', 'postconf', ('smtpd_recipient_restrictions='
-             'reject_rbl_client $reject_rbl_client, check_sender_access hash:$config_directory/soft_retry_senders_map, reject')
+             'check_sender_access hash:$config_directory/soft_retry_senders_map, reject')
              ]
             return execute_postfix_cmd(cmd_add)
         else:
