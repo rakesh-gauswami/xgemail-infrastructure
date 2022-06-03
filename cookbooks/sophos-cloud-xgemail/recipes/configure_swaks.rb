@@ -56,7 +56,7 @@ template SWAKS_SEND_WARMUP_EMAILS do
   mode '0644'
   variables(
     :aws_region => AWS_REGION,
-    :SWAKS_DIR => SWAKS_DIR
+    :swaks_dir => SWAKS_DIR
   )
 end
 
@@ -75,7 +75,7 @@ template SWAKS_UPDATE_SUBJECTS do
   group 'root'
   mode '0644'
   variables(
-    :SWAKS_DIR => SWAKS_DIR
+    :swaks_dir => SWAKS_DIR
   )
 end
 
@@ -86,7 +86,7 @@ template SWAKS_SEND_20_EMAILS do
   group 'root'
   mode '0644'
   variables(
-    :SWAKS_DIR => SWAKS_DIR
+    :swaks_dir => SWAKS_DIR
   )
 end
 
@@ -97,7 +97,7 @@ template SWAKS_SEND_50_EMAILS do
   group 'root'
   mode '0644'
   variables(
-    :SWAKS_DIR => SWAKS_DIR
+    :swaks_dir => SWAKS_DIR
   )
 end
 
