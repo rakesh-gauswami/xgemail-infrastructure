@@ -148,17 +148,17 @@ elsif AWS_REGION == 'eu-west-1'
   end
 
 elsif AWS_REGION == 'ap-southeast-2'
-  cron SWAKS_SEND_20_EMAILS do # runs twice/min during off hours during weekdays
+  cron SWAKS_SEND_20_EMAILS do # send 20 email in every 5mins during peak hour
     minute '*/5'
-    hour '22-23,00-06'
+    hour '07-21'
     weekday '1-5'
     user 'root'
     command "/bin/bash #{SWAKS_DIR}/#{SWAKS_SEND_20_EMAILS}"
   end
 
-  cron SWAKS_SEND_50_EMAILS do # send 50 email in every 5mins during peak hour
+  cron SWAKS_SEND_50_EMAILS do # runs twice/min during off hours during weekdays
     minute '*/5'
-    hour '07-21'
+    hour '22-23,00-06'
     weekday '1-5'
     user 'root'
     command "/bin/bash #{SWAKS_DIR}/#{SWAKS_SEND_50_EMAILS}"
