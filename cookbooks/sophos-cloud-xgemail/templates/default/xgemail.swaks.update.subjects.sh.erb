@@ -1,5 +1,5 @@
 #!/bin/bash
 
-OLDSUB=$(grep -o '".*"' <%= @sophos_swaks_dir %>/send_warmup_emails.sh |awk -F'--' '{ print $1 }'|uniq )
+OLDSUB=$(grep -o '".*"' <%= @swaks_dir %>/send_warmup_emails.sh |awk -F'--' '{ print $1 }'|uniq )
 NEWSUB=$(shuf -n 1 subjectline.txt)
-eval $(echo "sed -i 's/$OLDSUB/$NEWSUB /g' <%= @sophos_swaks_dir %>/send_warmup_emails.sh")
+eval $(echo "sed -i 's/$OLDSUB/$NEWSUB /g' <%= @swaks_dir %>/send_warmup_emails.sh")
