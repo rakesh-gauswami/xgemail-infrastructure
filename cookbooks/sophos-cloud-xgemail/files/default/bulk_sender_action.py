@@ -19,8 +19,8 @@ import json
 MAIL_PIC_RESPONSE_TIMEOUT = 30
 
 def get_parsed_args(parser):
-    parser.add_argument('--region', default = 'eu-west-1', choices=['eu-central-1', 'eu-west-1', 'us-west-2', 'us-east-2'], help = 'AWS region', required = True)
-    parser.add_argument('--env', default = 'DEV', choices=['DEV', 'DEV3', 'QA', 'PROD','INF'], help = 'AWS environment', required = True)
+    parser.add_argument('--region', default = 'eu-west-1', choices=['us-east-2', 'eu-west-1', 'eu-central-1', 'ca-central-1', 'ap-northeast-1', 'ap-southeast-2', 'ap-south-1', 'sa-east-1'], help = 'AWS region', required = True)
+    parser.add_argument('--env', default = 'DEV', choices=['DEV', 'DEV3', 'QA', 'PROD','INF', 'eml000cmh', 'eml010yul', 'eml030bom', 'eml030gru', 'eml030hnd', 'eml030syd', 'eml030yul', 'eml100bom', 'eml100gru', 'eml100hnd', 'eml100syd', 'eml100yul'], help = 'AWS environment', required = True)
     parser.add_argument('--customerid', help = 'Customer ID of the bulk sender request sender', required = False)
     parser.add_argument('--emailid', help = 'Email address of the bulk sender request mailbox', required = True)
     parser.add_argument('--approve', action = 'store_true', help = 'Approve the bulk sender request')
@@ -37,7 +37,11 @@ def get_passphrase(bucket, mail_pic_auth):
     return base64.b64encode('mail:' + passphrase['Body'].read())
 
 def create_mail_pic_request_data(args):
-    pic_fqdn = 'mail-cloudstation-{0}.{1}.hydra.sophos.com'.format(args.region, args.env.lower())
+    if args.env.startswith('eml'):
+        pic_fqdn = 'mail.{}.ctr.sophos.com'.format(args.env.replace('eml', 'stn'))
+    else:
+        pic_fqdn = 'mail-cloudstation-{0}.{1}.hydra.sophos.com'.format(args.region, args.env.lower())
+
     mail_pic_api_auth = 'xgemail-{0}-mail'.format(args.region)
     connections_bucket = 'cloud-{0}-connections'.format(args.env.lower())
     mail_pic_api_url = 'https://{0}/mail/api/xgemail'.format(pic_fqdn)
@@ -60,7 +64,7 @@ def create_mail_pic_request_data(args):
         bulk_sender_api_url = mail_pic_api_url + '/bulksender/status'
         data.append('status')
     else:
-        print 'Aborting... please use any of the following options --approve / --reject / --revoke / --request_approve / --status'
+        print('Aborting... please use any of the following options --approve / --reject / --revoke / --request_approve / --status')
         return None
 
     if bulk_sender_api_url:
@@ -89,9 +93,9 @@ def post_mail_pic_request(mail_pic_api_data):
     )
 
     if response.ok:
-        print 'Successfully submitted {0} request, response: {1}'.format(mail_pic_api_data[0], response)
+        print('Successfully submitted {0} request, response: {1}'.format(mail_pic_api_data[0], response))
     else:
-        print 'There was a problem in submitting {0} request, response code {1}'.format(mail_pic_api_data[0], response.status_code)
+        print('There was a problem in submitting {0} request, response code {1}'.format(mail_pic_api_data[0], response.status_code))
         return None
 
     return response
@@ -106,9 +110,9 @@ def perform_get_request(get_mail_pic_data):
     )
 
     if mail_pic_response.ok:
-        print json.dumps(mail_pic_response.json(), indent = 4)
+        print(json.dumps(mail_pic_response.json(), indent = 4))
     else:
-        print 'Unable to retrieve the bulk sender status. HTTP Response code <{0}>'.format(mail_pic_response.status_code)
+        print('Unable to retrieve the bulk sender status. HTTP Response code <{0}>'.format(mail_pic_response.status_code))
         return None
 
     return mail_pic_response
@@ -132,6 +136,6 @@ if __name__ == '__main__':
             if post_response is None or not post_response:
                 sys.exit(1)
     except Exception as e:
-        print 'An Exception occurred in main <{0}>'.format(e)
+        print('An Exception occurred in main <{0}>'.format(e))
         sys.exit(1)
 
