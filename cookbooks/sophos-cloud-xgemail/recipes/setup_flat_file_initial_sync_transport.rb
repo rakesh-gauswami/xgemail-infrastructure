@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: sophos-cloud-xgemail
-# Recipe:: setup_customer_delivery_initial_sync_transport
+# Recipe:: setup_flat_file_initial_sync_transport
 #
 # Copyright 2022, Sophos
 #
@@ -21,7 +21,7 @@ XGEMAIL_FILES_DIR       = node['xgemail']['xgemail_files_dir']
 XGEMAIL_UTILS_DIR       = node['xgemail']['xgemail_utils_files_dir']
 
 PACKAGE_DIR             = "#{XGEMAIL_FILES_DIR}/toggle-flat-file"
-INITIAL_SYNC_TRANSPORT_SCRIPT      = 'customer.delivery.initial.sync.transport.py'
+INITIAL_SYNC_TRANSPORT_SCRIPT      = 'flat.file.initial.sync.transport.py'
 INITIAL_SYNC_TRANSPORT_SCRIPT_PATH = "#{PACKAGE_DIR}/#{INITIAL_SYNC_TRANSPORT_SCRIPT}"
 
 #directory for internet submit bulk release script
