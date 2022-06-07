@@ -36,9 +36,9 @@ execute INITIAL_SYNC_TRANSPORT_SCRIPT_PATH do
   action :nothing
 end
 
-# Write bulk release script to internet submit instance
+# Write initial sync script to customer delivery and mf inbound delivery instance
 template INITIAL_SYNC_TRANSPORT_SCRIPT_PATH do
-  source "#{BULK_RELEASE_SCRIPT}.erb"
+  source "#{INITIAL_SYNC_TRANSPORT_SCRIPT}.erb"
   mode '0750'
   owner 'root'
   group 'root'
