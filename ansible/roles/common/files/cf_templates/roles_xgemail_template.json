@@ -65,6 +65,10 @@
     "MsgHistoryV2StreamName": {
       "Description": "Name of the message history stream name",
       "Type": "String"
+    },
+    "MsgHistoryDataStreamName": {
+      "Description": "Name of the message history data stream",
+      "Type": "String"
     }
   },
 
@@ -1355,6 +1359,19 @@
             },
             {
               "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
                 "dynamodb:BatchWriteItem",
                 "dynamodb:DeleteItem",
                 "dynamodb:BatchGetItem",
@@ -1737,6 +1754,19 @@
             },
             {
               "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
                 "dynamodb:BatchWriteItem",
                 "dynamodb:DeleteItem",
                 "dynamodb:BatchGetItem",
@@ -2101,6 +2131,19 @@
               "Resource": [
                 {
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
                 }
               ]
             },
@@ -2503,6 +2546,19 @@
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
                 }
               ]
+            },
+            {
+              "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
+                }
+              ]
             }
           ]
         },
@@ -2879,6 +2935,19 @@
               "Resource": [
                 {
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
                 }
               ]
             }
@@ -3258,6 +3327,19 @@
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
                 }
               ]
+            },
+            {
+              "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
+                }
+              ]
             }
           ]
         },
@@ -3604,6 +3686,19 @@
               "Resource": [
                 {
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
                 }
               ]
             }
@@ -3959,6 +4054,19 @@
             },
             {
               "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
                 "dynamodb:BatchWriteItem",
                 "dynamodb:DeleteItem",
                 "dynamodb:BatchGetItem",
@@ -4263,6 +4371,19 @@
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
                 }
               ]
+            },
+            {
+              "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
+                }
+              ]
             }
           ]
         },
@@ -4548,6 +4669,19 @@
               "Resource": [
                 {
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
                 }
               ]
             }
@@ -4926,6 +5060,19 @@
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
                 }
               ]
+            },
+            {
+              "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
+                }
+              ]
             }
           ]
         },
@@ -5276,6 +5423,19 @@
             },
             {
               "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
                 "dynamodb:BatchWriteItem",
                 "dynamodb:DeleteItem",
                 "dynamodb:BatchGetItem",
@@ -5580,6 +5740,19 @@
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
                 }
               ]
+            },
+            {
+              "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
+                }
+              ]
             }
           ]
         },
@@ -5865,6 +6038,19 @@
               "Resource": [
                 {
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
                 }
               ]
             }
@@ -6346,6 +6532,19 @@
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
                 }
               ]
+            },
+            {
+              "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
+                }
+              ]
             }
           ]
         },
@@ -6683,6 +6882,19 @@
               "Resource": [
                 {
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
                 }
               ]
             }
@@ -7091,6 +7303,19 @@
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
                 }
               ]
+            },
+            {
+              "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
+                }
+              ]
             }
           ]
         },
@@ -7428,6 +7653,19 @@
               "Resource": [
                 {
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
                 }
               ]
             }
@@ -7836,6 +8074,19 @@
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
                 }
               ]
+            },
+            {
+              "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
+                }
+              ]
             }
           ]
         },
@@ -8173,6 +8424,19 @@
               "Resource": [
                 {
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
                 }
               ]
             }
