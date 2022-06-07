@@ -1,0 +1,816 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "The template implements phase I of the new blue/green deployment workflow that creates an image of a XGEMAIL server instance (mail).",
+
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2021, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ],
+
+    "Comments": [
+      { "Ref": "Description" },
+      ""
+    ]
+  },
+
+  "Parameters": {
+    "AesDecryptionKey": {
+      "Description": "Decryption Key for encrypted buckets",
+      "Type": "String",
+      "Default": ""
+    },
+
+    "AmiBucket": {
+      "Description": "Name of S3 bucket where AMI ids will be stored.",
+      "Type": "String",
+      "Default": "sophos-cloud-amis"
+    },
+
+    "AmiBuildTimeoutMinutes": {
+      "Description": "Number of minutes allocated to create and copy AMIs.",
+      "Type": "String",
+      "AllowedPattern": "^[1-9][0-9]*$"
+    },
+
+    "ApplicationName": {
+      "Description": "Default to java for all bundled WARs",
+      "Type": "String",
+      "Default": "xgemail"
+    },
+
+    "BlockDeviceMappingsXvdf": {
+      "Description": "Block device mapping for /data",
+      "Type": "String",
+      "Default": "40"
+    },
+
+    "BlockDeviceMappingsXvdg": {
+      "Description": "Block device mapping for /var",
+      "Type": "String",
+      "Default": "50"
+    },
+
+    "BlockDeviceMappingsXvdh": {
+      "Description": "Block device mapping for /tmp",
+      "Type": "String",
+      "Default": "20"
+    },
+
+    "Branch": {
+      "Description": "(Develop, CPLAT-XXXX, etc...)",
+      "Type": "String"
+    },
+
+    "Build": {
+      "Description": "(v1, v2, etc...)",
+      "Type": "String",
+      "Default": "v1"
+    },
+
+    "EbsVolumeType": {
+      "Description": "Indicates the EBS volume type.",
+      "Type": "String",
+      "Default": "gp3",
+      "AllowedValues": [ "gp2", "gp3", "standard" ]
+    },
+
+    "Environment": {
+      "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
+      "Type": "String",
+      "Default": "hmr-core"
+    },
+
+    "IamProfile": {
+      "Description": "The IAM role to be used.",
+      "Type": "String",
+      "Default": "sophos-cloud-image-setup"
+    },
+
+    "ImageId": {
+      "Description": "AMI ID for the source image to build on.",
+      "Type": "String"
+    },
+
+    "InstanceType": {
+      "Description": "Amazon EC2 instance type",
+      "Type": "String",
+      "Default": "t2.small",
+      "AllowedValues" : [
+        "t2.micro",
+        "t2.small",
+        "t2.medium",
+        "t2.large",
+        "t2.xlarge",
+        "t2.2xlarge",
+        "m4.large",
+        "m4.xlarge",
+        "m4.2xlarge",
+        "m4.4xlarge",
+        "m5.large",
+        "m5.xlarge",
+        "m5.2xlarge",
+        "c4.large",
+        "c4.xlarge",
+        "c5.large",
+        "c5.xlarge"
+      ]
+    },
+
+    "JavaBranch": {
+      "Description": "(Develop, CPLAT-XXXX, etc...)",
+      "Type": "String",
+      "Default": "develop"
+    },
+
+    "JdkVersion": {
+     "Description": "Version of the Oracle JDK for installation.",
+     "Type": "String",
+     "Default": "jdk-1.8.0_101-b13"
+   },
+
+    "JilterInboundVersion": {
+      "Description": "Inbound Jilter version",
+      "Type": "String"
+    },
+
+    "JilterMfInboundVersion": {
+      "Description": "Mf Inbound Jilter version",
+      "Type": "String"
+    },
+
+    "JilterMfOutboundVersion": {
+      "Description": "Mf Outbound Jilter version",
+      "Type": "String"
+    },
+
+    "JilterOutboundVersion": {
+      "Description": "Outbound Jilter version",
+      "Type": "String"
+    },
+
+    "JilterEncryptionVersion": {
+      "Description": "Encryption Jilter version",
+      "Type": "String"
+    },
+
+    "JilterDeliveryVersion": {
+      "Description": "Encryption Jilter version",
+      "Type": "String"
+    },
+
+    "KeyPairName": {
+      "Description": "Name of an existing Amazon EC2 key pair for RDP access",
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Default": "ami-builder-key"
+    },
+
+    "LaunchDarklyInf": {
+      "Description": "The LaunckDarkly Client key for the INF account",
+      "Type": "String"
+    },
+
+    "LaunchDarklyDev": {
+      "Description": "The LaunckDarkly Client key for the DEV account",
+      "Type": "String"
+    },
+
+    "LaunchDarklyDev3": {
+      "Description": "The LaunckDarkly Client key for the DEV3 account",
+      "Type": "String"
+    },
+
+    "LaunchDarklyQa": {
+      "Description": "The LaunckDarkly Client key for the QA account",
+      "Type": "String"
+    },
+
+    "LaunchDarklyProd": {
+      "Description": "The LaunckDarkly Client key for the PROD account",
+      "Type": "String"
+    },
+
+    "S3CookbookRepositoryUrl": {
+      "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
+      "Type": "String"
+    },
+
+    "S3Sophos3rdPartyRepositoryUrl": {
+      "Description": "The S3 bucket path where to find 3rd party packages. (//<bucket>)",
+      "Type": "String",
+      "Default": "//cloud-applications-3rdparty"
+    },
+
+    "S3SophosAppRepositoryUrl": {
+      "Description": "The S3 bucket path where to find application packages. (//<bucket>)",
+      "Type": "String",
+      "Default": "//cloud-applications"
+    },
+
+    "VpcSecurityGroup": {
+      "Description": "The security group that allows communication within the VPC.",
+      "Type": "AWS::EC2::SecurityGroup::Id"
+    },
+
+    "VpcSubnetId": {
+      "Description": "The ID of the subnet the instance to associate to.",
+      "Type": "AWS::EC2::Subnet::Id"
+    }
+  },
+
+  "Resources": {
+    "XgemailServerInstance": {
+      "Type": "AWS::EC2::Instance",
+
+      "CreationPolicy": {
+        "ResourceSignal": {
+          "Timeout": {
+            "Fn::Join": [
+              "", [
+                "PT",
+                { "Ref": "AmiBuildTimeoutMinutes" },
+                "M"
+              ]
+            ]
+          }
+        }
+      },
+
+      "Metadata": {
+        "AWS::CloudFormation::Init": {
+          "configSets": {
+            "svcapi_install": [
+              "install_common_utils",
+              "build_base",
+              "install_volumes",
+              "install_cfn",
+              "reset_chef",
+              "reset_cookbooks",
+              "create_image"
+            ]
+          },
+
+          "install_common_utils": {
+            "commands": {
+              "01_get_common_utils": {
+                "command": {
+                  "Fn::Join": [
+                    "", [
+                      "mkdir -p /opt/sophos/bin\n",
+                      "aws s3 cp s3:", { "Ref": "S3SophosAppRepositoryUrl" }, "/", { "Ref": "Branch" }, "/xgemail-infrastructure/common_utils.enc /opt/sophos/bin/common_utils.enc\n"
+                    ]
+                  ]
+                }
+              },
+              "02_decrypt_common_utils": {
+                "command": {
+                  "Fn::Join": [
+                    "", [
+                      "openssl enc -aes-256-cbc -d -in ./common_utils.enc -out ./common_utils.tar.gz -pass pass:", { "Ref": "AesDecryptionKey" }, "\n"
+                    ]
+                  ]
+                },
+                "cwd": "/opt/sophos/bin"
+              },
+              "03_unpack_common_utils": {
+                "command": "tar xvf common_utils.tar.gz",
+                "cwd": "/opt/sophos/bin"
+              }
+            }
+          },
+
+          "build_base": {
+            "files": {
+              "/tmp/build_base.sh": {
+                "content": {
+                  "Fn::Join": [
+                    "", [
+                      "#!/bin/bash\n",
+
+                      "set -o xtrace   # Print commands and their arguments as they are executed.\n",
+                      "set -o errexit  # Exit immediately if a command exits with a non-zero status.\n",
+                      "set -o nounset  # Treat unset variables as an error when substituting.\n",
+                      "set -o pipefail # Pipeline status comes from last error, not last command.\n",
+
+                      "# Installing base AMI packages\n",
+
+                      "mkdir -p /var/log/sophos\n",
+
+                      "# Update the common profile\n",
+
+                      "cat <<'EOF' > /etc/profile.d/sophos.sh\n",
+                      "PATH=${PATH}:/opt/sophos/bin\n",
+                      "# Custom login prompt.\n",
+                      "# 1. Show current user.\n",
+                      "# 2. Show EC2 private IP, so we can easily select and copy it.\n",
+                      "# 3. Show service, including particulars like shard and service number.\n",
+                      "# 4. Show current directory basename.\n",
+                      "if [ \"$PS1\" ]; then\n",
+                      "    IPADDR=`/usr/bin/wget -q -O- http://169.254.169.254/latest/meta-data/local-ipv4`\n",
+                      "    if [ -r /opt/sophos/service ]; then\n",
+                      "        SERVICE=`head -1 /opt/sophos/service`\n",
+                      "        PS1=\"[\\u@${IPADDR}:${SERVICE} \\W]\\\\$ \"\n",
+                      "    else\n",
+                      "        PS1=\"[\\u@${IPADDR} \\W]\\\\$ \"\n",
+                      "    fi\n",
+                      "fi\n",
+                      "EOF\n",
+
+                      "CHEFDK_VERSION=0.2.0-2.el6\n",
+                      "CHEFDK_RPM=chefdk-${CHEFDK_VERSION}.x86_64.rpm\n",
+                      "aws --region us-west-2 s3 cp s3:", { "Ref": "S3Sophos3rdPartyRepositoryUrl" }, "/chef/${CHEFDK_RPM} ${CHEFDK_RPM}\n",
+                      "rpm -i ${CHEFDK_RPM}\n",
+                      "rm -f ${CHEFDK_RPM}\n",
+                      "CHEF_REPO_HASH=605eeda\n",
+                      "CHEF_REPO_TGZ=chef-chef-repo-${CHEF_REPO_HASH}.tar.gz\n",
+                      "aws --region us-west-2 s3 cp s3:", { "Ref": "S3Sophos3rdPartyRepositoryUrl" }, "/chef/${CHEF_REPO_TGZ} ${CHEF_REPO_TGZ}\n",
+                      "tar xzvf ${CHEF_REPO_TGZ}\n",
+                      "mkdir -p /var/chef/chef-repo/.chef\n",
+                      "cp -r chef-chef-repo-${CHEF_REPO_HASH}/* /var/chef/chef-repo\n",
+                      "rm -rf chef-chef-repo-${CHEF_REPO_HASH}\n",
+                      "chmod +rx /var/chef\n",
+
+                      "(\n",
+                      "    export CHEF_VERSION=12.3\n",
+                      "    cd /var/chef\n",
+                      "    /usr/bin/wget -O install.sh https://omnitruck.chef.io/install.sh\n",
+                      "    /bin/bash ./install.sh -v ${CHEF_VERSION}\n",
+                      ")\n",
+
+                      "cat <<EOF > /var/chef/chef-repo/.chef/knife.rb\n",
+                      "cookbook_path %w[/var/chef/chef-repo/cookbooks]\n",
+                      "node_path     %w[/var/chef/chef-repo/nodes]\n",
+                      "EOF\n",
+                      "chmod 0444 /var/chef/chef-repo/.chef/knife.rb\n",
+
+                      "cat <<EOF >/var/chef/chef-repo/.chef/client.rb\n",
+                      "cookbook_path %w[/var/chef/chef-repo/cookbooks]\n",
+                      "node_path     %w[/var/chef/chef-repo/nodes]\n",
+                      "EOF\n",
+                      "chmod 0444 /var/chef/chef-repo/.chef/client.rb\n",
+
+                      "CHEF_BASE_INSTALL_LOG=chef-$(date +\"%Y%m%d.%H%M%S\").base_ami.install_chef.log\n",
+                      "touch /var/log/$CHEF_BASE_INSTALL_LOG\n",
+                      "touch /var/log/sophos/chef-reset_chef.log\n",
+                      "touch /var/log/sophos/reset_cookbooks.output\n",
+                      "mkdir -p /etc/chef/ohai/hints\n",
+                      "touch /etc/chef/ohai/hints/ec2.json\n"
+                    ]
+                  ]
+                },
+                "mode": "000554",
+                "owner": "root"
+              }
+            },
+            "commands": {
+              "01_run_script": { "command": "bash /tmp/build_base.sh > /var/log/build_base.log 2>&1" }
+            }
+          },
+
+          "install_volumes": {
+            "files": {
+              "/mnt/add_volumes.sh": {
+                "content": {
+                  "Fn::Join": [
+                    "", [
+                      "#!/bin/bash\n",
+                      "# Install the additional volumes\n",
+                      "echo '/dev/xvdf  /data           ext4    defaults      0   0' >> /etc/fstab\n",
+                      "echo '/dev/xvdg  /var            ext4    defaults      0   0' >> /etc/fstab\n",
+                      "echo '/dev/xvdh  /tmp            ext4    defaults,noexec,nosuid      0   0' >> /etc/fstab\n",
+                      "echo 'updated /etc/fstab'\n",
+                      "mkfs -t ext4 /dev/xvdf\n",
+                      "mkfs -t ext4 /dev/xvdg\n",
+                      "mkfs -t ext4 /dev/xvdh\n",
+                      "echo 'created file systems'\n",
+                      "mkdir /data\n",
+                      "echo 'created /data directory'\n",
+                      "mount /dev/xvdg /mnt\n",
+                      "cp -rp /var/* /mnt\n",
+                      "umount /mnt\n",
+                      "echo 'copied contents of /var'\n",
+                      "mount /dev/xvdh /mnt\n",
+                      "cp -rp /tmp/* /mnt\n",
+                      "cp -rp /tmp/.ICE* /mnt\n",
+                      "umount /mnt\n",
+                      "echo 'copied contents of /tmp'\n",
+                      "mount -a\n",
+                      "echo 'mounted new file systems'\n",
+                      "chmod 777 /tmp\n",
+                      "chmod a+t /tmp\n",
+                      "mkdir /data/log\n",
+                      "echo 'completed add_volumes'\n"
+                    ]
+                  ]
+                },
+                "mode": "000554",
+                "owner": "root"
+              }
+            },
+            "commands": {
+              "01_run_script": { "command": "bash /mnt/add_volumes.sh > /var/log/add_volumes.log 2>&1" }
+            }
+          },
+
+          "install_cfn": {
+            "files": {
+              "/etc/cfn/cfn-hup.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[main]\n",
+                      "stack=",
+                      {
+                        "Ref": "AWS::StackName"
+                      },
+                      "\n",
+                      "region=",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "\n"
+                    ]
+                  ]
+                }
+              },
+              "/etc/cfn/hooks.d/cfn-auto-reloader.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[cfn-auto-reloader-hook]\n",
+                      "triggers=post.update\n",
+                      "path=Resources.XgemailServerInstance.Metadata.AWS::CloudFormation::Init\n",
+                      "action=cfn-init -v -s ",
+                      {
+                        "Ref": "AWS::StackName"
+                      },
+                      " -r XgemailServerInstance",
+                      " --region ",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "\n",
+                      "runas=root\n"
+                    ]
+                  ]
+                }
+              }
+            },
+            "services": {
+              "sysvinit": {
+                "cfn-hup": {
+                  "enabled": "true",
+                  "ensureRunning": "true",
+                  "files": [
+                    "/etc/cfn/cfn-hup.conf",
+                    "/etc/cfn/hooks.d/cfn-auto-reloader.conf"
+                  ]
+                }
+              }
+            }
+          },
+
+          "reset_chef": {
+            "commands": {
+              "01_reset_chef": {
+                "command": "/opt/sophos/bin/reset_chef.sh"
+              }
+            }
+          },
+
+          "reset_cookbooks": {
+            "commands": {
+              "01_reset_cookbooks": {
+                "command": {
+                  "Fn::Join": [
+                    "", [
+                      "/opt/sophos/bin/reset_cookbooks.py ",
+                      "-r us-west-2 ",
+                      "-f ",
+                      { "Ref": "Branch" },
+                      "/xgemail-infrastructure ",
+                      "-p ",
+                      { "Ref": "AesDecryptionKey" },
+                      " > /var/log/sophos/reset_cookbooks.output 2>&1"
+                    ]
+                  ]
+                }
+              }
+            }
+          },
+
+          "create_image": {
+            "files": {
+              "/var/sophos/cookbooks/attributes.json": {
+                "content": {
+                  "Fn::Join": [
+                    "\n", [
+                      "{",
+                      "    \"ami\": {",
+                      "        \"ami_bucket\":                  \"{{ami_bucket}}\",",
+                      "        \"application_name\":            \"{{application_name}}\",",
+                      "        \"branch\":                      \"{{branch}}\",",
+                      "        \"build\":                       \"{{build}}\",",
+                      "        \"environment\":                 \"{{environment}}\",",
+                      "        \"region\":                      \"{{region}}\"",
+                      "    },",
+                      "    \"sophos_cloud\": {",
+                      "        \"application\":                 \"{{s3_app_repo_url}}/{{java_branch}}\",",
+                      "        \"aeskey\":                      \"{{aes_decryption_key}}\",",
+                      "        \"context\":                     \"{{environment}}\",",
+                      "        \"environment\":                 \"{{environment}}\",",
+                      "        \"cookbooks\":                   \"{{s3_cookbook_repo_url}}\",",
+                      "        \"java\":                        \"{{s3_3rdparty_repo_url}}/jdk\",",
+                      "        \"jdk_version\":                 \"{{jdk_version}}\",",
+                      "        \"savi\":                        \"{{s3_3rdparty_repo_url}}/savi-install.tar.gz\",",
+                      "        \"thirdparty\":                  \"{{s3_3rdparty_repo_url}}\"",
+                      "    },",
+                      "    \"xgemail\": {",
+                      "        \"jilter_inbound_version\":      \"{{jilter_inbound_version}}\",",
+                      "        \"jilter_mf_inbound_version\":   \"{{jilter_mf_inbound_version}}\",",
+                      "        \"jilter_mf_outbound_version\":  \"{{jilter_mf_outbound_version}}\",",
+                      "        \"jilter_outbound_version\":     \"{{jilter_outbound_version}}\",",
+                      "        \"jilter_encryption_version\":   \"{{jilter_encryption_version}}\",",
+                      "        \"jilter_delivery_version\":     \"{{jilter_delivery_version}}\",",
+                      "        \"launch_darkly_inf\":           \"{{launch_darkly_inf}}\",",
+                      "        \"launch_darkly_dev\":           \"{{launch_darkly_dev}}\",",
+                      "        \"launch_darkly_dev3\":          \"{{launch_darkly_dev3}}\",",
+                      "        \"launch_darkly_qa\":            \"{{launch_darkly_qa}}\",",
+                      "        \"launch_darkly_prod\":          \"{{launch_darkly_prod}}\"",
+                      "    }",
+                      "}",
+                      ""
+                    ]
+                  ]
+                },
+                "context": {
+                  "aes_decryption_key":                         { "Ref": "AesDecryptionKey" },
+                  "ami_bucket":                                 { "Ref": "AmiBucket" },
+                  "application_name":                           { "Ref": "ApplicationName" },
+                  "branch":                                     { "Ref": "Branch" },
+                  "build":                                      { "Ref": "Build" },
+                  "environment":                                { "Ref": "Environment" },
+                  "java_branch":                                { "Ref": "JavaBranch" },
+                  "jdk_version":                                { "Ref": "JdkVersion" },
+                  "jilter_inbound_version":                     { "Ref": "JilterInboundVersion"},
+                  "jilter_mf_inbound_version":                  { "Ref": "JilterMfInboundVersion"},
+                  "jilter_mf_outbound_version":                 { "Ref": "JilterMfOutboundVersion"},
+                  "jilter_outbound_version":                    { "Ref": "JilterOutboundVersion"},
+                  "jilter_encryption_version":                  { "Ref": "JilterEncryptionVersion"},
+                  "jilter_delivery_version":                    { "Ref": "JilterDeliveryVersion"},
+                  "launch_darkly_inf":                          { "Ref": "LaunchDarklyInf"},
+                  "launch_darkly_dev":                          { "Ref": "LaunchDarklyDev"},
+                  "launch_darkly_dev3":                         { "Ref": "LaunchDarklyDev3"},
+                  "launch_darkly_qa":                           { "Ref": "LaunchDarklyQa"},
+                  "launch_darkly_prod":                         { "Ref": "LaunchDarklyProd"},
+                  "region":                                     { "Ref": "AWS::Region" },
+                  "s3_3rdparty_repo_url":                       { "Ref": "S3Sophos3rdPartyRepositoryUrl" },
+                  "s3_app_repo_url":                            { "Ref": "S3SophosAppRepositoryUrl" },
+                  "s3_cookbook_repo_url":                       { "Ref": "S3CookbookRepositoryUrl" }
+                },
+                "mode": "000444",
+                "owner": "root",
+                "group": "root"
+              }
+            },
+            "commands": {
+              "01_configure_node_run_list": {
+                "command": {
+                  "Fn::Join": [
+                    "", [
+                      "knife node run_list add -z `knife node list -z` \"",
+                      "recipe[sophos-base-ami::base_ami],",
+                      "recipe[sophos-cloud-fluentd::install],",
+                      "recipe[sophos-cloud-xgemail::install_monit_service],",
+                      "recipe[sophos-cloud-xgemail::download_libspf2],",
+                      "recipe[sophos-cloud-newrelic::install_newrelic_infra],",
+                      "recipe[sophos-cloud-xgemail::ami]",
+                      "\""
+                    ]
+                  ]
+                },
+                "cwd": "/var/chef/chef-repo",
+                "env": { "HOME": "/var/chef" }
+              },
+              "02_run_chef_client": {
+                "command": {
+                  "Fn::Join": [
+                    " ", [
+                      "chef-client --no-color -z",
+                      "-c /var/chef/chef-repo/.chef/client.rb",
+                      "-j /var/sophos/cookbooks/attributes.json",
+                      "-l debug -L /var/log/chef-client.xgemail_ami.install.service.log"
+                    ]
+                  ]
+                },
+                "cwd": "/var/chef/chef-repo",
+                "env": { "HOME": "/var/chef" }
+              }
+            }
+          }
+        }
+      },
+
+      "Properties": {
+        "BlockDeviceMappings": [
+          { "DeviceName": "/dev/xvdf", "Ebs": { "DeleteOnTermination": "true", "VolumeType": { "Ref": "EbsVolumeType" }, "VolumeSize": { "Ref": "BlockDeviceMappingsXvdf" } } },
+          { "DeviceName": "/dev/xvdg", "Ebs": { "DeleteOnTermination": "true", "VolumeType": { "Ref": "EbsVolumeType" }, "VolumeSize": { "Ref": "BlockDeviceMappingsXvdg" } } },
+          { "DeviceName": "/dev/xvdh", "Ebs": { "DeleteOnTermination": "true", "VolumeType": { "Ref": "EbsVolumeType" }, "VolumeSize": { "Ref": "BlockDeviceMappingsXvdh" } } }
+        ],
+        "IamInstanceProfile": { "Ref": "IamProfile" },
+        "ImageId": { "Ref": "ImageId" },
+        "InstanceType": { "Ref": "InstanceType" },
+        "KeyName": { "Ref": "KeyPairName" },
+        "NetworkInterfaces": [
+          {
+            "AssociatePublicIpAddress": "true",
+            "DeleteOnTermination": "true",
+            "DeviceIndex": "0",
+            "GroupSet": [ { "Ref": "VpcSecurityGroup" } ],
+            "SubnetId": { "Ref": "VpcSubnetId" }
+          }
+        ],
+        "Monitoring": "true",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                ":", [
+                  "AmiCandidate",
+                  { "Ref": "ApplicationName" },
+                  { "Ref": "Branch" },
+                  { "Ref": "Environment" }
+                ]
+              ]
+            }
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "", [
+                "#!/bin/bash\n",
+
+                "set -o xtrace   # Print commands and their arguments as they are executed.\n",
+                "set -o errexit  # Exit immediately if a command exits with a non-zero status.\n",
+                "set -o nounset  # Treat unset variables as an error when substituting.\n",
+                "set -o pipefail # Pipeline status comes from last error, not last command.\n",
+
+                "# Make sure we call cfn-signal before exiting, otherwise we have to\n",
+                "# wait for the CreationPolicy timeout to detect failed initialization.\n",
+                "# That's because of using the bash errexit option, which makes the script\n",
+                "# exit immediately as soon as any command, e.g. yum or cfn-init, fails.\n",
+
+                "onexit() {\n",
+                "  # Save exit code for call to cfn-signal below.\n",
+                "  EXIT_CODE=$?\n",
+                "",
+                "  # Upload logs before reporting failure to avoid race against termination.\n",
+                "  LOG_DIR=/tmp/create_", { "Ref": "ApplicationName" }, "_ami_build", { "Ref": "Build" }, "\n",
+                "",
+                "  cd /tmp\n",
+                "  rm -rf ${LOG_DIR}\n",
+                "  rm -rf ${LOG_DIR}.zip\n",
+                "",
+                "  mkdir -p ${LOG_DIR}/var\n",
+                "  for LEAF in chef log sophos; do\n",
+                "    if [ -d /var/${LEAF} -o -f /var/${LEAF} ]; then\n",
+                "      ln -s /var/${LEAF} ${LOG_DIR}/var/${LEAF}\n",
+                "    fi\n",
+                "  done\n",
+                "",
+                "  cd /tmp\n",
+                "  echo 'Zipping all logs for bamboo build artifact'\n",
+                "  zip -r ${LOG_DIR}.zip $(basename ${LOG_DIR})\n",
+                "",
+                "  n=0\n",
+                "  echo 'Copying log zip to S3 bucket for bamboo artifact'\n",
+                "  until [ $n -ge 10 ]\n",
+                "  do\n",
+                "    aws s3 cp --debug --region us-west-2 ${LOG_DIR}.zip s3://", { "Ref": "AmiBucket" }, "/", { "Ref": "Branch" }, "/build-", { "Ref": "Build" }, "/ && break\n",
+                "      ",
+                "    n=$[$n+1]\n",
+                "    sleep 6\n",
+                "   done\n",
+                "",
+                "  # Now we can safely emit the signal.\n",
+                "  /opt/aws/bin/cfn-signal -e $EXIT_CODE",
+                " --stack ", { "Ref": "AWS::StackName" },
+                " --region ", { "Ref": "AWS::Region" },
+                " --resource XgemailServerInstance\n",
+                "}\n",
+
+                "trap onexit EXIT\n",
+
+                "# Wait for a live internet connection.\n",
+
+                "while true; do\n",
+                "  wget -q --tries=10 --timeout=2 http://www.google.com -O /tmp/index.site &> /dev/null || true\n",
+                "  if [ ! -s /tmp/index.site ]; then\n",
+                "    echo No connection to internet\n",
+                "  else\n",
+                "    echo Connection to internet established\n",
+                "    break\n",
+                "  fi\n",
+                "  sleep 5\n",
+                "done\n",
+
+                "# Configure auth protocol used with S3, to enable KMS/SSE requests.\n",
+
+                "aws configure set default.s3.signature_version s3v4\n",
+
+                "# Push the Public IP of the instance to S3 for artifact retrieval via Bamboo.\n",
+
+                "PUBLIC_IP=ip_address_", { "Ref": "ApplicationName" }, "_ami_build", { "Ref": "Build" }, "\n",
+                "wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4 > /tmp/${PUBLIC_IP}.txt\n",
+
+                "aws s3 cp --debug --region us-west-2 /tmp/${PUBLIC_IP}.txt",
+                " s3://", { "Ref": "AmiBucket" }, "/", { "Ref": "Branch" },
+                "/build-", { "Ref": "Build" }, "/\n",
+
+                "# Install all security and aws updates.\n",
+
+                "yum update -y -t -v kernel\n",
+                "yum update -y -t --security\n",
+                "yum update -y -t aws-amitools-ec2\n",
+                "yum update -y -t aws-cfn-bootstrap\n",
+
+                "# Installing iptables startup scripts to use in multi-ip assignment with NAT rules\n",
+                "yum install -y -t iptables-services\n",
+
+                "# Install awslogs for mirroring log files to AWS CloudWatch.\n",
+                "yum install -y -t awslogs\n",
+
+                "# Install pip for amzn2.\n",
+                "yum install -y -t python-pip\n",
+                "# Downgrade pip to 9.0.3\n",
+                "pip install pip==9.0.3\n",
+
+                "# Install nc for amzn2.\n",
+                "yum install -y -t nc\n",
+
+                "# Install epel for amzn2.\n",
+                "amazon-linux-extras install epel -y\n",
+                "yum-config-manager --enable epel\n",
+
+                "# Install boto3 version.\n",
+                "pip install boto3==1.14.63\n",
+
+                "# Read metadata and configure system accordingly.\n",
+
+                "/opt/aws/bin/cfn-init",
+                " --stack ", { "Ref": "AWS::StackName" },
+                " --region ", { "Ref": "AWS::Region" },
+                " --resource XgemailServerInstance",
+                " --configsets svcapi_install",
+                " -v",
+                "\n",
+
+                "# Install specific python-daemon module for cfn-hup to work\n",
+                "pip install \"python-daemon>=1.5.2,<2.0\"\n",
+
+                "# Now the onexit function will get called.\n"
+              ]
+            ]
+          }
+        }
+      }
+    }
+  },
+
+  "Outputs": {
+    "InstanceId": {
+      "Value": {
+        "Ref": "XgemailServerInstance"
+      }
+    },
+    "AvailabilityZone": {
+      "Value": {
+        "Fn::GetAtt": [ "XgemailServerInstance", "AvailabilityZone" ]
+      }
+    },
+    "PrivateIp": {
+      "Value": {
+        "Fn::GetAtt": [ "XgemailServerInstance", "PrivateIp" ]
+      }
+    },
+    "PublicIp": {
+      "Value": {
+        "Fn::GetAtt": [ "XgemailServerInstance", "PublicIp" ]
+      }
+    },
+    "DNSName": {
+      "Value": {
+        "Fn::GetAtt": [ "XgemailServerInstance", "PublicDnsName" ]
+      }
+    }
+  }
+}
