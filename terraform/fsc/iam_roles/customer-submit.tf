@@ -14,7 +14,6 @@ resource "aws_iam_role" "customer_submit_instance_role" {
   path               = "/"
   assume_role_policy = data.aws_iam_policy_document.ec2_assume_role_policy.json
 
-
   tags = {
     Name = "CustomerSubmitInstanceRole"
   }
