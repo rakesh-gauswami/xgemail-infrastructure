@@ -6,7 +6,8 @@
 # names mentioned are trademarks or registered trademarks of their
 # respective owners.
 
-# this script is used for intial sync of transport record for cusgtomer/domain/full
+# this script is used for intial sync of preparing transport file / DynamoDb for cusgtomer/domain/full
+# Default will Full Sync for (Delivery/Submit)
 
 import sys
 sys.path.append("<%= @xgemail_utils_path %>")
@@ -38,9 +39,9 @@ def send_initial_sync_request_sqs_message(sqs_url,sqs_message_json):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='initial sync transport entry')
     parser.add_argument('-t', '--sync_type', metavar='sync_type',choices=["SUBMIT","DELIVERY"],
-                        help="request_type on mail SUBMIT/DELIVERY")
-    parser.add_argument('-c', '--customer_id', metavar='customer_id', help='Customer id for which we want to add transport entry')
-    parser.add_argument('-d', '--domain', metavar='domain',help="domain for which we want to add transport entry")
+                        help="sync_type on mail SUBMIT/DELIVERY", required = True)
+    parser.add_argument('-c', '--customer_id', metavar='customer_id', help='Customer id for which we want to add entry', required = False)
+    parser.add_argument('-d', '--domain', metavar='domain',help="domain for which we want to add  entry", required = False)
     args = parser.parse_args()
 
     initialSyncRequest = {}
