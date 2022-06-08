@@ -16,6 +16,14 @@ require 'json'
 ::Chef::Recipe.send(:include, ::SophosCloudXgemail::Helper)
 ::Chef::Resource.send(:include, ::SophosCloudXgemail::Helper)
 
+NODE_TYPE = node['xgemail']['cluster_type']
+
+INSTANCE_DATA = node['xgemail']['postfix_instance_data'][NODE_TYPE]
+raise "Unsupported node type [#{NODE_TYPE}]" if INSTANCE_DATA.nil?
+
+INSTANCE_NAME = INSTANCE_DATA[:instance_name]
+raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
+
 AWS_REGION              = node['sophos_cloud']['region']
 XGEMAIL_FILES_DIR       = node['xgemail']['xgemail_files_dir']
 XGEMAIL_UTILS_DIR       = node['xgemail']['xgemail_utils_files_dir']
@@ -44,6 +52,7 @@ template INITIAL_SYNC_TRANSPORT_SCRIPT_PATH do
   group 'root'
   variables(
     :aws_region => AWS_REGION,
+    :postfix_instance_name => instance_name( INSTANCE_NAME ),
     :xgemail_utils_path => XGEMAIL_UTILS_DIR
   )
 end

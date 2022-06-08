@@ -299,6 +299,7 @@ if ACCOUNT != 'sandbox'
   include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_msghistory_event_dir'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_mf_inbound_sender_and_recipient_block'
   include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_submit_bulk_release_post_quarantine'
+  include_recipe 'sophos-cloud-xgemail::setup_flat_file_initial_sync_transport'
 
 else
   [
@@ -317,4 +318,5 @@ else
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_mf_inbound_sqs_message_processors_structure'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_mf_inbound_multi_policy_service'
   include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_submit_bulk_release_post_quarantine'
+  include_recipe 'sophos-cloud-xgemail::setup_flat_file_initial_sync_transport'
 end

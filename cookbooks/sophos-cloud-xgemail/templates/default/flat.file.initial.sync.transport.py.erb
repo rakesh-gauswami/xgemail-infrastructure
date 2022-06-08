@@ -16,6 +16,7 @@ import json
 from awshandler import AwsHandler
 
 AWS_REGION = "<%= @aws_region %>"
+POSTFIX_INSTANCE_NAME = '<%= @postfix_instance_name %>'
 awshandler = AwsHandler(AWS_REGION)
 
 INITIAL_SYNC_QUEUE_NAME= "initial-data-sync-{}-sqs"
@@ -48,6 +49,10 @@ if __name__ == "__main__":
     if args.sync_type is None:
         parser.error("sync_type is required")
     initialSyncRequest["sync_type"] = args.sync_type
+
+    initialSyncRequest["product_type"] = "Gateway"
+    if ((POSTFIX_INSTANCE_NAME == 'postfix-mfis') or (POSTFIX_INSTANCE_NAME == 'postfix-mfid')):
+        initialSyncRequest["product_type"] = "Mailflow"
 
     if args.customer_id is not None:
         initialSyncRequest["customer_id"] = args.customer_id
