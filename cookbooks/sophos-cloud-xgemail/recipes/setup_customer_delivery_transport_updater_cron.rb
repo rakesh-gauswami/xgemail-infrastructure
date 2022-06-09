@@ -36,14 +36,14 @@ POLICY_BUCKET         = node['xgemail']['xgemail_policy_bucket_name']
 XGEMAIL_UTILS_DIR      = node['xgemail']['xgemail_utils_files_dir']
 CUSTOM_ROUTE_TRANSPORT_PATH  = node['xgemail']['custom_route_transport_path']
 FLAT_FILE_INSTANCE_LIST_PATH = node['xgemail']['flat_file_instance_path']
-TRANSPORT_S3_FILE_NAME   = 'flat_files/gateway/transport'
+TRANSPORT_S3_FILE_NAME   = 'flat_files/gateway/transport.txt'
 CONFIGURATION_COMMANDS =
   [
     "transport_maps=hash:$config_directory/#{TRANSPORT_FILENAME}"
   ]
 
 if NODE_TYPE == 'mf-inbound-xdelivery' || NODE_TYPE == 'mf-inbound-delivery'
-    TRANSPORT_S3_FILE_NAME   = 'flat_files/mailflow/transport'
+    TRANSPORT_S3_FILE_NAME   = 'flat_files/mailflow/transport.txt'
 end
 
 if ACCOUNT == 'sandbox'
