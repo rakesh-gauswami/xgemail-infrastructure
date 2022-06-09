@@ -300,7 +300,7 @@ if ACCOUNT != 'sandbox'
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_mf_inbound_sender_and_recipient_block'
   include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_submit_bulk_release_post_quarantine'
   include_recipe 'sophos-cloud-xgemail::setup_flat_file_initial_sync_transport'
-
+  include_recipe 'sophos-cloud-xgemail::setup_internet_submit_flat_file_flag'
 else
   [
     # RBL response configuration
@@ -319,4 +319,5 @@ else
   include_recipe 'sophos-cloud-xgemail::setup_xgemail_mf_inbound_multi_policy_service'
   include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_submit_bulk_release_post_quarantine'
   include_recipe 'sophos-cloud-xgemail::setup_flat_file_initial_sync_transport'
+  include_recipe 'sophos-cloud-xgemail::setup_internet_submit_flat_file_flag'
 end
