@@ -17,10 +17,11 @@ from awshandler import AwsHandler
 
 AWS_REGION = "<%= @aws_region %>"
 POSTFIX_INSTANCE_NAME = '<%= @postfix_instance_name %>'
+VPC_ID = '<%= @vpc_id %>'
 awshandler = AwsHandler(AWS_REGION)
 
-INITIAL_SYNC_QUEUE_NAME= "initial-data-sync-{}-sqs"
-INITIAL_SYNC_QUEUE_NAME = INITIAL_SYNC_QUEUE_NAME.format(AWS_REGION)
+INITIAL_SYNC_QUEUE_NAME= "{0}-data-sync-{1}-sqs"
+INITIAL_SYNC_QUEUE_NAME = INITIAL_SYNC_QUEUE_NAME.format(VPC_ID,AWS_REGION)
 
 def add_to_sqs(sqs_url, sqs_json):
     return awshandler.add_to_sqs(

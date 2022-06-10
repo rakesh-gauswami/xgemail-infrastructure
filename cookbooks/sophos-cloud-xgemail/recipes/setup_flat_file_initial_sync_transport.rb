@@ -27,6 +27,7 @@ raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 AWS_REGION              = node['sophos_cloud']['region']
 XGEMAIL_FILES_DIR       = node['xgemail']['xgemail_files_dir']
 XGEMAIL_UTILS_DIR       = node['xgemail']['xgemail_utils_files_dir']
+VPC_ID                  = node['sophos_cloud']['vpc_id']
 
 PACKAGE_DIR             = "#{XGEMAIL_FILES_DIR}/toggle-flat-file"
 INITIAL_SYNC_TRANSPORT_SCRIPT      = 'flat.file.initial.sync.transport.py'
@@ -52,6 +53,7 @@ template INITIAL_SYNC_TRANSPORT_SCRIPT_PATH do
   group 'root'
   variables(
     :aws_region => AWS_REGION,
+    :vpc_id => VPC_ID,
     :postfix_instance_name => instance_name( INSTANCE_NAME ),
     :xgemail_utils_path => XGEMAIL_UTILS_DIR
   )
