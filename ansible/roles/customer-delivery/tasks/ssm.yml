@@ -1,0 +1,13 @@
+- name: Whitelist clientId list for white space remove bug fix
+  aws_ssm_parameter_store:
+    name: "xgemail.white.space.remove.from.header.client.ids"
+    description: "Holds clientId for white space remove bug fix"
+    string_type: "StringList"
+    value: "{{aws.asg.xgemail.white.space.remove.from.header.client.ids}}"
+
+- name: Whitelist regions for white space remove bug fix
+  aws_ssm_parameter_store:
+    name: "xgemail.white.space.remove.from.header.aws.regions"
+    description: "Holds regions for white space remove bug fix"
+    string_type: "StringList"
+    value: "{{aws.asg.xgemail.white.space.remove.from.header.regions}}"
