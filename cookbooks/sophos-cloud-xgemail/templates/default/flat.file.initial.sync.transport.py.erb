@@ -20,8 +20,8 @@ POSTFIX_INSTANCE_NAME = '<%= @postfix_instance_name %>'
 VPC_ID = '<%= @vpc_id %>'
 awshandler = AwsHandler(AWS_REGION)
 
-INITIAL_SYNC_QUEUE_NAME= "{0}-data-sync-{1}-sqs"
-INITIAL_SYNC_QUEUE_NAME = INITIAL_SYNC_QUEUE_NAME.format(VPC_ID,AWS_REGION)
+INITIAL_SYNC_QUEUE_NAME= "{0}-Xgemail_Settings_Update_Queue"
+INITIAL_SYNC_QUEUE_NAME = INITIAL_SYNC_QUEUE_NAME.format(VPC_ID)
 
 def add_to_sqs(sqs_url, sqs_json):
     return awshandler.add_to_sqs(
@@ -47,6 +47,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     initialSyncRequest = {}
+    syncEvent={}
+    syncEvent["event"] = "com.sophos.cloud.data.messages.xgemail.PostfixSyncDataEvent"
+    syncEvent["is_deleted"] = "false"
     if args.sync_type is None:
         parser.error("sync_type is required")
     initialSyncRequest["sync_type"] = args.sync_type
@@ -60,13 +63,13 @@ if __name__ == "__main__":
 
     if args.domain is not None:
         initialSyncRequest["domain"] = args.domain
-
+    syncEvent["data"] = initialSyncRequest
     try:
         #initial sync request sqs url
         sqs_url = awshandler.get_sqs_url(
             INITIAL_SYNC_QUEUE_NAME
         )
-        send_initial_sync_request_sqs_message(sqs_url, initialSyncRequest)
+        send_initial_sync_request_sqs_message(sqs_url, syncEvent)
     except Exception as e:
         print("Unexpected exception during initial sync request [{0}]".format(e))
 
