@@ -107,26 +107,38 @@ def main():
             # Get information from rfc822-headers part of the email.
             if part.get_content_type() == 'text/rfc822-headers':
                 payload = part.get_payload()
-                args = payload.split("\n")
-                for arg in args:
-                    header_key = arg.split(':', 1)[0].strip().lower();
-                    if header_key.startswith('subject'):
-                        subject_header = arg.split(':', 1)
-                        subject = subject_header[1].strip() if len(subject_header) == 2 else ''
-                        try:
-                            subject, encoding = decode_header(subject)[0]
-                            if encoding is not None:
-                                subject = subject.decode(encoding).encode("utf-8")
-                        except email.errors.HeaderParseError:
-                            logger.warn("Failed to decode subject = {0}".format(subject) )
-                            subject = ''
-                        except BaseException as e:
-                            logger.exception("Failed to encode subject = {0}. {1}".format(subject, e))
-                            subject = ''
+                try:
+                    payload_email = email.message_from_string(payload)
+                    subject, encoding  = decode_header(payload_email.get('Subject'))[0]
+                    if encoding is not None:
+                        subject = subject.decode(encoding).encode("utf-8")
+                    return_path = payload_email.get('return-path')
+                    if return_path is not None:
+                        original_sender = format_sender(return_path).encode('utf-8')
+                except BaseException as e:
+                    logger.exception("Failed to encode subject = {0}. {1}".format(subject, e))
+                # For any reason if above logic fails, following condition would work as fallback
+                if subject is None:
+                    args = payload.split("\n")
+                    for arg in args:
+                        header_key = arg.split(':', 1)[0].strip().lower();
+                        if header_key.startswith('subject'):
+                            subject_header = arg.split(':', 1)
+                            subject = subject_header[1].strip() if len(subject_header) == 2 else ''
+                            try:
+                                subject, encoding = decode_header(subject)[0]
+                                if encoding is not None:
+                                    subject = subject.decode(encoding).encode("utf-8")
+                            except email.errors.HeaderParseError:
+                                logger.warn("Failed to decode subject = {0}".format(subject) )
+                                subject = ''
+                            except BaseException as e:
+                                logger.exception("Failed to encode subject = {0}. {1}".format(subject, e))
+                                subject = ''
 
-                    if header_key.startswith('return-path'):
-                        original_sender = format_sender(arg.split(':', 1)[1].strip())
-                        original_sender.encode("utf-8")
+                        if header_key.startswith('return-path'):
+                            original_sender = format_sender(arg.split(':', 1)[1].strip())
+                            original_sender.encode("utf-8")
             # Format is -  <recipient> : host <hostname> said: <status code> <failure_reason>
             payload_text = part.get_payload()
             if part.get_content_type() == 'text/plain' and len(payload_text) > 1:
