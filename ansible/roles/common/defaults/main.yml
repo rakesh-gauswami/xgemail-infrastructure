@@ -55,6 +55,8 @@ kinesis:
     firehose_log_shipper_stream:                        "firehose-log-shipper-stream-{{account.region}}-{{vpc.cloud_email.name}}"
     jilter_helo_telemetry_stream:                       "tf-jilter-helo-telemetry-{{account.region}}-{{account.name}}-firehose"
     msg_history_v2_stream_name:                         "tf-xgemail-msghistory-{{account.region}}-{{account.name}}-firehose"
+  datastream:
+    msg_history_data_stream_name:                       "tf-xgemail-msghistory-{{account.region}}-{{account.name}}-KinesisStream"    
 kms:
   key:
     alias:                                              "cloud-{{account.name}}-storage"
