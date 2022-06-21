@@ -65,6 +65,10 @@
     "MsgHistoryV2StreamName": {
       "Description": "Name of the message history stream name",
       "Type": "String"
+    },
+    "MsgHistoryDataStreamName": {
+      "Description": "Name of the message history data stream",
+      "Type": "String"
     }
   },
 
@@ -1355,6 +1359,19 @@
             },
             {
               "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
                 "dynamodb:BatchWriteItem",
                 "dynamodb:DeleteItem",
                 "dynamodb:BatchGetItem",
@@ -1372,6 +1389,29 @@
               "Resource": [
                 {
                   "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryV2DynamoDbTableName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:ListSecrets"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:GetResourcePolicy",
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+                "secretsmanager:ListSecretVersionIds"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/central/newrelic/license*"
                 }
               ]
             }
@@ -1737,6 +1777,19 @@
             },
             {
               "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
                 "dynamodb:BatchWriteItem",
                 "dynamodb:DeleteItem",
                 "dynamodb:BatchGetItem",
@@ -1754,6 +1807,29 @@
               "Resource": [
                 {
                   "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryV2DynamoDbTableName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:ListSecrets"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:GetResourcePolicy",
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+                "secretsmanager:ListSecretVersionIds"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/central/newrelic/license*"
                 }
               ]
             }
@@ -2106,6 +2182,19 @@
             },
             {
               "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
                 "dynamodb:BatchWriteItem",
                 "dynamodb:DeleteItem",
                 "dynamodb:BatchGetItem",
@@ -2123,6 +2212,29 @@
               "Resource": [
                 {
                   "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryV2DynamoDbTableName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:ListSecrets"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:GetResourcePolicy",
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+                "secretsmanager:ListSecretVersionIds"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/central/newrelic/license*"
                 }
               ]
             }
@@ -2503,6 +2615,42 @@
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
                 }
               ]
+            },
+            {
+              "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:ListSecrets"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:GetResourcePolicy",
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+                "secretsmanager:ListSecretVersionIds"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/central/newrelic/license*"
+                }
+              ]
             }
           ]
         },
@@ -2879,6 +3027,42 @@
               "Resource": [
                 {
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:ListSecrets"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:GetResourcePolicy",
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+                "secretsmanager:ListSecretVersionIds"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/central/newrelic/license*"
                 }
               ]
             }
@@ -3258,6 +3442,42 @@
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
                 }
               ]
+            },
+            {
+              "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:ListSecrets"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:GetResourcePolicy",
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+                "secretsmanager:ListSecretVersionIds"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/central/newrelic/license*"
+                }
+              ]
             }
           ]
         },
@@ -3604,6 +3824,42 @@
               "Resource": [
                 {
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:ListSecrets"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:GetResourcePolicy",
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+                "secretsmanager:ListSecretVersionIds"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/central/newrelic/license*"
                 }
               ]
             }
@@ -3959,6 +4215,19 @@
             },
             {
               "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
                 "dynamodb:BatchWriteItem",
                 "dynamodb:DeleteItem",
                 "dynamodb:BatchGetItem",
@@ -3976,6 +4245,29 @@
               "Resource": [
                 {
                   "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryV2DynamoDbTableName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:ListSecrets"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:GetResourcePolicy",
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+                "secretsmanager:ListSecretVersionIds"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/central/newrelic/license*"
                 }
               ]
             }
@@ -4263,6 +4555,42 @@
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
                 }
               ]
+            },
+            {
+              "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:ListSecrets"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:GetResourcePolicy",
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+                "secretsmanager:ListSecretVersionIds"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/central/newrelic/license*"
+                }
+              ]
             }
           ]
         },
@@ -4548,6 +4876,42 @@
               "Resource": [
                 {
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:ListSecrets"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:GetResourcePolicy",
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+                "secretsmanager:ListSecretVersionIds"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/central/newrelic/license*"
                 }
               ]
             }
@@ -4926,6 +5290,42 @@
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
                 }
               ]
+            },
+            {
+              "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:ListSecrets"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:GetResourcePolicy",
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+                "secretsmanager:ListSecretVersionIds"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/central/newrelic/license*"
+                }
+              ]
             }
           ]
         },
@@ -5276,6 +5676,19 @@
             },
             {
               "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
                 "dynamodb:BatchWriteItem",
                 "dynamodb:DeleteItem",
                 "dynamodb:BatchGetItem",
@@ -5293,6 +5706,29 @@
               "Resource": [
                 {
                   "Fn::Sub": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${MsgHistoryV2DynamoDbTableName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:ListSecrets"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:GetResourcePolicy",
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+                "secretsmanager:ListSecretVersionIds"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/central/newrelic/license*"
                 }
               ]
             }
@@ -5580,6 +6016,42 @@
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
                 }
               ]
+            },
+            {
+              "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:ListSecrets"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:GetResourcePolicy",
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+                "secretsmanager:ListSecretVersionIds"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/central/newrelic/license*"
+                }
+              ]
             }
           ]
         },
@@ -5865,6 +6337,42 @@
               "Resource": [
                 {
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:ListSecrets"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:GetResourcePolicy",
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+                "secretsmanager:ListSecretVersionIds"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/central/newrelic/license*"
                 }
               ]
             }
@@ -6346,6 +6854,42 @@
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
                 }
               ]
+            },
+            {
+              "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:ListSecrets"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:GetResourcePolicy",
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+                "secretsmanager:ListSecretVersionIds"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/central/newrelic/license*"
+                }
+              ]
             }
           ]
         },
@@ -6683,6 +7227,42 @@
               "Resource": [
                 {
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:ListSecrets"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:GetResourcePolicy",
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+                "secretsmanager:ListSecretVersionIds"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/central/newrelic/license*"
                 }
               ]
             }
@@ -7091,6 +7671,42 @@
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
                 }
               ]
+            },
+            {
+              "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:ListSecrets"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:GetResourcePolicy",
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+                "secretsmanager:ListSecretVersionIds"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/central/newrelic/license*"
+                }
+              ]
             }
           ]
         },
@@ -7428,6 +8044,42 @@
               "Resource": [
                 {
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:ListSecrets"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:GetResourcePolicy",
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+                "secretsmanager:ListSecretVersionIds"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/central/newrelic/license*"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
                 }
               ]
             }
@@ -7836,6 +8488,43 @@
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
                 }
               ]
+            },
+
+            {
+              "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:ListSecrets"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:GetResourcePolicy",
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+                "secretsmanager:ListSecretVersionIds"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/central/newrelic/license*"
+                }
+              ]
             }
           ]
         },
@@ -8173,6 +8862,42 @@
               "Resource": [
                 {
                   "Fn::Sub": "arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${MsgHistoryV2StreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "kinesis:DescribeStream",
+                "kinesis:PutRecord",
+                "kinesis:PutRecords"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${MsgHistoryDataStreamName}"
+                }
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:ListSecrets"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "secretsmanager:GetResourcePolicy",
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+                "secretsmanager:ListSecretVersionIds"
+              ],
+              "Effect" : "Allow",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/central/newrelic/license*"
                 }
               ]
             }
