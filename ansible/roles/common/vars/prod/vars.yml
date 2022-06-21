@@ -31,7 +31,6 @@ aws:
       as_min_service:                           "3"
       as_max_batch_size:                        "3"
       instance_size:                            "m5a.large"
-      newrelic_enabled:                         "true"
     cs:
       alarm_scaling_enabled:                    "false"
       as_min_size:                              "6"
@@ -39,12 +38,10 @@ aws:
       as_min_service:                           "3"
       as_max_batch_size:                        "3"
       instance_size:                            "m5a.2xlarge"
-      newrelic_enabled:                         "true"
       policy_target_value:                      "65"
     cx:
       asg_min_size:                             [ 1,1,1 ]
       instance_size:                            "m5a.large"
-      newrelic_enabled:                         "true"
     dd:
       alarm_scaling_enabled:                    "true"
       alarm_scale_in_threshold:                 "100"
@@ -54,18 +51,15 @@ aws:
       as_min_service:                           "3"
       as_max_batch_size:                        "3"
       instance_size:                            "c5a.large"
-      newrelic_enabled:                         "true"
     dx:
       asg_min_size:                             [1,1,1]
       instance_size:                            "c5a.large"
-      newrelic_enabled:                         "true"
     ed:
       as_min_size:                              "3"
       as_max_size:                              "12"
       as_min_service:                           "1"
       as_max_batch_size:                        "2"
       instance_size:                            "c5a.large"
-      newrelic_enabled:                         "true"
       policy_target_value:                      "80"
     es:
       as_min_size:                              "3"
@@ -73,7 +67,6 @@ aws:
       as_min_service:                           "1"
       as_max_batch_size:                        "2"
       instance_size:                            "c5a.large"
-      newrelic_enabled:                         "true"
       policy_target_value:                      "80"
     id:
       alarm_scaling_enabled:                    "true"
@@ -84,7 +77,6 @@ aws:
       as_min_service:                           "3"
       as_max_batch_size:                        "3"
       instance_size:                            "m5a.large"
-      newrelic_enabled:                         "true"
     is:
       alarm_scale_in_enabled:                   "false"
       alarm_scale_out_enabled:                  "true"
@@ -95,46 +87,36 @@ aws:
       as_min_service:                           "3"
       as_max_batch_size:                        "3"
       instance_size:                            "m5a.2xlarge"
-      newrelic_enabled:                         "true"
       policy_target_value:                      "85"
     ix:
       asg_min_size:                             [1,1,1]
       instance_size:                            "c5a.large"
-      newrelic_enabled:                         "true"
     mfid:
       instance_size:                            "m5a.large"
-      newrelic_enabled:                         "true"
     mfis:
       instance_size:                            "m5a.2xlarge"
-      newrelic_enabled:                         "true"
     mfix:
       instance_size:                            "c5.large"
-      newrelic_enabled:                         "true"
     mfos:
       as_min_size:                              "3"
       as_max_size:                              "6"
       instance_size:                            "m5a.2xlarge"
-      newrelic_enabled:                         "true"
     mfod:
       as_min_size:                              "3"
       as_max_size:                              "6"
       instance_size:                            "m5a.large"
-      newrelic_enabled:                         "true"
     mfox:
       instance_size:                            "c5a.large"
-      newrelic_enabled:                         "true"
     rd:
       as_min_size:                              "3"
       as_max_size:                              "12"
       as_min_service:                           "3"
       as_max_batch_size:                        "3"
       instance_size:                            "c5a.large"
-      newrelic_enabled:                         "true"
       policy_target_value:                      "80"
     rx:
       asg_min_size:                             [1,1,1]
       instance_size:                            "c5.large"
-      newrelic_enabled:                         "true"
     wd:
       alarm_scaling_enabled:                    "true"
       alarm_scale_in_threshold:                 "100"
@@ -145,12 +127,10 @@ aws:
       as_max_batch_size:                        "1"
       eip_count:                                "4"
       instance_size:                            "m5a.large"
-      newrelic_enabled:                         "true"
     wx:
       asg_min_size:                             [1,1,1]
       eip_count:                                "6"
       instance_size:                            "m5a.large"
-      newrelic_enabled:                         "true"
   ec:
     redis:
       xgemail_dqs:
@@ -173,8 +153,9 @@ aws:
       master_instance_number:                   "3"
       snapshot_start_hour:                      "4"
       zone_awareness:                           "true"
+newrelic_enabled:                               "true"
 external_ip_access:
   hopper:
-    a:                                                            "64.86.143.220/32"
-    b:                                                            "216.6.116.220/32"
-    c:                                                            "198.144.101.108/32"
+    a:                                          "64.86.143.220/32"
+    b:                                          "216.6.116.220/32"
+    c:                                          "198.144.101.108/32"
