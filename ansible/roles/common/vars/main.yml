@@ -37,7 +37,6 @@ aws:
       health_check_grace_period:                                  "1800"
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-internet-submit-Terminating-LifeCycleHook"
-      newrelic_enabled:                                           "false"
       policy_target_value:                                        "85"
       on_hour_desired:                                            "2"
       scale_in_out_weekdays:                                      "false"
@@ -64,7 +63,6 @@ aws:
       asg_min_size:                                               [0,0,1]
       health_check_grace_period:                                  "1200"
       instance_size:                                              "t2.small"
-      newrelic_enabled:                                           "false"
       stack_number:                                               [1,2,3]
       zone_index:                                                 [0,1,2]
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-customer-xdelivery-Launching-LifeCycleHook"
@@ -79,7 +77,6 @@ aws:
       health_check_grace_period:                                  "2400"
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-customer-submit-Terminating-LifeCycleHook"
-      newrelic_enabled:                                           "false"
       policy_target_value:                                        "90"
       on_hour_desired:                                            "2"
       scale_in_out_weekdays:                                      "false"
@@ -95,13 +92,11 @@ aws:
       instance_size:                                              "t2.small"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-delta-delivery-Launching-LifeCycleHook"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-delta-delivery-Terminating-LifeCycleHook"
-      newrelic_enabled:                                           "false"
     dx:
       asg_min_size:                                               [0,0,1]
       health_check_grace_period:                                  "600"
       instance_size:                                              "t2.small"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-delta-xdelivery-Launching-LifeCycleHook"
-      newrelic_enabled:                                           "false"
       stack_number:                                               [1,2,3]
       zone_index:                                                 [0,1,2]
     id:
@@ -116,13 +111,11 @@ aws:
       instance_size:                                              "t2.small"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-internet-delivery-Launching-LifeCycleHook"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-internet-delivery-Terminating-LifeCycleHook"
-      newrelic_enabled:                                           "false"
     ix:
       asg_min_size:                                               [0,0,1]
       health_check_grace_period:                                  "600"
       instance_size:                                              "t2.small"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-internet-xdelivery-Launching-LifeCycleHook"
-      newrelic_enabled:                                           "false"
       stack_number:                                               [1,2,3]
       zone_index:                                                 [0,1,2]
     mfid:
@@ -141,7 +134,6 @@ aws:
       instance_size:                                              "t2.small"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-mf-inbound-delivery-Launching-LifeCycleHook"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-mf-inbound-delivery-Terminating-LifeCycleHook"
-      newrelic_enabled:                                           "false"
       on_hour_desired:                                            "2"
       scale_in_out_weekdays:                                      "false"
     mfis:
@@ -158,7 +150,6 @@ aws:
       health_check_grace_period:                                  "1800"
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-mf-inbound-submit-Terminating-LifeCycleHook"
-      newrelic_enabled:                                           "false"
       policy_target_value:                                        "85"
       on_hour_desired:                                            "2"
       scale_in_out_weekdays:                                      "false"
@@ -170,7 +161,6 @@ aws:
       health_check_grace_period:                                  "900"
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-encryption-submit-Terminating-LifeCycleHook"
-      newrelic_enabled:                                           "false"
       policy_target_value:                                        "80"
     ed:
       as_min_size:                                                "1"
@@ -180,7 +170,6 @@ aws:
       health_check_grace_period:                                  "600"
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-encryption-delivery-Terminating-LifeCycleHook"
-      newrelic_enabled:                                           "false"
       policy_target_value:                                        "80"
     mfos:
       alarm_scaling_enabled:                                      "false"
@@ -191,7 +180,6 @@ aws:
       health_check_grace_period:                                  "2400"
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-mf-outbound-submit-Terminating-LifeCycleHook"
-      newrelic_enabled:                                           "false"
       policy_target_value:                                        "90"
     mfod:
       alarm_scaling_enabled:                                      "false"
@@ -205,13 +193,11 @@ aws:
       instance_size:                                              "t2.small"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-mf-outbound-delivery-Launching-LifeCycleHook"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-mf-outbound-delivery-Terminating-LifeCycleHook"
-      newrelic_enabled:                                           "false"
     mfix:
       asg_min_size:                                               [ 0,0,1 ]
       health_check_grace_period:                                  "900"
       instance_size:                                              "t2.small"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-mf-inbound-xdelivery-Launching-LifeCycleHook"
-      newrelic_enabled:                                           "false"
       stack_number:                                               [ 1,2,3 ]
       zone_index:                                                 [ 0,1,2 ]
     mfox:
@@ -219,7 +205,6 @@ aws:
       health_check_grace_period:                                  "600"
       instance_size:                                              "t2.small"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-mf-outbound-xdelivery-Launching-LifeCycleHook"
-      newrelic_enabled:                                           "false"
       stack_number:                                               [ 1,2,3 ]
       zone_index:                                                 [ 0,1,2 ]
     rd:
@@ -231,14 +216,12 @@ aws:
       instance_size:                                              "t2.small"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-risky-delivery-Launching-LifeCycleHook"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-risky-delivery-Terminating-LifeCycleHook"
-      newrelic_enabled:                                           "false"
       policy_target_value:                                        "80"
     rx:
       asg_min_size:                                               [0,0,1]
       health_check_grace_period:                                  "600"
       instance_size:                                              "t2.small"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-risky-xdelivery-Launching-LifeCycleHook"
-      newrelic_enabled:                                           "false"
       stack_number:                                               [1,2,3]
       zone_index:                                                 [0,1,2]
     wd:
@@ -254,14 +237,12 @@ aws:
       instance_size:                                              "t2.small"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-warmup-delivery-Launching-LifeCycleHook"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-warmup-delivery-Terminating-LifeCycleHook"
-      newrelic_enabled:                                           "false"
     wx:
       asg_min_size:                                               [0,0,1]
       eip_count:                                                  "2"
       health_check_grace_period:                                  "600"
       instance_size:                                              "t2.small"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-warmup-xdelivery-Launching-LifeCycleHook"
-      newrelic_enabled:                                           "false"
       stack_number:                                               [1,2,3]
       zone_index:                                                 [0,1,2]
   ec:
@@ -1091,6 +1072,7 @@ cron_scale_up:                                                    "0 4 * * 1"
 hopper_public_ip:                                                 "198.144.101.106/32"
 instance_size_elasticsearch:                                      "t2.medium"
 instance_size_bastion:                                            "m5.large"
+newrelic_enabled:                                                 "false"
 spot_price:                                                       "-1"
 weekend_scale_down:                                               "true"
 xgemail_sxl_dbl:                                                  "uri.cal1.sophosxl.com"
