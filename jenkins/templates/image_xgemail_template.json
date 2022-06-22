@@ -20,83 +20,69 @@
   },
 
   "Parameters": {
-    "AesDecryptionKey": {
-      "Description": "Decryption Key for encrypted buckets",
-      "Type": "String",
-      "Default": ""
-    },
-
     "AmiBucket": {
       "Description": "Name of S3 bucket where AMI ids will be stored.",
       "Type": "String",
       "Default": "sophos-cloud-amis"
     },
-
+    "AmiRegion": {
+      "Description": "Name of region where AMI will be built.",
+      "Type": "String",
+      "Default": "us-east-1"
+    },
     "AmiBuildTimeoutMinutes": {
       "Description": "Number of minutes allocated to create and copy AMIs.",
       "Type": "String",
       "AllowedPattern": "^[1-9][0-9]*$"
     },
-
     "ApplicationName": {
       "Description": "Default to java for all bundled WARs",
       "Type": "String",
       "Default": "xgemail"
     },
-
     "BlockDeviceMappingsXvdf": {
       "Description": "Block device mapping for /data",
       "Type": "String",
       "Default": "40"
     },
-
     "BlockDeviceMappingsXvdg": {
       "Description": "Block device mapping for /var",
       "Type": "String",
       "Default": "50"
     },
-
     "BlockDeviceMappingsXvdh": {
       "Description": "Block device mapping for /tmp",
       "Type": "String",
       "Default": "20"
     },
-
     "Branch": {
       "Description": "(Develop, CPLAT-XXXX, etc...)",
       "Type": "String"
     },
-
     "Build": {
       "Description": "(v1, v2, etc...)",
-      "Type": "String",
-      "Default": "v1"
+      "Type": "String"
     },
-
     "EbsVolumeType": {
       "Description": "Indicates the EBS volume type.",
       "Type": "String",
       "Default": "gp3",
       "AllowedValues": [ "gp2", "gp3", "standard" ]
     },
-
     "Environment": {
       "Description": "(dev2, dev3, dev4, dev5, qa, etc...)",
       "Type": "String",
-      "Default": "hmr-core"
+      "Default": "devops"
     },
-
     "IamProfile": {
       "Description": "The IAM role to be used.",
       "Type": "String",
       "Default": "sophos-cloud-image-setup"
     },
-
     "ImageId": {
       "Description": "AMI ID for the source image to build on.",
       "Type": "String"
     },
-
     "InstanceType": {
       "Description": "Amazon EC2 instance type",
       "Type": "String",
@@ -121,102 +107,84 @@
         "c5.xlarge"
       ]
     },
-
-    "JavaBranch": {
-      "Description": "(Develop, CPLAT-XXXX, etc...)",
-      "Type": "String",
-      "Default": "develop"
-    },
-
     "JdkVersion": {
      "Description": "Version of the Oracle JDK for installation.",
      "Type": "String",
      "Default": "jdk-1.8.0_101-b13"
    },
-
     "JilterInboundVersion": {
       "Description": "Inbound Jilter version",
       "Type": "String"
     },
-
     "JilterMfInboundVersion": {
       "Description": "Mf Inbound Jilter version",
       "Type": "String"
     },
-
     "JilterMfOutboundVersion": {
       "Description": "Mf Outbound Jilter version",
       "Type": "String"
     },
-
     "JilterOutboundVersion": {
       "Description": "Outbound Jilter version",
       "Type": "String"
     },
-
     "JilterEncryptionVersion": {
       "Description": "Encryption Jilter version",
       "Type": "String"
     },
-
     "JilterDeliveryVersion": {
       "Description": "Encryption Jilter version",
       "Type": "String"
     },
-
     "KeyPairName": {
-      "Description": "Name of an existing Amazon EC2 key pair for RDP access",
+      "Description": "Name of an existing Amazon EC2 key pair for SSH access",
       "Type": "AWS::EC2::KeyPair::KeyName",
-      "Default": "ami-builder-key"
+      "Default": "cloud-tools"
     },
-
     "LaunchDarklyInf": {
       "Description": "The LaunckDarkly Client key for the INF account",
-      "Type": "String"
+      "Type": "String",
+      "Default": "cloud-tools"
     },
-
     "LaunchDarklyDev": {
       "Description": "The LaunckDarkly Client key for the DEV account",
-      "Type": "String"
+      "Type": "String",
+      "Default": "cloud-tools"
     },
-
     "LaunchDarklyDev3": {
       "Description": "The LaunckDarkly Client key for the DEV3 account",
-      "Type": "String"
+      "Type": "String",
+      "Default": "cloud-tools"
     },
-
     "LaunchDarklyQa": {
       "Description": "The LaunckDarkly Client key for the QA account",
-      "Type": "String"
+      "Type": "String",
+      "Default": "cloud-tools"
     },
-
     "LaunchDarklyProd": {
       "Description": "The LaunckDarkly Client key for the PROD account",
-      "Type": "String"
+      "Type": "String",
+      "Default": "cloud-tools"
     },
-
     "S3CookbookRepositoryUrl": {
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
-      "Type": "String"
+      "Type": "String",
+      "Default": "//cloud-applications-devops"
     },
-
     "S3Sophos3rdPartyRepositoryUrl": {
       "Description": "The S3 bucket path where to find 3rd party packages. (//<bucket>)",
       "Type": "String",
-      "Default": "//cloud-applications-3rdparty"
+      "Default": "//central-3rdparty"
     },
-
     "S3SophosAppRepositoryUrl": {
       "Description": "The S3 bucket path where to find application packages. (//<bucket>)",
       "Type": "String",
-      "Default": "//cloud-applications"
+      "Default": "//cloud-applications-devops"
     },
-
     "VpcSecurityGroup": {
       "Description": "The security group that allows communication within the VPC.",
       "Type": "AWS::EC2::SecurityGroup::Id"
     },
-
     "VpcSubnetId": {
       "Description": "The ID of the subnet the instance to associate to.",
       "Type": "AWS::EC2::Subnet::Id"
@@ -226,21 +194,17 @@
   "Resources": {
     "XgemailServerInstance": {
       "Type": "AWS::EC2::Instance",
-
       "CreationPolicy": {
         "ResourceSignal": {
           "Timeout": {
-            "Fn::Join": [
-              "", [
-                "PT",
-                { "Ref": "AmiBuildTimeoutMinutes" },
-                "M"
+            "Fn::Join": [ "",
+              [
+                "PT", { "Ref": "AmiBuildTimeoutMinutes" }, "M"
               ]
             ]
           }
         }
       },
-
       "Metadata": {
         "AWS::CloudFormation::Init": {
           "configSets": {
@@ -259,25 +223,15 @@
             "commands": {
               "01_get_common_utils": {
                 "command": {
-                  "Fn::Join": [
-                    "", [
+                  "Fn::Join": [ "",
+                    [
                       "mkdir -p /opt/sophos/bin\n",
-                      "aws s3 cp s3:", { "Ref": "S3SophosAppRepositoryUrl" }, "/", { "Ref": "Branch" }, "/xgemail-infrastructure/common_utils.enc /opt/sophos/bin/common_utils.enc\n"
+                      "aws s3 cp s3:", { "Ref": "S3SophosAppRepositoryUrl" }, "/", { "Ref": "Branch" }, "/xgemail-infrastructure/common_utils.tar.gz /opt/sophos/bin/common_utils.tar.gz\n"
                     ]
                   ]
                 }
               },
-              "02_decrypt_common_utils": {
-                "command": {
-                  "Fn::Join": [
-                    "", [
-                      "openssl enc -aes-256-cbc -d -in ./common_utils.enc -out ./common_utils.tar.gz -pass pass:", { "Ref": "AesDecryptionKey" }, "\n"
-                    ]
-                  ]
-                },
-                "cwd": "/opt/sophos/bin"
-              },
-              "03_unpack_common_utils": {
+              "02_unpack_common_utils": {
                 "command": "tar xvf common_utils.tar.gz",
                 "cwd": "/opt/sophos/bin"
               }
@@ -288,8 +242,8 @@
             "files": {
               "/tmp/build_base.sh": {
                 "content": {
-                  "Fn::Join": [
-                    "", [
+                  "Fn::Join": [ "",
+                    [
                       "#!/bin/bash\n",
 
                       "set -o xtrace   # Print commands and their arguments as they are executed.\n",
@@ -323,12 +277,12 @@
 
                       "CHEFDK_VERSION=0.2.0-2.el6\n",
                       "CHEFDK_RPM=chefdk-${CHEFDK_VERSION}.x86_64.rpm\n",
-                      "aws --region us-west-2 s3 cp s3:", { "Ref": "S3Sophos3rdPartyRepositoryUrl" }, "/chef/${CHEFDK_RPM} ${CHEFDK_RPM}\n",
+                      "aws --region ", { "Ref": "AmiRegion" }, " s3 cp s3:", { "Ref": "S3Sophos3rdPartyRepositoryUrl" }, "/chef/${CHEFDK_RPM} ${CHEFDK_RPM}\n",
                       "rpm -i ${CHEFDK_RPM}\n",
                       "rm -f ${CHEFDK_RPM}\n",
                       "CHEF_REPO_HASH=605eeda\n",
                       "CHEF_REPO_TGZ=chef-chef-repo-${CHEF_REPO_HASH}.tar.gz\n",
-                      "aws --region us-west-2 s3 cp s3:", { "Ref": "S3Sophos3rdPartyRepositoryUrl" }, "/chef/${CHEF_REPO_TGZ} ${CHEF_REPO_TGZ}\n",
+                      "aws --region ", { "Ref": "AmiRegion" }, " s3 cp s3:", { "Ref": "S3Sophos3rdPartyRepositoryUrl" }, "/chef/${CHEF_REPO_TGZ} ${CHEF_REPO_TGZ}\n",
                       "tar xzvf ${CHEF_REPO_TGZ}\n",
                       "mkdir -p /var/chef/chef-repo/.chef\n",
                       "cp -r chef-chef-repo-${CHEF_REPO_HASH}/* /var/chef/chef-repo\n",
@@ -376,8 +330,8 @@
             "files": {
               "/mnt/add_volumes.sh": {
                 "content": {
-                  "Fn::Join": [
-                    "", [
+                  "Fn::Join": [ "",
+                    [
                       "#!/bin/bash\n",
                       "# Install the additional volumes\n",
                       "echo '/dev/xvdf  /data           ext4    defaults      0   0' >> /etc/fstab\n",
@@ -421,42 +375,25 @@
             "files": {
               "/etc/cfn/cfn-hup.conf": {
                 "content": {
-                  "Fn::Join": [
-                    "",
+                  "Fn::Join": [ "",
                     [
                       "[main]\n",
-                      "stack=",
-                      {
-                        "Ref": "AWS::StackName"
-                      },
-                      "\n",
-                      "region=",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      "\n"
+                      "stack=", { "Ref": "AWS::StackName" }, "\n",
+                      "region=", { "Ref": "AWS::Region" }, "\n"
                     ]
                   ]
                 }
               },
               "/etc/cfn/hooks.d/cfn-auto-reloader.conf": {
                 "content": {
-                  "Fn::Join": [
-                    "",
+                  "Fn::Join": [ "",
                     [
                       "[cfn-auto-reloader-hook]\n",
                       "triggers=post.update\n",
                       "path=Resources.XgemailServerInstance.Metadata.AWS::CloudFormation::Init\n",
-                      "action=cfn-init -v -s ",
-                      {
-                        "Ref": "AWS::StackName"
-                      },
-                      " -r XgemailServerInstance",
-                      " --region ",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      "\n",
+                      "action=cfn-init -v -s ", { "Ref": "AWS::StackName" }, "\n",
+                      " -r XgemailServerInstance\n",
+                      " --region ", { "Ref": "AWS::Region" }, "\n",
                       "runas=root\n"
                     ]
                   ]
@@ -489,16 +426,12 @@
             "commands": {
               "01_reset_cookbooks": {
                 "command": {
-                  "Fn::Join": [
-                    "", [
-                      "/opt/sophos/bin/reset_cookbooks.py ",
-                      "-r us-west-2 ",
-                      "-f ",
-                      { "Ref": "Branch" },
-                      "/xgemail-infrastructure ",
-                      "-p ",
-                      { "Ref": "AesDecryptionKey" },
-                      " > /var/log/sophos/reset_cookbooks.output 2>&1"
+                  "Fn::Join": [ "",
+                    [
+                      "/opt/sophos/bin/reset_cookbooks.py",
+                      " -r ", { "Ref": "AmiRegion" },
+                      " -b ", { "Ref": "S3SophosAppRepositoryUrl" },
+                      " -f ", { "Ref": "Branch" }, "/xgemail-infrastructure > /var/log/sophos/reset_cookbooks.output 2>&1"
                     ]
                   ]
                 }
@@ -510,8 +443,8 @@
             "files": {
               "/var/sophos/cookbooks/attributes.json": {
                 "content": {
-                  "Fn::Join": [
-                    "\n", [
+                  "Fn::Join": [ "\n",
+                    [
                       "{",
                       "    \"ami\": {",
                       "        \"ami_bucket\":                  \"{{ami_bucket}}\",",
@@ -551,13 +484,11 @@
                   ]
                 },
                 "context": {
-                  "aes_decryption_key":                         { "Ref": "AesDecryptionKey" },
                   "ami_bucket":                                 { "Ref": "AmiBucket" },
                   "application_name":                           { "Ref": "ApplicationName" },
                   "branch":                                     { "Ref": "Branch" },
                   "build":                                      { "Ref": "Build" },
                   "environment":                                { "Ref": "Environment" },
-                  "java_branch":                                { "Ref": "JavaBranch" },
                   "jdk_version":                                { "Ref": "JdkVersion" },
                   "jilter_inbound_version":                     { "Ref": "JilterInboundVersion"},
                   "jilter_mf_inbound_version":                  { "Ref": "JilterMfInboundVersion"},
@@ -583,8 +514,8 @@
             "commands": {
               "01_configure_node_run_list": {
                 "command": {
-                  "Fn::Join": [
-                    "", [
+                  "Fn::Join": [ "",
+                    [
                       "knife node run_list add -z `knife node list -z` \"",
                       "recipe[sophos-base-ami::base_ami],",
                       "recipe[sophos-cloud-fluentd::install],",
@@ -601,8 +532,8 @@
               },
               "02_run_chef_client": {
                 "command": {
-                  "Fn::Join": [
-                    " ", [
+                  "Fn::Join": [ " ",
+                    [
                       "chef-client --no-color -z",
                       "-c /var/chef/chef-repo/.chef/client.rb",
                       "-j /var/sophos/cookbooks/attributes.json",
@@ -642,8 +573,8 @@
           {
             "Key": "Name",
             "Value": {
-              "Fn::Join": [
-                ":", [
+              "Fn::Join": [ ":",
+                [
                   "AmiCandidate",
                   { "Ref": "ApplicationName" },
                   { "Ref": "Branch" },
@@ -655,8 +586,8 @@
         ],
         "UserData": {
           "Fn::Base64": {
-            "Fn::Join": [
-              "", [
+            "Fn::Join": [ "",
+              [
                 "#!/bin/bash\n",
 
                 "set -o xtrace   # Print commands and their arguments as they are executed.\n",
@@ -695,7 +626,7 @@
                 "  echo 'Copying log zip to S3 bucket for bamboo artifact'\n",
                 "  until [ $n -ge 10 ]\n",
                 "  do\n",
-                "    aws s3 cp --debug --region us-west-2 ${LOG_DIR}.zip s3://", { "Ref": "AmiBucket" }, "/", { "Ref": "Branch" }, "/build-", { "Ref": "Build" }, "/ && break\n",
+                "    aws s3 cp --debug --region ", { "Ref": "AmiRegion" }, " ${LOG_DIR}.zip s3://", { "Ref": "AmiBucket" }, "/", { "Ref": "Branch" }, "/build-", { "Ref": "Build" }, "/ && break\n",
                 "      ",
                 "    n=$[$n+1]\n",
                 "    sleep 6\n",
@@ -732,7 +663,7 @@
                 "PUBLIC_IP=ip_address_", { "Ref": "ApplicationName" }, "_ami_build", { "Ref": "Build" }, "\n",
                 "wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4 > /tmp/${PUBLIC_IP}.txt\n",
 
-                "aws s3 cp --debug --region us-west-2 /tmp/${PUBLIC_IP}.txt",
+                "aws s3 cp --debug --region ", { "Ref": "AmiRegion" }, " /tmp/${PUBLIC_IP}.txt",
                 " s3://", { "Ref": "AmiBucket" }, "/", { "Ref": "Branch" },
                 "/build-", { "Ref": "Build" }, "/\n",
 
@@ -771,8 +702,7 @@
                 " --region ", { "Ref": "AWS::Region" },
                 " --resource XgemailServerInstance",
                 " --configsets svcapi_install",
-                " -v",
-                "\n",
+                " -v", "\n",
 
                 "# Install specific python-daemon module for cfn-hup to work\n",
                 "pip install \"python-daemon>=1.5.2,<2.0\"\n",
@@ -788,29 +718,19 @@
 
   "Outputs": {
     "InstanceId": {
-      "Value": {
-        "Ref": "XgemailServerInstance"
-      }
+      "Value": { "Ref": "XgemailServerInstance" }
     },
     "AvailabilityZone": {
-      "Value": {
-        "Fn::GetAtt": [ "XgemailServerInstance", "AvailabilityZone" ]
-      }
+      "Value": { "Fn::GetAtt": [ "XgemailServerInstance", "AvailabilityZone" ] }
     },
     "PrivateIp": {
-      "Value": {
-        "Fn::GetAtt": [ "XgemailServerInstance", "PrivateIp" ]
-      }
+      "Value": { "Fn::GetAtt": [ "XgemailServerInstance", "PrivateIp" ] }
     },
     "PublicIp": {
-      "Value": {
-        "Fn::GetAtt": [ "XgemailServerInstance", "PublicIp" ]
-      }
+      "Value": { "Fn::GetAtt": [ "XgemailServerInstance", "PublicIp" ] }
     },
     "DNSName": {
-      "Value": {
-        "Fn::GetAtt": [ "XgemailServerInstance", "PublicDnsName" ]
-      }
+      "Value": { "Fn::GetAtt": [ "XgemailServerInstance", "PublicDnsName" ] }
     }
   }
 }
