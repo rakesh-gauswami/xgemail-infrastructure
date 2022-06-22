@@ -197,9 +197,9 @@ aws:
       asg_min_size:                                               [ 0,0,1 ]
       health_check_grace_period:                                  "900"
       instance_size:                                              "t2.small"
+      lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-mf-inbound-xdelivery-Launching-LifeCycleHook"
       stack_number:                                               [ 1,2,3 ]
       zone_index:                                                 [ 0,1,2 ]
-      lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-mf-inbound-xdelivery-Launching-LifeCycleHook"
     mfox:
       asg_min_size:                                               [ 0,0,1 ]
       health_check_grace_period:                                  "600"
@@ -1072,6 +1072,7 @@ cron_scale_up:                                                    "0 4 * * 1"
 hopper_public_ip:                                                 "198.144.101.106/32"
 instance_size_elasticsearch:                                      "t2.medium"
 instance_size_bastion:                                            "m5.large"
+newrelic_enabled:                                                 "false"
 spot_price:                                                       "-1"
 weekend_scale_down:                                               "true"
 xgemail_sxl_dbl:                                                  "uri.cal1.sophosxl.com"
