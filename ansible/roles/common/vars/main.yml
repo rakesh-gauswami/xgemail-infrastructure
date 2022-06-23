@@ -655,6 +655,11 @@ aws:
       template_parameters:
         TagApplication:                                           "xgemail-mail"
         TopicName:                                                "{{sns.xgemail_malware_submissions_labs_sns_topic}}"
+  ssm:
+    white_space_remove_from_header_regions_key: "xgemail.white.space.remove.from.header.aws.regions"
+    white_space_remove_from_header_client_ids_key: "xgemail.white.space.remove.from.header.client.ids"
+    white_space_remove_from_header_regions: "NA"
+    white_space_remove_from_header_client_ids: "NA"
   sqs:
     additional_action_sqs_queue_sns_listener:
       stack_name:                                                 "{{stack.sqs.additional_action_sqs_queue_sns_listener}}"
