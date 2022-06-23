@@ -5,7 +5,7 @@
     state:                        present
     region:                       "{{account.region}}"
     disable_rollback:             true
-    template:                     "{{template.ssm.ssm_template}}"
+    template:                     "{{template.ssm.ssm_xgemail_wsr_param_template}}"
     template_parameters:
       Key:                        "xgemail.white.space.remove.from.header.client.ids"
       Value:                      "{{aws.ssm.xgemail.white-space-remove-from-header-client-ids}}"
@@ -17,7 +17,7 @@
     state:                        present
     region:                       "{{account.region}}"
     disable_rollback:             true
-    template:                     "{{template.ssm.ssm_template}}"
+    template:                     "{{template.ssm.ssm_xgemail_wsr_param_template}}"
     template_parameters:
       Key:                        "xgemail.white.space.remove.from.header.aws.regions"
       Value:                      "{{aws.ssm.xgemail.white-space-remove-from-header-regions}}"
