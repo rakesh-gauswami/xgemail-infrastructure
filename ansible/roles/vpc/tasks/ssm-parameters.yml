@@ -8,7 +8,7 @@
     template:                     "{{template.ssm.ssm_xgemail_wsr_param_template}}"
     template_parameters:
       Key:                        "{{aws.ssm.white-space-remove-from-header-client-ids-key}}"
-      Value:                      "{{aws.ssm.xgemail.white-space-remove-from-header-client-ids}}"
+      Value:                      "{{aws.ssm.white-space-remove-from-header-client-ids}}"
   register: ssm_stack
 
 - name: "Deploy client region SSM parameters to {{account.name}}-{{account.region}}"
@@ -20,5 +20,5 @@
     template:                     "{{template.ssm.ssm_xgemail_wsr_param_template}}"
     template_parameters:
       Key:                        "{{aws.ssm.white-space-remove-from-header-regions-key}}"
-      Value:                      "{{aws.ssm.xgemail.white-space-remove-from-header-regions}}"
+      Value:                      "{{aws.ssm.white-space-remove-from-header-regions}}"
   register: ssm_stack
