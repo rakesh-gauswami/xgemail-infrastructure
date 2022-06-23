@@ -1,13 +1,24 @@
-- name: Whitelist clientId list for white space remove bug fix
-  aws_ssm_parameter_store:
-    name: "xgemail.white.space.remove.from.header.client.ids"
-    description: "Holds clientId for white space remove bug fix"
-    string_type: "StringList"
-    value: "{{aws.ssm.xgemail.white-space-remove-from-header-client-ids}}"
+---
+- name: "Deploy client ids SSM parameters to {{account.name}}-{{account.region}}"
+  cloudformation:
+    stack_name:                   "{{stack.ssm.ssm_wsr_client_ids}}"
+    state:                        present
+    region:                       "{{account.region}}"
+    disable_rollback:             true
+    template:                     "{{template.ssm.ssm_template}}"
+    template_parameters:
+      Key:                        "xgemail.white.space.remove.from.header.client.ids"
+      Value:                      "{{aws.ssm.xgemail.white-space-remove-from-header-client-ids}}"
+  register: ssm_stack
 
-- name: Whitelist regions for white space remove bug fix
-  aws_ssm_parameter_store:
-    name: "xgemail.white.space.remove.from.header.aws.regions"
-    description: "Holds regions for white space remove bug fix"
-    string_type: "StringList"
-    value: "{{aws.ssm.xgemail.white-space-remove-from-header-regions}}"
+- name: "Deploy client region SSM parameters to {{account.name}}-{{account.region}}"
+  cloudformation:
+    stack_name:                   "{{stack.ssm.ssm_wsr_regions}}"
+    state:                        present
+    region:                       "{{account.region}}"
+    disable_rollback:             true
+    template:                     "{{template.ssm.ssm_template}}"
+    template_parameters:
+      Key:                        "xgemail.white.space.remove.from.header.aws.regions"
+      Value:                      "{{aws.ssm.xgemail.white-space-remove-from-header-regions}}"
+  register: ssm_stack
