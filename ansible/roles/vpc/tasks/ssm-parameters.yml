@@ -9,7 +9,7 @@
     template_parameters:
       Key:                        "{{aws.ssm.white_space_remove_from_header_client_ids_key}}"
       Value:                      "{{aws.ssm.white_space_remove_from_header_client_ids}}"
-  register: ssm_parameters_client_ids_stack
+  register: ssm_parameters_wsr_client_ids_stack
 
 - name: "Deploy client region SSM parameters to {{account.name}}-{{account.region}}"
   cloudformation:
@@ -21,4 +21,4 @@
     template_parameters:
       Key:                        "{{aws.ssm.white_space_remove_from_header_regions_key}}"
       Value:                      "{{aws.ssm.white_space_remove_from_header_regions}}"
-  register: ssm_parameters_client_ids_stack
+  register: ssm_parameters_wsr_regions_stack
