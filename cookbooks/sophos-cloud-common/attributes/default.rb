@@ -36,6 +36,6 @@ default['sophos_cloud_common']['configure_logstash_forwarder']['sophos_log_type'
 
 default['sophos_cloud_common']['remote_user'] = 'remote_user'
 
-default['sophos_cloud_common']['docker_registry'] = 'registry.sophos-tools.com'
+default['sophos_cloud_common']['docker_registry'] = 'artifactory.sophos-tools.com'
 default['sophos_cloud_common']['install_dir'] = '/opt/sophos'
 default['sophos_cloud_common']['log_dir'] = '/var/log/sophos'

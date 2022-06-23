@@ -19,8 +19,8 @@ azoneid = {
     "eml100hnd": 'Z00959292MKFE2F8O3SVR',
     "eml100syd": 'Z1011819W5HGRZRGPENU',
     "eml100yul": 'Z1014554AERXECT6FME1',
-    "eml100bom": 'Z0317622WPHQXEY8RA1S',
-    "eml100gru": 'Z04474823GZ4M87DRPHJB'
+    "eml100bom": 'Z08088502LZELFMVN9UKY',
+    "eml100gru": 'Z0877666WYCAV6NDGPEM'
 }
 
 # HostedZoneIDs for PTR records based on region

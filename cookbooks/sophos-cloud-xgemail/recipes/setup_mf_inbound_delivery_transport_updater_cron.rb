@@ -36,7 +36,8 @@ MAIL_PIC_API_RESPONSE_TIMEOUT = node['xgemail']['mail_pic_apis_response_timeout_
 MAIL_PIC_API_AUTH     = node['xgemail']['mail_pic_api_auth']
 POLICY_BUCKET         = node['xgemail']['xgemail_policy_bucket_name']
 XGEMAIL_UTILS_DIR      = node['xgemail']['xgemail_utils_files_dir']
-
+INSTANCE_ID           = node['ec2']['instance_id']
+FLAT_FILE_INSTANCE_LIST_PATH = node['xgemail']['flat_file_instance_path']
 CONFIGURATION_COMMANDS =
   [
     "transport_maps=hash:$config_directory/#{TRANSPORT_FILENAME}"
@@ -108,6 +109,8 @@ template CRON_SCRIPT_PATH do
     :connections_bucket => CONNECTIONS_BUCKET,
     :policy_bucket => POLICY_BUCKET,
     :xgemail_utils_path => XGEMAIL_UTILS_DIR,
+    :instance_id => INSTANCE_ID,
+    :flat_file_instance_list_path => FLAT_FILE_INSTANCE_LIST_PATH
     )
   notifies :run, "execute[#{CRON_SCRIPT_PATH}]", :immediately
 end

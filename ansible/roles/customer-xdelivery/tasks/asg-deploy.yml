@@ -1,4 +1,15 @@
 ---
+# Upload Files
+# Documentation: http://ansible-manual.readthedocs.io/en/latest/s3_module.html
+- name: "Upload the config file for {{stack.ec2.asg.cx}} to the config bucket {{cloud_applications}}"
+  s3:
+    mode:               put
+    region:             "{{account.region}}"
+    bucket:             "{{cloud_applications}}"
+    object:             "{{build.branch}}/xgemail-infrastructure/as_customer_xdelivery_template.json"
+    src:                "{{template.ec2.asg.as_customer_xdelivery_template}}"
+    overwrite:          always
+
 #- name: Debug
 #  debug:
 #    msg: "{{item.value.stack_name}} {{item.value.AutoScalingMinSize}} {{item.value.AvailabilityZoneIndex}} {{item.value.VolumeSetId}} {{cloud_email_iam_output.stack_outputs.AutoScalingInstanceRoleArn}}"
@@ -12,10 +23,11 @@
     state: present
     region:  "{{account.region}}"
     disable_rollback: true
-    template: "{{template.ec2.asg.as_customer_xdelivery_template}}"
+    template_url:  "https://s3.amazonaws.com/{{cloud_applications}}/{{build.branch}}/xgemail-infrastructure/as_customer_xdelivery_template.json"
     template_parameters:
       AesDecryptionKey:                     "{{aes_decryption_key}}"
       AmiId:                                "{{ami_parent_id}}"
+      AutoScalingInstanceRoleArn:           "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.AutoScalingInstanceRoleArn}}"
       AutoScalingMinSize:                   "{{item.1}}"
       AutoScalingMaxSize:                   "1"
       AutoScalingNotificationTopicARN:      "{{sns.arn_prefix}}{{sns.lifecycle_sqs_sns}}"
@@ -30,26 +42,34 @@
       InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.XgemailXdeliveryInstanceProfile}}"
       InstanceType:                         "{{aws.asg.cx.instance_size}}"
       KeyName:                              "private-{{account.region}}"
+      KeyNamePub:                           "public-{{account.region}}"
+      LifecycleHookLaunching:               "{{aws.asg.cx.lifecycle_hook_launching}}"
       LoadBalancerName:                     "{{elb_stack_output.stack_outputs.LoadBalancerId}}"
+      LoadBalancerNamePub:                  "{{elb_stack_output_pub.stack_outputs.LoadBalancerId}}"
       MsgHistoryV2BucketName:               "{{s3.msg_history_v2_bucket_name}}"
       MsgHistoryV2DynamoDbTableName:        "{{dynamodb.msg_history_v2_dynamodb}}"
       MsgHistoryV2StreamName:               "{{kinesis.firehose.msg_history_v2_stream_name}}"
+      NewRelicEnabled:                      "{{newrelic_enabled}}"
       S3CookbookRepositoryURL:              "//cloud-{{account.name}}-templates/{{build.branch}}/xgemail-infrastructure/cookbooks.enc"
       ScaleDownOnWeekends:                  "{{weekend_scale_down}}"
       SecurityGroups:                       "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.XgemailXdeliverySecurityGroup}},{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.SecurityGroupBase}}"
+      SecurityGroupsPub:                    "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.XgemailXdeliverySecurityGroupPub}},{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.SecurityGroupBase}}"
       SpotPrice:                            "{{spot_price}}"
       StationVpcName:                       "{{vpc.cloud_station.name}}"
       StationVpcId:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}"
       VolumeSetId:                          "xdelivery-{{item.0}}"
+      VolumeSetIdPub:                       "customer-xdelivery-{{item.0}}"
       VolumeTrackerSimpleDbDomain:          "{{volume_tracker_sdb_output.ansible_facts.cloudformation[stack.sdb.volume_tracker_sdb].stack_outputs.SimpleDbDomain}}"
       Vpc:                                  "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.Vpc}}"
       VpcZoneIdentifiers:                   "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PrivateSubnetDefaultA}},{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PrivateSubnetDefaultB}},{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PrivateSubnetDefaultC}}"
+      VpcZoneIdentifiersPub:                "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PublicSubnetA}},{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PublicSubnetB}},{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PublicSubnetC}}"
       VpcName:                              "{{vpc.cloud_email.name}}"
       XgemailMinSizeDataGB:                 "{{xgemail_size_data_gb}}"
       XgemailMsgHistoryStatusQueueUrl:      "{{sqs.url_prefix}}{{sqs.msg_history_status_sqs_queue_sns_listener}}"
       XgemailMsgHistoryStatusSnsArn:        "{{sns.arn_prefix}}{{sns.msg_history_status_sns_topic}}"
       XgemailPolicyBucketName:              "{{s3.policy_bucket}}"
       XgemailServiceType:                   "xdelivery"
+      XgemailServiceTypePub:                "customer-xdelivery"
   with_together:
     - "{{aws.asg.cx.stack_number}}"
     - "{{aws.asg.cx.asg_min_size}}"

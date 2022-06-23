@@ -28,7 +28,7 @@ docker run --entrypoint="ansible-playbook" \
     -e "blockDeviceMappingsXvdf=$bamboo_blockDeviceMappingsXvdf" \
     --volume="$PWD:/work" \
     --workdir="/work/ansible" \
-    "registry.sophos-tools.com/sophos-ansible:2.4.0.0-2" \
+    "artifactory.sophos-tools.com/docker-read/sophos-ansible:2.4.0.0-2" \
     -vvv ./playbooks/build-xgemail-ami.yml \
     --extra-vars="stage=1 \
                   aws_account=${bamboo_ACCOUNT} \
