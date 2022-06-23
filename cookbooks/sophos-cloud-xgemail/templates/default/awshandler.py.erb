@@ -30,6 +30,7 @@ class AwsHandler(object):
         self.s3_client = self.session.client("s3")
         self.sqs_client = self.session.client("sqs")
         self.sns_client = self.session.client("sns")
+        self.ssm_client = self.session.client('ssm')
         self.firehose_client = self.session.client('firehose')
 
     def __get_session_credentials(self):
@@ -261,3 +262,12 @@ class AwsHandler(object):
             'Key': key
         }
         return self.s3_client.delete_object(**params)
+
+    #get value from param stores
+    def get_parameter_from_ssm(self, key, withDecryption = True):
+         params = {
+                 'Name': key,
+                 'WithDecryption': withDecryption
+             }
+         parameter = self.ssm_client.get_parameter(**params)
+         return  parameter['Parameter']['Value']

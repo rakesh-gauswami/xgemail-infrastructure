@@ -189,6 +189,16 @@ module "output_string_parameters" {
       name        = "/central/asg/warmup-delivery/lifecycle-hook/terminating/name"
       value       = local.asg_warmup_delivery_lifecycle_hook_terminating
       description = "Warmup Delivery Terminating Lifecycle Hook Name"
+    },
+    {
+      name        = "/xgemail/msg/white_space_remove/aws_regions"
+      value       = local.msg_xgemail_white_space_remove_aws_regions
+      description = "Xgemail white space remove from header aws region"
+    },
+    {
+      name        = "/xgemail/msg/white_space_remove/client_ids"
+      value       = local.msg_xgemail_white_space_remove_client_ids
+      description = "Xgemail white space remove from header client ids"
     }
   ]
 }

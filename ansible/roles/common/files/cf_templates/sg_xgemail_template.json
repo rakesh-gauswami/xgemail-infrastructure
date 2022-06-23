@@ -1124,6 +1124,69 @@
       }
     },
 
+    "XgemailCustomerDeliverySecurityGroupLbPub": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Controls access to public facing ELBs.",
+        "Tags": [
+          {
+            "Key": "Branch",
+            "Value": { "Ref" : "Branch" }
+
+          },
+          {
+            "Key": "Environment",
+            "Value": { "Ref" : "Environment" }
+          },
+          {
+            "Key": "Role",
+            "Value": "svc-xgemail-customer-delivery-elb-pub"
+          },
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "Environment"
+                  },
+                  "-",
+                  {
+                    "Ref": "Branch"
+                  },
+                  "-",
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "/sg/xgemail/customer/delivery/elb/pub"
+                ]
+              ]
+            }
+          },
+          {
+            "Key": "Application",
+            "Value": "customer-delivery"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      }
+    },
+
     "XgemailCustomerDeliverySecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
@@ -1166,6 +1229,60 @@
             "FromPort": "587",
             "ToPort": "587",
             "SourceSecurityGroupId": { "Ref": "XgemailCustomerDeliverySecurityGroupLb" }
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "-1",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "VpcId": { "Ref": "Vpc" }
+      }
+    },
+
+    "XgemailCustomerDeliverySecurityGroupPub": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Xgemail Delivery security group.",
+        "Tags": [{
+          "Key": "Name",
+          "Value": {
+            "Fn::Join": [ "", [
+              { "Ref": "Environment" }, "-",
+              { "Ref": "Branch" }, "-",
+              { "Ref": "AWS::StackName" }, "/sg/xgemail/customer/delivery/pub"
+            ]]
+          }
+        },
+        {
+          "Key": "Application",
+          "Value": "customer-delivery"
+        },
+        {
+          "Key": "BusinessUnit",
+          "Value": "MSG"
+        },
+        {
+          "Key": "Project",
+          "Value": "xgemail"
+        },
+        {
+          "Key": "OwnerEmail",
+          "Value": "sophosmailops@sophos.com"
+        }],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "25",
+            "ToPort": "25",
+            "SourceSecurityGroupId": { "Ref": "XgemailCustomerDeliverySecurityGroupLbPub" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "587",
+            "ToPort": "587",
+            "SourceSecurityGroupId": { "Ref": "XgemailCustomerDeliverySecurityGroupLbPub" }
           }
         ],
         "SecurityGroupEgress": [
@@ -2883,6 +3000,70 @@
       }
     },
 
+    "XgemailXdeliverySecurityGroupLbPub": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Controls access to Public facing Xdelivery ELB.",
+        "Tags": [
+          {
+            "Key": "Branch",
+            "Value": {"Ref": "Branch"}
+
+          },
+          {
+            "Key": "Environment",
+            "Value": {"Ref": "Environment"}
+          },
+          {
+            "Key": "Role",
+            "Value": "svc-xgemail-xdelivery-elb-public"
+
+          },
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "Environment"
+                  },
+                  "-",
+                  {
+                    "Ref": "Branch"
+                  },
+                  "-",
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "/sg/xgemail/xdelivery/elb/public"
+                ]
+              ]
+            }
+          },
+          {
+            "Key": "Application",
+            "Value": "customer-xdelivery-public"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      }
+    },
+
     "XgemailXdeliverySecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
@@ -2923,6 +3104,58 @@
             "FromPort": "8025",
             "ToPort": "8025",
             "SourceSecurityGroupId": { "Ref": "XgemailXdeliverySecurityGroupLb" }
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "-1",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "VpcId": { "Ref": "Vpc" }
+      }
+    },
+
+    "XgemailXdeliverySecurityGroupPub": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Xgemail Xdelivery security group.",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "", [
+                  { "Ref": "Environment" }, "-",
+                  { "Ref": "Branch" }, "-",
+                  { "Ref": "AWS::StackName" }, "/sg/xgemail/xdelivery/public"
+                ]
+              ]
+            }
+          },
+          {
+            "Key": "Application",
+            "Value": "customer-xdelivery-public"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "8025",
+            "ToPort": "8025",
+            "SourceSecurityGroupId": { "Ref": "XgemailXdeliverySecurityGroupLbPub" }
           }
         ],
         "SecurityGroupEgress": [
@@ -3494,6 +3727,17 @@
       }
     },
 
+    "XgemailXdeliverySecurityGroupLbIngressCustomerDeliverySmtpPub": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailXdeliverySecurityGroupLbPub" },
+        "SourceSecurityGroupId": { "Ref": "XgemailCustomerDeliverySecurityGroupPub" },
+        "IpProtocol": "tcp",
+        "FromPort": "8025",
+        "ToPort": "8025"
+      }
+    },    
+
     "XgemailInternetXdeliverySecurityGroupLbIngressDeliverySmtp": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
@@ -3626,6 +3870,17 @@
       }
     },
 
+    "XgemailCustomerDeliverySecurityGroupIngressBastionSshPub": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": { "Ref": "XgemailCustomerDeliverySecurityGroupPub" },
+        "SourceSecurityGroupId": { "Ref": "SecurityGroupBastion" },
+        "IpProtocol": "tcp",
+        "FromPort": "22",
+        "ToPort": "22"
+      }
+    },    
+
     "XgemailDeltaDeliverySecurityGroupIngressBastionSsh": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
@@ -3691,6 +3946,17 @@
         "ToPort": "22"
       }
     },
+
+    "XgemailXdeliverySecurityGroupIngressBastionSshPub": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {"Ref": "XgemailXdeliverySecurityGroupPub"},
+        "SourceSecurityGroupId": {"Ref": "SecurityGroupBastion"},
+        "IpProtocol": "tcp",
+        "FromPort": "22",
+        "ToPort": "22"
+      }
+    },    
 
     "XgemailInternetXdeliverySecurityGroupIngressBastionSsh": {
       "Type": "AWS::EC2::SecurityGroupIngress",
@@ -3919,6 +4185,12 @@
             "FromPort": "6379",
             "ToPort": "6379",
             "SourceSecurityGroupId": { "Ref": "XgemailCustomerDeliverySecurityGroup" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "6379",
+            "ToPort": "6379",
+            "SourceSecurityGroupId": { "Ref": "XgemailCustomerDeliverySecurityGroupPub" }
           }
         ]
       }
@@ -3979,6 +4251,14 @@
       "Description": "Xgemail Customer Delivery security group",
       "Value": { "Ref": "XgemailCustomerDeliverySecurityGroup" }
     },
+    "XgemailCustomerDeliverySecurityGroupLbPub": {
+      "Description": "Xgemail Customer Delivery Load Balancer security group",
+      "Value": { "Ref": "XgemailCustomerDeliverySecurityGroupLbPub" }
+    },
+    "XgemailCustomerDeliverySecurityGroupPub": {
+      "Description": "Xgemail Customer Delivery security group",
+      "Value": { "Ref": "XgemailCustomerDeliverySecurityGroupPub" }
+    },    
     "XgemailMfInboundDeliverySecurityGroupLb": {
       "Description": "Xgemail Mf Inbound Delivery Load Balancer security group",
       "Value": { "Ref": "XgemailMfInboundDeliverySecurityGroupLb" }
@@ -3995,6 +4275,14 @@
       "Description": "Xgemail Xdelivery security group",
       "Value": { "Ref": "XgemailXdeliverySecurityGroup" }
     },
+    "XgemailXdeliverySecurityGroupLbPub": {
+      "Description": "Xgemail Xdelivery Load Balancer security group",
+      "Value": { "Ref": "XgemailXdeliverySecurityGroupLbPub" }
+    },
+    "XgemailXdeliverySecurityGroupPub": {
+      "Description": "Xgemail Xdelivery security group",
+      "Value": { "Ref": "XgemailXdeliverySecurityGroupPub" }
+    },    
     "XgemailInternetDeliverySecurityGroupLb": {
       "Description": "Xgemail Internet Delivery Load Balancer security group",
       "Value": { "Ref": "XgemailInternetDeliverySecurityGroupLb" }

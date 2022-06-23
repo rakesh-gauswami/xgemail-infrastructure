@@ -228,6 +228,8 @@ if NODE_TYPE == 'xdelivery' || NODE_TYPE == 'customer-xdelivery'
 
   include_recipe 'sophos-cloud-xgemail::configure-bounce-message-customer-delivery-queue'
   include_recipe 'sophos-cloud-xgemail::setup_customer_delivery_transport_updater'
+  include_recipe 'sophos-cloud-xgemail::setup_flat_file_rollout_config'
+  include_recipe 'sophos-cloud-xgemail::setup_customer_delivery_transport_updater_cron'
   include_recipe 'sophos-cloud-xgemail::setup_push_policy_delivery_toggle'
 else
   if NODE_TYPE == 'internet-xdelivery'
@@ -258,6 +260,8 @@ else
     end
     include_recipe 'sophos-cloud-xgemail::configure-bounce-message-customer-delivery-queue'
     include_recipe 'sophos-cloud-xgemail::setup_mf_inbound_delivery_transport_updater_cron'
+    include_recipe 'sophos-cloud-xgemail::setup_flat_file_rollout_config'
+    include_recipe 'sophos-cloud-xgemail::setup_customer_delivery_transport_updater_cron'
     include_recipe 'sophos-cloud-xgemail::setup_push_policy_delivery_toggle'
   end
   if NODE_TYPE == 'mf-outbound-xdelivery'

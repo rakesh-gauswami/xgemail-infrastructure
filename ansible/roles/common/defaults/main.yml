@@ -15,8 +15,10 @@ ec2:
     bd:                                                 "XGEMAIL-BETA-DELIVERY"
     bx:                                                 "XGEMAIL-BETA-XDELIVERY"
     cd:                                                 "XGEMAIL-DELIVERY"
+    cdp:                                                "XGEMAIL-CUSTOMER-DELIVERY-PUBLIC"
     cs:                                                 "XGEMAIL-CUSTOMER-SUBMIT"
     cx:                                                 "XGEMAIL-XDELIVERY"
+    cxp:                                                "XGEMAIL-CUSTOMER-XDELIVERY-PUBLIC"
     dd:                                                 "XGEMAIL-DELTA-DELIVERY"
     dx:                                                 "XGEMAIL-DELTA-XDELIVERY"
     ed:                                                 "XGEMAIL-ENCRYPTION-DELIVERY"
@@ -53,6 +55,8 @@ kinesis:
     firehose_log_shipper_stream:                        "firehose-log-shipper-stream-{{account.region}}-{{vpc.cloud_email.name}}"
     jilter_helo_telemetry_stream:                       "tf-jilter-helo-telemetry-{{account.region}}-{{account.name}}-firehose"
     msg_history_v2_stream_name:                         "tf-xgemail-msghistory-{{account.region}}-{{account.name}}-firehose"
+  datastream:
+    msg_history_data_stream_name:                       "tf-xgemail-msghistory-{{account.region}}-{{account.name}}-KinesisStream"
 kms:
   key:
     alias:                                              "cloud-{{account.name}}-storage"
@@ -258,6 +262,8 @@ stack:
       cs:                                               "{{vpc.cloud_email.name}}-XGEMAIL-customer-submit-ELB"
       is:                                               "{{vpc.cloud_email.name}}-XGEMAIL-submit-ELB"
       cd:                                               "{{vpc.cloud_email.name}}-XGEMAIL-delivery-ELB"
+      cdp:                                              "{{vpc.cloud_email.name}}-XGEMAIL-customer-delivery-public-ELB"
+      cxp:                                              "{{vpc.cloud_email.name}}-XGEMAIL-customer-xdelivery-public-ELB"
       dd:                                               "{{vpc.cloud_email.name}}-XGEMAIL-delta-delivery-ELB"
       dx:                                               "{{vpc.cloud_email.name}}-XGEMAIL-delta-xdelivery-ELB"
       id:                                               "{{vpc.cloud_email.name}}-XGEMAIL-internet-delivery-ELB"
@@ -303,8 +309,10 @@ stack:
     customer_delivery_b_route53:                        "{{vpc.cloud_email.name}}-XGEMAIL-delivery-A-RECORD-B-ROUTE53"
     customer_delivery_c_route53:                        "{{vpc.cloud_email.name}}-XGEMAIL-delivery-A-RECORD-C-ROUTE53"
     customer_delivery_route53:                          "{{vpc.cloud_email.name}}-XGEMAIL-delivery-ROUTE53"
+    customer_delivery_public_route53:                   "{{vpc.cloud_email.name}}-XGEMAIL-customer-delivery-public-ROUTE53"
     customer_submit_a_route53:                          "{{vpc.cloud_email.name}}-XGEMAIL-customer-submit-A-RECORD-ROUTE53"
     customer_xdelivery_route53:                         "{{vpc.cloud_email.name}}-XGEMAIL-xdelivery-ROUTE53"
+    customer_xdelivery_public_route53:                  "{{vpc.cloud_email.name}}-XGEMAIL-customer-xdelivery-public-ROUTE53"
     delta_delivery_route53:                             "{{vpc.cloud_email.name}}-XGEMAIL-delta-delivery-ROUTE53"
     delta_xdelivery_route53:                            "{{vpc.cloud_email.name}}-XGEMAIL-delta-xdelivery-ROUTE53"
     encryption_delivery_route53:                        "{{vpc.cloud_email.name}}-XGEMAIL-encryption-delivery-ROUTE53"
@@ -444,6 +452,8 @@ stack:
     ssm_postfix_documents:                              "{{vpc.cloud_email.name}}-SSM-Postfix-Documents"
     ssm_elasticsearch_documents:                        "{{vpc.cloud_station.name}}-SSM-Elasticsearch-Documents"
     ssm_shell_documents:                                "{{vpc.cloud_email.name}}-SSM-Shell-Documents"
+    ssm_wsr_client_ids:                                 "{{vpc.cloud_email.name}}-WSR-Client-Ids-Parameter"
+    ssm_wsr_regions:                                    "{{vpc.cloud_email.name}}-WSR-Regions-Parameter"
   msg:
     xgemail_messaging:                                  "{{vpc.cloud_email.name}}-XGEMAIL-messaging"
     xgemail_messaging_b:                                "{{vpc.cloud_email.name}}-XGEMAIL-messaging-b"
@@ -537,6 +547,7 @@ template:
     ssm_xgemail_postfix_document_template:              "{{tmp_artifacts_dir}}/ssm_xgemail_postfix_document_template.json"
     ssm_xgemail_elasticsearch_document_template:        "{{tmp_artifacts_dir}}/ssm_xgemail_elasticsearch_document_template.json"
     ssm_xgemail_shell_document_template:                "{{tmp_artifacts_dir}}/ssm_xgemail_shell_document_template.json"
+    ssm_xgemail_parameter_template:                     "{{tmp_artifacts_dir}}/ssm_xgemail_parameter_template.json"
   msg:
     xgemail_messaging_a_template:                       "{{tmp_artifacts_dir}}/xgemail_messaging_a_template.json"
     xgemail_messaging_b_template:                       "{{tmp_artifacts_dir}}/xgemail_messaging_b_template.json"

@@ -14,6 +14,8 @@ ACCOUNT   =  node['sophos_cloud']['environment']
 
 ACCOUNT_NAME = node['sophos_cloud']['account_name']
 
+SMTP_FALLBACK_RELAY_PREFIX = node['xgemail']['smtp_fallback_relay_prefix']
+
 if NODE_TYPE != 'customer-delivery'
   return
 end
@@ -40,7 +42,7 @@ raise "Unsupported node type [#{NODE_TYPE}]" if XDELIVERY_INSTANCE_DATA.nil?
 SMTP_PORT = XDELIVERY_INSTANCE_DATA[:port]
 
 if ACCOUNT_NAME == 'legacy'
-  SMTP_FALLBACK_RELAY = "xdelivery-cloudemail-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com:#{SMTP_PORT}"
+  SMTP_FALLBACK_RELAY = "#{SMTP_FALLBACK_RELAY_PREFIX}-cloudemail-#{AWS_REGION}.#{ACCOUNT}.hydra.sophos.com:#{SMTP_PORT}"
 else
   SMTP_FALLBACK_RELAY = "customer-xdelivery.#{ACCOUNT_NAME}.ctr.sophos.com:#{SMTP_PORT}"
 end
@@ -95,6 +97,9 @@ end
 include_recipe 'sophos-cloud-xgemail::setup_customer_delivery_transport_updater'
 include_recipe 'sophos-cloud-xgemail::configure-bounce-message-customer-delivery-queue'
 include_recipe 'sophos-cloud-xgemail::setup_customer_delivery_custom_recipient_transport_updater'
+include_recipe 'sophos-cloud-xgemail::setup_flat_file_rollout_config'
+include_recipe 'sophos-cloud-xgemail::setup_customer_delivery_transport_updater_cron'
+include_recipe 'sophos-cloud-xgemail::setup_flat_file_initial_sync_transport'
 include_recipe 'sophos-cloud-xgemail::setup_transport_route_config'
 include_recipe 'sophos-cloud-xgemail::setup_xgemail_sqs_message_consumer'
 include_recipe 'sophos-cloud-xgemail::setup_message_history_storage_dir'

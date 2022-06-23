@@ -20,7 +20,7 @@ aws:
       instance_size:                            "c5a.large"
     bx:
       asg_min_size:                             [1,1,1]
-      instance_size:                            "c5.large"
+      instance_size:                            "c5a.large"
     cd:
       alarm_scale_in_enabled:                   "false"
       alarm_scale_out_enabled:                  "true"
@@ -37,7 +37,7 @@ aws:
       as_max_size:                              "12"
       as_min_service:                           "3"
       as_max_batch_size:                        "3"
-      instance_size:                            "m5.2xlarge"
+      instance_size:                            "m5a.2xlarge"
       policy_target_value:                      "65"
     cx:
       asg_min_size:                             [ 1,1,1 ]
@@ -53,7 +53,7 @@ aws:
       instance_size:                            "c5a.large"
     dx:
       asg_min_size:                             [1,1,1]
-      instance_size:                            "c5.large"
+      instance_size:                            "c5a.large"
     ed:
       as_min_size:                              "3"
       as_max_size:                              "12"
@@ -86,27 +86,27 @@ aws:
       as_max_size:                              "12"
       as_min_service:                           "3"
       as_max_batch_size:                        "3"
-      instance_size:                            "m5.2xlarge"
+      instance_size:                            "m5a.2xlarge"
       policy_target_value:                      "85"
     ix:
       asg_min_size:                             [1,1,1]
-      instance_size:                            "c5.large"
-    mfis:
-      instance_size:                            "m5.2xlarge"
+      instance_size:                            "c5a.large"
     mfid:
       instance_size:                            "m5a.large"
+    mfis:
+      instance_size:                            "m5a.2xlarge"
     mfix:
       instance_size:                            "c5.large"
     mfos:
       as_min_size:                              "3"
       as_max_size:                              "6"
-      instance_size:                            "m5.2xlarge"
+      instance_size:                            "m5a.2xlarge"
     mfod:
       as_min_size:                              "3"
       as_max_size:                              "6"
       instance_size:                            "m5a.large"
     mfox:
-      instance_size:                            "c5.large"
+      instance_size:                            "c5a.large"
     rd:
       as_min_size:                              "3"
       as_max_size:                              "12"
@@ -153,8 +153,14 @@ aws:
       master_instance_number:                   "3"
       snapshot_start_hour:                      "4"
       zone_awareness:                           "true"
+  ssm:
+    white_space_remove_from_header_regions_key:    "xgemail.white.space.remove.from.header.aws.regions"
+    white_space_remove_from_header_client_ids_key: "xgemail.white.space.remove.from.header.client.ids"
+    white_space_remove_from_header_regions:        "NA"
+    white_space_remove_from_header_client_ids:     "NA"
+newrelic_enabled:                               "true"
 external_ip_access:
   hopper:
-    a:                                                            "64.86.143.220/32"
-    b:                                                            "216.6.116.220/32"
-    c:                                                            "198.144.101.108/32"
+    a:                                          "64.86.143.220/32"
+    b:                                          "216.6.116.220/32"
+    c:                                          "198.144.101.108/32"

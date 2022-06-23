@@ -371,6 +371,14 @@ end
   end
 end
 
+execute 'download_swaks' do
+  user 'root'
+  cwd "#{PACKAGES_DIR}"
+  command <<-EOH
+      aws --region us-west-2 s3 cp s3:#{sophos_thirdparty}/xgemail/swaks .
+  EOH
+end
+
 execute 'remove_postfix_package' do
   command 'rpm -e --nodeps postfix'
   ignore_failure true

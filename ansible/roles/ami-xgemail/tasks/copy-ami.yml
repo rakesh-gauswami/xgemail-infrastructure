@@ -1,6 +1,20 @@
 ---
 # Copy AMI to Destination Regions
 # http://docs.ansible.com/ansible/latest/ec2_ami_copy_module.html
+- name: Regions for release, bugfix, and hotfix branches
+  set_fact:
+    branch_destination_regions: [ 'us-east-2', 'eu-west-1', 'eu-central-1', 'ca-central-1', 'ap-northeast-1', 'ap-southeast-2', 'ap-south-1', 'sa-east-1' ]
+
+- name: Regions for feature branches
+  set_fact:
+    branch_destination_regions: [ 'us-east-2', 'eu-west-1' ]
+  when: build.branch | regex_search('feature')
+
+- name: Regions for develop branch
+  set_fact:
+    branch_destination_regions: [ 'us-east-2', 'eu-west-1', 'ca-central-1' ]
+  when: build.branch | regex_search('develop')
+
 - name: "Update AWS Software"
   shell: pip install awscli botocore boto3 -U
   register: update_output
@@ -8,7 +22,7 @@
   delay: 10
   retries: 3
 
-- name: "Copy AMI to Destination Regions {{ami.xgemail.ami_destination_regions}}"
+- name: "Copy AMI to Destination Regions {{branch_destination_regions}}"
   ec2_ami_copy:
     description:          "{{image_description}}"
     source_region:        "{{ami.xgemail.region}}"
@@ -25,7 +39,7 @@
     wait_timeout:         1200
     launch_permissions:
       user_ids: "{{ami.xgemail.ami_launch_permissions}}"
-  with_items:             "{{ami.xgemail.ami_destination_regions}}"
+  with_items:             "{{branch_destination_regions}}"
   register: ec2_ami_copy_output
 
 - name: "Display Xgemail AMI IDs and their Region"

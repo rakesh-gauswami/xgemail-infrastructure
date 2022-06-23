@@ -1,4 +1,5 @@
 ---
+#ELB for Private Customer Delivery instance
 - name: "Deploy {{stack.ec2.elb.cd}} to {{account.name}} {{account.region}}"
   cloudformation:
     stack_name: "{{stack.ec2.elb.cd}}"
@@ -27,4 +28,35 @@
 - name: "Display ELB Stack Output"
   debug:
     msg: "{{elb_stack_output.stack_outputs}}"
+    verbosity: 2
+
+#ELB for Public Customer Delivery instance
+- name: "Deploy {{stack.ec2.elb.cdp}} to {{account.name}} {{account.region}}"
+  cloudformation:
+    stack_name: "{{stack.ec2.elb.cdp}}"
+    state: present
+    region: "{{account.region}}"
+    disable_rollback: true
+    template: "{{template.ec2.elb.elb_public_xgemail_template}}"
+    template_parameters:
+      Branch:                        "{{build.branch}}"
+      Environment:                   "{{account.name}}"
+      ExternalPort:                  "2255"
+      HealthCheckInterval:           "60"
+      HealthCheckTarget:             "TCP:25"
+      HostAlarmTopicARN:             "{{sns.arn_prefix}}{{sns.alarm_sns_topic}}"
+      LoadBalancerName:              "{{ec2.elb.cdp}}"
+      SecurityGroupLb:               "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.XgemailCustomerDeliverySecurityGroupLbPub}}"
+      Subnets:                       "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.VpcZoneIdentifiersPublic}}"
+      TagApplication:                "customer-delivery"
+      Vpc:                           "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.Vpc}}"
+  register: elb_stack_output_pub
+
+- debug:
+    var: elb_stack_output_pub
+    verbosity: 3
+
+- name: "Display ELB Stack Output"
+  debug:
+    msg: "{{elb_stack_output_pub.stack_outputs}}"
     verbosity: 2

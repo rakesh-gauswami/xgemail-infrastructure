@@ -75,17 +75,15 @@ class MultiEip:
 
     def associate_multi_eips(self):
         for private_ip in self.private_ips:
-            eip = self.get_clean_eip()
-            if eip is not None:
-                try:
+            while True:
+                eip = self.get_clean_eip()
+                if eip is not None:
                     logger.info("Associating EIP {} to Private IP {} on Instance: {}.".format(eip['PublicIp'], private_ip, self.instance.id))
-                    self.associate_address(eip=eip, instance_id=self.instance.id, private_ip=private_ip)
-                except ClientError as e:
-                    logger.exception("Unable to associate EIP {} to Private IP {} on Instance: {}. Exception: {}".format(eip['PublicIp'], private_ip, self.instance.id, e))
+                    if self.associate_address(eip=eip, instance_id=self.instance.id, private_ip=private_ip):
+                        break
+                else:
+                    logger.error("Unable to obtain EIP for Instance: {}.".format(self.instance.id))
                     return False
-            else:
-                logger.error("Unable to obtain EIP for Instance: {}.".format(self.instance.id))
-                return False
 
         return True
 
@@ -158,7 +156,9 @@ class MultiEip:
                 ]
             )['Addresses'][0]
         except ClientError as e:
-            logger.exception("Unable to get current elastic IP {}".format(e))
+            logger.exception("Unable to describe addresses {}".format(e))
+        except IndexError as error:
+            logger.exception("Unable to locate private IP {}".format(error))
         else:
             return current_eip
 
@@ -176,12 +176,7 @@ class MultiEip:
             )
         except ClientError as e:
             if e.response['Error']['Code'] == 'Resource.AlreadyAssociated':
-                logger.debug("Unable to associate elastic IP {}".format(e))
-                """ Get current EIP """
-                current_eip = self.get_current_eip(private_ip)
-                if self.disassociate_address(current_eip):
-                    logger.info("Retrying Associating Private IP {} with EIP Allocation Id:{} on Instance: {}".format(private_ip, eip['AllocationId'], instance_id))
-                    self.associate_address(eip=eip, instance_id=self.instance.id, private_ip=private_ip)
+                logger.exception("EIP already associated {}".format(e))
             else:
                 logger.exception("Unable to associate elastic IP {}".format(e))
         else:
