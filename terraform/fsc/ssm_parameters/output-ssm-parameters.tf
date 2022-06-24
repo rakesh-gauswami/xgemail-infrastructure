@@ -189,6 +189,12 @@ module "output_string_parameters" {
       name        = "/central/asg/warmup-delivery/lifecycle-hook/terminating/name"
       value       = local.asg_warmup_delivery_lifecycle_hook_terminating
       description = "Warmup Delivery Terminating Lifecycle Hook Name"
+    },
+
+    {
+      name        = "/central/newrelic/account/id"
+      value       = local.newrelic_account_id
+      description = "Newrelic Acount Id"
     }
   ]
 }

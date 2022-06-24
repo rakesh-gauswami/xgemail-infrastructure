@@ -29,6 +29,8 @@ locals {
   asg_risky_delivery_lifecycle_hook_terminating       = "risky-delivery-terminating"
   asg_warmup_delivery_lifecycle_hook_terminating      = "warmup-delivery-terminating"
 
+  newrelic_account_id                                 = "3452541"
+
   asg_instances_lifecycle_hook_launching = [
     local.asg_delta_delivery_lifecycle_hook_launching,
     local.asg_delta_xdelivery_lifecycle_hook_launching,
