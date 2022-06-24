@@ -166,6 +166,11 @@
       "Type": "String",
       "Default": "cloud-tools"
     },
+    "LogsBucket": {
+      "Description": "Name of S3 bucket where AMI logs will be stored.",
+      "Type": "String",
+      "Default": "logs-sophos-central-devops-us-east-1"
+    },
     "S3CookbookRepositoryUrl": {
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
       "Type": "String",
@@ -619,14 +624,14 @@
                 "  done\n",
                 "",
                 "  cd /tmp\n",
-                "  echo 'Zipping all logs for bamboo build artifact'\n",
+                "  echo 'Zipping all logs for jenkins build artifact'\n",
                 "  zip -r ${LOG_DIR}.zip $(basename ${LOG_DIR})\n",
                 "",
                 "  n=0\n",
-                "  echo 'Copying log zip to S3 bucket for bamboo artifact'\n",
+                "  echo 'Copying log zip to S3 bucket for jenkins artifact'\n",
                 "  until [ $n -ge 10 ]\n",
                 "  do\n",
-                "    aws s3 cp --debug --region ", { "Ref": "AmiRegion" }, " ${LOG_DIR}.zip s3://", { "Ref": "AmiBucket" }, "/", { "Ref": "Branch" }, "/build-", { "Ref": "Build" }, "/ && break\n",
+                "    aws s3 cp --debug --region ", { "Ref": "AmiRegion" }, " ${LOG_DIR}.zip s3://", { "Ref": "LogsBucket" }, "/", { "Ref": "Branch" }, "/build-", { "Ref": "Build" }, "/ && break\n",
                 "      ",
                 "    n=$[$n+1]\n",
                 "    sleep 6\n",
@@ -657,15 +662,6 @@
                 "# Configure auth protocol used with S3, to enable KMS/SSE requests.\n",
 
                 "aws configure set default.s3.signature_version s3v4\n",
-
-                "# Push the Public IP of the instance to S3 for artifact retrieval via Bamboo.\n",
-
-                "PUBLIC_IP=ip_address_", { "Ref": "ApplicationName" }, "_ami_build", { "Ref": "Build" }, "\n",
-                "wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4 > /tmp/${PUBLIC_IP}.txt\n",
-
-                "aws s3 cp --debug --region ", { "Ref": "AmiRegion" }, " /tmp/${PUBLIC_IP}.txt",
-                " s3://", { "Ref": "AmiBucket" }, "/", { "Ref": "Branch" },
-                "/build-", { "Ref": "Build" }, "/\n",
 
                 "# Install all security and aws updates.\n",
 
