@@ -8,12 +8,6 @@ module "output_string_parameters" {
   parameters = [
 
     {
-      name        = "/central/iam/roles/autoscaling/arn"
-      value       = aws_iam_role.autoscaling_role.arn
-      description = "IAM Role ARN for Autoscaling Service Role"
-    },
-
-    {
       name        = "/central/iam/profiles/encryption-delivery-instance/name"
       value       = aws_iam_instance_profile.encryption_delivery_instance_profile.name
       description = "IAM Instance Profile Name for Encryption Delivery Instance"
@@ -131,6 +125,18 @@ module "output_string_parameters" {
       name        = "/central/iam/profiles/mf-inbound-submit-instance/name"
       value       = aws_iam_instance_profile.mf_inbound_submit_instance_profile.name
       description = "IAM Instance Profile Name for MF Inbound Submit Instance"
+    },
+
+    {
+      name        = "/central/iam/roles/autoscaling/arn"
+      value       = aws_iam_role.autoscaling_role.arn
+      description = "IAM Role ARN for Autoscaling Service Role"
+    },
+
+    {
+      name        = "/central/iam/roles/newrelic-integrations/arn"
+      value       = aws_iam_role.autoscaling_role.arn
+      description = "IAM Role ARN for Newrelic Integrations Role"
     }
 
   ]
