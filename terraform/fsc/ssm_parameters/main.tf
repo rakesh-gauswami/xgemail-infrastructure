@@ -31,6 +31,8 @@ locals {
   msg_xgemail_white_space_remove_aws_regions          = "NA"
   msg_xgemail_white_space_remove_client_ids           = "NA"
 
+  newrelic_account_id                                 = "3452541"
+
   asg_instances_lifecycle_hook_launching = [
     local.asg_delta_delivery_lifecycle_hook_launching,
     local.asg_delta_xdelivery_lifecycle_hook_launching,
