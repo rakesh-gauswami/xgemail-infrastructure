@@ -1,5 +1,5 @@
 #
-# Cookbook Name:: sophos-cloud-fluentd
+# Cookbook Name:: sophos-msg-fluentd
 # Recipe:: configure
 #
 # Copyright 2021, Sophos

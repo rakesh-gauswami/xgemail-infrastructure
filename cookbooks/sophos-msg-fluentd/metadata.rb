@@ -1,4 +1,4 @@
-name             'sophos-cloud-fluentd'
+name             'sophos-msg-fluentd'
 maintainer       'Sophos'
 license          'All rights reserved'
 description      'Installs/Configures Fluentd/TD-Agent'

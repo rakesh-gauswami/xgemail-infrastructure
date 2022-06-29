@@ -14,7 +14,7 @@ instance_type=`echo $INSTANCE_TYPE`
     cd /opt/sophos/xgemail/cookbooks
     chef-client --local-mode -o "recipe[sophos-cloud-xgemail::configure-postfix]"
     echo "################ Installing fluentd ###################"
-    chef-client --local-mode -o "recipe[sophos-cloud-fluentd::install]"
+    chef-client --local-mode -o "recipe[sophos-msg-fluentd::install]"
     echo "################ Fluentd installation is complete ###################"
   elif [[ "$instance_type" == customer-submit ||  "$instance_type" == internet-submit ]]; then
     echo "################ Stage container using postfix image ###################"
