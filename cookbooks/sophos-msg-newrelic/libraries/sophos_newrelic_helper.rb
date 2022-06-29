@@ -1,5 +1,5 @@
 #
-# Cookbook Name:: sophos-cloud-newrelic
+# Cookbook Name:: sophos-msg-newrelic
 # Library:: sophos_newrelic_helper
 #
 # Copyright:: 2022, Sophos 2022, All Rights Reserved.
