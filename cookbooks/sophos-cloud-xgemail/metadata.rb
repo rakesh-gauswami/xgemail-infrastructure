@@ -2,7 +2,7 @@ name             'sophos-cloud-xgemail'
 maintainer       'Sophos'
 license          'All rights reserved'
 description      'Installs/Configures Postfix'
-version          '0.1.1'
+version          '1.0.0'
 
 depends          'sophos-cloud-mount'
 depends          'sophos-cloud-ntpd'
