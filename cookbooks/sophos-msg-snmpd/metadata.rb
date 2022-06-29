@@ -1,4 +1,4 @@
-name "sophos-cloud-snmpd"
+name "sophos-msg-snmpd"
 version "1.0.0"
 
 maintainer "Cloud Devops"
