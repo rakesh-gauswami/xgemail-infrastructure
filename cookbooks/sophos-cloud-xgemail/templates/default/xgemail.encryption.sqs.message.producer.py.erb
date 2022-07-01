@@ -657,8 +657,14 @@ def main():
         message_headers = get_message_headers(plaintext_message)
         metadata = get_metadata(message_headers)
         queue_id = metadata.get_queue_id()
-        #A dict where key is mailbox address and value is the 'accepted' event record.
-        msghistory_events = messagehistory.read_msghistory_accepted_events(queue_id, MSG_HISTORY_EVENT_DIR)
+        #A dict with msghistory_events and policy
+        jilter_context = messagehistory.read_jilter_context(queue_id, MSG_HISTORY_EVENT_DIR)
+        msghistory_events = {}
+        policy = {}
+        if jilter_context is not None and jilter_context.get('msghistory_events') is not None:
+            msghistory_events=jilter_context.get('msghistory_events')
+        if jilter_context is not None and jilter_context.get('policy') is not None:
+            policy = jilter_context.get('policy')
 
         if rfxrecoveryutils.is_reflexion_ip(metadata.get_sender_ip()):
             rfx_submit = True
