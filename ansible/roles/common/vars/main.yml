@@ -197,9 +197,9 @@ aws:
       asg_min_size:                                               [ 0,0,1 ]
       health_check_grace_period:                                  "900"
       instance_size:                                              "t2.small"
+      lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-mf-inbound-xdelivery-Launching-LifeCycleHook"
       stack_number:                                               [ 1,2,3 ]
       zone_index:                                                 [ 0,1,2 ]
-      lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-mf-inbound-xdelivery-Launching-LifeCycleHook"
     mfox:
       asg_min_size:                                               [ 0,0,1 ]
       health_check_grace_period:                                  "600"
@@ -655,6 +655,11 @@ aws:
       template_parameters:
         TagApplication:                                           "xgemail-mail"
         TopicName:                                                "{{sns.xgemail_malware_submissions_labs_sns_topic}}"
+  ssm:
+    white_space_remove_from_header_regions_key: "xgemail.white.space.remove.from.header.aws.regions"
+    white_space_remove_from_header_client_ids_key: "xgemail.white.space.remove.from.header.client.ids"
+    white_space_remove_from_header_regions: "NA"
+    white_space_remove_from_header_client_ids: "NA"
   sqs:
     additional_action_sqs_queue_sns_listener:
       stack_name:                                                 "{{stack.sqs.additional_action_sqs_queue_sns_listener}}"
@@ -1072,6 +1077,7 @@ cron_scale_up:                                                    "0 4 * * 1"
 hopper_public_ip:                                                 "198.144.101.106/32"
 instance_size_elasticsearch:                                      "t2.medium"
 instance_size_bastion:                                            "m5.large"
+newrelic_enabled:                                                 "false"
 spot_price:                                                       "-1"
 weekend_scale_down:                                               "true"
 xgemail_sxl_dbl:                                                  "uri.cal1.sophosxl.com"

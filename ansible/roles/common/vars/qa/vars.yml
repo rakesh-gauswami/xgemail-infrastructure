@@ -12,15 +12,15 @@ aws:
     cd:
       instance_size:                            "t3a.medium"
     cs:
-      instance_size:                            "m4.large"
+      instance_size:                            "t3a.medium"
     cx:
       instance_size:                            "t3a.medium"
     id:
-      instance_size:                            "c4.xlarge"
+      instance_size:                            "t3a.medium"
     is:
-      instance_size:                            "m4.large"
+      instance_size:                            "t3a.medium"
     ix:
-      instance_size:                            "c4.xlarge"
+      instance_size:                            "t3a.medium"
   ec:
     redis:
       xgemail_dqs:
@@ -43,6 +43,11 @@ aws:
       master_instance_number:                   "0"
       snapshot_start_hour:                      "4"
       zone_awareness:                           "true"
+  ssm:
+    white_space_remove_from_header_regions_key: "xgemail.white.space.remove.from.header.aws.regions"
+    white_space_remove_from_header_client_ids_key: "xgemail.white.space.remove.from.header.client.ids"
+    white_space_remove_from_header_regions: "NA"
+    white_space_remove_from_header_client_ids: "NA"
 external_ip_access:
   hopper:
     a:                                                            "64.86.143.221/32"

@@ -1,0 +1,76 @@
+#!/usr/bin/env python
+# Copyright 2022, Sophos Limited. All rights reserved.
+#
+# 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
+# Sophos Limited and Sophos Group.  All other product and company
+# names mentioned are trademarks or registered trademarks of their
+# respective owners.
+
+# this script is used for intial sync of preparing transport file / DynamoDb for cusgtomer/domain/full
+# Default will Full Sync for (Delivery/Submit)
+
+import sys
+sys.path.append("<%= @xgemail_utils_path %>")
+import argparse
+import json
+from awshandler import AwsHandler
+
+AWS_REGION = "<%= @aws_region %>"
+POSTFIX_INSTANCE_NAME = '<%= @postfix_instance_name %>'
+VPC_ID = '<%= @vpc_id %>'
+awshandler = AwsHandler(AWS_REGION)
+
+INITIAL_SYNC_QUEUE_NAME= "{0}-Xgemail_Settings_Update_Queue"
+INITIAL_SYNC_QUEUE_NAME = INITIAL_SYNC_QUEUE_NAME.format(VPC_ID)
+
+def add_to_sqs(sqs_url, sqs_json):
+    return awshandler.add_to_sqs(
+        sqs_url,
+        json.dumps(sqs_json))
+
+# sends purge request sqs messages to sqs
+def send_initial_sync_request_sqs_message(sqs_url,sqs_message_json):
+    try:
+        print("initial request SQS job [{0}]".format(sqs_message_json))
+        add_to_sqs(sqs_url, sqs_message_json)
+
+    except Exception as e:
+        print("Failed in uploading initial sync request SQS job [{0}]".format(e))
+        exit(0)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='initial sync transport entry')
+    parser.add_argument('-t', '--sync_type', metavar='sync_type',choices=["SUBMIT","DELIVERY"],
+                        help="sync_type on mail SUBMIT/DELIVERY", required = True)
+    parser.add_argument('-c', '--customer_id', metavar='customer_id', help='Customer id for which we want to add entry', required = False)
+    parser.add_argument('-d', '--domain', metavar='domain',help="domain for which we want to add  entry", required = False)
+    args = parser.parse_args()
+
+    initialSyncRequest = {}
+    syncEvent={}
+    syncEvent["event"] = "com.sophos.cloud.data.messages.xgemail.DomainMailboxDataSyncEventForS3FlatFile"
+    syncEvent["is_deleted"] = "false"
+    if args.sync_type is None:
+        parser.error("sync_type is required")
+    initialSyncRequest["sync_type"] = args.sync_type
+
+    initialSyncRequest["product_type"] = "Gateway"
+    if ((POSTFIX_INSTANCE_NAME == 'postfix-mfis') or (POSTFIX_INSTANCE_NAME == 'postfix-mfid')):
+        initialSyncRequest["product_type"] = "Mailflow"
+
+    if args.customer_id is not None:
+        initialSyncRequest["customer_id"] = args.customer_id
+
+    if args.domain is not None:
+        initialSyncRequest["domain"] = args.domain
+    syncEvent["data"] = initialSyncRequest
+    try:
+        #initial sync request sqs url
+        sqs_url = awshandler.get_sqs_url(
+            INITIAL_SYNC_QUEUE_NAME
+        )
+        send_initial_sync_request_sqs_message(sqs_url, syncEvent)
+    except Exception as e:
+        print("Unexpected exception during initial sync request [{0}]".format(e))
+
+

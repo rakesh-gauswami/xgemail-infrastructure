@@ -79,7 +79,7 @@ aws:
       instance_size:                            "m5a.large"
     is:
       alarm_scale_in_enabled:                   "false"
-      alarm_scale_out_enabled:                  "true"
+      alarm_scale_out_enabled:                  "false"
       alarm_scale_in_threshold:                 "5000"
       alarm_scale_out_threshold:                "30000"
       as_min_size:                              "6"
@@ -91,10 +91,10 @@ aws:
     ix:
       asg_min_size:                             [1,1,1]
       instance_size:                            "c5a.large"
-    mfis:
-      instance_size:                            "m5a.2xlarge"
     mfid:
       instance_size:                            "m5a.large"
+    mfis:
+      instance_size:                            "m5a.2xlarge"
     mfix:
       instance_size:                            "c5.large"
     mfos:
@@ -153,8 +153,14 @@ aws:
       master_instance_number:                   "3"
       snapshot_start_hour:                      "4"
       zone_awareness:                           "true"
+  ssm:
+    white_space_remove_from_header_regions_key:    "xgemail.white.space.remove.from.header.aws.regions"
+    white_space_remove_from_header_client_ids_key: "xgemail.white.space.remove.from.header.client.ids"
+    white_space_remove_from_header_regions:        "NA"
+    white_space_remove_from_header_client_ids:     "NA"
+newrelic_enabled:                               "true"
 external_ip_access:
   hopper:
-    a:                                                            "64.86.143.220/32"
-    b:                                                            "216.6.116.220/32"
-    c:                                                            "198.144.101.108/32"
+    a:                                          "64.86.143.220/32"
+    b:                                          "216.6.116.220/32"
+    c:                                          "198.144.101.108/32"
