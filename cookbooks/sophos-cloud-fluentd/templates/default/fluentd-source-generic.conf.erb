@@ -3,7 +3,7 @@
   format /^(?<time>[\w]+\s+[\d]+\s[\d:]+[.\d]+)\s+(?<message>.*)/
   time_key time
   keep_time_key true
-  time_format %b %d %H:%M:%S.%L
+  time_format %b %d %H:%M:%S.%N
   path <%= @log_path %>
   pos_file /var/log/td-agent/<%= @log_name %>.pos
   tag raw.<%= @log_name %>.log
