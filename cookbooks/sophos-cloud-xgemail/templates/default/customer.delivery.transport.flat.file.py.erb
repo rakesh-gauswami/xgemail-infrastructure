@@ -46,6 +46,7 @@ logger.addHandler(handler)
 
 logger.info('customer delivery transport updater cron started')
 s3 = boto3.client('s3')
+active_mode=False
 
 # sort custom record so that email will prior to it domain
 def sort_record_key(unsorted_dict):
@@ -117,6 +118,19 @@ def flat_file_rollout_config_exist():
       logger.debug("flat file instance list file not Exist." + trace)
       return False
 
+def compare_transport_files(EXISTING_TRANSPORT,NEW_TRANSPORT):
+    TRANSPORT_FILE_DIFF = NEW_TRANSPORT + '.diff'
+    with open(TRANSPORT_FILE_DIFF, 'w') as diff_file:
+      with open(EXISTING_TRANSPORT) as file1:
+        with open(NEW_TRANSPORT) as file2:
+          diff= set(file1).symmetric_difference(file2)
+            for line in diff:
+              print(line, end='')
+              diff_file.write('{0}\n'.format(line))
+        file1.close()
+      file2.close()
+    diff_file.close()
+
 if flat_file_rollout_config_exist():
   try:
       flat_file_rollout_config = s3.get_object(Bucket=POLICY_BUCKET,Key= INSTANCE_LIST_FILE_NAME)
@@ -125,6 +139,8 @@ if flat_file_rollout_config_exist():
       if not CURRENT_INSTANCE_ID in config['instance_id_enabled']:
           logger.warn('Instance id {0} Not exists in file {1} will Continue the legacy '.format(CURRENT_INSTANCE_ID, INSTANCE_LIST_FILE_NAME))
           sys.exit(0)
+      if config['active_passive_mode'] == 'ACTIVE'
+          active_mode=True
   except Exception as e:
       logger.error("Error loading flat file rollout Instance list file " + e.message)
       sys.exit(0)
@@ -141,7 +157,7 @@ POSTFIX_CONFIG_DIR = subprocess.check_output(
 ).rstrip()
 
 TRANSPORT_FILE = POSTFIX_CONFIG_DIR + '/' + TRANSPORT_FILENAME
-TRANSPORT_FILE_TMP = TRANSPORT_FILE + '.tmp'
+TRANSPORT_FILE_TMP = TRANSPORT_FILE + '.flat'
 
 logger.info('starting to update transport map file [%s.db]', TRANSPORT_FILE)
 
@@ -179,9 +195,11 @@ with open(TRANSPORT_FILE_TMP, 'w') as f:
 
     # Add catch-all to retry any unknown domain
     f.write('* retry: domain is unknown\n')
-
-subprocess.call(['postmap', 'hash:{0}'.format(TRANSPORT_FILE_TMP)])
-os.rename(TRANSPORT_FILE_TMP, TRANSPORT_FILE);
-os.rename(TRANSPORT_FILE_TMP + '.db', TRANSPORT_FILE + '.db');
+if not active_mode:
+    compare_transport_files(TRANSPORT_FILE,TRANSPORT_FILE_TMP);
+if active_mode:
+    subprocess.call(['postmap', 'hash:{0}'.format(TRANSPORT_FILE_TMP)])
+    os.rename(TRANSPORT_FILE_TMP, TRANSPORT_FILE);
+    os.rename(TRANSPORT_FILE_TMP + '.db', TRANSPORT_FILE + '.db');
 
 logger.info('transport map file [%s.db] successfully updated. Time taken [%s]', TRANSPORT_FILE, float(round(time.time() * 1000)) - float(timestamp_start))

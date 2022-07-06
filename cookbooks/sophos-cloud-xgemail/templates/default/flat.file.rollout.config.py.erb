@@ -65,6 +65,8 @@ def get_config():
         Returns the current flat file configuration.
     '''
     config_data = get_current_config(INSTANCE_LIST_FILE_NAME)
+    if config_data['active_passive_mode']:
+      print 'flat file mode actvie/passive : {0}'.format(config_data['active_passive_mode'])
     print 'flat file enabled for these {0} instance ids:'.format(len(config_data['instance_id_enabled']))
     for instance_id in config_data['instance_id_enabled']:
         print '\t{0}'.format(instance_id)
@@ -85,6 +87,20 @@ def add_instance(instance_id):
     upload_to_s3(config, INSTANCE_LIST_FILE_NAME)
 
     print 'Added Instance id {0} in file {1}'.format(instance_id, INSTANCE_LIST_FILE_NAME)
+
+def add_active_passive_mode(mode):
+    '''
+        Adds the instance_id to the list of instances for which we enable flat file.
+        If the instance_id already exists, this method does nothing.
+    '''
+    config = get_current_config(INSTANCE_LIST_FILE_NAME)
+
+    config['active_passive_mode']= mode
+
+    upload_to_s3(config, INSTANCE_LIST_FILE_NAME)
+
+    print 'Mode change to {0} in file {1}'.format(mode, INSTANCE_LIST_FILE_NAME)
+
 
 def remove_instance(instance_id):
     '''
@@ -123,6 +139,8 @@ if __name__ == "__main__":
     flat_file_config_parser.add_argument('--get', action='store_true', help='Get current  configuration')
     flat_file_config_parser.add_argument('--addinstance', help='Add a instance id for which feature should be enabled')
     flat_file_config_parser.add_argument('--removeinstance', help='Removes a instance id from enabled list')
+    flat_file_config_parser.add_argument('--mode',choices=["ACTIVE","PASSIVE"],
+          help='Add Mode ACTIVE/PASSIVE .Default PASSIVE mode')
 
     get_config_from_args = flat_file_config_parser.parse_args()
     if get_config_from_args.get:
@@ -131,6 +149,8 @@ if __name__ == "__main__":
         add_instance(get_config_from_args.addinstance)
     elif get_config_from_args.removeinstance:
         remove_instance(get_config_from_args.removeinstance)
+    elif get_config_from_args.activemode:
+        add_active_passive_mode(get_config_from_args.activemode)
     else:
         flat_file_config_parser.print_help()
 
