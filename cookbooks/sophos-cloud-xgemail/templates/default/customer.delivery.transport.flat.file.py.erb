@@ -124,12 +124,8 @@ def compare_transport_files(EXISTING_TRANSPORT,NEW_TRANSPORT):
       with open(EXISTING_TRANSPORT) as file1:
         with open(NEW_TRANSPORT) as file2:
           diff= set(file1).symmetric_difference(file2)
-            for line in diff:
-              print(line, end='')
-              diff_file.write('{0}\n'.format(line))
-        file1.close()
-      file2.close()
-    diff_file.close()
+          for line in diff:
+            diff_file.write('{0}\n'.format(line))
 
 if flat_file_rollout_config_exist():
   try:
