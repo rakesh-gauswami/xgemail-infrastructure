@@ -19,6 +19,7 @@ import os
 import logging
 import shutil
 import smtplib
+import socket
 from smtplib import SMTPDataError
 from smtplib import SMTPException
 from smtplib import SMTPSenderRefused
@@ -30,6 +31,7 @@ ERROR_ENTRIES_PATH = '/tmp/cidr.probe.tool.errors.txt'
 PROBE_RESPONSE_FILE = '/tmp/cidr.probe.response.json'
 
 sys.tracebacklimit = 0
+passphrase = ""
 
 logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
@@ -55,11 +57,16 @@ def get_mail_pic_url(args):
 
 
 def get_passphrase(args):
-    mail_pic_api_auth_key = 'xgemail-{0}-mail'.format(args.region)
-    connections_bucket = 'cloud-{0}-connections'.format(args.env.lower())
-    s3 = boto3.client('s3')
-    passphrase = s3.get_object(Bucket = connections_bucket, Key = mail_pic_api_auth_key)
-    return base64.b64encode('mail:' + passphrase['Body'].read())
+    global passphrase
+    if passphrase == "":
+        mail_pic_api_auth_key = 'xgemail-{0}-mail'.format(args.region)
+        connections_bucket = 'cloud-{0}-connections'.format(args.env.lower())
+        s3 = boto3.client('s3')
+        secret = s3.get_object(Bucket = connections_bucket, Key = mail_pic_api_auth_key)
+        passphrase = base64.b64encode('mail:' + secret['Body'].read())
+        return passphrase
+    else:
+        return passphrase
 
 def get_domain_and_status_from_file(args):
     domain_and_iptype_dict = {}
@@ -93,7 +100,7 @@ def update_delivery_ip_type(domain_and_iptype_dict,args):
     }
     failed_result = []
     for domain_name, ip_type in domain_and_iptype_dict.items():
-        logging.debug("Updating delivery ip type to {0} for domain {0}".format(ip_type, domain_name))
+        logging.info("Updating delivery ip type to {0} for domain {1}".format(ip_type, domain_name))
         url = mail_pic_api_url + '/domains/{0}/{1}'.format(domain_name,ip_type)
         urllib3.disable_warnings(urllib3.exceptions.SecurityWarning)
         response = requests.post(
@@ -107,7 +114,6 @@ def update_delivery_ip_type(domain_and_iptype_dict,args):
     if len(failed_result) > 0:
         logging.info("The list of domains that are not successfully updated can be found in /tmp/cidr.probe.tool.errors.txt")
         write_error_file(failed_result)
-    return response
 
 def write_error_file(failed_result):
     json_string = json.dumps(failed_result, indent=4)
@@ -115,7 +121,7 @@ def write_error_file(failed_result):
         write_file.write(json_string)
 
 def perform_smtp_probe(mta_host, mta_port,from_addr, to_addr):
-    server = smtplib.SMTP(mta_host, mta_port)
+    server = smtplib.SMTP(mta_host, mta_port, socket.getfqdn(), 5)
     server.ehlo_or_helo_if_needed()
     esmtp_opts = []
     rcpt_options=[]
@@ -220,6 +226,10 @@ def get_domains(last_domain, no_of_domains,args):
 
         if 'addresses' not in get_address_response.json():
             continue
+        
+        if len(get_address_response.json()['addresses']) == 0:
+            logging.info('No address found in response {0}'.format(get_address_response.json()))
+            continue
 
         to_addr = get_address_response.json()['addresses'][0]
         destination = domain_detail_dict[domain]['server']
@@ -257,11 +267,7 @@ if __name__ == '__main__':
             logging.info("Reading data from json file and creating domainName and deliveryIpType dictionary...")
             domain_and_iptype_dict = get_domain_and_status_from_file(parsed_args)
             logging.info("Sending request to update deliveryIpType for collected domains...")
-            result = update_delivery_ip_type(domain_and_iptype_dict, parsed_args)
-            if result is None or not result:
-                arg_parser.print_help(sys.stderr)
-                logging.info("Process Completed..!!")
-                sys.exit(1)
+            update_delivery_ip_type(domain_and_iptype_dict, parsed_args)
         elif perform_probe:
             logging.info("Collecting domains..!!")
             get_domains(last_domain, no_of_domains, parsed_args)
