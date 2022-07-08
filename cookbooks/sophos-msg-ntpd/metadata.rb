@@ -1,0 +1,7 @@
+name              'sophos-msg-ntpd'
+maintainer        'Sophos Email'
+maintainer_email  'SophosMailOps@sophos.com'
+license           'All Rights Reserved'
+description       'Installs/Configures NTP'
+long_description  'Installs/Configures NTP'
+version           '1.0.0'
