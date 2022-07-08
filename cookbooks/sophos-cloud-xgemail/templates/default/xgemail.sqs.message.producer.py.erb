@@ -690,7 +690,7 @@ def build_recipient_map_from_msghistory_enabled(queue_id, recipients, msghistory
     return recipient_map
 
 def update_policy_context(message_context, recipient, policy):
-    if policy is None or recipient is None or policy.get(recipient) is None:
+    if policy is None or recipient is None or policy.get(recipient.lower()) is None:
         return message_context
     message_context.update({"policy":policy.get(recipient.lower())})
     return message_context
