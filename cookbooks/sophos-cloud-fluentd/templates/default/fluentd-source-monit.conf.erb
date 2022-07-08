@@ -1,7 +1,7 @@
 <source>
   @type tail
   format /^(?<time>(?:\S+\s+){2}\S+) (?<host>[^ ]+) (?<process>[^:]+): (?<message>.*)/
-  time_format %b %d %H:%M:%S
+  time_format %b %d %H:%M:%S.%N
   path /var/log/monit
   tag sophos.xgemail.<%= @application_name %>.monit
   pos_file /var/log/td-agent/monit.pos
