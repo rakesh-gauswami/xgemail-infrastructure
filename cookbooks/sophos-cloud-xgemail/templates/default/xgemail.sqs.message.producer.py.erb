@@ -692,8 +692,9 @@ def build_recipient_map_from_msghistory_enabled(queue_id, recipients, msghistory
 def update_policy_context(message_context, recipient, policy):
     if policy is None or recipient is None or policy.get(recipient) is None:
         return message_context
-    message_context.update({"policy":policy.get(recipient)})
+    message_context.update({"policy":policy.get(recipient.lower())})
     return message_context
+
 # Mail flow goes through multi_policy_flow if multi-policy flag is enabled
 # but if there are error conditions such as file read error etc, the mail
 # fall back to base_policy_flow.
