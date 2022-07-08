@@ -217,8 +217,8 @@ ruby_block 'edit rsyslog.conf' do
     file.search_file_replace_line(
       '^\$ModLoad imjournal \# provides access to the systemd journal',
       '#$ModLoad imjournal # provides access to the systemd journal')
-    file.insert_line_after_match(
-      '^\$SystemLogRateLimitBurst',
+    file.search_file_replace_line(
+      '^\$ActionFileDefaultTemplate RSYSLOG_TraditionalFileFormat',
       '#$template CustomFileFormat,"%timegenerated:1:3:date-rfc3164% %$day% %timegenerated:12:23:date-rfc3339% %HOSTNAME% %syslogtag%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n"
        $ActionFileDefaultTemplate CustomFileFormat')
     file.write_file
