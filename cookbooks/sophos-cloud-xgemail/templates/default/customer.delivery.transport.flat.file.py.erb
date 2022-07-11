@@ -132,10 +132,10 @@ if flat_file_rollout_config_exist():
       flat_file_rollout_config = s3.get_object(Bucket=POLICY_BUCKET,Key= INSTANCE_LIST_FILE_NAME)
       enable_instance_data= flat_file_rollout_config['Body'].read()
       config = json.loads(enable_instance_data)
-      if not CURRENT_INSTANCE_ID in config['instance_id_enabled']:
+      if CURRENT_INSTANCE_ID is not None and CURRENT_INSTANCE_ID in config['instance_id_enabled'].keys():
           logger.warn('Instance id {0} Not exists in file {1} will Continue the legacy '.format(CURRENT_INSTANCE_ID, INSTANCE_LIST_FILE_NAME))
           sys.exit(0)
-      if config['active_passive_mode'] == 'ACTIVE'
+      if config['instance_id_enabled'][CURRENT_INSTANCE_ID] == 'ACTIVE'
           active_mode=True
   except Exception as e:
       logger.error("Error loading flat file rollout Instance list file " + e.message)
