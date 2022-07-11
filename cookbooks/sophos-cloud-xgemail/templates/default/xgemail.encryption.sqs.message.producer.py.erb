@@ -673,7 +673,7 @@ def main():
         policy = None
         if jilter_context is not None and jilter_context.get('msghistory_events') is not None:
             msghistory_events=jilter_context.get('msghistory_events')
-        if jilter_context is not None and jilter_context.get('policy') is not None and len(policy) > 0:
+        if jilter_context is not None and jilter_context.get('policy') is not None and len(jilter_context.get('policy')) > 0:
             policy = jilter_context.get('policy')
 
         if rfxrecoveryutils.is_reflexion_ip(metadata.get_sender_ip()):
