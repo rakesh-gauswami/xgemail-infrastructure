@@ -23,6 +23,8 @@ set -o pipefail # Pipeline status comes from last error, not last command.
 # Run in specified directory.
 cd "$(/usr/bin/dirname "$0")"
 
+echo "Running configure_target.sh script from $(pwd)"
+
 # Remember where we are.
 INSTALL_DIR="$(pwd)"
 COMMON_DIR="${INSTALL_DIR}/common"
@@ -116,6 +118,7 @@ logtime -- /usr/bin/aws configure set default.s3.signature_version s3v4
 
 
 install_chef_repo() {
+    echo "Installing Chef Repo"
     local REGION="us-east-1"
     local 3RD_PARTY_REPO="central-3rdparty"
     local CHEF_REPO_HASH=605eeda
@@ -159,6 +162,7 @@ EOF
 }
 
 install_cookbooks() {
+    echo "Installing Chef Cookbooks"
     chown -R root:root /tmp/cookbooks
     chmod -R go-w /tmp/cookbooks
     rm -rf /var/chef/chef-repo/cookbooks
@@ -166,6 +170,7 @@ install_cookbooks() {
 }
 
 create_ohai_hints() {
+    echo "Creating ohai hints"
     # Tell Chef to run the Ohai EC2 plugin.
     # This populates the node object with EC2 metadata, e.g.:
     #   node['ec2']['instance_id']
