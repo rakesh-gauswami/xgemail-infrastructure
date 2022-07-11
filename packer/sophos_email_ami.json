@@ -161,11 +161,11 @@
     },
     {
       "type": "shell-local",
-      "command": "tar cf cookbooks.tar.gz ../cookbooks"
+      "command": "tar czf cookbooks.tar.gz ../cookbooks"
     },
     {
       "type": "shell-local",
-      "command": "tar cf common_utils.tar.gz ../utils/common"
+      "command": "tar -C ../utils/ -czf common_utils.tar.gz common"
     },
     {
       "type": "file",
@@ -179,7 +179,7 @@
       "type": "shell",
       "remote_path": "/tmp/add_volumes.sh",
       "scripts": [
-        "scripts/add_volumes.sh"
+        "./scripts/add_volumes.sh"
       ],
       "execute_command": "{{ .Vars }} exec sudo -E -S bash '{{ .Path }}'"
     },
@@ -187,7 +187,7 @@
       "type": "shell",
       "remote_path": "/tmp/configure-target.sh",
       "scripts": [
-        "scripts/configure-target.sh"
+        "./scripts/configure-target.sh"
       ],
       "execute_command": "{{ .Vars }} exec sudo -E -S bash '{{ .Path }} {{user `chef_version`}}'",
       "pause_after": "1s"
