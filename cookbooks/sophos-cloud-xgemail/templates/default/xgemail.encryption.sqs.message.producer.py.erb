@@ -557,9 +557,9 @@ def get_s3_prefix_path(queue_id, mailbox_id, domain):
     return s3_file_path
 
 def update_policy_context(message_context, recipient, policy):
-    if policy is None or len(policy) == 0 or recipient is None or policy.get(recipient[0].lower()) is None:
+    if policy is None or recipient is None or policy.get(recipient.lower()) is None:
         return message_context
-    message_context.update({"policy":policy.get(recipient[0].lower())})
+    message_context.update({"policy":policy.get(recipient.lower())})
     return message_context
 
 
@@ -670,10 +670,10 @@ def main():
         #A dict with msghistory_events and policy
         jilter_context = messagehistory.read_jilter_context(queue_id, MSG_HISTORY_EVENT_DIR)
         msghistory_events = {}
-        policy = {}
+        policy = None
         if jilter_context is not None and jilter_context.get('msghistory_events') is not None:
             msghistory_events=jilter_context.get('msghistory_events')
-        if jilter_context is not None and jilter_context.get('policy') is not None:
+        if jilter_context is not None and jilter_context.get('policy') is not None and len(policy) > 0:
             policy = jilter_context.get('policy')
 
         if rfxrecoveryutils.is_reflexion_ip(metadata.get_sender_ip()):
