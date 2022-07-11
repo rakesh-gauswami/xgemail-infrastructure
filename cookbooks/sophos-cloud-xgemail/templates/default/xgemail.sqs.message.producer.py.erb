@@ -903,7 +903,7 @@ def main():
         #A dict with msghistory_events and policy
         jilter_context = messagehistory.read_jilter_context(queue_id, MSG_HISTORY_EVENT_DIR)
         msghistory_events = None
-        policy = {}
+        policy = None
         if jilter_context is not None and jilter_context.get('msghistory_events') is not None:
             msghistory_events=jilter_context.get('msghistory_events')
         if jilter_context is not None and jilter_context.get('policy') is not None and len(policy) > 0:
