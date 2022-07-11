@@ -743,7 +743,7 @@ def multi_policy_flow(metadata, direction, domain, sender, message, msghistory_e
             message_context = update_msghistory_event_and_get_message_context(msghistory_events, new_s3_file_path, this_policy_metadata, direction, recipient, sender)
 
         if policy is not None:
-            message_context = update_policy_context(message_context, recipient, policy)
+            message_context = update_policy_context(message_context, recipient[0], policy)
         # create a sqs message with policy_id
         sqs_message = SqsMessage(
             messageformatter.SCHEMA_VERSION,

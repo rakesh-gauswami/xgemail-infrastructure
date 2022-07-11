@@ -557,9 +557,9 @@ def get_s3_prefix_path(queue_id, mailbox_id, domain):
     return s3_file_path
 
 def update_policy_context(message_context, recipient, policy):
-    if policy is None or recipient is None or policy.get(recipient.lower()) is None:
+    if policy is None or len(policy) == 0 or recipient is None or policy.get(recipient[0].lower()) is None:
         return message_context
-    message_context.update({"policy":policy.get(recipient.lower())})
+    message_context.update({"policy":policy.get(recipient[0].lower())})
     return message_context
 
 
@@ -591,7 +591,7 @@ def base_policy_flow(metadata, direction, is_reply, domain, sender, message, rfx
     if msghistory_events is not None:
       message_context = update_msghistory_event_and_get_message_context(msghistory_events, s3_file_path, metadata, direction, metadata.get_recipients(), sender, upload_msg_history, is_mh_parent)
 
-    #Check is policy is not empty and number of recipient is 1 only for context
+    #Check is policy is not empty and number of recipient is more than 1 for context
     if policy is not None and len(metadata.get_recipients()) >= 1:
         message_context = update_policy_context(message_context, metadata.get_recipients()[0], policy)
 
