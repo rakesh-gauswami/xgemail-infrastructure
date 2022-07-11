@@ -591,7 +591,7 @@ def base_policy_flow(metadata, direction, is_reply, domain, sender, message, rfx
     if msghistory_events is not None:
       message_context = update_msghistory_event_and_get_message_context(msghistory_events, s3_file_path, metadata, direction, metadata.get_recipients(), sender, upload_msg_history, is_mh_parent)
 
-    #Check is policy is not empty and number of recipient is 1 only for context
+    #Check is policy is not empty and number of recipient is more than 1 for context
     if policy is not None and len(metadata.get_recipients()) >= 1:
         message_context = update_policy_context(message_context, metadata.get_recipients()[0], policy)
 
@@ -670,10 +670,10 @@ def main():
         #A dict with msghistory_events and policy
         jilter_context = messagehistory.read_jilter_context(queue_id, MSG_HISTORY_EVENT_DIR)
         msghistory_events = {}
-        policy = {}
+        policy = None
         if jilter_context is not None and jilter_context.get('msghistory_events') is not None:
             msghistory_events=jilter_context.get('msghistory_events')
-        if jilter_context is not None and jilter_context.get('policy') is not None:
+        if jilter_context is not None and jilter_context.get('policy') is not None and len(jilter_context.get('policy')) > 0:
             policy = jilter_context.get('policy')
 
         if rfxrecoveryutils.is_reflexion_ip(metadata.get_sender_ip()):
