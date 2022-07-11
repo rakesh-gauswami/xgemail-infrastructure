@@ -47,6 +47,7 @@ def get_parsed_args(parser):
     parser.add_argument('--last_domain', help="If this parameter is specified, fetches domains that come after the specified domain", required = False, default="")
     parser.add_argument('--no_of_domains', type=int, default=10, help="Number of domains")
     parser.add_argument('--file', help = 'Pass a json file ', required = False)
+    parser.add_argument('--helo_name', help = 'The server name to be used in helo/ehlo command', required=False, default="")
 
     args = parser.parse_args()
     return args
@@ -120,8 +121,8 @@ def write_error_file(failed_result):
     with open(ERROR_ENTRIES_PATH, 'w') as write_file:
         write_file.write(json_string)
 
-def perform_smtp_probe(mta_host, mta_port,from_addr, to_addr):
-    server = smtplib.SMTP(mta_host, mta_port, socket.getfqdn(), 5)
+def perform_smtp_probe(mta_host, mta_port,from_addr, to_addr, ehlo_name):
+    server = smtplib.SMTP(mta_host, mta_port, ehlo_name, 5)
     server.ehlo_or_helo_if_needed()
     esmtp_opts = []
     rcpt_options=[]
@@ -152,6 +153,9 @@ def build_probe_error_record(domain, error_response):
     return probe
 
 def get_domains(last_domain, no_of_domains,args):
+    if not args.helo_name:
+        logging.info("Aborting... please use --helo_name")
+        return None
     mail_pic_api_url = get_mail_pic_url(args)
     headers = {
         'Authorization': 'Basic ' + get_passphrase(args),
@@ -242,7 +246,7 @@ def get_domains(last_domain, no_of_domains,args):
 
         try:
             logging.debug("Domain [{}] Address [{}] Destination [{}] Port [{}]".format(domain, to_addr, destination, port))
-            (code, resp, cmd) = perform_smtp_probe(destination, port, MAIL_FROM, to_addr)
+            (code, resp, cmd) = perform_smtp_probe(destination, port, MAIL_FROM, to_addr, args.helo_name)
             logging.debug("Domain [{}] Code [{}] Response [{}]".format('devtest.jpsbim.com', code, resp))
             probe['smtp_command'] = cmd
             probe['smtp_response'] = resp
