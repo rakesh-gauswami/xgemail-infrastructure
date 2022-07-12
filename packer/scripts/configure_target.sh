@@ -138,7 +138,7 @@ install_chef_repo() {
     local CHEF_REPO_TGZ=chef-chef-repo-${CHEF_REPO_HASH}.tar.gz
     local CHEF_RPM_TGZ="chef-${CHEF_VERSION}.tar.gz"
 
-    /usr/bin/aws --region ${REGION} s3 cp "s3://${THIRD_PARTY_REPO}/chef/${CHEF_REPO_TGZ} ${CHEF_REPO_TGZ}"
+    /usr/bin/aws --region ${REGION} s3 cp s3://${THIRD_PARTY_REPO}/chef/${CHEF_REPO_TGZ} ${CHEF_REPO_TGZ}
     /bin/tar xzvf ${CHEF_REPO_TGZ}
     /bin/mkdir -p /var/chef/chef-repo/.chef
     /bin/cp -r chef-chef-repo-${CHEF_REPO_HASH}/* /var/chef/chef-repo
@@ -147,7 +147,7 @@ install_chef_repo() {
 
     cd /var/chef
 
-    /usr/bin/aws --region ${REGION} s3 cp "s3://${THIRD_PARTY_REPO}/chef/${CHEF_RPM_TGZ}" "${CHEF_RPM_TGZ}"
+    /usr/bin/aws --region ${REGION} s3 cp s3://${THIRD_PARTY_REPO}/chef/${CHEF_RPM_TGZ} ${CHEF_RPM_TGZ}
 
     /bin/tar -xzvf "${CHEF_RPM_TGZ}"
     /bin/rm -rfv "${CHEF_RPM_TGZ}"
