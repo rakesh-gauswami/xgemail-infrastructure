@@ -75,7 +75,8 @@ def add_instance(instance_id,mode):
         If the instance_id already exists, this method does nothing.
     '''
     config = get_current_config(INSTANCE_LIST_FILE_NAME)
-    config['instance_id_enabled'][instance_id]= mode
+    if config and config['instance_id_enabled']
+        config['instance_id_enabled'][instance_id]= mode
 
     upload_to_s3(config, INSTANCE_LIST_FILE_NAME)
     print 'Added Instance id {0} in file {1}'.format(instance_id, INSTANCE_LIST_FILE_NAME)
@@ -86,14 +87,13 @@ def remove_instance(instance_id):
         If the instance_id already exists, this method does nothing.
     '''
     config = get_current_config(INSTANCE_LIST_FILE_NAME)
-    if instance_id is not None and instance_id in config['instance_id_enabled'].keys():
+    if config and config['instance_id_enabled'] and instance_id is not None and instance_id in config['instance_id_enabled'].keys():
         del config['instance_id_enabled'][instance_id]
+        upload_to_s3(config, INSTANCE_LIST_FILE_NAME)
+        print 'removed Instance id {0} from file {1}'.format(instance_id, INSTANCE_LIST_FILE_NAME)
     else:
         print("Instance id {0} not exist".format(instance_id))
         return
-    upload_to_s3(config, INSTANCE_LIST_FILE_NAME)
-
-    print 'removed Instance id {0} from file {1}'.format(instance_id, INSTANCE_LIST_FILE_NAME)
 
 def get_current_config(config_location):
     '''
