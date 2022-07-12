@@ -111,11 +111,17 @@ logtime -- /usr/bin/yum install -y -t nc
 # Install lnav for amzn2.
 logtime -- /usr/bin/yum install -y -t lnav
 
-# Install python boto3 library.
-logtime -- pip install boto3==1.14.63
+# Installing iptables startup scripts to use in multi-ip assignment with NAT rules
+logtime -- /usr/bin/yum install -y -t iptables-services
+
+# Install pip for amzn2.
+logtime -- /usr/bin/yum install -y -t python-pip
 
 # Downgrade pip to 9.0.3
 logtime -- pip install pip==9.0.3
+
+# Install python boto3 library.
+logtime -- pip install boto3==1.14.63
 
 # Install specific python-daemon module for cfn-hup to work
 logtime -- pip install "python-daemon>=1.5.2,<2.0"
