@@ -44,7 +44,7 @@ formatter = logging.Formatter(
 handler.formatter = formatter
 logger.addHandler(handler)
 
-logger.info('customer delivery transport updater cron started')
+logger.info('flat file customer delivery transport updater cron started')
 s3 = boto3.client('s3')
 active_mode=False
 
@@ -120,6 +120,7 @@ def flat_file_rollout_config_exist():
 
 def compare_transport_files(EXISTING_TRANSPORT,NEW_TRANSPORT):
     TRANSPORT_FILE_DIFF = NEW_TRANSPORT + '.diff'
+    logger.info('PASSIVE MODE flat file diff will written in file [%s]', TRANSPORT_FILE_DIFF)
     with open(TRANSPORT_FILE_DIFF, 'w') as diff_file:
       with open(EXISTING_TRANSPORT) as file1:
         with open(NEW_TRANSPORT) as file2:
@@ -133,8 +134,8 @@ if flat_file_rollout_config_exist():
       enable_instance_data= flat_file_rollout_config['Body'].read()
       config = json.loads(enable_instance_data)
       if config and config['instance_id_enabled'] and CURRENT_INSTANCE_ID is not None and CURRENT_INSTANCE_ID in config['instance_id_enabled'].keys():
-          logger.warn('Instance id {0} exists in file {1} .flat file transport Execution'.format(CURRENT_INSTANCE_ID, INSTANCE_LIST_FILE_NAME))
-          if  CURRENT_INSTANCE_ID in config['instance_id_enabled'] and config['instance_id_enabled'][instance_id]=='ACTIVE':
+          logger.info('Instance id {0} exists in file.flat file transport Execution'.format(CURRENT_INSTANCE_ID))
+          if CURRENT_INSTANCE_ID in config['instance_id_enabled'] and config['instance_id_enabled'][CURRENT_INSTANCE_ID]=='ACTIVE':
               active_mode=True
       else:
           logger.warn('Instance id {0} Not exists in file {1} will Continue the legacy '.format(CURRENT_INSTANCE_ID, INSTANCE_LIST_FILE_NAME))
@@ -143,7 +144,7 @@ if flat_file_rollout_config_exist():
       logger.error("Error loading flat file rollout Instance list file " + e.message)
       sys.exit(0)
 else:
-    logger.info("flat file rollout Config not exist, exit from cron")
+    logger.info("flat file rollout Config not exist, exit from flat file cron")
     sys.exit(0)
 
 timestamp_start=time.time() * 1000
@@ -157,7 +158,7 @@ POSTFIX_CONFIG_DIR = subprocess.check_output(
 TRANSPORT_FILE = POSTFIX_CONFIG_DIR + '/' + TRANSPORT_FILENAME
 TRANSPORT_FILE_TMP = TRANSPORT_FILE + '.flat'
 
-logger.info('starting to update transport map file [%s.db]', TRANSPORT_FILE)
+logger.info('starting to update transport map file [%s.db]', TRANSPORT_FILE_TMP)
 
 with open(TRANSPORT_FILE_TMP, 'w') as f:
     if ((POSTFIX_INSTANCE_NAME == 'postfix-cd') or (POSTFIX_INSTANCE_NAME == 'postfix-cx')):
@@ -199,5 +200,4 @@ if active_mode:
     subprocess.call(['postmap', 'hash:{0}'.format(TRANSPORT_FILE_TMP)])
     os.rename(TRANSPORT_FILE_TMP, TRANSPORT_FILE);
     os.rename(TRANSPORT_FILE_TMP + '.db', TRANSPORT_FILE + '.db');
-
-logger.info('transport map file [%s.db] successfully updated. Time taken [%s]', TRANSPORT_FILE, float(round(time.time() * 1000)) - float(timestamp_start))
+    logger.info('transport map file [%s.db] successfully updated. Time taken [%s]', TRANSPORT_FILE, float(round(time.time() * 1000)) - float(timestamp_start))

@@ -75,8 +75,7 @@ def add_instance(instance_id,mode):
         If the instance_id already exists, this method does nothing.
     '''
     config = get_current_config(INSTANCE_LIST_FILE_NAME)
-    if config and config['instance_id_enabled']
-        config['instance_id_enabled'][instance_id]= mode
+    config['instance_id_enabled'][instance_id]= mode
 
     upload_to_s3(config, INSTANCE_LIST_FILE_NAME)
     print 'Added Instance id {0} in file {1}'.format(instance_id, INSTANCE_LIST_FILE_NAME)
