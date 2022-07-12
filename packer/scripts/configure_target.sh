@@ -63,7 +63,11 @@ if [ "$PS1" ]; then
 fi
 EOF
 
+cat "${SOPHOS_PROFILE}"
+echo "$PATH"
+
 # Update the SSM agent environment.
+/bin/mkdir -p /etc/init
 SSM_AGENT_CONF=/etc/init/amazon-ssm-agent.conf
 SSM_AGENT_CONF_TEMP=/tmp/amazon-ssm-agent.conf.$$
 awk '
@@ -97,6 +101,12 @@ yum update -y -t aws-amitools-ec2
 # Install awslogs for mirroring log files to AWS CloudWatch.
 logtime -- /usr/bin/yum install -y -t awslogs
 
+# Install nc for amzn2.
+logtime -- /usr/bin/yum install -y -t nc
+
+# Install lnav for amzn2.
+logtime -- /usr/bin/yum install -y -t lnav
+
 # Install python boto3 library.
 logtime -- /usr/bin/pip install boto3==1.14.63
 
@@ -105,20 +115,14 @@ amazon-linux-extras install epel -y
 yum-config-manager --enable epel
 
 # Downgrade pip to 9.0.3
-pip install pip==9.0.3
+logtime -- pip install pip==9.0.3
 
 # Install specific python-daemon module for cfn-hup to work
-pip install "python-daemon>=1.5.2,<2.0"
-
-# Install nc for amzn2.
-yum install -y -t nc
-# Install lnav for amzn2.
-yum install -y -t lnav
+logtime -- pip install "python-daemon>=1.5.2,<2.0"
 
 # Configure S3 to enable KMS/SSE requests.
 # Do this after installing boto3 as a quick compatibility test.
 logtime -- /usr/bin/aws configure set default.s3.signature_version s3v4
-
 
 install_chef_repo() {
     echo "Installing Chef Repo"
