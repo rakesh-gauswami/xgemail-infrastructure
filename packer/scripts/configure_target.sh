@@ -29,6 +29,9 @@ echo "Running configure_target.sh script from $(pwd)"
 INSTALL_DIR="$(pwd)"
 COMMON_DIR="${INSTALL_DIR}/common"
 
+# Unpack common_utils
+/bin/tar xzvf common_utils.tar.gz .
+
 # Load common bash functions.
 source "${COMMON_DIR}/sophos_common.sh"
 
