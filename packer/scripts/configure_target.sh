@@ -178,10 +178,10 @@ EOF
 
 install_cookbooks() {
     echo "Installing Chef Cookbooks"
+    /bin/tar xzvf /tmp/cookbooks.tar.gz /tmp/
     chown -R root:root /tmp/cookbooks
     chmod -R go-w /tmp/cookbooks
     rm -rf /var/chef/chef-repo/cookbooks
-    /bin/tar xzvf /tmp/cookbooks.tar.gz /tmp/
     mv -v /tmp/cookbooks /var/chef/chef-repo/
 }
 
