@@ -170,18 +170,14 @@
     {
       "type": "shell",
       "remote_path": "/tmp/add_volumes.sh",
-      "scripts": [
-        "{{ template_dir }}/scripts/add_volumes.sh"
-      ],
+      "script": "{{ template_dir }}/scripts/add_volumes.sh",
       "execute_command": "{{ .Vars }} exec sudo -E -S bash '{{ .Path }}'"
     },
     {
       "type": "shell",
       "remote_path": "/tmp/configure_target.sh",
-      "scripts": [
-        "{{ template_dir }}/scripts/configure_target.sh"
-      ],
-      "execute_command": "{{ .Vars }} exec sudo -E -S bash '{{ .Path }} {{user `chef_version`}}'",
+      "script": "{{ template_dir }}/scripts/configure_target.sh",
+      "execute_command": "{{ .Vars }} exec sudo -E -S bash '{{ .Path }}'",
       "pause_after": "1s"
     },
     {
