@@ -30,7 +30,7 @@ INSTALL_DIR="$(pwd)"
 COMMON_DIR="${INSTALL_DIR}/common"
 
 # Unpack common_utils
-/bin/tar xzvf common_utils.tar.gz
+/bin/tar xvzf common_utils.tar.gz
 
 # Load common bash functions.
 source "${COMMON_DIR}/sophos_common.sh"
@@ -178,7 +178,7 @@ EOF
 
 install_cookbooks() {
     echo "Installing Chef Cookbooks"
-    /bin/tar xzvf /tmp/cookbooks.tar.gz /tmp/
+    /bin/tar xvzf /tmp/cookbooks.tar.gz -C /tmp/
     chown -R root:root /tmp/cookbooks
     chmod -R go-w /tmp/cookbooks
     rm -rf /var/chef/chef-repo/cookbooks
