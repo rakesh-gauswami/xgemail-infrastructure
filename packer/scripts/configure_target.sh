@@ -63,7 +63,7 @@ if [ "$PS1" ]; then
 fi
 EOF
 
-source "${SOPHOS_PROFILE}"
+echo "${SOPHOS_PROFILE}"
 echo "$PATH"
 
 # Update the SSM agent environment.
