@@ -38,7 +38,7 @@ onexit() {
 }
 trap onexit EXIT
 
-CHEF_VERSION="${1}"
+CHEF_VERSION="12.3.0"
 
 # Create directory for sophos utilities.
 SOPHOS_BIN=/opt/sophos/bin
