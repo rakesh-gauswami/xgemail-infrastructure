@@ -1,4 +1,4 @@
-name              'sophos-msg-ntpd'
+name              'sophos-cloud-ntpd'
 maintainer        'Sophos Email'
 maintainer_email  'SophosMailOps@sophos.com'
 license           'All Rights Reserved'
