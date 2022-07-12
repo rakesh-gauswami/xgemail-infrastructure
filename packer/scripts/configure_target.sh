@@ -47,6 +47,9 @@ CHEF_VERSION="12.3.0"
 SOPHOS_BIN=/opt/sophos/bin
 /bin/mkdir -p "${SOPHOS_BIN}"
 
+# Install common utilities.
+/bin/cp -r "${COMMON_DIR}"/* "${SOPHOS_BIN}"
+
 # Update the common profile.
 SOPHOS_PROFILE=/etc/profile.d/sophos.sh
 cat <<'EOF' >"${SOPHOS_PROFILE}"
@@ -66,69 +69,70 @@ EOF
 echo "${SOPHOS_PROFILE}"
 echo "$PATH"
 
-# Update the SSM agent environment.
-/bin/mkdir -p /etc/init
-SSM_AGENT_CONF=/etc/init/amazon-ssm-agent.conf
-SSM_AGENT_CONF_TEMP=/tmp/amazon-ssm-agent.conf.$$
-awk '
-    $1 == "exec" { print "env PATH=/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/sbin:/sbin:/bin:/opt/sophos/bin" }
-                 { print }
-' "$SSM_AGENT_CONF" > "$SSM_AGENT_CONF_TEMP" && mv "$SSM_AGENT_CONF_TEMP" "$SSM_AGENT_CONF"
+install_software_packages() {
+    # Install latest kernel.
+    # Requires /proc and /dev be mounted inside this chroot jail, or you'll
+    # get a "grubby fatal error unable to find a suitable template" message
+    # and /etc/grub.conf will be left unchanged, so instances will continue
+    # to boot with the old kernel version.
+    logtime -- /usr/bin/yum update -y -t -v kernel
 
-# Install common utilities.
-/bin/cp -r "${COMMON_DIR}"/* "${SOPHOS_BIN}"
+    # Install all security updates.
+    logtime -- /usr/bin/yum update -y -t --security
 
-# Install latest kernel.
-# Requires /proc and /dev be mounted inside this chroot jail, or you'll
-# get a "grubby fatal error unable to find a suitable template" message
-# and /etc/grub.conf will be left unchanged, so instances will continue
-# to boot with the old kernel version.
-logtime -- /usr/bin/yum update -y -t -v kernel
+    # Install CloudFormation support.
+    logtime -- /usr/bin/yum update -y -t aws-cfn-bootstrap
 
-# Install all security updates.
-logtime -- /usr/bin/yum update -y -t --security
+    # Update aws-amitools-ec2 .
+    # It provides the ec2-metadata program.
+    yum update -y -t aws-amitools-ec2
 
-# Install CloudFormation support.
-logtime -- /usr/bin/yum update -y -t aws-cfn-bootstrap
+    # We assume aws-cli is already installed.
+    # It depends on boto and botocore but not boto3.
 
-# Update aws-amitools-ec2 .
-# It provides the ec2-metadata program.
-yum update -y -t aws-amitools-ec2
+    # Install awslogs for mirroring log files to AWS CloudWatch.
+    logtime -- /usr/bin/yum install -y -t awslogs
 
-# We assume aws-cli is already installed.
-# It depends on boto and botocore but not boto3.
+    # Install epel for amzn2.
+    amazon-linux-extras install epel -y
+    yum-config-manager --enable epel
 
-# Install awslogs for mirroring log files to AWS CloudWatch.
-logtime -- /usr/bin/yum install -y -t awslogs
+    # Install nc for amzn2.
+    logtime -- /usr/bin/yum install -y -t nc
 
-# Install epel for amzn2.
-amazon-linux-extras install epel -y
-yum-config-manager --enable epel
+    # Install lnav for amzn2.
+    logtime -- /usr/bin/yum install -y -t lnav
 
-# Install nc for amzn2.
-logtime -- /usr/bin/yum install -y -t nc
+    # Installing iptables startup scripts to use in multi-ip assignment with NAT rules
+    logtime -- /usr/bin/yum install -y -t iptables-services
 
-# Install lnav for amzn2.
-logtime -- /usr/bin/yum install -y -t lnav
+    # Install pip for amzn2.
+    logtime -- /usr/bin/yum install -y -t python-pip
 
-# Installing iptables startup scripts to use in multi-ip assignment with NAT rules
-logtime -- /usr/bin/yum install -y -t iptables-services
+    # Downgrade pip to 9.0.3
+    logtime -- pip install pip==9.0.3
 
-# Install pip for amzn2.
-logtime -- /usr/bin/yum install -y -t python-pip
+    # Install python boto3 library.
+    logtime -- pip install boto3==1.14.63
 
-# Downgrade pip to 9.0.3
-logtime -- pip install pip==9.0.3
+    # Install specific python-daemon module for cfn-hup to work
+    logtime -- pip install "python-daemon>=1.5.2,<2.0"
 
-# Install python boto3 library.
-logtime -- pip install boto3==1.14.63
+    # Configure S3 to enable KMS/SSE requests.
+    # Do this after installing boto3 as a quick compatibility test.
+    logtime -- /usr/bin/aws configure set default.s3.signature_version s3v4
+}
 
-# Install specific python-daemon module for cfn-hup to work
-logtime -- pip install "python-daemon>=1.5.2,<2.0"
-
-# Configure S3 to enable KMS/SSE requests.
-# Do this after installing boto3 as a quick compatibility test.
-logtime -- /usr/bin/aws configure set default.s3.signature_version s3v4
+update_ssm_agent() {
+    # Update the SSM agent environment.
+    /bin/mkdir -p /etc/init
+    SSM_AGENT_CONF=/etc/init/amazon-ssm-agent.conf
+    SSM_AGENT_CONF_TEMP=/tmp/amazon-ssm-agent.conf.$$
+    awk '
+        $1 == "exec" { print "env PATH=/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/sbin:/sbin:/bin:/opt/sophos/bin" }
+                     { print }
+    ' "$SSM_AGENT_CONF" > "$SSM_AGENT_CONF_TEMP" && mv "$SSM_AGENT_CONF_TEMP" "$SSM_AGENT_CONF"
+}
 
 install_chef_repo() {
     echo "Installing Chef Repo"
@@ -177,6 +181,7 @@ install_cookbooks() {
     chown -R root:root /tmp/cookbooks
     chmod -R go-w /tmp/cookbooks
     rm -rf /var/chef/chef-repo/cookbooks
+    /bin/tar xzvf /tmp/cookbooks.tar.gz /tmp/
     mv -v /tmp/cookbooks /var/chef/chef-repo/
 }
 
@@ -192,6 +197,8 @@ create_ohai_hints() {
     /bin/touch /etc/chef/ohai/hints/ec2.json
 }
 
+#logtime -- update_ssm_agent
+logtime -- install_software_packages
 logtime -- install_chef_repo
 logtime -- install_cookbooks
 logtime -- create_ohai_hints
