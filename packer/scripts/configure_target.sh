@@ -63,7 +63,7 @@ if [ "$PS1" ]; then
 fi
 EOF
 
-cat "${SOPHOS_PROFILE}"
+source "${SOPHOS_PROFILE}"
 echo "$PATH"
 
 # Update the SSM agent environment.
@@ -101,6 +101,10 @@ yum update -y -t aws-amitools-ec2
 # Install awslogs for mirroring log files to AWS CloudWatch.
 logtime -- /usr/bin/yum install -y -t awslogs
 
+# Install epel for amzn2.
+amazon-linux-extras install epel -y
+yum-config-manager --enable epel
+
 # Install nc for amzn2.
 logtime -- /usr/bin/yum install -y -t nc
 
@@ -108,11 +112,7 @@ logtime -- /usr/bin/yum install -y -t nc
 logtime -- /usr/bin/yum install -y -t lnav
 
 # Install python boto3 library.
-logtime -- /usr/bin/pip install boto3==1.14.63
-
-# Install epel for amzn2.
-amazon-linux-extras install epel -y
-yum-config-manager --enable epel
+logtime -- pip install boto3==1.14.63
 
 # Downgrade pip to 9.0.3
 logtime -- pip install pip==9.0.3
