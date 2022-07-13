@@ -197,8 +197,20 @@ create_ohai_hints() {
     /bin/touch /etc/chef/ohai/hints/ec2.json
 }
 
+cleanup() {
+    echo "Cleaning up files"
+    FILES=( "/home/ec2-user/.ssh/authorized_keys" "/root/.ssh/authorized_keys" )
+    for i in "${FILES[@]}"; do
+        if [ -f "${i}" ]; then
+            echo "Removing ${i}"
+            rm -f ${i}
+        fi
+    done
+}
+
 #logtime -- update_ssm_agent
 logtime -- install_software_packages
 logtime -- install_chef_repo
 logtime -- install_cookbooks
 logtime -- create_ohai_hints
+logtime -- cleanup
