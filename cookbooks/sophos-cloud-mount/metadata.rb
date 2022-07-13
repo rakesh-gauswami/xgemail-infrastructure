@@ -6,4 +6,3 @@ description       'Installs/Configures Ebs Volumes'
 long_description  'Installs/Configures Ebs Volumes'
 version           '1.0.0'
 
-depends           'sophos-cloud-xgemail'

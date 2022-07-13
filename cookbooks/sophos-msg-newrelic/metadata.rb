@@ -7,4 +7,3 @@ long_description  'Installs/Configures New Relic'
 version           '1.0.0'
 
 depends           'compat_resource', '>= 12.16.2'
-depends           'sophos-cloud-xgemail'

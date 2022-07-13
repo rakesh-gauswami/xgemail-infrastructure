@@ -6,4 +6,3 @@ description       'Installs/Configures Fluentd/TD-Agent'
 long_description  'Installs/Configures Fluentd/TD-Agent'
 version           '1.0.0'
 
-depends           'sophos-cloud-xgemail'

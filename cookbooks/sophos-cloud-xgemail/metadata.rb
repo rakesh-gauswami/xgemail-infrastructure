@@ -6,7 +6,4 @@ description       'Installs/Configures Postfix'
 long_description  'Installs/Configures Postfix'
 version           '1.0.0'
 
-depends           'sophos-cloud-mount'
-depends           'sophos-cloud-ntpd'
 depends           'sophos-msg-snmpd'
-depends           'sophos-cloud-java'
