@@ -59,7 +59,7 @@ directory "/opt/flamegraph" do
 end
 
 s3_file "/tmp/flamegraph.tar.gz" do
-  bucket "cloud-applications-3rdparty"
+  bucket "central-3rdparty"
   remote_path "/flamegraph-1.0.tar.gz"
   mode "0644"
 end
