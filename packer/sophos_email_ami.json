@@ -184,7 +184,7 @@
       "type": "chef-solo",
       "skip_install": true,
       "execute_command":
-      "{{if .Sudo}}sudo {{end}}chef-solo --no-color -c {{.ConfigPath}} -l debug -j {{.JsonPath}}",
+      "{{if .Sudo}}sudo {{end}}chef-solo -c /var/chef/chef-repo/.chef/client.rb -l debug -j {{.JsonPath}}",
       "remote_cookbook_paths": ["/var/chef/chef-repo/cookbooks"],
       "staging_directory": "/var/chef/chef-repo",
       "run_list":
