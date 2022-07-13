@@ -26,6 +26,12 @@ PACKAGE_DIR           = "#{XGEMAIL_FILES_DIR}/postfix-qstat-cron"
 CRON_SCRIPT           = 'postfix-qstat.sh'
 CRON_SCRIPT_PATH      = "#{PACKAGE_DIR}/#{CRON_SCRIPT}"
 
+directory PACKAGE_DIR do
+  mode "0755"
+  owner "root"
+  group "root"
+end
+
 template CRON_SCRIPT_PATH do
   source "#{CRON_SCRIPT}.erb"
   mode "0750"
