@@ -23,7 +23,7 @@ AWS_REGION            = node['sophos_cloud']['region']
 INSTANCE_ID           = node['ec2']['instance_id']
 XGEMAIL_FILES_DIR     = node['xgemail']['xgemail_files_dir']
 PACKAGE_DIR           = "#{XGEMAIL_FILES_DIR}/postfix-qstat-cron"
-CRON_SCRIPT           = 'postfix.qstat.sh'
+CRON_SCRIPT           = 'postfix-qstat.sh'
 CRON_SCRIPT_PATH      = "#{PACKAGE_DIR}/#{CRON_SCRIPT}"
 
 template CRON_SCRIPT_PATH do
@@ -36,7 +36,6 @@ template CRON_SCRIPT_PATH do
     :instance_id => INSTANCE_ID,
     :instance_name => INSTANCE_NAME
   )
-  notifies :run, "execute[#{CRON_SCRIPT_PATH}]", :immediately
 end
 
 cron CRON_SCRIPT_PATH do
