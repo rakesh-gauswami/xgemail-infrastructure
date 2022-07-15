@@ -78,7 +78,7 @@ legacyCommonDeploymentPipeline {{
     deploymentRegion = com.sophos.central.jenkins.lib.PopRegion.{region_enum}
     cronExpression = '{cron_expression}'
     vpcName = '{vpc_name}'
-    pipelineType = '{pipeline_type}'
+    pipelineName = '{pipeline_type}'
 }}
 """.strip()
 
