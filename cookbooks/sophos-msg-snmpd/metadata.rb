@@ -1,7 +1,7 @@
-name              'sophos-msg-snmpd'
-maintainer        'Sophos Email'
-maintainer_email  'SophosMailOps@sophos.com'
-license           'All Rights Reserved'
-description       'Installs/Configures SNMP'
-long_description  'Installs/Configures SNMP'
-version           '1.0.0'
+name "sophos-msg-snmpd"
+version "1.0.0"
+
+maintainer "Cloud Devops"
+maintainer_email "cloud-devops@sophos.com"
+
+
