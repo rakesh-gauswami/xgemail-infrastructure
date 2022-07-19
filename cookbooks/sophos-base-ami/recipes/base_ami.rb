@@ -1,5 +1,5 @@
 #
-# Cookbook Name:: sophos-cloud-common
+# Cookbook Name:: sophos-base-ami
 # Recipe:: base_ami
 #
 # Copyright 2017, Sophos

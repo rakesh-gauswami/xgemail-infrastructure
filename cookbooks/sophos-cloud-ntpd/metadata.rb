@@ -1,5 +1,7 @@
-name "sophos-cloud-ntpd"
-version "1.0.0"
-
-maintainer "Cloud Devops"
-maintainer_email "cloud-devops@sophos.com"
+name              'sophos-cloud-ntpd'
+maintainer        'Sophos Email'
+maintainer_email  'SophosMailOps@sophos.com'
+license           'All Rights Reserved'
+description       'Installs/Configures NTP'
+long_description  'Installs/Configures NTP'
+version           '1.0.0'
