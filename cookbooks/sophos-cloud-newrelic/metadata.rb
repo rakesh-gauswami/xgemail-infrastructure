@@ -1,4 +1,4 @@
-name              'sophos-msg-newrelic'
+name              'sophos-cloud-newrelic'
 maintainer        'Sophos Email'
 maintainer_email  'SophosMailOps@sophos.com'
 license           'All Rights Reserved'

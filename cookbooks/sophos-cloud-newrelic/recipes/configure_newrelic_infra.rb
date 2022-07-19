@@ -1,5 +1,5 @@
 #
-# Cookbook:: sophos-msg-newrelic
+# Cookbook:: sophos-cloud-newrelic
 # Recipe:: configure_newrelic_infra
 #
 # Copyright:: 2022, Sophos 2022, All Rights Reserved.
