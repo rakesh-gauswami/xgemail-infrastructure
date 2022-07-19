@@ -192,7 +192,7 @@ end
 # Submit instances - Start Order: 10
 template 'fluentd-source-jilter' do
   path "#{CONF_DIR}/10-source-jilter.conf"
-  source 'fluentd-source-generic.conf.erb'
+  source 'fluentd-source-jilter.conf.erb'
   mode '0644'
   owner 'root'
   group 'root'

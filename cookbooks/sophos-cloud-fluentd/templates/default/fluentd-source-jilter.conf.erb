@@ -1,0 +1,10 @@
+<source>
+  @type tail
+  format /^(?<time>(?:\S+\s+){2}\S+)\s+(?<message>.*)/
+  time_key time
+  keep_time_key true
+  time_format %b %d %H:%M:%S
+  path /var/log/xgemail/jilter.log
+  pos_file /var/log/td-agent/jilter.pos
+  tag raw.jilter.log
+</source>
