@@ -9,5 +9,5 @@ end
 
 def sophos_cookbook(name, folder_name=nil)
   folder_name ||= name
-  cookbook name, path: File.expand_path("../../cookbooks/#{folder_name}", __FILE__)
+  cookbook name, path: File.expand_path("../cookbooks/#{folder_name}", __FILE__)
 end

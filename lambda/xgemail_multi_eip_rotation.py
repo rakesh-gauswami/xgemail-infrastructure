@@ -67,7 +67,7 @@ class MultiEip:
         logger.info("Assigning {} Private IP(s) on Interface: {}.".format(self.eip_count, self.eni))
         try:
             result = self.ec2_client.assign_private_ip_addresses(NetworkInterfaceId=self.eni, SecondaryPrivateIpAddressCount=self.eip_count)
-            logger.debug("Assigned Private IP Addresses: {}.".format(result['AssignedPrivateIpAddresses']))
+            logger.info("Assigned Private IP Addresses: {}.".format(result['AssignedPrivateIpAddresses']))
             return True
         except ClientError as e:
             logger.exception("Unable to assign private ip addresses. {}".format(e))
@@ -90,7 +90,7 @@ class MultiEip:
     def fetch_private_ips(self):
         try:
             nic = self.ec2_client.describe_network_interfaces(NetworkInterfaceIds=[self.eni])
-            logger.debug("Fetch private ips: {}".format([private_ip['PrivateIpAddress'] for private_ip in nic['NetworkInterfaces'][0]['PrivateIpAddresses']]))
+            logger.info("Fetch private ips: {}".format([private_ip['PrivateIpAddress'] for private_ip in nic['NetworkInterfaces'][0]['PrivateIpAddresses']]))
             self.private_ips = [private_ip['PrivateIpAddress'] for private_ip in nic['NetworkInterfaces'][0]['PrivateIpAddresses']]
             return self.private_ips
         except ClientError as e:
@@ -307,6 +307,7 @@ def multi_eip_rotation_handler(event, context):
 
         multi_eip = MultiEip(instance_id)
         if multi_eip.assign_private_ips():
+            time.sleep(1)
             if multi_eip.fetch_private_ips() is not None:
                 if multi_eip.associate_multi_eips():
                     logger.info("Completing lifecycle action with CONTINUE")

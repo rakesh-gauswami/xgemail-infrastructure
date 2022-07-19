@@ -4,7 +4,7 @@ import boto3
 from datetime import datetime, timedelta
 from botocore.exceptions import ClientError
 
-session = boto3.session.Session(profile_name='eml100gru', region_name='sa-east-1')
+session = boto3.session.Session(profile_name='dev', region_name='eu-west-1')
 ec2 = session.resource('ec2')
 ec2_client = session.client('ec2')
 #ec2_client = boto3.client('ec2', region_name='eu-central-1')
