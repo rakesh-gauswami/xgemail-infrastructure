@@ -30,7 +30,7 @@ REGION_US_WEST_2        = 'us-west-2'
 
 DEPLOYMENT_ENVIRONMENT_DEV  = 'dev'
 DEPLOYMENT_ENVIRONMENT_INF  = 'inf'
-DEPLOYMENT_ENVIRONMENT_PERF = 'perf'
+#DEPLOYMENT_ENVIRONMENT_PERF = 'perf'
 DEPLOYMENT_ENVIRONMENT_PROD = 'prod'
 DEPLOYMENT_ENVIRONMENT_QA   = 'qa'
 
@@ -62,16 +62,16 @@ AWS_REGIONS = [
 ]
 
 REGION_CODES = {
-    REGION_AP_NORTHEAST_1: '0901',
-    REGION_AP_SOUTH_1: '0531',
-    REGION_AP_SOUTHEAST_2: '1001',
-    REGION_CA_CENTRAL_1: '1903',
-    REGION_EU_CENTRAL_1: '0101',
-    REGION_EU_WEST_1: '0001',
-    REGION_SA_EAST_1: '2101',
-    REGION_US_EAST_1: '1901',
-    REGION_US_EAST_2: '1902',
-    REGION_US_WEST_2: '1602'
+    REGION_AP_NORTHEAST_1   : '0901',
+    REGION_AP_SOUTH_1       : '0531',
+    REGION_AP_SOUTHEAST_2   : '1001',
+    REGION_CA_CENTRAL_1     : '1903',
+    REGION_EU_CENTRAL_1     : '0101',
+    REGION_EU_WEST_1        : '0001',
+    REGION_SA_EAST_1        : '2101',
+    REGION_US_EAST_1        : '1901',
+    REGION_US_EAST_2        : '1902',
+    REGION_US_WEST_2        : '1602'
 }
 
 REGION_TO_AIRPORT_CODES = {
@@ -118,14 +118,14 @@ ACCOUNT_ABBREVIATION_TO_FULL_TYPE = { value: key for key, value in POP_ACCOUNT_T
 PREPROD_DEPLOYMENT_ENVIRONMENTS_INDEX = {
     '0': DEPLOYMENT_ENVIRONMENT_INF,
     '1': DEPLOYMENT_ENVIRONMENT_DEV,
-    '2': DEPLOYMENT_ENVIRONMENT_PERF,
+    #'2': DEPLOYMENT_ENVIRONMENT_PERF,
     '3': DEPLOYMENT_ENVIRONMENT_QA
 }
 
 DEPLOYMENT_ENVIRONMENTS = [
     DEPLOYMENT_ENVIRONMENT_DEV,
     DEPLOYMENT_ENVIRONMENT_INF,
-    DEPLOYMENT_ENVIRONMENT_PERF,
+    #DEPLOYMENT_ENVIRONMENT_PERF,
     DEPLOYMENT_ENVIRONMENT_PROD,
     DEPLOYMENT_ENVIRONMENT_QA
 ]
@@ -142,7 +142,8 @@ LEGACY_ACCOUNTS = {
         'active': True,
         'deployment_environment': None,
         'station-regions': [],
-        'hub-region': None
+        'hub-region': None,
+        'pop-name': None
     },
     'dev': {
         'id': '750199083801',
@@ -151,33 +152,34 @@ LEGACY_ACCOUNTS = {
         'deployment_environment': DEPLOYMENT_ENVIRONMENT_DEV,
         'station-regions': [
             REGION_EU_CENTRAL_1,
-            REGION_EU_WEST_1,
-            REGION_US_EAST_1
+            REGION_EU_WEST_1
         ],
-        'hub-region': REGION_EU_WEST_1
+        'hub-region': REGION_EU_WEST_1,
+        'pop-name': 'hub010dub'
     },
-    'dev3': {
-        'id': '769208163330',
-        'connector': 'hammer-core/CloudDeployer-dev3',
-        'active': True,
-        'deployment_environment': DEPLOYMENT_ENVIRONMENT_PERF,
-        'station-regions': [
-            REGION_EU_WEST_1,
-            REGION_US_EAST_1,
-            REGION_US_WEST_2
-        ],
-        'hub-region': REGION_EU_WEST_1
-    },
+    # 'dev3': {
+    #     'id': '769208163330',
+    #     'connector': 'hammer-core/CloudDeployer-dev3',
+    #     'active': True,
+    #     'deployment_environment': DEPLOYMENT_ENVIRONMENT_PERF,
+    #     'station-regions': [
+    #         REGION_EU_WEST_1,
+    #         REGION_US_EAST_1,
+    #         REGION_US_WEST_2
+    #     ],
+    #     'hub-region': REGION_EU_WEST_1,
+    #     'pop-name': 'hub020dub'
+    # },
     'inf': {
         'id': '283871543274',
         'connector': 'hammer-core/CloudDeployer-inf',
         'active': True,
         'deployment_environment': DEPLOYMENT_ENVIRONMENT_INF,
         'station-regions': [
-            REGION_EU_WEST_1,
-            REGION_US_EAST_1
+            REGION_EU_WEST_1
         ],
-        'hub-region': REGION_EU_WEST_1
+        'hub-region': REGION_EU_WEST_1,
+        'pop-name': 'hub000dub'
     },
     'mr': {
         'id': '125218878894',
@@ -187,7 +189,8 @@ LEGACY_ACCOUNTS = {
         'station-regions': [
             'us-west-2'
         ],
-        'hub-region': None  # No Java instances go here!
+        'hub-region': None,  # No Java instances go here!
+        'pop-name': None
     },
     'prod': {
         'id': '202058678495',
@@ -197,11 +200,11 @@ LEGACY_ACCOUNTS = {
         'station-regions': [
             REGION_EU_CENTRAL_1,
             REGION_EU_WEST_1,
-            REGION_US_EAST_1,
             REGION_US_EAST_2,
             REGION_US_WEST_2
         ],
-        'hub-region': REGION_EU_WEST_1
+        'hub-region': REGION_EU_WEST_1,
+        'pop-name': 'hub100dub'
     },
     'qa': {
         'id': '382702281923',
@@ -210,10 +213,10 @@ LEGACY_ACCOUNTS = {
         'deployment_environment': DEPLOYMENT_ENVIRONMENT_QA,
         'station-regions': [
             REGION_EU_CENTRAL_1,
-            REGION_US_EAST_1,
             REGION_US_WEST_2
         ],
-        'hub-region': REGION_EU_WEST_1
+        'hub-region': REGION_EU_WEST_1,
+        'pop-name': 'hub030dub'
     }
 }
 
@@ -412,7 +415,8 @@ class LegacyAccountData(BaseAccountData):
         is_active,
         deployment_environment,
         station_regions,
-        hub_region
+        hub_region,
+        pop_name
     ):
         super().__init__(
             name,
@@ -424,6 +428,7 @@ class LegacyAccountData(BaseAccountData):
         self.connector = connector
         self.station_regions = station_regions
         self.hub_region = hub_region
+        self.pop_name = pop_name
 
         for region in self.station_regions:
             if not is_valid_region(region):
@@ -466,13 +471,14 @@ class LegacyAccountData(BaseAccountData):
                 )
 
     def __str__(self):
-        return '{{{}({}):active({}),env({}),is_release({}),hub({}),stations({})}}'.format(
+        return '{{{}({}):active({}),env({}),is_release({}),hub({}),pop({}),stations({})}}'.format(
                 self.name,
                 self.account_id,
                 self.is_active,
                 self.deployment_environment,
                 self.is_release_environment,
                 self.hub_region,
+                self.pop_name,
                 self.station_regions
             )
 
@@ -618,6 +624,7 @@ class SupportedEnvironment:
                 )
 
         self.legacy_accounts = {}
+        self.legacy_accounts_by_pop_name = {}
 
         for key, value in legacy_accounts_dict.items():
             try:
@@ -642,15 +649,20 @@ class SupportedEnvironment:
                                 )
                             )
 
-                self.legacy_accounts[ key ] = LegacyAccountData(
+                legacy_account_data = LegacyAccountData(
                     key,
                     value['id'],
                     connector,
                     value['active'],
                     value['deployment_environment'],
                     value['station-regions'],
-                    value['hub-region']
+                    value['hub-region'],
+                    value['pop-name']
                 )
+                self.legacy_accounts[ key ] = legacy_account_data
+
+                if legacy_account_data.pop_name:
+                    self.legacy_accounts_by_pop_name[legacy_account_data.pop_name] = legacy_account_data
 
             except KeyError as ex:
                 raise ValueError(
@@ -669,6 +681,11 @@ class SupportedEnvironment:
         get_account returns any account that matches name
         """
         ret_val = self.legacy_accounts.get(name)
+
+        if ret_val is not None:
+            return ret_val
+
+        ret_val = self.legacy_accounts_by_pop_name.get(name)
 
         if ret_val is not None:
             return ret_val
