@@ -14,7 +14,7 @@ default['sophos_cloud']['tmp']              = '/tmp/sophos'
 default['sophos_cloud']['local_cert_path']  = '/etc/ssl/certs'
 default['sophos_cloud']['local_key_path']   = '/etc/ssl/private'
 default['sophos_cloud']['logzio_poc']       = 'False'
-default['sophos_cloud']['s3_bucket_region'] = 'us-west-2'
+default['sophos_cloud']['s3_bucket_region'] = 'us-east-2'
 default['sophos_cloud']['thirdparty']       = '//central-3rdparty'
 
 # Sophos-Cloud-Common (Want to Start Using the Format: default['cookbook']['recipe']['variable_name'])
