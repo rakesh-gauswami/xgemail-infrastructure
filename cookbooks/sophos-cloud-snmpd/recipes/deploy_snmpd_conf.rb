@@ -1,5 +1,5 @@
 #
-# Cookbook Name:: sophos-msg-snmpd
+# Cookbook Name:: sophos-cloud-snmpd
 # Recipe:: deploy_snmpd_conf -- this runs during and after AMI deployment
 #
 # Copyright 2016, Sophos

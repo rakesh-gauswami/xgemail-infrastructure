@@ -1,4 +1,4 @@
-name              'sophos-msg-fluentd'
+name              'sophos-cloud-fluentd'
 maintainer        'Sophos Email'
 maintainer_email  'SophosMailOps@sophos.com'
 license           'All rights reserved'

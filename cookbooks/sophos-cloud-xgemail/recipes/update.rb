@@ -9,5 +9,5 @@
 # run list for updating existing xgemail node
 #
 
-include_recipe 'sophos-msg-snmpd::update'
+include_recipe 'sophos-cloud-snmpd::update'
 include_recipe 'sophos-cloud-xgemail::configure-postfix'

@@ -1,5 +1,5 @@
 #
-# Cookbook Name: sophos-msg-fluentd
+# Cookbook Name: sophos-cloud-fluentd
 # Attribute: sandbox
 #
 # Copyright 2019, Sophos

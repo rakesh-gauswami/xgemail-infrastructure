@@ -1,5 +1,5 @@
 #
-# Cookbook Name:: sophos-msg-fluentd
+# Cookbook Name:: sophos-cloud-fluentd
 # Recipe:: install
 #
 # Copyright 2018, Sophos

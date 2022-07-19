@@ -1,6 +1,6 @@
 #=============================================================================
 #
-# update_spec.rb
+# configure_spec.rb
 #
 #=============================================================================
 #
@@ -18,25 +18,31 @@ require File.expand_path('../../../../lib/spec_helper.rb', __FILE__)
 #----------------------------------------------------------------------------
 # SPEC
 #----------------------------------------------------------------------------
-describe 'sophos-msg-snmpd::update' do
+describe 'sophos-cloud-snmpd::configure' do
   let(:chef_run) { ChefSpec::SoloRunner.new.converge(described_recipe) }
 
   before do
     allow_any_instance_of(Chef::Recipe).to receive(:include_recipe).and_call_original
-    allow_any_instance_of(Chef::Recipe).to receive(:include_recipe).with('sophos-msg-snmpd::deploy_snmpd_conf')
+    allow_any_instance_of(Chef::Recipe).to receive(:include_recipe).with('sophos-cloud-snmpd::deploy_snmpd_conf')
   end
 
-  it 'includes recipe sophos-msg-snmpd::deploy_snmpd_conf' do
-    expect_any_instance_of(Chef::Recipe).to receive(:include_recipe).with('sophos-msg-snmpd::deploy_snmpd_conf')
+  it 'installs package net-snmp' do
+    expect(chef_run).to install_package('net-snmp')
+  end
+
+  it 'includes recipe sophos-cloud-snmpd::deploy_snmpd_conf' do
+    expect_any_instance_of(Chef::Recipe).to receive(:include_recipe).with('sophos-cloud-snmpd::deploy_snmpd_conf')
     chef_run
-  end
-
-  it 'stops service snmpd' do
-    expect(chef_run).to stop_service('snmpd')
   end
 
   it 'starts service snmpd' do
     expect(chef_run).to start_service('snmpd')
+  end
+
+  it 'adds snmpd to startup' do
+    expect(chef_run).to run_bash('add_snmpd_to_startup').with(
+      user: 'root',
+    )
   end
 
 end

@@ -18,7 +18,7 @@ require File.expand_path('../../../../lib/spec_helper.rb', __FILE__)
 #----------------------------------------------------------------------------
 # SPEC
 #----------------------------------------------------------------------------
-describe 'sophos-msg-snmpd::deploy_snmpd_conf' do
+describe 'sophos-cloud-snmpd::deploy_snmpd_conf' do
   let(:chef_run) do
     ChefSpec::SoloRunner.new do |node|
       node.set['sophos_cloud']['connections'] = 'cloud-inf-connections'
