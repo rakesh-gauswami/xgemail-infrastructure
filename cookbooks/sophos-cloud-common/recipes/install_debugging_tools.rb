@@ -62,7 +62,7 @@ execute 'download_flamegraph.tar.gz' do
   user 'root'
   cwd '/tmp'
   command <<-EOH
-      aws --region #{node['sophos_cloud']['s3_bucket_region']} s3 cp s3:#{node['sophos_cloud']['thirdparty']}/flamegraph-1.0.tar.gz .
+      aws --region #{node['sophos_cloud']['s3_bucket_region']} s3 cp s3:#{node['sophos_cloud']['thirdparty']}/flamegraph-1.0.tar.gz /tmp/flamegraph-1.0.tar.gz
   EOH
 end
 
