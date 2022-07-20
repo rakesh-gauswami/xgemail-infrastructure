@@ -61,7 +61,7 @@ JENKINSFILE_FORMAT = """
 _
 
 {function} {{
-    accountName = '{account_name}'{cron_settings}
+    popAccount = com.sophos.central.jenkins.lib.PopAccount.{account_name}{cron_settings}
 }}
 """.strip()
 

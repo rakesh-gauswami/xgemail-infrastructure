@@ -1,0 +1,241 @@
+{
+  "variables": {
+    "ami_name":                     null,
+    "ami_regions":                  null,
+    "ami_users":                    null,
+    "ami_type":                     "xgemail",
+    "application":                  "ami",
+    "branch":                       null,
+    "build_name":                   null,
+    "build_number":                 null,
+    "build_tag":                    null,
+    "build_url":                    null,
+    "business_unit":                "MSG",
+    "chef_version":                 "12.3.0",
+    "current_date":                 "{{isotime \"2006-01-02\"}}",
+    "iam_instance_profile":         null,
+    "instance_type":                "t3.medium",
+    "jdk_version":                  "jdk-1.8.0_101-b13",
+    "jilter_inbound_version" :      null,
+    "jilter_mf_inbound_version":    null,
+    "jilter_mf_outbound_version":   null,
+    "jilter_outbound_version":      null,
+    "jilter_encryption_version" :   null,
+    "jilter_delivery_version":      null,
+    "launch_darkly_inf":            null,
+    "launch_darkly_dev":            null,
+    "launch_darkly_dev3":           null,
+    "launch_darkly_qa":             null,
+    "launch_darkly_prod":           null,
+    "name_tag":                     null,
+    "os_version":                   "AmazonLinux2",
+    "owner_email":                  "SophosMailOps@sophos.com",
+    "project":                      "xgemail",
+    "region":                       null,
+    "security_group_id":            null,
+    "source_ami":                   null,
+    "subnet_id":                    null,
+    "vpc_id":                       null
+  },
+  "sensitive-variables": [
+    "launch_darkly_inf",
+    "launch_darkly_dev",
+    "launch_darkly_dev3",
+    "launch_darkly_qa",
+    "launch_darkly_prod"
+  ],
+  "builders": [
+    {
+      "type":                           "amazon-ebs",
+      "ami_name":                       "{{user `ami_name` | clean_resource_name}}",
+      "ami_regions":                    "{{user `ami_regions`}}",
+      "ami_users":                      "{{user `ami_users`}}",
+      "associate_public_ip_address":    false,
+      "iam_instance_profile":           "{{user `iam_instance_profile`}}",
+      "instance_type":                  "{{user `instance_type`}}",
+      "region":                         "{{user `region`}}",
+      "security_group_id":              "{{user `security_group_id`}}",
+      "ssh_username":                   "ec2-user",
+      "ssh_timeout":                    "5m",
+      "subnet_id":                      "{{user `subnet_id`}}",
+      "vpc_id":                         "{{user `vpc_id`}}",
+      "launch_block_device_mappings": [
+        {
+          "device_name": "/dev/xvda",
+          "volume_size": 8,
+          "volume_type": "gp3",
+          "delete_on_termination": true
+        },
+        {
+          "device_name": "/dev/xvdf",
+          "volume_size": 40,
+          "volume_type": "gp3",
+          "delete_on_termination": true
+        },
+        {
+          "device_name": "/dev/xvdg",
+          "volume_size": 50,
+          "volume_type": "gp3",
+          "delete_on_termination": true
+        },
+        {
+          "device_name": "/dev/xvdh",
+          "volume_size": 20,
+          "volume_type": "gp3",
+          "delete_on_termination": true
+        }
+      ],
+      "source_ami_filter": {
+        "filters": {
+          "virtualization-type": "hvm",
+          "name": "{{user `source_ami`}}",
+          "root-device-type": "ebs"
+        },
+        "owners": ["amazon"],
+        "most_recent": false
+      },
+      "run_tags": {
+        "Name":               "{{user `name_tag`}}",
+        "Application":        "{{user `application`}}",
+        "BaseAmi":            "{{.SourceAMI}}",
+        "BaseAmiName":        "{{.SourceAMIName}}",
+        "BuildName":          "{{user `build_name`}}",
+        "BuildNumber":        "{{user `build_number`}}",
+        "BusinessUnit":       "{{user `business_unit`}}",
+        "Date":               "{{user `current_date`}}",
+        "OSVersion":          "{{user `os_version`}}",
+        "OwnerEmail":         "{{user `owner_email`}}",
+        "Project":            "{{user `project`}}",
+        "ami_type":           "{{user `ami_type`}}",
+        "branch":             "{{user `branch`}}",
+        "build":              "{{user `build_number`}}",
+        "build_tag":          "{{user `build_tag`}}",
+        "build_id":           "{{user `build_url`}}"
+      },
+      "run_volume_tags": {
+        "Name":               "{{user `name_tag`}}",
+        "Application":        "{{user `application`}}",
+        "BaseAmi":            "{{.SourceAMI}}",
+        "BaseAmiName":        "{{.SourceAMIName}}",
+        "BuildName":          "{{user `build_name`}}",
+        "BuildNumber":        "{{user `build_number`}}",
+        "BusinessUnit":       "{{user `business_unit`}}",
+        "Date":               "{{user `current_date`}}",
+        "OSVersion":          "{{user `os_version`}}",
+        "OwnerEmail":         "{{user `owner_email`}}",
+        "Project":            "{{user `project`}}",
+        "ami_type":           "{{user `ami_type`}}",
+        "branch":             "{{user `branch`}}",
+        "build":              "{{user `build_number`}}",
+        "build_tag":          "{{user `build_tag`}}",
+        "build_id":           "{{user `build_url`}}"
+      },
+      "tags": {
+        "Name":               "{{user `name_tag`}}",
+        "Application":        "{{user `application`}}",
+        "BaseAmi":            "{{.SourceAMI}}",
+        "BaseAmiName":        "{{.SourceAMIName}}",
+        "BuildName":          "{{user `build_name`}}",
+        "BuildNumber":        "{{user `build_number`}}",
+        "BusinessUnit":       "{{user `business_unit`}}",
+        "Date":               "{{user `current_date`}}",
+        "OSVersion":          "{{user `os_version`}}",
+        "OwnerEmail":         "{{user `owner_email`}}",
+        "Project":            "{{user `project`}}",
+        "ami_type":           "{{user `ami_type`}}",
+        "branch":             "{{user `branch`}}",
+        "build":              "{{user `build_number`}}",
+        "build_tag":          "{{user `build_tag`}}",
+        "build_id":           "{{user `build_url`}}"
+      }
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": [
+        "set -x",
+        "whoami",
+        "sudo install -o ec2-user -g ec2-user -d /var/packer"
+      ]
+    },
+    {
+      "type": "file",
+      "destination": "/tmp/",
+      "sources": [
+        "{{ template_dir }}/cookbooks.tar.gz",
+        "{{ template_dir }}/common_utils.tar.gz"
+      ]
+    },
+    {
+      "type": "shell",
+      "remote_path": "/tmp/add_volumes.sh",
+      "script": "{{ template_dir }}/scripts/add_volumes.sh",
+      "execute_command": "{{ .Vars }} exec sudo -E -S bash '{{ .Path }}'"
+    },
+    {
+      "type": "shell",
+      "remote_path": "/tmp/configure_target.sh",
+      "script": "{{ template_dir }}/scripts/configure_target.sh",
+      "execute_command": "{{ .Vars }} exec sudo -E -S bash '{{ .Path }}'",
+      "pause_after": "1s"
+    },
+    {
+      "type": "chef-solo",
+      "skip_install": true,
+      "execute_command":
+      "{{if .Sudo}}sudo {{end}}chef-solo -c /var/chef/chef-repo/.chef/client.rb -l debug -j {{.JsonPath}}",
+      "remote_cookbook_paths": ["/var/chef/chef-repo/cookbooks"],
+      "staging_directory": "/var/chef/chef-repo",
+      "run_list":
+      [
+        "sophos-base-ami::base_ami",
+        "sophos-cloud-fluentd::install",
+        "sophos-cloud-xgemail::install_monit_service",
+        "sophos-cloud-xgemail::download_libspf2",
+        "sophos-cloud-newrelic::install_newrelic_infra",
+        "sophos-cloud-xgemail::ami"
+      ],
+      "json": {
+        "ami": {
+          "application_name":             "xgemail",
+          "branch":                       "{{user `branch`}}",
+          "build":                        "{{user `build`}}",
+          "environment":                  "hmr-core",
+          "region":                       "us-east-1"
+        },
+        "sophos_cloud" : {
+          "application":                  "xgemail",
+          "context":                      "hmr-core",
+          "environment":                  "hmr-core",
+          "java":                         "//central-3rdparty/jdk",
+          "jdk_version":                  "{{user `jdk_version`}}",
+          "savi":                         "//central-3rdparty/savi-install.tar.gz",
+          "s3_bucket_region":             "us-east-1",
+          "thirdparty":                   "//central-3rdparty"
+        },
+        "xgemail" : {
+          "jilter_delivery_version":      "{{user `jilter_delivery_version`}}",
+          "jilter_encryption_version" :   "{{user `jilter_encryption_version`}}",
+          "jilter_inbound_version" :      "{{user `jilter_inbound_version`}}",
+          "jilter_mf_inbound_version":    "{{user `jilter_mf_inbound_version`}}",
+          "jilter_mf_outbound_version":   "{{user `jilter_mf_outbound_version`}}",
+          "jilter_outbound_version":      "{{user `jilter_outbound_version`}}",
+          "launch_darkly_inf":            "{{user `launch_darkly_inf`}}",
+          "launch_darkly_dev":            "{{user `launch_darkly_dev`}}",
+          "launch_darkly_dev3" :          "{{user `launch_darkly_dev3`}}",
+          "launch_darkly_qa":             "{{user `launch_darkly_qa`}}",
+          "launch_darkly_prod":           "{{user `launch_darkly_prod`}}"
+        }
+      }
+    }
+  ],
+
+  "post-processors":[
+    {
+      "type": "manifest",
+      "output": "manifest.json",
+      "strip_path": "true"
+    }
+  ]
+}

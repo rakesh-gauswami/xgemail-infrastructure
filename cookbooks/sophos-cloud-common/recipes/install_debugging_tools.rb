@@ -58,10 +58,12 @@ directory "/opt/flamegraph" do
   recursive true
 end
 
-s3_file "/tmp/flamegraph.tar.gz" do
-  bucket "cloud-applications-3rdparty"
-  remote_path "/flamegraph-1.0.tar.gz"
-  mode "0644"
+execute 'download_flamegraph.tar.gz' do
+  user 'root'
+  cwd '/tmp'
+  command <<-EOH
+      aws --region #{node['sophos_cloud']['s3_bucket_region']} s3 cp s3:#{node['sophos_cloud']['thirdparty']}/flamegraph-1.0.tar.gz /tmp/flamegraph.tar.gz
+  EOH
 end
 
 bash "unpack flamegraph files to temporary directory" do

@@ -105,19 +105,23 @@ def write_mh_mail_info(json_to_write, directory):
         json_file.write(unicode(data))
     return filename
 
-def read_msghistory_accepted_events(queue_id, directory):
+def read_jilter_context(queue_id, directory):
     """
-    Reads the accepted events information written by the Jilters.
+    Reads and return the meta information written by the Jilters.
+    E.g
+    {
+        "msghistory_events": ["mailbox":MesageHistoryEventObj,....],
+        "policy": ["recipient":"policy_attributes"],
+        Can be extended further for other info
+    }
     """
-
-    msghistory_events = None
-
+    jilter_context = None
     try:
-      with io.open(directory + '/' + queue_id, encoding='utf8') as f:
-        msghistory_events = json.load(f)
-        return msghistory_events
+        with io.open(directory + '/' + queue_id, encoding='utf8') as f:
+            jilter_context = json.load(f)
+            return jilter_context
     except Exception as ex:
-      logger.debug("Queue Id:[{0}]. Error reading accepted events: [{1}]".format(queue_id, ex))
+        logger.debug("Queue Id:[{0}]. Error reading accepted events: [{1}]".format(queue_id, ex))
 
 def update_msghistory_event_inbound(msghistory_events, s3_file_path, policy_metadata, recipients, email_product_type):
     for recipient in recipients:

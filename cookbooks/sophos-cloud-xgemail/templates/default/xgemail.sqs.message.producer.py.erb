@@ -623,7 +623,7 @@ def get_s3_prefix_path(queue_id, mailbox_id, domain):
     return s3_file_path
 
 
-def base_policy_flow(metadata, direction, domain, sender, message, msghistory_events, message_attributes = None):
+def base_policy_flow(metadata, direction, domain, sender, message, msghistory_events, message_attributes=None, policy=None):
     queue_id = metadata.get_queue_id()
 
     
@@ -689,10 +689,16 @@ def build_recipient_map_from_msghistory_enabled(queue_id, recipients, msghistory
           return None
     return recipient_map
 
+def update_policy_context(message_context, recipient, policy):
+    if policy is None or recipient is None or policy.get(recipient.lower()) is None:
+        return message_context
+    message_context.update({"policy":policy.get(recipient.lower())})
+    return message_context
+
 # Mail flow goes through multi_policy_flow if multi-policy flag is enabled
 # but if there are error conditions such as file read error etc, the mail
 # fall back to base_policy_flow.
-def multi_policy_flow(metadata, direction, domain, sender, message, msghistory_events, message_attributes = None):
+def multi_policy_flow(metadata, direction, domain, sender, message, msghistory_events, message_attributes = None, policy = None):
     recipients = metadata.get_recipients()
     customer_id = get_customer_id(metadata.get_queue_id(), msghistory_events)
     policy_list = None
@@ -713,7 +719,7 @@ def multi_policy_flow(metadata, direction, domain, sender, message, msghistory_e
     logger.info("Input email metadata info [{0}]".format(metadata))
 
     if not policy_list:
-        return base_policy_flow(metadata, direction, domain, sender, message, message_attributes)
+        return base_policy_flow(metadata, direction, domain, sender, message, msghistory_events, message_attributes, policy)
 
     queue_id = metadata.get_queue_id()
     s3_file_path = get_s3_path(queue_id, domain)
@@ -723,9 +729,9 @@ def multi_policy_flow(metadata, direction, domain, sender, message, msghistory_e
 
     message_context = None
 
-    for policy_id, value in policy_list.items():
+    for policy_id, recipient in policy_list.items():
         this_policy_metadata = copy.deepcopy(metadata)
-        this_policy_metadata.set_recipients(value)
+        this_policy_metadata.set_recipients(recipient)
         this_policy_metadata.add_uuid_to_queue_id()
 
         policy_id_path = "/" + policy_id + "/"
@@ -734,8 +740,10 @@ def multi_policy_flow(metadata, direction, domain, sender, message, msghistory_e
             new_s3_file_path = get_s3_prefix_path(queue_id, policy_id, domain)
 
         if msghistory_events is not None:
-          message_context = update_msghistory_event_and_get_message_context(msghistory_events, new_s3_file_path, this_policy_metadata, direction, value, sender)
- 
+            message_context = update_msghistory_event_and_get_message_context(msghistory_events, new_s3_file_path, this_policy_metadata, direction, recipient, sender)
+
+        if policy is not None:
+            message_context = update_policy_context(message_context, recipient[0], policy)
         # create a sqs message with policy_id
         sqs_message = SqsMessage(
             messageformatter.SCHEMA_VERSION,
@@ -786,7 +794,7 @@ def get_message_headers(message):
     return Parser().parsestr(message, headersonly=True)
 
 
-def outbound_split_by_recipients(metadata, sender, domain, message, direction, msghistory_events, message_attributes=None):
+def outbound_split_by_recipients(metadata, sender, domain, message, direction, msghistory_events, message_attributes=None, policy=None):
 
     # required logging for XgemailTestBase automation test
     logger.info("Metadata json info [{0}]".format(metadata))
@@ -815,6 +823,9 @@ def outbound_split_by_recipients(metadata, sender, domain, message, direction, m
 
         if msghistory_events is not None:
             message_context = update_msghistory_event_and_get_message_context(msghistory_events, new_s3_file_path, this_recipient_metadata, direction, this_recipient_metadata.get_recipients(), sender)
+
+        if policy is not None:
+            message_context = update_policy_context(message_context, recipient, policy)
 
         # create a sqs message with policy_id
         sqs_message = SqsMessage(
@@ -889,8 +900,14 @@ def main():
         message_headers = get_message_headers(plaintext_message)
         metadata = get_metadata(message_headers)
         queue_id = metadata.get_queue_id()
-        #A dict where key is mailbox address and value is the 'accepted' event record.
-        msghistory_events = messagehistory.read_msghistory_accepted_events(queue_id, MSG_HISTORY_EVENT_DIR)
+        #A dict with msghistory_events and policy
+        jilter_context = messagehistory.read_jilter_context(queue_id, MSG_HISTORY_EVENT_DIR)
+        msghistory_events = None
+        policy = None
+        if jilter_context is not None and jilter_context.get('msghistory_events') is not None:
+            msghistory_events=jilter_context.get('msghistory_events')
+        if jilter_context is not None and jilter_context.get('policy') is not None and len(jilter_context.get('policy')) > 0:
+            policy = jilter_context.get('policy')
 
         if len(metadata.get_recipients()) == 0:
             logger.info("all recipients rejected by jilter for multiple reasons for metadata [{0}]".format(metadata))
@@ -906,7 +923,7 @@ def main():
                 "v1"
             )
             
-            return multi_policy_flow(metadata, direction, domain, sender, plaintext_message, msghistory_events, message_attributes)
+            return multi_policy_flow(metadata, direction, domain, sender, plaintext_message, msghistory_events, message_attributes, policy)
 
         elif MF_INBOUND == SUBMIT_TYPE:
             domain = metadata.get_recipient_domain()
@@ -918,7 +935,7 @@ def main():
                 "v1"
             )
             
-            return multi_policy_flow(metadata, direction, domain, sender, plaintext_message, msghistory_events, message_attributes)
+            return multi_policy_flow(metadata, direction, domain, sender, plaintext_message, msghistory_events, message_attributes, policy)
 
         elif CUSTOMER == SUBMIT_TYPE:
             direction = OUTBOUND_MESSAGE_DIRECTION
@@ -926,7 +943,7 @@ def main():
             sender = metadata.get_sender_address()
             domain = get_from_sender_domain(metadata)
 
-            return outbound_split_by_recipients(metadata,sender,domain,plaintext_message,direction, msghistory_events)
+            return outbound_split_by_recipients(metadata,sender,domain,plaintext_message,direction, msghistory_events, None, policy)
 
         elif MF_OUTBOUND == SUBMIT_TYPE:
             direction = OUTBOUND_MESSAGE_DIRECTION
@@ -934,7 +951,7 @@ def main():
             sender = metadata.get_sender_address()
             domain = get_from_sender_domain(metadata)
 
-            return outbound_split_by_recipients(metadata,sender,domain,plaintext_message,direction, msghistory_events)
+            return outbound_split_by_recipients(metadata,sender,domain,plaintext_message,direction, msghistory_events, None, policy)
 
         else:
             raise ("Wrong submit type [{0}]".format(SUBMIT_TYPE))
@@ -942,7 +959,7 @@ def main():
         # required logging for XgemailTestBase automation test
         logger.info("Metadata json info [{0}]".format(metadata))
 
-        base_policy_flow(metadata, direction, domain, sender, plaintext_message, msghistory_events, message_attributes)
+        base_policy_flow(metadata, direction, domain, sender, plaintext_message, msghistory_events, message_attributes ,policy)
     except BaseException as e:
         logger.exception("Failed in processing email [{0}]".format(e))
         exit(EX_TEMPFAIL)
