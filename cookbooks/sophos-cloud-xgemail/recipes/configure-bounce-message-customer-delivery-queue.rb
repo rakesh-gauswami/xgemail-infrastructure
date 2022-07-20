@@ -23,9 +23,9 @@ raise "Invalid instance name for node type [#{NODE_TYPE}]" if INSTANCE_NAME.nil?
 
 if NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'xdelivery' || NODE_TYPE == 'customer-xdelivery' || NODE_TYPE == 'encryption-delivery'
   [
-  #Change master.cf "bounce" command from default(bounce) to "discard" so NDR and bounces can be disabled.
-  'bounce/unix/command=discard'
+    # add xgemail_do_sender_bounce in main.cf to suppress bounces so NDR and bounces can be disabled.
+    'xgemail_do_sender_bounce = no'
   ].each do | cur |
-    execute print_postmulti_cmd(INSTANCE_NAME, "postconf -F '#{cur}'" )
+    execute print_postmulti_cmd(INSTANCE_NAME, "postconf -e '#{cur}'" )
   end
 end
