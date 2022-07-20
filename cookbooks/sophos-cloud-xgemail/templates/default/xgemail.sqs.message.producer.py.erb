@@ -719,7 +719,7 @@ def multi_policy_flow(metadata, direction, domain, sender, message, msghistory_e
     logger.info("Input email metadata info [{0}]".format(metadata))
 
     if not policy_list:
-        return base_policy_flow(metadata, direction, domain, sender, message, message_attributes, policy)
+        return base_policy_flow(metadata, direction, domain, sender, message, msghistory_events, message_attributes, policy)
 
     queue_id = metadata.get_queue_id()
     s3_file_path = get_s3_path(queue_id, domain)
@@ -943,7 +943,7 @@ def main():
             sender = metadata.get_sender_address()
             domain = get_from_sender_domain(metadata)
 
-            return outbound_split_by_recipients(metadata,sender,domain,plaintext_message,direction, msghistory_events, policy)
+            return outbound_split_by_recipients(metadata,sender,domain,plaintext_message,direction, msghistory_events, None, policy)
 
         elif MF_OUTBOUND == SUBMIT_TYPE:
             direction = OUTBOUND_MESSAGE_DIRECTION
@@ -951,7 +951,7 @@ def main():
             sender = metadata.get_sender_address()
             domain = get_from_sender_domain(metadata)
 
-            return outbound_split_by_recipients(metadata,sender,domain,plaintext_message,direction, msghistory_events, policy)
+            return outbound_split_by_recipients(metadata,sender,domain,plaintext_message,direction, msghistory_events, None, policy)
 
         else:
             raise ("Wrong submit type [{0}]".format(SUBMIT_TYPE))
