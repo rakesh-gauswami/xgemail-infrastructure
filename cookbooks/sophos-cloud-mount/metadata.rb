@@ -1,4 +1,4 @@
-name              'sophos-msg-mount'
+name              'sophos-cloud-mount'
 maintainer        'Sophos Email'
 maintainer_email  'sophos-email-dev@sophos.com'
 license           'All rights reserved'
