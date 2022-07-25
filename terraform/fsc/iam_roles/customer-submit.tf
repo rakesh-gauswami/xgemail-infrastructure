@@ -23,6 +23,11 @@ resource "aws_iam_role" "customer_submit_instance_role" {
   }
 }
 
+resource "aws_iam_role_policy_attachment" "customer_submit_instance_role_cloudwatch_policy" {
+  role       = aws_iam_role.customer_submit_instance_role.id
+  policy_arn = aws_iam_policy.cloudwatch_put_metric_policy.arn
+}
+
 resource "aws_iam_role_policy_attachment" "customer_submit_instance_role_sqs_policy" {
   role       = aws_iam_role.customer_submit_instance_role.id
   policy_arn = aws_iam_policy.sqs_policy.arn
