@@ -5,7 +5,7 @@
 #
 # Copyright: Copyright (c) 2018. All rights reserved.
 # Company: Sophos Limited or one of its affiliates.
-
+import codecs
 import sys
 sys.path.append("<%= @utils_dir %>")
 import email
@@ -57,7 +57,7 @@ def format_sender(sender_str):
 def add_to_sqs(sqs_url, sqs_json):
     return awshandler.add_to_sqs(
         sqs_url,
-        json.dumps(sqs_json)
+        json.dumps(sqs_json,ensure_ascii=False)
     )
 
 def submit_notification_info_to_sqs(sender, recipients, subject, hostname, failure_txt, sent_timestamp):
@@ -88,13 +88,44 @@ def submit_notification_info_to_sqs(sender, recipients, subject, hostname, failu
     except BaseException as e:
         logger.exception("Failed send bounce message for [{0}] with error [{1}]".format(sqs_json,e))
 
+#This function helps to identify if given encoding in input is valid according to pythong 2
+def lookup_encoding(encoding):
+    try:
+        codecs.lookup(encoding)
+        return encoding
+    except BaseException as baseException:
+        logger.warn("Failed to find codec {0}".format(encoding))
+    return None
+
+#This function encode try to encode string with given encoding and return utf 8
+def encode_utf8(value, encoding):
+    encoding=lookup_encoding(encoding)
+    try:
+        if encoding is not None:
+            return value.decode(encoding).encode("utf-8")
+        else:
+            return value.decode().encode('utf-8')
+    except BaseException as baseException:
+        logger.warn("Failed to encode value {0] encoding {1} error {2}".format(value, encoding, baseException))
+    return value.encode()
+
+# This function performs utf 8 encoding, returns fail open string
+def str_encode_utf8(value, encoding, failobj=None):
+    if value is None:
+        return value
+    try:
+        return encode_utf8(value, encoding)
+    except BaseException as baseException:
+        logger.warn("Failed to string encode value {0] encoding {1} error {2}".format(value, encoding, baseException))
+    return failobj
+
 def main():
     try:
         #Define default values
         subject = ''
         failure_reason = NOT_AVAILABLE_STR
         hostname = NOT_AVAILABLE_STR
-        original_sender = NOT_AVAILABLE_STR
+        original_sender = None
         recipient = NOT_AVAILABLE_STR
 
         email_msg = email.message_from_file(sys.stdin)
@@ -110,35 +141,29 @@ def main():
                 try:
                     payload_email = email.message_from_string(payload)
                     subject, encoding  = decode_header(payload_email.get('Subject'))[0]
-                    if encoding is not None:
-                        subject = subject.decode(encoding).encode("utf-8")
+                    subject=str_encode_utf8(subject,encoding,None)
+
                     return_path = payload_email.get('return-path')
-                    if return_path is not None:
-                        original_sender = format_sender(return_path).encode('utf-8')
+                    original_sender = str_encode_utf8(format_sender(return_path),None,None)
                 except BaseException as e:
-                    logger.exception("Failed to encode subject = {0}. {1}".format(subject, e))
+                    logger.warn("Failed to encode subject = {0}. {1}".format(subject, e))
                 # For any reason if above logic fails, following condition would work as fallback
-                if subject is None:
+                if subject is None or original_sender is None:
                     args = payload.split("\n")
                     for arg in args:
                         header_key = arg.split(':', 1)[0].strip().lower();
-                        if header_key.startswith('subject'):
+                        if subject is None and header_key.startswith('subject'):
                             subject_header = arg.split(':', 1)
                             subject = subject_header[1].strip() if len(subject_header) == 2 else ''
                             try:
                                 subject, encoding = decode_header(subject)[0]
-                                if encoding is not None:
-                                    subject = subject.decode(encoding).encode("utf-8")
-                            except email.errors.HeaderParseError:
-                                logger.warn("Failed to decode subject = {0}".format(subject) )
-                                subject = ''
+                                subject=str_encode_utf8(subject,encoding,'')
                             except BaseException as e:
-                                logger.exception("Failed to encode subject = {0}. {1}".format(subject, e))
+                                logger.warn("Failed to encode subject = {0}. {1}".format(subject, e))
                                 subject = ''
 
-                        if header_key.startswith('return-path'):
-                            original_sender = format_sender(arg.split(':', 1)[1].strip())
-                            original_sender.encode("utf-8")
+                        if original_sender is None and header_key.startswith('return-path'):
+                            original_sender = str_encode_utf8(format_sender(arg.split(':', 1)[1].strip()),None,None)
             # Format is -  <recipient> : host <hostname> said: <status code> <failure_reason>
             payload_text = part.get_payload()
             if part.get_content_type() == 'text/plain' and len(payload_text) > 1:
@@ -146,10 +171,7 @@ def main():
                 failure_reason = part.get_payload().replace('\n', ' ')
                 try:
                     failure_reason, encoding = decode_header(failure_reason)[0]
-                    if encoding is not None:
-                        failure_reason = failure_reason.decode(encoding).encode("utf-8")
-                    else:
-                        failure_reason = failure_reason.encode()
+                    failure_reason=str_encode_utf8(failure_reason, encoding,'Fail to deliver')
                 except email.errors.HeaderParseError:
                     logger.warn("Failed to decode failure reason = {0}".format(failure_reason))
                 except BaseException as e:
