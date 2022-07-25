@@ -1,0 +1,24 @@
+#!/bin/sh
+#
+# Copyright 2022, Sophos
+#
+# All rights reserved - Do Not Redistribute
+#
+# This script collects Postfix queue lengths and adds to Cloudwatch metrics
+#
+
+for sub_dir in \
+  \
+  incoming \
+  active \
+  deferred \
+  maildrop \
+  bounce \
+  hold \
+  corrupt \
+  saved
+do
+  queue_count=$( find "/storage/postfix-<%= @instance_name %>/${sub_dir:?nd}" -type f | wc -l )
+  echo "${sub_dir:?nd}: ${queue_count:?nd}"
+  aws --region <%= @aws_region %> cloudwatch put-metric-data --metric-name "postfix_${sub_dir}_queue" --dimensions InstanceId="<%= @instance_id %>" --namespace "EC2" --value $(echo $(($(postmulti -i postfix-<%= @instance_name %> -x mailq | grep -Po "(?<=in )([0-9]+)"))))
+done
