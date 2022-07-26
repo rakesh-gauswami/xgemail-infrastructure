@@ -19,7 +19,7 @@ import json
 MAIL_PIC_RESPONSE_TIMEOUT = 30
 
 def get_parsed_args(parser):
-    parser.add_argument('--region', default = 'eu-west-1', choices=['us-east-2', 'eu-west-1', 'eu-central-1', 'ca-central-1', 'ap-northeast-1', 'ap-southeast-2', 'ap-south-1', 'sa-east-1'], help = 'AWS region', required = True)
+    parser.add_argument('--region', default = 'eu-west-1', choices=['us-west-2','us-east-2', 'eu-west-1', 'eu-central-1', 'ca-central-1', 'ap-northeast-1', 'ap-southeast-2', 'ap-south-1', 'sa-east-1'], help = 'AWS region', required = True)
     parser.add_argument('--env', default = 'DEV', choices=['DEV', 'DEV3', 'QA', 'PROD','INF', 'eml000cmh', 'eml010yul', 'eml030bom', 'eml030gru', 'eml030hnd', 'eml030syd', 'eml030yul', 'eml100bom', 'eml100gru', 'eml100hnd', 'eml100syd', 'eml100yul'], help = 'AWS environment', required = True)
     parser.add_argument('--customerid', help = 'Customer ID of the bulk sender request sender', required = False)
     parser.add_argument('--emailid', help = 'Email address of the bulk sender request mailbox', required = True)
