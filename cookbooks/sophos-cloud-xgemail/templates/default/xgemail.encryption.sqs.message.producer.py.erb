@@ -684,7 +684,6 @@ def main():
             msghistory_events=jilter_context.get('msghistory_events')
         if jilter_context is not None and jilter_context.get('policy') is not None and len(jilter_context.get('policy')) > 0:
             policy = jilter_context.get('policy')
-
         if jilter_context is not None and jilter_context.get('secure_policy') is not None and len(jilter_context.get('secure_policy')) > 0:
             secure_policy = jilter_context.get('secure_policy')
 
@@ -710,7 +709,7 @@ def main():
         # required logging for XgemailTestBase automation test
         logger.info("Metadata json info [{0}]".format(metadata))
 
-        base_policy_flow(metadata, direction, is_reply, domain, sender, plaintext_message, rfx_submit, is_mh_parent, msghistory_events, policy)
+        base_policy_flow(metadata, direction, is_reply, domain, sender, plaintext_message, rfx_submit, is_mh_parent, msghistory_events, policy, secure_policy)
 
     except BaseException as e:
         logger.exception("Failed in processing email [{0}]".format(e))
