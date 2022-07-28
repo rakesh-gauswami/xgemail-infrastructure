@@ -562,8 +562,13 @@ def update_policy_context(message_context, recipient, policy):
     message_context.update({"policy":policy.get(recipient.lower())})
     return message_context
 
+def update_secure_policy_context(message_context, recipient, secure_policy):
+    if secure_policy is None or recipient is None or secure_policy.get(recipient.lower()) is None:
+        return message_context
+    message_context.update({"secure_policy":secure_policy.get(recipient.lower())})
+    return message_context
 
-def base_policy_flow(metadata, direction, is_reply, domain, sender, message, rfx_submit, is_mh_parent, msghistory_events, policy):
+def base_policy_flow(metadata, direction, is_reply, domain, sender, message, rfx_submit, is_mh_parent, msghistory_events, policy, secure_policy):
     queue_id = metadata.get_queue_id()
 
     tmp_file_path = formatterutils.get_s3_path(
@@ -594,6 +599,9 @@ def base_policy_flow(metadata, direction, is_reply, domain, sender, message, rfx
     #Check is policy is not empty and number of recipient is more than 1 for context
     if policy is not None and len(metadata.get_recipients()) >= 1:
         message_context = update_policy_context(message_context, metadata.get_recipients()[0], policy)
+
+    if secure_policy is not None and len(metadata.get_recipients()) >= 1:
+        message_context = update_secure_policy_context(message_context, metadata.get_recipients()[0], secure_policy)
 
     # create a sqs object
     sqs_message = SqsMessage(
@@ -671,10 +679,14 @@ def main():
         jilter_context = messagehistory.read_jilter_context(queue_id, MSG_HISTORY_EVENT_DIR)
         msghistory_events = {}
         policy = None
+        secure_policy = None
         if jilter_context is not None and jilter_context.get('msghistory_events') is not None:
             msghistory_events=jilter_context.get('msghistory_events')
         if jilter_context is not None and jilter_context.get('policy') is not None and len(jilter_context.get('policy')) > 0:
             policy = jilter_context.get('policy')
+
+        if jilter_context is not None and jilter_context.get('secure_policy') is not None and len(jilter_context.get('secure_policy')) > 0:
+            secure_policy = jilter_context.get('secure_policy')
 
         if rfxrecoveryutils.is_reflexion_ip(metadata.get_sender_ip()):
             rfx_submit = True
