@@ -13,6 +13,7 @@
 ::Chef::Recipe.send(:include, ::SophosCloudXgemail::Helper)
 ::Chef::Resource.send(:include, ::SophosCloudXgemail::Helper)
 
+ACCOUNT      = node['sophos_cloud']['environment']
 AWS_REGION   = node['sophos_cloud']['region']
 ACCOUNT_NAME = node['sophos_cloud']['account_name']
 NODE_TYPE    = node['xgemail']['cluster_type']
@@ -101,19 +102,47 @@ template SWAKS_SEND_50_EMAILS do
   )
 end
 
-cron SWAKS_UPDATE_SUBJECTS do # Update subjectline of the emails
-  minute '*/10'
-  user 'root'
-  command "/bin/bash #{SWAKS_DIR}/#{SWAKS_UPDATE_SUBJECTS}"
-end
+if ACCOUNT == 'sandbox' && AWS_REGION == 'us-east-2' || AWS_REGION == 'eu-west-1' || AWS_REGION == 'ap-northeast-1' || AWS_REGION == 'ap-southeast-2' || AWS_REGION == 'ca-central-1' || AWS_REGION == 'ap-south-1' || AWS_REGION == 'sa-east-1'
+  cron SWAKS_UPDATE_SUBJECTS do # Update subjectline of the emails
+    minute '*/10'
+    user 'root'
+    command "/bin/bash #{SWAKS_DIR}/#{SWAKS_UPDATE_SUBJECTS}"
+    action :nothing
+  end
+  cron SWAKS_SEND_WARMUP_EMAILS do # runs 1time/mins on Weekends
+    user 'root'
+    weekday '0,6'
+    command "/bin/bash #{SWAKS_DIR}/#{SWAKS_SEND_WARMUP_EMAILS}"
+    action :nothing
+  end
 
-cron SWAKS_SEND_WARMUP_EMAILS do # runs 1time/mins on Weekends
-  user 'root'
-  weekday '0,6'
-  command "/bin/bash #{SWAKS_DIR}/#{SWAKS_SEND_WARMUP_EMAILS}"
-end
+elsif ACCOUNT == 'prod' && ACCOUNT_NAME == 'legacy'
+  cron SWAKS_UPDATE_SUBJECTS do # Update subjectline of the emails
+    minute '*/10'
+    user 'root'
+    command "/bin/bash #{SWAKS_DIR}/#{SWAKS_UPDATE_SUBJECTS}"
+    action :nothing
+  end
+  cron SWAKS_SEND_WARMUP_EMAILS do # runs 1time/mins on Weekends
+    user 'root'
+    weekday '0,6'
+    command "/bin/bash #{SWAKS_DIR}/#{SWAKS_SEND_WARMUP_EMAILS}"
+    action :nothing
+  end
 
-if AWS_REGION == 'ca-central-1'
+elsif ACCOUNT == 'prod' && ACCOUNT_NAME != 'legacy'
+  cron SWAKS_UPDATE_SUBJECTS do # Update subjectline of the emails
+    minute '*/10'
+    user 'root'
+    command "/bin/bash #{SWAKS_DIR}/#{SWAKS_UPDATE_SUBJECTS}"
+  end
+  cron SWAKS_SEND_WARMUP_EMAILS do # runs 1time/mins on Weekends
+    user 'root'
+    weekday '0,6'
+    command "/bin/bash #{SWAKS_DIR}/#{SWAKS_SEND_WARMUP_EMAILS}"
+  end
+
+elsif ACCOUNT_NAME != 'legacy' && AWS_REGION == 'ca-central-1'
   cron SWAKS_SEND_20_EMAILS do # runs twice/min during off hours during weekdays
     minute '*/5'
     hour '00-14,21-23'
@@ -121,7 +150,6 @@ if AWS_REGION == 'ca-central-1'
     user 'root'
     command "/bin/bash #{SWAKS_DIR}/#{SWAKS_SEND_20_EMAILS}"
   end
-
   cron SWAKS_SEND_50_EMAILS do # send 50 email in every 5mins during peak hour
     minute '*/5'
     hour '15-20'
@@ -130,24 +158,7 @@ if AWS_REGION == 'ca-central-1'
     command "/bin/bash #{SWAKS_DIR}/#{SWAKS_SEND_50_EMAILS}"
   end
 
-elsif AWS_REGION == 'eu-west-1'
-  cron SWAKS_SEND_20_EMAILS do # runs twice/min during off hours during weekdays
-    minute '*/5'
-    hour '13-14,21-23'
-    weekday '1-5'
-    user 'root'
-    command "/bin/bash #{SWAKS_DIR}/#{SWAKS_SEND_20_EMAILS}"
-  end
-
-  cron SWAKS_SEND_50_EMAILS do # send 50 email in every 5mins during peak hour
-    minute '*/5'
-    hour '00-12'
-    weekday '1-5'
-    user 'root'
-    command "/bin/bash #{SWAKS_DIR}/#{SWAKS_SEND_50_EMAILS}"
-  end
-
-elsif AWS_REGION == 'ap-southeast-2'
+elsif ACCOUNT_NAME != 'legacy' && AWS_REGION == 'ap-southeast-2'
   cron SWAKS_SEND_20_EMAILS do # send 20 email in every 5mins during peak hour
     minute '*/5'
     hour '07-21'
@@ -155,7 +166,6 @@ elsif AWS_REGION == 'ap-southeast-2'
     user 'root'
     command "/bin/bash #{SWAKS_DIR}/#{SWAKS_SEND_20_EMAILS}"
   end
-
   cron SWAKS_SEND_50_EMAILS do # runs twice/min during off hours during weekdays
     minute '*/5'
     hour '22-23,00-06'
@@ -164,24 +174,25 @@ elsif AWS_REGION == 'ap-southeast-2'
     command "/bin/bash #{SWAKS_DIR}/#{SWAKS_SEND_50_EMAILS}"
   end
 
-elsif AWS_REGION == 'ap-northeast-1'
+elsif ACCOUNT_NAME != 'legacy' && AWS_REGION == 'ap-northeast-1'
   cron SWAKS_SEND_20_EMAILS do # runs twice/min during off hours during weekdays
     minute '*/5'
     hour '12-23,9-11'
     weekday '1-5'
     user 'root'
     command "/bin/bash #{SWAKS_DIR}/#{SWAKS_SEND_20_EMAILS}"
+    action :nothing
   end
-
   cron SWAKS_SEND_50_EMAILS do # send 50 email in every 5mins during peak hour
     minute '*/5'
     hour '00-08'
     weekday '1-5'
     user 'root'
     command "/bin/bash #{SWAKS_DIR}/#{SWAKS_SEND_50_EMAILS}"
+    action :nothing
   end
 
-elsif AWS_REGION == 'ap-south-1'
+elsif ACCOUNT_NAME != 'legacy' && AWS_REGION == 'ap-south-1'
   cron SWAKS_SEND_20_EMAILS do # runs twice/min during off hours during weekdays
     minute '*/5'
     hour '11-23,00-02'
@@ -189,7 +200,6 @@ elsif AWS_REGION == 'ap-south-1'
     user 'root'
     command "/bin/bash #{SWAKS_DIR}/#{SWAKS_SEND_20_EMAILS}"
   end
-
   cron SWAKS_SEND_50_EMAILS do # send 50 email in every 5mins during peak hour
     minute '*/5'
     hour '03-10'
@@ -198,7 +208,7 @@ elsif AWS_REGION == 'ap-south-1'
     command "/bin/bash #{SWAKS_DIR}/#{SWAKS_SEND_50_EMAILS}"
   end
 
-elsif AWS_REGION == 'sa-east-1'
+elsif ACCOUNT_NAME != 'legacy' && AWS_REGION == 'sa-east-1'
   cron SWAKS_SEND_20_EMAILS do # runs twice/min during off hours during weekdays
     minute '*/5'
     hour '00-11,20-23'
@@ -206,7 +216,6 @@ elsif AWS_REGION == 'sa-east-1'
     user 'root'
     command "/bin/bash #{SWAKS_DIR}/#{SWAKS_SEND_20_EMAILS}"
   end
-
   cron SWAKS_SEND_50_EMAILS do # send 50 email in every 5mins during peak hour
     minute '*/5'
     hour '12-19'
