@@ -4139,6 +4139,156 @@
       }
     },
 
+    "XgemailPostfixQueueEfsMountTargetSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "Tags": [{
+          "Key": "Name",
+          "Value": {
+            "Fn::Join": [ "", [
+              { "Ref": "Environment" }, "-",
+              { "Ref": "Branch" }, "-",
+              { "Ref": "AWS::StackName" }, "/sg/xgemail/efs/postfixqueuemount"
+            ]]
+          }
+        },
+        {
+          "Key": "Application",
+          "Value": "cloudemail"
+        },
+        {
+          "Key": "BusinessUnit",
+          "Value": "MSG"
+        },
+        {
+          "Key": "Project",
+          "Value": "xgemail"
+        },
+        {
+          "Key": "OwnerEmail",
+          "Value": "sophosmailops@sophos.com"
+        }],
+        "VpcId": { "Ref": "Vpc" },
+        "GroupDescription": "Controls access to the postfix queue EFS mount targets",
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
+            "SourceSecurityGroupId": { "Ref": "XgemailDeltaDeliverySecurityGroup" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
+            "SourceSecurityGroupId": { "Ref": "XgemailDeltaXdeliverySecurityGroup" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
+            "SourceSecurityGroupId": { "Ref": "XgemailRiskyDeliverySecurityGroup" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
+            "SourceSecurityGroupId": { "Ref": "XgemailRiskyXdeliverySecurityGroup" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
+            "SourceSecurityGroupId": { "Ref": "XgemailWarmupDeliverySecurityGroup" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
+            "SourceSecurityGroupId": { "Ref": "XgemailWarmupXdeliverySecurityGroup" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
+            "SourceSecurityGroupId": { "Ref": "XgemailInternetDeliverySecurityGroup" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
+            "SourceSecurityGroupId": { "Ref": "XgemailInternetXdeliverySecurityGroup" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
+            "SourceSecurityGroupId": { "Ref": "XgemailCustomerDeliverySecurityGroup" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
+            "SourceSecurityGroupId": { "Ref": "XgemailXdeliverySecurityGroup" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
+            "SourceSecurityGroupId": { "Ref": "XgemailCustomerDeliverySecurityGroupPub" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
+            "SourceSecurityGroupId": { "Ref": "XgemailCustomerSubmitSecurityGroup" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
+            "SourceSecurityGroupId": { "Ref": "XgemailInternetSubmitSecurityGroup" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
+            "SourceSecurityGroupId": { "Ref": "XgemailMfInboundDeliverySecurityGroup" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
+            "SourceSecurityGroupId": { "Ref": "XgemailMfInboundXdeliverySecurityGroup" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
+            "SourceSecurityGroupId": { "Ref": "XgemailMfOutboundDeliverySecurityGroup" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
+            "SourceSecurityGroupId": { "Ref": "XgemailMfOutboundXdeliverySecurityGroup" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
+            "SourceSecurityGroupId": { "Ref": "XgemailMfInboundSubmitSecurityGroup" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
+            "SourceSecurityGroupId": { "Ref": "XgemailMfOutboundSubmitSecurityGroup" }
+          }
+        ]
+      }
+    },
+
     "XgemailEcRedisSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
@@ -4410,6 +4560,14 @@
     "XgemailPolicyEfsMountTargetSecurityGroupId": {
       "Description": "Xgemail EFS mount target security group Id",
       "Value": { "Fn::GetAtt" : [ "XgemailPolicyEfsMountTargetSecurityGroup", "GroupId" ] }
+    },
+    "XgemailPostfixQueueEfsMountTargetSecurityGroup": {
+      "Description": "Xgemail EFS mount target security group",
+      "Value": { "Ref": "XgemailPostfixQueueEfsMountTargetSecurityGroup" }
+    },
+    "XgemailPostfixQueueEfsMountTargetSecurityGroupId": {
+      "Description": "Xgemail EFS mount target security group Id",
+      "Value": { "Fn::GetAtt" : [ "XgemailPostfixQueueEfsMountTargetSecurityGroup", "GroupId" ] }
     },
     "XgemailWarmupDeliverySecurityGroupLb": {
       "Description": "Xgemail Warmup Delivery Load Balancer security group",
