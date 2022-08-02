@@ -88,7 +88,7 @@ def submit_notification_info_to_sqs(sender, recipients, subject, hostname, failu
     except BaseException as e:
         logger.exception("Failed send bounce message for [{0}] with error [{1}]".format(sqs_json,e))
 
-#This function helps to identify if given encoding in input is valid according to pythong 2
+#This function helps to identify if given encoding in input is valid according to python 2
 def lookup_encoding(encoding):
     try:
         codecs.lookup(encoding)
