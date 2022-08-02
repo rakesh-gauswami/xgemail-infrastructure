@@ -50,7 +50,7 @@ if NODE_TYPE == 'delta-delivery' || NODE_TYPE == 'delta-xdelivery'
      'xgemail_do_sender_bounce = no',
      'xgemail_suppress_2bounce = yes',
      "transport_maps=hash:$config_directory/#{TRANSPORT_MAPS_FILENAME}",
-     "maximal_queue_lifetime=1d"
+     "maximal_queue_lifetime=5d"
    ]
 
  # Rehash transport map
