@@ -106,7 +106,7 @@ def encode_utf8(value, encoding):
         else:
             return value.decode().encode('utf-8')
     except BaseException as baseException:
-        logger.warn("Failed to encode value {0] encoding {1} error {2}".format(value, encoding, baseException))
+        logger.warn("Failed to encode value {0} encoding {1} error {2}".format(value, encoding, baseException))
     return value.encode()
 
 # This function performs utf 8 encoding, returns fail open string
@@ -116,7 +116,7 @@ def str_encode_utf8(value, encoding, failobj=None):
     try:
         return encode_utf8(value, encoding)
     except BaseException as baseException:
-        logger.warn("Failed to string encode value {0] encoding {1} error {2}".format(value, encoding, baseException))
+        logger.warn("Failed to string encode value {0} encoding {1} error {2}".format(value, encoding, baseException))
     return failobj
 
 def main():
@@ -176,20 +176,33 @@ def main():
                     logger.warn("Failed to decode failure reason = {0}".format(failure_reason))
                 except BaseException as e:
                     logger.exception("Failed to encode failure reason = {0}. {1}".format(failure_reason, e))
+
+            if original_sender is None and part.get_content_type() == 'message/global-headers':
+                payload = part.get_payload()
+                for key in payload:
+                    if key.get("Return-path") is not None:
+                        original_sender=str_encode_utf8(format_sender(key.get("Return-path")),None,None)
+                    if subject == '' and key.get('subject') is not None:
+                        subject, encoding  = decode_header(key.get('Subject'))[0]
+                        subject=str_encode_utf8(subject,encoding,None)
             logger.debug("Sender = {0}".format(original_sender))
             logger.debug("Recipient = {0}".format(recipient))
             logger.debug("Subject = {0}".format(subject))
             logger.debug("Hostname = {0}".format(hostname))
             logger.debug("Failure Reason = {0}".format(failure_reason))
 
-        submit_notification_info_to_sqs(
-            original_sender,
-            recipient,
-            subject,
-            hostname,
-            failure_reason,
-            sent_date
-        )
+        if original_sender is not None:
+            submit_notification_info_to_sqs(
+                original_sender,
+                recipient,
+                subject,
+                hostname,
+                failure_reason,
+                sent_date
+            )
+        else:
+            logger.error("Failed to parse original_sender from email payload {0}".format(email_msg.as_string()))
+
     except BaseException as e:
         logger.exception("Failed handling bounce message [{0}]".format(e))
         exit(EX_TEMPFAIL)
