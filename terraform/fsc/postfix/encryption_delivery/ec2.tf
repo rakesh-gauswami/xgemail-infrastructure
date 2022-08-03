@@ -262,6 +262,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     XgemailBucketName                   = var.outbound_submit_bucket
     XgemailMinSizeDataGB                = local.volume_size_gibs
     XgemailPolicyBucketName             = var.policy_bucket
+    XgemailPostfixQueueEfsFileSystemId  = local.input_param_postfix_queue_efs_volume_id
     XgemailSnsSqsQueueUrl               = var.encryption_delivery_sqs_queue
     XgemailServiceType                  = local.instance_type
     XgemailSxlDbl                       = local.sxl_dbl

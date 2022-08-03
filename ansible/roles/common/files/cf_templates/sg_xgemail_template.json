@@ -4181,6 +4181,12 @@
             "IpProtocol": "tcp",
             "FromPort": "2049",
             "ToPort": "2049",
+            "SourceSecurityGroupId": { "Ref": "XgemailEncryptionDeliverySecurityGroup" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
             "SourceSecurityGroupId": { "Ref": "XgemailRiskyDeliverySecurityGroup" }
           },
           {
@@ -4212,6 +4218,12 @@
             "FromPort": "2049",
             "ToPort": "2049",
             "SourceSecurityGroupId": { "Ref": "XgemailCustomerSubmitSecurityGroup" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
+            "SourceSecurityGroupId": { "Ref": "XgemailEncryptionSubmitSecurityGroup" }
           },
           {
             "IpProtocol": "tcp",

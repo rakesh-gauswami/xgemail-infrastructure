@@ -327,6 +327,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     XgemailPolicyArn                      = var.relay_control_sns_topic
     XgemailPolicyBucketName               = var.policy_bucket
     XgemailPolicyEfsFileSystemId          = local.input_param_policy_efs_volume_id
+    XgemailPostfixQueueEfsFileSystemId    = local.input_param_postfix_queue_efs_volume_id
     XgemailQueueUrl                       = var.customer_submit_sqs_queue
     XgemailScanEventsTopicArn             = var.scan_events_sns_topic
     XgemailServiceType                    = local.instance_type

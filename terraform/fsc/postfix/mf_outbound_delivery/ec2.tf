@@ -320,6 +320,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     XgemailMsgHistoryStatusSnsArn       = var.msg_history_status_sns_topic
     XgemailNotifierQueueUrl             = var.notifier_request_sqs_queue
     XgemailPolicyBucketName             = var.policy_bucket
+    XgemailPostfixQueueEfsFileSystemId  = local.input_param_postfix_queue_efs_volume_id
     XgemailSnsSqsQueue                  = var.mf_outbound_delivery_queue_name
     XgemailSnsSqsQueueUrl               = var.mf_outbound_delivery_queue_url
     XgemailServiceType                  = local.instance_type
