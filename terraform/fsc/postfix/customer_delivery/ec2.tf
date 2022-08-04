@@ -2,7 +2,7 @@ locals {
   DEFAULT_AS_ALARM_SCALING_ENABLED          = false
   DEFAULT_AS_ALARM_SCALE_IN_THRESHOLD       = 10
   DEFAULT_AS_ALARM_SCALE_OUT_THRESHOLD      = 50
-  DEFAULT_AS_MIN_SIZE                       = 0
+  DEFAULT_AS_MIN_SIZE                       = 1
   DEFAULT_AS_MAX_SIZE                       = 6
   DEFAULT_AS_MIN_SERVICE                    = 1
   DEFAULT_AS_MAX_BATCH_SIZE                 = 1
