@@ -1,0 +1,14 @@
+# raw.jilter.log
+# 2022-07-20T18:21:16+00:00 ip-172-19-100-106.eu-west-1.compute.internal [xgemail-jilter-delivery] [main] INFO  com.sophos.xgemail.jilter.impl.XgemailJilterServerImpl Opening socket
+#
+
+<source>
+  @type tail
+  format /^(?<time>(?:\S+\s+){2}\S+)\s+(?<message>.*)/
+  time_key time
+  keep_time_key true
+  time_format %Y-%m-%dT%H:%M:%S%z
+  path /var/log/xgemail/jilter.log
+  pos_file /var/log/td-agent/jilter.pos
+  tag raw.jilter.log
+</source>

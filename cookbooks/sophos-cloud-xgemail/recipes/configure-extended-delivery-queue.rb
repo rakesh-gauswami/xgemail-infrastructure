@@ -35,7 +35,8 @@ CONFIGURATION_COMMANDS =
   node['xgemail']['common_instance_config_params'] +
   [
     # Disable inet services for default instance
-    'master_service_disable = inet'
+    'master_service_disable = inet',
+    'inet_protocols = ipv4'
   ]
 
 MANAGED_SERVICES_IN_START_ORDER = [

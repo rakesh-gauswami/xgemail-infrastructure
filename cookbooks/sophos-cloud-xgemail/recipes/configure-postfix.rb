@@ -85,6 +85,7 @@ include_recipe 'sophos-cloud-xgemail::configure-mf-inbound-submit-queue'
 include_recipe 'sophos-cloud-xgemail::configure-mf-outbound-submit-queue'
 include_recipe 'sophos-cloud-xgemail::configure-mf-outbound-delivery-queue'
 include_recipe 'sophos-cloud-xgemail::configure-mf-inbound-delivery-queue'
+include_recipe 'sophos-cloud-xgemail::setup-postfix-qstat-cron'
 
 if ACCOUNT == 'sandbox'
   include_recipe 'sophos-cloud-xgemail::configure-extended-delivery-queue'
