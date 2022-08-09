@@ -44,8 +44,8 @@ if __name__ == "__main__":
                         help="sync_type on mail SUBMIT/DELIVERY", required = True)
     parser.add_argument('-c', '--customer_id', metavar='customer_id', help='Customer id for which we want to add entry', required = False)
     parser.add_argument('-d', '--domain', metavar='domain',help="domain for which we want to add  entry", required = False)
-    parser.add_argument('-m', '--process_mailboxes', metavar='process_mailbox',choices=["true","false"],
-                        help="process_mailbox on mail true/false", required = False)
+    parser.add_argument('-m', '--process_mailboxes', metavar='process_mailboxes',choices=["true","false"],
+                        help="process_mailboxes default true value that sync mailboxes in DynamoDB", required = False)
     args = parser.parse_args()
 
     initialSyncRequest = {}
@@ -66,7 +66,7 @@ if __name__ == "__main__":
     if args.domain is not None:
         initialSyncRequest["domain"] = args.domain
 
-    if args.process_mailbox is not None:
+    if args.process_mailboxes is not None:
         initialSyncRequest["process_mailboxes"] = args.process_mailboxes
 
     syncEvent["data"] = initialSyncRequest
