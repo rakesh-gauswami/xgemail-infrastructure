@@ -9,14 +9,8 @@
 
 for sub_dir in \
   \
-  incoming \
   active \
-  deferred \
-  maildrop \
-  bounce \
-  hold \
-  corrupt \
-  saved
+  deferred
 do
   queue_count=$( find "/storage/postfix-<%= @instance_name %>/${sub_dir:?nd}" -type f | wc -l )
   echo "${sub_dir:?nd}: ${queue_count:?nd}"

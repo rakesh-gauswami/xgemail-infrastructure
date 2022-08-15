@@ -860,6 +860,40 @@
       }
     },
 
+    "AlarmPostfixDeferredQueue": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmActions": [
+          {
+            "Fn::Join": [
+              ":",
+              [
+                "arn:aws:sns",
+                { "Ref": "AWS::Region" },
+                { "Ref": "AWS::AccountId" },
+                "postfix-queue-notifications"
+              ]
+            ]
+          }
+        ],
+        "AlarmDescription": "Alarm when postfix deferred queue metric exceeds threshold.",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "DatapointsToAlarm": "1",
+        "Dimensions": [
+            {
+                "Name": "InstanceId",
+                "Value": "*"
+            }
+        ],
+        "EvaluationPeriods": "10",
+        "MetricName": "postfix_deferred_queue",
+        "Namespace": "EC2",
+        "Period": "60",
+        "Statistic": "Average",
+        "Threshold": "1000"
+      }
+    },
+
     "AlarmScaleIn": {
       "Type": "AWS::CloudWatch::Alarm",
       "Properties": {
