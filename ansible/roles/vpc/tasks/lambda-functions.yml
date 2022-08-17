@@ -17,7 +17,7 @@
     mode:               put
     region:             "{{account.region}}"
     bucket:             "{{s3.lambda_bucket}}"
-    object:             "lambda/{{build.number}}/xgemail_eip_monitor.zip"
+    object:             "lambda/{{build.branch}}/{{build.number}}/xgemail_eip_monitor.zip"
     src:                "{{tmp_artifacts_dir}}/xgemail_eip_monitor.zip"
     overwrite:          always
 
@@ -34,7 +34,7 @@
       HandlerName:                          xgemail_eip_monitor.eip_monitor_handler
       IAMRoleArn:                           "{{iam_stack.stack_outputs.EipMonitorLambdaExecutionRoleArn}}"
       S3Bucket:                             "{{s3.lambda_bucket}}"
-      S3Key:                                "lambda/{{build.number}}/xgemail_eip_monitor.zip"
+      S3Key:                                "lambda/{{build.branch}}/{{build.number}}/xgemail_eip_monitor.zip"
       ScheduleExpression:                   rate(60 minutes)
   register: eip_monitor_stack
 
@@ -59,7 +59,7 @@
     mode:               put
     region:             "{{account.region}}"
     bucket:             "{{s3.lambda_bucket}}"
-    object:             "lambda/{{build.number}}/xgemail_eip_rotation.zip"
+    object:             "lambda/{{build.branch}}/{{build.number}}/xgemail_eip_rotation.zip"
     src:                "{{tmp_artifacts_dir}}/xgemail_eip_rotation.zip"
     overwrite:          always
 
@@ -76,7 +76,7 @@
       HandlerName:                          xgemail_eip_rotation.eip_rotation_handler
       IAMRoleArn:                           "{{iam_stack.stack_outputs.EipRotationLambdaExecutionRoleArn}}"
       S3Bucket:                             "{{s3.lambda_bucket}}"
-      S3Key:                                "lambda/{{build.number}}/xgemail_eip_rotation.zip"
+      S3Key:                                "lambda/{{build.branch}}/{{build.number}}/xgemail_eip_rotation.zip"
       ScheduleExpression:                   rate(45 minutes)
       SsmPostfixService:                    "{{ssm_stack.stack_outputs.PostfixService}}"
       SsmUpdateHostname:                    "{{ssm_stack.stack_outputs.UpdateHostname}}"
@@ -103,7 +103,7 @@
     mode:               put
     region:             "{{account.region}}"
     bucket:             "{{s3.lambda_bucket}}"
-    object:             "lambda/{{build.number}}/xgemail_multi_eip_rotation.zip"
+    object:             "lambda/{{build.branch}}/{{build.number}}/xgemail_multi_eip_rotation.zip"
     src:                "{{tmp_artifacts_dir}}/xgemail_multi_eip_rotation.zip"
     overwrite:          always
 
@@ -119,7 +119,7 @@
       HandlerName:                          xgemail_multi_eip_rotation.multi_eip_rotation_handler
       IAMRoleArn:                           "{{iam_stack.stack_outputs.MultiEipRotationLambdaExecutionRoleArn}}"
       S3Bucket:                             "{{s3.lambda_bucket}}"
-      S3Key:                                "lambda/{{build.number}}/xgemail_multi_eip_rotation.zip"
+      S3Key:                                "lambda/{{build.branch}}/{{build.number}}/xgemail_multi_eip_rotation.zip"
       ScheduleExpression:                   rate(45 minutes)
       SsmPostfixService:                    "{{ssm_stack.stack_outputs.PostfixService}}"
       ScheduleState:                        DISABLED
@@ -148,7 +148,7 @@
     mode:               put
     region:             "{{account.region}}"
     bucket:             "{{s3.lambda_bucket}}"
-    object:             "lambda/{{build.number}}/xgemail_mf_elb_o365_ip_sync.zip"
+    object:             "lambda/{{build.branch}}/{{build.number}}/xgemail_mf_elb_o365_ip_sync.zip"
     src:                "{{tmp_artifacts_dir}}/xgemail_mf_elb_o365_ip_sync.zip"
     overwrite:          always
 
@@ -167,7 +167,7 @@
       MfIsElbSecurityGroup:                 "{{sg_stack.stack_outputs.XgemailMfInboundSubmitSecurityGroupLb}}"
       MfOsElbSecurityGroup:                 "{{sg_stack.stack_outputs.XgemailMfOutboundSubmitSecurityGroupLb}}"
       S3Bucket:                             "{{s3.lambda_bucket}}"
-      S3Key:                                "lambda/{{build.number}}/xgemail_mf_elb_o365_ip_sync.zip"
+      S3Key:                                "lambda/{{build.branch}}/{{build.number}}/xgemail_mf_elb_o365_ip_sync.zip"
       ScheduleExpression:                   cron(0 10 * * ? *)
       ScheduleState:                        "ENABLED"
   register: mf_elb_o365_ip_sync_stack
