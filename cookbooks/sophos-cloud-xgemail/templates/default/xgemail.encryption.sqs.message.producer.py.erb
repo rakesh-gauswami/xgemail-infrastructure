@@ -571,16 +571,7 @@ def update_secure_policy_context(message_context, recipient, secure_policy):
 def base_policy_flow(metadata, direction, is_reply, domain, sender, message, rfx_submit, is_mh_parent, msghistory_events, policy, secure_policy):
     queue_id = metadata.get_queue_id()
 
-    tmp_file_path = formatterutils.get_s3_path(
-        ROOT_DIR,
-        TIMESTAMP_FORMAT,
-        SUBMIT_HOST_IP,
-        queue_id,
-        domain
-    )
-
-    if multipolicyreaderutils.prefix_messages_path_enabled(get_customer_id(queue_id, msghistory_events), SUBMIT_HOST_IP):
-        tmp_file_path = get_s3_prefix_path(queue_id, policy_id, domain)
+    tmp_file_path = get_s3_prefix_path(queue_id, policy_id, domain)
 
     if (direction == OUTBOUND_MESSAGE_DIRECTION and is_reply == True) or direction == INBOUND_MESSAGE_DIRECTION \
         or rfx_submit is True:

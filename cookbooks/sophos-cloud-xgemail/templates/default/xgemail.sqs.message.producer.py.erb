@@ -627,9 +627,7 @@ def base_policy_flow(metadata, direction, domain, sender, message, msghistory_ev
     queue_id = metadata.get_queue_id()
 
     
-    s3_file_path = get_s3_path(queue_id, domain)
-    if multipolicyreaderutils.prefix_messages_path_enabled(get_customer_id(metadata.get_queue_id(), msghistory_events), SUBMIT_HOST_IP):
-        s3_file_path = get_s3_prefix_path(queue_id, '00', domain)
+    s3_file_path = get_s3_prefix_path(queue_id, '00', domain)
    
     message_context = None
     if msghistory_events is not None:
@@ -740,10 +738,7 @@ def multi_policy_flow(metadata, direction, domain, sender, message, msghistory_e
         this_policy_metadata.set_recipients(recipient)
         this_policy_metadata.add_uuid_to_queue_id()
 
-        policy_id_path = "/" + policy_id + "/"
-        new_s3_file_path = s3_file_path.replace(POLICY_ID_PATH_VALUE, policy_id_path)
-        if multipolicyreaderutils.prefix_messages_path_enabled(get_customer_id(queue_id, msghistory_events), SUBMIT_HOST_IP):
-            new_s3_file_path = get_s3_prefix_path(queue_id, policy_id, domain)
+        new_s3_file_path = get_s3_prefix_path(queue_id, policy_id, domain)
 
         if msghistory_events is not None:
             message_context = update_msghistory_event_and_get_message_context(msghistory_events, new_s3_file_path, this_policy_metadata, direction, recipient, sender)
@@ -824,12 +819,9 @@ def outbound_split_by_recipients(metadata, sender, domain, message, direction, m
         this_recipient_metadata.set_recipients([recipient])
         this_recipient_metadata.add_uuid_to_queue_id()
 
-        new_s3_file_path = s3_file_path.replace(POLICY_ID_PATH_VALUE,
-                                                "/" + str(hashlib.sha256(str(recipient)).hexdigest()) + "/")
+        
+        new_s3_file_path = get_s3_prefix_path(queue_id, str(hashlib.sha256(str(recipient)).hexdigest()), domain)
 
-        if multipolicyreaderutils.prefix_messages_path_enabled(get_customer_id(queue_id, msghistory_events), SUBMIT_HOST_IP):
-            new_s3_file_path = get_s3_prefix_path(queue_id, str(hashlib.sha256(str(recipient)).hexdigest()), domain)
-                                            
 
         if msghistory_events is not None:
             message_context = update_msghistory_event_and_get_message_context(msghistory_events, new_s3_file_path, this_recipient_metadata, direction, this_recipient_metadata.get_recipients(), sender)
