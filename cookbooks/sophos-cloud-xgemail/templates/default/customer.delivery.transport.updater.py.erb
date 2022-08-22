@@ -80,11 +80,6 @@ def get_smtp_transport_tag(s3, domain_name, customer_id):
   logger.debug('Checking new location' + key_path)
   if encryption_config_exists(s3, key_path):
     return TLS_SMTP_TRANSPORT_TAG
-  
-  #Check old location.
-  key_path = ENC_CONFIG_KEY + domain_name + '.ENC_CONFIG'
-  if encryption_config_exists(s3, key_path):
-    return TLS_SMTP_TRANSPORT_TAG
 
   if tls_config_exists_in_api_response(customer_id):
     return TLS_SMTP_TRANSPORT_TAG
