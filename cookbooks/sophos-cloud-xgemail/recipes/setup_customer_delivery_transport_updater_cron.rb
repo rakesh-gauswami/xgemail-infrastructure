@@ -106,6 +106,7 @@ template CRON_SCRIPT_PATH do
     :xgemail_utils_path => XGEMAIL_UTILS_DIR,
     :custom_route_transport_path => CUSTOM_ROUTE_TRANSPORT_PATH,
     :instance_id => INSTANCE_ID,
+    :aws_region => REGION,
     :flat_file_instance_list_path => FLAT_FILE_INSTANCE_LIST_PATH,
     :transport_s3_file_name => TRANSPORT_S3_FILE_NAME
   )

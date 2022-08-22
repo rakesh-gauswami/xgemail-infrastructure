@@ -25,6 +25,7 @@ from logging.handlers import SysLogHandler
 POSTFIX_INSTANCE_NAME = '<%= @postfix_instance_name %>'
 TRANSPORT_FILENAME = '<%= @transport_filename %>'
 POLICY_BUCKET = '<%= @policy_bucket %>'
+AWS_REGION = "<%= @aws_region %>"
 TLS_SMTP_TRANSPORT_TAG = ' smtp_encrypt:'
 CUSTOM_ROUTE_TRANSPORT_PATH = "<%= @custom_route_transport_path %>"
 CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME = CUSTOM_ROUTE_TRANSPORT_PATH + "customer-delivery-custom-recipient-transport.CONFIG"
@@ -44,8 +45,9 @@ formatter = logging.Formatter(
 handler.formatter = formatter
 logger.addHandler(handler)
 
-logger.info('customer delivery transport updater cron started')
+logger.info('flat file customer delivery transport updater cron started')
 s3 = boto3.client('s3')
+active_mode=False
 
 # sort custom record so that email will prior to it domain
 def sort_record_key(unsorted_dict):
@@ -117,19 +119,34 @@ def flat_file_rollout_config_exist():
       logger.debug("flat file instance list file not Exist." + trace)
       return False
 
+def compare_transport_files(EXISTING_TRANSPORT,NEW_TRANSPORT):
+    TRANSPORT_FILE_DIFF = NEW_TRANSPORT + '.diff'
+    logger.info('For S3 base flat file Passive mode is on in region: {0} for instance id : {1}] and difference is written in file: {2}'.format(AWS_REGION,CURRENT_INSTANCE_ID, TRANSPORT_FILE_DIFF))
+    with open(TRANSPORT_FILE_DIFF, 'w') as diff_file:
+      with open(EXISTING_TRANSPORT) as file1:
+        with open(NEW_TRANSPORT) as file2:
+          diff= set(file1).symmetric_difference(file2)
+          for line in diff:
+            diff_file.write('{0}\n'.format(line))
+
 if flat_file_rollout_config_exist():
   try:
       flat_file_rollout_config = s3.get_object(Bucket=POLICY_BUCKET,Key= INSTANCE_LIST_FILE_NAME)
       enable_instance_data= flat_file_rollout_config['Body'].read()
       config = json.loads(enable_instance_data)
-      if not CURRENT_INSTANCE_ID in config['instance_id_enabled']:
+      if config and config['instance_id_enabled'] and CURRENT_INSTANCE_ID is not None and CURRENT_INSTANCE_ID in config['instance_id_enabled'].keys():
+          logger.info('For S3 base flat file Instance id {0} exists in Config mode is on in region: {1}'.format(CURRENT_INSTANCE_ID,AWS_REGION))
+          if CURRENT_INSTANCE_ID in config['instance_id_enabled'] and config['instance_id_enabled'][CURRENT_INSTANCE_ID]=='ACTIVE':
+              active_mode=True
+              logger.info('For S3 base flat file Instance id {0} exists in Config with ACTIVE mode in region: {1}'.format(CURRENT_INSTANCE_ID,AWS_REGION))
+      else:
           logger.warn('Instance id {0} Not exists in file {1} will Continue the legacy '.format(CURRENT_INSTANCE_ID, INSTANCE_LIST_FILE_NAME))
           sys.exit(0)
   except Exception as e:
       logger.error("Error loading flat file rollout Instance list file " + e.message)
       sys.exit(0)
 else:
-    logger.info("flat file rollout Config not exist, exit from cron")
+    logger.info("flat file rollout Config not exist, exit from flat file cron")
     sys.exit(0)
 
 timestamp_start=time.time() * 1000
@@ -141,12 +158,12 @@ POSTFIX_CONFIG_DIR = subprocess.check_output(
 ).rstrip()
 
 TRANSPORT_FILE = POSTFIX_CONFIG_DIR + '/' + TRANSPORT_FILENAME
-TRANSPORT_FILE_TMP = TRANSPORT_FILE + '.tmp'
+TRANSPORT_FILE_TMP = TRANSPORT_FILE + '.s3_flat'
 
-logger.info('starting to update transport map file [%s.db]', TRANSPORT_FILE)
+logger.info('starting to update transport map file [%s.db]', TRANSPORT_FILE_TMP)
 
 with open(TRANSPORT_FILE_TMP, 'w') as f:
-    if ((POSTFIX_INSTANCE_NAME == 'postfix-cd') or (POSTFIX_INSTANCE_NAME == 'postfix-xd')):
+    if ((POSTFIX_INSTANCE_NAME == 'postfix-cd') or (POSTFIX_INSTANCE_NAME == 'postfix-cx')):
         if custom_route_file_exist():
           try:
               current_config = s3.get_object(Bucket=POLICY_BUCKET,Key= CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
@@ -175,13 +192,14 @@ with open(TRANSPORT_FILE_TMP, 'w') as f:
                 logger.error("Error loading Transport " + line)
 
     if (float(round(time.time() * 1000)) - float(timestamp_start)) > 5 * 60 * 1000:
-        logger.warn('transport map file updater taken more than 10 mins')
+        logger.warn('transport map file updater taken more than 5 mins')
 
     # Add catch-all to retry any unknown domain
     f.write('* retry: domain is unknown\n')
-
-subprocess.call(['postmap', 'hash:{0}'.format(TRANSPORT_FILE_TMP)])
-os.rename(TRANSPORT_FILE_TMP, TRANSPORT_FILE);
-os.rename(TRANSPORT_FILE_TMP + '.db', TRANSPORT_FILE + '.db');
-
-logger.info('transport map file [%s.db] successfully updated. Time taken [%s]', TRANSPORT_FILE, float(round(time.time() * 1000)) - float(timestamp_start))
+if not active_mode:
+    compare_transport_files(TRANSPORT_FILE,TRANSPORT_FILE_TMP);
+if active_mode:
+    subprocess.call(['postmap', 'hash:{0}'.format(TRANSPORT_FILE_TMP)])
+    os.rename(TRANSPORT_FILE_TMP, TRANSPORT_FILE);
+    os.rename(TRANSPORT_FILE_TMP + '.db', TRANSPORT_FILE + '.db');
+    logger.info('transport map file [%s.db] successfully updated from s3 flat file. Time taken [%s]', TRANSPORT_FILE, float(round(time.time() * 1000)) - float(timestamp_start))

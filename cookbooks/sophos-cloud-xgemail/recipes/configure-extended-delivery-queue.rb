@@ -274,6 +274,9 @@ end
 # Setup multi IP NAT rules in IPTABLES if IP_COUNT > 1 for all xdelivery types
 include_recipe 'sophos-cloud-xgemail::setup_iptables_nat_rules'
 
+# Setup postfix qstat cron on all Xdelivery servers to report postfix queue metrics
+include_recipe 'sophos-cloud-xgemail::setup-postfix-qstat-cron'
+
 # recipes to be run in all x-delivery servers for Mhv2
 include_recipe 'sophos-cloud-xgemail::setup_message_history_storage_dir'
 include_recipe 'sophos-cloud-xgemail::setup_message_history_files_cleanup_cron'
