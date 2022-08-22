@@ -26,7 +26,7 @@ POLICY_BUCKET_NAME = "<%= @policy_bucket %>"
 S3_ENCRYPTION_ALGORITHM = 'AES256'
 awshandler = AwsHandler(AWS_REGION)
 
-default_config = {'instance_id_enabled' :[]}
+default_config = {'instance_id_enabled' :{}}
 s3 = boto3.client('s3')
 
 # logging to syslog setup
@@ -66,24 +66,18 @@ def get_config():
     '''
     config_data = get_current_config(INSTANCE_LIST_FILE_NAME)
     print 'flat file enabled for these {0} instance ids:'.format(len(config_data['instance_id_enabled']))
-    for instance_id in config_data['instance_id_enabled']:
-        print '\t{0}'.format(instance_id)
+    for instance_id,mode in config_data['instance_id_enabled'].items():
+        print '\t{0}\t {1}'.format(instance_id,mode)
 
-def add_instance(instance_id):
+def add_instance(instance_id,mode):
     '''
         Adds the instance_id to the list of instances for which we enable flat file.
         If the instance_id already exists, this method does nothing.
     '''
     config = get_current_config(INSTANCE_LIST_FILE_NAME)
-
-    if instance_id in config['instance_id_enabled']:
-        print 'Instance id {0} already exists in file {1}'.format(instance_id, INSTANCE_LIST_FILE_NAME)
-        return
-
-    config['instance_id_enabled'].append(instance_id)
+    config['instance_id_enabled'][instance_id]= mode
 
     upload_to_s3(config, INSTANCE_LIST_FILE_NAME)
-
     print 'Added Instance id {0} in file {1}'.format(instance_id, INSTANCE_LIST_FILE_NAME)
 
 def remove_instance(instance_id):
@@ -92,16 +86,13 @@ def remove_instance(instance_id):
         If the instance_id already exists, this method does nothing.
     '''
     config = get_current_config(INSTANCE_LIST_FILE_NAME)
-
-    if not instance_id in config['instance_id_enabled']:
-        print 'Instance id {0} does not exists in file {1}'.format(instance_id, INSTANCE_LIST_FILE_NAME)
+    if config and config['instance_id_enabled'] and instance_id is not None and instance_id in config['instance_id_enabled'].keys():
+        del config['instance_id_enabled'][instance_id]
+        upload_to_s3(config, INSTANCE_LIST_FILE_NAME)
+        print 'removed Instance id {0} from file {1}'.format(instance_id, INSTANCE_LIST_FILE_NAME)
+    else:
+        print("Instance id {0} not exist".format(instance_id))
         return
-
-    config['instance_id_enabled'].remove(instance_id)
-
-    upload_to_s3(config, INSTANCE_LIST_FILE_NAME)
-
-    print 'removed Instance id {0} from file {1}'.format(instance_id, INSTANCE_LIST_FILE_NAME)
 
 def get_current_config(config_location):
     '''
@@ -123,14 +114,21 @@ if __name__ == "__main__":
     flat_file_config_parser.add_argument('--get', action='store_true', help='Get current  configuration')
     flat_file_config_parser.add_argument('--addinstance', help='Add a instance id for which feature should be enabled')
     flat_file_config_parser.add_argument('--removeinstance', help='Removes a instance id from enabled list')
+    flat_file_config_parser.add_argument('--mode',choices=["ACTIVE","PASSIVE"],
+          help='Add Mode ACTIVE/PASSIVE .Default PASSIVE mode')
 
     get_config_from_args = flat_file_config_parser.parse_args()
     if get_config_from_args.get:
         get_config()
     elif get_config_from_args.addinstance:
-        add_instance(get_config_from_args.addinstance)
+        if get_config_from_args.mode is None:
+            add_instance(get_config_from_args.addinstance,"PASSIVE")
+        else:
+            add_instance(get_config_from_args.addinstance,get_config_from_args.mode)
     elif get_config_from_args.removeinstance:
         remove_instance(get_config_from_args.removeinstance)
+    elif get_config_from_args.mode:
+        flat_file_config_parser.error("mode Should be with addinstance")
     else:
         flat_file_config_parser.print_help()
 
