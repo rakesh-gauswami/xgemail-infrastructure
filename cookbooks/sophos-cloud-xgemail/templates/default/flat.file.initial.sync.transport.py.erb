@@ -6,7 +6,7 @@
 # names mentioned are trademarks or registered trademarks of their
 # respective owners.
 
-# this script is used for intial sync of preparing transport file / DynamoDb for cusgtomer/domain/full
+# this script is used for intial sync of preparing transport file / DynamoDb for customer/domain/full
 # Default will Full Sync for (Delivery/Submit)
 
 import sys
@@ -39,13 +39,13 @@ def send_initial_sync_request_sqs_message(sqs_url,sqs_message_json):
         exit(0)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='initial sync transport entry')
+    parser = argparse.ArgumentParser(description='initiate sync Request transport entry and DynamoDB Entry for Domain and Mailbox')
     parser.add_argument('-t', '--sync_type', metavar='sync_type',choices=["SUBMIT","DELIVERY"],
-                        help="sync_type on mail SUBMIT/DELIVERY", required = True)
+                        help="sync_type SUBMIT/DELIVERY, When DELIVERY add transport entry in s3 file, When SUBMIT add domain entry in DYNAMO-DB", required = True)
     parser.add_argument('-c', '--customer_id', metavar='customer_id', help='Customer id for which we want to add entry', required = False)
     parser.add_argument('-d', '--domain', metavar='domain',help="domain for which we want to add  entry", required = False)
     parser.add_argument('-m', '--process_mailboxes', metavar='process_mailboxes',choices=["true","false"],
-                        help="process_mailboxes default true value that sync mailboxes in DynamoDB", required = False)
+                        help="Applicable For sync_type SUBMIT only. true/false value, If true add mailboxes in DynamoDB. For Full Sync when sync_type SUBMIT default true value", required = False)
     args = parser.parse_args()
 
     initialSyncRequest = {}
