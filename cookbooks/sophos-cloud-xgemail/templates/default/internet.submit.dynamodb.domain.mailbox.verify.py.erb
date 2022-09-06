@@ -35,6 +35,8 @@ else:
 
 with open(RELAY_DOMAINS_FILE, 'r') as f:
     for domainLine in f:
+        if(not(domainLine and domainLine.strip())):
+            continue
         domain= domainLine.strip().split(' ', 1)[0]
         #print("checking domain in daynamo:"+domain)
         try:
@@ -49,6 +51,8 @@ with open(RELAY_DOMAINS_FILE, 'r') as f:
 
 with open(RECIPIENT_ACCESS_FILE, 'r') as f:
     for recipientLine in f:
+        if(not(recipientLine and recipientLine.strip())):
+            continue
         recipient= recipientLine.strip().split(' ', 1)[0]
         #print("checking recipient in daynamo:"+recipient)
         recipientDomain= recipient.strip().split('@', 1)[1]
