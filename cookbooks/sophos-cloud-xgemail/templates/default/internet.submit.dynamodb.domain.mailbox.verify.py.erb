@@ -1,6 +1,7 @@
 import sys
 sys.path.append("<%= @xgemail_utils_path %>")
 import boto3
+from boto3.dynamodb.conditions import Key, Attr
 import json
 import subprocess
 
@@ -27,26 +28,39 @@ POSTFIX_CONFIG_DIR = subprocess.check_output(
 
 RELAY_DOMAINS_FILE = POSTFIX_CONFIG_DIR + '/' + RELAY_DOMAINS_FILENAME
 RECIPIENT_ACCESS_FILE = POSTFIX_CONFIG_DIR + '/' + RECIPIENT_ACCESS_FILENAME
+if (POSTFIX_INSTANCE_NAME == 'postfix-is'):
+    productType='gateway'
+else:
+    productType='mailflow'
 
 with open(RELAY_DOMAINS_FILE, 'r') as f:
     for domainLine in f:
         domain= domainLine.strip().split(' ', 1)[0]
         #print("checking domain in daynamo:"+domain)
         try:
-            response = domaintable.get_item(
-                Key={
-                    'd_name': domain,
-                }
+            response = domaintable.query(
+                KeyConditionExpression=Key('d_name').eq(domain),
+                FilterExpression=Attr(productType).eq(1)
             )
-            if not  response['Item']:
-                print("Domain not found"+domain)
+            if not response['Items']:
+                print(domain)
         except KeyError:
-            print("No record found for given domain:"+domain)
+            print(domain)
 
 with open(RECIPIENT_ACCESS_FILE, 'r') as f:
     for recipientLine in f:
         recipient= recipientLine.strip().split(' ', 1)[0]
-        print("checking recipient in daynamo:"+recipient)
+        #print("checking recipient in daynamo:"+recipient)
+        recipientDomain= recipient.strip().split('@', 1)[1]
+        try:
+            response = domaintable.query(
+                KeyConditionExpression=Key('d_name').eq(recipientDomain),
+                FilterExpression=Attr(productType).eq(1)
+            )
+            if not response['Items']:
+                print("Domain not found for recipient "+recipient)
+        except KeyError:
+            print(recipient)
         try:
             response = mailboxtable.get_item(
                 Key={
@@ -54,6 +68,6 @@ with open(RECIPIENT_ACCESS_FILE, 'r') as f:
                 }
             )
             if not  response['Item']:
-                print("Mailbox not found"+recipient)
+                print(recipient)
         except KeyError:
-            print("No record found for given email:"+recipient)
+            print(recipient)
