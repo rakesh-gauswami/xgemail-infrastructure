@@ -35,7 +35,8 @@ CONFIGURATION_COMMANDS =
   node['xgemail']['common_instance_config_params'] +
   [
     # Disable inet services for default instance
-    'master_service_disable = inet'
+    'master_service_disable = inet',
+    'inet_protocols = ipv4'
   ]
 
 MANAGED_SERVICES_IN_START_ORDER = [
@@ -272,6 +273,9 @@ end
 
 # Setup multi IP NAT rules in IPTABLES if IP_COUNT > 1 for all xdelivery types
 include_recipe 'sophos-cloud-xgemail::setup_iptables_nat_rules'
+
+# Setup postfix qstat cron on all Xdelivery servers to report postfix queue metrics
+include_recipe 'sophos-cloud-xgemail::setup-postfix-qstat-cron'
 
 # recipes to be run in all x-delivery servers for Mhv2
 include_recipe 'sophos-cloud-xgemail::setup_message_history_storage_dir'

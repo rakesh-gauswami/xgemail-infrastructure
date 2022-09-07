@@ -9,16 +9,11 @@
 
 for sub_dir in \
   \
-  incoming \
   active \
   deferred \
-  maildrop \
-  bounce \
-  hold \
-  corrupt \
-  saved
+  incoming
 do
-  queue_count=$( find "/storage/postfix-<%= @instance_name %>/${sub_dir:?nd}" -type f | wc -l )
-  echo "${sub_dir:?nd}: ${queue_count:?nd}"
-  aws --region <%= @aws_region %> cloudwatch put-metric-data --metric-name "postfix_${sub_dir}_queue" --dimensions InstanceId="<%= @instance_id %>" --namespace "EC2" --value $(echo $(($(postmulti -i postfix-<%= @instance_name %> -x mailq | grep -Po "(?<=in )([0-9]+)"))))
+  queue_count=$( find "/storage/postfix-<%= @instance_name %>/${sub_dir}" -type f | wc -l )
+  echo "${sub_dir}: ${queue_count}"
+  aws --region <%= @aws_region %> cloudwatch put-metric-data --metric-name "postfix_${sub_dir}_queue" --dimensions InstanceId="<%= @instance_id %>" --namespace "EC2" --value ${queue_count}
 done

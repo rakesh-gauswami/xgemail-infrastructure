@@ -2,10 +2,10 @@
 # Example logs for the different rejections
 #
 # XGEMAIL_0004
-# Mar  9 03:59:43 ip-172-20-0-4 postfix-is/smtpd[1237]: NOQUEUE: reject: SOPHOS_UUID_24f65175-4398-421d-8f59-831ab6d7b5e6: RCPT from unknown[91.216.61.22]: 554 5.7.1 Service unavailable; Client host [91.216.61.22] is blacklisted. Visit https://www.sophos.com/en-us/threat-center/ip-lookup.aspx?ip=91.216.61.22 to request delisting; from=<badguy@bad-domain.com> to=<recipient@sophos-email-customer.com> proto=ESMTP helo=<[91.216.61.22]>
+# 2022-07-20T20:57:42.190680+00:00 ip-172-20-0-4 postfix-is/smtpd[1237]: NOQUEUE: reject: SOPHOS_UUID_24f65175-4398-421d-8f59-831ab6d7b5e6: RCPT from unknown[91.216.61.22]: 554 5.7.1 Service unavailable; Client host [91.216.61.22] is blacklisted. Visit https://www.sophos.com/en-us/threat-center/ip-lookup.aspx?ip=91.216.61.22 to request delisting; from=<badguy@bad-domain.com> to=<recipient@sophos-email-customer.com> proto=ESMTP helo=<[91.216.61.22]>
 #
 # XGEMAIL_0005
-# Mar  9 03:59:43 ip-172-20-0-4 postfix-is/smtpd[1237]: NOQUEUE: reject: SOPHOS_UUID_24f65175-4398-421d-8f59-831ab6d7b5e6: RCPT from unknown[192.210.213.76]: 554 5.7.1 Service unavailable; Sender address [badguy@bad-domain.com] blocked using uri.ire1.sophosxl.com; from=<badguy@bad-domain.com> to=<recipient@sophos-email-customer.com> proto=ESMTP helo=<bad-domain.com>
+# 2022-07-20T20:57:42.190680+00:00 ip-172-20-0-4 postfix-is/smtpd[1237]: NOQUEUE: reject: SOPHOS_UUID_24f65175-4398-421d-8f59-831ab6d7b5e6: RCPT from unknown[192.210.213.76]: 554 5.7.1 Service unavailable; Sender address [badguy@bad-domain.com] blocked using uri.ire1.sophosxl.com; from=<badguy@bad-domain.com> to=<recipient@sophos-email-customer.com> proto=ESMTP helo=<bad-domain.com>
 #
 
 <filter sns.msg_stats_reject.XGEMAIL_0004>
@@ -34,7 +34,7 @@
   @type record_transformer
   enable_ruby true
   <record>
-    timestamp ${time.strftime("%Y-%m-%dT%H:%M:%S%z")}
+    timestamp ${time.strftime("%Y-%m-%dT%H:%M:%S.%L%z")}
     message_rejection_code ${tag_suffix[2]}
     email_product_type <%= @email_product_type %>
   </record>

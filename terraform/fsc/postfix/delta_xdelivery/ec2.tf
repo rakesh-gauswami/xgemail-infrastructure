@@ -12,7 +12,7 @@ locals {
   }
 
   DEFAULT_AS_MIN_SIZE = {
-    1 = 1
+    1 = 0
     2 = 0
     3 = 0
   }
@@ -54,24 +54,24 @@ locals {
 
   AS_MIN_SIZE_BY_ENVIRONMENT = {
     inf = {
-      1 = 1
+      1 = 0
       2 = 0
       3 = 0
     }
     dev = {
-      1 = 1
+      1 = 0
       2 = 0
       3 = 0
     }
     qa = {
-      1 = 1
+      1 = 0
       2 = 0
       3 = 0
     }
     prod = {
-      1 = 1
-      2 = 1
-      3 = 1
+      1 = 0
+      2 = 0
+      3 = 0
     }
   }
 
