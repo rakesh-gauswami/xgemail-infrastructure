@@ -172,6 +172,8 @@ aws:
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-encryption-delivery-Terminating-LifeCycleHook"
       policy_target_value:                                        "80"
     mfos:
+      alarm_scale_in_enabled:                                     "false"
+      alarm_scale_out_enabled:                                    "true"
       alarm_scaling_enabled:                                      "false"
       as_min_size:                                                "1"
       as_max_size:                                                "3"
@@ -182,6 +184,8 @@ aws:
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-mf-outbound-submit-Terminating-LifeCycleHook"
       policy_target_value:                                        "90"
     mfod:
+      alarm_scale_in_enabled:                                     "false"
+      alarm_scale_out_enabled:                                    "true"
       alarm_scaling_enabled:                                      "false"
       alarm_scale_in_threshold:                                   "10"
       alarm_scale_out_threshold:                                  "50"
