@@ -42,7 +42,7 @@ locals {
     inf  = "t3.medium"
     dev  = "t3.medium"
     qa   = "t3.medium"
-    prod = "m5.2xlarge"
+    prod = "m5a.large"
   }
 
   NEWRELIC_ENABLED_BY_ENVIRONMENT = {
