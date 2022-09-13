@@ -207,7 +207,7 @@ class Terminator(object):
         while self.postfix_queue_count != 0:
             self.logger.warning("There are {} email messages still in the queue. We need to wait for them to drain.".format(self.postfix_queue_count))
 
-            for lifecycle_hook.heartbeat_request_count in range(1, 100, 1):
+            for lifecycle_hook.heartbeat_request_count in range(1, 20, 1):
                 while lifecycle_hook.time_check():
                     last_count = self.postfix_queue_count
                     sleep(10)
