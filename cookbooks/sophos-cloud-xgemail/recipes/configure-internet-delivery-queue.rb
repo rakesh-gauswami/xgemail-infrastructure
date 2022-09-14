@@ -64,25 +64,12 @@ end
 
 # Run an instance of the smtp process that enforces TLS encryption
 [
-  "smtp_encrypt/unix = smtp_encrypt unix - - n - - smtp -o smtp_tls_security_level=encrypt
-  -o smtp_tls_mandatory_protocols=TLSv1.2 -o smtp_tls_ciphers=high
-  -o tls_high_cipherlist=TLSv1.2+FIPS:kRSA+FIPS:!eNULL:!aNULL",
-  "smtp_encrypt_12_verify/unix = smtp_encrypt unix - - n - - smtp -o smtp_tls_security_level=encrypt
-  -o smtp_tls_mandatory_protocols=TLSv1.2 -o smtp_tls_ciphers=high
-  -o smtp_tls_verify_cert_match=hostname,nexthop,dot-nexthop -o tls_high_cipherlist=TLSv1.2+FIPS:kRSA+FIPS:!eNULL:!aNULL",
-  "smtp_13/unix = smtp_encrypt unix - - n - - smtp -o smtp_tls_security_level=may -o smtp_tls_protocols=TLSv1.3,TLSv1.2
-  -o smtp_tls_ciphers=high -o tls_high_cipherlist=TLSv1.3+FIPS:TLSv1.2+FIPS:kRSA+FIPS:!eNULL:!aNULL",
-  "smtp_13_verify/unix = smtp_encrypt unix - - n - - smtp -o smtp_tls_security_level=may
-  -o smtp_tls_protocols=TLSv1.3,TLSv1.2 -o smtp_tls_ciphers=high
-  -o smtp_tls_verify_cert_match=hostname,nexthop,dot-nexthop
-  -o tls_high_cipherlist=TLSv1.3+FIPS:TLSv1.2+FIPS:kRSA+FIPS:!eNULL:!aNULL",
-  "smtp_encrypt_13/unix = smtp_encrypt unix - - n - - smtp -o smtp_tls_security_level=verify
-  -o tls_high_cipherlist=TLSv1.3+FIPS:TLSv1.2+FIPS:kRSA+FIPS:!eNULL:!aNULL
-  -o smtp_tls_mandatory_protocols=TLSv1.3",
-  "smtp_encrypt_13_verify/unix = smtp_encrypt unix - - n - - smtp -o smtp_tls_security_level=verify
-  -o tls_high_cipherlist=TLSv1.3+FIPS:TLSv1.2+FIPS:kRSA+FIPS:!eNULL:!aNULL
-  -o smtp_tls_verify_cert_match=hostname,nexthop,dot-nexthop
-  -o smtp_tls_mandatory_protocols=TLSv1.3",
+  "smtp_encrypt/unix = smtp_encrypt unix - - n - - smtp -o smtp_tls_security_level=encrypt -o smtp_tls_mandatory_protocols=TLSv1.2 -o smtp_tls_ciphers=high  -o tls_high_cipherlist=TLSv1.2+FIPS:kRSA+FIPS:!eNULL:!aNULL",
+  "smtp_encrypt_12_verify/unix = smtp_encrypt unix - - n - - smtp -o smtp_tls_security_level=encrypt -o smtp_tls_mandatory_protocols=TLSv1.2 -o smtp_tls_ciphers=high -o smtp_tls_verify_cert_match=hostname,nexthop,dot-nexthop -o tls_high_cipherlist=TLSv1.2+FIPS:kRSA+FIPS:!eNULL:!aNULL",
+  "smtp_13/unix = smtp_encrypt unix - - n - - smtp -o smtp_tls_security_level=may -o smtp_tls_protocols=TLSv1.3,TLSv1.2 -o smtp_tls_ciphers=high -o tls_high_cipherlist=TLSv1.3+FIPS:TLSv1.2+FIPS:kRSA+FIPS:!eNULL:!aNULL",
+  "smtp_13_verify/unix = smtp_encrypt unix - - n - - smtp -o smtp_tls_security_level=may -o smtp_tls_protocols=TLSv1.3,TLSv1.2 -o smtp_tls_ciphers=high -o smtp_tls_verify_cert_match=hostname,nexthop,dot-nexthop -o tls_high_cipherlist=TLSv1.3+FIPS:TLSv1.2+FIPS:kRSA+FIPS:!eNULL:!aNULL",
+  "smtp_encrypt_13/unix = smtp_encrypt unix - - n - - smtp -o smtp_tls_security_level=verify -o tls_high_cipherlist=TLSv1.3+FIPS:TLSv1.2+FIPS:kRSA+FIPS:!eNULL:!aNULL -o smtp_tls_mandatory_protocols=TLSv1.3",
+  "smtp_encrypt_13_verify/unix = smtp_encrypt unix - - n - - smtp -o smtp_tls_security_level=verify -o tls_high_cipherlist=TLSv1.3+FIPS:TLSv1.2+FIPS:kRSA+FIPS:!eNULL:!aNULL -o smtp_tls_verify_cert_match=hostname,nexthop,dot-nexthop -o smtp_tls_mandatory_protocols=TLSv1.3",
 ].each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf -M '#{cur}'" )
 end
