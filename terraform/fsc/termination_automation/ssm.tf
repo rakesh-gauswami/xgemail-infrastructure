@@ -100,14 +100,15 @@ locals {
         "name": "terminationAutomation",
         "action": "aws:runCommand",
         "maxAttempts": 1,
+        "timeoutSeconds": 30000,
         "inputs": {
           "DocumentName": "AWS-RunShellScript",
           "InstanceIds": [ "{{InstanceId}}" ],
           "Parameters": {
-             "executionTimeout": ["172800"],
-             "commands": [
+            "commands": [
               "/opt/sophos/xgemail/instance-terminator.py -r {{Region}} -t {{Time}} -a {{AutoScalingGroupName}} -i {{InstanceId}} -l {{LifecycleHookName}} -k {{LifecycleActionToken}}"
-            ]
+            ],
+            "executionTimeout": ["172800"]
           }
         },
         "nextStep": "volumeEmpty",
