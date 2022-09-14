@@ -104,8 +104,8 @@ locals {
           "DocumentName": "AWS-RunShellScript",
           "InstanceIds": [ "{{InstanceId}}" ],
           "Parameters": {
-            "timeoutSeconds": "172800",
-            "commands": [
+             "executionTimeout": ["172800"],
+             "commands": [
               "/opt/sophos/xgemail/instance-terminator.py -r {{Region}} -t {{Time}} -a {{AutoScalingGroupName}} -i {{InstanceId}} -l {{LifecycleHookName}} -k {{LifecycleActionToken}}"
             ]
           }
