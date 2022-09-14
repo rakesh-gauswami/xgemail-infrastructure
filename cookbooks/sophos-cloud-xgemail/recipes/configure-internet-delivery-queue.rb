@@ -50,12 +50,11 @@ HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
 
 file "#{HEADER_CHECKS_PATH}" do
   content "/^X_Sophos_TLS_Connection: tls1.2$|^X_Sophos_TLS_Verify: false/i FILTER smtp_encrypt:
-  /^X_Sophos_TLS_Connection: tls1.2$|^X_Sophos_TLS_Verify: true/i FILTER smtp_encrypt_12_verify:
-  /^X_Sophos_TLS_Connection: Opp_tls1.3$|^X_Sophos_TLS_Verify: false$/i FILTER smtp_13:
-  /^X_Sophos_TLS_Connection: Opp_tls1.3$|^X_Sophos_TLS_Verify: true$/i FILTER smtp_13_verify:
-  /^X_Sophos_TLS_Connection: tls1.3$|^X_Sophos_TLS_Verify: false$/i FILTER smtp_encrypt_13:
-  /^X_Sophos_TLS_Connection: tls1.3$|^X_Sophos_TLS_Verify: true$/i FILTER smtp_encrypt_13_verify:
-  "
+/^X_Sophos_TLS_Connection: tls1.2$|^X_Sophos_TLS_Verify: true/i FILTER smtp_encrypt_12_verify:
+/^X_Sophos_TLS_Connection: Opp_tls1.3$|^X_Sophos_TLS_Verify: false$/i FILTER smtp_13:
+/^X_Sophos_TLS_Connection: Opp_tls1.3$|^X_Sophos_TLS_Verify: true$/i FILTER smtp_13_verify:
+/^X_Sophos_TLS_Connection: tls1.3$|^X_Sophos_TLS_Verify: false$/i FILTER smtp_encrypt_13:
+/^X_Sophos_TLS_Connection: tls1.3$|^X_Sophos_TLS_Verify: true$/i FILTER smtp_encrypt_13_verify:"
   mode '0644'
   owner 'root'
   group 'root'
