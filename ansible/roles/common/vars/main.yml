@@ -8,16 +8,16 @@ aws:
       alarm_scaling_enabled:                                      "false"
       alarm_scale_in_threshold:                                   "10"
       alarm_scale_out_threshold:                                  "50"
-      as_min_size:                                                "1"
-      as_max_size:                                                "6"
-      as_min_service:                                             "1"
+      as_min_size:                                                "0"
+      as_max_size:                                                "0"
+      as_min_service:                                             "0"
       as_max_batch_size:                                          "1"
       health_check_grace_period:                                  "600"
       instance_size:                                              "t2.small"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-beta-delivery-Launching-LifeCycleHook"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-beta-delivery-Terminating-LifeCycleHook"
     bx:
-      asg_min_size:                                               [0,0,1]
+      asg_min_size:                                               [0,0,0]
       health_check_grace_period:                                  "600"
       instance_size:                                              "t2.small"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-beta-xdelivery-Launching-LifeCycleHook"
@@ -172,6 +172,8 @@ aws:
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-encryption-delivery-Terminating-LifeCycleHook"
       policy_target_value:                                        "80"
     mfos:
+      alarm_scale_in_enabled:                                     "false"
+      alarm_scale_out_enabled:                                    "true"
       alarm_scaling_enabled:                                      "false"
       as_min_size:                                                "1"
       as_max_size:                                                "3"
@@ -182,6 +184,8 @@ aws:
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-mf-outbound-submit-Terminating-LifeCycleHook"
       policy_target_value:                                        "90"
     mfod:
+      alarm_scale_in_enabled:                                     "false"
+      alarm_scale_out_enabled:                                    "true"
       alarm_scaling_enabled:                                      "false"
       alarm_scale_in_threshold:                                   "10"
       alarm_scale_out_threshold:                                  "50"

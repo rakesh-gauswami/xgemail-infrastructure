@@ -143,9 +143,9 @@ locals {
   }
 
   INSTANCE_SIZE_BY_ENVIRONMENT = {
-    inf  = "t3.small"
-    dev  = "t3.small"
-    qa   = "t3.small"
+    inf  = "t3a.small"
+    dev  = "t3a.small"
+    qa   = "t3a.small"
     prod = "m5a.large"
   }
 

@@ -376,6 +376,9 @@ def get_metadata_for_outbound(metadata, headers, msghistory_events):
             if header_value is not None:
                 header_sender = get_address_from_header(header_value)
 
+                if header_sender is  None or not header_sender:
+                    continue
+
                 is_valid_sender = is_valid_outbound_sender(header_sender, header_name)
 
                 if is_valid_sender:
