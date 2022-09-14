@@ -107,7 +107,8 @@ locals {
           "Parameters": {
             "commands": [
               "/opt/sophos/xgemail/instance-terminator.py -r {{Region}} -t {{Time}} -a {{AutoScalingGroupName}} -i {{InstanceId}} -l {{LifecycleHookName}} -k {{LifecycleActionToken}}"
-            ]
+            ],
+            "executionTimeout": ["172800"]
           }
         },
         "nextStep": "volumeEmpty",
