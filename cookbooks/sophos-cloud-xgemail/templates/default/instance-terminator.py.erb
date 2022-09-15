@@ -218,6 +218,7 @@ class Terminator(object):
             self.logger.info("Finished copying messages from source: {} to EFS: {}".format(messages, efsmessages))
             # If all messages copied to EFS successfully then its safe to purge the queue
             self.run_cmd(['/usr/sbin/postmulti', '-i', self.postfix_instance, '-x', 'postsuper', '-d', 'ALL'])
+            self.postfix_queue_count = self.check_postfix_queue()
             self.logger.info("Postfix queue has been purged {}".format(self.postfix_queue_count))
             return True
         else:
