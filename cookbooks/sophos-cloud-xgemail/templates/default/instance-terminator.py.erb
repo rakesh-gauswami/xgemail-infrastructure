@@ -292,7 +292,7 @@ class Terminator(object):
                 return self.postfix_queue_count
 
             # If waiting doesn't deliver all email then copy it to EFS and delete the volume
-            if self.backup_postfix_queue():
+            if self.backup_postfix_queue() is True:
                 self.logger.critical("LIFECYCLE HOOK EXHAUSTED! The postfix queue has been copied to EFS for recovery.")
                 return self.postfix_queue_count
             else:
