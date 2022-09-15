@@ -49,12 +49,12 @@ end
 HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
 
 file "#{HEADER_CHECKS_PATH}" do
-  content "/^X_Sophos_TLS_Connection: tls1.2$|^X_Sophos_TLS_Verify: false/i FILTER smtp_encrypt_12:
-/^X_Sophos_TLS_Connection: tls1.2$|^X_Sophos_TLS_Verify: true/i FILTER smtp_encrypt_12_verify:
-/^X_Sophos_TLS_Connection: Opp_tls1.3$|^X_Sophos_TLS_Verify: false$/i FILTER smtp_13:
-/^X_Sophos_TLS_Connection: Opp_tls1.3$|^X_Sophos_TLS_Verify: true$/i FILTER smtp_13_verify:
-/^X_Sophos_TLS_Connection: tls1.3$|^X_Sophos_TLS_Verify: false$/i FILTER smtp_encrypt_13:
-/^X_Sophos_TLS_Connection: tls1.3$|^X_Sophos_TLS_Verify: true$/i FILTER smtp_encrypt_13_verify:
+  content "/^X_Sophos_TLS_Connection: tls1.2$/i FILTER smtp_encrypt_12:
+/^X_Sophos_TLS_Connection: tls1.2_verify$/i FILTER smtp_encrypt_12_verify:
+/^X_Sophos_TLS_Connection: Opp_tls1.3$/i FILTER smtp_13:
+/^X_Sophos_TLS_Connection: Opp_tls1.3_verify$/i FILTER smtp_13_verify:
+/^X_Sophos_TLS_Connection: tls1.3$/i FILTER smtp_encrypt_13:
+/^X_Sophos_TLS_Connection: tls1.3_verify$/i FILTER smtp_encrypt_13_verify:
 /^X-Sophos-Enforce-TLS: yes$|^X-Sophos-TLS-Probe: SUCCESS$/i FILTER smtp_encrypt:"
   mode '0644'
   owner 'root'
@@ -65,10 +65,10 @@ end
 # Run an instance of the smtp process that enforces TLS encryption
 [
   "smtp_encrypt_12/unix = smtp_encrypt_12 unix - - n - - smtp -o smtp_tls_security_level=encrypt -o smtp_tls_mandatory_protocols=TLSv1.2 -o smtp_tls_ciphers=high  -o tls_high_cipherlist=TLSv1.2+FIPS:kRSA+FIPS:!eNULL:!aNULL",
-  "smtp_encrypt_12_verify/unix = smtp_encrypt_12_verify unix - - n - - smtp -o smtp_tls_security_level=encrypt -o smtp_tls_mandatory_protocols=TLSv1.2 -o smtp_tls_ciphers=high -o smtp_tls_verify_cert_match=hostname,nexthop,dot-nexthop -o tls_high_cipherlist=TLSv1.2+FIPS:kRSA+FIPS:!eNULL:!aNULL",
+  "smtp_encrypt_12_verify/unix = smtp_encrypt_12_verify unix - - n - - smtp -o smtp_tls_security_level=verify -o smtp_tls_mandatory_protocols=TLSv1.2 -o smtp_tls_ciphers=high -o smtp_tls_verify_cert_match=hostname,nexthop,dot-nexthop -o tls_high_cipherlist=TLSv1.2+FIPS:kRSA+FIPS:!eNULL:!aNULL",
   "smtp_13/unix = smtp_13 unix - - n - - smtp -o smtp_tls_security_level=may -o smtp_tls_protocols=TLSv1.3,TLSv1.2 -o smtp_tls_ciphers=high -o tls_high_cipherlist=TLSv1.3+FIPS:TLSv1.2+FIPS:kRSA+FIPS:!eNULL:!aNULL",
   "smtp_13_verify/unix = smtp_13_verify unix - - n - - smtp -o smtp_tls_security_level=may -o smtp_tls_protocols=TLSv1.3,TLSv1.2 -o smtp_tls_ciphers=high -o smtp_tls_verify_cert_match=hostname,nexthop,dot-nexthop -o tls_high_cipherlist=TLSv1.3+FIPS:TLSv1.2+FIPS:kRSA+FIPS:!eNULL:!aNULL",
-  "smtp_encrypt_13/unix = smtp_encrypt_13 unix - - n - - smtp -o smtp_tls_security_level=verify -o tls_high_cipherlist=TLSv1.3+FIPS:TLSv1.2+FIPS:kRSA+FIPS:!eNULL:!aNULL -o smtp_tls_mandatory_protocols=TLSv1.3",
+  "smtp_encrypt_13/unix = smtp_encrypt_13 unix - - n - - smtp -o smtp_tls_security_level=encrypt -o tls_high_cipherlist=TLSv1.3+FIPS:TLSv1.2+FIPS:kRSA+FIPS:!eNULL:!aNULL -o smtp_tls_mandatory_protocols=TLSv1.3",
   "smtp_encrypt_13_verify/unix = smtp_encrypt_13_verify unix - - n - - smtp -o smtp_tls_security_level=verify -o tls_high_cipherlist=TLSv1.3+FIPS:TLSv1.2+FIPS:kRSA+FIPS:!eNULL:!aNULL -o smtp_tls_verify_cert_match=hostname,nexthop,dot-nexthop -o smtp_tls_mandatory_protocols=TLSv1.3",
   "smtp_encrypt/unix = smtp_encrypt unix - - n - - smtp",
 ].each do | cur |
@@ -90,6 +90,7 @@ if ACCOUNT != 'sandbox'
       'smtp_tls_ciphers=high',
       'smtp_tls_mandatory_ciphers=high',
       'smtp_tls_mandatory_protocols = TLSv1.2',
+      'smtp_tls_CAfile = /etc/pki/tls/certs/ca-bundle.crt',
       'smtp_tls_loglevel=1',
       'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache',
       "header_checks = regexp:#{HEADER_CHECKS_PATH}"
