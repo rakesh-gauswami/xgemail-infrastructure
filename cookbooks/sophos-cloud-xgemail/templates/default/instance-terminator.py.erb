@@ -195,6 +195,8 @@ class Terminator(object):
         messages = 0
         efsmessages = 0
 
+        self.logger.info("Copying {} messages to EFS mount {}".format(self.postfix_queue_count, efstarget))
+
         # Create a unique path on the EFS mount
         if not os.path.exists(efstarget):
             os.makedirs(efstarget)
@@ -204,6 +206,7 @@ class Terminator(object):
             path = ("/storage/{}/{}".format(self.postfix_instance, q))
             for root, dirs, files in os.walk(path):
                 messages += len(files)
+            self.logger.info("Current queue progress: from {} to {}".format(path, efspath))
             self.run_cmd(['cp', '-rp', path, efstarget])
             efspath = ("{}/{}".format(efstarget, q))
             for root, dirs, files in os.walk(efspath):
@@ -211,10 +214,13 @@ class Terminator(object):
 
         # Compare live queues to EFS queues
         if efsmessages == messages:
+            self.logger.info("Finished copying messages from source: {} to EFS: {}".format(messages, efsmessages))
             # If all messages copied to EFS successfully then its safe to purge the queue
             self.run_cmd(['/usr/sbin/postmulti', '-i', self.postfix_instance, '-x', 'postsuper', '-d', 'ALL'])
+            self.logger.info("Postfix queue has been purged {}".format(self.postfix_queue_count))
             return True
         else:
+            self.logger.info("Postfix queue: {} was not successfully copied to EFS: {}".format(messages, efsmessages))
             return False
 
     def process_event(self):
@@ -286,7 +292,7 @@ class Terminator(object):
                 return self.postfix_queue_count
 
             # If waiting doesn't deliver all email then copy it to EFS and delete the volume
-            if self.backup_postfix_queue:
+            if self.backup_postfix_queue():
                 self.logger.critical("LIFECYCLE HOOK EXHAUSTED! The postfix queue has been copied to EFS for recovery.")
                 return self.postfix_queue_count
             else:
