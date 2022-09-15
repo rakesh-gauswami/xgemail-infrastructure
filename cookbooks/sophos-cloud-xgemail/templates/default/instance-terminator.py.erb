@@ -204,11 +204,12 @@ class Terminator(object):
         # Copy all emails from postfix queues to efs mount
         for q in subdirs:
             path = ("/storage/{}/{}".format(self.postfix_instance, q))
+            efspath = ("{}/{}".format(efstarget, q))
+            self.logger.info("Current queue progress: copying from {} to {}...".format(path, efspath))
+            self.run_cmd(['cp', '-rp', path, efstarget])
+            # Count all messages in both locations for verification
             for root, dirs, files in os.walk(path):
                 messages += len(files)
-            self.logger.info("Current queue progress: from {} to {}".format(path, efspath))
-            self.run_cmd(['cp', '-rp', path, efstarget])
-            efspath = ("{}/{}".format(efstarget, q))
             for root, dirs, files in os.walk(efspath):
                 efsmessages += len(files)
 
