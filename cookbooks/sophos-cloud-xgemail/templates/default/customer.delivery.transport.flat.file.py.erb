@@ -195,7 +195,7 @@ with open(TRANSPORT_FILE_TMP, 'w') as f:
                 logger.error("Error loading Transport " + line)
             sys.exit(0)
     else:
-        logger.error("Transport file not exist.exit from flat file cron" )
+        logger.error("S3 Transport file not exist. Exiting from flat file cron" )
         sys.exit(0)
     if (float(round(time.time() * 1000)) - float(timestamp_start)) > 5 * 60 * 1000:
         logger.warn('transport map file updater taken more than 5 mins')

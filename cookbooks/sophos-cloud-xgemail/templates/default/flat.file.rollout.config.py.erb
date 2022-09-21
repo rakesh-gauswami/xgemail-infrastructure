@@ -65,6 +65,8 @@ def get_config():
         Returns the current flat file configuration.
     '''
     config_data = get_current_config(INSTANCE_LIST_FILE_NAME)
+    if config_data and config_data['flat_file_enable_global']:
+        print 'flat file enabled globally: {0} \n'.format(config_data['flat_file_enable_global'])
     print 'flat file enabled for these {0} instance ids:'.format(len(config_data['instance_id_enabled']))
     for instance_id,mode in config_data['instance_id_enabled'].items():
         print '\t{0}\t {1}'.format(instance_id,mode)
@@ -74,11 +76,11 @@ def set_global_config(enable_global):
         enable flat file flag globaly for this region.
     '''
     config = get_current_config(INSTANCE_LIST_FILE_NAME)
-    query = raw_input("Do you really want to Enable flag from this region. Enter 'y' to proceed further ? ")
+    query = raw_input("Do you really want to Enable global flag from this region. Enter 'y' to proceed further ? ")
     if query.lower() == 'y':
       config['flat_file_enable_global'] = enable_global
       upload_to_s3(config, INSTANCE_LIST_FILE_NAME)
-      print 'global flat file enabled for this region'
+      print 'global flat file flag set for this region'
 
 def add_instance(instance_id,mode):
     '''
@@ -123,9 +125,9 @@ if __name__ == "__main__":
 
     flat_file_config_parser = argparse.ArgumentParser(description='ADD/Remove postfix ec2 instances for flat file')
     flat_file_config_parser.add_argument('--get', action='store_true', help='Get current  configuration')
-    flat_file_config_parser.add_argument('--global_enable', choices=["true","false"], help='Set Flat file for this region true/false')
-    flat_file_config_parser.add_argument('--addinstance', help='Add a instance id for which feature should be enabled')
-    flat_file_config_parser.add_argument('--removeinstance', help='Removes a instance id from enabled list')
+    flat_file_config_parser.add_argument('-g','--global_enable', choices=["true","false"], help='Set Flat file for this region true/false')
+    flat_file_config_parser.add_argument('-a','--addinstance', help='Add a instance id for which feature should be enabled')
+    flat_file_config_parser.add_argument('-r','--removeinstance', help='Removes a instance id from enabled list')
     flat_file_config_parser.add_argument('--mode',choices=["ACTIVE","PASSIVE"],
           help='Add Mode ACTIVE/PASSIVE .Default PASSIVE mode')
 

@@ -219,7 +219,7 @@ while True:
         enable_instance_data= flat_file_enable['Body'].read()
         config = json.loads(enable_instance_data)
         if config and config['flat_file_enable_global'] is not None and config['flat_file_enable_global'] == 'true':
-            logger.warn('Flat file globaly enabled for this region')
+            logger.warn('Flat file globaly enabled for this region, will stop the legacy code exection')
             sys.exit(0)
 
         if config and config['instance_id_enabled'] and CURRENT_INSTANCE_ID in config['instance_id_enabled']:
