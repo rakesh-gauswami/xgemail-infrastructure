@@ -134,7 +134,7 @@ if flat_file_rollout_config_exist():
       flat_file_rollout_config = s3.get_object(Bucket=POLICY_BUCKET,Key= INSTANCE_LIST_FILE_NAME)
       enable_instance_data= flat_file_rollout_config['Body'].read()
       config = json.loads(enable_instance_data)
-      if config and config['flat_file_enable_global'] is not None and config['flat_file_enable_global'] == 'true':
+      if config and 'flat_file_enable_global' in config and config['flat_file_enable_global'] == 'true':
           active_mode=True
       else:
           if config and config['instance_id_enabled'] and CURRENT_INSTANCE_ID is not None and CURRENT_INSTANCE_ID in config['instance_id_enabled'].keys():
