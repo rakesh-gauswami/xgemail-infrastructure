@@ -15,5 +15,5 @@ for sub_dir in \
 do
   queue_count=$( find "/storage/postfix-<%= @instance_name %>/${sub_dir}" -type f | wc -l )
   echo "${sub_dir}: ${queue_count}"
-  aws --region <%= @aws_region %> cloudwatch put-metric-data --metric-name "postfix_${sub_dir}_queue" --dimensions InstanceId="<%= @instance_id %>" --namespace "EC2" --value ${queue_count}
+  aws --region <%= @aws_region %> cloudwatch put-metric-data --metric-name "${sub_dir}_queue" --dimensions InstanceName="postfix-<%= @instance_name %>" InstanceId="<%= @instance_id %>" --namespace "Postfix" --value ${queue_count}
 done
