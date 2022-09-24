@@ -20,6 +20,7 @@ import traceback
 import configformatter
 import hashlib
 from logging.handlers import SysLogHandler
+from awshandler import AwsHandler
 
 # Constants
 POSTFIX_INSTANCE_NAME = '<%= @postfix_instance_name %>'
@@ -33,6 +34,9 @@ CURRENT_INSTANCE_ID             =  "<%= @instance_id %>"
 TRANSPORT_S3_FILE_NAME          = "<%= @transport_s3_file_name %>"
 INSTANCE_LIST_PATH              = "<%= @flat_file_instance_list_path %>"
 INSTANCE_LIST_FILE_NAME         =  INSTANCE_LIST_PATH + "flat-file-instance-list.CONFIG"
+
+awshandler = AwsHandler(AWS_REGION)
+
 
 # logging to syslog setup
 logging.getLogger("botocore").setLevel(logging.WARNING)
@@ -86,9 +90,8 @@ def custom_route_file_exist():
       return False
       
     try:
-      s3.head_object(Bucket=POLICY_BUCKET,Key=CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
+      return awshandler.s3_key_exists(POLICY_BUCKET,CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
       # custom route file found return true
-      return True
     except botocore.exceptions.ClientError as e:
       trace = traceback.format_exc()
       logger.debug("Custom route file not Exist." + trace)
@@ -99,9 +102,8 @@ def s3_transport_flat_file_exist():
       return False
 
     try:
-      s3.head_object(Bucket=POLICY_BUCKET,Key=TRANSPORT_S3_FILE_NAME)
+      return awshandler.s3_key_exists(POLICY_BUCKET,TRANSPORT_S3_FILE_NAME)
       # transport file found return true
-      return True
     except botocore.exceptions.ClientError as e:
       trace = traceback.format_exc()
       logger.error("transport file not Exist." + trace)
@@ -111,9 +113,8 @@ def flat_file_rollout_config_exist():
     if not POLICY_BUCKET:
       return False
     try:
-      s3.head_object(Bucket=POLICY_BUCKET,Key=INSTANCE_LIST_FILE_NAME)
       # flat file instance list file found return true
-      return True
+      return awshandler.s3_key_exists(POLICY_BUCKET,INSTANCE_LIST_FILE_NAME)
     except botocore.exceptions.ClientError as e:
       trace = traceback.format_exc()
       logger.debug("flat file instance list file not Exist." + trace)
@@ -131,8 +132,8 @@ def compare_transport_files(EXISTING_TRANSPORT,NEW_TRANSPORT):
 
 if flat_file_rollout_config_exist():
   try:
-      flat_file_rollout_config = s3.get_object(Bucket=POLICY_BUCKET,Key= INSTANCE_LIST_FILE_NAME)
-      enable_instance_data= flat_file_rollout_config['Body'].read()
+      enable_instance_data= awshandler.download_data_from_s3(POLICY_BUCKET,INSTANCE_LIST_FILE_NAME)
+
       config = json.loads(enable_instance_data)
       if config and config['instance_id_enabled'] and CURRENT_INSTANCE_ID is not None and CURRENT_INSTANCE_ID in config['instance_id_enabled'].keys():
           logger.info('For S3 base flat file Instance id {0} exists in Config mode is on in region: {1}'.format(CURRENT_INSTANCE_ID,AWS_REGION))
@@ -166,8 +167,10 @@ with open(TRANSPORT_FILE_TMP, 'w') as f:
     if ((POSTFIX_INSTANCE_NAME == 'postfix-cd') or (POSTFIX_INSTANCE_NAME == 'postfix-cx')):
         if custom_route_file_exist():
           try:
-              current_config = s3.get_object(Bucket=POLICY_BUCKET,Key= CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
-              raw_config_data= current_config['Body'].read()
+              #current_config = s3.get_object(Bucket=POLICY_BUCKET,Key= CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
+              #raw_config_data= current_config['Body'].read()
+              raw_config_data= awshandler.download_data_from_s3(POLICY_BUCKET,CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
+
               config_data = configformatter.get_config_binary(raw_config_data)
               record = json.loads(config_data)
 
@@ -182,8 +185,7 @@ with open(TRANSPORT_FILE_TMP, 'w') as f:
 
     if s3_transport_flat_file_exist():
         try:
-            transport_file = s3.get_object(Bucket=POLICY_BUCKET,Key= TRANSPORT_S3_FILE_NAME)
-            transport_data= transport_file['Body'].read().decode("utf-8")
+            transport_data= awshandler.download_data_from_s3(POLICY_BUCKET,TRANSPORT_S3_FILE_NAME)
             for transport_line in transport_data.splitlines():
                 f.write('{0}\n'.format(transport_line.strip()))
         except Exception as e:

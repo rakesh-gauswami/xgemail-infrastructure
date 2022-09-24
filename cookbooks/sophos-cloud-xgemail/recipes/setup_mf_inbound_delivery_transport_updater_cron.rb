@@ -109,6 +109,7 @@ template CRON_SCRIPT_PATH do
     :connections_bucket => CONNECTIONS_BUCKET,
     :policy_bucket => POLICY_BUCKET,
     :xgemail_utils_path => XGEMAIL_UTILS_DIR,
+    :aws_region => REGION,
     :instance_id => INSTANCE_ID,
     :flat_file_instance_list_path => FLAT_FILE_INSTANCE_LIST_PATH
     )

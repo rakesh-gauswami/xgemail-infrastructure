@@ -114,6 +114,7 @@ template TRANSPORT_UPDATER_SCRIPT_PATH do
     :enc_config_key => ENC_CONFIG_KEY,
     :enc_config_prefix_key => ENC_CONFIG_PREFIX_KEY,
     :inbound_tls_config_key => INBOUND_TLS_CONFIG_KEY,
+    :aws_region => REGION,
     :instance_id => INSTANCE_ID,
     :flat_file_instance_list_path => FLAT_FILE_INSTANCE_LIST_PATH
   )
