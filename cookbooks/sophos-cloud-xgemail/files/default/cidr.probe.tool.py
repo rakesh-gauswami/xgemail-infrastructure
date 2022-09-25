@@ -20,6 +20,7 @@ import logging
 import shutil
 import smtplib
 import socket
+import dns.resolver
 from smtplib import SMTPDataError
 from smtplib import SMTPException
 from smtplib import SMTPSenderRefused
@@ -121,6 +122,10 @@ def write_error_file(failed_result):
     with open(ERROR_ENTRIES_PATH, 'w') as write_file:
         write_file.write(json_string)
 
+def get_mail_server_fqdn(domain):
+    for server in dns.resolver.query('routing-mx.nbr-gsuite.click', 'MX'):
+        return server.exchange.to_text()
+
 def perform_smtp_probe(mta_host, mta_port,from_addr, to_addr, ehlo_name):
     server = smtplib.SMTP(mta_host, mta_port, ehlo_name, 5)
     server.ehlo_or_helo_if_needed()
@@ -212,7 +217,7 @@ def get_domains(last_domain, no_of_domains,args):
             continue
         logging.info('Domain {} Ip Type {}'.format(domain, get_delivery_ip_type_response.content))
 
-        if get_delivery_ip_type_response.content == 'CIDR':
+        if get_delivery_ip_type_response.content.startswith('CIDR'):
             continue
 
         get_address_parameters = {
@@ -245,6 +250,8 @@ def get_domains(last_domain, no_of_domains,args):
         probe['destination_port'] = port
 
         try:
+            if get_delivery_ip_type_response.content.startswith('FQDN'):
+                destination = get_mail_server_fqdn(destination)
             logging.debug("Domain [{}] Address [{}] Destination [{}] Port [{}]".format(domain, to_addr, destination, port))
             (code, resp, cmd) = perform_smtp_probe(destination, port, MAIL_FROM, to_addr, args.helo_name)
             logging.debug("Domain [{}] Code [{}] Response [{}]".format('devtest.jpsbim.com', code, resp))
