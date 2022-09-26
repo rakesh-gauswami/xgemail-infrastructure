@@ -404,7 +404,6 @@
               "Fn::If": [
                 "IsSubmitBucket",
                 {
-                  "condition": "IsProduction",
                   "Sid": "Allow Sophos Labs to access internet submit bucket",
                   "Action": "s3:GetObject",
                   "Effect": "Allow",
@@ -421,40 +420,18 @@
                     ]
                   },
                   "Principal": {
-                    "AWS": "arn:aws:iam::872445321290:role/labs_platform_prod"
-                  }
-                },
-                {
-                  "Ref": "AWS::NoValue"
-                }
-              ]
-            },
-            {
-              "Fn::If": [
-                "IsSubmitBucket",
-                {
-                  "Fn::Not": [
-                    {
-                      "condition": "IsProduction"
-                    }
-                  ],
-                  "Sid": "Allow Sophos Labs to access internet submit bucket",
-                  "Action": "s3:GetObject",
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::Join": [
-                      "",
-                      [
-                        "arn:aws:s3:::",
-                        {
-                          "Ref": "S3Bucket"
-                        },
-                        "/*"
-                      ]
+                    "Fn::If": [
+                      "IsProduction",
+                      {
+                        "AWS": "arn:aws:iam::872445321290:role/labs_platform_prod"
+                      }
+                    ],
+                    "Fn::Not": [
+                      "IsProduction",
+                      {
+                        "AWS": "arn:aws:iam::792368871298:role/labsdev"
+                      }
                     ]
-                  },
-                  "Principal": {
-                    "AWS": "arn:aws:iam::792368871298:role/labsdev"
                   }
                 },
                 {
