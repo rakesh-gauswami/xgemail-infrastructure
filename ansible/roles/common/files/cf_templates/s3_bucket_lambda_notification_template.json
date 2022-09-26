@@ -177,6 +177,14 @@
         },
         "AWS"
       ]
+    },
+    "SubmitBucketReadAccess": {
+      "Fn::Equals": [
+        {
+          "Ref": "Environment"
+        },
+        "prod"
+      ]
     }
   },
   "Resources": {
@@ -396,34 +404,7 @@
               "Fn::If": [
                 "IsSubmitBucket",
                 {
-                  "Sid": "Allow Sophos Labs to access internet submit bucket",
-                  "Action": "s3:GetObject",
-                  "Effect": "Allow",
-                  "Resource": {
-                    "Fn::Join": [
-                      "",
-                      [
-                        "arn:aws:s3:::",
-                        {
-                          "Ref": "S3Bucket"
-                        },
-                        "/*"
-                      ]
-                    ]
-                  },
-                  "Principal": {
-                    "AWS": "arn:aws:iam::792368871298:role/labsdev"
-                  }
-                },
-                {
-                  "Ref": "AWS::NoValue"
-                }
-              ]
-            },
-            {
-              "Fn::If": [
-                "IsSubmitBucket",
-                {
+                  "condition": "SubmitBucketReadAccess",
                   "Sid": "Allow Sophos Labs to access internet submit bucket",
                   "Action": "s3:GetObject",
                   "Effect": "Allow",
@@ -441,6 +422,39 @@
                   },
                   "Principal": {
                     "AWS": "arn:aws:iam::872445321290:role/labs_platform_prod"
+                  }
+                },
+                {
+                  "Ref": "AWS::NoValue"
+                }
+              ]
+            },
+            {
+              "Fn::If": [
+                "IsSubmitBucket",
+                {
+                  "Fn::Not": [
+                    {
+                      "condition": "SubmitBucketReadAccess"
+                    }
+                  ],
+                  "Sid": "Allow Sophos Labs to access internet submit bucket",
+                  "Action": "s3:GetObject",
+                  "Effect": "Allow",
+                  "Resource": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:aws:s3:::",
+                        {
+                          "Ref": "S3Bucket"
+                        },
+                        "/*"
+                      ]
+                    ]
+                  },
+                  "Principal": {
+                    "AWS": "arn:aws:iam::792368871298:role/labsdev"
                   }
                 },
                 {
