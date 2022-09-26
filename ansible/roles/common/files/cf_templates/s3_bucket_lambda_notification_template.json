@@ -420,18 +420,7 @@
                     ]
                   },
                   "Principal": {
-                    "Fn::If": [
-                      "IsProduction",
-                      {
-                        "AWS": "arn:aws:iam::872445321290:role/labs_platform_prod"
-                      }
-                    ],
-                    "Fn::Not": [
-                      "IsProduction",
-                      {
-                        "AWS": "arn:aws:iam::792368871298:role/labsdev"
-                      }
-                    ]
+                    "AWS": {"Fn::If": ["IsProduction", "arn:aws:iam::872445321290:role/labs_platform_prod", "arn:aws:iam::792368871298:role/labsdev"]}
                   }
                 },
                 {
