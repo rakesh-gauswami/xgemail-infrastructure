@@ -4587,19 +4587,6 @@
             },
             {
               "Action": [
-                "s3:GetBucketLocation",
-                "s3:GetObject",
-                "s3:ListBucket",
-                "s3:PutObject"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailPolicyBucketName" }, "/*" ] ] },
-                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailPolicyBucketName" } ] ] }
-              ]
-            },
-            {
-              "Action": [
                 "dynamodb:BatchWriteItem",
                 "dynamodb:DeleteItem",
                 "dynamodb:BatchGetItem",
@@ -6086,19 +6073,6 @@
               "Effect" : "Allow",
               "Resource" : [{ "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }, "/*"]]},
                 { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "MsgHistoryV2BucketName" }]]}]
-            },
-            {
-              "Action": [
-                "s3:GetBucketLocation",
-                "s3:GetObject",
-                "s3:ListBucket",
-                "s3:PutObject"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailPolicyBucketName" }, "/*" ] ] },
-                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "XgemailPolicyBucketName" } ] ] }
-              ]
             },
             {
               "Action": [
