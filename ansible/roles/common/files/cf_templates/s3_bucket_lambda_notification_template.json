@@ -178,7 +178,7 @@
         "AWS"
       ]
     },
-    "SubmitBucketReadAccess": {
+    "IsProduction": {
       "Fn::Equals": [
         {
           "Ref": "Environment"
@@ -404,7 +404,7 @@
               "Fn::If": [
                 "IsSubmitBucket",
                 {
-                  "condition": "SubmitBucketReadAccess",
+                  "condition": "IsProduction",
                   "Sid": "Allow Sophos Labs to access internet submit bucket",
                   "Action": "s3:GetObject",
                   "Effect": "Allow",
@@ -435,7 +435,7 @@
                 {
                   "Fn::Not": [
                     {
-                      "condition": "SubmitBucketReadAccess"
+                      "condition": "IsProduction"
                     }
                   ],
                   "Sid": "Allow Sophos Labs to access internet submit bucket",
