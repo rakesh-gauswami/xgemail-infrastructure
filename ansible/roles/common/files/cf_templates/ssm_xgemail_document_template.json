@@ -798,76 +798,6 @@
       }
     },
 
-    "InstanceTerminator": {
-      "Type": "AWS::SSM::Document",
-      "Properties":{
-        "Content": {
-          "schemaVersion": "2.2",
-          "description": "Safe shutdown of an EC2 instance",
-          "parameters": {
-            "Region":{
-              "type":"String",
-              "description":"The AWS Region."
-            },
-            "Time":{
-              "type":"String",
-              "description":"The timestamp on the Lifecycle Hook."
-            },
-            "AutoScalingGroupName":{
-              "type":"String",
-              "description":"The AutoScaling Group Name."
-            },
-            "InstanceId":{
-              "type":"String",
-              "description":"The EC2 Instance Id."
-            },
-            "LifecycleHookName":{
-              "type":"String",
-              "description":"The Lifecycle Hook Name."
-            },
-            "LifecycleActionToken":{
-              "type":"String",
-              "description":"The Lifecycle Action Token."
-            }
-          },
-          "mainSteps":[
-            {
-              "action":"aws:runShellScript",
-              "name":"runShellScript",
-              "inputs":{
-                "runCommand":[
-                  "/opt/sophos/xgemail/instance-terminator.py -r {{ Region }} -t {{ Time }} -a {{ AutoScalingGroupName }} -i {{ InstanceId }} -l {{ LifecycleHookName }} -k {{ LifecycleActionToken }}"
-                ]
-              }
-            }
-          ]
-        },
-        "DocumentType": "Command",
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "InstanceTerminator" ] ] }
-          },
-          {
-            "Key": "Application",
-            "Value": "cloudemail"
-          },
-          {
-            "Key": "BusinessUnit",
-            "Value": "MSG"
-          },
-          {
-            "Key": "Project",
-            "Value": "xgemail"
-          },
-          {
-            "Key": "OwnerEmail",
-            "Value": "sophosmailops@sophos.com"
-          }
-        ]
-      }
-    },
-
     "TerminationAutomation": {
       "Type": "AWS::SSM::Document",
       "Properties": {
@@ -979,7 +909,8 @@
                 "Parameters": {
                   "commands": [
                     "/opt/sophos/xgemail/instance-terminator.py -r {{Region}} -t {{Time}} -a {{AutoScalingGroupName}} -i {{InstanceId}} -l {{LifecycleHookName}} -k {{LifecycleActionToken}}"
-                  ]
+                  ],
+                  "executionTimeout": ["172800"]
                 }
               },
               "nextStep": "volumeEmpty",
@@ -1605,10 +1536,6 @@
     "EipRotationAutomationRoleArn": {
       "Description": "EipRotation Automation role ARN",
       "Value": { "Fn::GetAtt" : [ "EipRotationAutomationRole", "Arn" ] }
-    },
-    "InstanceTerminator" : {
-      "Description" : "SSM Instance Terminator document name",
-      "Value" : { "Ref" : "InstanceTerminator" }
     },
     "PostconfCommand" : {
       "Description" : "SSM Postfix Command document name",
