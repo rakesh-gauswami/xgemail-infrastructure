@@ -137,10 +137,18 @@ include_recipe 'sophos-cloud-xgemail::common-postfix-multi-instance-config'
 
 # Run an instance of the smtp process that enforces TLS encryption
 [
+  "tls_12_verify/unix = tls_12_verify unix - - n - - smtp -o smtp_tls_security_level=verify -o smtp_tls_mandatory_protocols=TLSv1.2 -o smtp_tls_ciphers=high -o smtp_tls_verify_cert_match=hostname,nexthop,dot-nexthop -o tls_high_cipherlist=TLSv1.2+FIPS:kRSA+FIPS:!eNULL:!aNULL",
+  "opps_tls_13/unix = opps_tls_13 unix - - n - - smtp -o smtp_tls_security_level=may -o smtp_tls_protocols=TLSv1.3,TLSv1.2 -o smtp_tls_ciphers=high -o tls_high_cipherlist=TLSv1.3+FIPS:TLSv1.2+FIPS:kRSA+FIPS:!eNULL:!aNULL",
+  "tls_13/unix = tls_13 unix - - n - - smtp -o smtp_tls_security_level=encrypt -o tls_high_cipherlist=TLSv1.3+FIPS:kRSA+FIPS:!eNULL:!aNULL -o smtp_tls_mandatory_protocols=TLSv1.3",
+  "tls_13_verify/unix = tls_13_verify unix - - n - - smtp -o smtp_tls_security_level=verify -o tls_high_cipherlist=TLSv1.3+FIPS:kRSA+FIPS:!eNULL:!aNULL -o smtp_tls_verify_cert_match=hostname,nexthop,dot-nexthop -o smtp_tls_mandatory_protocols=TLSv1.3",
+  "pref_tls_13/unix = pref_tls_13 unix - - n - - smtp -o smtp_tls_security_level=encrypt -o tls_high_cipherlist=TLSv1.3+FIPS:kRSA+FIPS:!eNULL:!aNULL -o smtp_tls_mandatory_protocols=<=TLSv1.3",
+  "pref_tls_13_verify/unix = pref_tls_13_verify unix - - n - - smtp -o smtp_tls_security_level=verify -o tls_high_cipherlist=TLSv1.3+FIPS:kRSA+FIPS:!eNULL:!aNULL -o smtp_tls_verify_cert_match=hostname,nexthop,dot-nexthop -o smtp_tls_mandatory_protocols=<=TLSv1.3",
   "smtp_encrypt/unix = smtp_encrypt unix - - n - - smtp"
 ].each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf -M '#{cur}'" )
 end
+
+
 
 [
   "smtp_encrypt/unix/smtp_tls_security_level=encrypt"
@@ -148,7 +156,7 @@ end
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf -P '#{cur}'" )
 end
 
-if NODE_TYPE == 'mf-inbound-xdelivery' || NODE_TYPE == 'mf-outbound-xdelivery'
+if NODE_TYPE == 'mf-inbound-xdelivery'
   [
       # Server side TLS configuration
       'smtpd_tls_security_level = may',
@@ -172,6 +180,31 @@ if NODE_TYPE == 'mf-inbound-xdelivery' || NODE_TYPE == 'mf-outbound-xdelivery'
   ].each do |cur|
     execute print_postmulti_cmd(INSTANCE_NAME, "postconf '#{cur}'")
   end
+elsif  NODE_TYPE == 'mf-outbound-xdelivery'
+ [
+     # Server side TLS configuration
+     'smtpd_tls_security_level = may',
+     'smtpd_tls_ciphers = high',
+     'smtpd_tls_mandatory_ciphers = high',
+     'smtpd_tls_loglevel = 1',
+     'smtpd_tls_received_header = yes',
+     "smtpd_tls_cert_file = #{SERVER_PEM_FILE}",
+     "smtpd_tls_key_file = #{KEY_FILE}",
+     'bounce_queue_lifetime=0',
+     "hopcount_limit = #{HOP_COUNT_DELIVERY_INSTANCE}",
+     'mynetworks = 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16',
+     'smtp_tls_security_level = encrypt',
+     'smtp_tls_ciphers=high',
+     'smtp_tls_mandatory_ciphers = high',
+     'smtp_tls_mandatory_protocols = !SSLv2,!SSLv3,!TLSv1,!TLSv1.1,TLSv1.2',
+     'smtp_tls_CAfile = /etc/pki/tls/certs/ca-bundle.crt',
+     'smtp_tls_protocols = !SSLv2,!SSLv3,!TLSv1,!TLSv1.1,TLSv1.2',
+     'smtp_tls_loglevel=1',
+     'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache',
+     'soft_bounce=yes'
+ ].each do |cur|
+   execute print_postmulti_cmd(INSTANCE_NAME, "postconf '#{cur}'")
+ end
 else
   [
       # Server side TLS configuration
@@ -189,6 +222,7 @@ else
       'smtp_tls_ciphers=high',
       'smtp_tls_mandatory_ciphers=high',
       'smtp_tls_mandatory_protocols = TLSv1.2',
+      'smtp_tls_CAfile = /etc/pki/tls/certs/ca-bundle.crt',
       'smtp_tls_loglevel=1',
       'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache'
   ].each do |cur|
@@ -202,7 +236,13 @@ if NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery' || NODE_T
   HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
 
   file "#{HEADER_CHECKS_PATH}" do
-    content "/^X-Sophos-Enforce-TLS: yes$|^X-Sophos-TLS-Probe: SUCCESS$/i FILTER smtp_encrypt:"
+    content "/^X_Sophos_TLS_Connection: TLS_1_2_V$/i FILTER tls_12_verify:
+/^X_Sophos_TLS_Connection: OPP_TLS_1_3$/i FILTER opps_tls_13:
+/^X_Sophos_TLS_Connection: TLS_1_3$/i FILTER tls_13:
+/^X_Sophos_TLS_Connection: TLS_1_3_V$/i FILTER tls_13_verify:
+/^X_Sophos_TLS_Connection: PRE_TLS_1.3$/i FILTER pref_tls_13:
+/^X_Sophos_TLS_Connection: PRE_TLS_1.3_V$/i FILTER pref_tls_13_verify:
+/^X-Sophos-Enforce-TLS: yes$|^X-Sophos-TLS-Probe: SUCCESS$|^X_Sophos_TLS_Connection: TLS_1_2$/i FILTER smtp_encrypt:"
     mode '0644'
     owner 'root'
     group 'root'
