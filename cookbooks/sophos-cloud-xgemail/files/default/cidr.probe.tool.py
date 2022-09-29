@@ -45,6 +45,7 @@ def get_parsed_args(parser):
     parser.add_argument('--env', default = 'DEV', choices=['DEV', 'QA', 'PROD','INF'], help = 'AWS environment', required = True)
     parser.add_argument('--perform_probe', required=False, action='store_true', help="This option is to perform smtp probe for domain still using legacy delivery servers.")
     parser.add_argument('--update_ip_type', required=False, action='store_true', help="This option is to update delivery ip type for domains which passed smtp probe.")
+    parser.add_argument('--update_ip_type_without_check', default = 'CIDR', choices=['CIDR', 'LEGACY'], required=False, help="This option is to update delivery ip type for domains")
     parser.add_argument('--last_domain', help="If this parameter is specified, fetches domains that come after the specified domain", required = False, default="")
     parser.add_argument('--no_of_domains', type=int, default=10, help="Number of domains")
     parser.add_argument('--file', help = 'Pass a json file ', required = False)
@@ -123,7 +124,7 @@ def write_error_file(failed_result):
         write_file.write(json_string)
 
 def get_mail_server_fqdn(domain):
-    for server in dns.resolver.query('routing-mx.nbr-gsuite.click', 'MX'):
+    for server in dns.resolver.query(domain, 'MX'):
         return server.exchange.to_text()
 
 def perform_smtp_probe(mta_host, mta_port,from_addr, to_addr, ehlo_name):
@@ -134,7 +135,7 @@ def perform_smtp_probe(mta_host, mta_port,from_addr, to_addr, ehlo_name):
 
     if server.does_esmtp:
         if server.has_extn('starttls'):
-            logging.info('STARTTLS supported')
+            logging.debug('STARTTLS supported')
             server.starttls()
             server.ehlo_or_helo_if_needed()
 
@@ -207,7 +208,7 @@ def get_domains(last_domain, no_of_domains,args):
 
         #For each domain, get current delivery ip type by calling mail pic api.
         get_delivery_ip_type_response = requests.get(
-            mail_pic_api_url + '/domains/' + domain + '/deliveryIpType',
+            mail_pic_api_url + '/domains/' + domain + '/ipAndDestinationType',
             headers = headers,
             timeout = MAIL_PIC_RESPONSE_TIMEOUT
         )
@@ -235,7 +236,7 @@ def get_domains(last_domain, no_of_domains,args):
 
         if 'addresses' not in get_address_response.json():
             continue
-        
+
         if len(get_address_response.json()['addresses']) == 0:
             logging.info('No address found in response {0}'.format(get_address_response.json()))
             continue
@@ -250,7 +251,7 @@ def get_domains(last_domain, no_of_domains,args):
         probe['destination_port'] = port
 
         try:
-            if get_delivery_ip_type_response.content.startswith('FQDN'):
+            if get_delivery_ip_type_response.content.endswith('MX'):
                 destination = get_mail_server_fqdn(destination)
             logging.debug("Domain [{}] Address [{}] Destination [{}] Port [{}]".format(domain, to_addr, destination, port))
             (code, resp, cmd) = perform_smtp_probe(destination, port, MAIL_FROM, to_addr, args.helo_name)
@@ -266,12 +267,49 @@ def get_domains(last_domain, no_of_domains,args):
     with open(PROBE_RESPONSE_FILE, 'w') as f:
         f.write('{0}'.format(json.dumps(probe_details)))
 
+def send_update_request(args, domain_name, ip_type):
+    mail_pic_api_url = get_mail_pic_url(args)
+    headers = {
+        'Authorization': 'Basic ' + get_passphrase(args),
+        'Content-Type': 'application/json'
+    }
+    logging.debug("Updating delivery ip type to {0} for domain {1}".format(ip_type, domain_name))
+    url = mail_pic_api_url + '/domains/{0}/{1}'.format(domain_name,ip_type)
+    urllib3.disable_warnings(urllib3.exceptions.SecurityWarning)
+    response = requests.post(
+        url,
+        headers = headers,
+        timeout = MAIL_PIC_RESPONSE_TIMEOUT,
+    )
+    return response
+
+def update_delivery_ip_type_without_check(args):
+    ip_type = args.update_ip_type_without_check
+    if args.file:
+        file_name = args.file
+        with open(file_name, 'r') as file:
+            failed_result = []
+            for domain_name in file:
+                logging.debug("Updating delivery ip type to {0} for domain {1}".format(ip_type, domain_name))
+                response = send_update_request(args, domain_name.strip(), ip_type)
+                if response.status_code != 200:
+                    logging.info("Error {0} for domain {1}".format(response.status_code, domain_name))
+                    failed_result.append(domain_name)
+
+        if len(failed_result) > 0:
+            logging.info("The list of domains that are not successfully updated can be found in /tmp/cidr.probe.tool.errors.txt")
+            write_error_file(failed_result)
+    else:
+        logging.info("Aborting... please use --file")
+        return None
+
 if __name__ == '__main__':
     try:
         arg_parser = argparse.ArgumentParser(description='Update deliveryIpType Request')
         parsed_args = get_parsed_args(arg_parser)
         perform_probe = parsed_args.perform_probe
         update_ip_type = parsed_args.update_ip_type
+        update_ip_type_without_check = parsed_args.update_ip_type_without_check
         last_domain = parsed_args.last_domain
         no_of_domains = parsed_args.no_of_domains
         if update_ip_type:
@@ -282,6 +320,8 @@ if __name__ == '__main__':
         elif perform_probe:
             logging.info("Collecting domains..!!")
             get_domains(last_domain, no_of_domains, parsed_args)
+        elif update_ip_type_without_check:
+            update_delivery_ip_type_without_check(parsed_args)
         else:
             print("Incorrect option provided, please provide option based on the operation you want to perform - perform_prob or update_ip_type ")
             exit()
