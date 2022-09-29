@@ -218,6 +218,10 @@ while True:
         flat_file_enable = s3.get_object(Bucket=POLICY_BUCKET,Key= INSTANCE_LIST_FILE_NAME)
         enable_instance_data= flat_file_enable['Body'].read()
         config = json.loads(enable_instance_data)
+        if config and 'flat_file_enable_global' in config and config['flat_file_enable_global'] == 'true':
+            logger.warn('Flat file globaly enabled for this region, will stop the legacy code exection')
+            sys.exit(0)
+
         if config and config['instance_id_enabled'] and CURRENT_INSTANCE_ID in config['instance_id_enabled']:
             if CURRENT_INSTANCE_ID in config['instance_id_enabled'] and config['instance_id_enabled'][CURRENT_INSTANCE_ID]=='ACTIVE':
               logger.warn('Instance id {0} exists in file {1} will stop the legacy code'.format(CURRENT_INSTANCE_ID, INSTANCE_LIST_FILE_NAME))
