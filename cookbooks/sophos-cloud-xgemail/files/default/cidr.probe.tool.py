@@ -290,7 +290,7 @@ def update_delivery_ip_type_without_check(args):
         with open(file_name, 'r') as file:
             failed_result = []
             for domain_name in file:
-                logging.debug("Updating delivery ip type to {0} for domain {1}".format(ip_type, domain_name))
+                logging.info("Updating delivery ip type to {0} for domain {1}".format(ip_type, domain_name))
                 response = send_update_request(args, domain_name.strip(), ip_type)
                 if response.status_code != 200:
                     logging.info("Error {0} for domain {1}".format(response.status_code, domain_name))
