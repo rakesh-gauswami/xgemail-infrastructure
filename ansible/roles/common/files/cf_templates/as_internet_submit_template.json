@@ -686,7 +686,7 @@
             [
               "Alarm when",
               { "Ref": "XgemailServiceType" },
-              "ELB RequestCount exceeds a threshold of",
+              "Postfix queue exceeds a threshold of",
               { "Ref": "AlarmScaleOutThreshold" },
               "for a duration of time"
             ]
@@ -698,15 +698,15 @@
         "Statistic": "Sum",
         "Threshold": { "Ref": "AlarmScaleOutThreshold" },
         "AlarmActions": [ { "Ref": "XgemailScaleOutPolicy" } ],
-        "Namespace": "AWS/ELB",
+        "Namespace": "Postfix",
         "Dimensions": [
           {
-            "Name": "LoadBalancerName",
-            "Value": { "Ref": "LoadBalancerName" }
+            "Name": "NodeType",
+            "Value": { "Ref": "postfix-is" }
           }
         ],
         "ComparisonOperator": "GreaterThanOrEqualToThreshold",
-        "MetricName": "RequestCount"
+        "MetricName": "active_queue"
       }
     },
 
