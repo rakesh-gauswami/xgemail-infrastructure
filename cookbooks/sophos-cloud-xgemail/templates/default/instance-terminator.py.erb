@@ -183,6 +183,48 @@ class Terminator(object):
                 messages += len(files)
         return messages
 
+    def backup_postfix_queue(self):
+        """
+        Copy all emails in the postfix queues to the EFS mount for recovery.
+        After copy is verified, purge the postfix queue to return 0
+        This will allow the volume to be deleted. Any failure will
+        allow the volume to survive for manual recovery.
+        """
+        subdirs = ['maildrop', 'incoming', 'active', 'deferred']
+        efstarget = ("/postfix-offline-storage/{}/{}".format(self.postfix_instance, self.timestamp))
+        messages = 0
+        efsmessages = 0
+
+        self.logger.info("Copying {} messages to EFS mount {}".format(self.postfix_queue_count, efstarget))
+
+        # Create a unique path on the EFS mount
+        if not os.path.exists(efstarget):
+            os.makedirs(efstarget)
+
+        # Copy all emails from postfix queues to efs mount
+        for q in subdirs:
+            path = ("/storage/{}/{}".format(self.postfix_instance, q))
+            efspath = ("{}/{}".format(efstarget, q))
+            self.logger.info("Current queue progress: copying from {} to {}...".format(path, efspath))
+            self.run_cmd(['cp', '-rp', path, efstarget])
+            # Count all messages in both locations for verification
+            for root, dirs, files in os.walk(path):
+                messages += len(files)
+            for root, dirs, files in os.walk(efspath):
+                efsmessages += len(files)
+
+        # Compare live queues to EFS queues
+        if efsmessages == messages:
+            self.logger.info("Finished copying messages from source: {} to EFS: {}".format(messages, efsmessages))
+            # If all messages copied to EFS successfully then its safe to purge the queue
+            self.run_cmd(['/usr/sbin/postmulti', '-i', self.postfix_instance, '-x', 'postsuper', '-d', 'ALL'])
+            self.postfix_queue_count = self.check_postfix_queue()
+            self.logger.info("Postfix queue has been purged {}".format(self.postfix_queue_count))
+            return True
+        else:
+            self.logger.info("Postfix queue: {} was not successfully copied to EFS: {}".format(messages, efsmessages))
+            return False
+
     def process_event(self):
         """
         Main function that processes the CloudWatch Event generated from the Lifecycle Hook.
@@ -207,7 +249,8 @@ class Terminator(object):
         while self.postfix_queue_count != 0:
             self.logger.warning("There are {} email messages still in the queue. We need to wait for them to drain.".format(self.postfix_queue_count))
 
-            for lifecycle_hook.heartbeat_request_count in range(1, 100, 1):
+            # First try to finish delivering all emails for 300X20 seconds
+            for lifecycle_hook.heartbeat_request_count in range(1, 20, 1):
                 while lifecycle_hook.time_check():
                     last_count = self.postfix_queue_count
                     sleep(10)
@@ -250,9 +293,14 @@ class Terminator(object):
                 self.logger.info("The Postfix queue is empty.")
                 return self.postfix_queue_count
 
-            error_message = "LIFECYCLE HOOK EXHAUSTED! *** {} *** Undelivered messages are stuck in the email queue.".format(self.postfix_queue_count)
-            self.logger.critical(error_message)
-            return self.postfix_queue_count
+            # If waiting doesn't deliver all email then copy it to EFS and delete the volume
+            if self.backup_postfix_queue() is True:
+                self.logger.critical("LIFECYCLE HOOK EXHAUSTED! The postfix queue has been copied to EFS for recovery.")
+                return self.postfix_queue_count
+            else:
+                error_message = "LIFECYCLE HOOK EXHAUSTED! *** {} *** Undelivered messages are stuck in the email queue.".format(self.postfix_queue_count)
+                self.logger.critical(error_message)
+                return self.postfix_queue_count
 
 
 class LifecycleHook(object):

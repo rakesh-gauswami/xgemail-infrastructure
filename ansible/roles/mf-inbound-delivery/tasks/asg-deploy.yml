@@ -60,6 +60,7 @@
       XgemailMsgHistoryStatusQueueUrl:      "{{sqs.url_prefix}}{{sqs.msg_history_status_sqs_queue_sns_listener}}"
       XgemailMsgHistoryStatusSnsArn:        "{{sns.arn_prefix}}{{sns.msg_history_status_sns_topic}}"
       XgemailPolicyBucketName:              "{{s3.policy_bucket}}"
+      XgemailPostfixQueueEfsFileSystemId:   "{{cloud_email_postfix_queue_efs_output.ansible_facts.cloudformation[stack.efs.postfix_queue_efs_volume].stack_outputs.FileSystemId}}"
       XgemailSnsSqsQueue:                   "{{sqs.mf_inbound_delivery_sqs_queue_sns_listener}}"
       XgemailSnsSqsQueueUrl:                "{{sqs.url_prefix}}{{sqs.mf_inbound_delivery_sqs_queue_sns_listener}}"
       XgemailServiceType:                   "mf-inbound-delivery"

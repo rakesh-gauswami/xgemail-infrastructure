@@ -53,6 +53,7 @@
       XgemailMsgHistoryMsBucketName:        "{{s3.msg_history_ms_bucket}}"
       XgemailMsgHistoryQueueUrl:            "{{sqs.url_prefix}}{{sqs.msg_history_sqs_queue}}"
       XgemailPolicyBucketName:              "{{s3.policy_bucket}}"
+      XgemailPostfixQueueEfsFileSystemId:   "{{cloud_email_postfix_queue_efs_output.ansible_facts.cloudformation[stack.efs.postfix_queue_efs_volume].stack_outputs.FileSystemId}}"
       XgemailQueueUrl:                      "{{sqs.url_prefix}}{{sqs.internet_submit_sqs_queue}}"
       XgemailServiceType:                   "encryption-submit"
       XgemailSxlDbl:                        "{{xgemail_sxl_dbl}}"

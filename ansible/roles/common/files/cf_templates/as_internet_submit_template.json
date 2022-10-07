@@ -290,6 +290,11 @@
       "Type" : "String",
       "Default": ""
     },
+    "XgemailPostfixQueueEfsFileSystemId" : {
+      "Description": "The id of the EFS file system used to store offline postfix queues",
+      "Type" : "String",
+      "Default": ""
+    },
     "XgemailQueueUrl": {
       "Description": "URL for the SQS Queue where XGEMAIL messages are sent",
       "Type": "String",
@@ -793,6 +798,7 @@
                       "    \"msg_history_v2_bucket_name\"             : \"{{msg_history_v2_bucket_name}}\",\n",
                       "    \"msg_history_v2_stream_name\"             : \"{{msg_history_v2_stream_name}}\",\n",
                       "    \"policy_efs_file_system_id\"              : \"{{policy_efs_file_system_id}}\",\n",
+                      "    \"postfix_queue_efs_file_system_id\"       : \"{{postfix_queue_efs_file_system_id}}\",\n",
                       "    \"smtpd_authorized_xclient_hosts\"         : \"{{smtpd_authorized_xclient_hosts}}\",\n",
                       "    \"station_vpc_id\"                         : \"{{station_vpc_id}}\",\n",
                       "    \"station_vpc_name\"                       : \"{{station_vpc_name}}\",\n",
@@ -827,6 +833,7 @@
                   "msg_history_v2_stream_name":                       { "Ref": "MsgHistoryV2StreamName" },
                   "newrelic_enabled":                                 { "Ref": "NewRelicEnabled" },
                   "policy_efs_file_system_id":                        { "Ref": "XgemailPolicyEfsFileSystemId" },
+                  "postfix_queue_efs_file_system_id":                 { "Ref": "XgemailPostfixQueueEfsFileSystemId" },
                   "region":                                           { "Ref": "AWS::Region" },
                   "smtpd_authorized_xclient_hosts":                   { "Ref": "SmtpdAuthorizedXclientHosts" },
                   "stack":                                            { "Ref": "AWS::StackName" },

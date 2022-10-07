@@ -248,6 +248,11 @@
       "Type" : "String",
       "Default": ""
     },
+    "XgemailPostfixQueueEfsFileSystemId" : {
+      "Description": "The id of the EFS file system used to store offline postfix queues",
+      "Type" : "String",
+      "Default": ""
+    },
     "XgemailSnsSqsQueue": {
       "Description": "The SNS-SQS Queue where XGEMAIL messages are sent",
       "Type": "String",
@@ -708,6 +713,7 @@
                       "    \"msg_history_v2_stream_name\"             : \"{{msg_history_v2_stream_name}}\",\n",
                       "    \"msg_history_status_sns_arn\"             : \"{{msg_history_delivery_status_sns_arn}}\",\n",
                       "    \"msg_notifier_queue_url\"                 : \"{{msg_notifier_queue_url}}\",\n",
+                      "    \"postfix_queue_efs_file_system_id\"       : \"{{postfix_queue_efs_file_system_id}}\",\n",
                       "    \"station_vpc_id\"                         : \"{{station_vpc_id}}\",\n",
                       "    \"station_vpc_name\"                       : \"{{station_vpc_name}}\",\n",
                       "    \"sxl_dbl\"                                : \"{{sxl_dbl}}\",\n",
@@ -734,6 +740,7 @@
                   "msg_history_v2_stream_name":                       { "Ref": "MsgHistoryV2StreamName" },
                   "msg_notifier_queue_url":                           { "Ref": "XgemailNotifierQueueUrl" },
                   "newrelic_enabled":                                 { "Ref": "NewRelicEnabled" },
+                  "postfix_queue_efs_file_system_id":                 { "Ref": "XgemailPostfixQueueEfsFileSystemId" },
                   "region":                                           { "Ref": "AWS::Region" },
                   "stack":                                            { "Ref": "AWS::StackName" },
                   "station_vpc_id":                                   { "Ref": "StationVpcId" },

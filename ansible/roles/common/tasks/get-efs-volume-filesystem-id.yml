@@ -10,3 +10,14 @@
   debug:
     var: cloud_email_efs_output
     verbosity: 3
+
+- name: "Gather {{stack.efs.postfix_queue_efs_volume}} CloudFormation Stack Output"
+  cloudformation_facts:
+    stack_name: "{{stack.efs.postfix_queue_efs_volume}}"
+    region: "{{account.region}}"
+  register: cloud_email_postfix_queue_efs_output
+
+- name: "Print {{stack.efs.postfix_queue_efs_volume}} CloudFormation Stack Output"
+  debug:
+    var: cloud_email_postfix_queue_efs_output
+    verbosity: 3
