@@ -38,6 +38,7 @@ ec2:
     wx:                                                 "XGEMAIL-WARMUP-XDELIVERY"
 efs:
   policy_efs_volume:                                    "Xgemail-Policy-EFS"
+  postfix_queue_efs_volume:                             "Xgemail-Postfix-Queue-EFS"
 iam:
   role:
     arn_prefix:                                         "arn:aws:iam::{{aws_account_id}}:role/"
@@ -284,6 +285,8 @@ stack:
   efs:
     policy_efs_volume:                                  "{{vpc.cloud_email.name}}-xgemail-policy-EFS-volume"
     policy_efs_mount_target:                            "{{vpc.cloud_email.name}}-xgemail-policy-EFS-volume-mount-target"
+    postfix_queue_efs_volume:                           "{{vpc.cloud_email.name}}-xgemail-postfix-queue-EFS-volume"
+    postfix_queue_efs_mount_target:                     "{{vpc.cloud_email.name}}-xgemail-postfix-queue-EFS-volume-mount-target"
   events:
     rule:
       lifecycle_automation:                             "{{vpc.cloud_email.name}}-xgemail-lifecycle-termination-events-rule"

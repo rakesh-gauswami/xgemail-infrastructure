@@ -10,6 +10,7 @@ locals {
   input_param_availability_zones          = nonsensitive(data.aws_ssm_parameter.availability_zones.value)
   input_param_cloud_templates_bucket_name = nonsensitive(data.aws_ssm_parameter.cloud_templates_bucket_name.value)
   input_param_parent_account_name         = nonsensitive(data.aws_ssm_parameter.parent_account_name.value)
+  input_param_postfix_queue_efs_volume_id = nonsensitive(data.aws_ssm_parameter.postfix_queue_efs_volume_id.value)
   input_param_vpc_name                    = replace(nonsensitive(data.aws_ssm_parameter.vpc_name.value), "/-.*/", "")
   input_param_zone_fqdn                   = nonsensitive(data.aws_ssm_parameter.zone_fqdn.value)
   input_param_zone_id                     = nonsensitive(data.aws_ssm_parameter.zone_id.value)
@@ -52,6 +53,11 @@ data "aws_ssm_parameter" "deployment_environment" {
 
 data "aws_ssm_parameter" "parent_account_name" {
   name     = "/central/account/parent-account/name"
+  provider = aws.parameters
+}
+
+data "aws_ssm_parameter" "postfix_queue_efs_volume_id" {
+  name     = "/central/efs/postfix-queue/volume/id"
   provider = aws.parameters
 }
 

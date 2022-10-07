@@ -177,6 +177,14 @@
         },
         "AWS"
       ]
+    },
+    "IsProduction": {
+      "Fn::Equals": [
+        {
+          "Ref": "Environment"
+        },
+        "prod"
+      ]
     }
   },
   "Resources": {
@@ -385,6 +393,34 @@
                   },
                   "Principal": {
                     "AWS": "arn:aws:iam::459806747212:role/dsml_processing"
+                  }
+                },
+                {
+                  "Ref": "AWS::NoValue"
+                }
+              ]
+            },
+            {
+              "Fn::If": [
+                "IsSubmitBucket",
+                {
+                  "Sid": "Allow Sophos Labs to access internet submit bucket",
+                  "Action": "s3:GetObject",
+                  "Effect": "Allow",
+                  "Resource": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:aws:s3:::",
+                        {
+                          "Ref": "S3Bucket"
+                        },
+                        "/*"
+                      ]
+                    ]
+                  },
+                  "Principal": {
+                    "AWS": {"Fn::If": ["IsProduction", "arn:aws:iam::872445321290:role/labs_platform_prod", "arn:aws:iam::792368871298:role/labsdev"]}
                   }
                 },
                 {

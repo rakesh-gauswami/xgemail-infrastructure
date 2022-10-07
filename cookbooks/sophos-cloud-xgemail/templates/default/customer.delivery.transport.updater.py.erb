@@ -23,7 +23,7 @@ import traceback
 import configformatter
 import hashlib
 from logging.handlers import SysLogHandler
-
+from awshandler import AwsHandler
 
 # Constants
 PIC_FQDN = '<%= @xgemail_pic_fqdn %>'
@@ -33,6 +33,8 @@ MAIL_PIC_RESPONSE_TIMEOUT = <%= @mail_pic_api_response_timeout %>
 MAIL_PIC_API_AUTH = '<%= @mail_pic_api_auth %>'
 CONNECTIONS_BUCKET = '<%= @connections_bucket %>'
 POLICY_BUCKET = '<%= @policy_bucket %>'
+AWS_REGION = "<%= @aws_region %>"
+
 ENC_CONFIG_KEY = '<%= @enc_config_key %>'
 ENC_CONFIG_PREFIX_KEY = '<%= @enc_config_prefix_key %>'
 INBOUND_TLS_CONFIG_KEY = '<%= @inbound_tls_config_key %>'
@@ -43,6 +45,7 @@ CUSTOM_ROUTE_TRANSPORT_PATH = "<%= @custom_route_transport_path %>"
 CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME = CUSTOM_ROUTE_TRANSPORT_PATH + "customer-delivery-custom-recipient-transport.CONFIG"
 INSTANCE_LIST_PATH            = "<%= @flat_file_instance_list_path %>"
 INSTANCE_LIST_FILE_NAME       =  INSTANCE_LIST_PATH + "flat-file-instance-list.CONFIG"
+awshandler = AwsHandler(AWS_REGION)
 
 # logging to syslog setup
 logging.getLogger("botocore").setLevel(logging.WARNING)
@@ -183,11 +186,9 @@ def custom_route_file_exist():
 def flat_file_rollout_config_exist():
     if not POLICY_BUCKET:
       return False
-    s3 = boto3.client('s3')
     try:
-      s3.head_object(Bucket=POLICY_BUCKET,Key=INSTANCE_LIST_FILE_NAME)
+      return awshandler.s3_key_exists(POLICY_BUCKET,INSTANCE_LIST_FILE_NAME)
       # flat file instance list file found return true
-      return True
     except botocore.exceptions.ClientError as e:
       trace = traceback.format_exc()
       logger.debug("flat file instance list file not Exist." + trace)
@@ -214,10 +215,12 @@ while True:
 
   if flat_file_rollout_config_exist():
     try:
-        s3 = boto3.client('s3')
-        flat_file_enable = s3.get_object(Bucket=POLICY_BUCKET,Key= INSTANCE_LIST_FILE_NAME)
-        enable_instance_data= flat_file_enable['Body'].read()
+        enable_instance_data= awshandler.download_data_from_s3(POLICY_BUCKET,INSTANCE_LIST_FILE_NAME)
         config = json.loads(enable_instance_data)
+        if config and 'flat_file_enable_global' in config and config['flat_file_enable_global'] == 'true':
+            logger.warn('Flat file globaly enabled for this region, will stop the legacy code exection')
+            sys.exit(0)
+
         if config and config['instance_id_enabled'] and CURRENT_INSTANCE_ID in config['instance_id_enabled']:
             if CURRENT_INSTANCE_ID in config['instance_id_enabled'] and config['instance_id_enabled'][CURRENT_INSTANCE_ID]=='ACTIVE':
               logger.warn('Instance id {0} exists in file {1} will stop the legacy code'.format(CURRENT_INSTANCE_ID, INSTANCE_LIST_FILE_NAME))

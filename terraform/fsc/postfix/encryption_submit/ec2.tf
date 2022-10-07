@@ -81,7 +81,7 @@ locals {
 
   INSTANCE_SIZE_BY_ENVIRONMENT = {
     inf  = "t3a.medium"
-    dev  = "t3a.medium"
+    dev  = "t3.medium"
     qa   = "t3a.medium"
     prod = "m5a.large"
   }
@@ -267,6 +267,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     XgemailMsgHistoryMsBucketName       = var.message_history_ms_bucket
     XgemailMsgHistoryQueueUrl           = var.message_history_sqs_queue
     XgemailPolicyBucketName             = var.policy_bucket
+    XgemailPostfixQueueEfsFileSystemId  = local.input_param_postfix_queue_efs_volume_id
     XgemailQueueUrl                     = var.internet_submit_sqs_queue
     XgemailServiceType                  = local.instance_type
     XgemailSxlDbl                       = local.sxl_dbl

@@ -289,7 +289,8 @@
         "SetPrincipal": { "Fn::Not": [ {"Fn::Equals": [ {"Fn::Select": [0,{ "Ref": "S3PolicyPrincipalList"}]},"arn:aws:iam::############:role/build-system-<account> or canonical user id string"]}]},
         "UseAWSPolicyPrincipalList": { "Fn::Equals": [ { "Ref": "S3PolicyPrincipalListType" }, "AWS" ]},
         "UseAWSPolicyPrincipalDenyList": { "Fn::Equals": [ { "Ref": "S3PolicyPrincipalDenyListType" }, "AWS" ]},
-        "IsSubmitBucket": { "Fn::Equals": [ { "Ref": "SubmitBucketPolicy" }, "true" ]}
+        "IsSubmitBucket": { "Fn::Equals": [ { "Ref": "SubmitBucketPolicy" }, "true" ]},
+        "IsProduction": { "Fn::Equals": [ { "Ref": "Environment" }, "prod"]}
     },
 
     "Resources": {
@@ -796,6 +797,34 @@
                                 },
                                 { "Ref": "AWS::NoValue" }
                                 ]
+                        },
+                        {
+                            "Fn::If": [
+                                "IsSubmitBucket",
+                                {
+                                    "Sid": "Allow Sophos Labs to access internet submit bucket",
+                                    "Action": "s3:GetObject",
+                                    "Effect": "Allow",
+                                    "Resource": {
+                                        "Fn::Join": [
+                                            "",
+                                            [
+                                                "arn:aws:s3:::",
+                                                {
+                                                    "Ref": "S3Bucket"
+                                                },
+                                                "/*"
+                                            ]
+                                        ]
+                                    },
+                                    "Principal": {
+                                        "AWS": {"Fn::If": ["IsProduction", "arn:aws:iam::872445321290:role/labs_platform_prod", "arn:aws:iam::792368871298:role/labsdev"]}
+                                    }
+                                },
+                                {
+                                    "Ref": "AWS::NoValue"
+                                }
+                            ]
                         }
                     ]
                 }

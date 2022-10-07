@@ -62,6 +62,7 @@
       XgemailPolicyArn:                     "{{sns.arn_prefix}}{{sns.policy_sns_topic}}"
       XgemailPolicyBucketName:              "{{s3.policy_bucket}}"
       XgemailPolicyEfsFileSystemId:         "{{cloud_email_efs_output.ansible_facts.cloudformation[stack.efs.policy_efs_volume].stack_outputs.FileSystemId}}"
+      XgemailPostfixQueueEfsFileSystemId:   "{{cloud_email_postfix_queue_efs_output.ansible_facts.cloudformation[stack.efs.postfix_queue_efs_volume].stack_outputs.FileSystemId}}"
       XgemailQueueUrl:                      "{{sqs.url_prefix}}{{sqs.internet_submit_sqs_queue}}"
       XgemailScanEventsTopicArn:            "{{sns.arn_prefix}}{{sns.scan_events_sns_topic}}"
       XgemailServiceType:                   "internet-submit"

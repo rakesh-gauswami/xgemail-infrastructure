@@ -40,7 +40,7 @@ template CRON_SCRIPT_PATH do
   variables(
     :aws_region => AWS_REGION,
     :instance_id => INSTANCE_ID,
-    :instance_name => INSTANCE_NAME
+    :node_type => INSTANCE_NAME
   )
 end
 

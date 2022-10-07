@@ -98,6 +98,7 @@ default['xgemail']['libdkimjni'] = '1.0.14-SNAPSHOT'
 default['xgemail']['libopendkim_version'] = '2.11.0'
 
 default['xgemail']['policy_efs_mount_dir'] = '/policy-storage'
+default['xgemail']['postfix_queue_efs_mount_dir'] = '/postfix-offline-storage'
 
 #Message History
 default['xgemail']['mh_event_storage_dir'] = '/storage/msg-history/events'

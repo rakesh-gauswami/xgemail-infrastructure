@@ -44,3 +44,50 @@
   debug:
     msg: "{{efs_mount_point_stack.stack_outputs}}"
     verbosity: 2
+
+# Postfix Queue EFS volume for abandoned emails during termination sequence
+- name: "Deploy Postfix Queue EFS Volumes {{stack.efs.postfix_queue_efs_volume}} to {{account.name}}-{{account.region}}"
+  cloudformation:
+    stack_name:              "{{stack.efs.postfix_queue_efs_volume}}"
+    state:                   present
+    region:                  "{{account.region}}"
+    disable_rollback:        true
+    template:                "{{template.efs.efs_template}}"
+    template_parameters:
+      EfsNameTag:                       "{{efs.postfix_queue_efs_volume}}"
+      Encrypted:                        "{{aws.efs.postfix_queue_efs_volume.encrypted}}"
+      PerformanceMode:                  "{{aws.efs.postfix_queue_efs_volume.performance_mode}}"
+      ProvisionedThroughputInMibps:     "{{aws.efs.postfix_queue_efs_volume.provisioned_throughput_in_mibps}}"
+      ThroughputMode:                   "{{aws.efs.postfix_queue_efs_volume.throughput_mode}}"
+  register: postfix_queue_efs_volume_stack
+
+- debug:
+    var: postfix_queue_efs_volume_stack
+    verbosity: 3
+
+- name: "Display Postfix Queue EFS Volume Stack Output"
+  debug:
+    msg: "{{postfix_queue_efs_volume_stack.stack_outputs}}"
+    verbosity: 2
+
+- name: "Deploy Postfix Queue EFS Mount Point {{stack.efs.postfix_queue_efs_mount_target}} to {{account.name}}-{{account.region}}"
+  cloudformation:
+    stack_name:              "{{stack.efs.postfix_queue_efs_mount_target}}"
+    state:                   present
+    region:                  "{{account.region}}"
+    disable_rollback:        true
+    template:                "{{template.efs.efs_mount_target_template}}"
+    template_parameters:
+      FileSystemId:          "{{postfix_queue_efs_volume_stack.stack_outputs.FileSystemId}}"
+      SecurityGroups:        "{{sg_stack.stack_outputs.XgemailPostfixQueueEfsMountTargetSecurityGroupId}}"
+      SubnetIds:             "{{cloud_email_vpc_stack.stack_outputs.PrivateSubnetDefaultA}},{{cloud_email_vpc_stack.stack_outputs.PrivateSubnetDefaultB}},{{cloud_email_vpc_stack.stack_outputs.PrivateSubnetDefaultC}}"
+  register: postfix_queue_efs_mount_point_stack
+
+- debug:
+    var: postfix_queue_efs_mount_point_stack
+    verbosity: 3
+
+- name: "Display Postfix Queue EFS Mount Point Stack Output"
+  debug:
+    msg: "{{postfix_queue_efs_mount_point_stack.stack_outputs}}"
+    verbosity: 2
