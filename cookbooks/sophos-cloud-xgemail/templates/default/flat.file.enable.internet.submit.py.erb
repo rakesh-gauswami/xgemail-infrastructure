@@ -85,17 +85,12 @@ def disable_postfix_smtpd_recipient_restrictions():
          'reject_rhsbl_reverse_client uri.ire1.sophosxl.com=127.0.1.[1;3;4;5], '
          'reject_rhsbl_sender uri.ire1.sophosxl.com=127.0.1.[1;3;4;5], '
          'reject_rhsbl_client uri.ire1.sophosxl.com=127.0.1.[1;3;4;5], '
-         'reject_rbl_client $reject_rbl_client, check_sender_access hash:$config_directory/soft_retry_senders_map, reject')
+         'reject_rbl_client $reject_rbl_client')
          ]
         return execute_postfix_cmd(cmd_add)
     if( postfix_instance_name == 'postfix-mfis'):
         cmd = [ 'postmulti', '-i' ,  postfix_instance_name, '-x', 'postconf', '-X', 'smtpd_recipient_restrictions' ]
-        execute_postfix_cmd(cmd)
-        cmd_add = [ 'postmulti', '-i' ,  postfix_instance_name, '-x', 'postconf', ('smtpd_recipient_restrictions='
-         'check_sender_access hash:$config_directory/soft_retry_senders_map, reject')
-         ]
-        return execute_postfix_cmd(cmd_add)
-
+        return execute_postfix_cmd(cmd)
 
 def reload_postfix():
     cmd= ['service', 'postfix', 'reload']
