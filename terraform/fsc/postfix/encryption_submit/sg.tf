@@ -10,10 +10,6 @@ data "aws_security_group" "base" {
   id = local.input_param_sg_base_id
 }
 
-data "aws_security_group" "efs_policy" {
-  id = local.input_param_sg_efs_policy_id
-}
-
 data "aws_security_group" "efs_postfix_queue" {
   id = local.input_param_sg_efs_postfix_queue_id
 }
@@ -68,15 +64,6 @@ resource "aws_security_group_rule" "ec2_egress_world" {
   protocol          = "-1"
   security_group_id = aws_security_group.security_group_ec2.id
   cidr_blocks       = [local.cidr_block_world]
-}
-
-resource "aws_security_group_rule" "efs_policy_ingress_tcp" {
-  type                     = "ingress"
-  from_port                = local.efs_tcp_port
-  to_port                  = local.efs_tcp_port
-  protocol                 = "tcp"
-  security_group_id        = data.aws_security_group.efs_policy.id
-  source_security_group_id = aws_security_group.security_group_ec2.id
 }
 
 resource "aws_security_group_rule" "efs_postfix_queue_ingress_tcp" {

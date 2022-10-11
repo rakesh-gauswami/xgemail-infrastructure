@@ -15,7 +15,6 @@ locals {
   input_param_private_subnet_ids          = split(",", nonsensitive(data.aws_ssm_parameter.private_subnet_ids.value))
   input_param_public_subnet_ids           = split(",", nonsensitive(data.aws_ssm_parameter.public_subnet_ids.value))
   input_param_sg_base_id                  = nonsensitive(data.aws_ssm_parameter.sg_base_id.value)
-  input_param_sg_efs_policy_id            = nonsensitive(data.aws_ssm_parameter.sg_efs_policy_id.value)
   input_param_sg_efs_postfix_queue_id     = nonsensitive(data.aws_ssm_parameter.sg_efs_postfix_queue_id.value)
   input_param_vpc_id                      = nonsensitive(data.aws_ssm_parameter.vpc_id.value)
   input_param_vpc_name                    = replace(nonsensitive(data.aws_ssm_parameter.vpc_name.value), "/-.*/", "")
@@ -102,11 +101,6 @@ data "aws_ssm_parameter" "sg_base_id" {
   provider = aws.parameters
 
   name = "/central/sg/base/id"
-}
-
-data "aws_ssm_parameter" "sg_efs_policy_id" {
-  name     = "/central/sg/efs/policy/id"
-  provider = aws.parameters
 }
 
 data "aws_ssm_parameter" "sg_efs_postfix_queue_id" {
