@@ -11,6 +11,7 @@ locals {
   input_param_cloud_templates_bucket_name = nonsensitive(data.aws_ssm_parameter.cloud_templates_bucket_name.value)
   input_param_parent_account_name         = nonsensitive(data.aws_ssm_parameter.parent_account_name.value)
   input_param_postfix_queue_efs_volume_id = nonsensitive(data.aws_ssm_parameter.postfix_queue_efs_volume_id.value)
+  input_param_sg_efs_postfix_queue_id     = nonsensitive(data.aws_ssm_parameter.sg_efs_postfix_queue_id.value)
   input_param_vpc_name                    = replace(nonsensitive(data.aws_ssm_parameter.vpc_name.value), "/-.*/", "")
   input_param_zone_fqdn                   = nonsensitive(data.aws_ssm_parameter.zone_fqdn.value)
   input_param_zone_id                     = nonsensitive(data.aws_ssm_parameter.zone_id.value)
@@ -70,6 +71,11 @@ data "aws_ssm_parameter" "sg_base_id" {
   provider = aws.parameters
 
   name = "/central/sg/base/id"
+}
+
+data "aws_ssm_parameter" "sg_efs_postfix_queue_id" {
+  name     = "/central/sg/efs/postfix-queue/id"
+  provider = aws.parameters
 }
 
 data "aws_ssm_parameter" "public_subnet_ids" {

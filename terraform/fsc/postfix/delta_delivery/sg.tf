@@ -1,7 +1,12 @@
 locals {
   cidr_block_world       = "0.0.0.0/0"
+  efs_tcp_port           = 2049
   smtp_tcp_port          = 25
   security_group_name_lb = "${local.instance_type}-lb"
+}
+
+data "aws_security_group" "efs_postfix_queue" {
+  id = local.input_param_sg_efs_postfix_queue_id
 }
 
 resource "aws_security_group" "security_group_lb" {
@@ -45,4 +50,13 @@ resource "aws_security_group_rule" "ec2_ingress_lb_smtp" {
   protocol                 = "tcp"
   security_group_id        = aws_security_group.security_group_ec2.id
   source_security_group_id = aws_security_group.security_group_lb.id
+}
+
+resource "aws_security_group_rule" "efs_postfix_queue_ingress_tcp" {
+  type                     = "ingress"
+  from_port                = local.efs_tcp_port
+  to_port                  = local.efs_tcp_port
+  protocol                 = "tcp"
+  security_group_id        = data.aws_security_group.efs_postfix_queue.id
+  source_security_group_id = aws_security_group.security_group_ec2.id
 }
