@@ -15,7 +15,7 @@ data "aws_ssm_parameter" "subnet_ids" {
 }
 
 data "aws_ssm_parameter" "security_groups" {
-  name     = "/central/sg/efs/policy/id"
+  name     = "/central/sg/efs/postfix-queue/id"
   provider = aws.parameters
 }
 
