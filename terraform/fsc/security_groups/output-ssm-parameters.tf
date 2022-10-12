@@ -20,6 +20,12 @@ module "output_string_parameters" {
     },
 
     {
+      name        = "/central/sg/efs/postfix-queue/id"
+      value       = aws_security_group.efs_postfix_queue.id
+      description = aws_security_group.efs_postfix_queue.description
+    },
+
+    {
       name        = "/central/sg/logicmonitor/id"
       value       = aws_security_group.logicmonitor.id
       description = aws_security_group.logicmonitor.description
