@@ -1,6 +1,6 @@
 locals {
   efs_policy_sg_name  = "efs-policy"
-  efs_postfix_queue_sg_name = 'efs-postfix-queue'
+  efs_postfix_queue_sg_name = "efs-postfix-queue"
 }
 
 resource "aws_security_group" "efs_policy" {
