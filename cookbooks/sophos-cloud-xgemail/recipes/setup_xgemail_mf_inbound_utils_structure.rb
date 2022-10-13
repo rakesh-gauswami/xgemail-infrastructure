@@ -14,7 +14,6 @@ NODE_TYPE = node['xgemail']['cluster_type']
 XGEMAIL_FILES_DIR = node['xgemail']['xgemail_files_dir']
 XGEMAIL_UTILS_DIR = node['xgemail']['xgemail_utils_files_dir']
 POLICY_FORMATTER = 'policyformatter.py'
-BLOCKED_SENDER_API = 'blocked_sender_api.py'
 TRANSPORT_ROUTE_CONFIG = 'transportrouteconfig.py'
 BULKSENDER_FORMATTER = 'bulksenderformatter.py'
 BULK_SENDER_ACTION = "bulk_sender_action.py"
