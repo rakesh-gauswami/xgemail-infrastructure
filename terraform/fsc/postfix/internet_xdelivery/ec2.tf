@@ -32,7 +32,7 @@ locals {
   }
 
   INSTANCE_SIZE_BY_ENVIRONMENT = {
-    inf  = "m6i.medium"
+    inf  = "m6i.large"
     dev  = "t3.medium"
     qa   = "t3a.medium"
     prod = "m6i.large"
