@@ -1041,6 +1041,13 @@ aws:
       template_parameters:
         TagApplication:                                           "xgemail-mail"
         QueueName:                                                "{{sqs.sender_check_reject_queue}}"
+    stripped_messages_queue:
+      stack_name:                                                 "{{stack.sqs.stripped_messages_queue}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.stripped_messages_queue}}"
+        TagApplication:                                           "xgemail-mail"
     toc_settings_update_sqs_queue_sns_listener:
       stack_name:                                                 "{{stack.sqs.toc_settings_update_sqs_queue_sns_listener}}"
       state:                                                      present
