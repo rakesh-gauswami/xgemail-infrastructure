@@ -21,16 +21,14 @@ CONFIGURATION_COMMANDS =
   node['xgemail']['common_instance_config_params'] +
   [
     # Disable inet services for default instance
-    'master_service_disable = inet',
-    'inet_protocols = ipv4'
+    'master_service_disable = inet'
   ]
 
 CONFIGURATION_COMMANDS_SANDBOX =
     node['xgemail']['common_instance_config_params'] +
     [
         # Disable inet services for default instance
-        'master_service_disable = inet',
-        'inet_protocols = ipv4'
+        'master_service_disable = inet'
     ]
 
 SQS_MESSAGE_CONSUMER_SERVICE_NAME = node['xgemail']['sqs_message_consumer_service_name']

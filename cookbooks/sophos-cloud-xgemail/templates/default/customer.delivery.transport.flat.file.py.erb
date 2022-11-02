@@ -167,7 +167,7 @@ TRANSPORT_FILE_TMP = TRANSPORT_FILE + '.s3_flat'
 logger.info('starting to update transport map file [%s.db]', TRANSPORT_FILE_TMP)
 
 with open(TRANSPORT_FILE_TMP, 'w') as f:
-    if ((POSTFIX_INSTANCE_NAME == 'postfix-cd') or (POSTFIX_INSTANCE_NAME == 'postfix-cx')):
+    if ((POSTFIX_INSTANCE_NAME == 'postfix-cd') or (POSTFIX_INSTANCE_NAME == 'postfix-cx')  or (POSTFIX_INSTANCE_NAME == 'postfix-xd')):
         if custom_route_file_exist():
           try:
               #current_config = s3.get_object(Bucket=POLICY_BUCKET,Key= CUSTOM_RECIPIENT_TRANSPORT_FILE_NAME)
