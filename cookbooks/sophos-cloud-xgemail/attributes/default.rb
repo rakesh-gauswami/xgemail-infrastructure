@@ -509,7 +509,7 @@ default['xgemail']['common_instance_config_params'] = [
   # Without it the system goes into tailspin when hosts in transport file
   # cannot be resolved, producing mail to 'owner-owner-owner-owner-owner...'
   'owner_request_special = no',
-
+  'inet_protocols = ipv4',
   'enable_long_queue_ids=yes',
   'allow_min_user = yes'
 ]
