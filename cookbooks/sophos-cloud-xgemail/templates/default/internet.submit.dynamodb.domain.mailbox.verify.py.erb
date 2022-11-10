@@ -4,6 +4,7 @@ import boto3
 from boto3.dynamodb.conditions import Key, Attr
 import json
 import subprocess
+from uuid import uuid4
 
 AWS_REGION = "<%= @aws_region %>"
 ACCOUNT = "<%= @account %>"
@@ -11,10 +12,28 @@ ACCOUNT = "<%= @account %>"
 POSTFIX_INSTANCE_NAME = '<%= @postfix_instance_name %>'
 RELAY_DOMAINS_FILENAME = '<%= @relay_domains_filename %>'
 RECIPIENT_ACCESS_FILENAME = '<%= @recipient_access_filename %>'
+STATION_ACCOUNT_ROLE_ARN = "<%= @station_account_role_arn %>"
 
-# Legacy session
-session = boto3.session.Session(region_name=AWS_REGION)
-dynamoDb = session.resource('dynamodb')
+if STATION_ACCOUNT_ROLE_ARN == 'none':
+    # Legacy session
+    session = boto3.session.Session(region_name=AWS_REGION)
+    dynamoDb = session.resource('dynamodb')
+    s3 = session.resource('s3')
+else:
+    # FSC session
+    sts_client = boto3.client("sts")
+    response = sts_client.assume_role(
+        RoleArn=STATION_ACCOUNT_ROLE_ARN,
+        RoleSessionName=uuid4().hex,
+    )
+    credentials = response['Credentials']
+    dynamoDb = boto3.resource(
+        'dynamodb',
+        AWS_REGION,
+        aws_access_key_id=credentials['AccessKeyId'],
+        aws_secret_access_key=credentials['SecretAccessKey'],
+        aws_session_token=credentials['SessionToken'],
+    )
 domaintable = dynamoDb.Table('tf-msg-domains')
 mailboxtable = dynamoDb.Table('tf-msg-mailboxes')
 
