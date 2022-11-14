@@ -801,6 +801,25 @@
       }
     },
 
+    "XgemailPredictiveScaleOutPolicy": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+      "Properties": {
+        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
+        "PolicyType":"PredictiveScaling",
+        "PredictiveScalingConfiguration":{
+          "MetricSpecifications":[
+            {
+              "TargetValue":50,
+              "PredefinedMetricPairSpecification":{
+                "PredefinedMetricType":"ASGCPUUtilization"
+              }
+            }
+          ],
+          "Mode":"ForecastOnly"
+        }
+      }
+    },
+
     "XgemailScaleOutPolicyPub": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
       "Properties": {
@@ -818,6 +837,25 @@
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
         "Cooldown": "60",
         "ScalingAdjustment": "-1"
+      }
+    },
+
+    "XgemailPredictiveScaleInPolicy": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+      "Properties": {
+        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
+        "PolicyType":"PredictiveScaling",
+        "PredictiveScalingConfiguration":{
+          "MetricSpecifications":[
+            {
+              "TargetValue":50,
+              "PredefinedMetricPairSpecification":{
+                "PredefinedMetricType":"ASGCPUUtilization"
+              }
+            }
+          ],
+          "Mode":"ForecastOnly"
+        }
       }
     },
 
