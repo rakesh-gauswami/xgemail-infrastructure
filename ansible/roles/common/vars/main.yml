@@ -107,12 +107,14 @@ aws:
       as_max_size:                                                "6"
       as_min_service:                                             "1"
       as_max_batch_size:                                          "1"
+      eip_count:                                                  "2"
       health_check_grace_period:                                  "600"
       instance_size:                                              "t2.small"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-internet-delivery-Launching-LifeCycleHook"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-internet-delivery-Terminating-LifeCycleHook"
     ix:
       asg_min_size:                                               [0,0,1]
+      eip_count:                                                  "2"
       health_check_grace_period:                                  "600"
       instance_size:                                              "t2.small"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-internet-xdelivery-Launching-LifeCycleHook"
