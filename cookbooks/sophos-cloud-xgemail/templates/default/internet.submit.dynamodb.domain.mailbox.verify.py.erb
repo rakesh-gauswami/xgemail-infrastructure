@@ -98,8 +98,8 @@ def verify_legacy_domain_with_dynamodb():
               print(recipient)
 
 def export_dynamodb():
-    DOMAIN_FILE = "daynamo_domain.txt"
-    MAILBOX_FILE = "daynamo_mailbox.txt"
+    DOMAIN_FILE = "dynamo_domain.txt"
+    MAILBOX_FILE = "dynamo_mailbox.txt"
     try:
         response = domaintable.scan(FilterExpression=Attr(productType).eq(1))
         data = response['Items']
