@@ -3,6 +3,7 @@ sys.path.append("<%= @xgemail_utils_path %>")
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
 import json
+import argparse
 import subprocess
 from uuid import uuid4
 
@@ -52,45 +53,91 @@ if (POSTFIX_INSTANCE_NAME == 'postfix-is'):
 else:
     productType='mailflow'
 
-with open(RELAY_DOMAINS_FILE, 'r') as f:
-    for domainLine in f:
-        if(not(domainLine and domainLine.strip())):
-            continue
-        domain= domainLine.strip().split(' ', 1)[0]
-        #print("checking domain in daynamo:"+domain)
-        try:
-            response = domaintable.query(
-                KeyConditionExpression=Key('d_name').eq(domain),
-                FilterExpression=Attr(productType).eq(1)
-            )
-            if not response['Items']:
-                print(domain)
-        except KeyError:
-            print(domain)
+def verify_legacy_domain_with_dynamodb()
+  with open(RELAY_DOMAINS_FILE, 'r') as f:
+      for domainLine in f:
+          if(not(domainLine and domainLine.strip())):
+              continue
+          domain= domainLine.strip().split(' ', 1)[0]
+          #print("checking domain in daynamo:"+domain)
+          try:
+              response = domaintable.query(
+                  KeyConditionExpression=Key('d_name').eq(domain),
+                  FilterExpression=Attr(productType).eq(1)
+              )
+              if not response['Items']:
+                  print(domain)
+          except KeyError:
+              print(domain)
 
-with open(RECIPIENT_ACCESS_FILE, 'r') as f:
-    for recipientLine in f:
-        if(not(recipientLine and recipientLine.strip())):
-            continue
-        recipient= recipientLine.strip().split(' ', 1)[0]
-        #print("checking recipient in daynamo:"+recipient)
-        recipientDomain= recipient.strip().split('@', 1)[1]
-        try:
-            response = domaintable.query(
-                KeyConditionExpression=Key('d_name').eq(recipientDomain),
-                FilterExpression=Attr(productType).eq(1)
-            )
-            if not response['Items']:
-                print("Domain not found for recipient "+recipient)
-        except KeyError:
-            print(recipient)
-        try:
-            response = mailboxtable.get_item(
-                Key={
-                    'mailbox': recipient,
-                }
-            )
-            if not  response['Item']:
-                print(recipient)
-        except KeyError:
-            print(recipient)
+  with open(RECIPIENT_ACCESS_FILE, 'r') as f:
+      for recipientLine in f:
+          if(not(recipientLine and recipientLine.strip())):
+              continue
+          recipient= recipientLine.strip().split(' ', 1)[0]
+          #print("checking recipient in daynamo:"+recipient)
+          recipientDomain= recipient.strip().split('@', 1)[1]
+          try:
+              response = domaintable.query(
+                  KeyConditionExpression=Key('d_name').eq(recipientDomain),
+                  FilterExpression=Attr(productType).eq(1)
+              )
+              if not response['Items']:
+                  print("Domain not found for recipient "+recipient)
+          except KeyError:
+              print(recipient)
+          try:
+              response = mailboxtable.get_item(
+                  Key={
+                      'mailbox': recipient,
+                  }
+              )
+              if not  response['Item']:
+                  print(recipient)
+          except KeyError:
+              print(recipient)
+
+def export_dynamodb()
+    DOMAIN_FILE = "daynamo_domain.txt"
+    MAILBOX_FILE = "daynamo_mailbox.txt"
+    try:
+        response = domaintable.scan(FilterExpression=Attr(productType).eq(1))
+        data = response['Items']
+
+        while 'LastEvaluatedKey' in response:
+            response = domaintable.scan(ExclusiveStartKey=response['LastEvaluatedKey'],
+                            FilterExpression=Attr(productType).eq(1))
+            data.extend(response['Items'])
+        with open(DOMAIN_FILE, 'w+') as f:
+            for domain in data:
+                f.write('{0} OK\n'.format(domain['d_name']))
+    except Exception as e:
+        print("ERROR %s", e.message)
+
+    try:
+        response = mailboxtable.scan()
+        mailboxdata = response['Items']
+
+        while 'LastEvaluatedKey' in response:
+            response = mailboxtable.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
+            mailboxdata.extend(response['Items'])
+        with open(MAILBOX_FILE, 'w+') as f:
+                for mailbox in mailboxdata:
+                    f.write('{0} OK\n'.format(mailbox['mailbox']))
+    except Exception as e:
+        print("ERROR %s", e.message)
+
+if __name__ == "__main__":
+
+    verify_dynamodb_parser = argparse.ArgumentParser(description='Verify Dynamodb domain/mailbox')
+    verify_dynamodb_parser.add_argument('-v','--verifydomain', help='Add a instance id for which feature should be enabled')
+    verify_dynamodb_parser.add_argument('-e','--exportDynamodbtable', help='Removes a instance id from enabled list')
+
+    get_config_from_args = verify_dynamodb_parser.parse_args()
+    if get_config_from_args.verifydomain:
+        verify_legacy_domain_with_dynamodb()
+    elif get_config_from_args.exportDynamodbtable:
+        export_dynamodb()
+    else:
+        verify_dynamodb_parser.print_help()
+
