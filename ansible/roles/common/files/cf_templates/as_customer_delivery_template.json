@@ -798,6 +798,18 @@
         "Cooldown": "60",
         "ScalingAdjustment": "-1",
         "TargetTrackingConfiguration": {
+          "CustomizedMetricSpecification": {
+            "MetricName":"ApproximateNumberOfMessagesVisible",
+            "Statistic": "Average",
+            "Namespace": "AWS/SQS",
+            "Dimensions": [
+              {
+                "Name": "QueueName",
+                "Value": { "Ref": "XgemailSnsSqsQueue" }
+              }
+            ]
+          },
+          "TargetValue": { "Ref": "AlarmScaleInThreshold"},
           "DisableScaleIn" : "true"
         }
       }
