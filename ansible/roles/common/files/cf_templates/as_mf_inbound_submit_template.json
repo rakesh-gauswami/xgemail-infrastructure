@@ -568,44 +568,25 @@
       }
     },
 
-    "AutoScalingScheduledScaleIn": {
-      "Type": "AWS::AutoScaling::ScheduledAction",
-      "Condition": "EnableScaleInOnWeekends",
+    "XgemailPredictiveScalingPolicy": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "MinSize": "0",
-        "Recurrence": { "Ref": "ScaleInCron" }
+        "PolicyType":"PredictiveScaling",
+        "PredictiveScalingConfiguration":{
+          "MetricSpecifications":[
+            {
+              "TargetValue":50,
+              "PredefinedMetricPairSpecification":{
+                "PredefinedMetricType":"ASGCPUUtilization"
+              }
+            }
+          ],
+          "Mode":"ForecastAndScale"
+        }
       }
     },
 
-    "AutoScalingScheduledScaleOut": {
-      "Type": "AWS::AutoScaling::ScheduledAction",
-      "Condition": "EnableScaleInOnWeekends",
-      "Properties": {
-        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "MinSize": { "Ref": "AutoScalingMinSize" },
-        "Recurrence": { "Ref": "ScaleOutCron" }
-      }
-    },
-    "AutoScalingScheduledScaleInWeekdays": {
-      "Type": "AWS::AutoScaling::ScheduledAction",
-      "Condition": "EnableScaleInOutOnWeekdays",
-      "Properties": {
-        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "DesiredCapacity": {"Ref": "AutoScalingMinSize"},
-        "Recurrence": { "Ref": "ScaleInOnWeekdaysCron" }
-      }
-    },
-
-    "AutoScalingScheduledScaleOutWeekdays": {
-      "Type": "AWS::AutoScaling::ScheduledAction",
-      "Condition": "EnableScaleInOutOnWeekdays",
-      "Properties": {
-        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "DesiredCapacity": {"Ref": "ScheduledAsOnHourDesiredCapacity"},
-        "Recurrence": { "Ref": "ScaleOutOnWeekdaysCron" }
-      }
-    },
     "XgemailScaleOutPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
       "Properties": {
