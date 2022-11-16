@@ -53,7 +53,7 @@ if (POSTFIX_INSTANCE_NAME == 'postfix-is'):
 else:
     productType='mailflow'
 
-def verify_legacy_domain_with_dynamodb()
+def verify_legacy_domain_with_dynamodb():
   with open(RELAY_DOMAINS_FILE, 'r') as f:
       for domainLine in f:
           if(not(domainLine and domainLine.strip())):
@@ -97,7 +97,7 @@ def verify_legacy_domain_with_dynamodb()
           except KeyError:
               print(recipient)
 
-def export_dynamodb()
+def export_dynamodb():
     DOMAIN_FILE = "daynamo_domain.txt"
     MAILBOX_FILE = "daynamo_mailbox.txt"
     try:
@@ -129,9 +129,9 @@ def export_dynamodb()
 
 if __name__ == "__main__":
 
-    verify_dynamodb_parser = argparse.ArgumentParser(description='Verify Dynamodb domain/mailbox')
-    verify_dynamodb_parser.add_argument('-v','--verifydomain', help='Add a instance id for which feature should be enabled')
-    verify_dynamodb_parser.add_argument('-e','--exportDynamodbtable', help='Removes a instance id from enabled list')
+    verify_dynamodb_parser = argparse.ArgumentParser(description='Verify Dynamodb domain/mailbox table')
+    verify_dynamodb_parser.add_argument('-v','--verifydomain', action='store_true', help='verify postfix domain/mailbox with dynamodb table')
+    verify_dynamodb_parser.add_argument('-e','--exportDynamodbtable', action='store_true', help='export dynamodb domain mailbox table to file')
 
     get_config_from_args = verify_dynamodb_parser.parse_args()
     if get_config_from_args.verifydomain:
