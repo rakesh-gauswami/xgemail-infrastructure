@@ -711,46 +711,6 @@
       }
     },
 
-    "AutoScalingScheduledScaleInPub": {
-      "Type": "AWS::AutoScaling::ScheduledAction",
-      "Condition": "EnableScaleInOnWeekends",
-      "Properties": {
-        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroupPub" },
-        "MinSize": "0",
-        "Recurrence": { "Ref": "ScaleInCron" }
-      }
-    },
-
-    "AutoScalingScheduledScaleOutPub": {
-      "Type": "AWS::AutoScaling::ScheduledAction",
-      "Condition": "EnableScaleInOnWeekends",
-      "Properties": {
-        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroupPub" },
-        "MinSize": { "Ref": "AutoScalingMinSize" },
-        "Recurrence": { "Ref": "ScaleOutCron" }
-      }
-    },
-
-    "AutoScalingScheduledScaleInWeekdaysPub": {
-      "Type": "AWS::AutoScaling::ScheduledAction",
-      "Condition": "EnableScaleInOutOnWeekdays",
-      "Properties": {
-        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroupPub" },
-        "DesiredCapacity": {"Ref": "AutoScalingMinSize"},
-        "Recurrence": { "Ref": "ScaleInOnWeekdaysCron" }
-      }
-    },
-
-    "AutoScalingScheduledScaleOutWeekdaysPub": {
-      "Type": "AWS::AutoScaling::ScheduledAction",
-      "Condition": "EnableScaleInOutOnWeekdays",
-      "Properties": {
-        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroupPub" },
-        "DesiredCapacity": {"Ref": "ScheduledAsOnHourDesiredCapacity"},
-        "Recurrence": { "Ref": "ScaleOutOnWeekdaysCron" }
-      }
-    },
-
     "XgemailScaleOutPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
       "Properties": {
