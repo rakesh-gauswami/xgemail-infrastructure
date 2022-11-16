@@ -711,16 +711,6 @@
       }
     },
 
-    "XgemailScaleOutPolicy": {
-      "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Properties": {
-        "AdjustmentType": "ChangeInCapacity",
-        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "Cooldown": "400",
-        "ScalingAdjustment": "1"
-      }
-    },
-
     "XgemailPredictiveScalingPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
       "Properties": {
@@ -740,13 +730,22 @@
       }
     },
 
-    "XgemailScaleOutPolicyPub": {
+    "XgemailPredictiveScalingPolicyPub": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
       "Properties": {
-        "AdjustmentType": "ChangeInCapacity",
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroupPub" },
-        "Cooldown": "400",
-        "ScalingAdjustment": "1"
+        "PolicyType":"PredictiveScaling",
+        "PredictiveScalingConfiguration":{
+          "MetricSpecifications":[
+            {
+              "TargetValue":50,
+              "PredefinedMetricPairSpecification":{
+                "PredefinedMetricType":"ASGCPUUtilization"
+              }
+            }
+          ],
+          "Mode":"ForecastAndScale"
+        }
       }
     },
 
@@ -767,6 +766,26 @@
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroupPub" },
         "Cooldown": "60",
         "ScalingAdjustment": "-1"
+      }
+    },
+
+    "XgemailScaleOutPolicy": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+      "Properties": {
+        "AdjustmentType": "ChangeInCapacity",
+        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
+        "Cooldown": "400",
+        "ScalingAdjustment": "1"
+      }
+    },
+
+    "XgemailScaleOutPolicyPub": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+      "Properties": {
+        "AdjustmentType": "ChangeInCapacity",
+        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroupPub" },
+        "Cooldown": "400",
+        "ScalingAdjustment": "1"
       }
     },
 
