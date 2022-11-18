@@ -245,7 +245,9 @@ def get_instances_by_name():
             {
                 'Name': 'tag:Name',
                 'Values': [
-                    'CloudEmail:warmup-delivery:*'
+                    'CloudEmail:warmup-delivery:*',
+                    'CloudEmail:internet-delivery:*',
+                    'CloudEmail:internet-xdelivery:*'
                 ]
             }
         ]
