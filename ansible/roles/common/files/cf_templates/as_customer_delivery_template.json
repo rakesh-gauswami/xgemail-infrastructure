@@ -413,7 +413,6 @@
     },
     "UseSpotPrice": {
       "Fn::And": [
-        { "Fn::Not": [ { "Fn::Equals": [ { "Ref": "Environment" }, "inf" ] } ] },
         { "Fn::Not": [ { "Fn::Equals": [ { "Ref": "Environment" }, "prod" ] } ] },
         { "Fn::Not": [ { "Fn::Equals": [ {"Ref": "SpotPrice"}, "-1" ] } ] }
       ]
@@ -1642,6 +1641,7 @@
               }
             }
           ],
+          "DisableApiTermination": "true",
           "NetworkInterfaces": [
             {
               "AssociatePublicIpAddress": "true",
