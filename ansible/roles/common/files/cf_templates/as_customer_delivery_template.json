@@ -408,11 +408,15 @@
     "EnableDetailedMonitoring": {
       "Fn::Equals": [ { "Ref": "Environment" }, "prod" ]
     },
+    "EnableInstanceTerminationProtection": {
+      "Fn::Equals": [ { "Ref": "Environment" }, "prod" ]
+    },
     "PreProd": {
       "Fn::Not": [ { "Fn::Equals": [ { "Ref": "Environment" }, "prod" ] } ]
     },
     "UseSpotPrice": {
       "Fn::And": [
+        { "Fn::Not": [ { "Fn::Equals": [ { "Ref": "Environment" }, "inf" ] } ] },
         { "Fn::Not": [ { "Fn::Equals": [ { "Ref": "Environment" }, "prod" ] } ] },
         { "Fn::Not": [ { "Fn::Equals": [ {"Ref": "SpotPrice"}, "-1" ] } ] }
       ]
@@ -1218,7 +1222,9 @@
               }
             }
           ],
-          "DisableApiTermination": "true",
+          "DisableApiTermination": {
+            "Enabled": { "Fn::If": [ "EnableInstanceTerminationProtection", "true", "false" ] }
+          },
           "NetworkInterfaces": [
             {
               "AssociatePublicIpAddress": "false",
