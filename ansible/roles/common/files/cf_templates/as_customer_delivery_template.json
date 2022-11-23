@@ -576,6 +576,11 @@
         "LoadBalancerNames": { "Ref": "LoadBalancerNamePub" },
         "MinSize": { "Ref": "AutoScalingMinSize" },
         "MaxSize": { "Ref": "AutoScalingMaxSize" },
+        "MetricsCollection": [
+          {
+            "Granularity": "1Minute"
+          }
+        ],
         "TerminationPolicies": [ "Default" ],
         "VPCZoneIdentifier": { "Ref": "VpcZoneIdentifiersPub" },
         "Tags": [
