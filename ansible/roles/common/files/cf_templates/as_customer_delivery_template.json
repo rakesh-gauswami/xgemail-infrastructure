@@ -1654,7 +1654,7 @@
               }
             }
           ],
-          "DisableApiTermination": "true",
+          "DisableApiTermination": { "Fn::If": [ "EnableTerminationProtection", "true", "false" ] },
           "NetworkInterfaces": [
             {
               "AssociatePublicIpAddress": "true",
