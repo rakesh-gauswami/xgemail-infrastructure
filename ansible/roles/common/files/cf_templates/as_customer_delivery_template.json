@@ -409,7 +409,10 @@
       "Fn::Equals": [ { "Ref": "Environment" }, "prod" ]
     },
     "EnableTerminationProtection": {
-      "Fn::Equals": [ { "Ref": "Environment" }, "prod" ]
+      "Fn::Or": [
+        { "Fn::Equals": [ { "Ref": "Environment" }, "inf" ] },
+        { "Fn::Equals": [ { "Ref": "Environment" }, "prod" ] }
+      ]
     },
     "PreProd": {
       "Fn::Not": [ { "Fn::Equals": [ { "Ref": "Environment" }, "prod" ] } ]
