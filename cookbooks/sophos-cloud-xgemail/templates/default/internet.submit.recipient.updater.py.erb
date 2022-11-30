@@ -82,15 +82,19 @@ with open(RELAY_DOMAINS_FILE, 'r') as f:
     domains.append(domain.split(' ')[0])
 
 recipients = set()
+
 for domain in domains:
-  response = requests.post(
+  try:
+    response = requests.post(
       PIC_ADDRESSES_URL,
       json.dumps({'domain': domain}),
       headers=HEADERS,
       timeout=MAIL_PIC_RESPONSE_TIMEOUT
-  )
-  response.raise_for_status()
-  recipients.update(response.json()['addresses'])
+    )
+    response.raise_for_status()
+    recipients.update(response.json()['addresses'])
+  except Exception as e:
+    logger.exception('Unhandled exception in domain sync [{0}]'.format(domain), e)
 
 RECIPIENT_ACCESS_FILE = POSTFIX_CONFIG_DIR + '/' + RECIPIENT_ACCESS_FILENAME
 RECIPIENT_ACCESS_FILE_TMP = RECIPIENT_ACCESS_FILE + '.tmp'
