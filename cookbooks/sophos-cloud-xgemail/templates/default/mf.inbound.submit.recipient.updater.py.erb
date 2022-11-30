@@ -93,7 +93,7 @@ for domain in domains:
       response.raise_for_status()
       recipients.update(response.json()['addresses'])
   except Exception as e:
-    logger.exception('Unhandled exception in domain sync [{0}]'.format(domain), e)
+    logger.exception("Unhandled exception in domain sync {} {}".format(domain, e))
 
 RECIPIENT_ACCESS_FILE = POSTFIX_CONFIG_DIR + '/' + RECIPIENT_ACCESS_FILENAME
 RECIPIENT_ACCESS_FILE_TMP = RECIPIENT_ACCESS_FILE + '.tmp'
