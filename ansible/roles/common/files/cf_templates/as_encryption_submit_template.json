@@ -368,6 +368,9 @@
     "EnableDetailedMonitoring": {
       "Fn::Equals": [ { "Ref": "Environment" }, "prod" ]
     },
+    "EnableTerminationProtection": {
+      "Fn::Equals": [ { "Ref": "Environment" }, "prod" ]
+    },
     "PreProd": {
       "Fn::Not": [ { "Fn::Equals": [ { "Ref": "Environment" }, "prod" ] } ]
     },
@@ -869,7 +872,7 @@
               }
             }
           ],
-          "DisableApiTermination": "true",
+          "DisableApiTermination": { "Fn::If": [ "EnableTerminationProtection", "true", "false" ] },
           "NetworkInterfaces": [
             {
               "AssociatePublicIpAddress": "true",

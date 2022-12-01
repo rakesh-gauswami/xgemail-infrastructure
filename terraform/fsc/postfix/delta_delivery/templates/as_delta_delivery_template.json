@@ -384,6 +384,9 @@
     "EnableDetailedMonitoring": {
       "Fn::Equals": [ { "Ref": "Environment" }, "prod" ]
     },
+    "EnableTerminationProtection": {
+      "Fn::Equals": [ { "Ref": "Environment" }, "prod" ]
+    },
     "PreProd": {
       "Fn::Not": [ { "Fn::Equals": [ { "Ref": "Environment" }, "prod" ] } ]
     },
@@ -946,7 +949,6 @@
       },
       "Properties": {
         "LaunchTemplateData": {
-          "DisableApiTermination": "true",
           "BlockDeviceMappings": [
             {
               "DeviceName": "/dev/xvdi",
@@ -957,6 +959,7 @@
               }
             }
           ],
+          "DisableApiTermination": { "Fn::If": [ "EnableTerminationProtection", "true", "false" ] },
           "IamInstanceProfile": {
             "Name": { "Ref": "InstanceProfile" }
           },
