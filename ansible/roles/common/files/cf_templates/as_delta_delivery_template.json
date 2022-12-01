@@ -366,10 +366,7 @@
   },
 
   "Conditions": {
-    "EnableDetailedMonitoring": {
-      "Fn::Equals": [ { "Ref": "Environment" }, "prod" ]
-    },
-    "EnableTerminationProtection": {
+    "IsProd": {
       "Fn::Equals": [ { "Ref": "Environment" }, "prod" ]
     },
     "PreProd": {
@@ -941,7 +938,7 @@
               }
             }
           ],
-          "DisableApiTermination": { "Fn::If": [ "EnableTerminationProtection", "true", "false" ] },
+          "DisableApiTermination": { "Fn::If": [ "IsProd", "true", "false" ] },
           "NetworkInterfaces": [
             {
               "AssociatePublicIpAddress": "true",
@@ -968,7 +965,7 @@
           "Monitoring": {
             "Enabled": {
               "Fn::If": [
-                "EnableDetailedMonitoring",
+                "IsProd",
                 "true",
                 "false"
               ]
