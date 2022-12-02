@@ -376,7 +376,7 @@
   },
 
   "Conditions": {
-    "EnableDetailedMonitoring": {
+    "IsProd": {
       "Fn::Equals": [ { "Ref": "Environment" }, "prod" ]
     },
     "PreProd": {
@@ -888,7 +888,7 @@
               }
             }
           ],
-          "DisableApiTermination": "true",
+          "DisableApiTermination": { "Fn::If": [ "IsProd", "true", "false" ] },
           "IamInstanceProfile": {
             "Name": { "Ref": "InstanceProfile" }
           },
@@ -904,7 +904,7 @@
             ]
           },
           "Monitoring": {
-            "Enabled": { "Fn::If": [ "EnableDetailedMonitoring", "true", "false" ] }
+            "Enabled": { "Fn::If": [ "IsProd", "true", "false" ] }
           },
           "NetworkInterfaces": [
             {

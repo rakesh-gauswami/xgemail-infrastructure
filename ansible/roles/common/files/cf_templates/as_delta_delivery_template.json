@@ -366,7 +366,7 @@
   },
 
   "Conditions": {
-    "EnableDetailedMonitoring": {
+    "IsProd": {
       "Fn::Equals": [ { "Ref": "Environment" }, "prod" ]
     },
     "PreProd": {
@@ -938,7 +938,7 @@
               }
             }
           ],
-          "DisableApiTermination": "true",
+          "DisableApiTermination": { "Fn::If": [ "IsProd", "true", "false" ] },
           "NetworkInterfaces": [
             {
               "AssociatePublicIpAddress": "true",
@@ -965,7 +965,7 @@
           "Monitoring": {
             "Enabled": {
               "Fn::If": [
-                "EnableDetailedMonitoring",
+                "IsProd",
                 "true",
                 "false"
               ]
