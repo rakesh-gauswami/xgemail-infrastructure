@@ -742,26 +742,6 @@
       }
     },
 
-    "XgemailScaleInPolicy": {
-      "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Properties": {
-        "AdjustmentType": "ChangeInCapacity",
-        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "Cooldown": "60",
-        "ScalingAdjustment": "-1"
-      }
-    },
-
-    "XgemailScaleInPolicyPub": {
-      "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Properties": {
-        "AdjustmentType": "ChangeInCapacity",
-        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroupPub" },
-        "Cooldown": "60",
-        "ScalingAdjustment": "-1"
-      }
-    },
-
     "XgemailScaleOutPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
       "Properties": {
@@ -813,76 +793,6 @@
           "TargetValue": { "Ref": "PolicyTargetValue"},
           "DisableScaleIn" : "true"
         }
-      }
-    },
-
-    "AlarmScaleIn": {
-      "Type": "AWS::CloudWatch::Alarm",
-      "Properties": {
-        "ActionsEnabled": { "Ref": "AlarmScaleInEnabled" },
-        "AlarmDescription": {
-          "Fn::Join": [
-            " ", [
-              "Alarm when",
-              { "Ref": "XgemailServiceType" },
-              "visible SQS messages is below threshold of",
-              { "Ref": "AlarmScaleInThreshold" },
-              "for a duration of time"
-            ]
-          ]
-        },
-        "DatapointsToAlarm": "3",
-        "EvaluationPeriods": "10",
-        "Period": "60",
-        "Statistic": "Average",
-        "Threshold": { "Ref": "AlarmScaleInThreshold" },
-        "InsufficientDataActions": [ { "Ref": "XgemailScaleInPolicy" } ],
-        "AlarmActions": [
-          { "Ref": "XgemailScaleInPolicy" }
-        ],
-        "Namespace": "AWS/SQS",
-        "Dimensions": [
-          {
-            "Name": "QueueName",
-            "Value": { "Ref": "XgemailSnsSqsQueue" }
-          }
-        ],
-        "ComparisonOperator":"LessThanThreshold",
-        "MetricName":"ApproximateNumberOfMessagesVisible"
-      }
-    },
-
-    "AlarmScaleInPub": {
-      "Type": "AWS::CloudWatch::Alarm",
-      "Properties": {
-        "ActionsEnabled": { "Ref": "AlarmScaleInEnabled" },
-        "AlarmDescription": {
-          "Fn::Join": [ " ",
-            [
-              "Alarm when",
-              { "Ref": "XgemailServiceType" },
-              "visible SQS messages is below threshold of",
-              { "Ref": "AlarmScaleInThreshold" },
-              "for a duration of time"
-            ]
-          ]
-        },
-        "DatapointsToAlarm": "3",
-        "EvaluationPeriods": "10",
-        "Period": "60",
-        "Statistic": "Average",
-        "Threshold": { "Ref": "AlarmScaleInThreshold" },
-        "InsufficientDataActions": [ { "Ref": "XgemailScaleInPolicyPub" } ],
-        "AlarmActions": [ { "Ref": "XgemailScaleInPolicyPub" } ],
-        "Namespace": "AWS/SQS",
-        "Dimensions": [
-          {
-            "Name": "QueueName",
-            "Value": { "Ref": "CidrSnsSqsQueue" }
-          }
-        ],
-        "ComparisonOperator":"LessThanThreshold",
-        "MetricName":"ApproximateNumberOfMessagesVisible"
       }
     },
 

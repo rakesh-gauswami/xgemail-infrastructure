@@ -20,9 +20,7 @@
     template_url:  "https://s3.amazonaws.com/{{cloud_applications}}/{{build.branch}}/xgemail-infrastructure/as_customer_delivery_template.json"
     template_parameters:
       AesDecryptionKey:                     "{{aes_decryption_key}}"
-      AlarmScaleInEnabled:                  "{{aws.asg.cd.alarm_scale_in_enabled}}"
       AlarmScaleOutEnabled:                 "{{aws.asg.cd.alarm_scale_out_enabled}}"
-      AlarmScaleInThreshold:                "{{aws.asg.cd.alarm_scale_in_threshold}}"
       AlarmScaleOutThreshold:               "{{aws.asg.cd.alarm_scale_out_threshold}}"
       AlarmTopicArn:                        "{{sns.arn_prefix}}{{sns.alarm_sns_topic}}"
       AmiId:                                "{{ami_parent_id}}"
