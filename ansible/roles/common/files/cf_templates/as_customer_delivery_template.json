@@ -199,6 +199,11 @@
       "Default": "false",
       "AllowedValues": [ "true", "false" ]
     },
+    "PolicyTargetValue": {
+      "Description": "The target value for the metric.",
+      "Type": "Number",
+      "Default": "50"
+    },
     "S3CookbookRepositoryURL": {
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
       "Type": "String",
@@ -771,6 +776,40 @@
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroupPub" },
         "Cooldown": "400",
         "ScalingAdjustment": "3"
+      }
+    },
+
+    "XgemailScaleCpuPolicy": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+      "Condition": "ScalingEnabled",
+      "Properties": {
+        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
+        "EstimatedInstanceWarmup": "600",
+        "PolicyType": "TargetTrackingScaling",
+        "TargetTrackingConfiguration": {
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "ASGAverageCPUUtilization"
+          },
+          "TargetValue": { "Ref": "PolicyTargetValue"},
+          "DisableScaleIn" : "true"
+        }
+      }
+    },
+
+    "XgemailScaleCpuPolicyPub": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+      "Condition": "ScalingEnabled",
+      "Properties": {
+        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroupPub" },
+        "EstimatedInstanceWarmup": "600",
+        "PolicyType": "TargetTrackingScaling",
+        "TargetTrackingConfiguration": {
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "ASGAverageCPUUtilization"
+          },
+          "TargetValue": { "Ref": "PolicyTargetValue"},
+          "DisableScaleIn" : "true"
+        }
       }
     },
 
