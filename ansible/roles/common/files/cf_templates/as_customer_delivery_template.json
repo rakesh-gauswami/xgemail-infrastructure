@@ -438,6 +438,9 @@
         { "Fn::Equals": [ { "Ref": "Environment" },  "qainf" ] },
         { "Fn::Equals": [ { "Ref": "Environment" },  "dev" ] }
       ]
+    },
+    "ScalingEnabled": {
+      "Fn::Equals": [ { "Ref": "Environment" }, "prod" ]
     }
   },
 
@@ -761,6 +764,7 @@
 
     "XgemailScaleCpuPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
+      "Condition": "ScalingEnabled",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
         "EstimatedInstanceWarmup": "600",
@@ -777,6 +781,7 @@
 
     "XgemailScaleCpuPolicyPub": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
+      "Condition": "ScalingEnabled",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroupPub" },
         "EstimatedInstanceWarmup": "600",
