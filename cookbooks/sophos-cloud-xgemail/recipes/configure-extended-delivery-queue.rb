@@ -268,7 +268,7 @@ if NODE_TYPE == 'xdelivery' || NODE_TYPE == 'customer-xdelivery'
     group 'root'
   end
   [
-    "header_checks = regexp:#{HEADER_CHECKS_PATH}"
+    "header_checks = regexp:#{TRANSPORT_ROUTE_HEADER_CHECKS_PATH}"
   ].each do | cur |
     execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
   end
