@@ -259,10 +259,18 @@ if NODE_TYPE == 'xdelivery' || NODE_TYPE == 'customer-xdelivery'
 
   # Add the header checks config file
   file "#{TRANSPORT_ROUTE_HEADER_CHECKS_PATH}" do
-    content "/^X-Sophos-Email-Transport-Route: (smtp|smtp_encrypt):(.*)$/i FILTER $1:$2"
+    content "/^X_Sophos_Cust_Delivery_TLS: OPP_TLS_1_3$/i FILTER opps_tls_13:
+/^X_Sophos_Cust_Delivery_TLS: TLS_1_3$/i FILTER tls_13:
+/^X_Sophos_Cust_Delivery_TLS: TLS_1_2$/i FILTER smtp_encrypt:
+/^X_Sophos_Cust_Delivery_TLS: PRE_TLS_1.3$/i FILTER pref_tls_13:"
     mode '0644'
     owner 'root'
     group 'root'
+  end
+  [
+    "header_checks = regexp:#{HEADER_CHECKS_PATH}"
+  ].each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
   end
 
   include_recipe 'sophos-cloud-xgemail::configure-bounce-message-customer-delivery-queue'
