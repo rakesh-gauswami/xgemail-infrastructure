@@ -421,7 +421,7 @@
 
   "Conditions": {
     "IsProd": {
-      "Fn::Equals": [ { "Ref": "Environment" }, "prod" ]
+      "Fn::Equals": [ { "Ref": "Environment" }, "inf" ]
     },
     "PreProd": {
       "Fn::Not": [ { "Fn::Equals": [ { "Ref": "Environment" }, "prod" ] } ]
@@ -438,9 +438,6 @@
         { "Fn::Equals": [ { "Ref": "Environment" },  "qainf" ] },
         { "Fn::Equals": [ { "Ref": "Environment" },  "dev" ] }
       ]
-    },
-    "ScalingEnabled": {
-      "Fn::Equals": [ { "Ref": "Environment" }, "prod" ]
     }
   },
 
@@ -764,7 +761,7 @@
 
     "XgemailScaleCpuPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Condition": "ScalingEnabled",
+      "Condition": "IsProd",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
         "EstimatedInstanceWarmup": "600",
@@ -773,15 +770,14 @@
           "PredefinedMetricSpecification": {
             "PredefinedMetricType": "ASGAverageCPUUtilization"
           },
-          "TargetValue": { "Ref": "PolicyTargetValue"},
-          "DisableScaleIn" : "true"
+          "TargetValue": { "Ref": "PolicyTargetValue"}
         }
       }
     },
 
     "XgemailScaleCpuPolicyPub": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Condition": "ScalingEnabled",
+      "Condition": "IsProd",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroupPub" },
         "EstimatedInstanceWarmup": "600",
@@ -790,8 +786,7 @@
           "PredefinedMetricSpecification": {
             "PredefinedMetricType": "ASGAverageCPUUtilization"
           },
-          "TargetValue": { "Ref": "PolicyTargetValue"},
-          "DisableScaleIn" : "true"
+          "TargetValue": { "Ref": "PolicyTargetValue"}
         }
       }
     },
