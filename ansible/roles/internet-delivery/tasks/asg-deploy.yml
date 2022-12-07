@@ -10,8 +10,6 @@
     template_parameters:
       AesDecryptionKey:                     "{{aes_decryption_key}}"
       AlarmScalingEnabled:                  "{{aws.asg.id.alarm_scaling_enabled}}"
-      AlarmScaleInThreshold:                "{{aws.asg.id.alarm_scale_in_threshold}}"
-      AlarmScaleOutThreshold:               "{{aws.asg.id.alarm_scale_out_threshold}}"
       AlarmTopicArn:                        "{{sns.arn_prefix}}{{sns.alarm_sns_topic}}"
       AmiId:                                "{{ami_parent_id}}"
       AutoScalingInstanceRoleArn:           "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.AutoScalingInstanceRoleArn}}"
@@ -38,9 +36,6 @@
       MsgHistoryV2StreamName:               "{{kinesis.firehose.msg_history_v2_stream_name}}"
       NewRelicEnabled:                      "{{newrelic_enabled}}"
       S3CookbookRepositoryURL:              "//cloud-{{account.name}}-templates/{{build.branch}}/xgemail-infrastructure/cookbooks.enc"
-      ScaleInOnWeekends:                    "{{weekend_scale_down}}"
-      ScaleInCron:                          "{{cron_scale_down}}"
-      ScaleOutCron:                         "{{cron_scale_up}}"
       SecurityGroups:                       "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.XgemailInternetDeliverySecurityGroup}},{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.SecurityGroupBase}}"
       SpotPrice:                            "{{spot_price}}"
       StationVpcId:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}"
