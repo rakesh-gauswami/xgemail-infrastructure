@@ -333,9 +333,6 @@
         { "Fn::Equals": [ { "Ref": "Environment" }, "qainf" ] },
         { "Fn::Equals": [ { "Ref": "Environment" },  "dev" ] }
       ]
-    },
-    "ScalingEnabled": {
-      "Fn::Equals": [ { "Ref": "Environment" }, "prod" ]
     }
   },
 
@@ -484,13 +481,13 @@
       }
     },
 
-    "XgemailAutoScalePolicy": {
+    "XgemailScaleCpuPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Condition": "ScalingEnabled",
+      "Condition": "IsProd",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
         "PolicyType": "TargetTrackingScaling",
-        "EstimatedInstanceWarmup": "600",
+        "EstimatedInstanceWarmup": "400",
         "TargetTrackingConfiguration": {
           "PredefinedMetricSpecification":{
             "PredefinedMetricType":"ASGAverageCPUUtilization"
