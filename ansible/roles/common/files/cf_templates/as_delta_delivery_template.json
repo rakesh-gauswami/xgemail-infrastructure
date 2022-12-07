@@ -368,6 +368,9 @@
         { "Fn::Equals": [ { "Ref": "Environment" }, "qainf"] },
         { "Fn::Equals": [ { "Ref": "Environment" }, "dev" ] }
       ]
+    },
+    "ScalingEnabled": {
+      "Fn::Equals": [ { "Ref": "Environment" }, "inf" ]
     }
   },
 
@@ -493,7 +496,7 @@
 
     "XgemailScaleCpuPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Condition": "IsProd",
+      "Condition": "ScalingEnabled",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
         "PolicyType": "TargetTrackingScaling",
