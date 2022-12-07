@@ -168,7 +168,7 @@
     "PolicyTargetValue": {
       "Description": "The target value for the metric.",
       "Type": "Number",
-      "Default": "85"
+      "Default": "50"
     },
     "S3CookbookRepositoryURL": {
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
@@ -410,7 +410,7 @@
       ]
     },
     "ScalingEnabled": {
-      "Fn::Equals": [ { "Ref": "Environment" }, "prod" ]
+      "Fn::Equals": [ { "Ref": "Environment" }, "inf" ]
     }
   },
 
@@ -569,22 +569,12 @@
       }
     },
 
-    "XgemailScaleInPolicy": {
-      "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Properties": {
-        "AdjustmentType": "ChangeInCapacity",
-        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "Cooldown": "60",
-        "ScalingAdjustment": "-1"
-      }
-    },
-
     "XgemailScaleCpuPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
       "Condition": "ScalingEnabled",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "EstimatedInstanceWarmup": "400",
+        "EstimatedInstanceWarmup": "600",
         "PolicyType": "TargetTrackingScaling",
         "TargetTrackingConfiguration": {
           "PredefinedMetricSpecification": {
@@ -593,40 +583,6 @@
           "TargetValue": { "Ref": "PolicyTargetValue"},
           "DisableScaleIn" : "true"
         }
-      }
-    },
-
-    "AlarmScaleIn": {
-      "Type": "AWS::CloudWatch::Alarm",
-      "Properties": {
-        "ActionsEnabled": { "Ref": "AlarmScaleInEnabled" },
-        "AlarmDescription": {
-          "Fn::Join": [ " ",
-            [
-              "Alarm when",
-              { "Ref": "XgemailServiceType" },
-              "ELB RequestCount is below threshold of",
-              { "Ref": "AlarmScaleInThreshold" },
-              "for a duration of time"
-            ]
-          ]
-        },
-        "DatapointsToAlarm": "3",
-        "EvaluationPeriods": "10",
-        "Period": "60",
-        "Statistic": "Sum",
-        "Threshold": { "Ref": "AlarmScaleInThreshold" },
-        "InsufficientDataActions": [ { "Ref": "XgemailScaleInPolicy" } ],
-        "AlarmActions": [ { "Ref": "XgemailScaleInPolicy" } ],
-        "Namespace": "AWS/ELB",
-        "Dimensions": [
-          {
-            "Name": "LoadBalancerName",
-            "Value": { "Ref": "LoadBalancerName" }
-          }
-        ],
-        "ComparisonOperator": "LessThanThreshold",
-        "MetricName": "RequestCount"
       }
     },
 
@@ -1106,14 +1062,6 @@
   },
 
   "Outputs": {
-    "AlarmScaleIn": {
-      "Description": "The name of the Scale In Alarm",
-      "Value": { "Ref": "AlarmScaleIn" }
-    },
-    "AlarmScaleInArn": {
-      "Description": "The Arn of the Scale In Alarm",
-      "Value": { "Fn::GetAtt": [ "AlarmScaleIn", "Arn" ] }
-    },
     "AlarmScaleOut": {
       "Description": "The name of the Scale Out Alarm",
       "Value": { "Ref": "AlarmScaleOut" }

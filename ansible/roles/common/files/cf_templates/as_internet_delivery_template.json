@@ -29,16 +29,6 @@
       "Default": "false",
       "AllowedValues": [ "true", "false" ]
     },
-    "AlarmScaleInThreshold": {
-      "Description": "The value against which the specified statistic is compared.",
-      "Type": "Number",
-      "Default": "1000"
-    },
-    "AlarmScaleOutThreshold": {
-      "Description": "The value against which the specified statistic is compared.",
-      "Type": "Number",
-      "Default": "5000"
-    },
     "AlarmTopicArn": {
       "Description": "ARN for SNS Topic that should receive alarm notifications",
       "Type": "String"
@@ -178,22 +168,6 @@
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
       "Type": "String",
       "Default": "//cloud-applications/develop/cookbooks.enc"
-    },
-    "ScaleInOnWeekends": {
-      "Description": "Enable scale in to zero on Saturday at midnight and scale out on Monday morning. (Times are UTC, NON PROD/QA ENVIRONMENT ONLY)",
-      "Type": "String",
-      "Default": "false",
-      "AllowedValues": [ "true", "false" ]
-    },
-    "ScaleInCron": {
-      "Description": "Cron string for when to begin scale in.",
-      "Type": "String",
-      "Default": "0 1 * * 6"
-    },
-    "ScaleOutCron": {
-      "Description": "Cron string for when to begin scale out.",
-      "Type": "String",
-      "Default": "0 4 * * 1"
     },
     "SecurityGroups": {
       "Description": "The security group that allows communication within the VPC.",
@@ -395,9 +369,6 @@
         { "Fn::Equals": [ { "Ref": "Environment" }, "qainf" ] },
         { "Fn::Equals": [ { "Ref": "Environment" }, "dev" ] }
       ]
-    },
-    "ScalingEnabled": {
-      "Fn::Equals": [ { "Ref": "Environment" }, "inf" ]
     }
   },
 
@@ -555,7 +526,7 @@
 
     "XgemailScaleCpuPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Condition": "ScalingEnabled",
+      "Condition": "IsProd",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
         "EstimatedInstanceWarmup": "600",
