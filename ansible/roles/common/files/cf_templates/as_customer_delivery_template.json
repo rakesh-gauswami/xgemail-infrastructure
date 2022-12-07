@@ -19,22 +19,11 @@
       "Description": "Decryption key for encrypted buckets",
       "Type": "String"
     },
-    "AlarmScaleInEnabled": {
-      "Description": "Enable AutoScaling Alarms to trigger scaling policies.",
-      "Type": "String",
-      "Default": "false",
-      "AllowedValues": [ "true", "false" ]
-    },
     "AlarmScaleOutEnabled": {
       "Description": "Enable AutoScaling Alarms to trigger scaling policies.",
       "Type": "String",
       "Default": "false",
       "AllowedValues": [ "true", "false" ]
-    },
-    "AlarmScaleInThreshold": {
-      "Description": "The value against which the specified statistic is compared.",
-      "Type": "Number",
-      "Default": "1000"
     },
     "AlarmScaleOutThreshold": {
       "Description": "The value against which the specified statistic is compared.",
@@ -438,9 +427,6 @@
         { "Fn::Equals": [ { "Ref": "Environment" },  "qainf" ] },
         { "Fn::Equals": [ { "Ref": "Environment" },  "dev" ] }
       ]
-    },
-    "ScalingEnabled": {
-      "Fn::Equals": [ { "Ref": "Environment" }, "inf" ]
     }
   },
 
@@ -764,7 +750,7 @@
 
     "XgemailScaleCpuPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Condition": "ScalingEnabled",
+      "Condition": "IsProd",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
         "EstimatedInstanceWarmup": "600",
@@ -780,7 +766,7 @@
 
     "XgemailScaleCpuPolicyPub": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Condition": "ScalingEnabled",
+      "Condition": "IsProd",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroupPub" },
         "EstimatedInstanceWarmup": "600",
