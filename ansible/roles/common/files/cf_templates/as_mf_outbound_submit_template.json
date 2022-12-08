@@ -146,28 +146,12 @@
     "PolicyTargetValue": {
       "Description": "The target value for the metric.",
       "Type": "Number",
-      "Default": "65"
+      "Default": "50"
     },
     "S3CookbookRepositoryURL": {
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
       "Type": "String",
       "Default": "//cloud-applications/develop/cookbooks.enc"
-    },
-    "ScaleInOnWeekends": {
-      "Description": "Enable scale in to zero on Saturday at midnight and scale out on Monday morning. (Times are UTC, NON PROD/QA ENVIRONMENT ONLY)",
-      "Type": "String",
-      "Default": "false",
-      "AllowedValues": [ "true", "false" ]
-    },
-    "ScaleInCron": {
-      "Description": "Cron string for when to begin scale in.",
-      "Type": "String",
-      "Default": "0 1 * * 6"
-    },
-    "ScaleOutCron": {
-      "Description": "Cron string for when to begin scale out.",
-      "Type": "String",
-      "Default": "0 4 * * 1"
     },
     "SecurityGroups": {
       "Description": "The security group that allows communication within the VPC.",
@@ -381,21 +365,12 @@
         { "Fn::Not": [ { "Fn::Equals": [ {"Ref": "SpotPrice"}, "-1" ] } ] }
       ]
     },
-    "EnableScaleInOnWeekends": {
-      "Fn::And": [
-        { "Fn::Not": [ { "Fn::Or": [ { "Fn::Equals": [ { "Ref": "Environment" }, "prod" ] }, { "Fn::Equals": [ { "Ref": "Environment" }, "qa" ] } ] } ] },
-        { "Fn::Equals": [ { "Ref": "ScaleInOnWeekends" }, "true" ] }
-      ]
-    },
     "IsInfDevelopmentEnvironment": {
       "Fn::Or": [
         { "Fn::Equals": [ { "Ref": "Environment" }, "inf" ] },
         { "Fn::Equals": [ { "Ref": "Environment" }, "qainf" ] },
         { "Fn::Equals": [ { "Ref": "Environment" }, "dev" ] }
       ]
-    },
-    "ScalingEnabled": {
-      "Fn::Equals": [ { "Ref": "Environment" }, "prod" ]
     }
   },
 
@@ -423,6 +398,11 @@
         "LoadBalancerNames": [ { "Ref": "LoadBalancerName" } ],
         "MinSize": { "Ref": "AutoScalingMinSize" },
         "MaxSize": { "Ref": "AutoScalingMaxSize" },
+        "MetricsCollection": [
+          {
+            "Granularity": "1Minute"
+          }
+        ],
         "TerminationPolicies": [ "Default" ],
         "VPCZoneIdentifier": { "Ref": "VpcZoneIdentifiers" },
         "Tags": [
@@ -517,32 +497,35 @@
       }
     },
 
-    "AutoScalingScheduledScaleIn": {
-      "Type": "AWS::AutoScaling::ScheduledAction",
-      "Condition": "EnableScaleInOnWeekends",
+    "XgemailPredictiveScalingPolicy": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "MinSize": "0",
-        "Recurrence": { "Ref": "ScaleInCron" }
+        "PolicyType":"PredictiveScaling",
+        "PredictiveScalingConfiguration":{
+          "MetricSpecifications":[
+            {
+              "TargetValue":50,
+              "PredefinedMetricPairSpecification":{
+                "PredefinedMetricType":"ASGCPUUtilization"
+              }
+            }
+          ],
+          "Mode":"ForecastAndScale",
+          "MaxCapacityBreachBehavior": "IncreaseMaxCapacity",
+          "MaxCapacityBuffer": 10,
+          "SchedulingBufferTime": 600
+        }
       }
     },
 
-    "AutoScalingScheduledScaleOut": {
-      "Type": "AWS::AutoScaling::ScheduledAction",
-      "Condition": "EnableScaleInOnWeekends",
-      "Properties": {
-        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "MinSize": { "Ref": "AutoScalingMinSize" },
-        "Recurrence": { "Ref": "ScaleOutCron" }
-      }
-    },
-    "XgemailAutoScalePolicy": {
+    "XgemailScaleCpuPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Condition": "ScalingEnabled",
+      "Condition": "IsProd",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
         "PolicyType": "TargetTrackingScaling",
-        "EstimatedInstanceWarmup": "400",
+        "EstimatedInstanceWarmup": "600",
         "TargetTrackingConfiguration": {
           "PredefinedMetricSpecification":{
             "PredefinedMetricType":"ASGAverageCPUUtilization"
