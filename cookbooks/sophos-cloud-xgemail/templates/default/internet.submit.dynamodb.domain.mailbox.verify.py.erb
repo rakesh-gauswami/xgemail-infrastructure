@@ -6,6 +6,9 @@ import json
 import argparse
 import subprocess
 from uuid import uuid4
+import time
+import traceback
+
 
 AWS_REGION = "<%= @aws_region %>"
 ACCOUNT = "<%= @account %>"
@@ -52,6 +55,43 @@ if (POSTFIX_INSTANCE_NAME == 'postfix-is'):
     productType='gateway'
 else:
     productType='mailflow'
+
+def full_cleanup_dynamoDB():
+    # domains table clean up
+    try:
+        response = domaintable.scan()
+        data = response['Items']
+
+        while 'LastEvaluatedKey' in response:
+            response = domaintable.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
+            data.extend(response['Items'])
+        with domaintable.batch_writer() as batch:
+            for each in data:
+                batch.delete_item(
+                    Key={
+                        'd_name': each['d_name']
+                    }
+                )
+    except Exception as e:
+        print(traceback.format_exc())
+
+    # Mailboxes table clean up
+    try:
+        response = mailboxtable.scan()
+        data = response['Items']
+
+        while 'LastEvaluatedKey' in response:
+            response = mailboxtable.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
+            data.extend(response['Items'])
+        with mailboxtable.batch_writer() as batch:
+            for each in data:
+                batch.delete_item(
+                    Key={
+                        'mailbox': each['mailbox']
+                    }
+                )
+    except Exception as e:
+        print(traceback.format_exc())
 
 def verify_legacy_domain_with_dynamodb():
   with open(RELAY_DOMAINS_FILE, 'r') as f:
@@ -100,19 +140,38 @@ def verify_legacy_domain_with_dynamodb():
 def export_dynamodb():
     DOMAIN_FILE = "dynamo_domain.txt"
     MAILBOX_FILE = "dynamo_mailbox.txt"
+    DOMAIN_EXPIRED_FILE  = "dynamo_domain_expired.txt"
+    epoch= time.time();
+    timestamp = (epoch - (30 * 24* 60 * 60)) * 1000
+
     try:
-        response = domaintable.scan(FilterExpression=Attr(productType).eq(1))
+        response = domaintable.scan(FilterExpression=Attr(productType).eq(1) & Attr('expires_on').gt(int(timestamp)))
         data = response['Items']
 
         while 'LastEvaluatedKey' in response:
             response = domaintable.scan(ExclusiveStartKey=response['LastEvaluatedKey'],
-                            FilterExpression=Attr(productType).eq(1))
+                                        FilterExpression=Attr(productType).eq(1) & Attr('expires_on').gt(int(timestamp)))
             data.extend(response['Items'])
         with open(DOMAIN_FILE, 'w+') as f:
             for domain in data:
                 f.write('{0} OK\n'.format(domain['d_name']))
     except Exception as e:
         print("ERROR %s", e.message)
+
+    try:
+        response = domaintable.scan(FilterExpression=Attr(productType).eq(1) & Attr('expires_on').lt(int(timestamp)))
+        data = response['Items']
+
+        while 'LastEvaluatedKey' in response:
+            response = domaintable.scan(ExclusiveStartKey=response['LastEvaluatedKey'],
+                                        FilterExpression=Attr(productType).eq(1) & Attr('expires_on').lt(int(timestamp)))
+            data.extend(response['Items'])
+        with open(DOMAIN_EXPIRED_FILE, 'w+') as f:
+            for domain in data:
+                f.write('{0} OK\n'.format(domain['d_name']))
+    except Exception as e:
+        print("ERROR %s", e.message)
+
 
     try:
         response = mailboxtable.scan()
@@ -122,8 +181,8 @@ def export_dynamodb():
             response = mailboxtable.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
             mailboxdata.extend(response['Items'])
         with open(MAILBOX_FILE, 'w+') as f:
-                for mailbox in mailboxdata:
-                    f.write('{0} OK\n'.format(mailbox['mailbox']))
+            for mailbox in mailboxdata:
+                f.write('{0} OK\n'.format(mailbox['mailbox']))
     except Exception as e:
         print("ERROR %s", e.message)
 
@@ -132,12 +191,14 @@ if __name__ == "__main__":
     verify_dynamodb_parser = argparse.ArgumentParser(description='Verify Dynamodb domain/mailbox table')
     verify_dynamodb_parser.add_argument('-v','--verifydomain', action='store_true', help='verify postfix domain/mailbox with dynamodb table')
     verify_dynamodb_parser.add_argument('-e','--exportDynamodbtable', action='store_true', help='export dynamodb domain mailbox table to file')
+    verify_dynamodb_parser.add_argument('-d','--cleanUpDynamodbtable', action='store_true', help='Clean up tf-msg-domains and tf-msg-mailboxes')
 
     get_config_from_args = verify_dynamodb_parser.parse_args()
     if get_config_from_args.verifydomain:
         verify_legacy_domain_with_dynamodb()
     elif get_config_from_args.exportDynamodbtable:
         export_dynamodb()
+    elif get_config_from_args.cleanUpDynamodbtable:
+        full_cleanup_dynamoDB()
     else:
         verify_dynamodb_parser.print_help()
-
