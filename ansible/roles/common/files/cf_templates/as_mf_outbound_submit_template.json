@@ -497,6 +497,22 @@
       }
     },
 
+    "XgemailAutoScalePolicy": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+      "Condition": "IsProd",
+      "Properties": {
+        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
+        "PolicyType": "TargetTrackingScaling",
+        "EstimatedInstanceWarmup": "600",
+        "TargetTrackingConfiguration": {
+          "PredefinedMetricSpecification":{
+            "PredefinedMetricType":"ASGAverageCPUUtilization"
+          },
+          "TargetValue": { "Ref": "PolicyTargetValue"}
+        }
+      }
+    },
+
     "XgemailPredictiveScalingPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
       "Properties": {
@@ -515,22 +531,6 @@
           "MaxCapacityBreachBehavior": "IncreaseMaxCapacity",
           "MaxCapacityBuffer": 10,
           "SchedulingBufferTime": 600
-        }
-      }
-    },
-
-    "XgemailScaleCpuPolicy": {
-      "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Condition": "IsProd",
-      "Properties": {
-        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "PolicyType": "TargetTrackingScaling",
-        "EstimatedInstanceWarmup": "600",
-        "TargetTrackingConfiguration": {
-          "PredefinedMetricSpecification":{
-            "PredefinedMetricType":"ASGAverageCPUUtilization"
-          },
-          "TargetValue": { "Ref": "PolicyTargetValue"}
         }
       }
     },
