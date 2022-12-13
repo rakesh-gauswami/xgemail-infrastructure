@@ -175,6 +175,11 @@
             "Default": "NO VALUE"
         },
 
+        "SNSFailureEventsTopic": {
+            "Description": "SNS Topic Failure Events Notification ARN",
+            "Type": "String"
+        },
+
         "SNSNotificationTopic": {
             "Description": "SNS Topic Notification ARN",
             "Type": "String",
@@ -422,6 +427,25 @@
                                     "Event": "s3:ObjectCreated:*",
                                     "Queue": { "Ref" : "SQSNotificationQueue" }
                                 },
+                                { "Ref" : "AWS::NoValue" }
+                            ]
+                        }
+                    ],
+                    "SNSFailureEventsTopic": [
+                        {
+                            "Fn::If": [
+                                "EnableQueueNotification",
+                                {
+                                    "Event": "s3:ObjectCreated:*",
+                                    "Queue": { "Ref" : "SNSFailureEventsTopic" }
+                                },
+                                "Filter",
+                                    "S3Key",
+                                        "Rules",
+                                            {
+                                                "Name": "prefix",
+                                                "Value": "failures/firehose-failed/"
+                                            },
                                 { "Ref" : "AWS::NoValue" }
                             ]
                         }
