@@ -30,6 +30,10 @@
       "MinLength": 3,
       "MaxLength": 63
     },
+    "SNSFailureEventsTopic": {
+      "Description": "SNS Topic Failure Events Notification ARN",
+      "Type": "String"
+    },
     "SNSNotificationTopic": {
       "Description": "SNS Topic Notification ARN",
       "Type": "String"
@@ -50,8 +54,21 @@
             {
               "Event": "s3:ObjectRemoved:*",
               "Topic": { "Ref": "SNSNotificationTopic" }
+            },
+            {
+              "Topic": { "Ref": "SNSFailureEventsTopic" },
+              "Event": "s3:ObjectCreated:*",
+              "Filter": {
+                "S3Key": {
+                  "Rules": [
+                    {
+                      "Name": "KinesisFailedEvents",
+                      "Value": "failures/firehose-failed/"
+                    }
+                  ]
+                }
+              }
             }
-
           ]
         },
         "Tags": [
