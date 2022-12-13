@@ -63,6 +63,16 @@
       "Type": "String",
       "Default": "12"
     },
+    "AutoScalingMinSizePub": {
+      "Description": "Minimum number of instances in the Auto Scaling Group",
+      "Type": "String",
+      "Default": "3"
+    },
+    "AutoScalingMaxSizePub": {
+      "Description": "Maximum number of instances in the Auto Scaling Group",
+      "Type": "String",
+      "Default": "4"
+    },
     "AutoScalingNotificationTopicARN": {
       "Description": "ARN for SNS Topic that should receive launch and termination notifications",
       "Type": "String"
@@ -574,8 +584,8 @@
           }
         ],
         "LoadBalancerNames": { "Ref": "LoadBalancerNamePub" },
-        "MinSize": { "Ref": "AutoScalingMinSize" },
-        "MaxSize": { "Ref": "AutoScalingMaxSize" },
+        "MinSize": { "Ref": "AutoScalingMinSizePub" },
+        "MaxSize": { "Ref": "AutoScalingMaxSizePub" },
         "MetricsCollection": [
           {
             "Granularity": "1Minute"
@@ -657,7 +667,7 @@
       },
       "CreationPolicy": {
         "ResourceSignal": {
-          "Count": { "Ref": "AutoScalingMinSize" },
+          "Count": { "Ref": "AutoScalingMinSizePub" },
           "Timeout": { "Ref": "DeployTimeout" }
         }
       },
