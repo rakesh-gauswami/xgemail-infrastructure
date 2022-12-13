@@ -498,6 +498,12 @@ aws:
       template_parameters:
         TagApplication:                                           "xgemail-mail"
         TopicName:                                                "{{sns.msg_history_events_failure_sns_topic}}"
+    msg_history_events_sns_topic:
+      stack_name:                                                 "{{stack.sns.msg_history_events_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TagApplication:                                           "xgemail-mail"
+        TopicName:                                                "{{sns.msg_history_events_sns_topic}}"
     msg_history_status_sns_topic:
       stack_name:                                                 "{{stack.sns.msg_history_status_sns_topic}}"
       template:                                                   "{{template.sns.sns_simple_template}}"
