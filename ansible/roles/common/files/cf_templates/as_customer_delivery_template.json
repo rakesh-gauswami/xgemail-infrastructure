@@ -188,6 +188,12 @@
       "Default": "false",
       "AllowedValues": [ "true", "false" ]
     },
+    "PolicyEnabled": {
+      "Description": "Enable AutoScaling Policy for specified Accounts.",
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [ "true", "false" ]
+    },
     "PolicyTargetValue": {
       "Description": "The target value for the metric.",
       "Type": "Number",
@@ -766,7 +772,6 @@
 
     "XgemailAutoScalePolicyPub": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Condition": "IsProd",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroupPub" },
         "EstimatedInstanceWarmup": "600",
@@ -775,7 +780,8 @@
           "PredefinedMetricSpecification": {
             "PredefinedMetricType": "ASGAverageCPUUtilization"
           },
-          "TargetValue": { "Ref": "PolicyTargetValue"}
+          "TargetValue": { "Ref": "PolicyTargetValue"},
+          "DisableScaleIn": { "Fn::If": [ "IsProd", "false", "true" ] }
         }
       }
     },
