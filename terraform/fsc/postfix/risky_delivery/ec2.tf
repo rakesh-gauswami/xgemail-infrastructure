@@ -6,11 +6,8 @@ locals {
   DEFAULT_AS_MAX_SIZE                       = 6
   DEFAULT_AS_MIN_SERVICE                    = 1
   DEFAULT_AS_MAX_BATCH_SIZE                 = 1
-  DEFAULT_AS_CRON_SCALE_DOWN                = "0 1 * * 6"
-  DEFAULT_AS_CRON_SCALE_UP                  = "0 4 * * 1"
   DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD      = 2400
   DEFAULT_AS_POLICY_TARGET_VALUE            = 80
-  DEFAULT_AS_SCALE_IN_ON_WEEKENDS           = false
   DEFAULT_EIP_COUNT                         = 1
   DEFAULT_INSTANCE_SIZE                     = "t3.medium"
   DEFAULT_NEWRELIC_ENABLED                  = false
@@ -66,20 +63,6 @@ locals {
     prod = 2
   }
 
-  AS_CRON_SCALE_DOWN_BY_ENVIRONMENT = {
-    inf  = "0 1 * * 6"
-    dev  = "0 1 * * 6"
-    qa   = "0 1 * * 6"
-    prod = "0 1 * * 6"
-  }
-
-  AS_CRON_SCALE_UP_BY_ENVIRONMENT = {
-    inf  = "0 4 * * 1"
-    dev  = "0 4 * * 1"
-    qa   = "0 4 * * 1"
-    prod = "0 4 * * 1"
-  }
-
   AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT = {
     inf  = 600
     dev  = 600
@@ -92,13 +75,6 @@ locals {
     dev  = 80
     qa   = 80
     prod = 80
-  }
-
-  AS_SCALE_IN_ON_WEEKENDS_BY_ENVIRONMENT = {
-    inf  = false
-    dev  = false
-    qa   = false
-    prod = true
   }
 
   EIP_COUNT_BY_ENVIRONMENT = {
@@ -193,18 +169,6 @@ locals {
     local.DEFAULT_AS_MAX_BATCH_SIZE
   )
 
-  as_cron_scale_down = lookup(
-    local.AS_CRON_SCALE_DOWN_BY_ENVIRONMENT,
-    local.input_param_deployment_environment,
-    local.DEFAULT_AS_CRON_SCALE_DOWN
-  )
-
-  as_cron_scale_up = lookup(
-    local.AS_CRON_SCALE_UP_BY_ENVIRONMENT,
-    local.input_param_deployment_environment,
-    local.DEFAULT_AS_CRON_SCALE_UP
-  )
-
   health_check_grace_period = lookup(
     local.AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT,
     local.input_param_deployment_environment,
@@ -215,12 +179,6 @@ locals {
     local.AS_POLICY_TARGET_VALUE_BY_ENVIRONMENT,
     local.input_param_deployment_environment,
     local.DEFAULT_AS_POLICY_TARGET_VALUE
-  )
-
-  as_scale_in_on_weekends = lookup(
-    local.AS_SCALE_IN_ON_WEEKENDS_BY_ENVIRONMENT,
-    local.input_param_deployment_environment,
-    local.DEFAULT_AS_SCALE_IN_ON_WEEKENDS
   )
 
   eip_count = lookup(
@@ -301,9 +259,6 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     ParentAccountName                   = local.input_param_parent_account_name
     PolicyTargetValue                   = local.as_policy_target_value
     S3CookbookRepositoryURL             = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/${var.build_number}/cookbooks.tar.gz"
-    ScaleInOnWeekends                   = local.as_scale_in_on_weekends
-    ScaleInCron                         = local.as_cron_scale_down
-    ScaleOutCron                        = local.as_cron_scale_up
     SecurityGroups                      = aws_security_group.security_group_ec2.id
     SpotPrice                           = "-1"
     StationAccountRoleArn               = var.station_account_role_arn
