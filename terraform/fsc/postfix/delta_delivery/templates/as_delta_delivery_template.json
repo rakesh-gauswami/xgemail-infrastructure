@@ -520,6 +520,27 @@
         }
       }
     },
+    "XgemailPredictiveScalingPolicy": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+      "Properties": {
+        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
+        "PolicyType":"PredictiveScaling",
+        "PredictiveScalingConfiguration":{
+          "MetricSpecifications":[
+            {
+              "TargetValue":50,
+              "PredefinedMetricPairSpecification":{
+                "PredefinedMetricType":"ASGCPUUtilization"
+              }
+            }
+          ],
+          "Mode":"ForecastAndScale",
+          "MaxCapacityBreachBehavior": "IncreaseMaxCapacity",
+          "MaxCapacityBuffer": 10,
+          "SchedulingBufferTime": 600
+        }
+      }
+    },
     "XgemailScaleOutPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
       "Properties": {
