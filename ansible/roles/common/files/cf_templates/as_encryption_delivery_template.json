@@ -481,7 +481,7 @@
       }
     },
 
-    "XgemailAutoScalePolicy": {
+    "XgemailScaleCpuPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
       "Condition": "IsProd",
       "Properties": {
@@ -944,9 +944,9 @@
       "Description": "Auto Scaling Launch Template Name.",
       "Value": { "Ref": "XgemailAutoScalingLaunchTemplate" }
     },
-    "XgemailAutoScalePolicy": {
+    "XgemailScaleCpuPolicy": {
       "Description": "Auto Scaling Scale Out Policy based on CPU.",
-      "Value": { "Ref": "XgemailAutoScalePolicy" },
+      "Value": { "Ref": "XgemailScaleCpuPolicy" },
       "Condition": "IsProd"
     }
   }

@@ -518,22 +518,6 @@
       }
     },
 
-    "XgemailAutoScalePolicy": {
-      "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Condition": "IsProd",
-      "Properties": {
-        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "EstimatedInstanceWarmup": "600",
-        "PolicyType": "TargetTrackingScaling",
-        "TargetTrackingConfiguration": {
-          "PredefinedMetricSpecification": {
-            "PredefinedMetricType": "ASGAverageCPUUtilization"
-          },
-          "TargetValue": { "Ref": "PolicyTargetValue"}
-        }
-      }
-    },
-
     "XgemailPredictiveScalingPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
       "Properties": {
@@ -552,6 +536,22 @@
           "MaxCapacityBreachBehavior": "IncreaseMaxCapacity",
           "MaxCapacityBuffer": 10,
           "SchedulingBufferTime": 600
+        }
+      }
+    },
+
+    "XgemailScaleCpuPolicy": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+      "Condition": "IsProd",
+      "Properties": {
+        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
+        "EstimatedInstanceWarmup": "600",
+        "PolicyType": "TargetTrackingScaling",
+        "TargetTrackingConfiguration": {
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "ASGAverageCPUUtilization"
+          },
+          "TargetValue": { "Ref": "PolicyTargetValue"}
         }
       }
     },
@@ -1073,9 +1073,9 @@
       "Description": "Auto Scaling Scale Out Policy ARN.",
       "Value": { "Ref": "XgemailScaleOutPolicy" }
     },
-    "XgemailAutoScalePolicy": {
+    "XgemailScaleCpuPolicy": {
       "Description": "Auto Scaling Scale Out Policy based on CPU.",
-      "Value": { "Ref": "XgemailAutoScalePolicy" },
+      "Value": { "Ref": "XgemailScaleCpuPolicy" },
       "Condition": "IsProd"
     }
   }
