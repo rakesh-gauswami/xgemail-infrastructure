@@ -286,6 +286,7 @@
         "EnableGlacierTransition": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "GlacierTransitionInDays"},"0"]}]},
         "EnableQueueNotification": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "SQSNotificationQueue"},"NO VALUE"]}]},
         "EnableTopicNotification": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "SNSNotificationTopic"},"NO VALUE"]}]},
+        "EnableEventsFailureNotification": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "EventsFailureNotificationTopic"},"NO VALUE"]}]},
         "EnableVersioning": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "VersioningStatus"},"Ignore"]}]},
         "EnableReplicationConfiguration": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "S3ReplicationRole"},"NO VALUE"]}]},
         "HasBucketEncryption": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "BucketEncryptionKmsKeyId"},"NO VALUE"]}]},
@@ -441,21 +442,29 @@
                                 },
                                 { "Ref" : "AWS::NoValue" }
                             ]
-                        },
+                        }
+                    ],
+                    "EventsFailureConfigurations": [
                         {
-                            "Topic": { "Ref": "EventsFailureNotificationTopic" },
-                            "Name": "KinesisFailedEvents",
-                            "Event": "s3:ObjectCreated:Put",
-                            "Filter": {
-                                "S3Key": {
-                                    "Rules": [
-                                        {
-                                            "Name": "prefix",
-                                            "Value": "failures/firehose-failed/"
+                            "Fn::If":[
+                                "EnableEventsFailureNotification",
+                                {
+                                    "Event": "s3:ObjectCreated:Put",
+                                    "Topic": { "Ref": "EventsFailureNotificationTopic" },
+                                    "Name": "KinesisFailedEvents",
+                                    "Filter": {
+                                        "S3Key": {
+                                            "Rules": [
+                                                {
+                                                    "Name": "prefix",
+                                                    "Value": "failures/firehose-failed/"
+                                                }
+                                            ]
                                         }
-                                    ]
-                                }
-                            }
+                                    }
+                                },
+                                { "Ref" : "AWS::NoValue" }
+                            ]
                         }
                     ]
                 },
