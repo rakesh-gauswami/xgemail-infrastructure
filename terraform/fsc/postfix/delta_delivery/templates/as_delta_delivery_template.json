@@ -178,22 +178,6 @@
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
       "Type": "String"
     },
-    "ScaleInOnWeekends": {
-      "Description": "Enable scale in to zero on Saturday at midnight and scale out on Monday morning. (Times are UTC, NON PROD/QA ENVIRONMENT ONLY)",
-      "Type": "String",
-      "Default": "false",
-      "AllowedValues": [ "true", "false" ]
-    },
-    "ScaleInCron": {
-      "Description": "Cron string for when to begin scale in.",
-      "Type": "String",
-      "Default": "0 1 * * 6"
-    },
-    "ScaleOutCron": {
-      "Description": "Cron string for when to begin scale out.",
-      "Type": "String",
-      "Default": "0 4 * * 1"
-    },
     "SecurityGroups": {
       "Description": "The security group that allows communication within the VPC.",
       "Type": "List<AWS::EC2::SecurityGroup::Id>"
@@ -393,12 +377,6 @@
         { "Fn::Not": [ { "Fn::Equals": [ {"Ref": "SpotPrice"}, "-1" ] } ] }
       ]
     },
-    "EnableScaleInOnWeekends": {
-      "Fn::And": [
-        { "Fn::Not": [ { "Fn::Or": [ { "Fn::Equals": [ { "Ref": "Environment" }, "prod" ] }, { "Fn::Equals": [ { "Ref": "Environment" }, "qa" ] } ] } ] },
-        { "Fn::Equals": [ { "Ref": "ScaleInOnWeekends" }, "true" ] }
-      ]
-    },
     "IsInfDevelopmentEnvironment": {
       "Fn::Or": [
         { "Fn::Equals": [ { "Ref": "Environment" }, "inf" ] },
@@ -540,24 +518,6 @@
         "AutoScalingScheduledAction": {
           "IgnoreUnmodifiedGroupSizeProperties": { "Ref": "DeployIgnoreUnmodifiedGroupSize" }
         }
-      }
-    },
-    "AutoScalingScheduledScaleIn": {
-      "Type": "AWS::AutoScaling::ScheduledAction",
-      "Condition": "EnableScaleInOnWeekends",
-      "Properties": {
-        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "MinSize": "0",
-        "Recurrence": { "Ref": "ScaleInCron" }
-      }
-    },
-    "AutoScalingScheduledScaleOut": {
-      "Type": "AWS::AutoScaling::ScheduledAction",
-      "Condition": "EnableScaleInOnWeekends",
-      "Properties": {
-        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "MinSize": { "Ref": "AutoScalingMinSize" },
-        "Recurrence": { "Ref": "ScaleOutCron" }
       }
     },
     "XgemailScaleOutPolicy": {
