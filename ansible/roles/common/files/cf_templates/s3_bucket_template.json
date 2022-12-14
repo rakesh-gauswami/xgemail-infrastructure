@@ -177,7 +177,8 @@
 
         "EventsFailureNotificationTopic": {
             "Description": "The Failure Events SNS Topic Notification ARN",
-            "Type": "String"
+            "Type": "String",
+            "Default": "NO VALUE"
         },
 
         "SNSNotificationTopic": {
@@ -442,16 +443,13 @@
                                 },
                                 { "Ref" : "AWS::NoValue" }
                             ]
-                        }
-                    ],
-                    "EventsFailureConfigurations": [
+                        },
                         {
                             "Fn::If":[
                                 "EnableEventsFailureNotification",
                                 {
                                     "Event": "s3:ObjectCreated:Put",
                                     "Topic": { "Ref": "EventsFailureNotificationTopic" },
-                                    "Name": "KinesisFailedEvents",
                                     "Filter": {
                                         "S3Key": {
                                             "Rules": [
