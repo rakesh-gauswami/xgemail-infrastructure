@@ -175,8 +175,8 @@
             "Default": "NO VALUE"
         },
 
-        "SNSFailureEventsTopic": {
-            "Description": "SNS Topic Failure Events Notification ARN",
+        "EventsFailureNotificationTopic": {
+            "Description": "The Failure Events SNS Topic Notification ARN",
             "Type": "String"
         },
 
@@ -431,25 +431,6 @@
                             ]
                         }
                     ],
-                    "SNSFailureEventsTopic": [
-                        {
-                            "Fn::If": [
-                                "EnableQueueNotification",
-                                {
-                                    "Event": "s3:ObjectCreated:*",
-                                    "Queue": { "Ref" : "SNSFailureEventsTopic" }
-                                },
-                                "Filter",
-                                    "S3Key",
-                                        "Rules",
-                                            {
-                                                "Name": "prefix",
-                                                "Value": "failures/firehose-failed/"
-                                            },
-                                { "Ref" : "AWS::NoValue" }
-                            ]
-                        }
-                    ],
                     "TopicConfigurations": [
                         {
                             "Fn::If": [
@@ -460,6 +441,20 @@
                                 },
                                 { "Ref" : "AWS::NoValue" }
                             ]
+                        },
+                        {
+                            "Topic": { "Ref": "EventsFailureNotification" },
+                            "Event": "s3:ObjectCreated:Put",
+                            "Filter": {
+                                "S3Key": {
+                                    "Rules": [
+                                        {
+                                            "Name": "prefix",
+                                            "Value": "failures/firehose-failed/"
+                                        }
+                                    ]
+                                }
+                            }
                         }
                     ]
                 },

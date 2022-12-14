@@ -329,7 +329,7 @@ aws:
         S3PolicyCreate:                                           "true"
         S3PolicyPrincipalList:                                    "arn:aws:iam::{{aws_account_id}}:role/build-system-{{account.name}}"
         EnableSSES3Encryption:                                    "true"
-        SNSFailureEventsTopic:                                    "{{sns.arn_prefix}}{{sns.msg_history_events_failure_sns_topic}}"
+        EventsFailureNotificationTopic:                           "{{sns.arn_prefix}}{{sns.msg_history_events_failure_sns_topic}}"
         TagApplication:                                           "message-history"
     msg_stats_bucket:
       stack_name:                                                 "{{stack.s3.msg_stats_bucket}}"
