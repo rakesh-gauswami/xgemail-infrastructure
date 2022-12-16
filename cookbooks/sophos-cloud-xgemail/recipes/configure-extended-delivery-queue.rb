@@ -262,7 +262,7 @@ if NODE_TYPE == 'xdelivery' || NODE_TYPE == 'customer-xdelivery'
     content "/^X_Sophos_Cust_Delivery_TLS: OPP_TLS_1_3$/i FILTER opps_tls_13:
 /^X_Sophos_Cust_Delivery_TLS: TLS_1_3$/i FILTER tls_13:
 /^X_Sophos_Cust_Delivery_TLS: TLS_1_2$/i FILTER smtp_encrypt:
-/^X_Sophos_Cust_Delivery_TLS: PRE_TLS_1.3$/i FILTER pref_tls_13:"
+/^X_Sophos_Cust_Delivery_TLS: PRE_TLS_1_3$/i FILTER pref_tls_13:"
     mode '0644'
     owner 'root'
     group 'root'
