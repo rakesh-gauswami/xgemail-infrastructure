@@ -175,12 +175,6 @@
             "Default": "NO VALUE"
         },
 
-        "EventsFailureNotificationTopic": {
-            "Description": "The Failure Events SNS Topic Notification ARN",
-            "Type": "String",
-            "Default": "NO VALUE"
-        },
-
         "SNSNotificationTopic": {
             "Description": "SNS Topic Notification ARN",
             "Type": "String",
@@ -287,7 +281,6 @@
         "EnableGlacierTransition": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "GlacierTransitionInDays"},"0"]}]},
         "EnableQueueNotification": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "SQSNotificationQueue"},"NO VALUE"]}]},
         "EnableTopicNotification": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "SNSNotificationTopic"},"NO VALUE"]}]},
-        "EnableEventsFailureNotification": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "EventsFailureNotificationTopic"},"NO VALUE"]}]},
         "EnableVersioning": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "VersioningStatus"},"Ignore"]}]},
         "EnableReplicationConfiguration": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "S3ReplicationRole"},"NO VALUE"]}]},
         "HasBucketEncryption": { "Fn::Not": [ {"Fn::Equals": [{ "Ref": "BucketEncryptionKmsKeyId"},"NO VALUE"]}]},
@@ -440,26 +433,6 @@
                                 {
                                     "Event": "s3:ObjectCreated:*",
                                     "Topic": { "Ref" : "SNSNotificationTopic" }
-                                },
-                                { "Ref" : "AWS::NoValue" }
-                            ]
-                        },
-                        {
-                            "Fn::If":[
-                                "EnableEventsFailureNotification",
-                                {
-                                    "Event": "s3:ObjectCreated:Put",
-                                    "Topic": { "Ref": "EventsFailureNotificationTopic" },
-                                    "Filter": {
-                                        "S3Key": {
-                                            "Rules": [
-                                                {
-                                                    "Name": "prefix",
-                                                    "Value": "failures/firehose-failed/"
-                                                }
-                                            ]
-                                        }
-                                    }
                                 },
                                 { "Ref" : "AWS::NoValue" }
                             ]
