@@ -137,7 +137,7 @@ include_recipe 'sophos-cloud-xgemail::common-postfix-multi-instance-config'
 # Run an instance of the smtp process that enforces TLS encryption
 if NODE_TYPE == 'mf-inbound-xdelivery' || NODE_TYPE == 'mf-outbound-xdelivery'
  [
-   "smtp_encrypt/unix = smtp_encrypt unix - - n - - smtp"
+   "smtp_encrypt/unix = smtp_encrypt unix - - n - - smtp -o smtp_tls_mandatory_protocols=>=TLSv1.2"
  ].each do | cur |
    execute print_postmulti_cmd( INSTANCE_NAME, "postconf -M '#{cur}'" )
  end
@@ -149,7 +149,7 @@ else
      "tls_13_verify/unix = tls_13_verify unix - - n - - smtp -o smtp_tls_security_level=verify -o tls_high_cipherlist=TLSv1.3+FIPS:kRSA+FIPS:!eNULL:!aNULL -o smtp_tls_verify_cert_match=hostname,nexthop,dot-nexthop -o smtp_tls_mandatory_protocols=TLSv1.3",
      "pref_tls_13/unix = pref_tls_13 unix - - n - - smtp -o smtp_tls_security_level=encrypt -o tls_high_cipherlist=TLSv1.3+FIPS:kRSA+FIPS:!eNULL:!aNULL -o smtp_tls_mandatory_protocols=<=TLSv1.3",
      "pref_tls_13_verify/unix = pref_tls_13_verify unix - - n - - smtp -o smtp_tls_security_level=verify -o tls_high_cipherlist=TLSv1.3+FIPS:kRSA+FIPS:!eNULL:!aNULL -o smtp_tls_verify_cert_match=hostname,nexthop,dot-nexthop -o smtp_tls_mandatory_protocols=<=TLSv1.3",
-     "smtp_encrypt/unix = smtp_encrypt unix - - n - - smtp"
+     "smtp_encrypt/unix = smtp_encrypt unix - - n - - smtp -o smtp_tls_mandatory_protocols=>=TLSv1.2"
    ].each do | cur |
      execute print_postmulti_cmd( INSTANCE_NAME, "postconf -M '#{cur}'" )
    end
@@ -259,10 +259,18 @@ if NODE_TYPE == 'xdelivery' || NODE_TYPE == 'customer-xdelivery'
 
   # Add the header checks config file
   file "#{TRANSPORT_ROUTE_HEADER_CHECKS_PATH}" do
-    content "/^X-Sophos-Email-Transport-Route: (smtp|smtp_encrypt):(.*)$/i FILTER $1:$2"
+    content "/^X_Sophos_Cust_Delivery_TLS: OPP_TLS_1_3$/i FILTER opps_tls_13:
+/^X_Sophos_Cust_Delivery_TLS: TLS_1_3$/i FILTER tls_13:
+/^X_Sophos_Cust_Delivery_TLS: TLS_1_2$/i FILTER smtp_encrypt:
+/^X_Sophos_Cust_Delivery_TLS: PRE_TLS_1_3$/i FILTER pref_tls_13:"
     mode '0644'
     owner 'root'
     group 'root'
+  end
+  [
+    "header_checks = regexp:#{TRANSPORT_ROUTE_HEADER_CHECKS_PATH}"
+  ].each do | cur |
+    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
   end
 
   include_recipe 'sophos-cloud-xgemail::configure-bounce-message-customer-delivery-queue'

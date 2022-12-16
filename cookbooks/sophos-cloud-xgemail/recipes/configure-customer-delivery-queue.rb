@@ -49,7 +49,13 @@ end
 
 # Run an instance of the smtp process that enforces TLS encryption
 [
-  "smtp_encrypt/unix = smtp_encrypt unix - - n - - smtp"
+  "tls_12_verify/unix = tls_12_verify unix - - n - - smtp -o smtp_tls_security_level=verify -o smtp_tls_mandatory_protocols=TLSv1.2 -o smtp_tls_ciphers=high -o smtp_tls_verify_cert_match=hostname,nexthop,dot-nexthop -o tls_high_cipherlist=TLSv1.2+FIPS:kRSA+FIPS:!eNULL:!aNULL",
+  "opps_tls_13/unix = opps_tls_13 unix - - n - - smtp -o smtp_tls_security_level=may -o smtp_tls_protocols=TLSv1.3,TLSv1.2 -o smtp_tls_ciphers=high -o tls_high_cipherlist=TLSv1.3+FIPS:TLSv1.2+FIPS:kRSA+FIPS:!eNULL:!aNULL",
+  "tls_13/unix = tls_13 unix - - n - - smtp -o smtp_tls_security_level=encrypt -o tls_high_cipherlist=TLSv1.3+FIPS:kRSA+FIPS:!eNULL:!aNULL -o smtp_tls_mandatory_protocols=TLSv1.3",
+  "tls_13_verify/unix = tls_13_verify unix - - n - - smtp -o smtp_tls_security_level=verify -o tls_high_cipherlist=TLSv1.3+FIPS:kRSA+FIPS:!eNULL:!aNULL -o smtp_tls_verify_cert_match=hostname,nexthop,dot-nexthop -o smtp_tls_mandatory_protocols=TLSv1.3",
+  "pref_tls_13/unix = pref_tls_13 unix - - n - - smtp -o smtp_tls_security_level=encrypt -o tls_high_cipherlist=TLSv1.3+FIPS:kRSA+FIPS:!eNULL:!aNULL -o smtp_tls_mandatory_protocols=<=TLSv1.3",
+  "pref_tls_13_verify/unix = pref_tls_13_verify unix - - n - - smtp -o smtp_tls_security_level=verify -o tls_high_cipherlist=TLSv1.3+FIPS:kRSA+FIPS:!eNULL:!aNULL -o smtp_tls_verify_cert_match=hostname,nexthop,dot-nexthop -o smtp_tls_mandatory_protocols=<=TLSv1.3",
+  "smtp_encrypt/unix = smtp_encrypt unix - - n - - smtp -o smtp_tls_mandatory_protocols=>=TLSv1.2"
 ].each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf -M '#{cur}'" )
 end
@@ -63,7 +69,10 @@ HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
 
 # Add the header checks config file
 file "#{HEADER_CHECKS_PATH}" do
-  content "/^X-Sophos-Email-Transport-Route: (smtp|smtp_encrypt):(.*)$/i FILTER $1:$2"
+  content "/^X_Sophos_Cust_Delivery_TLS: OPP_TLS_1_3$/i FILTER opps_tls_13:
+/^X_Sophos_Cust_Delivery_TLS: TLS_1_3$/i FILTER tls_13:
+/^X_Sophos_Cust_Delivery_TLS: TLS_1_2$/i FILTER smtp_encrypt:
+/^X_Sophos_Cust_Delivery_TLS: PRE_TLS_1_3$/i FILTER pref_tls_13:"
   mode '0644'
   owner 'root'
   group 'root'
@@ -79,11 +88,8 @@ CONFIGURATION_COMMANDS =
         'smtp_tls_mandatory_ciphers=high',
         'smtp_tls_mandatory_protocols = TLSv1.2',
         'smtp_tls_loglevel=1',
-        'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache'
-
-    # TODO XGE-8891
-    # Once we're fully cut over to push policy, uncomment the header_checks line below
-    # "header_checks=regexp:#{HEADER_CHECKS_PATH}"
+        'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache',
+        "header_checks=regexp:#{HEADER_CHECKS_PATH}"
     ]
 
 CONFIGURATION_COMMANDS.each do | cur |

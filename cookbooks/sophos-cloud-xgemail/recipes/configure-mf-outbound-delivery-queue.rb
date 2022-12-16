@@ -57,7 +57,7 @@ end
 
 # Run an instance of the smtp process that enforces TLS encryption
 [
-  "smtp_encrypt/unix = smtp_encrypt unix - - n - - smtp"
+  "smtp_encrypt/unix = smtp_encrypt unix - - n - - smtp -o smtp_tls_mandatory_protocols=>=TLSv1.2"
 ].each do | cur |
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf -M '#{cur}'" )
 end
