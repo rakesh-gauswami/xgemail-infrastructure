@@ -77,6 +77,15 @@ XGEMAIL_WHITESPACE_REMOVE_AWS_REGION = "xgemail.white.space.remove.from.header.a
 THREAD_COUNT_CONFIG_KEY = "<%= @consumer_thread_count_key %>"
 X_SOPHOS_PROCESSING_START_TIME_HEADER = 'X-Sophos-Processing-Start-Time'
 X_SOPHOS_MAILFLOW_PROCESSING_ID = 'X-Sophos-Mailflow-Processing-Id'
+SECURE_POLICY = "secure_policy"
+SECURE_INBOUND_METHOD = "xgemail_secure/inbound/secure_method"
+SECURE_INBOUND_TLS_VERSION = "xgemail_secure/inbound/tls_version"
+INBOUND_UNENCRIPTED_DELIVERY_ENABLED = "xgemail_secure/tls/inbound/unencrypted_delivery/enabled"
+TLS = "TLS"
+PRE_TLS_1_3 = "PRE_TLS_1_3"
+OPP_TLS_1_3 = "OPP_TLS_1_3"
+X_SOPHOS_CUST_DELIVERY_TLS = "X_Sophos_Cust_Delivery_TLS"
+
 # logging to syslog setup
 logging.getLogger("botocore").setLevel(logging.WARNING)
 logger = logging.getLogger('sqsmsgconsumer')
@@ -625,6 +634,24 @@ def get_email_product_type(node_type):
     else:
         return "Gateway"
 
+def find_customer_delivery_tls_version(sqs_message):
+    if sqs_message.message_context is None or SECURE_POLICY not in sqs_message.message_context:
+        return None
+    secure_policy = sqs_message.message_context[SECURE_POLICY]
+    if SECURE_INBOUND_METHOD not in secure_policy or secure_policy[
+        SECURE_INBOUND_METHOD] != TLS or SECURE_INBOUND_TLS_VERSION not in secure_policy:
+        return None
+    tls_version = secure_policy[SECURE_INBOUND_TLS_VERSION]
+    unencrypted_delivery = False
+    if INBOUND_UNENCRIPTED_DELIVERY_ENABLED in secure_policy and secure_policy[
+        INBOUND_UNENCRIPTED_DELIVERY_ENABLED]:
+        unencrypted_delivery = True
+    if tls_version == PRE_TLS_1_3 and unencrypted_delivery:
+        tls_header = OPP_TLS_1_3
+    else:
+        tls_header = tls_version
+    return tls_header
+
 def deliver_messages():
     while True:
         try:
@@ -656,7 +683,7 @@ def deliver_messages():
                     sqs_message = parse_sqs_message(msg["Body"], msg["ReceiptHandle"])
     
                 logger.debug("Polled SQS message [{0}] from queue [{1}]".format(sqs_message, origin_sqs_queue))
-    
+
                 headers = {}
                 try:
                     headers = attempt_to_retrieve_headers(sqs_message.message_path)
@@ -710,7 +737,12 @@ def deliver_messages():
                             mh_mail_info_filename,
                             headers
                         )
-    
+
+                if NODE_TYPE == 'customer-delivery' or NODE_TYPE == 'customer-xdelivery' or NODE_TYPE == 'xdelivery':
+                    tls_version = find_customer_delivery_tls_version(sqs_message)
+                    if tls_version is not None:
+                        headers[X_SOPHOS_CUST_DELIVERY_TLS] = tls_version
+
                 if NODE_TYPE == 'mf-outbound-delivery':
                     headers[X_SOPHOS_MAILFLOW_PROCESSING_ID] = str(uuid.uuid4()).replace('-','')
 
