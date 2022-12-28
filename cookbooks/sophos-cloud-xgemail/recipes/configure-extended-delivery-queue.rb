@@ -267,11 +267,6 @@ if NODE_TYPE == 'xdelivery' || NODE_TYPE == 'customer-xdelivery'
     owner 'root'
     group 'root'
   end
-  [
-    "header_checks = regexp:#{TRANSPORT_ROUTE_HEADER_CHECKS_PATH}"
-  ].each do | cur |
-    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
-  end
 
   include_recipe 'sophos-cloud-xgemail::configure-bounce-message-customer-delivery-queue'
   include_recipe 'sophos-cloud-xgemail::setup_customer_delivery_transport_updater'
