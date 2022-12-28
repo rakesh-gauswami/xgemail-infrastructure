@@ -89,7 +89,7 @@ CONFIGURATION_COMMANDS =
         'smtp_tls_mandatory_protocols = TLSv1.2',
         'smtp_tls_loglevel=1',
         'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache',
-        "header_checks=regexp:#{HEADER_CHECKS_PATH}"
+        "#header_checks=regexp:#{HEADER_CHECKS_PATH}"
     ]
 
 CONFIGURATION_COMMANDS.each do | cur |
