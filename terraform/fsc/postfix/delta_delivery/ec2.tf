@@ -245,8 +245,8 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     MsgHistoryV2DynamoDbTableName       = var.message_history_dynamodb_table_name
     MsgHistoryV2StreamName              = var.message_history_v2_stream_name
     NewRelicEnabled                     = local.newrelic_enabled
-    PolicyTargetValue                  = local.as_policy_target_value
     ParentAccountName                   = local.input_param_parent_account_name
+    PolicyTargetValue                   = local.as_policy_target_value
     S3CookbookRepositoryURL             = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/${var.build_number}/cookbooks.tar.gz"
     SecurityGroups                      = aws_security_group.security_group_ec2.id
     SpotPrice                           = "-1"
