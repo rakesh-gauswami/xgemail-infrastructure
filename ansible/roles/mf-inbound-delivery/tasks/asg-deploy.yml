@@ -35,6 +35,7 @@
       MsgHistoryV2DynamoDbTableName:        "{{dynamodb.msg_history_v2_dynamodb}}"
       MsgHistoryV2StreamName:               "{{kinesis.firehose.msg_history_v2_stream_name}}"
       NewRelicEnabled:                      "{{newrelic_enabled}}"
+      PolicyTargetValue:                    "{{aws.asg.mfid.policy_target_value}}"
       S3CookbookRepositoryURL:              "//cloud-{{account.name}}-templates/{{build.branch}}/xgemail-infrastructure/cookbooks.enc"
       ScheduledAsOnHourDesiredCapacity:     "{{aws.asg.mfid.on_hour_desired}}"
       SecurityGroups:                       "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.XgemailMfInboundDeliverySecurityGroup}},{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.SecurityGroupBase}}"
