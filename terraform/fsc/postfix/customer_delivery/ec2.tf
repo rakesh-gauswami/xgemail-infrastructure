@@ -1,6 +1,5 @@
 locals {
   DEFAULT_AS_ALARM_SCALING_ENABLED          = false
-  DEFAULT_AS_ALARM_SCALE_IN_THRESHOLD       = 10
   DEFAULT_AS_ALARM_SCALE_OUT_THRESHOLD      = 50
   DEFAULT_AS_MIN_SIZE                       = 1
   DEFAULT_AS_MAX_SIZE                       = 6
@@ -9,8 +8,6 @@ locals {
   DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD      = 900
   DEFAULT_AS_POLICY_TARGET_VALUE            = 90
   DEFAULT_AS_ON_HOUR_DESIRED                = 2
-  DEFAULT_AS_SCALE_IN_OUT_WEEKDAYS          = false
-  DEFAULT_AS_SCALE_IN_ON_WEEKENDS           = false
   DEFAULT_EIP_COUNT                         = 1
   DEFAULT_INSTANCE_SIZE                     = "t3.medium"
   DEFAULT_INSTANCE_COUNT                    = 1
@@ -24,13 +21,6 @@ locals {
     dev  = false
     qa   = false
     prod = true
-  }
-
-  AS_ALARM_SCALE_IN_THRESHOLD_BY_ENVIRONMENT = {
-    inf  = 10
-    dev  = 10
-    qa   = 10
-    prod = 100
   }
 
   AS_ALARM_SCALE_OUT_THRESHOLD_BY_ENVIRONMENT = {
@@ -145,12 +135,6 @@ locals {
     local.DEFAULT_AS_ALARM_SCALING_ENABLED
   )
 
-  alarm_scale_in_threshold = lookup(
-    local.AS_ALARM_SCALE_IN_THRESHOLD_BY_ENVIRONMENT,
-    local.input_param_deployment_environment,
-    local.DEFAULT_AS_ALARM_SCALE_IN_THRESHOLD
-  )
-
   alarm_scale_out_threshold = lookup(
     local.AS_ALARM_SCALE_OUT_THRESHOLD_BY_ENVIRONMENT,
     local.input_param_deployment_environment,
@@ -250,7 +234,6 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
   parameters = {
     AccountName                        = local.input_param_account_name
     AlarmScalingEnabled                = local.alarm_scaling_enabled
-    AlarmScaleInThreshold              = local.alarm_scale_in_threshold
     AlarmScaleOutThreshold             = local.alarm_scale_out_threshold
     AlarmTopicArn                      = local.input_param_alarm_topic_arn
     AmiId                              = var.ami_id
