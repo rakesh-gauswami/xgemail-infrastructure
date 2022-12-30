@@ -150,7 +150,7 @@
     "PolicyTargetValue": {
       "Description": "The target value for the metric.",
       "Type": "Number",
-      "Default": "80"
+      "Default": "50"
     },
     "S3CookbookRepositoryURL": {
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
@@ -341,9 +341,6 @@
         { "Fn::Not": [ { "Fn::Equals": [ {"Ref": "SpotPrice"}, "-1" ] } ] }
       ]
     },
-    "ScalingEnabled": {
-      "Fn::Equals": [ { "Ref": "Environment" }, "prod" ]
-    },
     "IsInfDevelopmentEnvironment": {
       "Fn::Or": [
         { "Fn::Equals": [ { "Ref": "Environment" }, "inf" ] },
@@ -503,10 +500,9 @@
     },
     "XgemailScaleCpuPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Condition": "ScalingEnabled",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "EstimatedInstanceWarmup": "400",
+        "EstimatedInstanceWarmup": "600",
         "PolicyType": "TargetTrackingScaling",
         "TargetTrackingConfiguration": {
           "PredefinedMetricSpecification": {
@@ -952,8 +948,7 @@
     },
     "XgemailScaleCpuPolicy": {
       "Description": "Auto Scaling Scale Out Policy based on CPU.",
-      "Value": { "Ref": "XgemailScaleCpuPolicy" },
-      "Condition": "ScalingEnabled"
+      "Value": { "Ref": "XgemailScaleCpuPolicy" }
     }
   }
 }
