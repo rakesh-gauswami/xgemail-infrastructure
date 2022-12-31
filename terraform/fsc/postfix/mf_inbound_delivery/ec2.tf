@@ -1,6 +1,5 @@
 locals {
   DEFAULT_AS_ALARM_SCALING_ENABLED          = false
-  DEFAULT_AS_ALARM_SCALE_IN_THRESHOLD       = 10
   DEFAULT_AS_ALARM_SCALE_OUT_THRESHOLD      = 50
   DEFAULT_AS_MIN_SIZE                       = 1
   DEFAULT_AS_MAX_SIZE                       = 6
@@ -22,13 +21,6 @@ locals {
     dev  = false
     qa   = false
     prod = true
-  }
-
-  AS_ALARM_SCALE_IN_THRESHOLD_BY_ENVIRONMENT = {
-    inf  = 10
-    dev  = 10
-    qa   = 10
-    prod = 100
   }
 
   AS_ALARM_SCALE_OUT_THRESHOLD_BY_ENVIRONMENT = {
@@ -77,7 +69,7 @@ locals {
     inf  = 90
     dev  = 90
     qa   = 90
-    prod = 65
+    prod = 50
   }
 
   AS_ON_HOUR_DESIRED_BY_ENVIRONMENT = {
@@ -141,12 +133,6 @@ locals {
     local.AS_ALARM_SCALING_ENABLED_BY_ENVIRONMENT,
     local.input_param_deployment_environment,
     local.DEFAULT_AS_ALARM_SCALING_ENABLED
-  )
-
-  alarm_scale_in_threshold = lookup(
-    local.AS_ALARM_SCALE_IN_THRESHOLD_BY_ENVIRONMENT,
-    local.input_param_deployment_environment,
-    local.DEFAULT_AS_ALARM_SCALE_IN_THRESHOLD
   )
 
   alarm_scale_out_threshold = lookup(
@@ -248,7 +234,6 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
   parameters = {
     AccountName                           = local.input_param_account_name
     AlarmScalingEnabled                   = local.alarm_scaling_enabled
-    AlarmScaleInThreshold                 = local.alarm_scale_in_threshold
     AlarmScaleOutThreshold                = local.alarm_scale_out_threshold
     AlarmTopicArn                         = local.input_param_alarm_topic_arn
     AmiId                                 = var.ami_id
@@ -276,6 +261,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     MsgHistoryV2StreamName                = var.message_history_v2_stream_name
     NewRelicEnabled                       = local.newrelic_enabled
     ParentAccountName                     = local.input_param_parent_account_name
+    PolicyTargetValue                     = local.as_policy_target_value
     S3CookbookRepositoryURL               = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/${var.build_number}/cookbooks.tar.gz"
     ScheduledAsOnHourDesiredCapacity      = local.as_on_hour_desired
     SecurityGroups                        = aws_security_group.security_group_ec2.id
