@@ -37,7 +37,7 @@ aws:
       health_check_grace_period:                                  "1800"
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-internet-submit-Terminating-LifeCycleHook"
-      policy_target_value:                                        "85"
+      policy_target_value:                                        "90"
       on_hour_desired:                                            "2"
       scale_in_out_weekdays:                                      "false"
       smtpd_auth_xcli_hosts:                                      "81.136.243.94, 79.99.68.210"
@@ -60,6 +60,7 @@ aws:
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-customer-delivery-Launching-LifeCycleHook"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-customer-delivery-Terminating-LifeCycleHook"
       on_hour_desired:                                            "2"
+      policy_target_value:                                        "90"
       scale_in_out_weekdays:                                      "false"
     cx:
       asg_min_size:                                               [0,0,1]
@@ -94,6 +95,7 @@ aws:
       instance_size:                                              "t2.small"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-delta-delivery-Launching-LifeCycleHook"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-delta-delivery-Terminating-LifeCycleHook"
+      policy_target_value:                                        "90"
     dx:
       asg_min_size:                                               [0,0,1]
       health_check_grace_period:                                  "600"
@@ -114,6 +116,7 @@ aws:
       instance_size:                                              "t2.small"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-internet-delivery-Launching-LifeCycleHook"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-internet-delivery-Terminating-LifeCycleHook"
+      policy_target_value:                                        "90"
     ix:
       asg_min_size:                                               [0,0,1]
       eip_count:                                                  "2"
@@ -139,6 +142,7 @@ aws:
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-mf-inbound-delivery-Launching-LifeCycleHook"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-mf-inbound-delivery-Terminating-LifeCycleHook"
       on_hour_desired:                                            "2"
+      policy_target_value:                                        "90"
       scale_in_out_weekdays:                                      "false"
     mfis:
       alarm_scale_in_enabled:                                     "false"
@@ -154,7 +158,7 @@ aws:
       health_check_grace_period:                                  "1800"
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-mf-inbound-submit-Terminating-LifeCycleHook"
-      policy_target_value:                                        "85"
+      policy_target_value:                                        "90"
       on_hour_desired:                                            "2"
       scale_in_out_weekdays:                                      "false"
     es:
@@ -165,7 +169,7 @@ aws:
       health_check_grace_period:                                  "900"
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-encryption-submit-Terminating-LifeCycleHook"
-      policy_target_value:                                        "80"
+      policy_target_value:                                        "90"
     ed:
       as_min_size:                                                "1"
       as_max_size:                                                "3"
@@ -174,7 +178,7 @@ aws:
       health_check_grace_period:                                  "600"
       instance_size:                                              "t2.small"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-encryption-delivery-Terminating-LifeCycleHook"
-      policy_target_value:                                        "80"
+      policy_target_value:                                        "90"
     mfos:
       alarm_scale_in_enabled:                                     "false"
       alarm_scale_out_enabled:                                    "true"
@@ -201,6 +205,7 @@ aws:
       instance_size:                                              "t2.small"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-mf-outbound-delivery-Launching-LifeCycleHook"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-mf-outbound-delivery-Terminating-LifeCycleHook"
+      policy_target_value:                                        "90"
     mfix:
       asg_min_size:                                               [ 0,0,1 ]
       health_check_grace_period:                                  "900"
@@ -224,7 +229,7 @@ aws:
       instance_size:                                              "t2.small"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-risky-delivery-Launching-LifeCycleHook"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-risky-delivery-Terminating-LifeCycleHook"
-      policy_target_value:                                        "80"
+      policy_target_value:                                        "90"
     rx:
       asg_min_size:                                               [0,0,1]
       health_check_grace_period:                                  "600"

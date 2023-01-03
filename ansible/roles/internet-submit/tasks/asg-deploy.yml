@@ -9,10 +9,7 @@
     template: "{{template.ec2.asg.as_internet_submit_template}}"
     template_parameters:
       AesDecryptionKey:                     "{{aes_decryption_key}}"
-      AlarmScaleInEnabled:                  "{{aws.asg.is.alarm_scale_in_enabled}}"
       AlarmScaleOutEnabled:                 "{{aws.asg.is.alarm_scale_out_enabled}}"
-      AlarmScaleInThreshold:                "{{aws.asg.is.alarm_scale_in_threshold}}"
-      AlarmScaleOutThreshold:               "{{aws.asg.is.alarm_scale_out_threshold}}"
       AlarmTopicArn:                        "{{sns.arn_prefix}}{{sns.alarm_sns_topic}}"
       AmiId:                                "{{ami_parent_id}}"
       AutoScalingInstanceRoleArn:           "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.AutoScalingInstanceRoleArn}}"

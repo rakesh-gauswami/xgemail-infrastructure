@@ -146,7 +146,7 @@
     "PolicyTargetValue": {
       "Description": "The target value for the metric.",
       "Type": "Number",
-      "Default": "65"
+      "Default": "50"
     },
     "S3CookbookRepositoryURL": {
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
@@ -333,9 +333,6 @@
         { "Fn::Equals": [ { "Ref": "Environment" }, "qainf" ] },
         { "Fn::Equals": [ { "Ref": "Environment" },  "dev" ] }
       ]
-    },
-    "ScalingEnabled": {
-      "Fn::Equals": [ { "Ref": "Environment" }, "prod" ]
     }
   },
 
@@ -486,11 +483,10 @@
 
     "XgemailAutoScalePolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Condition": "ScalingEnabled",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
         "PolicyType": "TargetTrackingScaling",
-        "EstimatedInstanceWarmup": "400",
+        "EstimatedInstanceWarmup": "600",
         "TargetTrackingConfiguration": {
           "PredefinedMetricSpecification":{
             "PredefinedMetricType":"ASGAverageCPUUtilization"
