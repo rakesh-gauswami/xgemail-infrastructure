@@ -35,11 +35,6 @@
       "Default": "false",
       "AllowedValues": [ "true", "false" ]
     },
-    "AlarmScaleInThreshold": {
-      "Description": "The value against which the specified statistic is compared.",
-      "Type": "Number",
-      "Default": "1000"
-    },
     "AlarmScaleOutThreshold": {
       "Description": "The value against which the specified statistic is compared.",
       "Type": "Number",
@@ -172,7 +167,7 @@
     "PolicyTargetValue": {
       "Description": "The target value for the metric.",
       "Type": "Number",
-      "Default": "85"
+      "Default": "50"
     },
     "S3CookbookRepositoryURL": {
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
@@ -412,9 +407,6 @@
         { "Fn::Equals": [ { "Ref": "Environment" }, "qainf" ] },
         { "Fn::Equals": [ { "Ref": "Environment" }, "dev" ] }
       ]
-    },
-    "ScalingEnabled": {
-      "Fn::Equals": [ { "Ref": "Environment" }, "prod" ]
     }
   },
 
@@ -580,64 +572,18 @@
         "ScalingAdjustment": "1"
       }
     },
-    "XgemailScaleInPolicy": {
-      "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Properties": {
-        "AdjustmentType": "ChangeInCapacity",
-        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "Cooldown": "60",
-        "ScalingAdjustment": "-1"
-      }
-    },
     "XgemailScaleCpuPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Condition": "ScalingEnabled",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "EstimatedInstanceWarmup": "400",
+        "EstimatedInstanceWarmup": "600",
         "PolicyType": "TargetTrackingScaling",
         "TargetTrackingConfiguration": {
           "PredefinedMetricSpecification": {
             "PredefinedMetricType": "ASGAverageCPUUtilization"
           },
-          "TargetValue": { "Ref": "PolicyTargetValue"},
-          "DisableScaleIn" : "true"
+          "TargetValue": { "Ref": "PolicyTargetValue"}
         }
-      }
-    },
-    "AlarmScaleIn": {
-      "Type": "AWS::CloudWatch::Alarm",
-      "Properties": {
-        "ActionsEnabled": { "Ref": "AlarmScaleInEnabled" },
-        "AlarmDescription": {
-          "Fn::Join": [
-            " ", [
-              "Alarm when",
-              { "Ref": "XgemailServiceType" },
-              "ELB RequestCount is below threshold of",
-              { "Ref": "AlarmScaleInThreshold" },
-              "for a duration of time"
-            ]
-          ]
-        },
-        "DatapointsToAlarm": "3",
-        "EvaluationPeriods": "10",
-        "Period": "60",
-        "Statistic": "Sum",
-        "Threshold": { "Ref": "AlarmScaleInThreshold" },
-        "InsufficientDataActions": [ { "Ref": "XgemailScaleInPolicy" } ],
-        "AlarmActions": [
-          { "Ref": "XgemailScaleInPolicy" }
-        ],
-        "Namespace": "AWS/ELB",
-        "Dimensions": [
-          {
-            "Name": "LoadBalancerName",
-            "Value": { "Ref": "LoadBalancerName" }
-          }
-        ],
-        "ComparisonOperator": "LessThanThreshold",
-        "MetricName": "RequestCount"
       }
     },
     "AlarmScaleOut": {
@@ -1108,14 +1054,6 @@
   },
 
   "Outputs": {
-    "AlarmScaleIn": {
-      "Description": "The name of the Scale In Alarm",
-      "Value": { "Ref": "AlarmScaleIn" }
-    },
-    "AlarmScaleInArn": {
-      "Description": "The Arn of the Scale In Alarm",
-      "Value": { "Fn::GetAtt": [ "AlarmScaleIn", "Arn" ] }
-    },
     "AlarmScaleOut": {
       "Description": "The name of the Scale Out Alarm",
       "Value": { "Ref": "AlarmScaleOut" }
@@ -1148,14 +1086,9 @@
       "Description": "Auto Scaling Scale Out Policy ARN.",
       "Value": { "Ref": "XgemailScaleOutPolicy" }
     },
-    "XgemailScaleInPolicy": {
-      "Description": "Auto Scaling Scale In Policy ARN..",
-      "Value": { "Ref": "XgemailScaleInPolicy" }
-    },
     "XgemailScaleCpuPolicy": {
       "Description": "Auto Scaling Scale Out Policy based on CPU.",
       "Value": { "Ref": "XgemailScaleCpuPolicy" },
-      "Condition": "ScalingEnabled"
     }
   }
 }

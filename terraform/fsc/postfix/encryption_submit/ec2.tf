@@ -52,7 +52,7 @@ locals {
     inf  = 90
     dev  = 90
     qa   = 90
-    prod = 65
+    prod = 50
   }
 
   INSTANCE_SIZE_BY_ENVIRONMENT = {

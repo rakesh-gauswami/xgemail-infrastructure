@@ -1,6 +1,5 @@
 locals {
   DEFAULT_AS_ALARM_SCALING_ENABLED          = false
-  DEFAULT_AS_ALARM_SCALE_IN_THRESHOLD       = 10
   DEFAULT_AS_ALARM_SCALE_OUT_THRESHOLD      = 50
   DEFAULT_AS_MIN_SIZE                       = 1
   DEFAULT_AS_MAX_SIZE                       = 6
@@ -21,13 +20,6 @@ locals {
     dev  = false
     qa   = false
     prod = true
-  }
-
-  AS_ALARM_SCALE_IN_THRESHOLD_BY_ENVIRONMENT = {
-    inf  = 10
-    dev  = 10
-    qa   = 10
-    prod = 100
   }
 
   AS_ALARM_SCALE_OUT_THRESHOLD_BY_ENVIRONMENT = {
@@ -76,7 +68,7 @@ locals {
     inf  = 90
     dev  = 90
     qa   = 90
-    prod = 65
+    prod = 50
   }
 
   AS_ON_HOUR_DESIRED_BY_ENVIRONMENT = {
@@ -137,12 +129,6 @@ locals {
     local.AS_ALARM_SCALING_ENABLED_BY_ENVIRONMENT,
     local.input_param_deployment_environment,
     local.DEFAULT_AS_ALARM_SCALING_ENABLED
-  )
-
-  alarm_scale_in_threshold = lookup(
-    local.AS_ALARM_SCALE_IN_THRESHOLD_BY_ENVIRONMENT,
-    local.input_param_deployment_environment,
-    local.DEFAULT_AS_ALARM_SCALE_IN_THRESHOLD
   )
 
   alarm_scale_out_threshold = lookup(
