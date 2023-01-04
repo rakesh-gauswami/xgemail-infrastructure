@@ -250,6 +250,7 @@ aws:
       instance_size:                                              "t2.small"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-warmup-delivery-Launching-LifeCycleHook"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-warmup-delivery-Terminating-LifeCycleHook"
+      policy_target_value:                                        "90"
     wx:
       asg_min_size:                                               [0,0,1]
       eip_count:                                                  "2"
