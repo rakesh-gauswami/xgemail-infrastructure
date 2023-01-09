@@ -89,6 +89,9 @@
               "inputs": {
                 "Service": "athena",
                 "Api": "start_query_execution",
+                "ResultConfiguration" : {
+                  "OutputLocation" : "s3://aws-athena-query-results-202058678495-eu-central-1/"
+                },
                 "QueryString": "SELECT message_path FROM series_datalake.telemetry_email_telemetry where queue_id = '{{ PostfixQueueId }}' and direction = '{{ Direction }}' and region = '{{ Region }}'"
               },
               "outputs": [
