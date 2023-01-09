@@ -1,0 +1,368 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "Template containing a collection of Xgemail SSM Documents",
+
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2023, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ],
+
+    "Comments": [
+      "Creates SSM Documents to automate extracting of specific email messages from Sophos Email."
+    ]
+  },
+
+  "Parameters": {
+    "S3Bucket": {
+      "Description": "The S3 bucket where the code has been placed.",
+      "Type": "String"
+    },
+
+    "S3Key": {
+      "Description": "The object key name in S3 (no slash in the beginning).",
+      "Type": "String"
+    }
+  },
+
+  "Resources" : {
+    "ExtractMessageAutomation": {
+      "Type": "AWS::SSM::Document",
+      "Properties": {
+        "DocumentType": "Automation",
+        "Attachments": [
+          {
+            "Key": "S3FileUrl",
+            "Name": "scriptExtractMessage.py",
+            "Values": [
+              {"Fn::Join": [ "", [
+                "s3://",
+                { "Ref": "S3Bucket" },
+                { "Ref": "S3Key" }
+              ]]}
+            ]
+          }
+        ],
+        "Content": {
+          "schemaVersion": "0.3",
+          "assumeRole": { "Fn::GetAtt" : [ "ExtractMessageAutomationRole", "Arn" ] },
+          "description": "Extract a message from Sophos Email",
+          "files": {
+            "scriptExtractMessage.py": {
+              "checksums": {
+                "sha256": "d2fef2747fed3bf16426e82adb20317dedab3ec3bf3f655c9f9f4459e403b006"
+              }
+            }
+          },
+          "parameters": {
+            "Direction": {
+              "type":"String",
+              "description":"The direction of the customer email, inbound or outbound.",
+              "allowedValues": [
+                "INBOUND",
+                "OUTBOUND"
+              ],
+              "default": "OUTBOUND"
+            },
+            "Region": {
+              "type":"String",
+              "description":"The AWS Region."
+            },
+            "PostfixQueueId": {
+              "type":"String",
+              "description":"The postfix email queue ID."
+            }
+          },
+          "mainSteps": [
+            {
+              "name": "executeGetMessagePathApi",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": 3,
+              "timeoutSeconds": 120,
+              "onFailure": "Abort",
+              "isCritical": "true",
+              "inputs": {
+                "Service": "athena",
+                "Api": "start_query_execution",
+                "QueryString": "SELECT message_path FROM series_datalake.telemetry_email_telemetry where queue_id = '{{ PostfixQueueId }}' and direction = '{{ Direction }}' and region = '{{ Region }}'"
+              },
+              "outputs": [
+                {
+                  "Name": "QueryExecutionId",
+                  "Selector": "$.QueryExecutionId",
+                  "Type": "String"
+                }
+              ],
+              "nextStep": "resultsGetMessagePathApi"
+            },
+            {
+              "name": "resultsGetMessagePathApi",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": 3,
+              "timeoutSeconds": 120,
+              "onFailure": "Abort",
+              "isCritical": "true",
+              "inputs": {
+                "Service": "athena",
+                "Api": "get_query_results",
+                "QueryExecutionId": "{{ executeGetMessagePathApi.QueryExecutionId }}"
+              },
+              "outputs": [
+                {
+                  "Name": "MessagePath",
+                  "Selector": "$.['ResultSet']['Rows'][1]['Data'][0]['VarCharValue']",
+                  "Type": "String"
+                }
+              ],
+              "nextStep": "extractMessage"
+            },
+            {
+              "name": "extractMessage",
+              "action": "aws:executeScript",
+              "maxAttempts": 3,
+              "timeoutSeconds": 120,
+              "onFailure": "Abort",
+              "isCritical": "true",
+              "inputs": {
+                "Attachment": "scriptExtractMessage.py",
+                "Runtime": "python3.8",
+                "Handler": "scriptExtractMessage.extract_message",
+                "InputPayload": {
+                  "Direction": "{{ Direction }}",
+                  "Key": "{{ resultsGetMessagePathApi.MessagePath }}",
+                  "Region": "{{ Region }}"
+                }
+              },
+              "outputs": [
+                {
+                  "Name": "finalMessage",
+                  "Selector": "$.Payload",
+                  "Type": "String"
+                }
+              ],
+              "nextStep": "sendEmailNotification"
+            },
+            {
+              "name": "sendEmailNotification",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": 3,
+              "timeoutSeconds": 120,
+              "inputs": {
+                "Service": "ses",
+                "Api": "send_raw_email",
+                "RawMessage": {
+                  "Data": "From: message_extractor@sophos-email-recipient.com\nTo: SophosMailOps@sophos.com\nSubject: Sophos Email Message Extracted (contains an attachment)\nMIME-Version: 1.0\nContent-type: Multipart/Mixed; boundary=\"NextPart\"\n\n--NextPart\nContent-Type: text/html\n\nThe attached email was downloaded and deserialized from S3 path: {{ resultsGetMessagePathApi.MessagePath }}.\n\n--NextPart\nContent-Type: text/html;\nContent-Disposition: attachment; filename=\"{{ PostfixQueueId }}.eml\"\n\n{{ extractMessage.finalMessage }}\n\n--NextPart--"
+                }
+              },
+              "outputs": [
+                {
+                  "Name": "emailMessage",
+                  "Selector": "$.MessageId",
+                  "Type": "String"
+                }
+              ],
+              "isEnd": "true"
+            }
+          ],
+          "outputs": [
+            "extractMessage.finalMessage"
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "ExtractMessageAutomation" ] ] }
+          },
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
+      }
+    },
+
+    "ExtractMessageAutomationRole" : {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [
+                "ec2.amazonaws.com",
+                "ssm.amazonaws.com"
+              ]
+            },
+            "Action": [ "sts:AssumeRole" ]
+          }]
+        },
+        "Path": "/",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "ExtractMessageAutomationRole" ] ] }
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
+      }
+    },
+    "ExtractMessageAutomationRolePolicies": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "athena:GetQueryResults",
+                "athena:StartQueryExecution"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:athena:eu-central-1:202058678495:workgroup/primary"
+              ]
+            },
+            {
+              "Action": [
+                "glue:GetDatabase",
+                "glue:GetTable"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:glue:eu-central-1:202058678495:catalog",
+                "arn:aws:glue:eu-central-1:202058678495:database/series_datalake",
+                "arn:aws:glue:eu-central-1:202058678495:table/series_datalake/telemetry_email_telemetry"
+              ]
+            },
+            {
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:s3:::cloud-prod-eu-central-1-lambda/*",
+                "arn:aws:s3:::cloud-prod-eu-central-1-lambda",
+                "arn:aws:s3:::private-cloud-prod-eu-central-1-cloudemail-xgemail-cust-submit/*",
+                "arn:aws:s3:::private-cloud-prod-eu-west-1-cloudemail-xgemail-cust-submit/*",
+                "arn:aws:s3:::private-cloud-prod-us-east-2-cloudemail-xgemail-cust-submit/*",
+                "arn:aws:s3:::private-cloud-prod-us-west-2-cloudemail-xgemail-cust-submit/*",
+                "arn:aws:s3:::private-cloud-prod-eu-central-1-cloudemail-xgemail-submit/*",
+                "arn:aws:s3:::private-cloud-prod-eu-west-1-cloudemail-xgemail-submit/*",
+                "arn:aws:s3:::private-cloud-prod-us-east-2-cloudemail-xgemail-submit/*",
+                "arn:aws:s3:::private-cloud-prod-us-west-2-cloudemail-xgemail-submit/*",
+                "arn:aws:s3:::private-cloud-prod-eu-central-1-cloudemail-xgemail-cust-submit",
+                "arn:aws:s3:::private-cloud-prod-eu-west-1-cloudemail-xgemail-cust-submit",
+                "arn:aws:s3:::private-cloud-prod-us-east-2-cloudemail-xgemail-cust-submit",
+                "arn:aws:s3:::private-cloud-prod-us-west-2-cloudemail-xgemail-cust-submit",
+                "arn:aws:s3:::private-cloud-prod-eu-central-1-cloudemail-xgemail-submit",
+                "arn:aws:s3:::private-cloud-prod-eu-west-1-cloudemail-xgemail-submit",
+                "arn:aws:s3:::private-cloud-prod-us-east-2-cloudemail-xgemail-submit",
+                "arn:aws:s3:::private-cloud-prod-us-west-2-cloudemail-xgemail-submit"
+              ]
+            },
+            {
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObject"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:s3:::aws-athena-query-results-202058678495-eu-central-1/*",
+                "arn:aws:s3:::aws-athena-query-results-202058678495-eu-central-1"
+              ]
+            },
+            {
+              "Action": [
+                "ses:SendRawEmail"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:ses:us-west-2:202058678495:identity/sophos-email-recipient.com"
+              ]
+            },
+            {
+              "Action": [
+                "ssm:DescribeAutomationExecutions",
+                "ssm:DescribeAutomationStepExecutions",
+                "ssm:DescribeDocument",
+                "ssm:DescribeInstanceInformation",
+                "ssm:GetAutomationExecution",
+                "ssm:GetCommandInvocation",
+                "ssm:GetConnectionStatus",
+                "ssm:GetDocument",
+                "ssm:ListCommandInvocations",
+                "ssm:ListCommands",
+                "ssm:ListInstanceAssociations",
+                "ssm:ListDocuments",
+                "ssm:ListDocumentVersions",
+                "ssm:SendCommand",
+                "ssm:StartAutomationExecution"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ]
+        },
+        "PolicyName": "root",
+        "Roles": [
+          {
+            "Ref": "ExtractMessageAutomationRole"
+          }
+        ]
+      },
+      "Type": "AWS::IAM::Policy"
+    }
+  },
+
+  "Outputs" : {
+    "ExtractMessageAutomation" : {
+      "Description" : "SSM Extract Message Automation Document name",
+      "Value" : { "Ref" : "ExtractMessageAutomation" }
+    },
+    "ExtractMessageAutomationRole": {
+      "Description": "ExtractMessageAutomationRole Name",
+      "Value": { "Ref": "ExtractMessageAutomationRole" }
+    },
+    "ExtractMessageAutomationRoleArn": {
+      "Description": "ExtractMessageAutomationRole ARN",
+      "Value": { "Fn::GetAtt" : [ "ExtractMessageAutomationRole", "Arn" ] }
+    }
+  }
+}
