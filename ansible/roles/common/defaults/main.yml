@@ -456,6 +456,7 @@ stack:
     xgemail_malware_submissions_labs_sns_topic:         "{{vpc.cloud_email.name}}-xgemail-malware-submissions-labs-SNS"
   ssm:
     ssm_documents:                                      "{{vpc.cloud_email.name}}-SSM-Documents"
+    ssm_extract_message_documents:                      "{{vpc.cloud_email.name}}-SSM-Extract-Message-Documents"
     ssm_postfix_documents:                              "{{vpc.cloud_email.name}}-SSM-Postfix-Documents"
     ssm_elasticsearch_documents:                        "{{vpc.cloud_station.name}}-SSM-Elasticsearch-Documents"
     ssm_shell_documents:                                "{{vpc.cloud_email.name}}-SSM-Shell-Documents"
@@ -551,6 +552,7 @@ template:
     sns_topic_policy_iam_template:                      "{{tmp_artifacts_dir}}/sns_topic_policy_iam_template.json"
   ssm:
     ssm_xgemail_document_template:                      "{{tmp_artifacts_dir}}/ssm_xgemail_document_template.json"
+    ssm_xgemail_extract_message_document_template:      "{{tmp_artifacts_dir}}/ssm_xgemail_extract_message_document_template.json"
     ssm_xgemail_postfix_document_template:              "{{tmp_artifacts_dir}}/ssm_xgemail_postfix_document_template.json"
     ssm_xgemail_elasticsearch_document_template:        "{{tmp_artifacts_dir}}/ssm_xgemail_elasticsearch_document_template.json"
     ssm_xgemail_shell_document_template:                "{{tmp_artifacts_dir}}/ssm_xgemail_shell_document_template.json"
