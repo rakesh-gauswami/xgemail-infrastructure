@@ -112,8 +112,6 @@
             },
             {
               "name": "sleep",
-              "maxAttempts": 3,
-              "timeoutSeconds": 120,
               "action": "aws:sleep",
               "inputs": {
                 "Duration": "PT1M"
@@ -144,8 +142,6 @@
             {
               "name": "checkQueryStatus",
               "action": "aws:branch",
-              "maxAttempts": 3,
-              "timeoutSeconds": 120,
               "inputs": {
                 "Choices": [
                   {
@@ -154,13 +150,21 @@
                     "StringEquals": "SUCCEEDED"
                   },
                   {
-                    "NextStep": "sleep",
+                    "NextStep": "sleepAgain",
                     "Variable": "{{ getExecutionStatus.QueryExecutionStatus }}",
                     "StringEquals": "RUNNING"
                   }
                 ]
               },
               "isCritical": "true"
+            },
+            {
+              "name": "sleepAgain",
+              "action": "aws:sleep",
+              "inputs": {
+                "Duration": "PT1M"
+              },
+              "nextStep": "resultsGetMessagePathApi"
             },
             {
               "name": "resultsGetMessagePathApi",
