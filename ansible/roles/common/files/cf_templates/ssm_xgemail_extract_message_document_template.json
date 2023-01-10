@@ -222,7 +222,7 @@
                 "Service": "ses",
                 "Api": "send_raw_email",
                 "RawMessage": {
-                  "Data": "From: message_extractor@sophos-email-recipient.com\nTo: SophosMailOps@sophos.com\nSubject: Sophos Email Message Extracted (contains an attachment)\nMIME-Version: 1.0\nContent-type: Multipart/Mixed; boundary=\"NextPart\"\n\n--NextPart\nContent-Type: text/html\n\nThe attached email was downloaded and deserialized from S3 path: {{ resultsGetMessagePathApi.MessagePath }}.\n\n--NextPart\nContent-Type: text/html;\nContent-Disposition: attachment; filename=\"{{ PostfixQueueId }}.eml\"\n\n{{ extractMessage.finalMessage }}\n\n--NextPart--"
+                  "Data": "From: sophos_message_extractor@sophos-message-extractor.net\nTo: SophosMailOps@sophos.com\nSubject: Sophos Email Message Extracted (contains an attachment)\nMIME-Version: 1.0\nContent-type: Multipart/Mixed; boundary=\"NextPart\"\n\n--NextPart\nContent-Type: text/html\n\nThe attached email was downloaded and deserialized from S3 path: {{ resultsGetMessagePathApi.MessagePath }}.\n\n--NextPart\nContent-Type: text/html;\nContent-Disposition: attachment; filename=\"{{ PostfixQueueId }}.eml\"\n\n{{ extractMessage.finalMessage }}\n\n--NextPart--"
                 }
               },
               "outputs": [
@@ -381,7 +381,7 @@
               ],
               "Effect": "Allow",
               "Resource": [
-                "arn:aws:ses:us-west-2:202058678495:identity/sophos-email-recipient.com"
+                "arn:aws:ses:eu-central-1:202058678495:identity/sophos-message-extractor.net"
               ]
             },
             {
