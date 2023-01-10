@@ -108,7 +108,55 @@
                   "Type": "String"
                 }
               ],
-              "nextStep": "resultsGetMessagePathApi"
+              "nextStep": "sleep"
+            },
+            {
+              "name": "sleep",
+              "action": "aws:sleep",
+              "inputs": {
+                "Duration": "PT1M"
+              },
+              "nextStep": "getExecutionStatus"
+            },
+            {
+              "name": "getExecutionStatus",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": 3,
+              "timeoutSeconds": 120,
+              "onFailure": "Abort",
+              "isCritical": "true",
+              "inputs": {
+                "Service": "athena",
+                "Api": "get_query_execution",
+                "QueryExecutionId": "{{ executeGetMessagePathApi.QueryExecutionId }}"
+              },
+              "outputs": [
+                {
+                  "Name": "QueryExecutionStatus",
+                  "Selector": "$.QueryExecution.Status.State",
+                  "Type": "String"
+                }
+              ],
+              "nextStep": "checkQueryStatus"
+            },
+            {
+              "name": "checkQueryStatus",
+              "action": "aws:branch",
+              "inputs": {
+                "Choices": [
+                  {
+                    "NextStep": "resultsGetMessagePathApi",
+                    "Variable": "{{ getExecutionStatus.QueryExecutionStatus }}",
+                    "StringEquals": "SUCCEEDED"
+                  },
+                  {
+                    "NextStep": "sleep",
+                    "Variable": "{{ getExecutionStatus.QueryExecutionStatus }}",
+                    "StringEquals": "RUNNING"
+                  }
+                ]
+              },
+              "isCritical": "true"
             },
             {
               "name": "resultsGetMessagePathApi",
@@ -255,8 +303,10 @@
           "Statement": [
             {
               "Action": [
+                "athena:StartQueryExecution",
                 "athena:GetQueryResults",
-                "athena:StartQueryExecution"
+                "athena:GetWorkGroup",
+                "athena:GetQueryExecution"
               ],
               "Effect": "Allow",
               "Resource": [
@@ -286,7 +336,6 @@
               "Resource": [
                 "arn:aws:s3:::cloud-prod-eu-central-1-lambda/*",
                 "arn:aws:s3:::cloud-prod-eu-central-1-lambda",
-                "arn:aws:s3:::data-series-shared-eu-central-1-prod-tlm-datalake/sym_telemetry/appIdentity=email-telemetry/*",
                 "arn:aws:s3:::private-cloud-prod-eu-central-1-cloudemail-xgemail-cust-submit/*",
                 "arn:aws:s3:::private-cloud-prod-eu-west-1-cloudemail-xgemail-cust-submit/*",
                 "arn:aws:s3:::private-cloud-prod-us-east-2-cloudemail-xgemail-cust-submit/*",
@@ -295,7 +344,6 @@
                 "arn:aws:s3:::private-cloud-prod-eu-west-1-cloudemail-xgemail-submit/*",
                 "arn:aws:s3:::private-cloud-prod-us-east-2-cloudemail-xgemail-submit/*",
                 "arn:aws:s3:::private-cloud-prod-us-west-2-cloudemail-xgemail-submit/*",
-                "arn:aws:s3:::data-series-shared-eu-central-1-prod-tlm-datalake/sym_telemetry/appIdentity=email-telemetry/",
                 "arn:aws:s3:::private-cloud-prod-eu-central-1-cloudemail-xgemail-cust-submit",
                 "arn:aws:s3:::private-cloud-prod-eu-west-1-cloudemail-xgemail-cust-submit",
                 "arn:aws:s3:::private-cloud-prod-us-east-2-cloudemail-xgemail-cust-submit",
@@ -303,15 +351,15 @@
                 "arn:aws:s3:::private-cloud-prod-eu-central-1-cloudemail-xgemail-submit",
                 "arn:aws:s3:::private-cloud-prod-eu-west-1-cloudemail-xgemail-submit",
                 "arn:aws:s3:::private-cloud-prod-us-east-2-cloudemail-xgemail-submit",
-                "arn:aws:s3:::private-cloud-prod-us-west-2-cloudemail-xgemail-submit"
+                "arn:aws:s3:::private-cloud-prod-us-west-2-cloudemail-xgemail-submit",
+                "arn:aws:s3:::data-series-shared-eu-central-1-prod-tlm-datalake/*",
+                "arn:aws:s3:::data-series-shared-eu-central-1-prod-tlm-datalake"
               ]
             },
             {
               "Action": [
-                "s3:GetBucketLocation",
-                "s3:GetObject",
-                "s3:ListBucket",
-                "s3:PutObject"
+                "s3:PutObject",
+                "s3:GetObject"
               ],
               "Effect": "Allow",
               "Resource": [
