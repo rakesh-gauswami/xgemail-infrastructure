@@ -69,10 +69,7 @@ HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
 
 # Add the header checks config file
 file "#{HEADER_CHECKS_PATH}" do
-  content "/^X_Sophos_Cust_Delivery_TLS: OPP_TLS_1_3$/i FILTER opps_tls_13:
-/^X_Sophos_Cust_Delivery_TLS: TLS_1_3$/i FILTER tls_13:
-/^X_Sophos_Cust_Delivery_TLS: TLS_1_2$/i FILTER smtp_encrypt:
-/^X_Sophos_Cust_Delivery_TLS: PRE_TLS_1_3$/i FILTER pref_tls_13:"
+  content "/^X-Sophos-Email-Transport-Route: (.*)$/i FILTER $1"
   mode '0644'
   owner 'root'
   group 'root'
@@ -88,7 +85,8 @@ CONFIGURATION_COMMANDS =
         'smtp_tls_mandatory_ciphers=high',
         'smtp_tls_mandatory_protocols = TLSv1.2',
         'smtp_tls_loglevel=1',
-        'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache'
+        'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache',
+        "header_checks=regexp:#{HEADER_CHECKS_PATH}"
     ]
 
 CONFIGURATION_COMMANDS.each do | cur |
