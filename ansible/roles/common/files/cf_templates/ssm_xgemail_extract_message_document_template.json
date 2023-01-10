@@ -221,6 +221,10 @@
               "inputs": {
                 "Service": "ses",
                 "Api": "send_raw_email",
+                "Source": "sophos_message_extractor@sophos-message-extractor.net",
+                "Destinations": [
+                  "SophosMailOps@sophos.com"
+                  ],
                 "RawMessage": {
                   "Data": "From: sophos_message_extractor@sophos-message-extractor.net\nTo: SophosMailOps@sophos.com\nSubject: Sophos Email Message Extracted (contains an attachment)\nMIME-Version: 1.0\nContent-type: Multipart/Mixed; boundary=\"NextPart\"\n\n--NextPart\nContent-Type: text/html\n\nThe attached email was downloaded and deserialized from S3 path: {{ resultsGetMessagePathApi.MessagePath }}.\n\n--NextPart\nContent-Type: text/html;\nContent-Disposition: attachment; filename=\"{{ PostfixQueueId }}.eml\"\n\n{{ extractMessage.finalMessage }}\n\n--NextPart--"
                 }
