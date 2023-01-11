@@ -71,7 +71,14 @@
             },
             "Region": {
               "type":"String",
-              "description":"The AWS Region."
+              "description":"The AWS Region.",
+              "allowedValues": [
+                "eu-central-1",
+                "eu-west-1",
+                "us-east-2",
+                "us-west-2"
+              ],
+              "default": "eu-west-1"
             },
             "PostfixQueueId": {
               "type":"String",
@@ -89,6 +96,9 @@
               "inputs": {
                 "Service": "athena",
                 "Api": "start_query_execution",
+                "ResultConfiguration" : {
+                  "OutputLocation" : "s3://aws-athena-query-results-202058678495-eu-central-1/"
+                },
                 "QueryString": "SELECT message_path FROM series_datalake.telemetry_email_telemetry where queue_id = '{{ PostfixQueueId }}' and direction = '{{ Direction }}' and region = '{{ Region }}'"
               },
               "outputs": [
@@ -98,6 +108,62 @@
                   "Type": "String"
                 }
               ],
+              "nextStep": "sleep"
+            },
+            {
+              "name": "sleep",
+              "action": "aws:sleep",
+              "inputs": {
+                "Duration": "PT1M"
+              },
+              "nextStep": "getExecutionStatus"
+            },
+            {
+              "name": "getExecutionStatus",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": 3,
+              "timeoutSeconds": 120,
+              "onFailure": "Abort",
+              "isCritical": "true",
+              "inputs": {
+                "Service": "athena",
+                "Api": "get_query_execution",
+                "QueryExecutionId": "{{ executeGetMessagePathApi.QueryExecutionId }}"
+              },
+              "outputs": [
+                {
+                  "Name": "QueryExecutionStatus",
+                  "Selector": "$.QueryExecution.Status.State",
+                  "Type": "String"
+                }
+              ],
+              "nextStep": "checkQueryStatus"
+            },
+            {
+              "name": "checkQueryStatus",
+              "action": "aws:branch",
+              "inputs": {
+                "Choices": [
+                  {
+                    "NextStep": "resultsGetMessagePathApi",
+                    "Variable": "{{ getExecutionStatus.QueryExecutionStatus }}",
+                    "StringEquals": "SUCCEEDED"
+                  },
+                  {
+                    "NextStep": "sleepAgain",
+                    "Variable": "{{ getExecutionStatus.QueryExecutionStatus }}",
+                    "StringEquals": "RUNNING"
+                  }
+                ]
+              },
+              "isCritical": "true"
+            },
+            {
+              "name": "sleepAgain",
+              "action": "aws:sleep",
+              "inputs": {
+                "Duration": "PT1M"
+              },
               "nextStep": "resultsGetMessagePathApi"
             },
             {
@@ -134,7 +200,7 @@
                 "Handler": "scriptExtractMessage.extract_message",
                 "InputPayload": {
                   "Direction": "{{ Direction }}",
-                  "Key": "{{ resultsGetMessagePathApi.MessagePath }}",
+                  "Key": "{{ resultsGetMessagePathApi.MessagePath }}.MESSAGE",
                   "Region": "{{ Region }}"
                 }
               },
@@ -155,8 +221,12 @@
               "inputs": {
                 "Service": "ses",
                 "Api": "send_raw_email",
+                "Source": "sophos_message_extractor@sophos-message-extractor.net",
+                "Destinations": [
+                  "SophosMailOps@sophos.com"
+                  ],
                 "RawMessage": {
-                  "Data": "From: message_extractor@sophos-email-recipient.com\nTo: SophosMailOps@sophos.com\nSubject: Sophos Email Message Extracted (contains an attachment)\nMIME-Version: 1.0\nContent-type: Multipart/Mixed; boundary=\"NextPart\"\n\n--NextPart\nContent-Type: text/html\n\nThe attached email was downloaded and deserialized from S3 path: {{ resultsGetMessagePathApi.MessagePath }}.\n\n--NextPart\nContent-Type: text/html;\nContent-Disposition: attachment; filename=\"{{ PostfixQueueId }}.eml\"\n\n{{ extractMessage.finalMessage }}\n\n--NextPart--"
+                  "Data": "From: sophos_message_extractor@sophos-message-extractor.net\nTo: SophosMailOps@sophos.com\nSubject: Sophos Email Message Extracted (contains an attachment)\nMIME-Version: 1.0\nContent-type: Multipart/Mixed; boundary=\"NextPart\"\n\n--NextPart\nContent-Type: text/html\n\nThe attached email was downloaded and deserialized from S3 path: {{ resultsGetMessagePathApi.MessagePath }}.\n\n--NextPart\nContent-Type: text/html;\nContent-Disposition: attachment; filename=\"{{ PostfixQueueId }}.eml\"\n\n{{ extractMessage.finalMessage }}\n\n--NextPart--"
                 }
               },
               "outputs": [
@@ -245,8 +315,10 @@
           "Statement": [
             {
               "Action": [
+                "athena:StartQueryExecution",
                 "athena:GetQueryResults",
-                "athena:StartQueryExecution"
+                "athena:GetWorkGroup",
+                "athena:GetQueryExecution"
               ],
               "Effect": "Allow",
               "Resource": [
@@ -256,6 +328,7 @@
             {
               "Action": [
                 "glue:GetDatabase",
+                "glue:GetPartitions",
                 "glue:GetTable"
               ],
               "Effect": "Allow",
@@ -290,15 +363,15 @@
                 "arn:aws:s3:::private-cloud-prod-eu-central-1-cloudemail-xgemail-submit",
                 "arn:aws:s3:::private-cloud-prod-eu-west-1-cloudemail-xgemail-submit",
                 "arn:aws:s3:::private-cloud-prod-us-east-2-cloudemail-xgemail-submit",
-                "arn:aws:s3:::private-cloud-prod-us-west-2-cloudemail-xgemail-submit"
+                "arn:aws:s3:::private-cloud-prod-us-west-2-cloudemail-xgemail-submit",
+                "arn:aws:s3:::data-series-shared-eu-central-1-prod-tlm-datalake/*",
+                "arn:aws:s3:::data-series-shared-eu-central-1-prod-tlm-datalake"
               ]
             },
             {
               "Action": [
-                "s3:GetBucketLocation",
-                "s3:GetObject",
-                "s3:ListBucket",
-                "s3:PutObject"
+                "s3:PutObject",
+                "s3:GetObject"
               ],
               "Effect": "Allow",
               "Resource": [
@@ -312,7 +385,7 @@
               ],
               "Effect": "Allow",
               "Resource": [
-                "arn:aws:ses:us-west-2:202058678495:identity/sophos-email-recipient.com"
+                "arn:aws:ses:eu-central-1:202058678495:identity/sophos-message-extractor.net"
               ]
             },
             {
