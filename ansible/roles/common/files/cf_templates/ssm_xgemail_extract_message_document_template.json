@@ -87,109 +87,8 @@
           },
           "mainSteps": [
             {
-              "name": "executeGetMessagePathApi",
-              "action": "aws:executeAwsApi",
-              "maxAttempts": 3,
-              "timeoutSeconds": 120,
-              "onFailure": "Abort",
-              "isCritical": "true",
-              "inputs": {
-                "Service": "athena",
-                "Api": "start_query_execution",
-                "ResultConfiguration" : {
-                  "OutputLocation" : "s3://aws-athena-query-results-202058678495-eu-central-1/"
-                },
-                "QueryString": "SELECT message_path FROM series_datalake.telemetry_email_telemetry where queue_id = '{{ PostfixQueueId }}' and direction = '{{ Direction }}' and region = '{{ Region }}'"
-              },
-              "outputs": [
-                {
-                  "Name": "QueryExecutionId",
-                  "Selector": "$.QueryExecutionId",
-                  "Type": "String"
-                }
-              ],
-              "nextStep": "sleep"
-            },
-            {
-              "name": "sleep",
-              "action": "aws:sleep",
-              "inputs": {
-                "Duration": "PT1M"
-              },
-              "nextStep": "getExecutionStatus"
-            },
-            {
-              "name": "getExecutionStatus",
-              "action": "aws:executeAwsApi",
-              "maxAttempts": 3,
-              "timeoutSeconds": 120,
-              "onFailure": "Abort",
-              "isCritical": "true",
-              "inputs": {
-                "Service": "athena",
-                "Api": "get_query_execution",
-                "QueryExecutionId": "{{ executeGetMessagePathApi.QueryExecutionId }}"
-              },
-              "outputs": [
-                {
-                  "Name": "QueryExecutionStatus",
-                  "Selector": "$.QueryExecution.Status.State",
-                  "Type": "String"
-                }
-              ],
-              "nextStep": "checkQueryStatus"
-            },
-            {
-              "name": "checkQueryStatus",
-              "action": "aws:branch",
-              "inputs": {
-                "Choices": [
-                  {
-                    "NextStep": "resultsGetMessagePathApi",
-                    "Variable": "{{ getExecutionStatus.QueryExecutionStatus }}",
-                    "StringEquals": "SUCCEEDED"
-                  },
-                  {
-                    "NextStep": "sleepAgain",
-                    "Variable": "{{ getExecutionStatus.QueryExecutionStatus }}",
-                    "StringEquals": "RUNNING"
-                  }
-                ]
-              },
-              "isCritical": "true"
-            },
-            {
-              "name": "sleepAgain",
-              "action": "aws:sleep",
-              "inputs": {
-                "Duration": "PT1M"
-              },
-              "nextStep": "resultsGetMessagePathApi"
-            },
-            {
-              "name": "resultsGetMessagePathApi",
-              "action": "aws:executeAwsApi",
-              "maxAttempts": 3,
-              "timeoutSeconds": 120,
-              "onFailure": "Abort",
-              "isCritical": "true",
-              "inputs": {
-                "Service": "athena",
-                "Api": "get_query_results",
-                "QueryExecutionId": "{{ executeGetMessagePathApi.QueryExecutionId }}"
-              },
-              "outputs": [
-                {
-                  "Name": "MessagePath",
-                  "Selector": "$.['ResultSet']['Rows'][1]['Data'][0]['VarCharValue']",
-                  "Type": "String"
-                }
-              ],
-              "nextStep": "extractMessage"
-            },
-            {
               "name": "extractMessage",
-              "action": "aws:executeScript",
+              "action": "aws:executeLambdaFunction",
               "maxAttempts": 3,
               "timeoutSeconds": 120,
               "onFailure": "Abort",
@@ -277,7 +176,6 @@
             "Effect": "Allow",
             "Principal": {
               "Service": [
-                "ec2.amazonaws.com",
                 "ssm.amazonaws.com"
               ]
             },
@@ -313,74 +211,6 @@
       "Properties": {
         "PolicyDocument": {
           "Statement": [
-            {
-              "Action": [
-                "athena:StartQueryExecution",
-                "athena:GetQueryResults",
-                "athena:GetWorkGroup",
-                "athena:GetQueryExecution"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                "arn:aws:athena:eu-central-1:202058678495:workgroup/primary"
-              ]
-            },
-            {
-              "Action": [
-                "glue:GetDatabase",
-                "glue:GetPartitions",
-                "glue:GetTable"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                "arn:aws:glue:eu-central-1:202058678495:catalog",
-                "arn:aws:glue:eu-central-1:202058678495:database/series_datalake",
-                "arn:aws:glue:eu-central-1:202058678495:table/series_datalake/telemetry_email_telemetry"
-              ]
-            },
-            {
-              "Action": [
-                "s3:GetBucketLocation",
-                "s3:GetObject",
-                "s3:ListBucket"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                "arn:aws:s3:::cloud-prod-eu-central-1-lambda/*",
-                "arn:aws:s3:::cloud-prod-eu-central-1-lambda",
-                "arn:aws:s3:::private-cloud-prod-eu-central-1-cloudemail-xgemail-cust-submit/*",
-                "arn:aws:s3:::private-cloud-prod-eu-west-1-cloudemail-xgemail-cust-submit/*",
-                "arn:aws:s3:::private-cloud-prod-us-east-2-cloudemail-xgemail-cust-submit/*",
-                "arn:aws:s3:::private-cloud-prod-us-west-2-cloudemail-xgemail-cust-submit/*",
-                "arn:aws:s3:::private-cloud-prod-eu-central-1-cloudemail-xgemail-submit/*",
-                "arn:aws:s3:::private-cloud-prod-eu-west-1-cloudemail-xgemail-submit/*",
-                "arn:aws:s3:::private-cloud-prod-us-east-2-cloudemail-xgemail-submit/*",
-                "arn:aws:s3:::private-cloud-prod-us-west-2-cloudemail-xgemail-submit/*",
-                "arn:aws:s3:::private-cloud-prod-eu-central-1-cloudemail-xgemail-cust-submit",
-                "arn:aws:s3:::private-cloud-prod-eu-west-1-cloudemail-xgemail-cust-submit",
-                "arn:aws:s3:::private-cloud-prod-us-east-2-cloudemail-xgemail-cust-submit",
-                "arn:aws:s3:::private-cloud-prod-us-west-2-cloudemail-xgemail-cust-submit",
-                "arn:aws:s3:::private-cloud-prod-eu-central-1-cloudemail-xgemail-submit",
-                "arn:aws:s3:::private-cloud-prod-eu-west-1-cloudemail-xgemail-submit",
-                "arn:aws:s3:::private-cloud-prod-us-east-2-cloudemail-xgemail-submit",
-                "arn:aws:s3:::private-cloud-prod-us-west-2-cloudemail-xgemail-submit",
-                "arn:aws:s3:::data-series-shared-eu-central-1-prod-tlm-datalake/*",
-                "arn:aws:s3:::data-series-shared-eu-central-1-prod-tlm-datalake"
-              ]
-            },
-            {
-              "Action": [
-                "s3:GetBucketLocation",
-                "s3:ListBucket",
-                "s3:PutObject",
-                "s3:GetObject"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                "arn:aws:s3:::aws-athena-query-results-202058678495-eu-central-1/*",
-                "arn:aws:s3:::aws-athena-query-results-202058678495-eu-central-1"
-              ]
-            },
             {
               "Action": [
                 "ses:SendRawEmail"

@@ -82,7 +82,7 @@
 
 # Create another stack dedicated to Extract Message SSM commands
 - name: "Deploy SSM Extract Message Document {{stack.ssm.ssm_extract_message_documents}}"
-  when: account.name == 'prod' and account.region == 'eu-central-1'
+  #when: account.name == 'prod' and account.region == 'eu-central-1'
   cloudformation:
     stack_name: "{{stack.ssm.ssm_extract_message_documents}}"
     state: present
@@ -99,7 +99,7 @@
     verbosity: 3
 
 - name: "Display SSM Extract Message Document Stack Output"
-  when: account.name == 'prod' and account.region == 'eu-central-1'
+  #when: account.name == 'prod' and account.region == 'eu-central-1'
   debug:
     msg: "{{ssm_extract_message_stack.stack_outputs}}"
     verbosity: 2

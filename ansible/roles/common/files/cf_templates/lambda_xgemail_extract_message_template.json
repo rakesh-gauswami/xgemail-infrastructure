@@ -196,6 +196,74 @@
         "Statement": [
           {
             "Action": [
+              "athena:StartQueryExecution",
+              "athena:GetQueryResults",
+              "athena:GetWorkGroup",
+              "athena:GetQueryExecution"
+            ],
+            "Effect": "Allow",
+            "Resource": [
+              "arn:aws:athena:eu-central-1:202058678495:workgroup/primary"
+            ]
+          },
+          {
+            "Action": [
+              "glue:GetDatabase",
+              "glue:GetPartitions",
+              "glue:GetTable"
+            ],
+            "Effect": "Allow",
+            "Resource": [
+              "arn:aws:glue:eu-central-1:202058678495:catalog",
+              "arn:aws:glue:eu-central-1:202058678495:database/series_datalake",
+              "arn:aws:glue:eu-central-1:202058678495:table/series_datalake/telemetry_email_telemetry"
+            ]
+          },
+          {
+            "Action": [
+              "s3:GetBucketLocation",
+              "s3:GetObject",
+              "s3:ListBucket"
+            ],
+            "Effect": "Allow",
+            "Resource": [
+              "arn:aws:s3:::cloud-prod-eu-central-1-lambda/*",
+              "arn:aws:s3:::cloud-prod-eu-central-1-lambda",
+              "arn:aws:s3:::private-cloud-prod-eu-central-1-cloudemail-xgemail-cust-submit/*",
+              "arn:aws:s3:::private-cloud-prod-eu-west-1-cloudemail-xgemail-cust-submit/*",
+              "arn:aws:s3:::private-cloud-prod-us-east-2-cloudemail-xgemail-cust-submit/*",
+              "arn:aws:s3:::private-cloud-prod-us-west-2-cloudemail-xgemail-cust-submit/*",
+              "arn:aws:s3:::private-cloud-prod-eu-central-1-cloudemail-xgemail-submit/*",
+              "arn:aws:s3:::private-cloud-prod-eu-west-1-cloudemail-xgemail-submit/*",
+              "arn:aws:s3:::private-cloud-prod-us-east-2-cloudemail-xgemail-submit/*",
+              "arn:aws:s3:::private-cloud-prod-us-west-2-cloudemail-xgemail-submit/*",
+              "arn:aws:s3:::private-cloud-prod-eu-central-1-cloudemail-xgemail-cust-submit",
+              "arn:aws:s3:::private-cloud-prod-eu-west-1-cloudemail-xgemail-cust-submit",
+              "arn:aws:s3:::private-cloud-prod-us-east-2-cloudemail-xgemail-cust-submit",
+              "arn:aws:s3:::private-cloud-prod-us-west-2-cloudemail-xgemail-cust-submit",
+              "arn:aws:s3:::private-cloud-prod-eu-central-1-cloudemail-xgemail-submit",
+              "arn:aws:s3:::private-cloud-prod-eu-west-1-cloudemail-xgemail-submit",
+              "arn:aws:s3:::private-cloud-prod-us-east-2-cloudemail-xgemail-submit",
+              "arn:aws:s3:::private-cloud-prod-us-west-2-cloudemail-xgemail-submit",
+              "arn:aws:s3:::data-series-shared-eu-central-1-prod-tlm-datalake/*",
+              "arn:aws:s3:::data-series-shared-eu-central-1-prod-tlm-datalake"
+            ]
+          },
+          {
+            "Action": [
+              "s3:GetBucketLocation",
+              "s3:ListBucket",
+              "s3:PutObject",
+              "s3:GetObject"
+            ],
+            "Effect": "Allow",
+            "Resource": [
+              "arn:aws:s3:::aws-athena-query-results-202058678495-eu-central-1/*",
+              "arn:aws:s3:::aws-athena-query-results-202058678495-eu-central-1"
+            ]
+          },
+          {
+            "Action": [
               "lambda:*"
             ],
             "Effect": "Allow",
