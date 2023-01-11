@@ -67,7 +67,7 @@ locals {
     inf  = 90
     dev  = 90
     qa   = 90
-    prod = 50
+    prod = 55
   }
 
   EIP_COUNT_BY_ENVIRONMENT = {
