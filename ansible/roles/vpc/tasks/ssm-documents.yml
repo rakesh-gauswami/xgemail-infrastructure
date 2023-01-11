@@ -80,16 +80,6 @@
     msg: "{{ssm_shell_stack.stack_outputs}}"
     verbosity: 2
 
-- name: "Upload the python script for Extract Message SSM {{stack.ssm.ssm_extract_message_documents}}"
-  when: account.name == 'prod' and account.region == 'eu-central-1'
-  s3:
-    mode: put
-    region: "{{account.region}}"
-    bucket: "{{s3.lambda_bucket}}"
-    object: "lambda/{{build.branch}}/{{build.number}}/scriptExtractMessage.py"
-    src: /work/utils/scriptExtractMessage.py
-    overwrite: always
-
 # Create another stack dedicated to Extract Message SSM commands
 - name: "Deploy SSM Extract Message Document {{stack.ssm.ssm_extract_message_documents}}"
   when: account.name == 'prod' and account.region == 'eu-central-1'
@@ -100,11 +90,11 @@
     disable_rollback: true
     template: "{{template.ssm.ssm_xgemail_extract_message_document_template}}"
     template_parameters:
-      S3Bucket: "{{s3.lambda_bucket}}"
-      S3Key: "/lambda/{{build.branch}}/{{build.number}}/scriptExtractMessage.py"
+      ExtractMessageLambdaFunction: "{{lambda.extract_message_lambda_function}}"
   register: ssm_extract_message_stack
 
 - debug:
+  when: account.name == 'prod' and account.region == 'eu-central-1'
     var: ssm_extract_message_stack
     verbosity: 3
 

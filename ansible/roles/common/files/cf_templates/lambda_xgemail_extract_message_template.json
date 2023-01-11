@@ -1,0 +1,252 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Creates/Updates/Deletes the Xgemail Extract Message lambda function stored in S3.",
+
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2023, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ],
+
+    "Comments": [
+      "NOTE: The template requires a valid IAM role arn that allows",
+      "the lambda code to access AWS resources."
+    ]
+  },
+
+  "Parameters": {
+    "Environment": {
+      "Description": "(inf, dev, qa, prod, etc...)",
+      "Type": "String"
+    },
+
+    "FunctionDescription": {
+      "Description": "Description for this function.",
+      "Type": "String",
+      "Default": "Triggered from a System Manager document, this Lambda function will extract an email from S3 given the Postfix queue ID."
+    },
+
+    "FunctionName": {
+      "Description": "The name for this function.  Defaults to a unique physical ID.",
+      "Type": "String",
+      "Default": ""
+    },
+
+    "HandlerName": {
+      "Description": "The name of the handler declared in source code.",
+      "Type": "String"
+    },
+
+    "IAMRoleArn": {
+      "Description": "The IAM role that Lambda assumes when it runs your code to access AWS services.",
+      "Type": "String"
+    },
+
+    "MemorySize": {
+      "Description": "The amount of memory to allocate for this lambda function (128-1536)",
+      "Type": "Number",
+      "Default": "256"
+    },
+
+    "Runtime": {
+      "Description": "The scripting runtime the code runs on.",
+      "Type": "String",
+      "Default": "python3.8"
+    },
+
+    "S3Bucket": {
+      "Description": "The S3 bucket where the code has been placed.",
+      "Type": "String"
+    },
+
+    "S3Key": {
+      "Description": "The object key name in S3 (no slash in the beginning).",
+      "Type": "String"
+    },
+
+    "Timeout": {
+      "Description": "Timeout in seconds.",
+      "Type": "Number",
+      "Default": "300",
+      "MinValue": "30",
+      "MaxValue": "300"
+    }
+  },
+
+  "Conditions": {
+    "HasFunctionName": {
+      "Fn::Not": [{ "Fn::Equals": [ { "Ref": "FunctionName" }, "" ] }]
+    }
+  },
+
+  "Resources": {
+    "LambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": { "Ref": "S3Bucket" },
+          "S3Key": { "Ref": "S3Key" }
+        },
+        "Description": { "Ref": "FunctionDescription" },
+        "Environment": {
+          "Variables": {
+            "ACCOUNT": { "Ref": "Environment" }
+          }
+        },
+        "FunctionName": {
+          "Fn::If": [
+            "HasFunctionName",
+            { "Ref": "FunctionName" },
+            { "Ref": "AWS::NoValue" }
+          ]
+        },
+        "Handler": { "Ref": "HandlerName" },
+        "Role": { "Ref": "IAMRoleArn" },
+        "Runtime": { "Ref": "Runtime" },
+        "Timeout": { "Ref": "Timeout" },
+        "MemorySize": {"Ref": "MemorySize"},
+        "ReservedConcurrentExecutions": "1",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Ref": "FunctionName" }
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          }
+        ]
+      }
+    },
+
+    "LambdaFunctionVersion": {
+      "Type": "AWS::Lambda::Version",
+      "DependsOn": "LambdaFunction",
+      "Properties": {
+        "Description": {
+          "Fn::Join": [ "", [
+            "Sophos Central code: ",
+            { "Ref": "HandlerName" }
+          ]]
+        },
+        "FunctionName": { "Fn::GetAtt": [ "LambdaFunction", "Arn" ] }
+      }
+    }
+
+  },
+
+  "ExtractMessageLambdaExecutionRole" : {
+    "Type": "AWS::IAM::Role",
+    "Properties": {
+      "AssumeRolePolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [{
+          "Effect": "Allow",
+          "Principal": {
+            "Service": [ "lambda.amazonaws.com" ]
+          },
+          "Action": [ "sts:AssumeRole" ]
+        }]
+      },
+      "Path": "/",
+      "Tags": [
+        {
+          "Key": "Application",
+          "Value": "cloudemail"
+        },
+        {
+          "Key": "BusinessUnit",
+          "Value": "MSG"
+        },
+        {
+          "Key": "Name",
+          "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "ExtractMessageLambdaExecutionRole" ] ] }
+        },
+        {
+          "Key": "Project",
+          "Value": "xgemail"
+        },
+        {
+          "Key": "OwnerEmail",
+          "Value": "sophosmailops@sophos.com"
+        }
+      ]
+    }
+  },
+  "ExtractMessageLambdaExecutionRolePolicies": {
+    "Properties": {
+      "PolicyDocument": {
+        "Statement": [
+          {
+            "Action": [
+              "lambda:*"
+            ],
+            "Effect": "Allow",
+            "Resource": [
+              "*"
+            ]
+          },
+          {
+            "Action": [
+              "logs:CreateLogGroup",
+              "logs:CreateLogStream",
+              "logs:PutLogEvents"
+            ],
+            "Effect": "Allow",
+            "Resource": [
+              "arn:aws:logs:*:*:*"
+            ]
+          },
+          {
+            "Action": [
+              "ssm:DescribeDocument",
+              "ssm:GetCommandInvocation",
+              "ssm:ListInstanceAssociations",
+              "ssm:ListCommands",
+              "ssm:SendCommand"
+            ],
+            "Effect": "Allow",
+            "Resource": [
+              "*"
+            ]
+          }
+        ]
+      },
+      "PolicyName": "root",
+      "Roles": [
+        {
+          "Ref": "ExtractMessageLambdaExecutionRole"
+        }
+      ]
+    },
+    "Type": "AWS::IAM::Policy"
+  },
+
+  "Outputs": {
+    "LambdaFunction": {
+      "Description": "The Lambda Function's Name.",
+      "Value": { "Ref": "LambdaFunction" }
+    },
+    "LambdaFunctionArn": {
+      "Description": "ARN of the function created.",
+      "Value": { "Fn::GetAtt": [ "LambdaFunction", "Arn" ] }
+    }
+  }
+}

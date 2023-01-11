@@ -75,7 +75,7 @@ def deserialize(message_body):
     return deserialized_content
 
 
-def extract_message(events, context):
+def extract_message_handler(events, context):
     s3 = boto3.resource('s3')
     if events["Direction"] == "INBOUND":
         bucket = "private-cloud-prod-" + events["Region"] + "-cloudemail-xgemail-submit"
