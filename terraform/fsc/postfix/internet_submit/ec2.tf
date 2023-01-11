@@ -68,7 +68,7 @@ locals {
     inf  = 85
     dev  = 85
     qa   = 85
-    prod = 50
+    prod = 55
   }
 
   AS_ON_HOUR_DESIRED_BY_ENVIRONMENT = {
