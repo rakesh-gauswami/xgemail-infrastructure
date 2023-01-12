@@ -19,14 +19,10 @@
   },
 
   "Parameters": {
-    "S3Bucket": {
-      "Description": "The S3 bucket where the code has been placed.",
-      "Type": "String"
-    },
-
-    "S3Key": {
-      "Description": "The object key name in S3 (no slash in the beginning).",
-      "Type": "String"
+    "FunctionName": {
+      "Description": "The name for this function.  Defaults to a unique physical ID.",
+      "Type": "String",
+      "Default": ""
     }
   },
 
@@ -35,30 +31,10 @@
       "Type": "AWS::SSM::Document",
       "Properties": {
         "DocumentType": "Automation",
-        "Attachments": [
-          {
-            "Key": "S3FileUrl",
-            "Name": "scriptExtractMessage.py",
-            "Values": [
-              {"Fn::Join": [ "", [
-                "s3://",
-                { "Ref": "S3Bucket" },
-                { "Ref": "S3Key" }
-              ]]}
-            ]
-          }
-        ],
         "Content": {
           "schemaVersion": "0.3",
           "assumeRole": { "Fn::GetAtt" : [ "ExtractMessageAutomationRole", "Arn" ] },
           "description": "Extract a message from Sophos Email",
-          "files": {
-            "scriptExtractMessage.py": {
-              "checksums": {
-                "sha256": "f48a1dfd1e4d94ddc0392f3f80365b73b272af995e01620350279fec6a1a381a"
-              }
-            }
-          },
           "parameters": {
             "Direction": {
               "type":"String",
@@ -87,59 +63,20 @@
           },
           "mainSteps": [
             {
-              "name": "extractMessage",
-              "action": "aws:executeLambdaFunction",
+              "name": "invokeExtractMessageLambda",
+              "action": "aws:invokeLambdaFunction",
               "maxAttempts": 3,
-              "timeoutSeconds": 120,
+              "timeoutSeconds": 300,
               "onFailure": "Abort",
-              "isCritical": "true",
               "inputs": {
-                "Attachment": "scriptExtractMessage.py",
-                "Runtime": "python3.8",
-                "Handler": "scriptExtractMessage.extract_message",
-                "InputPayload": {
+                "FunctionName": { "Ref": "FunctionName" },
+                "Payload": {
                   "Direction": "{{ Direction }}",
-                  "Key": "{{ resultsGetMessagePathApi.MessagePath }}.MESSAGE",
+                  "PostfixQueueId": "{{ PostfixQueueId }}",
                   "Region": "{{ Region }}"
                 }
-              },
-              "outputs": [
-                {
-                  "Name": "finalMessage",
-                  "Selector": "$.Payload",
-                  "Type": "String"
-                }
-              ],
-              "nextStep": "sendEmailNotification"
-            },
-            {
-              "name": "sendEmailNotification",
-              "action": "aws:executeAwsApi",
-              "maxAttempts": 3,
-              "timeoutSeconds": 120,
-              "inputs": {
-                "Service": "ses",
-                "Api": "send_raw_email",
-                "Source": "sophos_message_extractor@sophos-message-extractor.net",
-                "Destinations": [
-                  "SophosMailOps@sophos.com"
-                  ],
-                "RawMessage": {
-                  "Data": "From: sophos_message_extractor@sophos-message-extractor.net\nTo: SophosMailOps@sophos.com\nSubject: Sophos Email Message Extracted (contains an attachment)\nMIME-Version: 1.0\nContent-type: Multipart/Mixed; boundary=\"NextPart\"\n\n--NextPart\nContent-Type: text/html\n\nThe attached email was downloaded and deserialized from S3 path: {{ resultsGetMessagePathApi.MessagePath }}.\n\n--NextPart\nContent-Type: text/html;\nContent-Disposition: attachment; filename=\"{{ PostfixQueueId }}.eml\"\n\n{{ extractMessage.finalMessage }}\n\n--NextPart--"
-                }
-              },
-              "outputs": [
-                {
-                  "Name": "emailMessage",
-                  "Selector": "$.MessageId",
-                  "Type": "String"
-                }
-              ],
-              "isEnd": "true"
+              }
             }
-          ],
-          "outputs": [
-            "extractMessage.finalMessage"
           ]
         },
         "Tags": [
@@ -213,34 +150,11 @@
           "Statement": [
             {
               "Action": [
-                "ses:SendRawEmail"
+                "lambda:InvokeFunction"
               ],
               "Effect": "Allow",
               "Resource": [
-                "arn:aws:ses:eu-central-1:202058678495:identity/sophos-message-extractor.net"
-              ]
-            },
-            {
-              "Action": [
-                "ssm:DescribeAutomationExecutions",
-                "ssm:DescribeAutomationStepExecutions",
-                "ssm:DescribeDocument",
-                "ssm:DescribeInstanceInformation",
-                "ssm:GetAutomationExecution",
-                "ssm:GetCommandInvocation",
-                "ssm:GetConnectionStatus",
-                "ssm:GetDocument",
-                "ssm:ListCommandInvocations",
-                "ssm:ListCommands",
-                "ssm:ListInstanceAssociations",
-                "ssm:ListDocuments",
-                "ssm:ListDocumentVersions",
-                "ssm:SendCommand",
-                "ssm:StartAutomationExecution"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                "*"
+                ""
               ]
             }
           ]
