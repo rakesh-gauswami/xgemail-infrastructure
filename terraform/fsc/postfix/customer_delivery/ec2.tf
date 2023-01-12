@@ -87,10 +87,18 @@ locals {
   }
 
   INSTANCE_SIZE_BY_ENVIRONMENT = {
-    inf  = "t3a.medium"
+    inf  = {
+      us-east-2 = "t3a.medium"
+    }
     dev  = "t3.medium"
     qa   = "t3a.medium"
-    prod = "m6a.large"
+    prod = {
+      ca-central-1    = "m6i.large"
+      ap-northeast-1  = "m6a.large"
+      ap-south-1      = "m6a.large"
+      ap-southeast-2  = "m6a.large"
+      sa-east-1       = "m6a.large"
+    }
   }
 
   NEWRELIC_ENABLED_BY_ENVIRONMENT = {
