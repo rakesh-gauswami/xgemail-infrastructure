@@ -87,19 +87,28 @@ locals {
   }
 
   INSTANCE_SIZE_BY_ENVIRONMENT = {
-    inf  = {
-      us-east-2 = "t3a.medium"
-    }
+    inf  = "t3a.medium"
     dev  = "t3.medium"
     qa   = "t3a.medium"
-    prod = {
-      ca-central-1    = "m6i.large"
-      ap-northeast-1  = "m6a.large"
-      ap-south-1      = "m6a.large"
-      ap-southeast-2  = "m6a.large"
-      sa-east-1       = "m6a.large"
-    }
+    prod = "m6a.large"
   }
+
+  INSTANCE_SIZE_BY_POP = {
+    eml100bom = "m6a.large"
+    eml100gru = "m6a.large"
+    eml100hnd = "m6a.large"
+    eml100syd = "m6a.large"
+    eml100yul = "m6i.large"
+  }
+  instance_size = lookup(
+    local.INSTANCE_SIZE_BY_POP,
+    local.input_param_account_name,
+    lookup(
+      local.INSTANCE_SIZE_BY_ENVIRONMENT,
+      local.input_param_deployment_environment,
+      local.DEFAULT_INSTANCE_SIZE
+    )
+  )
 
   NEWRELIC_ENABLED_BY_ENVIRONMENT = {
     inf  = false
