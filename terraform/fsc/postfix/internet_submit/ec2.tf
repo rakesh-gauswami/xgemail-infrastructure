@@ -85,6 +85,14 @@ locals {
     prod = "m6a.large"
   }
 
+  INSTANCE_SIZE_BY_POP = {
+    eml100bom = "m6a.large"
+    eml100gru = "m6a.large"
+    eml100hnd = "m6a.large"
+    eml100syd = "m6a.large"
+    eml100yul = "m6i.large"
+  }
+
   NEWRELIC_ENABLED_BY_ENVIRONMENT = {
     inf  = false
     dev  = false
@@ -176,9 +184,13 @@ locals {
   )
 
   instance_size = lookup(
-    local.INSTANCE_SIZE_BY_ENVIRONMENT,
-    local.input_param_deployment_environment,
-    local.DEFAULT_INSTANCE_SIZE
+    local.INSTANCE_SIZE_BY_POP,
+    local.input_param_account_name,
+    lookup(
+      local.INSTANCE_SIZE_BY_ENVIRONMENT,
+      local.input_param_deployment_environment,
+      local.DEFAULT_INSTANCE_SIZE
+    )
   )
 
   newrelic_enabled = lookup(
