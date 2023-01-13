@@ -33,12 +33,12 @@
         "DocumentType": "Automation",
         "Content": {
           "schemaVersion": "0.3",
-          "assumeRole": { "Fn::GetAtt" : [ "ExtractMessageAutomationRole", "Arn" ] },
+          "assumeRole": { "Fn::GetAtt": [ "ExtractMessageAutomationRole", "Arn" ] },
           "description": "Extract a message from Sophos Email",
           "parameters": {
             "Direction": {
-              "type":"String",
-              "description":"The direction of the customer email, inbound or outbound.",
+              "type": "String",
+              "description": "The direction of the customer email, inbound or outbound.",
               "allowedValues": [
                 "INBOUND",
                 "OUTBOUND"
@@ -46,8 +46,8 @@
               "default": "OUTBOUND"
             },
             "Region": {
-              "type":"String",
-              "description":"The AWS Region.",
+              "type": "String",
+              "description": "The AWS Region.",
               "allowedValues": [
                 "eu-central-1",
                 "eu-west-1",
@@ -57,8 +57,8 @@
               "default": "eu-west-1"
             },
             "PostfixQueueId": {
-              "type":"String",
-              "description":"The postfix email queue ID."
+              "type": "String",
+              "description": "The postfix email queue ID."
             }
           },
           "mainSteps": [
@@ -82,7 +82,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "ExtractMessageAutomation" ] ] }
+            "Value": { "Fn::Join": [ "-", [ { "Ref": "AWS::StackName" }, "ExtractMessageAutomation" ] ] }
           },
           {
             "Key": "Application",
@@ -103,21 +103,22 @@
         ]
       }
     },
-
-    "ExtractMessageAutomationRole" : {
+    "ExtractMessageAutomationRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
         "AssumeRolePolicyDocument": {
           "Version": "2012-10-17",
-          "Statement": [{
-            "Effect": "Allow",
-            "Principal": {
-              "Service": [
-                "ssm.amazonaws.com"
-              ]
-            },
-            "Action": [ "sts:AssumeRole" ]
-          }]
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "ssm.amazonaws.com"
+                ]
+              },
+              "Action": [ "sts:AssumeRole" ]
+            }
+          ]
         },
         "Path": "/",
         "Tags": [
@@ -131,7 +132,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "ExtractMessageAutomationRole" ] ] }
+            "Value": { "Fn::Join": [ "-", [ { "Ref": "AWS::StackName" }, "ExtractMessageAutomationRole" ] ] }
           },
           {
             "Key": "Project",
@@ -154,7 +155,18 @@
               ],
               "Effect": "Allow",
               "Resource": [
-                ""
+                {
+                  "Fn::Join": [
+                    ":",
+                    [
+                      "arn:aws:lambda",
+                      { "Ref": "AWS::Region" },
+                      { "Ref": "AWS::AccountId" },
+                      "function",
+                      { "Ref": "FunctionName" }
+                    ]
+                  ]
+                }
               ]
             }
           ]
