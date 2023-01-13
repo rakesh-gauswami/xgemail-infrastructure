@@ -133,163 +133,163 @@
         },
         "FunctionName": { "Fn::GetAtt": [ "LambdaFunction", "Arn" ] }
       }
-    }
+    },
 
-  },
-
-  "ExtractMessageLambdaExecutionRole" : {
-    "Type": "AWS::IAM::Role",
-    "Properties": {
-      "AssumeRolePolicyDocument": {
-        "Version": "2012-10-17",
-        "Statement": [{
-          "Effect": "Allow",
-          "Principal": {
-            "Service": [ "lambda.amazonaws.com" ]
-          },
-          "Action": [ "sts:AssumeRole" ]
-        }]
-      },
-      "Path": "/",
-      "Tags": [
-        {
-          "Key": "Application",
-          "Value": "cloudemail"
+    "ExtractMessageLambdaExecutionRole" : {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [ "lambda.amazonaws.com" ]
+            },
+            "Action": [ "sts:AssumeRole" ]
+          }]
         },
-        {
-          "Key": "BusinessUnit",
-          "Value": "MSG"
+        "Path": "/",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "ExtractMessageLambdaExecutionRole" ] ] }
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
+      }
+    },
+    "ExtractMessageLambdaExecutionRolePolicies": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "athena:StartQueryExecution",
+                "athena:GetQueryResults",
+                "athena:GetWorkGroup",
+                "athena:GetQueryExecution"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:athena:eu-central-1:202058678495:workgroup/primary"
+              ]
+            },
+            {
+              "Action": [
+                "glue:GetDatabase",
+                "glue:GetPartitions",
+                "glue:GetTable"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:glue:eu-central-1:202058678495:catalog",
+                "arn:aws:glue:eu-central-1:202058678495:database/series_datalake",
+                "arn:aws:glue:eu-central-1:202058678495:table/series_datalake/telemetry_email_telemetry"
+              ]
+            },
+            {
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:s3:::cloud-prod-eu-central-1-lambda/*",
+                "arn:aws:s3:::cloud-prod-eu-central-1-lambda",
+                "arn:aws:s3:::private-cloud-prod-eu-central-1-cloudemail-xgemail-cust-submit/*",
+                "arn:aws:s3:::private-cloud-prod-eu-west-1-cloudemail-xgemail-cust-submit/*",
+                "arn:aws:s3:::private-cloud-prod-us-east-2-cloudemail-xgemail-cust-submit/*",
+                "arn:aws:s3:::private-cloud-prod-us-west-2-cloudemail-xgemail-cust-submit/*",
+                "arn:aws:s3:::private-cloud-prod-eu-central-1-cloudemail-xgemail-submit/*",
+                "arn:aws:s3:::private-cloud-prod-eu-west-1-cloudemail-xgemail-submit/*",
+                "arn:aws:s3:::private-cloud-prod-us-east-2-cloudemail-xgemail-submit/*",
+                "arn:aws:s3:::private-cloud-prod-us-west-2-cloudemail-xgemail-submit/*",
+                "arn:aws:s3:::private-cloud-prod-eu-central-1-cloudemail-xgemail-cust-submit",
+                "arn:aws:s3:::private-cloud-prod-eu-west-1-cloudemail-xgemail-cust-submit",
+                "arn:aws:s3:::private-cloud-prod-us-east-2-cloudemail-xgemail-cust-submit",
+                "arn:aws:s3:::private-cloud-prod-us-west-2-cloudemail-xgemail-cust-submit",
+                "arn:aws:s3:::private-cloud-prod-eu-central-1-cloudemail-xgemail-submit",
+                "arn:aws:s3:::private-cloud-prod-eu-west-1-cloudemail-xgemail-submit",
+                "arn:aws:s3:::private-cloud-prod-us-east-2-cloudemail-xgemail-submit",
+                "arn:aws:s3:::private-cloud-prod-us-west-2-cloudemail-xgemail-submit",
+                "arn:aws:s3:::data-series-shared-eu-central-1-prod-tlm-datalake/*",
+                "arn:aws:s3:::data-series-shared-eu-central-1-prod-tlm-datalake"
+              ]
+            },
+            {
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:ListBucket",
+                "s3:PutObject",
+                "s3:GetObject"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:s3:::aws-athena-query-results-202058678495-eu-central-1/*",
+                "arn:aws:s3:::aws-athena-query-results-202058678495-eu-central-1"
+              ]
+            },
+            {
+              "Action": [
+                "lambda:*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:logs:*:*:*"
+              ]
+            },
+            {
+              "Action": [
+                "ssm:DescribeDocument",
+                "ssm:GetCommandInvocation",
+                "ssm:ListInstanceAssociations",
+                "ssm:ListCommands",
+                "ssm:SendCommand"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ]
         },
-        {
-          "Key": "Name",
-          "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "ExtractMessageLambdaExecutionRole" ] ] }
-        },
-        {
-          "Key": "Project",
-          "Value": "xgemail"
-        },
-        {
-          "Key": "OwnerEmail",
-          "Value": "sophosmailops@sophos.com"
-        }
-      ]
-    }
-  },
-  "ExtractMessageLambdaExecutionRolePolicies": {
-    "Properties": {
-      "PolicyDocument": {
-        "Statement": [
+        "PolicyName": "root",
+        "Roles": [
           {
-            "Action": [
-              "athena:StartQueryExecution",
-              "athena:GetQueryResults",
-              "athena:GetWorkGroup",
-              "athena:GetQueryExecution"
-            ],
-            "Effect": "Allow",
-            "Resource": [
-              "arn:aws:athena:eu-central-1:202058678495:workgroup/primary"
-            ]
-          },
-          {
-            "Action": [
-              "glue:GetDatabase",
-              "glue:GetPartitions",
-              "glue:GetTable"
-            ],
-            "Effect": "Allow",
-            "Resource": [
-              "arn:aws:glue:eu-central-1:202058678495:catalog",
-              "arn:aws:glue:eu-central-1:202058678495:database/series_datalake",
-              "arn:aws:glue:eu-central-1:202058678495:table/series_datalake/telemetry_email_telemetry"
-            ]
-          },
-          {
-            "Action": [
-              "s3:GetBucketLocation",
-              "s3:GetObject",
-              "s3:ListBucket"
-            ],
-            "Effect": "Allow",
-            "Resource": [
-              "arn:aws:s3:::cloud-prod-eu-central-1-lambda/*",
-              "arn:aws:s3:::cloud-prod-eu-central-1-lambda",
-              "arn:aws:s3:::private-cloud-prod-eu-central-1-cloudemail-xgemail-cust-submit/*",
-              "arn:aws:s3:::private-cloud-prod-eu-west-1-cloudemail-xgemail-cust-submit/*",
-              "arn:aws:s3:::private-cloud-prod-us-east-2-cloudemail-xgemail-cust-submit/*",
-              "arn:aws:s3:::private-cloud-prod-us-west-2-cloudemail-xgemail-cust-submit/*",
-              "arn:aws:s3:::private-cloud-prod-eu-central-1-cloudemail-xgemail-submit/*",
-              "arn:aws:s3:::private-cloud-prod-eu-west-1-cloudemail-xgemail-submit/*",
-              "arn:aws:s3:::private-cloud-prod-us-east-2-cloudemail-xgemail-submit/*",
-              "arn:aws:s3:::private-cloud-prod-us-west-2-cloudemail-xgemail-submit/*",
-              "arn:aws:s3:::private-cloud-prod-eu-central-1-cloudemail-xgemail-cust-submit",
-              "arn:aws:s3:::private-cloud-prod-eu-west-1-cloudemail-xgemail-cust-submit",
-              "arn:aws:s3:::private-cloud-prod-us-east-2-cloudemail-xgemail-cust-submit",
-              "arn:aws:s3:::private-cloud-prod-us-west-2-cloudemail-xgemail-cust-submit",
-              "arn:aws:s3:::private-cloud-prod-eu-central-1-cloudemail-xgemail-submit",
-              "arn:aws:s3:::private-cloud-prod-eu-west-1-cloudemail-xgemail-submit",
-              "arn:aws:s3:::private-cloud-prod-us-east-2-cloudemail-xgemail-submit",
-              "arn:aws:s3:::private-cloud-prod-us-west-2-cloudemail-xgemail-submit",
-              "arn:aws:s3:::data-series-shared-eu-central-1-prod-tlm-datalake/*",
-              "arn:aws:s3:::data-series-shared-eu-central-1-prod-tlm-datalake"
-            ]
-          },
-          {
-            "Action": [
-              "s3:GetBucketLocation",
-              "s3:ListBucket",
-              "s3:PutObject",
-              "s3:GetObject"
-            ],
-            "Effect": "Allow",
-            "Resource": [
-              "arn:aws:s3:::aws-athena-query-results-202058678495-eu-central-1/*",
-              "arn:aws:s3:::aws-athena-query-results-202058678495-eu-central-1"
-            ]
-          },
-          {
-            "Action": [
-              "lambda:*"
-            ],
-            "Effect": "Allow",
-            "Resource": [
-              "*"
-            ]
-          },
-          {
-            "Action": [
-              "logs:CreateLogGroup",
-              "logs:CreateLogStream",
-              "logs:PutLogEvents"
-            ],
-            "Effect": "Allow",
-            "Resource": [
-              "arn:aws:logs:*:*:*"
-            ]
-          },
-          {
-            "Action": [
-              "ssm:DescribeDocument",
-              "ssm:GetCommandInvocation",
-              "ssm:ListInstanceAssociations",
-              "ssm:ListCommands",
-              "ssm:SendCommand"
-            ],
-            "Effect": "Allow",
-            "Resource": [
-              "*"
-            ]
+            "Ref": "ExtractMessageLambdaExecutionRole"
           }
         ]
       },
-      "PolicyName": "root",
-      "Roles": [
-        {
-          "Ref": "ExtractMessageLambdaExecutionRole"
-        }
-      ]
-    },
-    "Type": "AWS::IAM::Policy"
+      "Type": "AWS::IAM::Policy"
+    }
+
   },
 
   "Outputs": {
