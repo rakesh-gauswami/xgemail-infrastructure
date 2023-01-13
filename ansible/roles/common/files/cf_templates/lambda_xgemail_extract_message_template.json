@@ -20,11 +20,6 @@
   },
 
   "Parameters": {
-    "Environment": {
-      "Description": "(inf, dev, qa, prod, etc...)",
-      "Type": "String"
-    },
-
     "FunctionDescription": {
       "Description": "Description for this function.",
       "Type": "String",
@@ -88,11 +83,6 @@
           "S3Key": { "Ref": "S3Key" }
         },
         "Description": { "Ref": "FunctionDescription" },
-        "Environment": {
-          "Variables": {
-            "ACCOUNT": { "Ref": "Environment" }
-          }
-        },
         "FunctionName": {
           "Fn::If": [
             "HasFunctionName",
