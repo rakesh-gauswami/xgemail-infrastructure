@@ -77,14 +77,18 @@ XGEMAIL_WHITESPACE_REMOVE_AWS_REGION = "xgemail.white.space.remove.from.header.a
 THREAD_COUNT_CONFIG_KEY = "<%= @consumer_thread_count_key %>"
 X_SOPHOS_PROCESSING_START_TIME_HEADER = 'X-Sophos-Processing-Start-Time'
 X_SOPHOS_MAILFLOW_PROCESSING_ID = 'X-Sophos-Mailflow-Processing-Id'
-SECURE_POLICY = "secure_policy"
-SECURE_INBOUND_METHOD = "xgemail_secure/inbound/secure_method"
-SECURE_INBOUND_TLS_VERSION = "xgemail_secure/inbound/tls_version"
-INBOUND_UNENCRIPTED_DELIVERY_ENABLED = "xgemail_secure/tls/inbound/unencrypted_delivery/enabled"
-TLS = "TLS"
-PRE_TLS_1_3 = "PRE_TLS_1_3"
-OPP_TLS_1_3 = "OPP_TLS_1_3"
-X_SOPHOS_CUST_DELIVERY_TLS = "X_Sophos_Cust_Delivery_TLS"
+X_SOPHOS_TRANSPORT_ROUTE = 'X-Sophos-Email-Transport-Route'
+
+tls_version_to_transport_map = {
+    'tls_1_2'       : 'smtp_encrypt',
+    'tls_1_2_v'     : 'tls_12_verify',
+    'tls_1_3'       : 'tls_13',
+    'tls_1_3_v'     : 'tls_13_verify',
+    'pre_tls_1_3'   : 'pref_tls_13',
+    'pre_tls_1.3'   : 'pref_tls_13',
+    'pre_tls_1.3_v' : 'pref_tls_13_verify',
+    'opp_tls_1_3'   : 'opps_tls_13'
+}
 
 # logging to syslog setup
 logging.getLogger("botocore").setLevel(logging.WARNING)
@@ -634,23 +638,23 @@ def get_email_product_type(node_type):
     else:
         return "Gateway"
 
-def find_customer_delivery_tls_version(sqs_message):
-    if sqs_message.message_context is None or SECURE_POLICY not in sqs_message.message_context:
-        return None
-    secure_policy = sqs_message.message_context[SECURE_POLICY]
-    if SECURE_INBOUND_METHOD not in secure_policy or secure_policy[
-        SECURE_INBOUND_METHOD] != TLS or SECURE_INBOUND_TLS_VERSION not in secure_policy:
-        return None
-    tls_version = secure_policy[SECURE_INBOUND_TLS_VERSION]
-    unencrypted_delivery = False
-    if INBOUND_UNENCRIPTED_DELIVERY_ENABLED in secure_policy and secure_policy[
-        INBOUND_UNENCRIPTED_DELIVERY_ENABLED]:
-        unencrypted_delivery = True
-    if tls_version == PRE_TLS_1_3 and unencrypted_delivery:
-        tls_header = OPP_TLS_1_3
-    else:
-        tls_header = tls_version
-    return tls_header
+def find_transport(sqs_message):
+    if 'delivery_tls_version' in sqs_message.message_context:
+        tls_version = sqs_message.message_context['delivery_tls_version']
+        try:
+            transport_to_use =  tls_version_to_transport_map.get(tls_version.lower())
+            if transport_to_use is not None:
+                return transport_to_use
+        except Exception as e:
+            logger.error("Error occurred while getting transport from map for version {1} error: {2} "
+                         .format(tls_version.lower, sqs_message.message_path, e))
+    return 'smtp'
+
+def add_custom_route_header(headers, transport, destination):
+    if transport is None or destination is None:
+        return
+    header_value = transport + ":" + destination
+    headers[X_SOPHOS_TRANSPORT_ROUTE] = header_value
 
 def deliver_messages():
     while True:
@@ -738,13 +742,19 @@ def deliver_messages():
                             headers
                         )
 
-                if NODE_TYPE == 'customer-delivery' or NODE_TYPE == 'customer-xdelivery' or NODE_TYPE == 'xdelivery':
-                    tls_version = find_customer_delivery_tls_version(sqs_message)
-                    if tls_version is not None:
-                        headers[X_SOPHOS_CUST_DELIVERY_TLS] = tls_version
-
                 if NODE_TYPE == 'mf-outbound-delivery':
                     headers[X_SOPHOS_MAILFLOW_PROCESSING_ID] = str(uuid.uuid4()).replace('-','')
+
+                if X_SOPHOS_TRANSPORT_ROUTE in headers:
+                    headers.pop(X_SOPHOS_TRANSPORT_ROUTE)
+
+                # if the message_context contains custom_route and delivery_tls_version, we add header for routing
+                if sqs_message.message_context is not None and 'custom_route' in sqs_message.message_context:
+                    # extract the destination which is combination of IP/FQDN:PORT
+                    destination = sqs_message.message_context['custom_route']
+                    # extract the tls version and decide transport
+                    transport = find_transport(sqs_message)
+                    add_custom_route_header(headers, transport, destination)
 
                 # attempt to add any existing headers to the message
                 message_binary_with_headers, timestamp_header  = add_headers(
