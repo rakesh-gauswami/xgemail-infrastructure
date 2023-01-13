@@ -87,7 +87,7 @@ locals {
 
   INSTANCE_SIZE_BY_POP = {
     eml100bom = "m6a.large"
-    eml100gru = "m6a.large"
+    eml100gru = "m6i.large"
     eml100hnd = "m6a.large"
     eml100syd = "m6a.large"
     eml100yul = "m6i.large"
