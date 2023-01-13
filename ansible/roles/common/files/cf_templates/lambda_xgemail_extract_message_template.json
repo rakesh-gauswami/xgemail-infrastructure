@@ -42,11 +42,6 @@
       "Type": "String"
     },
 
-    "IAMRoleArn": {
-      "Description": "The IAM role that Lambda assumes when it runs your code to access AWS services.",
-      "Type": "String"
-    },
-
     "MemorySize": {
       "Description": "The amount of memory to allocate for this lambda function (128-1536)",
       "Type": "Number",
@@ -106,7 +101,7 @@
           ]
         },
         "Handler": { "Ref": "HandlerName" },
-        "Role": { "Ref": "IAMRoleArn" },
+        "Role": { "Fn::GetAtt": [ "ExtractMessageLambdaExecutionRole", "Arn" ] },
         "Runtime": { "Ref": "Runtime" },
         "Timeout": { "Ref": "Timeout" },
         "MemorySize": {"Ref": "MemorySize"},

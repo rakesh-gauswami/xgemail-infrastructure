@@ -210,7 +210,6 @@
     template_parameters:
       FunctionName:                         "{{lambda.extract_message_lambda_function}}"
       HandlerName:                          xgemail_extract_message.extract_message_handler
-      IAMRoleArn:                           "{{iam_stack.stack_outputs.ExtractMessageLambdaExecutionRoleArn}}"
       S3Bucket:                             "{{s3.lambda_bucket}}"
       S3Key:                                "lambda/{{build.branch}}/{{build.number}}/xgemail_extract_message.zip"
   register: extract_message_stack
