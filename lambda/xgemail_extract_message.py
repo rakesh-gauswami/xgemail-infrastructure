@@ -2,11 +2,49 @@ import boto3
 import struct
 import gzip
 import io
+import time
 
 SCHEMA_VERSION = 20170224
 MSG_MAGIC_NUMBER = b'\0SOPHMSG'
 MESSAGE_FILE_EXTENSION = ".MESSAGE"
 NONCE_LENGTH = 0
+session = boto3.Session()
+s3 = boto3.resource('s3')
+
+
+def athena_query(client, events):
+    query_string = "SELECT message_path FROM series_datalake.telemetry_email_telemetry where queue_id = '" + events["PostfixQueueId"] + "' and direction = '" + events["Direction"] + "' and region = '" + events["Region"] + "'"
+    response = client.start_query_execution(
+        QueryString=query_string,
+        ResultConfiguration={
+            'OutputLocation': 's3://aws-athena-query-results-202058678495-eu-central-1/'
+        }
+    )
+    return response
+
+
+def get_message_path(events, max_execution=5):
+    client = session.client('athena', region_name='eu-central-1')
+    execution = athena_query(client, events)
+    execution_id = execution['QueryExecutionId']
+    state = 'RUNNING'
+
+    while max_execution > 0 and state in ['RUNNING', 'QUEUED']:
+        max_execution = max_execution - 1
+        response = client.get_query_execution(QueryExecutionId=execution_id)
+
+        if 'QueryExecution' in response and \
+                'Status' in response['QueryExecution'] and \
+                'State' in response['QueryExecution']['Status']:
+            state = response['QueryExecution']['Status']['State']
+            if state == 'FAILED':
+                return False
+            elif state == 'SUCCEEDED':
+                message_path = response['ResultSet']['Rows'][1]['Data'][0]['VarCharValue']
+                return message_path
+        time.sleep(60)
+    
+    return False
 
 
 def unzip_data(data):
@@ -75,14 +113,29 @@ def deserialize(message_body):
     return deserialized_content
 
 
+def send_email(message_path, events, message):
+    client = session.client('ses', region_name='eu-central-1')
+    response = client.send_raw_email(
+        Source='sophos_message_extractor@sophos-message-extractor.net',
+        Destinations=[
+            'SophosMailOps@sophos.com'
+        ],
+        RawMessage={
+            'Data': "From: sophos_message_extractor@sophos-message-extractor.net\nTo: SophosMailOps@sophos.com\nSubject: Sophos Email Message Extracted (contains an attachment)\nMIME-Version: 1.0\nContent-type: Multipart/Mixed; boundary=\"NextPart\"\n\n--NextPart\nContent-Type: text/html\n\nThe attached email was downloaded and deserialized from S3 path: " + message_path + ".\n\n--NextPart\nContent-Type: text/html;\nContent-Disposition: attachment; filename=\"" + events["PostfixQueueId"] + ".eml\"\n\n" + message + "\n\n--NextPart--"
+        }
+    )
+    return response
+
+
 def extract_message_handler(events, context):
-    s3 = boto3.resource('s3')
     if events["Direction"] == "INBOUND":
         bucket = "private-cloud-prod-" + events["Region"] + "-cloudemail-xgemail-submit"
     elif events["Direction"] == "OUTBOUND":
         bucket = "private-cloud-prod-" + events["Region"] + "-cloudemail-xgemail-cust-submit"
+    else:
+        raise Exception("Message direction not set correctly.")
     bucket = s3.Bucket(bucket)
-    message = bucket.Object(events["Key"])
+    message_path = get_message_path(events)
+    message = bucket.Object(message_path)
     message_body = message.get()['Body'].read()
-
-    return deserialize(message_body)
+    return send_email(message_path, events, deserialize(message_body))
