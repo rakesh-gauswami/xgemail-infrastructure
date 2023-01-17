@@ -19,14 +19,10 @@
   },
 
   "Parameters": {
-    "S3Bucket": {
-      "Description": "The S3 bucket where the code has been placed.",
-      "Type": "String"
-    },
-
-    "S3Key": {
-      "Description": "The object key name in S3 (no slash in the beginning).",
-      "Type": "String"
+    "FunctionName": {
+      "Description": "The name for this function.  Defaults to a unique physical ID.",
+      "Type": "String",
+      "Default": ""
     }
   },
 
@@ -35,34 +31,14 @@
       "Type": "AWS::SSM::Document",
       "Properties": {
         "DocumentType": "Automation",
-        "Attachments": [
-          {
-            "Key": "S3FileUrl",
-            "Name": "scriptExtractMessage.py",
-            "Values": [
-              {"Fn::Join": [ "", [
-                "s3://",
-                { "Ref": "S3Bucket" },
-                { "Ref": "S3Key" }
-              ]]}
-            ]
-          }
-        ],
         "Content": {
           "schemaVersion": "0.3",
-          "assumeRole": { "Fn::GetAtt" : [ "ExtractMessageAutomationRole", "Arn" ] },
+          "assumeRole": { "Fn::GetAtt": [ "ExtractMessageAutomationRole", "Arn" ] },
           "description": "Extract a message from Sophos Email",
-          "files": {
-            "scriptExtractMessage.py": {
-              "checksums": {
-                "sha256": "f48a1dfd1e4d94ddc0392f3f80365b73b272af995e01620350279fec6a1a381a"
-              }
-            }
-          },
           "parameters": {
             "Direction": {
-              "type":"String",
-              "description":"The direction of the customer email, inbound or outbound.",
+              "type": "String",
+              "description": "The direction of the customer email, inbound or outbound.",
               "allowedValues": [
                 "INBOUND",
                 "OUTBOUND"
@@ -70,8 +46,8 @@
               "default": "OUTBOUND"
             },
             "Region": {
-              "type":"String",
-              "description":"The AWS Region.",
+              "type": "String",
+              "description": "The AWS Region.",
               "allowedValues": [
                 "eu-central-1",
                 "eu-west-1",
@@ -81,172 +57,32 @@
               "default": "eu-west-1"
             },
             "PostfixQueueId": {
-              "type":"String",
-              "description":"The postfix email queue ID."
+              "type": "String",
+              "description": "The postfix email queue ID."
             }
           },
           "mainSteps": [
             {
-              "name": "executeGetMessagePathApi",
-              "action": "aws:executeAwsApi",
+              "name": "invokeExtractMessageLambda",
+              "action": "aws:invokeLambdaFunction",
               "maxAttempts": 3,
-              "timeoutSeconds": 120,
+              "timeoutSeconds": 300,
               "onFailure": "Abort",
-              "isCritical": "true",
               "inputs": {
-                "Service": "athena",
-                "Api": "start_query_execution",
-                "ResultConfiguration" : {
-                  "OutputLocation" : "s3://aws-athena-query-results-202058678495-eu-central-1/"
-                },
-                "QueryString": "SELECT message_path FROM series_datalake.telemetry_email_telemetry where queue_id = '{{ PostfixQueueId }}' and direction = '{{ Direction }}' and region = '{{ Region }}'"
-              },
-              "outputs": [
-                {
-                  "Name": "QueryExecutionId",
-                  "Selector": "$.QueryExecutionId",
-                  "Type": "String"
-                }
-              ],
-              "nextStep": "sleep"
-            },
-            {
-              "name": "sleep",
-              "action": "aws:sleep",
-              "inputs": {
-                "Duration": "PT1M"
-              },
-              "nextStep": "getExecutionStatus"
-            },
-            {
-              "name": "getExecutionStatus",
-              "action": "aws:executeAwsApi",
-              "maxAttempts": 3,
-              "timeoutSeconds": 120,
-              "onFailure": "Abort",
-              "isCritical": "true",
-              "inputs": {
-                "Service": "athena",
-                "Api": "get_query_execution",
-                "QueryExecutionId": "{{ executeGetMessagePathApi.QueryExecutionId }}"
-              },
-              "outputs": [
-                {
-                  "Name": "QueryExecutionStatus",
-                  "Selector": "$.QueryExecution.Status.State",
-                  "Type": "String"
-                }
-              ],
-              "nextStep": "checkQueryStatus"
-            },
-            {
-              "name": "checkQueryStatus",
-              "action": "aws:branch",
-              "inputs": {
-                "Choices": [
-                  {
-                    "NextStep": "resultsGetMessagePathApi",
-                    "Variable": "{{ getExecutionStatus.QueryExecutionStatus }}",
-                    "StringEquals": "SUCCEEDED"
-                  },
-                  {
-                    "NextStep": "sleepAgain",
-                    "Variable": "{{ getExecutionStatus.QueryExecutionStatus }}",
-                    "StringEquals": "RUNNING"
-                  }
-                ]
-              },
-              "isCritical": "true"
-            },
-            {
-              "name": "sleepAgain",
-              "action": "aws:sleep",
-              "inputs": {
-                "Duration": "PT1M"
-              },
-              "nextStep": "resultsGetMessagePathApi"
-            },
-            {
-              "name": "resultsGetMessagePathApi",
-              "action": "aws:executeAwsApi",
-              "maxAttempts": 3,
-              "timeoutSeconds": 120,
-              "onFailure": "Abort",
-              "isCritical": "true",
-              "inputs": {
-                "Service": "athena",
-                "Api": "get_query_results",
-                "QueryExecutionId": "{{ executeGetMessagePathApi.QueryExecutionId }}"
-              },
-              "outputs": [
-                {
-                  "Name": "MessagePath",
-                  "Selector": "$.['ResultSet']['Rows'][1]['Data'][0]['VarCharValue']",
-                  "Type": "String"
-                }
-              ],
-              "nextStep": "extractMessage"
-            },
-            {
-              "name": "extractMessage",
-              "action": "aws:executeScript",
-              "maxAttempts": 3,
-              "timeoutSeconds": 120,
-              "onFailure": "Abort",
-              "isCritical": "true",
-              "inputs": {
-                "Attachment": "scriptExtractMessage.py",
-                "Runtime": "python3.8",
-                "Handler": "scriptExtractMessage.extract_message",
+                "FunctionName": { "Ref": "FunctionName" },
                 "InputPayload": {
                   "Direction": "{{ Direction }}",
-                  "Key": "{{ resultsGetMessagePathApi.MessagePath }}.MESSAGE",
+                  "PostfixQueueId": "{{ PostfixQueueId }}",
                   "Region": "{{ Region }}"
                 }
-              },
-              "outputs": [
-                {
-                  "Name": "finalMessage",
-                  "Selector": "$.Payload",
-                  "Type": "String"
-                }
-              ],
-              "nextStep": "sendEmailNotification"
-            },
-            {
-              "name": "sendEmailNotification",
-              "action": "aws:executeAwsApi",
-              "maxAttempts": 3,
-              "timeoutSeconds": 120,
-              "inputs": {
-                "Service": "ses",
-                "Api": "send_raw_email",
-                "Source": "sophos_message_extractor@sophos-message-extractor.net",
-                "Destinations": [
-                  "SophosMailOps@sophos.com"
-                  ],
-                "RawMessage": {
-                  "Data": "From: sophos_message_extractor@sophos-message-extractor.net\nTo: SophosMailOps@sophos.com\nSubject: Sophos Email Message Extracted (contains an attachment)\nMIME-Version: 1.0\nContent-type: Multipart/Mixed; boundary=\"NextPart\"\n\n--NextPart\nContent-Type: text/html\n\nThe attached email was downloaded and deserialized from S3 path: {{ resultsGetMessagePathApi.MessagePath }}.\n\n--NextPart\nContent-Type: text/html;\nContent-Disposition: attachment; filename=\"{{ PostfixQueueId }}.eml\"\n\n{{ extractMessage.finalMessage }}\n\n--NextPart--"
-                }
-              },
-              "outputs": [
-                {
-                  "Name": "emailMessage",
-                  "Selector": "$.MessageId",
-                  "Type": "String"
-                }
-              ],
-              "isEnd": "true"
+              }
             }
-          ],
-          "outputs": [
-            "extractMessage.finalMessage"
           ]
         },
         "Tags": [
           {
             "Key": "Name",
-            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "ExtractMessageAutomation" ] ] }
+            "Value": { "Fn::Join": [ "-", [ { "Ref": "AWS::StackName" }, "ExtractMessageAutomation" ] ] }
           },
           {
             "Key": "Application",
@@ -267,22 +103,22 @@
         ]
       }
     },
-
-    "ExtractMessageAutomationRole" : {
+    "ExtractMessageAutomationRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
         "AssumeRolePolicyDocument": {
           "Version": "2012-10-17",
-          "Statement": [{
-            "Effect": "Allow",
-            "Principal": {
-              "Service": [
-                "ec2.amazonaws.com",
-                "ssm.amazonaws.com"
-              ]
-            },
-            "Action": [ "sts:AssumeRole" ]
-          }]
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "ssm.amazonaws.com"
+                ]
+              },
+              "Action": [ "sts:AssumeRole" ]
+            }
+          ]
         },
         "Path": "/",
         "Tags": [
@@ -296,7 +132,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "ExtractMessageAutomationRole" ] ] }
+            "Value": { "Fn::Join": [ "-", [ { "Ref": "AWS::StackName" }, "ExtractMessageAutomationRole" ] ] }
           },
           {
             "Key": "Project",
@@ -315,100 +151,22 @@
           "Statement": [
             {
               "Action": [
-                "athena:StartQueryExecution",
-                "athena:GetQueryResults",
-                "athena:GetWorkGroup",
-                "athena:GetQueryExecution"
+                "lambda:InvokeFunction"
               ],
               "Effect": "Allow",
               "Resource": [
-                "arn:aws:athena:eu-central-1:202058678495:workgroup/primary"
-              ]
-            },
-            {
-              "Action": [
-                "glue:GetDatabase",
-                "glue:GetPartitions",
-                "glue:GetTable"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                "arn:aws:glue:eu-central-1:202058678495:catalog",
-                "arn:aws:glue:eu-central-1:202058678495:database/series_datalake",
-                "arn:aws:glue:eu-central-1:202058678495:table/series_datalake/telemetry_email_telemetry"
-              ]
-            },
-            {
-              "Action": [
-                "s3:GetBucketLocation",
-                "s3:GetObject",
-                "s3:ListBucket"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                "arn:aws:s3:::cloud-prod-eu-central-1-lambda/*",
-                "arn:aws:s3:::cloud-prod-eu-central-1-lambda",
-                "arn:aws:s3:::private-cloud-prod-eu-central-1-cloudemail-xgemail-cust-submit/*",
-                "arn:aws:s3:::private-cloud-prod-eu-west-1-cloudemail-xgemail-cust-submit/*",
-                "arn:aws:s3:::private-cloud-prod-us-east-2-cloudemail-xgemail-cust-submit/*",
-                "arn:aws:s3:::private-cloud-prod-us-west-2-cloudemail-xgemail-cust-submit/*",
-                "arn:aws:s3:::private-cloud-prod-eu-central-1-cloudemail-xgemail-submit/*",
-                "arn:aws:s3:::private-cloud-prod-eu-west-1-cloudemail-xgemail-submit/*",
-                "arn:aws:s3:::private-cloud-prod-us-east-2-cloudemail-xgemail-submit/*",
-                "arn:aws:s3:::private-cloud-prod-us-west-2-cloudemail-xgemail-submit/*",
-                "arn:aws:s3:::private-cloud-prod-eu-central-1-cloudemail-xgemail-cust-submit",
-                "arn:aws:s3:::private-cloud-prod-eu-west-1-cloudemail-xgemail-cust-submit",
-                "arn:aws:s3:::private-cloud-prod-us-east-2-cloudemail-xgemail-cust-submit",
-                "arn:aws:s3:::private-cloud-prod-us-west-2-cloudemail-xgemail-cust-submit",
-                "arn:aws:s3:::private-cloud-prod-eu-central-1-cloudemail-xgemail-submit",
-                "arn:aws:s3:::private-cloud-prod-eu-west-1-cloudemail-xgemail-submit",
-                "arn:aws:s3:::private-cloud-prod-us-east-2-cloudemail-xgemail-submit",
-                "arn:aws:s3:::private-cloud-prod-us-west-2-cloudemail-xgemail-submit",
-                "arn:aws:s3:::data-series-shared-eu-central-1-prod-tlm-datalake/*",
-                "arn:aws:s3:::data-series-shared-eu-central-1-prod-tlm-datalake"
-              ]
-            },
-            {
-              "Action": [
-                "s3:PutObject",
-                "s3:GetObject"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                "arn:aws:s3:::aws-athena-query-results-202058678495-eu-central-1/*",
-                "arn:aws:s3:::aws-athena-query-results-202058678495-eu-central-1"
-              ]
-            },
-            {
-              "Action": [
-                "ses:SendRawEmail"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                "arn:aws:ses:eu-central-1:202058678495:identity/sophos-message-extractor.net"
-              ]
-            },
-            {
-              "Action": [
-                "ssm:DescribeAutomationExecutions",
-                "ssm:DescribeAutomationStepExecutions",
-                "ssm:DescribeDocument",
-                "ssm:DescribeInstanceInformation",
-                "ssm:GetAutomationExecution",
-                "ssm:GetCommandInvocation",
-                "ssm:GetConnectionStatus",
-                "ssm:GetDocument",
-                "ssm:ListCommandInvocations",
-                "ssm:ListCommands",
-                "ssm:ListInstanceAssociations",
-                "ssm:ListDocuments",
-                "ssm:ListDocumentVersions",
-                "ssm:SendCommand",
-                "ssm:StartAutomationExecution"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                "*"
+                {
+                  "Fn::Join": [
+                    ":",
+                    [
+                      "arn:aws:lambda",
+                      { "Ref": "AWS::Region" },
+                      { "Ref": "AWS::AccountId" },
+                      "function",
+                      { "Ref": "FunctionName" }
+                    ]
+                  ]
+                }
               ]
             }
           ]
