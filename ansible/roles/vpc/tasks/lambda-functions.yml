@@ -183,14 +183,14 @@
 
 # Extract Message Lambda Function
 - name: "Create a zip archive of extract message lambda function"
-  #when: account.name == 'prod' and account.region == 'eu-central-1'
+  when: account.name == 'prod' and account.region == 'eu-central-1'
   archive:
     path: /work/lambda/xgemail_extract_message.py
     dest: "{{tmp_artifacts_dir}}/xgemail_extract_message.zip"
     format: zip
 
 - name: "Upload the extract message lambda function for {{stack.lambda.extract_message_lambda_function}} to the config bucket {{s3.lambda_bucket}}"
-  #when: account.name == 'prod' and account.region == 'eu-central-1'
+  when: account.name == 'prod' and account.region == 'eu-central-1'
   s3:
     mode:               put
     region:             "{{account.region}}"
@@ -200,7 +200,7 @@
     overwrite:          always
 
 - name: "Deploy Extract Message Lambda Function {{stack.lambda.extract_message_lambda_function}} to {{account.name}}-{{account.region}}"
-  #when: account.name == 'prod' and account.region == 'eu-central-1'
+  when: account.name == 'prod' and account.region == 'eu-central-1'
   cloudformation:
     stack_name:                             "{{stack.lambda.extract_message_lambda_function}}"
     state:                                  present
@@ -215,12 +215,12 @@
   register: extract_message_stack
 
 - debug:
-  #when: account.name == 'prod' and account.region == 'eu-central-1'
+  when: account.name == 'prod' and account.region == 'eu-central-1'
     var: extract_message_stack
     verbosity: 3
 
 - name: "Display Extract Message Lambda Function Stack Output"
-  #when: account.name == 'prod' and account.region == 'eu-central-1'
+  when: account.name == 'prod' and account.region == 'eu-central-1'
   debug:
     msg: "{{extract_message_stack.stack_outputs}}"
     verbosity: 2
