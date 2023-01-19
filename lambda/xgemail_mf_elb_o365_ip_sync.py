@@ -1,7 +1,7 @@
 """
 Description here.
 
-Copyright 2021, Sophos Limited. All rights reserved.
+Copyright 2023, Sophos Limited. All rights reserved.
 
 'Sophos' and 'Sophos Anti-Virus' are registered trademarks of
 Sophos Limited and Sophos Group.  All other product and company
@@ -24,17 +24,17 @@ logger.setLevel(logging.INFO)
 
 region = os.environ['AWS_REGION']
 account = os.environ['ACCOUNT']
-mf_security_groups = [os.environ['MFISSECURITYGROUP'], os.environ['MFOSSECURITYGROUP']]
+mf_security_groups = [os.environ['MFISSECURITYGROUP'], os.environ['MFOSSECURITYGROUP'], os.environ['JSSECURITYGROUP']]
 ec2 = boto3.client('ec2')
 
-logger.info("Starting MF ELB O365 IP Sync function")
+logger.info("Starting ELB O365 IP Sync function")
 
 
 def o365_api_call():
     """
     Query the Office 365 IP Address web service to retrieve all IP addresses used by Microsoft for sending email.
     """
-    logger.info("Setting ingress rules for MF-IS and MF-OS ELB Security Groups.")
+    logger.info("Setting ingress rules for MF-IS, MF-OS, and JS ELB Security Groups.")
 
     # Microsoft Web Service URLs
     url_ms_o365_endpoints = "endpoints.office.com"
@@ -115,7 +115,7 @@ def remove_ingress_rule(sg, ip_list):
 
 def add_ingress_rules(sg, ip_list):
     """
-    Set ingress rules on both MF-IS and MF-OS ELB SGs to allow all O365 published IPs to connect.
+    Set ingress rules on MF-IS, MF-OS, and JS ELB SGs to allow all O365 published IPs to connect.
     """
     logger.info("Setting ingress rules for ELB Security Group: " + sg)
     for ip in ip_list:
@@ -155,4 +155,4 @@ def mf_elb_o365_ip_sync_handler(event, context):
         else:
             update_ingress_rules(sg=sg, o365_ips=o365_ips, existing_ip_list=existing_ip_list)
 
-    logger.info("===FINISHED=== MF ELB O365 IP Sync.")
+    logger.info("===FINISHED=== ELB O365 IP Sync.")

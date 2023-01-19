@@ -166,6 +166,7 @@
       IAMRoleArn:                           "{{iam_stack.stack_outputs.MfElbO365IpSyncLambdaExecutionRoleArn}}"
       MfIsElbSecurityGroup:                 "{{sg_stack.stack_outputs.XgemailMfInboundSubmitSecurityGroupLb}}"
       MfOsElbSecurityGroup:                 "{{sg_stack.stack_outputs.XgemailMfOutboundSubmitSecurityGroupLb}}"
+      JsElbSecurityGroup:                   "{{sg_stack.stack_outputs.XgemailJournalSubmitSecurityGroupLb}}"
       S3Bucket:                             "{{s3.lambda_bucket}}"
       S3Key:                                "lambda/{{build.branch}}/{{build.number}}/xgemail_mf_elb_o365_ip_sync.zip"
       ScheduleExpression:                   cron(0 10 * * ? *)
