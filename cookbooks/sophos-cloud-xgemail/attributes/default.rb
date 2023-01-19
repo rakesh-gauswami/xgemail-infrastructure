@@ -374,6 +374,14 @@ default['xgemail']['postfix_instance_data'] = {
     :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
     :server_type => 'ENCRYPTION_SUBMIT'
   },
+  # journal-submit
+  'journal-submit' => {
+    :instance_name => 'js',
+    :port => 25,
+    :msg_size_limit => SUBMIT_MESSAGE_SIZE_LIMIT_BYTES,
+    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+    :server_type => 'JOURNAL_SUBMIT'
+  },
   # mf-inbound-delivery
   'mf-inbound-delivery' => {
     :instance_name => 'mfid',

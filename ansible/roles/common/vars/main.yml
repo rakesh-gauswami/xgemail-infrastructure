@@ -125,6 +125,23 @@ aws:
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-internet-xdelivery-Launching-LifeCycleHook"
       stack_number:                                               [1,2,3]
       zone_index:                                                 [0,1,2]
+    js:
+      alarm_scale_in_enabled:                                     "false"
+      alarm_scale_out_enabled:                                    "true"
+      alarm_scale_in_threshold:                                   "100"
+      alarm_scale_out_threshold:                                  "500"
+      as_min_size:                                                "1"
+      as_max_size:                                                "3"
+      as_min_service:                                             "1"
+      as_max_batch_size:                                          "1"
+      cron_scale_in:                                              "00 02 * * 1-5"
+      cron_scale_out:                                             "30 14 * * 1-5"
+      health_check_grace_period:                                  "1800"
+      instance_size:                                              "t2.small"
+      lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-journal-submit-Terminating-LifeCycleHook"
+      policy_target_value:                                        "90"
+      on_hour_desired:                                            "2"
+      scale_in_out_weekdays:                                      "false"
     mfid:
       alarm_scale_in_enabled:                                     "false"
       alarm_scale_out_enabled:                                    "true"

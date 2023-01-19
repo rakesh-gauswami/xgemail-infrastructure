@@ -1,0 +1,25 @@
+---
+
+- name: "Deploy {{stack.route53.journal_submit_a_route53}} to {{account.name}} {{account.region}}"
+  cloudformation:
+    stack_name: "{{stack.route53.journal_submit_a_route53}}"
+    state: present
+    region: "{{account.region}}"
+    disable_rollback: true
+    template: "{{template.route53.route53_record_basic_template}}"
+    template_parameters:
+      Environment:                   "{{account.name}}"
+      RecordType:                    "ALIAS"
+      DnsName:                       "{{elb_stack_output.stack_outputs.LoadBalancerDnsName}}"
+      HostedZoneId:                  "{{elb_stack_output.stack_outputs.CanonicalHostedZoneNameID}}"
+      ServiceName:                   "journal-submit"
+  register: js_route53_stack_output
+
+- debug:
+    var: js_route53_stack_output
+    verbosity: 3
+
+- name: "Display js Route53 Stack Output"
+  debug:
+    msg: "{{js_route53_stack_output.stack_outputs}}"
+    verbosity: 2
