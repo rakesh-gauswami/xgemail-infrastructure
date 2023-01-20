@@ -481,7 +481,7 @@ template 'fluentd-match-multi-policy' do
   owner 'root'
   group 'root'
   variables(
-    :application_name => NODAPPLICATION_NAMEE_TYPE,
+    :application_name => APPLICATION_NAME,
     :log_name => 'multi-policy',
     :filter_patterns => MULTIPOLICY_FILTER_PATTERNS
   )
