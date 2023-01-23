@@ -55,6 +55,7 @@ aws:
       as_max_batch_size:                                          "1"
       cron_scale_in:                                              "00 02 * * 1-5"
       cron_scale_out:                                             "30 14 * * 1-5"
+      eip_count:                                                  "1"
       health_check_grace_period:                                  "1200"
       instance_size:                                              "t2.small"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-customer-delivery-Launching-LifeCycleHook"
@@ -64,6 +65,7 @@ aws:
       scale_in_out_weekdays:                                      "false"
     cx:
       asg_min_size:                                               [0,0,1]
+      eip_count:                                                  "1"
       health_check_grace_period:                                  "1200"
       instance_size:                                              "t2.small"
       stack_number:                                               [1,2,3]
