@@ -23,6 +23,7 @@ resource "aws_lambda_function" "mf_elb_o365_ip_sync_lambda" {
       ACCOUNT             = local.input_param_account_type
       MF_IS_LB_SG_SSM_KEY = "/central/sg/mf/inbound/submit/lb/id"
       MF_OS_LB_SG_SSM_KEY = "/central/sg/mf/outbound/submit/lb/id"
+      JS_LB_SG_SSM_KEY    = "/central/sg/journal/submit/lb/id"
     }
   }
   tags = {
