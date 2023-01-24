@@ -31,3 +31,4 @@ default['fluentd']['conf_dir']                = '/etc/td-agent.d'
 default['fluentd']['patterns_dir']            = "#{node['fluentd']['main_dir']}/patterns"
 default['fluentd']['plugin_dir']              = "#{node['fluentd']['main_dir']}/plugin"
 default['fluentd']['sqs_delivery_delay']      = 240
+default['fluentd']['application_name']        = "#{node['sophos_cloud']['application_name']}"

@@ -11,6 +11,7 @@
 
 ACCOUNT                          = node['sophos_cloud']['environment']
 ACCOUNT_NAME                     = node['sophos_cloud']['account_name']
+APPLICATION_NAME                 = node['fluentd']['application_name']
 CONF_DIR                         = node['fluentd']['conf_dir']
 INSTANCE_ID                      = node['ec2']['instance_id']
 MAIN_DIR                         = node['fluentd']['main_dir']
@@ -361,7 +362,7 @@ template 'fluentd-source-monit' do
   owner 'root'
   group 'root'
   variables(
-    :application_name => NODE_TYPE,
+    :application_name => APPLICATION_NAME,
   )
 end
 
@@ -375,7 +376,7 @@ template 'fluentd-match-maillog' do
   owner 'root'
   group 'root'
   variables(
-    :application_name => NODE_TYPE,
+    :application_name => APPLICATION_NAME,
     :filter_patterns => MAILLOG_FILTER_PATTERNS
   )
   only_if {
@@ -394,7 +395,7 @@ template 'fluentd-match-jilter' do
   owner 'root'
   group 'root'
   variables(
-    :application_name => NODE_TYPE,
+    :application_name => APPLICATION_NAME,
     :log_name => 'jilter',
     :filter_patterns => JILTER_FILTER_PATTERNS
   )
@@ -433,7 +434,7 @@ template 'fluentd-match-lifecycle' do
   owner 'root'
   group 'root'
   variables(
-    :application_name => NODE_TYPE,
+    :application_name => APPLICATION_NAME,
     :log_name => 'lifecycle',
     :filter_patterns => LIFECYCLE_FILTER_PATTERNS
   )
@@ -458,7 +459,7 @@ end
    owner 'root'
    group 'root'
    variables(
-    :application_name => NODE_TYPE,
+    :application_name => APPLICATION_NAME,
     :log_name => 'messagebouncer',
     :filter_patterns => MESSAGEBOUNCER_FILTER_PATTERNS
   )
@@ -480,7 +481,7 @@ template 'fluentd-match-multi-policy' do
   owner 'root'
   group 'root'
   variables(
-    :application_name => NODE_TYPE,
+    :application_name => APPLICATION_NAME,
     :log_name => 'multi-policy',
     :filter_patterns => MULTIPOLICY_FILTER_PATTERNS
   )
@@ -498,7 +499,7 @@ template 'fluentd-match-sqsmsgproducer' do
   owner 'root'
   group 'root'
   variables(
-    :application_name => NODE_TYPE,
+    :application_name => APPLICATION_NAME,
     :log_name => 'sqsmsgproducer',
     :filter_patterns => SQSMSGPRODUCER_FILTER_PATTERNS
   )
@@ -537,7 +538,7 @@ template 'fluentd-match-sqsmsgconsumer' do
   owner 'root'
   group 'root'
   variables(
-    :application_name => NODE_TYPE,
+    :application_name => APPLICATION_NAME,
     :log_name => 'sqsmsgconsumer',
     :filter_patterns => SQSMSGCONSUMER_FILTER_PATTERNS
   )
@@ -561,7 +562,7 @@ template 'fluentd-match-transportupdater' do
   owner 'root'
   group 'root'
   variables(
-    :application_name => NODE_TYPE,
+    :application_name => APPLICATION_NAME,
     :log_name => 'transportupdater',
     :filter_patterns => TRANSPORTUPDATER_FILTER_PATTERNS
   )
@@ -584,7 +585,7 @@ template 'fluentd-filter-maillog' do
   owner 'root'
   group 'root'
   variables(
-    :application_name => NODE_TYPE,
+    :application_name => APPLICATION_NAME,
     :log_name => 'maillog',
     :grok_pattern => 'MAILLOG',
     :reserve_data => 'true',
@@ -600,7 +601,7 @@ template 'fluentd-filter-jilter' do
   owner 'root'
   group 'root'
   variables(
-    :application_name => NODE_TYPE,
+    :application_name => APPLICATION_NAME,
     :log_name => 'jilter',
     :grok_pattern => 'JILTER',
     :reserve_data => 'true',
@@ -623,7 +624,7 @@ template 'fluentd-filter-lifecycle' do
   owner 'root'
   group 'root'
   variables(
-    :application_name => NODE_TYPE,
+    :application_name => APPLICATION_NAME,
     :log_name => 'lifecycle',
     :grok_pattern => 'LIFECYCLE',
     :reserve_data => 'true',
@@ -650,7 +651,7 @@ end
    owner 'root'
    group 'root'
    variables(
-    :application_name => NODE_TYPE,
+    :application_name => APPLICATION_NAME,
     :log_name => 'messagebouncer',
     :grok_pattern => 'MESSAGEBOUNCER',
     :reserve_data => 'true',
@@ -674,7 +675,7 @@ template 'fluentd-filter-multi-policy' do
   owner 'root'
   group 'root'
   variables(
-    :application_name => NODE_TYPE,
+    :application_name => APPLICATION_NAME,
     :log_name => 'multi-policy',
     :grok_pattern => 'MULTIPOLICY',
     :reserve_data => 'true',
@@ -694,7 +695,7 @@ template 'fluentd-filter-sqsmsgproducer' do
   owner 'root'
   group 'root'
   variables(
-    :application_name => NODE_TYPE,
+    :application_name => APPLICATION_NAME,
     :log_name => 'sqsmsgproducer',
     :grok_pattern => 'SQSMSGPRODUCER',
     :reserve_data => 'true',
@@ -717,7 +718,7 @@ template 'fluentd-filter-sqsmsgconsumer' do
   owner 'root'
   group 'root'
   variables(
-    :application_name => NODE_TYPE,
+    :application_name => APPLICATION_NAME,
     :log_name => 'sqsmsgconsumer',
     :grok_pattern => 'SQSMSGCONSUMER',
     :reserve_data => 'true',
@@ -743,7 +744,7 @@ template 'fluentd-filter-transportupdater' do
   owner 'root'
   group 'root'
   variables(
-    :application_name => NODE_TYPE,
+    :application_name => APPLICATION_NAME,
     :log_name => 'transportupdater',
     :grok_pattern => 'TRANSPORTUPDATER',
     :reserve_data => 'true',
@@ -768,7 +769,7 @@ template 'fluentd-match-postfix-maillog' do
   owner 'root'
   group 'root'
   variables(
-    :application_name => NODE_TYPE,
+    :application_name => APPLICATION_NAME,
     :maillog_filter_patterns => MAILLOG_FILTER_PATTERNS,
     :region => REGION
   )
@@ -786,7 +787,7 @@ template 'fluentd-match-msg-delivery' do
   owner 'root'
   group 'root'
   variables(
-    :application_name => NODE_TYPE,
+    :application_name => APPLICATION_NAME,
     :maillog_filter_patterns => MAILLOG_FILTER_PATTERNS,
     :region => REGION
   )
@@ -865,7 +866,7 @@ template 'fluentd-filter-transform' do
   group 'root'
   variables(
     :account => ACCOUNT,
-    :application_name => NODE_TYPE,
+    :application_name => APPLICATION_NAME,
     :instance_id => INSTANCE_ID,
     :region => REGION
   )
