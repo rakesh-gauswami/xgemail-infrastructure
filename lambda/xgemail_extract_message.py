@@ -40,8 +40,7 @@ def get_message_path(events, max_execution=5):
             if state == 'FAILED':
                 return False
             elif state == 'SUCCEEDED':
-                message_path = response['ResultSet']['Rows'][1]['Data'][0]['VarCharValue']
-                return message_path
+                return client.get_query_results(QueryExecutionId=execution_id)['ResultSet']['Rows'][1]['Data'][0]['VarCharValue'] + ".MESSAGE"
         time.sleep(60)
     
     return False
