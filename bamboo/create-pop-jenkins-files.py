@@ -27,6 +27,7 @@ PIPELINES = [
     ('customer-submit-deploy',          'customerSubmitDeployPipeline',          NO_CRON),
     ('internet-delivery-deploy',        'internetDeliveryDeployPipeline',        NO_CRON),
     ('internet-xdelivery-deploy',       'internetXdeliveryDeployPipeline',       NO_CRON),
+    ('journal-submit-deploy',           'journalSubmitDeployPipeline',           NO_CRON),
     ('risky-delivery-deploy',           'riskyDeliveryDeployPipeline',           NO_CRON),
     ('risky-xdelivery-deploy',          'riskyXdeliveryDeployPipeline',          NO_CRON),
     ('delta-delivery-deploy',           'deltaDeliveryDeployPipeline',           NO_CRON),

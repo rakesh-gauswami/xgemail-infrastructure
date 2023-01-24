@@ -31,6 +31,7 @@ PIPELINES = [
     ('customer-submit',                 NO_CRON),
     ('internet-delivery',               NO_CRON),
     ('internet-xdelivery',              NO_CRON),
+    ('journal-submit',                  NO_CRON),
     ('risky-delivery',                  NO_CRON),
     ('risky-xdelivery',                 NO_CRON),
     ('delta-delivery',                  NO_CRON),
