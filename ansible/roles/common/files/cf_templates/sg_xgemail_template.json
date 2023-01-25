@@ -5,7 +5,7 @@
 
   "Metadata": {
     "Copyright": [
-      "Copyright 2021, Sophos Limited. All rights reserved.",
+      "Copyright 2023, Sophos Limited. All rights reserved.",
       "",
       "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
       "Sophos Limited and Sophos Group.  All other product and company",
@@ -931,6 +931,124 @@
             "FromPort": "587",
             "ToPort": "587",
             "SourceSecurityGroupId": { "Ref": "XgemailInternetSubmitSecurityGroupLb" }
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "-1",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "VpcId": { "Ref": "Vpc" }
+      }
+    },
+
+    "XgemailJournalSubmitSecurityGroupLb": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Controls access to public facing ELBs.",
+        "Tags": [
+          {
+            "Key": "Branch",
+            "Value": { "Ref" : "Branch" }
+
+          },
+          {
+            "Key": "Environment",
+            "Value": { "Ref" : "Environment" }
+          },
+          {
+            "Key": "Role",
+            "Value": "svc-xgemail-journal-submit-elb"
+
+          },
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "Environment"
+                  },
+                  "-",
+                  {
+                    "Ref": "Branch"
+                  },
+                  "-",
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "/sg/xgemail/journal/submit/elb"
+                ]
+              ]
+            }
+          },
+          {
+            "Key": "Application",
+            "Value": "journal-submit"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      }
+    },
+
+    "XgemailJournalSubmitSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "XGEMAIL Journal Submit security group.",
+        "Tags": [{
+          "Key": "Name",
+          "Value": {
+            "Fn::Join": [ "", [
+              { "Ref": "Environment" }, "-",
+              { "Ref": "Branch" }, "-",
+              { "Ref": "AWS::StackName" }, "/sg/xgemail/journal/submit"
+            ]]
+          }
+        },
+          {
+            "Key": "Application",
+            "Value": "journal-submit"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "25",
+            "ToPort": "25",
+            "SourceSecurityGroupId": { "Ref": "XgemailJournalSubmitSecurityGroupLb" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "587",
+            "ToPort": "587",
+            "SourceSecurityGroupId": { "Ref": "XgemailJournalSubmitSecurityGroupLb" }
           }
         ],
         "SecurityGroupEgress": [
@@ -4127,6 +4245,12 @@
             "IpProtocol": "tcp",
             "FromPort": "2049",
             "ToPort": "2049",
+            "SourceSecurityGroupId": { "Ref": "XgemailJournalSubmitSecurityGroup" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
             "SourceSecurityGroupId": { "Ref": "XgemailMfInboundSubmitSecurityGroup" }
           },
           {
@@ -4230,6 +4354,12 @@
             "FromPort": "2049",
             "ToPort": "2049",
             "SourceSecurityGroupId": { "Ref": "XgemailInternetSubmitSecurityGroup" }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
+            "SourceSecurityGroupId": { "Ref": "XgemailJournalSubmitSecurityGroup" }
           },
           {
             "IpProtocol": "tcp",
@@ -4474,6 +4604,14 @@
     "XgemailInternetSubmitSecurityGroup": {
       "Description": "Xgemail Internet Submit security group",
       "Value": { "Ref": "XgemailInternetSubmitSecurityGroup" }
+    },
+    "XgemailJournalSubmitSecurityGroupLb": {
+      "Description": "Xgemail Journal Submit Load Balancer security group",
+      "Value": { "Ref": "XgemailJournalSubmitSecurityGroupLb" }
+    },
+    "XgemailJournalSubmitSecurityGroup": {
+      "Description": "Xgemail Journal Submit security group",
+      "Value": { "Ref": "XgemailJournalSubmitSecurityGroup" }
     },
     "XgemailMfInboundSubmitSecurityGroupLb": {
       "Description": "Xgemail Mf Inbound Submit Load Balancer security group",

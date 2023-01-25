@@ -2,7 +2,7 @@
 # Cookbook Name:: sophos-cloud-xgemail
 # Recipe:: setup_flag_toggle_mf_inbound_submit.rb
 #
-# Copyright 2021, Sophos
+# Copyright 2023, Sophos
 #
 # All rights reserved - Do Not Redistribute
 #
@@ -11,7 +11,7 @@
 
 NODE_TYPE = node['xgemail']['cluster_type']
 
-if NODE_TYPE != 'mf-inbound-submit'
+if NODE_TYPE != 'mf-inbound-submit' && NODE_TYPE != 'journal-submit'
   return
 end
 

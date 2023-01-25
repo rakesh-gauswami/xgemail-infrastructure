@@ -16,8 +16,8 @@ STATION_VPC_ID = node['xgemail']['station_vpc_id']
 NODE_TYPE = node['xgemail']['cluster_type']
 ACCOUNT = node['sophos_cloud']['environment']
 
-# Make sure we're on an mf inbound submit node
-if NODE_TYPE != 'mf-inbound-submit'
+# Make sure we're on an mf inbound submit or journal submit node
+if NODE_TYPE != 'mf-inbound-submit' && NODE_TYPE != 'journal-submit'
   return
 end
 

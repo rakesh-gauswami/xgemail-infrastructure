@@ -85,7 +85,7 @@ end
   end
 end
 
-if NODE_TYPE == 'mf-inbound-submit'
+if NODE_TYPE == 'mf-inbound-submit' or NODE_TYPE == 'journal-submit'
   cookbook_file "#{XGEMAIL_UTILS_DIR}/#{POLICY_FORMATTER}" do
     source 'policyformatter.py'
     mode '0644'

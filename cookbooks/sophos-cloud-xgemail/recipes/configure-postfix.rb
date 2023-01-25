@@ -79,6 +79,7 @@ include_recipe 'sophos-cloud-xgemail::configure-risky-delivery-queue'
 include_recipe 'sophos-cloud-xgemail::configure-warmup-delivery-queue'
 include_recipe 'sophos-cloud-xgemail::configure-beta-delivery-queue'
 include_recipe 'sophos-cloud-xgemail::configure-delta-delivery-queue'
+include_recipe 'sophos-cloud-xgemail::configure-journal-submit-queue'
 include_recipe 'sophos-cloud-xgemail::configure-mf-inbound-submit-queue'
 include_recipe 'sophos-cloud-xgemail::configure-mf-outbound-submit-queue'
 include_recipe 'sophos-cloud-xgemail::configure-mf-outbound-delivery-queue'
@@ -101,7 +102,7 @@ if NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' || NODE_
   'postfix'
 ]
 else
-  if NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit' || NODE_TYPE == 'encryption-submit' || NODE_TYPE == 'mf-inbound-submit' || NODE_TYPE == 'mf-outbound-submit'
+  if NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit' || NODE_TYPE == 'encryption-submit' || NODE_TYPE == 'mf-inbound-submit' || NODE_TYPE == 'mf-outbound-submit' || NODE_TYPE == 'journal-submit'
     if ACCOUNT != 'sandbox'
        MANAGED_SERVICES_IN_START_ORDER = [
           JILTER_SERVICE_NAME,
