@@ -1,8 +1,16 @@
 import boto3
-import struct
 import gzip
 import io
+import json
+import logging
+import struct
 import time
+from botocore.exceptions import ClientError
+
+print('Loading function')
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 SCHEMA_VERSION = 20170224
 MSG_MAGIC_NUMBER = b'\0SOPHMSG'
@@ -12,8 +20,8 @@ session = boto3.Session()
 s3 = boto3.resource('s3')
 
 
-def athena_query(client, events):
-    query_string = "SELECT message_path FROM series_datalake.telemetry_email_telemetry where queue_id = '" + events["PostfixQueueId"] + "' and direction = '" + events["Direction"] + "' and region = '" + events["Region"] + "'"
+def athena_query(client, event):
+    query_string = "SELECT message_path FROM series_datalake.telemetry_email_telemetry where queue_id = '" + event["PostfixQueueId"] + "' and direction = '" + event["Direction"] + "' and region = '" + event["Region"] + "'"
     response = client.start_query_execution(
         QueryString=query_string,
         ResultConfiguration={
@@ -23,9 +31,9 @@ def athena_query(client, events):
     return response
 
 
-def get_message_path(events, max_execution=5):
+def get_message_path(event, max_execution=5):
     client = session.client('athena', region_name='eu-central-1')
-    execution = athena_query(client, events)
+    execution = athena_query(client, event)
     execution_id = execution['QueryExecutionId']
     state = 'RUNNING'
 
@@ -40,7 +48,21 @@ def get_message_path(events, max_execution=5):
             if state == 'FAILED':
                 return False
             elif state == 'SUCCEEDED':
-                return client.get_query_results(QueryExecutionId=execution_id)['ResultSet']['Rows'][1]['Data'][0]['VarCharValue'] + ".MESSAGE"
+                try:
+                    query_results = client.get_query_results(QueryExecutionId=execution_id)
+                    logger.info("Athena query results. {}".format(query_results))
+                except ClientError as e:
+                    logger.exception("Unable to get query results. {}".format(e))
+                    return False
+                try:
+                    message_path = query_results['ResultSet']['Rows'][1]['Data'][0]['VarCharValue'] + ".MESSAGE"
+                except IndexError:
+                    logger.exception("No message found in Athena.")
+                    return False
+                else:
+                    logger.info("Message path : {}".format(message_path))
+                    return message_path
+                
         time.sleep(60)
     
     return False
@@ -112,7 +134,7 @@ def deserialize(message_body):
     return deserialized_content
 
 
-def send_email(message_path, events, message):
+def send_email(message_path, event, message):
     client = session.client('ses', region_name='eu-central-1')
     response = client.send_raw_email(
         Source='sophos_message_extractor@sophos-message-extractor.net',
@@ -120,21 +142,33 @@ def send_email(message_path, events, message):
             'SophosMailOps@sophos.com'
         ],
         RawMessage={
-            'Data': "From: sophos_message_extractor@sophos-message-extractor.net\nTo: SophosMailOps@sophos.com\nSubject: Sophos Email Message Extracted (contains an attachment)\nMIME-Version: 1.0\nContent-type: Multipart/Mixed; boundary=\"NextPart\"\n\n--NextPart\nContent-Type: text/html\n\nThe attached email was downloaded and deserialized from S3 path: " + message_path + ".\n\n--NextPart\nContent-Type: text/html;\nContent-Disposition: attachment; filename=\"" + events["PostfixQueueId"] + ".eml\"\n\n" + message + "\n\n--NextPart--"
+            'Data': "From: sophos_message_extractor@sophos-message-extractor.net\nTo: SophosMailOps@sophos.com, " + event["CcEmail"] + "\nSubject: Sophos Email Message Extracted (contains an attachment)\nMIME-Version: 1.0\nContent-type: Multipart/Mixed; boundary=\"NextPart\"\n\n--NextPart\nContent-Type: text/html\n\nThe attached email was downloaded and deserialized from S3 path: " + message_path + ".\n\n--NextPart\nContent-Type: text/html;\nContent-Disposition: attachment; filename=\"" + event["PostfixQueueId"] + ".eml\"\n\n" + message + "\n\n--NextPart--"
         }
     )
     return response
 
 
-def extract_message_handler(events, context):
-    if events["Direction"] == "INBOUND":
-        bucket = "private-cloud-prod-" + events["Region"] + "-cloudemail-xgemail-submit"
-    elif events["Direction"] == "OUTBOUND":
-        bucket = "private-cloud-prod-" + events["Region"] + "-cloudemail-xgemail-cust-submit"
+def extract_message_handler(event, context):
+    logger.info("Received event: {}".format(json.dumps(event)))
+    logger.info("Log stream name: {}".format(context.log_stream_name))
+    logger.info("Log group name: {}".format(context.log_group_name))
+    logger.info("Request ID: {}".format(context.aws_request_id))
+    logger.info("Mem. limits(MB): {}".format(context.memory_limit_in_mb))
+
+    if event["Direction"] == "INBOUND":
+        bucket = "private-cloud-prod-" + event["Region"] + "-cloudemail-xgemail-submit"
+    elif event["Direction"] == "OUTBOUND":
+        bucket = "private-cloud-prod-" + event["Region"] + "-cloudemail-xgemail-cust-submit"
     else:
         raise Exception("Message direction not set correctly.")
     bucket = s3.Bucket(bucket)
-    message_path = get_message_path(events)
-    message = bucket.Object(message_path)
-    message_body = message.get()['Body'].read()
-    return send_email(message_path, events, deserialize(message_body))
+    message_path = get_message_path(event)
+    if message_path:
+        message = bucket.Object(message_path)
+        message_body = message.get()['Body'].read()
+        response = send_email(message_path, event, deserialize(message_body))
+        logger.info("===FINISHED WITH SUCCESS===.")
+        return response
+    else:
+        logger.info("===FINISHED WITH FAILURE===.")
+        return "No message found"

@@ -38,34 +38,37 @@
           "parameters": {
             "Direction": {
               "type": "String",
-              "description": "The direction of the customer email, inbound or outbound.",
+              "description": "The direction of the customer email, inbound or outbound. [REQUIRED]",
               "allowedValues": [
                 "INBOUND",
                 "OUTBOUND"
-              ],
-              "default": "OUTBOUND"
+              ]
             },
             "Region": {
               "type": "String",
-              "description": "The AWS Region.",
+              "description": "The AWS Region. [REQUIRED]",
               "allowedValues": [
                 "eu-central-1",
                 "eu-west-1",
                 "us-east-2",
                 "us-west-2"
-              ],
-              "default": "eu-west-1"
+              ]
             },
             "PostfixQueueId": {
               "type": "String",
-              "description": "The postfix email queue ID."
+              "description": "The postfix email queue ID to extract, (ex: 4P35DP2kBFzuSHo) [REQUIRED]"
+            },
+            "CcEmail": {
+              "type": "String",
+              "description": "A copy of the extracted email will be sent to the provided email address. MailOps is always notified. [OPTIONAL]",
+              "default": ""
             }
           },
           "mainSteps": [
             {
               "name": "invokeExtractMessageLambda",
               "action": "aws:invokeLambdaFunction",
-              "maxAttempts": 3,
+              "maxAttempts": 1,
               "timeoutSeconds": 300,
               "onFailure": "Abort",
               "inputs": {
@@ -73,7 +76,8 @@
                 "InputPayload": {
                   "Direction": "{{ Direction }}",
                   "PostfixQueueId": "{{ PostfixQueueId }}",
-                  "Region": "{{ Region }}"
+                  "Region": "{{ Region }}",
+                  "CcEmail": "{{ CcEmail }}"
                 }
               }
             }
