@@ -164,11 +164,17 @@ def extract_message_handler(event, context):
     bucket = s3.Bucket(bucket)
     message_path = get_message_path(event)
     if message_path:
-        message = bucket.Object(message_path)
-        message_body = message.get()['Body'].read()
-        response = send_email(message_path, event, deserialize(message_body))
-        logger.info("===FINISHED WITH SUCCESS===.")
-        return response
+        # Check for Sophos owned domains and quit since access is not permitted
+        sophos_domains = ["sophos.com", "sophos.at", "sophos.it", "sophos.co.jp", "sophos.com.au", "sophos.co.nz", "sophos.de", "sophos.fr", "sophos.fi", "sophose.se"]
+        if any(x in message_path for x in sophos_domains):
+            logger.error("Quitting due to Sophos domain detected in message.")
+            return "Extraction of Sophos owned domains is not permitted"
+        else:
+            message = bucket.Object(message_path)
+            message_body = message.get()['Body'].read()
+            response = send_email(message_path, event, deserialize(message_body))
+            logger.info("===FINISHED WITH SUCCESS===.")
+            return response
     else:
         logger.info("===FINISHED WITH FAILURE===.")
         return "No message found"
