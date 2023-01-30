@@ -43,7 +43,8 @@ SMTP_FALLBACK_RELAY = "beta-xdelivery-cloudemail-#{AWS_REGION}.#{ACCOUNT}.hydra.
 HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
 
 file "#{HEADER_CHECKS_PATH}" do
-  content "/^X-Sophos-Enforce-TLS: yes$|^X-Sophos-TLS-Probe: SUCCESS$/i FILTER smtp_encrypt:"
+  content "/^X-Sophos-Enforce-TLS: yes$|^X-Sophos-TLS-Probe: SUCCESS$/i FILTER smtp_encrypt:
+/^X-Sophos-Email-Transport-Route: (.*)$/i FILTER $1"
   mode '0644'
   owner 'root'
   group 'root'
