@@ -17,10 +17,10 @@ aws:
       as_max_size:                              "0"
       as_min_service:                           "0"
       as_max_batch_size:                        "3"
-      instance_size:                            "c5a.large"
+      instance_size:                            "c6a.large"
     bx:
       asg_min_size:                             [0,0,0]
-      instance_size:                            "c5a.large"
+      instance_size:                            "c6a.large"
     cd:
       alarm_scale_in_enabled:                   "false"
       alarm_scale_out_enabled:                  "true"
@@ -33,7 +33,7 @@ aws:
       as_min_service:                           "3"
       as_max_batch_size:                        "3"
       eip_count:                                "3"
-      instance_size:                            "m5a.large"
+      instance_size:                            "m6a.large"
       policy_target_value:                      "65"
     cs:
       alarm_scaling_enabled:                    "false"
@@ -41,12 +41,12 @@ aws:
       as_max_size:                              "50"
       as_min_service:                           "3"
       as_max_batch_size:                        "3"
-      instance_size:                            "m5a.2xlarge"
+      instance_size:                            "m6a.2xlarge"
       policy_target_value:                      "65"
     cx:
       asg_min_size:                             [ 1,1,1 ]
       eip_count:                                "3"
-      instance_size:                            "m5a.large"
+      instance_size:                            "m6a.large"
     dd:
       alarm_scaling_enabled:                    "true"
       alarm_scale_in_threshold:                 "100"
@@ -55,24 +55,24 @@ aws:
       as_max_size:                              "12"
       as_min_service:                           "3"
       as_max_batch_size:                        "3"
-      instance_size:                            "c5a.large"
+      instance_size:                            "c6a.large"
       policy_target_value:                      "65"
     dx:
       asg_min_size:                             [1,1,1]
-      instance_size:                            "c5a.large"
+      instance_size:                            "c6a.large"
     ed:
       as_min_size:                              "3"
       as_max_size:                              "12"
       as_min_service:                           "1"
       as_max_batch_size:                        "2"
-      instance_size:                            "c5a.large"
+      instance_size:                            "m6a.large"
       policy_target_value:                      "65"
     es:
       as_min_size:                              "3"
       as_max_size:                              "12"
       as_min_service:                           "1"
       as_max_batch_size:                        "2"
-      instance_size:                            "c5a.large"
+      instance_size:                            "m6a.large"
       policy_target_value:                      "65"
     id:
       alarm_scaling_enabled:                    "true"
@@ -83,7 +83,7 @@ aws:
       as_min_service:                           "3"
       as_max_batch_size:                        "1"
       eip_count:                                "4"
-      instance_size:                            "c6a.xlarge"
+      instance_size:                            "m6a.xlarge"
       policy_target_value:                      "65"
     is:
       alarm_scale_in_enabled:                   "false"
@@ -94,48 +94,48 @@ aws:
       as_max_size:                              "12"
       as_min_service:                           "3"
       as_max_batch_size:                        "3"
-      instance_size:                            "m5a.2xlarge"
+      instance_size:                            "m6a.2xlarge"
       policy_target_value:                      "65"
     ix:
       asg_min_size:                             [1,1,1]
       eip_count:                                "6"
-      instance_size:                            "c5a.large"
+      instance_size:                            "m6a.large"
     mfid:
       as_min_size:                              "3"
       as_max_size:                              "24"
-      instance_size:                            "m5a.large"
+      instance_size:                            "m6a.large"
       policy_target_value:                      "65"
     mfis:
       as_min_size:                              "3"
       as_max_size:                              "25"
-      instance_size:                            "m5a.2xlarge"
+      instance_size:                            "m6a.2xlarge"
       on_hour_desired:                          "6"
       policy_target_value:                      "65"
     mfix:
-      instance_size:                            "c5.large"
+      instance_size:                            "m6a.large"
     mfos:
       as_min_size:                              "3"
       as_max_size:                              "25"
-      instance_size:                            "m5a.2xlarge"
+      instance_size:                            "m6a.2xlarge"
       on_hour_desired:                          "6"
       policy_target_value:                      "65"
     mfod:
       as_min_size:                              "3"
       as_max_size:                              "24"
-      instance_size:                            "m5a.large"
+      instance_size:                            "m6a.large"
       policy_target_value:                      "65"
     mfox:
-      instance_size:                            "c5a.large"
+      instance_size:                            "m6a.large"
     rd:
       as_min_size:                              "3"
       as_max_size:                              "12"
       as_min_service:                           "3"
       as_max_batch_size:                        "3"
-      instance_size:                            "c5a.large"
+      instance_size:                            "m6a.large"
       policy_target_value:                      "65"
     rx:
       asg_min_size:                             [1,1,1]
-      instance_size:                            "c5.large"
+      instance_size:                            "m6a.large"
     wd:
       alarm_scaling_enabled:                    "false"
       alarm_scale_in_enabled:                   "false"
@@ -147,16 +147,16 @@ aws:
       as_min_service:                           "3"
       as_max_batch_size:                        "1"
       eip_count:                                "2"
-      instance_size:                            "m5a.large"
+      instance_size:                            "m6a.large"
       policy_target_value:                      "65"
     wx:
       asg_min_size:                             [1,1,1]
       eip_count:                                "2"
-      instance_size:                            "m5a.large"
+      instance_size:                            "m6a.large"
   ec:
     redis:
       xgemail_dqs:
-        node_type:                             "cache.r5.large"
+        node_type:                             "cache.r6a.large"
         at_rest_encryption:                    "true"
         automatic_failover:                    "true"
         number_of_nodes:                       "2"
@@ -169,8 +169,8 @@ aws:
     toc_elasticsearch_domain:
       state:                                    present
       ebs_volume_size:                          "300"
-      master_node_type:                         "m4.large.elasticsearch"
-      node_type:                                "m4.xlarge.elasticsearch"
+      master_node_type:                         "m6a.large.elasticsearch"
+      node_type:                                "m6a.xlarge.elasticsearch"
       instance_number:                          "2"
       master_instance_number:                   "3"
       snapshot_start_hour:                      "4"
