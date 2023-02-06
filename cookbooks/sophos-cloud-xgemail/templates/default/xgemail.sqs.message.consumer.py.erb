@@ -71,8 +71,6 @@ MH_MAIL_INFO_STORAGE_DIR = "<%= @mh_mail_info_storage_dir %>"
 MSG_HISTORY_V2_BUCKET = "<%= @msg_history_v2_bucket_name %>"
 DEFAULT_NO_OF_THREADS = <%= @default_number_of_consumer_threads %>
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
-XGEMAIL_WHITESPACE_REMOVE_CLIENTID_KEY = "xgemail.white.space.remove.from.header.client.ids"
-XGEMAIL_WHITESPACE_REMOVE_AWS_REGION = "xgemail.white.space.remove.from.header.aws.regions"
 
 THREAD_COUNT_CONFIG_KEY = "<%= @consumer_thread_count_key %>"
 X_SOPHOS_PROCESSING_START_TIME_HEADER = 'X-Sophos-Processing-Start-Time'
@@ -434,7 +432,7 @@ def sendmail_to_postfix(server, from_addr, to_addrs, msg, mail_options=[], rcpt_
 # Adds headers to the provided message object.
 # Returns the updated message object if successful. If any issues occurred with
 # retrieving or updating the headers, the original message object is returned.
-def add_headers(message, message_path, headers, mh_mail_info):
+def add_headers(message, message_path, headers):
     try:
         if headers is None:
             logger.warn("Unable to add headers for message [%s]: header object was None.", message_path)
@@ -465,11 +463,8 @@ def add_headers(message, message_path, headers, mh_mail_info):
             message_path,
             header_keys
         )
-        customerId = None
-        if mh_mail_info is not None:
-           customerId = mh_mail_info.get("mail_info", {}).get("customer_id", {})
 
-        if NODE_TYPE == 'customer-delivery' and (AWS_REGION  in regionList or customerId in customerIdList):
+        if NODE_TYPE == 'customer-delivery':
             return as_string(parsed_message), timestamp_value
         else:
             return parsed_message.as_string(), timestamp_value
@@ -587,24 +582,6 @@ def get_thread_count():
     # return default config.
     return DEFAULT_NO_OF_THREADS;
 
-def get_client_id_lists_for_ws_remove():
-    customerIdList = []
-    try:
-        response = awshandler.get_parameter_from_ssm(XGEMAIL_WHITESPACE_REMOVE_CLIENTID_KEY)
-        customerIdList = response.split(',')
-    except Exception as e:
-        logger.exception("Error while fetching key from ssm.[{0}]".format(e))
-    return customerIdList
-
-
-def get_region_lists_for_ws_remove():
-    regionList = []
-    try:
-        response = awshandler.get_parameter_from_ssm(XGEMAIL_WHITESPACE_REMOVE_AWS_REGION)
-        regionList = response.split(',')
-    except Exception as e:
-        logger.exception("Error while fetching key from ssm.[{0}]".format(e))
-    return regionList
 
 def wait_for_jilter():
     j = 0
@@ -760,8 +737,7 @@ def deliver_messages():
                 message_binary_with_headers, timestamp_header  = add_headers(
                     message_binary,
                     sqs_message.message_path,
-                    headers,
-                    mh_mail_info
+                    headers
                 )
     
                 postfix_injection_response = inject_email(
@@ -825,8 +801,6 @@ wait_for_jilter()
 # Start consumers
 i = 0;
 thread_count = get_thread_count()
-customerIdList = get_client_id_lists_for_ws_remove()
-regionList = get_region_lists_for_ws_remove();
 logger.info("Multi thread is enabled with thread count [{0}].".format(thread_count))
 while i < thread_count:
     logger.info("Starting thread [{0}]".format(i))
