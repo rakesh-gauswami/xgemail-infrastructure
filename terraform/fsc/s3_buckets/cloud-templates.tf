@@ -10,7 +10,7 @@ locals {
     prod = 90
   }
 
-  s3_cloud_lifecyle_value = lookup(
+  s3_cloud_lifecyle_expiration_days_value = lookup(
     local.S3_CLOUD_TEMPLATE_BUCKET_BY_EXPIRATION_DAYS,
     local.input_param_deployment_environment,
     local.default_cloud_templates_bucket_expiration_days
@@ -32,7 +32,7 @@ module "cloud_templates_bucket" {
     {
       id = format(
         "global expiration in %d days",
-        local.s3_cloud_lifecyle_value
+        local.s3_cloud_lifecyle_expiration_days_value
       )
       enabled = true
 
@@ -44,7 +44,7 @@ module "cloud_templates_bucket" {
       expiration = [
         {
           date                         = null
-          days                         = local.s3_cloud_lifecyle_value
+          days                         = local.s3_cloud_lifecyle_expiration_days_value
           expired_object_delete_marker = null
         }
       ]
