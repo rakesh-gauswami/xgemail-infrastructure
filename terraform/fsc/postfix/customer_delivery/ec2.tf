@@ -6,7 +6,8 @@ locals {
   DEFAULT_AS_MIN_SERVICE                    = 1
   DEFAULT_AS_MAX_BATCH_SIZE                 = 1
   DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD      = 900
-  DEFAULT_AS_POLICY_TARGET_VALUE            = 90
+  DEFAULT_AS_DYNAMIC_CPU_TARGET_VALUE       = 90
+  DEFAULT_AS_PREDICTIVE_CPU_TARGET_VALUE    = 90
   DEFAULT_AS_ON_HOUR_DESIRED                = 2
   DEFAULT_EIP_COUNT                         = 1
   DEFAULT_INSTANCE_SIZE                     = "t3.medium"
@@ -65,11 +66,18 @@ locals {
     prod = 2400
   }
 
-  AS_POLICY_TARGET_VALUE_BY_ENVIRONMENT = {
+  AS_DYNAMIC_CPU_TARGET_VALUE_BY_ENVIRONMENT = {
     inf  = 90
     dev  = 90
     qa   = 90
-    prod = 65
+    prod = 75
+  }
+
+  AS_PREDICTIVE_CPU_TARGET_VALUE_BY_ENVIRONMENT = {
+    inf  = 90
+    dev  = 90
+    qa   = 90
+    prod = 75
   }
 
   AS_ON_HOUR_DESIRED_BY_ENVIRONMENT = {
@@ -185,10 +193,16 @@ locals {
     local.DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD
   )
 
-  as_policy_target_value = lookup(
-    local.AS_POLICY_TARGET_VALUE_BY_ENVIRONMENT,
+  as_dynamic_cpu_target_value = lookup(
+    local.AS_DYNAMIC_CPU_TARGET_VALUE_BY_ENVIRONMENT,
     local.input_param_deployment_environment,
-    local.DEFAULT_AS_POLICY_TARGET_VALUE
+    local.DEFAULT_AS_DYNAMIC_CPU_TARGET_VALUE
+  )
+
+  as_predictive_cpu_target_value = lookup(
+    local.AS_PREDICTIVE_CPU_TARGET_VALUE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_PREDICTIVE_CPU_TARGET_VALUE
   )
 
   as_on_hour_desired = lookup(
@@ -273,7 +287,8 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     MsgHistoryV2StreamName             = var.message_history_v2_stream_name
     NewRelicEnabled                    = local.newrelic_enabled
     ParentAccountName                  = local.input_param_parent_account_name
-    PolicyTargetValue                  = local.as_policy_target_value
+    DynamicCpuTargetValue              = local.as_dynamic_cpu_target_value
+    PredictiveCpuTargetValue           = local.as_predictive_cpu_target_value
     S3CookbookRepositoryURL            = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/${local.instance_type}/${var.build_number}/cookbooks.tar.gz"
     ScheduledAsOnHourDesiredCapacity   = local.as_on_hour_desired
     SecurityGroups                     = aws_security_group.security_group_ec2.id

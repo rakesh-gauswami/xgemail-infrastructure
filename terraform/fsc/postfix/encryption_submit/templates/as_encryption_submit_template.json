@@ -143,8 +143,13 @@
       "Default": "false",
       "AllowedValues": [ "true", "false" ]
     },
-    "PolicyTargetValue": {
-      "Description": "The target value for the metric.",
+    "DynamicCpuTargetValue": {
+      "Description": "The target CPU value for the dynamic scaling policy.",
+      "Type": "Number",
+      "Default": "50"
+    },
+    "PredictiveCpuTargetValue": {
+      "Description": "The target CPU value for the predictive scaling policy.",
       "Type": "Number",
       "Default": "50"
     },
@@ -510,7 +515,7 @@
         "PredictiveScalingConfiguration":{
           "MetricSpecifications":[
             {
-              "TargetValue":65,
+              "TargetValue": { "Ref": "PredictiveCpuTargetValue" },
               "PredefinedMetricPairSpecification":{
                 "PredefinedMetricType":"ASGCPUUtilization"
               }
@@ -533,7 +538,7 @@
           "PredefinedMetricSpecification": {
             "PredefinedMetricType": "ASGAverageCPUUtilization"
           },
-          "TargetValue": { "Ref": "PolicyTargetValue"}
+          "TargetValue": { "Ref": "DynamicCpuTargetValue" }
         }
       }
     },
