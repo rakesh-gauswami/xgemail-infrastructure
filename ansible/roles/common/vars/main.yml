@@ -89,9 +89,9 @@ aws:
       alarm_scaling_enabled:                                      "false"
       alarm_scale_in_threshold:                                   "10"
       alarm_scale_out_threshold:                                  "50"
-      as_min_size:                                                "1"
-      as_max_size:                                                "6"
-      as_min_service:                                             "1"
+      as_min_size:                                                "0"
+      as_max_size:                                                "0"
+      as_min_service:                                             "0"
       as_max_batch_size:                                          "1"
       health_check_grace_period:                                  "600"
       instance_size:                                              "t2.small"
@@ -99,7 +99,7 @@ aws:
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-delta-delivery-Terminating-LifeCycleHook"
       policy_target_value:                                        "90"
     dx:
-      asg_min_size:                                               [0,0,1]
+      asg_min_size:                                               [0,0,0]
       health_check_grace_period:                                  "600"
       instance_size:                                              "t2.small"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-delta-xdelivery-Launching-LifeCycleHook"
@@ -260,19 +260,19 @@ aws:
       alarm_scaling_enabled:                                      "false"
       alarm_scale_in_threshold:                                   "10"
       alarm_scale_out_threshold:                                  "50"
-      as_min_size:                                                "1"
-      as_max_size:                                                "6"
-      as_min_service:                                             "1"
+      as_min_size:                                                "0"
+      as_max_size:                                                "0"
+      as_min_service:                                             "0"
       as_max_batch_size:                                          "1"
-      eip_count:                                                  "2"
+      eip_count:                                                  "1"
       health_check_grace_period:                                  "600"
       instance_size:                                              "t2.small"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-warmup-delivery-Launching-LifeCycleHook"
       lifecycle_hook_terminating:                                 "{{vpc.cloud_email.name}}-warmup-delivery-Terminating-LifeCycleHook"
       policy_target_value:                                        "90"
     wx:
-      asg_min_size:                                               [0,0,1]
-      eip_count:                                                  "2"
+      asg_min_size:                                               [0,0,0]
+      eip_count:                                                  "1"
       health_check_grace_period:                                  "600"
       instance_size:                                              "t2.small"
       lifecycle_hook_launching:                                   "{{vpc.cloud_email.name}}-warmup-xdelivery-Launching-LifeCycleHook"
