@@ -1,0 +1,58 @@
+{
+  "description": "Stop an ecs task",
+  "schemaVersion": "0.3",
+  "assumeRole": "{{AutomationAssumeRole}},",
+  "parameters": {
+    "AutomationAssumeRole":
+      "type": "String"
+    }
+  }
+  "mainSteps": [
+    {
+      "action": "aws:runPowerShellScript",
+      "name": "stopECSTask",
+      "inputs": {
+        "Handler": "stopTask",
+        "Runtime": "python3.8",
+        "InputPayload":
+        "TaskArn": "{TaskArn}",
+        "Script": "|-",
+        "def stopTask(events,context)":
+        "import boto3",
+
+        "Initialize",
+        "client": "ec2" : "boto3.client(ecs,region_name=“{region}”)
+        "client.stop_task",
+
+        "cluster" = "string",
+
+        "task" = "string",
+
+        "reason" = "string",
+
+      }
+    }
+  ]
+}
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "Stmt1674106119374",
+      "Action": [
+        "ecs:DescribeClusters",
+        "ecs:DescribeServices",
+        "ecs:DescribeTaskDefinition",
+        "ecs:DescribeTaskSets",
+        "ecs:DescribeTasks",
+        "ecs:StopTask"
+      ],
+      "Effect": "Allow",
+      "Resource": "*",
+      "Condition": {
+        "ArnLike": {
+          "ecs:cluster": "cluster/central-chassis-ecs-station"
+        }
+      }
+    }
+  ]
+}
