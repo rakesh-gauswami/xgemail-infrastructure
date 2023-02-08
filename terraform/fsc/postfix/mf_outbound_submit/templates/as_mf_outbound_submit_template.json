@@ -97,6 +97,11 @@
       "Type": "String",
       "Default": "PT1H"
     },
+    "DynamicCpuTargetValue": {
+      "Description": "The target CPU value for the dynamic scaling policy.",
+      "Type": "Number",
+      "Default": "50"
+    },
     "EbsVolumeType": {
       "Description": "Indicates the EBS volume type.",
       "Type": "String",
@@ -142,8 +147,8 @@
       "Default": "false",
       "AllowedValues": [ "true", "false" ]
     },
-    "PolicyTargetValue": {
-      "Description": "The target value for the metric.",
+    "PredictiveCpuTargetValue": {
+      "Description": "The target CPU value for the predictive scaling policy.",
       "Type": "Number",
       "Default": "50"
     },
@@ -528,7 +533,7 @@
         "PredictiveScalingConfiguration":{
           "MetricSpecifications":[
             {
-              "TargetValue":65,
+              "TargetValue": { "Ref": "PredictiveCpuTargetValue" },
               "PredefinedMetricPairSpecification":{
                 "PredefinedMetricType":"ASGCPUUtilization"
               }
@@ -551,7 +556,7 @@
           "PredefinedMetricSpecification":{
             "PredefinedMetricType":"ASGAverageCPUUtilization"
           },
-          "TargetValue": { "Ref": "PolicyTargetValue"}
+          "TargetValue": { "Ref": "DynamicCpuTargetValue" }
         }
       }
     },
