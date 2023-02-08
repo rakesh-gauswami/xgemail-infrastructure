@@ -1,6 +1,6 @@
 locals {
   cloud_templates_bucket_name    = "cloud-${local.input_param_account_name}-templates"
-  default_cloud_templates_bucket_expiration_days = 90
+  default_cloud_templates_bucket_expiration_days = 60
   cloud_templates_enable_versioning      = true
 
   S3_CLOUD_TEMPLATE_BUCKET_BY_EXPIRATION_DAYS = {
