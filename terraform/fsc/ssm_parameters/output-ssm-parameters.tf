@@ -191,17 +191,6 @@ module "output_string_parameters" {
       description = "Warmup Delivery Terminating Lifecycle Hook Name"
     },
     {
-      name        = "/xgemail/msg/white_space_remove/aws_regions"
-      value       = local.msg_xgemail_white_space_remove_aws_regions
-      description = "Xgemail white space remove from header aws region"
-    },
-    {
-      name        = "/xgemail/msg/white_space_remove/client_ids"
-      value       = local.msg_xgemail_white_space_remove_client_ids
-      description = "Xgemail white space remove from header client ids"
-    },
-
-    {
       name        = "/central/newrelic/account/id"
       value       = local.newrelic_account_id
       description = "Newrelic Acount Id"
