@@ -231,7 +231,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     MessageHistoryEventsTopicArn          = var.message_history_events_sns_topic
     NewRelicEnabled                       = local.newrelic_enabled
     PolicyTargetValue                     = local.as_policy_target_value
-    S3CookbookRepositoryURL               = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/${var.build_number}/cookbooks.tar.gz"
+    S3CookbookRepositoryURL               = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/${local.instance_type}/${var.build_number}/cookbooks.tar.gz"
     ScheduledASOnHourDesiredCapacity      = local.as_on_hour_desired
     SecurityGroups                        = aws_security_group.security_group_ec2.id
     SpotPrice                             = "-1"

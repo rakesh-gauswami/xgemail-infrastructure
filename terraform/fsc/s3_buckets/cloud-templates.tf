@@ -1,7 +1,20 @@
 locals {
   cloud_templates_bucket_name    = "cloud-${local.input_param_account_name}-templates"
-  cloud_templates_bucket_expiration_days = 30
+  default_cloud_templates_bucket_expiration_days = 60
   cloud_templates_enable_versioning      = true
+
+  S3_CLOUD_TEMPLATE_BUCKET_BY_EXPIRATION_DAYS = {
+    inf  = 60
+    dev  = 60
+    qa   = 60
+    prod = 90
+  }
+
+  s3_cloud_lifecyle_expiration_days_value = lookup(
+    local.S3_CLOUD_TEMPLATE_BUCKET_BY_EXPIRATION_DAYS,
+    local.input_param_deployment_environment,
+    local.default_cloud_templates_bucket_expiration_days
+  )
 }
 
 module "cloud_templates_bucket" {
@@ -19,7 +32,7 @@ module "cloud_templates_bucket" {
     {
       id = format(
         "global expiration in %d days",
-        local.cloud_templates_bucket_expiration_days
+        local.s3_cloud_lifecyle_expiration_days_value
       )
       enabled = true
 
@@ -31,7 +44,7 @@ module "cloud_templates_bucket" {
       expiration = [
         {
           date                         = null
-          days                         = local.cloud_templates_bucket_expiration_days
+          days                         = local.s3_cloud_lifecyle_expiration_days_value
           expired_object_delete_marker = null
         }
       ]
