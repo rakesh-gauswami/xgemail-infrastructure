@@ -16,6 +16,7 @@ SCHEMA_VERSION = 20170224
 MSG_MAGIC_NUMBER = b'\0SOPHMSG'
 MESSAGE_FILE_EXTENSION = ".MESSAGE"
 NONCE_LENGTH = 0
+recipients = ["SophosMailOps@sophos.com"]
 session = boto3.Session()
 s3 = boto3.resource('s3')
 
@@ -134,15 +135,15 @@ def deserialize(message_body):
     return deserialized_content
 
 
-def send_email(message_path, event, message):
+def send_email(message_path, recipients, event, message):
     client = session.client('ses', region_name='eu-central-1')
     response = client.send_raw_email(
         Source='sophos_message_extractor@sophos-message-extractor.net',
         Destinations=[
-            'SophosMailOps@sophos.com'
+            recipients
         ],
         RawMessage={
-            'Data': "From: sophos_message_extractor@sophos-message-extractor.net\nTo: SophosMailOps@sophos.com, " + event["CcEmail"] + "\nSubject: Sophos Email Message Extracted (contains an attachment)\nMIME-Version: 1.0\nContent-type: Multipart/Mixed; boundary=\"NextPart\"\n\n--NextPart\nContent-Type: text/html\n\nThe attached email was downloaded and deserialized from S3 path: " + message_path + ".\n\n--NextPart\nContent-Type: text/html;\nContent-Disposition: attachment; filename=\"" + event["PostfixQueueId"] + ".eml\"\n\n" + message + "\n\n--NextPart--"
+            'Data': "From: sophos_message_extractor@sophos-message-extractor.net\nTo: " + recipients + "\nSubject: Sophos Email Message Extracted (contains an attachment)\nMIME-Version: 1.0\nContent-type: Multipart/Mixed; boundary=\"NextPart\"\n\n--NextPart\nContent-Type: text/html\n\nThe attached email was downloaded and deserialized from S3 path: " + message_path + ".\n\n--NextPart\nContent-Type: text/html;\nContent-Disposition: attachment; filename=\"" + event["PostfixQueueId"] + ".eml\"\n\n" + message + "\n\n--NextPart--"
         }
     )
     return response
@@ -172,7 +173,9 @@ def extract_message_handler(event, context):
         else:
             message = bucket.Object(message_path)
             message_body = message.get()['Body'].read()
-            response = send_email(message_path, event, deserialize(message_body))
+            if event["CcEmail"]:
+                recipients.append(event["CcEmail"])
+            response = send_email(message_path, recipients, event, deserialize(message_body))
             logger.info("===FINISHED WITH SUCCESS===.")
             return response
     else:
