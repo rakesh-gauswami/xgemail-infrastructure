@@ -139,11 +139,9 @@ def send_email(message_path, recipients, event, message):
     client = session.client('ses', region_name='eu-central-1')
     response = client.send_raw_email(
         Source='sophos_message_extractor@sophos-message-extractor.net',
-        Destinations=[
-            recipients
-        ],
+        Destinations=recipients,
         RawMessage={
-            'Data': "From: sophos_message_extractor@sophos-message-extractor.net\nTo: " + recipients + "\nSubject: Sophos Email Message Extracted (contains an attachment)\nMIME-Version: 1.0\nContent-type: Multipart/Mixed; boundary=\"NextPart\"\n\n--NextPart\nContent-Type: text/html\n\nThe attached email was downloaded and deserialized from S3 path: " + message_path + ".\n\n--NextPart\nContent-Type: text/html;\nContent-Disposition: attachment; filename=\"" + event["PostfixQueueId"] + ".eml\"\n\n" + message + "\n\n--NextPart--"
+            'Data': "From: sophos_message_extractor@sophos-message-extractor.net\nTo: {}\nSubject: Sophos Email Message Extracted (contains an attachment)\nMIME-Version: 1.0\nContent-type: Multipart/Mixed; boundary=\"NextPart\"\n\n--NextPart\nContent-Type: text/html\n\nThe attached email was downloaded and deserialized from S3 path: " + message_path + ".\n\n--NextPart\nContent-Type: text/html;\nContent-Disposition: attachment; filename=\"" + event["PostfixQueueId"] + ".eml\"\n\n" + message + "\n\n--NextPart--".format(recipients)
         }
     )
     return response

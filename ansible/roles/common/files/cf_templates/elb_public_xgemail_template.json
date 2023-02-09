@@ -175,13 +175,17 @@
         },
         "Listeners": [
           {
-            "LoadBalancerPort": { "Ref" : "ExternalPort" },
-            "InstancePort": "25",
-            "Protocol": "TCP"
+            "Fn::If": ["AlternatePortExists",
+              {
+                "LoadBalancerPort": { "Ref": "ExternalAlternatePort" },
+                "InstancePort": "25",
+                "Protocol": "TCP"
+              },
+              { "Ref" : "AWS::NoValue" }
+            ]
           },
           {
-            "Condition": "AlternatePortExists",
-            "LoadBalancerPort": { "Ref" : "ExternalAlternatePort" },
+            "LoadBalancerPort": { "Ref" : "ExternalPort" },
             "InstancePort": "25",
             "Protocol": "TCP"
           }
