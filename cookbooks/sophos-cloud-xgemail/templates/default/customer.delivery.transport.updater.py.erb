@@ -149,11 +149,7 @@ def parse_domain_response(domain_name, destinations_json, s3_client,is_custom) :
     customer_id = destination_json['customer_id']
 
   if not is_custom:
-      smtp_transport_tag = get_smtp_transport_tag(
-          s3_client,
-          domain_name,
-          customer_id
-      )
+      smtp_transport_tag = DEFAULT_SMTP_TRANSPORT_TAG
   else:
       smtp_transport_tag = TLS_SMTP_TRANSPORT_TAG
 
