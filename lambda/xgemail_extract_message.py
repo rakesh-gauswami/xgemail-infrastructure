@@ -141,7 +141,7 @@ def send_email(message_path, recipients, event, message):
         Source='sophos_message_extractor@sophos-message-extractor.net',
         Destinations=recipients,
         RawMessage={
-            'Data': "From: sophos_message_extractor@sophos-message-extractor.net\nTo: {}\nSubject: Sophos Email Message Extracted (contains an attachment)\nMIME-Version: 1.0\nContent-type: Multipart/Mixed; boundary=\"NextPart\"\n\n--NextPart\nContent-Type: text/html\n\nThe attached email was downloaded and deserialized from S3 path: " + message_path + ".\n\n--NextPart\nContent-Type: text/html;\nContent-Disposition: attachment; filename=\"" + event["PostfixQueueId"] + ".eml\"\n\n" + message + "\n\n--NextPart--".format(recipients)
+            'Data': "From: sophos_message_extractor@sophos-message-extractor.net\nTo: " + ','.join(recipients) + "\nSubject: Sophos Email Message Extracted (contains an attachment)\nMIME-Version: 1.0\nContent-type: Multipart/Mixed; boundary=\"NextPart\"\n\n--NextPart\nContent-Type: text/html\n\nThe attached email was downloaded and deserialized from S3 path: " + message_path + ".\n\n--NextPart\nContent-Type: text/html;\nContent-Disposition: attachment; filename=\"" + event["PostfixQueueId"] + ".eml\"\n\n" + message + "\n\n--NextPart--"
         }
     )
     return response
@@ -173,6 +173,7 @@ def extract_message_handler(event, context):
             message_body = message.get()['Body'].read()
             if event["CcEmail"]:
                 recipients.append(event["CcEmail"])
+            logger.info("Sending extracted email to recipients: {}".format(recipients))
             response = send_email(message_path, recipients, event, deserialize(message_body))
             logger.info("===FINISHED WITH SUCCESS===.")
             return response
