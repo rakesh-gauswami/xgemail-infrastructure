@@ -625,11 +625,24 @@ def find_transport(sqs_message):
         except Exception as e:
             logger.error("Error occurred while getting transport from map for version {1} error: {2} "
                          .format(tls_version.lower, sqs_message.message_path, e))
-    return 'smtp'
+    return None
 
-def add_custom_route_header(headers, transport, destination):
-    if transport is None or destination is None:
+def maybe_add_custom_route_header(headers, transport, destination):
+    # for inbound we need both transport and destination
+    if MESSAGE_DIRECTION == 'INBOUND':
+        if transport is None or destination is None:
         return
+    # for outbound we need one of transport or destination
+    if transport is None and destination is None:
+        return
+
+    # when transport is not present use default transport smtp: in header
+    if transport is None:
+        transport = "smtp"
+    # when destination is not present use default routing by just adding transport: in header
+    if destination is None:
+        destination = ""
+
     header_value = transport + ":" + destination
     headers[X_SOPHOS_TRANSPORT_ROUTE] = header_value
 
@@ -725,13 +738,18 @@ def deliver_messages():
                 if X_SOPHOS_TRANSPORT_ROUTE in headers:
                     headers.pop(X_SOPHOS_TRANSPORT_ROUTE)
 
-                # if the message_context contains custom_route and delivery_tls_version, we add header for routing
-                if sqs_message.message_context is not None and 'custom_route' in sqs_message.message_context:
-                    # extract the destination which is combination of IP/FQDN:PORT
-                    destination = sqs_message.message_context['custom_route']
-                    # extract the tls version and decide transport
-                    transport = find_transport(sqs_message)
-                    add_custom_route_header(headers, transport, destination)
+                # if the message_context contains custom_route or delivery_tls_version, we add header for routing
+                if sqs_message.message_context is not None:
+                    destination = None
+                    transport = None
+                    if 'custom_route' in sqs_message.message_context:
+                        # extract the destination which is combination of IP/FQDN:PORT
+                        destination = sqs_message.message_context['custom_route']
+                    if 'delivery_tls_version' in sqs_message.message_context:
+                        # extract the tls version and decide transport
+                        transport = find_transport(sqs_message)
+                    #add new header if at-least one of custom_route or delivery_tls_version is present
+                    maybe_add_custom_route_header(headers, transport, destination)
 
                 # attempt to add any existing headers to the message
                 message_binary_with_headers, timestamp_header  = add_headers(
