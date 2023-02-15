@@ -1,0 +1,150 @@
+#!/usr/bin/env
+
+import sys
+sys.path.append("<%= @xgemail_utils_path %>")
+import argparse
+import boto3
+import json
+import sys
+from uuid import uuid4
+
+AWS_REGION = "<%= @aws_region %>"
+ACCOUNT = "<%= @account %>"
+STATION_ACCOUNT_ROLE_ARN = "<%= @station_account_role_arn %>"
+DOMAIN_THRESHOLD_DEFAULT = 50
+EMAIL_THRESHOLD_DEFAULT = 10
+WARMUP_PERCENTAGE_DEFAULT = 0
+
+if STATION_ACCOUNT_ROLE_ARN == 'none':
+    # Legacy session
+    session = boto3.session.Session(region_name=AWS_REGION)
+    dynamoDb = session.resource('dynamodb')
+    s3 = session.resource('s3')
+else:
+    # FSC session
+    sts_client = boto3.client("sts")
+    response = sts_client.assume_role(
+        RoleArn=STATION_ACCOUNT_ROLE_ARN,
+        RoleSessionName=uuid4().hex,
+    )
+    credentials = response['Credentials']
+    dynamoDb = boto3.resource(
+        'dynamodb',
+        AWS_REGION,
+        aws_access_key_id=credentials['AccessKeyId'],
+        aws_secret_access_key=credentials['SecretAccessKey'],
+        aws_session_token=credentials['SessionToken'],
+    )
+
+def print_sender_record(record):
+    print"==============================================================================="
+    print "Sender Email: %s" % record['Item']["sender"]
+    print "First IOC date  : %s" % record['Item']["first_IOC_dt"]
+    print "Lattest IOC date : %s" % record['Item']["latest_IOC_dt"]
+    print "Subject : %s" % record['Item']["subject"]
+    print"==============================================================================="
+
+def print_recipient_record(record):
+    print"==============================================================================="
+    print "Recipient Email: %s" % record['Item']["recipient"]
+    print "Sender for this Recipient : %s" % record['Item']["for_sender"]
+    print "First IOC date  : %s" % record['Item']["first_IOC_dt"]
+    print "Lattest IOC date : %s" % record['Item']["latest_IOC_dt"]
+    print "Subject : %s" % record['Item']["subject"]
+    print"==============================================================================="
+
+
+def print_all_sender(records):
+    print"==============================================================================="
+    for record in records['Items']:
+        print "Sender Email: %s" % record['Item']["sender"]
+        print "First IOC date  : %s" % record['Item']["first_IOC_dt"]
+        print "Lattest IOC date : %s" % record['Item']["latest_IOC_dt"]
+        print "Subject : %s" % record['Item']["subject"]
+        print"==============================================================================="
+
+def print_all_recipient(records):
+    print"==============================================================================="
+    for record in records['Items']:
+        print "Recipient Email: %s" % record['Item']["recipient"]
+        print "Sender for this Recipient : %s" % record['Item']["for_sender"]
+        print "First IOC date  : %s" % record['Item']["first_IOC_dt"]
+        print "Lattest IOC date : %s" % record['Item']["latest_IOC_dt"]
+        print "Subject : %s" % record['Item']["subject"]
+        print"==============================================================================="
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Delivery director ioc risk delivery add/delete')
+    parser.add_argument('command', metavar='command choices=[GET, GET_ALL, DELETE_SENDER,DELETE_RECIPIENT]',
+                        choices=["GET", "GET_ALL", "DELETE_SENDER", "DELETE_RECIPIENT"],
+                        help='Type of action/operation choices=[GET, GET_ALL, DELETE_SENDER, DELETE_RECIPIENT]')
+    parser.add_argument('--senderOrRecipient', type=str, metavar='email address of sender/recipient',
+                        help='email address of sender/recipient ')
+    args = parser.parse_args()
+
+    if (args.command == "GET" or args.command == "DELETE_SENDER" or args.command == "DELETE_RECIPIENT") \
+      and (args.domainOrEmail is None):
+        parser.error("--senderOrRecipient is required attribute for GET/DELETE_SENDER/DELETE_RECIPIENT operation")
+
+
+    command = args.command
+
+    sendertable = dynamoDb.Table('msg-ioc-senders')
+    recipienttable = dynamoDb.Table('msg-ioc-recipients')
+    if command != "GET_ALL":
+        senderOrRecipient = str(args.senderOrRecipient).strip().lower()
+
+    if command == "GET_ALL":
+        response_sender = sendertable.scan()
+        if len(response_sender) == 0:
+            print "No record found for ioc-senders in this region"
+        else:
+            print "ioc-senders Records:"
+            print_all_sender(response_sender)
+        response_recipient = recipienttable.scan()
+        if len(response_recipient) == 0:
+            print "No record found for ioc-recipient in this region"
+        else:
+            print "ioc-recipient Records:"
+            print_all_recipient(response_recipient)
+
+    if command == "GET":
+        try:
+            response = sendertable.get_item(
+                Key={
+                    'key': senderOrRecipient,
+                }
+            )
+            print_sender_record(response)
+        except KeyError:
+            print("No record found for given sender.")
+        try:
+            recipient_response = recipienttable.get_item(
+                Key={
+                    'key': senderOrRecipient,
+                }
+            )
+            print_recipient_record(recipient_response)
+        except KeyError:
+            print("No record found for given recipient.")
+
+    if command == "DELETE_SENDER":
+        confirmation = raw_input("Are you sure you want to delete record [Y/N]? :")
+        if confirmation.upper() == 'Y':
+            sendertable.delete_item(
+                Key={
+                    'key': senderOrRecipient
+                }
+            )
+            print("sender Record deleted.")
+
+    if command == "DELETE_RECIPIENT":
+        confirmation = raw_input("Are you sure you want to delete record [Y/N]? :")
+        if confirmation.upper() == 'Y':
+            recipienttable.delete_item(
+                Key={
+                    'key': senderOrRecipient
+                }
+            )
+            print("Recipient Record deleted.")
