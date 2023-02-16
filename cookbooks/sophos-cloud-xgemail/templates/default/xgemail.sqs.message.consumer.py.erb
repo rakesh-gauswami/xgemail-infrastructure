@@ -631,7 +631,7 @@ def maybe_add_custom_route_header(headers, transport, destination):
     # for inbound we need both transport and destination
     if MESSAGE_DIRECTION == 'INBOUND':
         if transport is None or destination is None:
-        return
+            return
     # for outbound we need one of transport or destination
     if transport is None and destination is None:
         return
