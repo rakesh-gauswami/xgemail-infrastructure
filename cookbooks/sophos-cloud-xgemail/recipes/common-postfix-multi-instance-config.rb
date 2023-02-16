@@ -78,7 +78,7 @@ if ACCOUNT == 'sandbox'
   MULTI_CREATE_GUARD = ::File.join( FILE_CACHE_DIR, ".create-postfix-instance-#{INSTANCE_NAME}" )
   execute "#{print_postmulti_create( INSTANCE_NAME )} && touch #{MULTI_CREATE_GUARD}" do
     creates MULTI_CREATE_GUARD
-    ignore_failure true
+    ignore_failure false
   end
 
   # Modify stock main.cf for newly created INSTANCE_NAME
