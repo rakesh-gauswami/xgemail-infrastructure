@@ -60,7 +60,9 @@ def print_all_sender(records):
         print "Sender Email: %s" % record["sender"]
         print "First IOC date  : %s" % record["first_IOC_dt"]
         print "Lattest IOC date : %s" % record["latest_IOC_dt"]
-        print "Subject : %s" % record["subject"]
+        subject = record.get("subject")
+        if subject:
+            print "Subject : %s" % subject
         print"==============================================================================="
 
 def print_all_recipient(records):
@@ -70,7 +72,9 @@ def print_all_recipient(records):
         print "Sender for this Recipient : %s" % record["for_sender"]
         print "First IOC date  : %s" % record["first_IOC_dt"]
         print "Lattest IOC date : %s" % record["latest_IOC_dt"]
-        print "Subject : %s" % record["subject"]
+        subject = record.get("subject")
+        if subject:
+            print "Subject : %s" % subject
         print"==============================================================================="
 
 
