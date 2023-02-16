@@ -69,7 +69,7 @@ end
 
 # Setup cron script execution
 execute CRON_SCRIPT_PATH do
-  ignore_failure true
+  ignore_failure false
   user 'root'
   action :nothing
 end
