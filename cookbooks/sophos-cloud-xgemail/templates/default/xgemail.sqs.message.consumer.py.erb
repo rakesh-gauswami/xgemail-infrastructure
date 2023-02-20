@@ -632,7 +632,7 @@ def maybe_add_custom_route_header(headers, transport, destination):
     if transport is None and destination is None:
         return
 
-    # for inbound we need both transport and destination
+    # for inbound we need destination to avoid looping via MX
     if MESSAGE_DIRECTION == 'INBOUND' and destination is None:
         return
 
