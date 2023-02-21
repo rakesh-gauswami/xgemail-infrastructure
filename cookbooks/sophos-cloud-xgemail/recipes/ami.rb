@@ -381,7 +381,7 @@ end
 
 execute 'remove_postfix_package' do
   command 'rpm -e --nodeps postfix'
-  ignore_failure true
+  ignore_failure false
 end
 
 execute 'download_postfix3-sophos-rpm' do
