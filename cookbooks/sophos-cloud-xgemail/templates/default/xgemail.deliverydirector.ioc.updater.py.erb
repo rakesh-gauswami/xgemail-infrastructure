@@ -4,16 +4,11 @@ import sys
 sys.path.append("<%= @xgemail_utils_path %>")
 import argparse
 import boto3
-import json
-import sys
 from uuid import uuid4
 
 AWS_REGION = "<%= @aws_region %>"
 ACCOUNT = "<%= @account %>"
 STATION_ACCOUNT_ROLE_ARN = "<%= @station_account_role_arn %>"
-DOMAIN_THRESHOLD_DEFAULT = 50
-EMAIL_THRESHOLD_DEFAULT = 10
-WARMUP_PERCENTAGE_DEFAULT = 0
 
 if STATION_ACCOUNT_ROLE_ARN == 'none':
     # Legacy session
@@ -79,7 +74,7 @@ def print_all_recipient(records):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Delivery director ioc risk delivery add/delete')
+    parser = argparse.ArgumentParser(description='Delivery director IOC risk delivery add/delete')
     parser.add_argument('command', metavar='command choices=[GET, GET_ALL, DELETE_SENDER,DELETE_RECIPIENT]',
                         choices=["GET", "GET_ALL", "DELETE_SENDER", "DELETE_RECIPIENT"],
                         help='Type of action/operation choices=[GET, GET_ALL, DELETE_SENDER, DELETE_RECIPIENT]')
@@ -102,15 +97,15 @@ if __name__ == "__main__":
     if command == "GET_ALL":
         response_sender = sendertable.scan()
         if len(response_sender) == 0:
-            print "No record found for ioc-senders in this region"
+            print "No record found for IOC senders in this region"
         else:
-            print "ioc-senders Records:"
+            print "IOC senders Records:"
             print_all_sender(response_sender)
         response_recipient = recipienttable.scan()
         if len(response_recipient) == 0:
-            print "No record found for ioc-recipient in this region"
+            print "No record found for IOC recipient in this region"
         else:
-            print "\nioc-recipient Records:"
+            print "\nIOC recipient Records:"
             print_all_recipient(response_recipient)
 
     if command == "GET":
