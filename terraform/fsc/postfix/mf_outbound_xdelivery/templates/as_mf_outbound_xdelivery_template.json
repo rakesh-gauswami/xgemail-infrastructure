@@ -150,6 +150,11 @@
       "Type" : "String",
       "Default": ""
     },
+    "ParentAccountName" : {
+      "Description" : "FSC Parent Account Name",
+      "Type": "String",
+      "Default": ""
+    },
     "PolicyBucketName" : {
       "Description" : "Name of the S3 Bucket where XGEMAIL policy docs are stored",
       "Type" : "String",
@@ -506,6 +511,7 @@
                       "    \"branch\"                                 : \"{{branch}}\",\n",
                       "    \"cluster\"                                : \"{{cluster}}\",\n",
                       "    \"client-endpoint\"                        : \"{{region}}\",\n",
+                      "    \"parent_account_name\"                    : \"{{parent_account_name}}\",\n",
                       "    \"region\"                                 : \"{{region}}\",\n",
                       "    \"sdb_region\"                             : \"{{sdb_region}}\",\n",
                       "    \"station_account_role_arn\"               : \"{{station_account_role_arn}}\",\n",
@@ -563,6 +569,7 @@
                   "msg_history_v2_stream_name":                       { "Ref": "MsgHistoryV2StreamName" },
                   "msg_notifier_queue_url":                           { "Ref": "NotifierQueueUrl" },
                   "newrelic_enabled":                                 { "Ref": "NewRelicEnabled" },
+                  "parent_account_name":                              { "Ref": "ParentAccountName" },
                   "region":                                           { "Ref": "AWS::Region" },
                   "sdb_region":                                       { "Ref": "SdbRegion" },
                   "station_account_role_arn":                         { "Ref": "StationAccountRoleArn" },
