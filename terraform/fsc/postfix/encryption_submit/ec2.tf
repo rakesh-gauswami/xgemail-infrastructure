@@ -231,6 +231,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     MsgHistoryV2StreamName              = var.message_history_v2_stream_name
     MessageHistoryEventsTopicArn        = var.message_history_events_sns_topic
     NewRelicEnabled                     = local.newrelic_enabled
+    ParentAccountName                   = local.input_param_parent_account_name
     PredictiveCpuTargetValue            = local.as_predictive_cpu_target_value
     S3CookbookRepositoryURL             = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/${local.instance_type}/${var.build_number}/cookbooks.tar.gz"
     SecurityGroups                      = aws_security_group.security_group_ec2.id

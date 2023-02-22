@@ -5,6 +5,7 @@ locals {
   input_param_availability_zones          = nonsensitive(data.aws_ssm_parameter.availability_zones.value)
   input_param_cloud_templates_bucket_name = nonsensitive(data.aws_ssm_parameter.cloud_templates_bucket_name.value)
   input_param_deployment_environment      = nonsensitive(data.aws_ssm_parameter.deployment_environment.value)
+  input_param_parent_account_name         = nonsensitive(data.aws_ssm_parameter.parent_account_name.value)
   input_param_postfix_queue_efs_volume_id = nonsensitive(data.aws_ssm_parameter.postfix_queue_efs_volume_id.value)
   input_param_primary_region              = nonsensitive(data.aws_ssm_parameter.primary_region.value)
   input_param_public_subnet_ids           = split(",", nonsensitive(data.aws_ssm_parameter.public_subnet_ids.value))
@@ -67,6 +68,11 @@ data "aws_ssm_parameter" "lifecycle_topic_arn" {
 
 data "aws_ssm_parameter" "lifecycle_hook_terminating_name" {
   name     = "/central/asg/${local.instance_type}/lifecycle-hook/terminating/name"
+  provider = aws.parameters
+}
+
+data "aws_ssm_parameter" "parent_account_name" {
+  name     = "/central/account/parent-account/name"
   provider = aws.parameters
 }
 

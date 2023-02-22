@@ -159,6 +159,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     MsgHistoryV2StreamName              = var.message_history_v2_stream_name
     NewRelicEnabled                     = local.newrelic_enabled
     NotifierQueueUrl                    = var.notifier_request_sqs_queue
+    ParentAccountName                   = local.input_param_parent_account_name
     PolicyBucketName                    = var.policy_bucket
     S3CookbookRepositoryURL             = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/${local.instance_type}/${var.build_number}/cookbooks.tar.gz"
     ScaleDownOnWeekends                 = "true"

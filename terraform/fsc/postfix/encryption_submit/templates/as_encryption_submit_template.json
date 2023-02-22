@@ -148,6 +148,11 @@
       "Default": "false",
       "AllowedValues": [ "true", "false" ]
     },
+    "ParentAccountName" : {
+      "Description" : "FSC Parent Account Name",
+      "Type": "String",
+      "Default": ""
+    },
     "PredictiveCpuTargetValue": {
       "Description": "The target CPU value for the predictive scaling policy.",
       "Type": "Number",
@@ -603,6 +608,7 @@
                       "    \"branch\"                                   : \"{{branch}}\",\n",
                       "    \"cluster\"                                  : \"{{cluster}}\",\n",
                       "    \"client-endpoint\"                          : \"{{region}}\",\n",
+                      "    \"parent_account_name\"                      : \"{{parent_account_name}}\",\n",
                       "    \"region\"                                   : \"{{region}}\",\n",
                       "    \"station_account_role_arn\"                 : \"{{station_account_role_arn}}\",\n",
                       "    \"vpc_id\"                                   : \"{{vpc_id}}\",\n",
@@ -657,6 +663,7 @@
                   "msg_history_v2_dynamodb_table_name":                 { "Ref": "MsgHistoryV2DynamoDbTableName"},
                   "msg_history_v2_stream_name":                         { "Ref": "MsgHistoryV2StreamName" },
                   "newrelic_enabled":                                   { "Ref": "NewRelicEnabled" },
+                  "parent_account_name":                                { "Ref": "ParentAccountName" },
                   "postfix_queue_efs_file_system_id":                   { "Ref": "XgemailPostfixQueueEfsFileSystemId" },
                   "region":                                             { "Ref": "AWS::Region" },
                   "stack":                                              { "Ref": "AWS::StackName" },
