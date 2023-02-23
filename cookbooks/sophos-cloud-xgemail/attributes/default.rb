@@ -203,7 +203,7 @@ default['xgemail']['sqs_message_consumer_visibility_timeout'] = 300
 default['xgemail']['sqs_message_consumer_wait_time_seconds'] = 10
 
 ## Mail Pic Api settings
-default['xgemail']['mail_pic_apis_response_timeout_seconds'] = 60
+default['xgemail']['mail_pic_apis_response_timeout_seconds'] = 180
 default['xgemail']['mail_pic_api_auth'] = "xgemail-#{node['sophos_cloud']['region']}-mail"
 
 ## Customer delivery settings
