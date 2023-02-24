@@ -892,6 +892,41 @@ template 'fluentd-filter-transform-sqs-telemetry-log' do
   }
 end
 
+# Start Order: 75
+template 'fluentd-filter-transform-msg-delivery' do
+  path "#{CONF_DIR}/75-filter-transform-msg-delivery.conf"
+  source 'fluentd-filter-transform-msg-delivery.conf.erb'
+  mode '0644'
+  owner 'root'
+  group 'root'
+  variables(
+    :server_type => SERVER_TYPE,
+    :server_ip => SERVER_IP,
+    :server_type_xdelivery => SERVER_TYPE_XDELIVERY,
+    :direction => DIRECTION,
+    :non_delivery_dsn => NON_DELIVERY_DSN
+  )
+  only_if {
+    NODE_TYPE == 'customer-delivery' ||
+    NODE_TYPE == 'xdelivery' ||
+    NODE_TYPE == 'customer-xdelivery' ||
+    NODE_TYPE == 'internet-delivery' ||
+    NODE_TYPE == 'internet-xdelivery' ||
+    NODE_TYPE == 'mf-inbound-delivery' ||
+    NODE_TYPE == 'mf-outbound-delivery' ||
+    NODE_TYPE == 'mf-inbound-xdelivery' ||
+    NODE_TYPE == 'mf-outbound-xdelivery' ||
+    NODE_TYPE == 'risky-delivery' ||
+    NODE_TYPE == 'risky-xdelivery' ||
+    NODE_TYPE == 'warmup-delivery' ||
+    NODE_TYPE == 'warmup-xdelivery'||
+    NODE_TYPE == 'beta-delivery' ||
+    NODE_TYPE == 'beta-xdelivery' ||
+    NODE_TYPE == 'delta-delivery' ||
+    NODE_TYPE == 'delta-xdelivery'
+  }
+end
+
 # Start Order: 78
 template 'fluentd-filter-transform-msg-history-v2' do
   path "#{CONF_DIR}/78-filter-transform-msg-history-v2.conf"
