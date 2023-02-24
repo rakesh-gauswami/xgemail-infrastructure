@@ -801,12 +801,6 @@ def deliver_messages():
                         "Removed message [{0}] from SQS".format(sqs_message.message_path)
                     )
     
-                    if NODE_TYPE != 'encryption-delivery':
-                        create_and_publish_message_history_delivery_status_sns_job(
-                            sqs_message,
-                            postfix_injection_response
-                        )
-    
         except Exception:
             logger.exception("Unhandled exception in main loop")
             continue
