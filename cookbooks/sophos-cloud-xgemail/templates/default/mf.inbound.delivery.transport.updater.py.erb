@@ -106,11 +106,6 @@ response = requests.get(
 )
 response.raise_for_status()
 
-# Returns the smtp transport tag to be used for the customer
-# with the given id
-def get_smtp_transport_tag(s3, domain_name, customer_id):
-  return TLS_SMTP_TRANSPORT_TAG
-
 # Expecting JSON in this form
 #   {
 #     "destination": "10.11.12.13",
@@ -128,14 +123,7 @@ def parse_domain_response(domain_name, destinations_json, s3_client,is_custom) :
   if 'customer_id' in destination_json:
     customer_id = destination_json['customer_id']
 
-  if not is_custom:
-      smtp_transport_tag = get_smtp_transport_tag(
-          s3_client,
-          domain_name,
-          customer_id
-      )
-  else:
-      smtp_transport_tag = TLS_SMTP_TRANSPORT_TAG
+  smtp_transport_tag = TLS_SMTP_TRANSPORT_TAG
 
   ret_val = domain_name + smtp_transport_tag
 
