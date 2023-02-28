@@ -74,21 +74,6 @@ def get_enc_config_path_with_prefix(domain_name):
   prefix_chars = hashlib.md5(s3_object).hexdigest().lower()[0:4]
   return ENC_CONFIG_PREFIX_KEY + prefix_chars + "/" + s3_object
 
-# Returns the smtp transport tag to be used for the customer
-# with the given id
-def get_smtp_transport_tag(s3, domain_name, customer_id):
-
-  #Check new location.
-  key_path = get_enc_config_path_with_prefix(domain_name)
-  logger.debug('Checking new location' + key_path)
-  if encryption_config_exists(s3, key_path):
-    return TLS_SMTP_TRANSPORT_TAG
-
-  if tls_config_exists_in_api_response(customer_id):
-    return TLS_SMTP_TRANSPORT_TAG
-
-  return DEFAULT_SMTP_TRANSPORT_TAG
-
 # sort custom record so that email will prior to it domain
 def sort_record_key(unsorted_dict):
     sorted_keys = unsorted_dict.keys()
