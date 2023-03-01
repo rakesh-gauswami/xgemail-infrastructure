@@ -1,7 +1,0 @@
-# Syslog stuff
-#
-NOMATCH %{GREEDYDATA:message}
-#
-LOGBASE %{SYSLOGHOST:host} \[%{PROG:process}\] %{POSINT:pid} %{LOGLEVEL:level}
-#
-TRANSPORTUPDATERFLATFILE %{LOGBASE} (?:%{NOMATCH})

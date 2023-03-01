@@ -86,14 +86,6 @@ directory PACKAGE_DIR do
   group 'root'
 end
 
-# Add rsyslog config file to redirect flat file transportupdatercron messages to its own log file.
-file '/etc/rsyslog.d/00-xgemail-transportupdatercron.conf' do
-  content "if $syslogtag == '[cd-transport-updater-cron]' then /var/log/xgemail/flatfiletransport.log\n& ~"
-  mode '0600'
-  owner 'root'
-  group 'root'
-end
-
 # Setup cron script execution
 execute CRON_SCRIPT_PATH do
   ignore_failure false

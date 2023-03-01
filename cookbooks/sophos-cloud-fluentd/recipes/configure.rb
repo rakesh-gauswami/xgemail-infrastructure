@@ -33,7 +33,6 @@ MULTIPOLICY_FILTER_PATTERNS      = "(?!.*)"
 SQSMSGCONSUMER_FILTER_PATTERNS   = "(?!.*)"
 SQSMSGPRODUCER_FILTER_PATTERNS   = "(?!.*)"
 TRANSPORTUPDATER_FILTER_PATTERNS = "(?!.*)"
-TRANSPORTUPDATERCRON_FILTER_PATTERNS = "(?!.*)"
 MH_MAIL_INFO_STORAGE_DIR         = node['xgemail']['mh_mail_info_storage_dir']
 
 STATION_ACCOUNT_ROLE_ARN         = node['sophos_cloud']['station_account_role_arn']
@@ -335,27 +334,6 @@ template 'fluentd-source-transportupdater' do
   }
 end
 
-# Customer delivery,mf inbound delivery and xdelivery - Start Order: 10
-template 'fluentd-source-transportupdatercron' do
-  path "#{CONF_DIR}/10-source-transportupdatercron.conf"
-  source 'fluentd-source-generic.conf.erb'
-  mode '0644'
-  owner 'root'
-  group 'root'
-  variables(
-    :log_name => 'transportupdatercron',
-    :log_path => '/var/log/xgemail/flatfiletransport.log'
-  )
-  only_if {
-    NODE_TYPE == 'customer-delivery' ||
-    NODE_TYPE == 'customer-xdelivery' ||
-    NODE_TYPE == 'xdelivery' ||
-    NODE_TYPE == 'mf-inbound-delivery' ||
-    NODE_TYPE == 'mf-inbound-xdelivery'
-  }
-end
-
-
 # Submit instances - Start Order: 10
 template 'fluentd-source-sqsmsgproducer' do
   path "#{CONF_DIR}/10-source-sqsmsgproducer.conf"
@@ -597,26 +575,6 @@ template 'fluentd-match-transportupdater' do
   }
 end
 
-template 'fluentd-match-transportupdatercron' do
-  path "#{CONF_DIR}/20-match-transportupdatercron.conf"
-  source 'fluentd-match-generic.conf.erb'
-  mode '0644'
-  owner 'root'
-  group 'root'
-  variables(
-    :application_name => APPLICATION_NAME,
-    :log_name => 'transportupdatercron',
-    :filter_patterns => TRANSPORTUPDATERCRON_FILTER_PATTERNS
-  )
-  only_if {
-    NODE_TYPE == 'customer-delivery' ||
-    NODE_TYPE == 'customer-xdelivery' ||
-    NODE_TYPE == 'xdelivery' ||
-    NODE_TYPE == 'mf-inbound-delivery' ||
-    NODE_TYPE == 'mf-inbound-xdelivery'
-  }
-end
-
 ### Fluentd Filter Configuration Files ###
 
 # All instances - Start Order: 50
@@ -795,28 +753,6 @@ template 'fluentd-filter-transportupdater' do
   only_if {
     NODE_TYPE == 'customer-delivery' ||
     NODE_TYPE == 'xdelivery'
-    NODE_TYPE == 'customer-xdelivery' ||
-    NODE_TYPE == 'mf-inbound-delivery' ||
-    NODE_TYPE == 'mf-inbound-xdelivery'
-  }
-end
-
-template 'fluentd-filter-transportupdatercron' do
-  path "#{CONF_DIR}/50-filter-transportupdatercron.conf"
-  source 'fluentd-filter-generic.conf.erb'
-  mode '0644'
-  owner 'root'
-  group 'root'
-  variables(
-    :application_name => APPLICATION_NAME,
-    :log_name => 'transportupdatercron',
-    :grok_pattern => 'TRANSPORTUPDATERFLATFILE',
-    :reserve_data => 'true',
-    :patterns_dir => PATTERNS_DIR
-  )
-  only_if {
-    NODE_TYPE == 'customer-delivery' ||
-    NODE_TYPE == 'xdelivery' ||
     NODE_TYPE == 'customer-xdelivery' ||
     NODE_TYPE == 'mf-inbound-delivery' ||
     NODE_TYPE == 'mf-inbound-xdelivery'
