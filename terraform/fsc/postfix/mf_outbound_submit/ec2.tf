@@ -107,23 +107,33 @@ locals {
   SXL_DBL_BY_ENVIRONMENT = {
     inf  = "uri.vir1.sophosxl.com"
     dev  = "uri.vir1.sophosxl.com"
-    qa   = "uri.vir1.sophosxl.com"
+    qa   = "uri.ire1.sophosxl.com"
     prod = "uri.vir1.sophosxl.com"
   }
 
   SXL_DBL_BY_POP = {
-    stn000cmh = "uri.vir1.sophosxl.com"
+    eml000cmh = "uri.vir1.sophosxl.com"
+    eml100bom = "uri.ire1.sophosxl.com"
+    eml100gru = "uri.cal1.sophosxl.com"
+    eml100hnd = "uri.jap1.sophosxl.com"
+    eml100syd = "uri.aus1.sophosxl.com"
+    eml100yul = "uri.vir1.sophosxl.com"
   }
 
   SXL_RBL_BY_ENVIRONMENT = {
     inf  = "fur.vir1.sophosxl.com"
     dev  = "fur.vir1.sophosxl.com"
-    qa   = "fur.vir1.sophosxl.com"
+    qa   = "fur.ire1.sophosxl.com"
     prod = "fur.vir1.sophosxl.com"
   }
 
   SXL_RBL_BY_POP = {
-    stn000cmh = "fur.vir1.sophosxl.com"
+    eml000cmh = "fur.vir1.sophosxl.com"
+    eml100bom = "fur.ire1.sophosxl.com"
+    eml100gru = "fur.cal1.sophosxl.com"
+    eml100hnd = "fur.jap1.sophosxl.com"
+    eml100syd = "fur.aus1.sophosxl.com"
+    eml100yul = "fur.vir1.sophosxl.com"
   }
 
   as_min_size = lookup(
