@@ -144,7 +144,7 @@ if flat_file_rollout_config_exist():
                   active_mode=True
                   logger.debug('For S3 base flat file Instance id {0} exists in Config with ACTIVE mode in region: {1}'.format(CURRENT_INSTANCE_ID,AWS_REGION))
           else:
-              logger.warn('Instance id {0} Not exists in file {1} will Continue the legacy '.format(CURRENT_INSTANCE_ID, INSTANCE_LIST_FILE_NAME))
+              logger.debug('Instance id {0} Not exists in file {1} will Continue the legacy '.format(CURRENT_INSTANCE_ID, INSTANCE_LIST_FILE_NAME))
               sys.exit(0)
   except Exception as e:
       logger.error("Error loading flat file rollout Instance list file " + e.message)
