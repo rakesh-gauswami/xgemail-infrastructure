@@ -138,7 +138,7 @@ locals {
   SXL_RBL_BY_ENVIRONMENT = {
     inf  = "fur.vir1.sophosxl.com"
     dev  = "fur.vir1.sophosxl.com"
-    qa   = "fur.vir1.sophosxl.com"
+    qa   = "fur.ire1.sophosxl.com"
     prod = "fur.vir1.sophosxl.com"
   }
 
