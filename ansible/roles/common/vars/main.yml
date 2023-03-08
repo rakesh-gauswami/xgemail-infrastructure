@@ -508,6 +508,12 @@ aws:
       template_parameters:
         TagApplication:                                           "xgemail-mail"
         TopicName:                                                "{{sns.encryption_settings_update_sns_topic}}"
+    google_integration_warmup_sns_topic:
+      stack_name:                                                 "{{stack.sns.google_integration_warmup_sns_topic}}"
+      template:                                                   "{{template.sns.sns_simple_template}}"
+      template_parameters:
+        TagApplication:                                           "xgemail-mail"
+        TopicName:                                                "{{sns.google_integration_warmup_sns_topic}}"
     internet_delivery_sns_topic:
       stack_name:                                                 "{{stack.sns.internet_delivery_sns_topic}}"
       template:                                                   "{{template.sns.sns_simple_template}}"
