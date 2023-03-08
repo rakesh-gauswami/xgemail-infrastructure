@@ -61,23 +61,23 @@
     msg: "{{ssm_elasticsearch_stack.stack_outputs}}"
     verbosity: 2
 
-# Create another stack dedicated to stop specific HRU ECS containers task SSM commands
-- name: "Deploy SSM Ecs Container Documents {{stack.ssm.ssm_ecs_container_documents}}"
+# Create another stack dedicated to create an SSM document used to stop specific ECS Tasks
+- name: "Deploy SSM Ecs Container Documents {{stack.ssm.ssm_ecs_task_documents}}"
   cloudformation:
-    stack_name:                   "{{stack.ssm.ssm_ecs_container_documents}}"
+    stack_name:                   "{{stack.ssm.ssm_ecs_task_documents}}"
     state:                        present
     region:                       "{{account.region}}"
     disable_rollback:             true
-    template:                     "{{template.ssm.ssm_xgemail_ecs_container_document_template}}"
-  register: ssm_ecs_container_stack
+    template:                     "{{template.ssm.ssm_xgemail_ecs_task_document_template}}"
+  register: ssm_ecs_task_stack
 
 - debug:
-    var: ssm_ecs_container_stack
+    var: ssm_ecs_task_stack
     verbosity: 3
 
 - name: "Display SSM Ecs Container Documents Stack Output"
   debug:
-    msg: "{{ssm_ecs_container_stack.stack_outputs}}"
+    msg: "{{ssm_ecs_task_stack.stack_outputs}}"
     verbosity: 2
 
 # Create another stack dedicated to Linux Shell SSM commands

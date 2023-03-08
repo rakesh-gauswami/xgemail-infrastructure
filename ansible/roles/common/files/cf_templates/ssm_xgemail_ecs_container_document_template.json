@@ -1,6 +1,6 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "Template containing an Xgemail SSM Document to stop an ECS container",
+  "Description": "Template containing an Xgemail SSM Document to stop an ECS Task",
   "Metadata": {
     "Copyright": [
       "Copyright 2023, Sophos Limited. All rights reserved.",
@@ -11,34 +11,40 @@
       "respective owners."
     ],
     "Comments": [
-      "Creates an SSM Document to stop an ECS container by container ID."
+      "Creates an SSM Document to stop an ECS Task by Task ID."
     ]
   },
   "Resources": {
-    "StopEcsContainer": {
+    "StopEcsTask": {
       "Type": "AWS::SSM::Document",
       "Properties": {
         "DocumentType": "Automation",
         "Content": {
           "schemaVersion": "0.3",
-          "assumeRole": { "Fn::GetAtt": [ "StopEcsContainerRole", "Arn" ] },
-          "description": "This SSM document will stop an ECS container.",
+          "assumeRole": { "Fn::GetAtt": [ "StopEcsTaskRole", "Arn" ] },
+          "description": "This SSM document will stop an ECS Task.",
           "parameters": {
-            "ContainerId": {
+            "Cluster": {
               "type": "String",
-              "description": "Container ID"
+              "description": "The short name or full Amazon Resource Name (ARN) of the cluster that hosts the task to stop.",
+              "default": "central-chassis-ecs-CloudStation"
+            },
+            "Task": {
+              "type": "String",
+              "description": "The task ID or full ARN entry of the task to stop."
             }
           },
           "mainSteps": [
             {
-              "name": "stopContainer",
+              "name": "stopTask",
               "action": "aws:executeAwsApi",
               "maxAttempts": 3,
               "onFailure": "Abort",
               "inputs": {
-                "Service": "ecs",
-                "Api": "StopContainer",
-                "Input": "{{ ContainerId }}"
+                "service": "ecs",
+                "api": "stop_task",
+                "cluster": "{{ Cluster }}",
+                "task": "{{ Task }}"
               },
               "isCritical": "true",
               "isEnd": "true"
@@ -55,7 +61,7 @@
                   {
                     "Ref": "AWS::StackName"
                   },
-                  "StopEcsContainer"
+                  "StopEcsTask"
                 ]
               ]
             }
@@ -79,7 +85,7 @@
         ]
       }
     },
-    "StopEcsContainerRole" : {
+    "StopEcsTaskRole" : {
       "Type": "AWS::IAM::Role",
       "Properties": {
         "AssumeRolePolicyDocument": {
@@ -106,7 +112,7 @@
           },
           {
             "Key": "Name",
-            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "StopEcsContainerRole" ] ] }
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "StopEcsTaskRole" ] ] }
           },
           {
             "Key": "Project",
@@ -119,7 +125,7 @@
         ]
       }
     },
-    "StopEcsContainerRolePolicies": {
+    "StopEcsTaskRolePolicies": {
       "Properties": {
         "PolicyDocument": {
           "Statement": [
@@ -133,34 +139,31 @@
                 "ecs:StopTask"
               ],
               "Effect": "Allow",
-              "Resource": "*",
-              "Condition": {
-                "ArnLike": {
-                  "ecs:cluster": "cluster/central-chassis-ecs-station"
-                }
-              }
+              "Resource": [
+                "arn:aws:logs:*:*:*"
+              ]
             }
           ]
         },
         "PolicyName": "root",
-        "Roles": [ { "Ref": "StopEcsContainerRole" } ]
+        "Roles": [ { "Ref": "StopEcsTaskRole" } ]
       },
       "Type": "AWS::IAM::Policy"
     }
   },
 
   "Outputs" : {
-     "StopEcsContainer": {
-      "Description": "SSM Stop Ecs Container document stops an ECS container",
-      "Value": { "Ref": "StopEcsContainer" }
+     "StopEcsTask": {
+      "Description": "SSM Stop Ecs Task document stops an ECS Task",
+      "Value": { "Ref": "StopEcsTask" }
     },
-    "StopEcsContainerRole": {
-      "Description": "Stop Ecs Container role",
-      "Value": { "Ref": "StopEcsContainerRole" }
+    "StopEcsTaskRole": {
+      "Description": "Stop Ecs Task role",
+      "Value": { "Ref": "StopEcsTaskRole" }
     },
-    "StopEcsContainerRoleArn": {
-      "Description": "Stop Ecs Container role ARN",
-      "Value": { "Fn::GetAtt" : [ "StopEcsContainerRole", "Arn" ] }
+    "StopEcsTaskRoleArn": {
+      "Description": "Stop Ecs Task role ARN",
+      "Value": { "Fn::GetAtt" : [ "StopEcsTaskRole", "Arn" ] }
     }
   }
 }
