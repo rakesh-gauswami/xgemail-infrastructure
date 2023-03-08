@@ -4,15 +4,10 @@ locals {
   DEFAULT_AS_MAX_SIZE                       = 6
   DEFAULT_AS_MIN_SERVICE                    = 1
   DEFAULT_AS_MAX_BATCH_SIZE                 = 1
-  DEFAULT_AS_CRON_SCALE_DOWN                = "0 1 * * 6"
-  DEFAULT_AS_CRON_SCALE_UP                  = "0 4 * * 1"
-  DEFAULT_AS_CRON_SCALE_IN                  = "00 02 * * 1-5"
-  DEFAULT_AS_CRON_SCALE_OUT                 = "30 14 * * 1-5"
   DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD      = 2400
-  DEFAULT_AS_POLICY_TARGET_VALUE            = 90
+  DEFAULT_AS_DYNAMIC_CPU_TARGET_VALUE       = 90
+  DEFAULT_AS_PREDICTIVE_CPU_TARGET_VALUE    = 90
   DEFAULT_AS_ON_HOUR_DESIRED                = 2
-  DEFAULT_AS_SCALE_IN_OUT_WEEKDAYS          = false
-  DEFAULT_AS_SCALE_IN_ON_WEEKENDS           = false
   DEFAULT_INSTANCE_SIZE                     = "t3.medium"
   DEFAULT_INSTANCE_COUNT                    = 1
   DEFAULT_NEWRELIC_ENABLED                  = false
@@ -48,34 +43,6 @@ locals {
     prod = 2
   }
 
-  AS_CRON_SCALE_DOWN_BY_ENVIRONMENT = {
-    inf  = "0 1 * * 6"
-    dev  = "0 1 * * 6"
-    qa   = "0 1 * * 6"
-    prod = "0 1 * * 6"
-  }
-
-  AS_CRON_SCALE_UP_BY_ENVIRONMENT = {
-    inf  = "0 4 * * 1"
-    dev  = "0 4 * * 1"
-    qa   = "0 4 * * 1"
-    prod = "0 4 * * 1"
-  }
-
-  AS_CRON_SCALE_IN_BY_ENVIRONMENT = {
-    inf  = "00 02 * * 1-5"
-    dev  = "00 02 * * 1-5"
-    qa   = "00 02 * * 1-5"
-    prod = "00 02 * * 1-5"
-  }
-
-  AS_CRON_SCALE_OUT_BY_ENVIRONMENT = {
-    inf  = "30 14 * * 1-5"
-    dev  = "30 14 * * 1-5"
-    qa   = "30 14 * * 1-5"
-    prod = "30 14 * * 1-5"
-  }
-
   AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT = {
     inf  = 2400
     dev  = 2400
@@ -83,11 +50,18 @@ locals {
     prod = 2400
   }
 
-  AS_POLICY_TARGET_VALUE_BY_ENVIRONMENT = {
+  AS_DYNAMIC_CPU_TARGET_VALUE_BY_ENVIRONMENT = {
     inf  = 90
     dev  = 90
     qa   = 90
-    prod = 65
+    prod = 75
+  }
+
+  AS_PREDICTIVE_CPU_TARGET_VALUE_BY_ENVIRONMENT = {
+    inf  = 90
+    dev  = 90
+    qa   = 90
+    prod = 75
   }
 
   AS_ON_HOUR_DESIRED_BY_ENVIRONMENT = {
@@ -97,25 +71,19 @@ locals {
     prod = 2
   }
 
-  AS_SCALE_IN_OUT_WEEKDAYS_BY_ENVIRONMENT = {
-    inf  = false
-    dev  = false
-    qa   = false
-    prod = false
-  }
-
-  AS_SCALE_IN_ON_WEEKENDS_BY_ENVIRONMENT = {
-    inf  = false
-    dev  = false
-    qa   = false
-    prod = false
-  }
-
   INSTANCE_SIZE_BY_ENVIRONMENT = {
     inf  = "t3a.medium"
     dev  = "t3.medium"
     qa   = "t3a.medium"
-    prod = "m5a.large"
+    prod = "m6a.large"
+  }
+
+  INSTANCE_SIZE_BY_POP = {
+    eml100bom = "m6a.large"
+    eml100gru = "m6i.large"
+    eml100hnd = "m6a.large"
+    eml100syd = "m6a.large"
+    eml100yul = "m6i.large"
   }
 
   NEWRELIC_ENABLED_BY_ENVIRONMENT = {
@@ -137,23 +105,33 @@ locals {
   SXL_DBL_BY_ENVIRONMENT = {
     inf  = "uri.vir1.sophosxl.com"
     dev  = "uri.vir1.sophosxl.com"
-    qa   = "uri.vir1.sophosxl.com"
+    qa   = "uri.ire1.sophosxl.com"
     prod = "uri.vir1.sophosxl.com"
   }
 
   SXL_DBL_BY_POP = {
-    stn000cmh = "uri.vir1.sophosxl.com"
+    eml000cmh = "uri.vir1.sophosxl.com"
+    eml100bom = "uri.ire1.sophosxl.com"
+    eml100gru = "uri.cal1.sophosxl.com"
+    eml100hnd = "uri.jap1.sophosxl.com"
+    eml100syd = "uri.aus1.sophosxl.com"
+    eml100yul = "uri.vir1.sophosxl.com"
   }
 
   SXL_RBL_BY_ENVIRONMENT = {
     inf  = "fur.vir1.sophosxl.com"
     dev  = "fur.vir1.sophosxl.com"
-    qa   = "fur.vir1.sophosxl.com"
+    qa   = "fur.ire1.sophosxl.com"
     prod = "fur.vir1.sophosxl.com"
   }
 
   SXL_RBL_BY_POP = {
-    stn000cmh = "fur.vir1.sophosxl.com"
+    eml000cmh = "fur.vir1.sophosxl.com"
+    eml100bom = "fur.ire1.sophosxl.com"
+    eml100gru = "fur.cal1.sophosxl.com"
+    eml100hnd = "fur.jap1.sophosxl.com"
+    eml100syd = "fur.aus1.sophosxl.com"
+    eml100yul = "fur.vir1.sophosxl.com"
   }
 
   as_min_size = lookup(
@@ -180,40 +158,22 @@ locals {
     local.DEFAULT_AS_MAX_BATCH_SIZE
   )
 
-  as_cron_scale_down = lookup(
-    local.AS_CRON_SCALE_DOWN_BY_ENVIRONMENT,
-    local.input_param_deployment_environment,
-    local.DEFAULT_AS_CRON_SCALE_DOWN
-  )
-
-  as_cron_scale_up = lookup(
-    local.AS_CRON_SCALE_UP_BY_ENVIRONMENT,
-    local.input_param_deployment_environment,
-    local.DEFAULT_AS_CRON_SCALE_UP
-  )
-
-  as_cron_scale_in = lookup(
-    local.AS_CRON_SCALE_IN_BY_ENVIRONMENT,
-    local.input_param_deployment_environment,
-    local.DEFAULT_AS_CRON_SCALE_IN
-  )
-
-  as_cron_scale_out = lookup(
-    local.AS_CRON_SCALE_OUT_BY_ENVIRONMENT,
-    local.input_param_deployment_environment,
-    local.DEFAULT_AS_CRON_SCALE_OUT
-  )
-
   health_check_grace_period = lookup(
     local.AS_HEALTH_CHECK_GRACE_PERIOD_BY_ENVIRONMENT,
     local.input_param_deployment_environment,
     local.DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD
   )
 
-  as_policy_target_value = lookup(
-    local.AS_POLICY_TARGET_VALUE_BY_ENVIRONMENT,
+  as_dynamic_cpu_target_value = lookup(
+    local.AS_DYNAMIC_CPU_TARGET_VALUE_BY_ENVIRONMENT,
     local.input_param_deployment_environment,
-    local.DEFAULT_AS_POLICY_TARGET_VALUE
+    local.DEFAULT_AS_DYNAMIC_CPU_TARGET_VALUE
+  )
+
+  as_predictive_cpu_target_value = lookup(
+    local.AS_PREDICTIVE_CPU_TARGET_VALUE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_PREDICTIVE_CPU_TARGET_VALUE
   )
 
   as_on_hour_desired = lookup(
@@ -222,22 +182,14 @@ locals {
     local.DEFAULT_AS_ON_HOUR_DESIRED
   )
 
-  as_scale_in_out_weekdays = lookup(
-    local.AS_SCALE_IN_OUT_WEEKDAYS_BY_ENVIRONMENT,
-    local.input_param_deployment_environment,
-    local.DEFAULT_AS_SCALE_IN_OUT_WEEKDAYS
-  )
-
-  as_scale_in_on_weekends = lookup(
-    local.AS_SCALE_IN_ON_WEEKENDS_BY_ENVIRONMENT,
-    local.input_param_deployment_environment,
-    local.DEFAULT_AS_SCALE_IN_ON_WEEKENDS
-  )
-
   instance_size = lookup(
-    local.INSTANCE_SIZE_BY_ENVIRONMENT,
-    local.input_param_deployment_environment,
-    local.DEFAULT_INSTANCE_SIZE
+    local.INSTANCE_SIZE_BY_POP,
+    local.input_param_account_name,
+    lookup(
+      local.INSTANCE_SIZE_BY_ENVIRONMENT,
+      local.input_param_deployment_environment,
+      local.DEFAULT_INSTANCE_SIZE
+    )
   )
 
   newrelic_enabled = lookup(
@@ -292,6 +244,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     DeliveryDirectorBucketName            = var.delivery_director_bucket_name
     DeployMaxBatchSize                    = local.as_max_batch_size
     DeployMinInstancesInService           = local.as_min_service
+    DynamicCpuTargetValue                 = local.as_dynamic_cpu_target_value
     Environment                           = local.input_param_deployment_environment
     HealthCheckGracePeriod                = local.health_check_grace_period
     InstanceProfile                       = local.input_param_iam_instance_profile_name
@@ -302,15 +255,9 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     MsgHistoryV2StreamName                = var.message_history_v2_stream_name
     MessageHistoryEventsTopicArn          = var.message_history_events_sns_topic
     NewRelicEnabled                       = local.newrelic_enabled
-    PolicyTargetValue                     = local.as_policy_target_value
-    S3CookbookRepositoryURL               = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/${var.build_number}/cookbooks.tar.gz"
-    ScaleInOnWeekends                     = local.as_scale_in_on_weekends
-    ScaleInCron                           = local.as_cron_scale_down
-    ScaleOutCron                          = local.as_cron_scale_up
+    PredictiveCpuTargetValue              = local.as_predictive_cpu_target_value
+    S3CookbookRepositoryURL               = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/${local.instance_type}/${var.build_number}/cookbooks.tar.gz"
     ScheduledASOnHourDesiredCapacity      = local.as_on_hour_desired
-    ScaleInAndOutOnWeekdays               = local.as_scale_in_out_weekdays
-    ScaleInOnWeekdaysCron                 = local.as_cron_scale_in
-    ScaleOutOnWeekdaysCron                = local.as_cron_scale_out
     SecurityGroups                        = aws_security_group.security_group_ec2.id
     SpotPrice                             = "-1"
     StationAccountRoleArn                 = var.station_account_role_arn

@@ -23,22 +23,11 @@
       "Description": "Decryption key for encrypted buckets",
       "Type": "String"
     },
-    "AlarmScaleInEnabled": {
-      "Description": "Enable AutoScaling Alarms to trigger scaling policies.",
-      "Type": "String",
-      "Default": "false",
-      "AllowedValues": [ "true", "false" ]
-    },
     "AlarmScaleOutEnabled": {
       "Description": "Enable AutoScaling Alarms to trigger scaling policies.",
       "Type": "String",
       "Default": "false",
       "AllowedValues": [ "true", "false" ]
-    },
-    "AlarmScaleInThreshold": {
-      "Description": "The value against which the specified statistic is compared.",
-      "Type": "Number",
-      "Default": "1000"
     },
     "AlarmScaleOutThreshold": {
       "Description": "The value against which the specified statistic is compared.",
@@ -112,6 +101,11 @@
       "Type": "String",
       "Default": "PT1H"
     },
+    "DynamicCpuTargetValue": {
+      "Description": "The target value for the metric.",
+      "Type": "Number",
+      "Default": "50"
+    },
     "EbsVolumeType": {
       "Description": "Indicates the EBS volume type.",
       "Type": "String",
@@ -168,6 +162,11 @@
       "Type": "String",
       "Default": "false",
       "AllowedValues": [ "true", "false" ]
+    },
+    "PredictiveCpuTargetValue": {
+      "Description": "The target value for the metric.",
+      "Type": "Number",
+      "Default": "50"
     },
     "S3CookbookRepositoryURL": {
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
@@ -530,7 +529,7 @@
         "PredictiveScalingConfiguration":{
           "MetricSpecifications":[
             {
-              "TargetValue":50,
+              "TargetValue": { "Ref": "PredictiveCpuTargetValue"},
               "PredefinedMetricPairSpecification":{
                 "PredefinedMetricType":"ASGCPUUtilization"
               }
@@ -544,6 +543,21 @@
       }
     },
 
+    "XgemailAutoScalePolicy": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+      "Properties": {
+        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
+        "EstimatedInstanceWarmup": "600",
+        "PolicyType": "TargetTrackingScaling",
+        "TargetTrackingConfiguration": {
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "ASGAverageCPUUtilization"
+          },
+          "TargetValue": { "Ref": "DynamicCpuTargetValue"}
+        }
+      }
+    },
+
     "XgemailScaleOutPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
       "Properties": {
@@ -551,50 +565,6 @@
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
         "Cooldown": "400",
         "ScalingAdjustment": "3"
-      }
-    },
-
-    "XgemailScaleInPolicy": {
-      "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Properties": {
-        "AdjustmentType": "ChangeInCapacity",
-        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "Cooldown": "60",
-        "ScalingAdjustment": "-1"
-      }
-    },
-
-    "AlarmScaleIn": {
-      "Type": "AWS::CloudWatch::Alarm",
-      "Properties": {
-        "ActionsEnabled": { "Ref": "AlarmScaleInEnabled" },
-        "AlarmDescription": {
-          "Fn::Join": [ " ",
-            [
-              "Alarm when",
-              { "Ref": "XgemailServiceType" },
-              "visible SQS messages is below threshold of",
-              { "Ref": "AlarmScaleInThreshold" },
-              "for a duration of time"
-            ]
-          ]
-        },
-        "DatapointsToAlarm": "3",
-        "EvaluationPeriods": "10",
-        "Period": "60",
-        "Statistic": "Average",
-        "Threshold": { "Ref": "AlarmScaleInThreshold" },
-        "InsufficientDataActions": [ { "Ref": "XgemailScaleInPolicy" } ],
-        "AlarmActions": [ { "Ref": "XgemailScaleInPolicy" } ],
-        "Namespace": "AWS/SQS",
-        "Dimensions": [
-          {
-            "Name": "QueueName",
-            "Value": { "Ref": "XgemailSnsSqsQueue" }
-          }
-        ],
-        "ComparisonOperator":"LessThanThreshold",
-        "MetricName":"ApproximateNumberOfMessagesVisible"
       }
     },
 
@@ -1065,14 +1035,6 @@
   },
 
   "Outputs": {
-    "AlarmScaleIn": {
-      "Description": "The name of the Scale In Alarm",
-      "Value": { "Ref": "AlarmScaleIn" }
-    },
-    "AlarmScaleInArn": {
-      "Description": "The Arn of the Scale In Alarm",
-      "Value": { "Fn::GetAtt": [ "AlarmScaleIn", "Arn" ] }
-    },
     "AlarmScaleOut": {
       "Description": "The name of the Scale Out Alarm",
       "Value": { "Ref": "AlarmScaleOut" }
@@ -1105,9 +1067,5 @@
       "Description": "Auto Scaling Scale Out Policy ARN.",
       "Value": { "Ref": "XgemailScaleOutPolicy" }
     },
-    "XgemailScaleInPolicy": {
-      "Description": "Auto Scaling Scale In Policy ARN..",
-      "Value": { "Ref": "XgemailScaleInPolicy" }
-    }
   }
 }

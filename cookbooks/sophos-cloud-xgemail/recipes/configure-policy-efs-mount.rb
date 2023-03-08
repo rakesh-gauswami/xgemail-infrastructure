@@ -19,7 +19,7 @@ POSTFIX_QUEUE_FILE_SYSTEM_ID = node['xgemail']['postfix_queue_efs_file_system_id
 POSTFIX_QUEUE_MOUNT_DNS_NAME = "#{POSTFIX_QUEUE_FILE_SYSTEM_ID}.efs.#{AWS_REGION}.amazonaws.com:/"
 
 #Only mount policy EFS drive for submit type nodes
-if NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit' || NODE_TYPE == 'mf-inbound-submit' || NODE_TYPE == 'mf-outbound-submit'
+if NODE_TYPE == 'internet-submit' || NODE_TYPE == 'customer-submit' || NODE_TYPE == 'mf-inbound-submit' || NODE_TYPE == 'mf-outbound-submit' || NODE_TYPE == 'journal-submit'
 
   # Create the mount directory
   directory POLICY_EFS_MOUNT_DIR do

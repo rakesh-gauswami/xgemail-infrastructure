@@ -40,7 +40,7 @@ awshandler = AwsHandler(AWS_REGION)
 
 # logging to syslog setup
 logging.getLogger("botocore").setLevel(logging.WARNING)
-logger = logging.getLogger('cd-transport-updater-cron')
+logger = logging.getLogger('cd-transport-updater')
 logger.setLevel(logging.INFO)
 handler = logging.handlers.SysLogHandler('/dev/log')
 formatter = logging.Formatter(
@@ -49,7 +49,7 @@ formatter = logging.Formatter(
 handler.formatter = formatter
 logger.addHandler(handler)
 
-logger.info('flat file customer delivery transport updater cron started')
+logger.debug('flat file customer delivery transport updater cron started')
 s3 = boto3.client('s3')
 active_mode=False
 
@@ -106,7 +106,7 @@ def s3_transport_flat_file_exist():
       # transport file found return true
     except botocore.exceptions.ClientError as e:
       trace = traceback.format_exc()
-      logger.error("transport file not Exist." + trace)
+      logger.error("s3 flat file transport file not Exist." + trace)
       return False
 
 def flat_file_rollout_config_exist():
@@ -122,7 +122,7 @@ def flat_file_rollout_config_exist():
 
 def compare_transport_files(EXISTING_TRANSPORT,NEW_TRANSPORT):
     TRANSPORT_FILE_DIFF = NEW_TRANSPORT + '.diff'
-    logger.info('For S3 base flat file Passive mode is on in region: {0} for instance id : {1}] and difference is written in file: {2}'.format(AWS_REGION,CURRENT_INSTANCE_ID, TRANSPORT_FILE_DIFF))
+    logger.debug('For S3 base flat file Passive mode is on in region: {0} for instance id : {1}] and difference is written in file: {2}'.format(AWS_REGION,CURRENT_INSTANCE_ID, TRANSPORT_FILE_DIFF))
     with open(TRANSPORT_FILE_DIFF, 'w') as diff_file:
       with open(EXISTING_TRANSPORT) as file1:
         with open(NEW_TRANSPORT) as file2:
@@ -139,12 +139,12 @@ if flat_file_rollout_config_exist():
           active_mode=True
       else:
           if config and config['instance_id_enabled'] and CURRENT_INSTANCE_ID is not None and CURRENT_INSTANCE_ID in config['instance_id_enabled'].keys():
-              logger.info('For S3 base flat file Instance id {0} exists in Config mode is on in region: {1}'.format(CURRENT_INSTANCE_ID,AWS_REGION))
+              logger.debug('For S3 base flat file Instance id {0} exists in Config mode is on in region: {1}'.format(CURRENT_INSTANCE_ID,AWS_REGION))
               if CURRENT_INSTANCE_ID in config['instance_id_enabled'] and config['instance_id_enabled'][CURRENT_INSTANCE_ID]=='ACTIVE':
                   active_mode=True
-                  logger.info('For S3 base flat file Instance id {0} exists in Config with ACTIVE mode in region: {1}'.format(CURRENT_INSTANCE_ID,AWS_REGION))
+                  logger.debug('For S3 base flat file Instance id {0} exists in Config with ACTIVE mode in region: {1}'.format(CURRENT_INSTANCE_ID,AWS_REGION))
           else:
-              logger.warn('Instance id {0} Not exists in file {1} will Continue the legacy '.format(CURRENT_INSTANCE_ID, INSTANCE_LIST_FILE_NAME))
+              logger.debug('Instance id {0} Not exists in file {1} will Continue the legacy '.format(CURRENT_INSTANCE_ID, INSTANCE_LIST_FILE_NAME))
               sys.exit(0)
   except Exception as e:
       logger.error("Error loading flat file rollout Instance list file " + e.message)
@@ -164,7 +164,7 @@ POSTFIX_CONFIG_DIR = subprocess.check_output(
 TRANSPORT_FILE = POSTFIX_CONFIG_DIR + '/' + TRANSPORT_FILENAME
 TRANSPORT_FILE_TMP = TRANSPORT_FILE + '.s3_flat'
 
-logger.info('starting to update transport map file [%s.db]', TRANSPORT_FILE_TMP)
+logger.debug('starting to update flat file transport map file [%s.db]', TRANSPORT_FILE_TMP)
 
 with open(TRANSPORT_FILE_TMP, 'w') as f:
     if ((POSTFIX_INSTANCE_NAME == 'postfix-cd') or (POSTFIX_INSTANCE_NAME == 'postfix-cx')  or (POSTFIX_INSTANCE_NAME == 'postfix-xd')):
@@ -200,7 +200,7 @@ with open(TRANSPORT_FILE_TMP, 'w') as f:
         logger.error("S3 Transport file not exist. Exiting from flat file cron" )
         sys.exit(0)
     if (float(round(time.time() * 1000)) - float(timestamp_start)) > 5 * 60 * 1000:
-        logger.warn('transport map file updater taken more than 5 mins')
+        logger.warn('flat file transport map file updater taken more than 5 mins')
 
     # Add catch-all to retry any unknown domain
     f.write('* retry: domain is unknown\n')

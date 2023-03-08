@@ -1,13 +1,13 @@
 locals {
   DEFAULT_AS_ALARM_SCALING_ENABLED          = false
-  DEFAULT_AS_ALARM_SCALE_IN_THRESHOLD       = 10
   DEFAULT_AS_ALARM_SCALE_OUT_THRESHOLD      = 50
   DEFAULT_AS_MIN_SIZE                       = 1
   DEFAULT_AS_MAX_SIZE                       = 6
   DEFAULT_AS_MIN_SERVICE                    = 1
   DEFAULT_AS_MAX_BATCH_SIZE                 = 1
   DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD      = 2400
-  DEFAULT_AS_POLICY_TARGET_VALUE            = 90
+  DEFAULT_AS_DYNAMIC_CPU_TARGET_VALUE       = 90
+  DEFAULT_AS_PREDICTIVE_CPU_TARGET_VALUE    = 90
   DEFAULT_EIP_COUNT                         = 1
   DEFAULT_INSTANCE_SIZE                     = "t3.medium"
   DEFAULT_NEWRELIC_ENABLED                  = false
@@ -20,13 +20,6 @@ locals {
     dev  = false
     qa   = false
     prod = true
-  }
-
-  AS_ALARM_SCALE_IN_THRESHOLD_BY_ENVIRONMENT = {
-    inf  = 10
-    dev  = 10
-    qa   = 10
-    prod = 100
   }
 
   AS_ALARM_SCALE_OUT_THRESHOLD_BY_ENVIRONMENT = {
@@ -71,11 +64,18 @@ locals {
     prod = 2400
   }
 
-  AS_POLICY_TARGET_VALUE_BY_ENVIRONMENT = {
+  AS_DYNAMIC_CPU_TARGET_VALUE_BY_ENVIRONMENT = {
     inf  = 90
     dev  = 90
     qa   = 90
-    prod = 65
+    prod = 75
+  }
+
+  AS_PREDICTIVE_CPU_TARGET_VALUE_BY_ENVIRONMENT = {
+    inf  = 90
+    dev  = 90
+    qa   = 90
+    prod = 75
   }
 
   EIP_COUNT_BY_ENVIRONMENT = {
@@ -89,7 +89,15 @@ locals {
     inf  = "t3a.medium"
     dev  = "t3.medium"
     qa   = "t3a.medium"
-    prod = "m5a.large"
+    prod = "m6a.large"
+  }
+
+  INSTANCE_SIZE_BY_POP = {
+    eml100bom = "m6a.large"
+    eml100gru = "m6i.large"
+    eml100hnd = "m6a.large"
+    eml100syd = "m6a.large"
+    eml100yul = "m6i.large"
   }
 
   NEWRELIC_ENABLED_BY_ENVIRONMENT = {
@@ -109,35 +117,39 @@ locals {
   SXL_DBL_BY_ENVIRONMENT = {
     inf  = "uri.vir1.sophosxl.com"
     dev  = "uri.vir1.sophosxl.com"
-    qa   = "uri.vir1.sophosxl.com"
+    qa   = "uri.ire1.sophosxl.com"
     prod = "uri.vir1.sophosxl.com"
   }
 
   SXL_DBL_BY_POP = {
-    stn000cmh = "uri.vir1.sophosxl.com"
+    eml000cmh = "uri.vir1.sophosxl.com"
+    eml100bom = "uri.ire1.sophosxl.com"
+    eml100gru = "uri.cal1.sophosxl.com"
+    eml100hnd = "uri.jap1.sophosxl.com"
+    eml100syd = "uri.aus1.sophosxl.com"
+    eml100yul = "uri.vir1.sophosxl.com"
   }
 
   SXL_RBL_BY_ENVIRONMENT = {
     inf  = "fur.vir1.sophosxl.com"
     dev  = "fur.vir1.sophosxl.com"
-    qa   = "fur.vir1.sophosxl.com"
+    qa   = "fur.ire1.sophosxl.com"
     prod = "fur.vir1.sophosxl.com"
   }
 
   SXL_RBL_BY_POP = {
-    stn000cmh = "fur.vir1.sophosxl.com"
+    eml000cmh = "fur.vir1.sophosxl.com"
+    eml100bom = "fur.ire1.sophosxl.com"
+    eml100gru = "fur.cal1.sophosxl.com"
+    eml100hnd = "fur.jap1.sophosxl.com"
+    eml100syd = "fur.aus1.sophosxl.com"
+    eml100yul = "fur.vir1.sophosxl.com"
   }
 
   alarm_scaling_enabled = lookup(
     local.AS_ALARM_SCALING_ENABLED_BY_ENVIRONMENT,
     local.input_param_deployment_environment,
     local.DEFAULT_AS_ALARM_SCALING_ENABLED
-  )
-
-  alarm_scale_in_threshold = lookup(
-    local.AS_ALARM_SCALE_IN_THRESHOLD_BY_ENVIRONMENT,
-    local.input_param_deployment_environment,
-    local.DEFAULT_AS_ALARM_SCALE_IN_THRESHOLD
   )
 
   alarm_scale_out_threshold = lookup(
@@ -182,16 +194,26 @@ locals {
     local.DEFAULT_AS_HEALTH_CHECK_GRACE_PERIOD
   )
 
-  as_policy_target_value = lookup(
-    local.AS_POLICY_TARGET_VALUE_BY_ENVIRONMENT,
+  as_dynamic_cpu_target_value = lookup(
+    local.AS_DYNAMIC_CPU_TARGET_VALUE_BY_ENVIRONMENT,
     local.input_param_deployment_environment,
-    local.DEFAULT_AS_POLICY_TARGET_VALUE
+    local.DEFAULT_AS_DYNAMIC_CPU_TARGET_VALUE
+  )
+
+  as_predictive_cpu_target_value = lookup(
+    local.AS_PREDICTIVE_CPU_TARGET_VALUE_BY_ENVIRONMENT,
+    local.input_param_deployment_environment,
+    local.DEFAULT_AS_PREDICTIVE_CPU_TARGET_VALUE
   )
 
   instance_size = lookup(
-    local.INSTANCE_SIZE_BY_ENVIRONMENT,
-    local.input_param_deployment_environment,
-    local.DEFAULT_INSTANCE_SIZE
+    local.INSTANCE_SIZE_BY_POP,
+    local.input_param_account_name,
+    lookup(
+      local.INSTANCE_SIZE_BY_ENVIRONMENT,
+      local.input_param_deployment_environment,
+      local.DEFAULT_INSTANCE_SIZE
+    )
   )
 
   newrelic_enabled = lookup(
@@ -233,7 +255,6 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
   parameters = {
     AccountName                         = local.input_param_account_name
     AlarmScalingEnabled                 = local.alarm_scaling_enabled
-    AlarmScaleInThreshold               = local.alarm_scale_in_threshold
     AlarmScaleOutThreshold              = local.alarm_scale_out_threshold
     AlarmTopicArn                       = local.input_param_alarm_topic_arn
     AmiId                               = var.ami_id
@@ -248,6 +269,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     BundleVersion                       = var.ami_build
     DeployMaxBatchSize                  = local.as_max_batch_size
     DeployMinInstancesInService         = local.as_min_service
+    DynamicCpuTargetValue               = local.as_dynamic_cpu_target_value
     EipCount                            = local.eip_count
     Environment                         = local.input_param_deployment_environment
     HealthCheckGracePeriod              = local.health_check_grace_period
@@ -259,9 +281,10 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     MsgHistoryV2BucketName              = var.message_history_bucket
     MsgHistoryV2DynamoDbTableName       = var.message_history_dynamodb_table_name
     MsgHistoryV2StreamName              = var.message_history_v2_stream_name
-    NewRelicEnabled                      = local.newrelic_enabled
+    NewRelicEnabled                     = local.newrelic_enabled
     ParentAccountName                   = local.input_param_parent_account_name
-    S3CookbookRepositoryURL             = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/${var.build_number}/cookbooks.tar.gz"
+    PredictiveCpuTargetValue            = local.as_predictive_cpu_target_value
+    S3CookbookRepositoryURL             = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/${local.instance_type}/${var.build_number}/cookbooks.tar.gz"
     SecurityGroups                      = aws_security_group.security_group_ec2.id
     SpotPrice                           = "-1"
     StationAccountRoleArn               = var.station_account_role_arn

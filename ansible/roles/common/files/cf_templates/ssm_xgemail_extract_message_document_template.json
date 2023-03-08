@@ -1,0 +1,203 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "Template containing a collection of Xgemail SSM Documents",
+
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2023, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ],
+
+    "Comments": [
+      "Creates SSM Documents to automate extracting of specific email messages from Sophos Email."
+    ]
+  },
+
+  "Parameters": {
+    "FunctionName": {
+      "Description": "The name for this function.  Defaults to a unique physical ID.",
+      "Type": "String",
+      "Default": ""
+    }
+  },
+
+  "Resources" : {
+    "ExtractMessageAutomation": {
+      "Type": "AWS::SSM::Document",
+      "Properties": {
+        "DocumentType": "Automation",
+        "Content": {
+          "schemaVersion": "0.3",
+          "assumeRole": { "Fn::GetAtt": [ "ExtractMessageAutomationRole", "Arn" ] },
+          "description": "Extract a message from Sophos Email",
+          "parameters": {
+            "Direction": {
+              "type": "String",
+              "description": "The direction of the customer email, inbound or outbound. [REQUIRED]",
+              "allowedValues": [
+                "INBOUND",
+                "OUTBOUND"
+              ]
+            },
+            "Region": {
+              "type": "String",
+              "description": "The AWS Region. [REQUIRED]",
+              "allowedValues": [
+                "eu-central-1",
+                "eu-west-1",
+                "us-east-2",
+                "us-west-2"
+              ]
+            },
+            "PostfixQueueId": {
+              "type": "String",
+              "description": "The postfix submit queue email ID to extract, (ex: 4P35DP2kBFzuSHo) [REQUIRED]"
+            },
+            "CcEmail": {
+              "type": "String",
+              "description": "A copy of the extracted email will be sent to the provided email address. MailOps is always notified. [OPTIONAL]",
+              "default": ""
+            }
+          },
+          "mainSteps": [
+            {
+              "name": "invokeExtractMessageLambda",
+              "action": "aws:invokeLambdaFunction",
+              "maxAttempts": 1,
+              "timeoutSeconds": 300,
+              "onFailure": "Abort",
+              "inputs": {
+                "FunctionName": { "Ref": "FunctionName" },
+                "InputPayload": {
+                  "Direction": "{{ Direction }}",
+                  "PostfixQueueId": "{{ PostfixQueueId }}",
+                  "Region": "{{ Region }}",
+                  "CcEmail": "{{ CcEmail }}"
+                }
+              }
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref": "AWS::StackName" }, "ExtractMessageAutomation" ] ] }
+          },
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
+      }
+    },
+    "ExtractMessageAutomationRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "ssm.amazonaws.com"
+                ]
+              },
+              "Action": [ "sts:AssumeRole" ]
+            }
+          ]
+        },
+        "Path": "/",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref": "AWS::StackName" }, "ExtractMessageAutomationRole" ] ] }
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
+      }
+    },
+    "ExtractMessageAutomationRolePolicies": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "lambda:InvokeFunction"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    ":",
+                    [
+                      "arn:aws:lambda",
+                      { "Ref": "AWS::Region" },
+                      { "Ref": "AWS::AccountId" },
+                      "function",
+                      { "Ref": "FunctionName" }
+                    ]
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "PolicyName": "root",
+        "Roles": [
+          {
+            "Ref": "ExtractMessageAutomationRole"
+          }
+        ]
+      },
+      "Type": "AWS::IAM::Policy"
+    }
+  },
+
+  "Outputs" : {
+    "ExtractMessageAutomation" : {
+      "Description" : "SSM Extract Message Automation Document name",
+      "Value" : { "Ref" : "ExtractMessageAutomation" }
+    },
+    "ExtractMessageAutomationRole": {
+      "Description": "ExtractMessageAutomationRole Name",
+      "Value": { "Ref": "ExtractMessageAutomationRole" }
+    },
+    "ExtractMessageAutomationRoleArn": {
+      "Description": "ExtractMessageAutomationRole ARN",
+      "Value": { "Fn::GetAtt" : [ "ExtractMessageAutomationRole", "Arn" ] }
+    }
+  }
+}

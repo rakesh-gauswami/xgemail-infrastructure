@@ -28,8 +28,6 @@ locals {
   asg_customer_submit_lifecycle_hook_terminating      = "customer-submit-terminating"
   asg_risky_delivery_lifecycle_hook_terminating       = "risky-delivery-terminating"
   asg_warmup_delivery_lifecycle_hook_terminating      = "warmup-delivery-terminating"
-  msg_xgemail_white_space_remove_aws_regions          = "NA"
-  msg_xgemail_white_space_remove_client_ids           = "NA"
 
   newrelic_account_id                                 = "3452541"
 

@@ -44,10 +44,8 @@ MH_MAIL_INFO_STORAGE_DIR                = node['xgemail']['mh_mail_info_storage_
 MSG_HISTORY_V2_BUCKET                   = node['xgemail']['msg_history_v2_bucket_name']
 
 if NODE_TYPE == 'customer-delivery' || NODE_TYPE == 'internet-delivery' || NODE_TYPE == 'mf-inbound-delivery' ||  NODE_TYPE == 'mf-outbound-delivery'
-  #m5a.large 2vCPU / 8 GB.
   DEFAULT_NUMBER_OF_CONSUMER_THREADS = 3
 else
-  #c5a.large 2vCPU /4 GB.
   DEFAULT_NUMBER_OF_CONSUMER_THREADS = 3
 end
 

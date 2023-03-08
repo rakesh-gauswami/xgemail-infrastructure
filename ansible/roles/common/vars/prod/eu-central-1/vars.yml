@@ -3,25 +3,32 @@ az:
   b: eu-central-1b
   c: eu-central-1c
 
-xgemail_sxl_dbl: uri.ire1.sophosxl.com
-xgemail_sxl_rbl: fur.ire1.sophosxl.com
+xgemail_sxl_dbl: uri.ire2.sophosxl.com
+xgemail_sxl_rbl: fur.ire2.sophosxl.com
 
 aws:
   asg:
     cd:
-      as_min_size:                              "15"
+      as_min_size:                              "4"
       as_max_size:                              "50"
       cron_scale_in:                            "00 17 * * 1-5"
       cron_scale_out:                           "45 04 * * 1-5"
       on_hour_desired:                          "18"
+      instance_size:                            "m5a.large"
       scale_in_out_weekdays:                    "true"
     cs:
       cron_scale_in:                            "00 17 * * 1-5"
       cron_scale_out:                           "30 05 * * 1-5"
       on_hour_desired:                          "2"
       scale_in_out_weekdays:                    "false"
+    cx:
+      instance_size:                            "m5a.large"
+    ed:
+      instance_size:                            "m5a.large"
+    es:
+      instance_size:                            "m5a.large"
     is:
-      as_min_size:                              "15"
+      as_min_size:                              "4"
       as_max_size:                              "50"
       cron_scale_in:                            "00 17 * * 1-5"
       cron_scale_out:                           "30 05 * * 1-5"
@@ -29,6 +36,21 @@ aws:
       scale_in_out_weekdays:                    "true"
     id:
       instance_size:                            "m6a.xlarge"
+    ix:
+      instance_size:                            "m5a.large"
+    mfid:
+      instance_size:                            "m5a.large"
+    mfix:
+      instance_size:                            "m5a.large"
+    mfod:
+      instance_size:                            "m5a.large"
+    mfox:
+      instance_size:                            "m5a.large"
+    rd:
+      instance_size:                            "m5a.large"
+    rx:
+      instance_size:                            "m5a.large"
+    
   efs:
     policy_efs_volume:
       provisioned_throughput_in_mibps:          "8"

@@ -203,7 +203,7 @@ default['xgemail']['sqs_message_consumer_visibility_timeout'] = 300
 default['xgemail']['sqs_message_consumer_wait_time_seconds'] = 10
 
 ## Mail Pic Api settings
-default['xgemail']['mail_pic_apis_response_timeout_seconds'] = 60
+default['xgemail']['mail_pic_apis_response_timeout_seconds'] = 180
 default['xgemail']['mail_pic_api_auth'] = "xgemail-#{node['sophos_cloud']['region']}-mail"
 
 ## Customer delivery settings
@@ -373,6 +373,14 @@ default['xgemail']['postfix_instance_data'] = {
     :msg_size_limit => (SUBMIT_MESSAGE_SIZE_LIMIT_BYTES + 204800 + 5242880),
     :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
     :server_type => 'ENCRYPTION_SUBMIT'
+  },
+  # journal-submit
+  'journal-submit' => {
+    :instance_name => 'js',
+    :port => 25,
+    :msg_size_limit => SUBMIT_MESSAGE_SIZE_LIMIT_BYTES,
+    :rcpt_size_limit => POSTFIX_INBOUND_MAX_NO_OF_RCPT_PER_REQUEST,
+    :server_type => 'JOURNAL_SUBMIT'
   },
   # mf-inbound-delivery
   'mf-inbound-delivery' => {

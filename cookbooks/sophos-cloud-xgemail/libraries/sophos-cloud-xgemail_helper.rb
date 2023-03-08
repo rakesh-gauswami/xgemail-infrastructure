@@ -173,6 +173,8 @@ module SophosCloudXgemail
       case type
         when 'internet-submit'
           return "mx-01-#{region}.#{account}.hydra.sophos.com"
+        when 'journal-submit'
+          return "journal-#{region}.#{account}.hydra.sophos.com"
         when 'mf-inbound-submit'
           return "mf-inbound-#{region}.#{account}.hydra.sophos.com"
         when 'customer-submit'

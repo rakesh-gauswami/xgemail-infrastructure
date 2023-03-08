@@ -90,6 +90,11 @@
       "Type": "String",
       "Default": "PT1H"
     },
+    "DynamicCpuTargetValue": {
+      "Description": "The target value for the metric.",
+      "Type": "Number",
+      "Default": "50"
+    },
     "EbsVolumeType": {
       "Description": "Indicates the EBS volume type.",
       "Type": "String",
@@ -143,10 +148,10 @@
       "Default": "false",
       "AllowedValues": [ "true", "false" ]
     },
-    "PolicyTargetValue": {
+    "PredictiveCpuTargetValue": {
       "Description": "The target value for the metric.",
       "Type": "Number",
-      "Default": "85"
+      "Default": "50"
     },
     "S3CookbookRepositoryURL": {
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
@@ -377,21 +382,12 @@
         { "Fn::Not": [ { "Fn::Equals": [ {"Ref": "SpotPrice"}, "-1" ] } ] }
       ]
     },
-    "EnableScaleInOnWeekends": {
-      "Fn::And": [
-        { "Fn::Not": [ { "Fn::Or": [ { "Fn::Equals": [ { "Ref": "Environment" },  "prod" ] }, { "Fn::Equals": [ { "Ref": "Environment" }, "qa" ] } ] } ] },
-        { "Fn::Equals": [ { "Ref": "ScaleInOnWeekends" }, "true" ] }
-      ]
-    },
     "IsInfDevelopmentEnvironment": {
       "Fn::Or": [
         { "Fn::Equals": [ { "Ref": "Environment" }, "inf" ] },
         { "Fn::Equals": [ { "Ref": "Environment" }, "qainf" ] },
         { "Fn::Equals": [ { "Ref": "Environment" }, "dev" ] }
       ]
-    },
-    "ScalingEnabled": {
-      "Fn::Equals": [ { "Ref": "Environment" }, "prod" ]
     }
   },
 
@@ -419,6 +415,11 @@
         "LoadBalancerNames": { "Ref": "LoadBalancerName" },
         "MinSize": { "Ref": "AutoScalingMinSize" },
         "MaxSize": { "Ref": "AutoScalingMaxSize" },
+        "MetricsCollection": [
+          {
+            "Granularity": "1Minute"
+          }
+        ],
         "TerminationPolicies": [ "Default" ],
         "VPCZoneIdentifier": { "Ref": "VpcZoneIdentifiers" },
         "Tags": [
@@ -508,38 +509,39 @@
       }
     },
 
-    "AutoScalingScheduledScaleIn": {
-      "Type": "AWS::AutoScaling::ScheduledAction",
-      "Condition": "EnableScaleInOnWeekends",
+    "XgemailPredictiveScalingPolicy": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "MinSize": "0",
-        "Recurrence": { "Ref": "ScaleInCron" }
-      }
-    },
-
-    "AutoScalingScheduledScaleOut": {
-      "Type": "AWS::AutoScaling::ScheduledAction",
-      "Condition": "EnableScaleInOnWeekends",
-      "Properties": {
-        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "MinSize": { "Ref": "AutoScalingMinSize" },
-        "Recurrence": { "Ref": "ScaleOutCron" }
+        "PolicyType":"PredictiveScaling",
+        "PredictiveScalingConfiguration":{
+          "MetricSpecifications":[
+            {
+              "TargetValue": { "Ref": "PredictiveCpuTargetValue"},
+              "PredefinedMetricPairSpecification":{
+                "PredefinedMetricType":"ASGCPUUtilization"
+              }
+            }
+          ],
+          "Mode":"ForecastAndScale",
+          "MaxCapacityBreachBehavior": "IncreaseMaxCapacity",
+          "MaxCapacityBuffer": 10,
+          "SchedulingBufferTime": 600
+        }
       }
     },
 
     "XgemailScaleCpuPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Condition": "ScalingEnabled",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "EstimatedInstanceWarmup": "400",
+        "EstimatedInstanceWarmup": "600",
         "PolicyType": "TargetTrackingScaling",
         "TargetTrackingConfiguration": {
           "PredefinedMetricSpecification": {
             "PredefinedMetricType": "ASGAverageCPUUtilization"
           },
-          "TargetValue": { "Ref": "PolicyTargetValue"}
+          "TargetValue": { "Ref": "DynamicCpuTargetValue"}
         }
       }
     },
@@ -1007,7 +1009,7 @@
     "XgemailScaleCpuPolicy": {
       "Description": "Auto Scaling Scale Out Policy based on CPU.",
       "Value": { "Ref": "XgemailScaleCpuPolicy" },
-      "Condition": "ScalingEnabled"
+      "Condition": "IsProd"
     }
   }
 }

@@ -127,7 +127,7 @@ end
 
 # Run once manually
 execute TRANSPORT_UPDATER_SCRIPT_PATH do
-  ignore_failure true
+  ignore_failure false
   user 'root'
   action :nothing
 end

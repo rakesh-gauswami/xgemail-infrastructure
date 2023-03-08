@@ -8,6 +8,8 @@ aws:
   asg:
     cd:
       instance_size:                            "t3.medium"
+      dynamic_cpu_target_value:                  "75"
+      predictive_cpu_target_value:               "75"
     cs:
       instance_size:                            "t3.medium"
     cx:
@@ -21,7 +23,7 @@ aws:
   ec:
     redis:
       xgemail_dqs:
-        node_type:                              "cache.m5.large"
+        node_type:                              "cache.m6a.large"
         at_rest_encryption:                     "false"
         automatic_failover:                     "true"
         number_of_nodes:                        "2"

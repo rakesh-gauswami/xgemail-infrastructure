@@ -1,0 +1,72 @@
+---
+
+- name: "Create ASG Stack in AWS"
+  cloudformation:
+    stack_name: "{{stack.ec2.asg.js}}"
+    state: present
+    region:  "{{account.region}}"
+    disable_rollback: no
+    template: "{{template.ec2.asg.as_journal_submit_template}}"
+    template_parameters:
+      AesDecryptionKey:                     "{{aes_decryption_key}}"
+      AlarmScaleOutEnabled:                 "{{aws.asg.js.alarm_scale_out_enabled}}"
+      AlarmScaleOutThreshold:               "{{aws.asg.js.alarm_scale_out_threshold}}"
+      AlarmTopicArn:                        "{{sns.arn_prefix}}{{sns.alarm_sns_topic}}"
+      AmiId:                                "{{ami_parent_id}}"
+      AutoScalingInstanceRoleArn:           "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.AutoScalingInstanceRoleArn}}"
+      AutoScalingMinSize:                   "{{aws.asg.js.as_min_size}}"
+      AutoScalingMaxSize:                   "{{aws.asg.js.as_max_size}}"
+      AutoScalingNotificationTopicARN:      "{{sns.arn_prefix}}{{sns.lifecycle_sqs_sns}}"
+      AvailabilityZones:                    "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.AvailabilityZones}}"
+      Branch:                               "{{build.branch}}"
+      BuildVersion:                         "{{build.result_key}}"
+      BundleVersion:                        "{{ami_build}}"
+      DeployMaxBatchSize:                   "{{aws.asg.js.as_max_batch_size}}"
+      DeployMinInstancesInService:          "{{aws.asg.js.as_min_service}}"
+      DynamicCpuTargetValue:                "{{aws.asg.js.dynamic_cpu_target_value}}"
+      Environment:                          "{{account.name}}"
+      HealthCheckGracePeriod:               "{{aws.asg.js.health_check_grace_period}}"
+      InstanceProfile:                      "{{cloud_email_iam_output.ansible_facts.cloudformation[stack.iam.role.cloud_email_roles].stack_outputs.XgemailJournalSubmitInstanceProfile}}"
+      InstanceType:                         "{{aws.asg.js.instance_size}}"
+      JilterHeloTelemetryStreamName:        "{{kinesis.firehose.jilter_helo_telemetry_stream}}"
+      KeyName:                              "public-{{account.region}}"
+      LifecycleHookTerminating:             "{{aws.asg.js.lifecycle_hook_terminating}}"
+      LoadBalancerName:                     "{{elb_stack_output.stack_outputs.LoadBalancerId}}"
+      MsgHistoryV2BucketName:               "{{s3.msg_history_v2_bucket_name}}"
+      MsgHistoryV2StreamName:               "{{kinesis.firehose.msg_history_v2_stream_name}}"
+      MessageHistoryEventsTopicArn:         "{{sns.arn_prefix}}{{sns.msg_history_events_sns_topic}}"
+      NewRelicEnabled:                      "{{newrelic_enabled}}"
+      PredictiveCpuTargetValue:             "{{aws.asg.js.predictive_cpu_target_value}}"
+      S3CookbookRepositoryURL:              "//cloud-{{account.name}}-templates/{{build.branch}}/xgemail-infrastructure/cookbooks.enc"
+      ScheduledAsOnHourDesiredCapacity:     "{{aws.asg.js.on_hour_desired}}"
+      SecurityGroups:                       "{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.XgemailJournalSubmitSecurityGroup}},{{cloud_email_sg_output.ansible_facts.cloudformation[stack.ec2.sg.cloud_email_security_groups].stack_outputs.SecurityGroupBase}}"
+      SpotPrice:                            "{{spot_price}}"
+      StationVpcId:                         "{{cloud_station_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_station_vpc].stack_outputs.Vpc}}"
+      StationVpcName:                       "{{vpc.cloud_station.name}}"
+      Vpc:                                  "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.Vpc}}"
+      VpcZoneIdentifiers:                   "{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PublicSubnetA}},{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PublicSubnetB}},{{cloud_email_vpc_output.ansible_facts.cloudformation[stack.vpc.cloud_email_vpc].stack_outputs.PublicSubnetC}}"
+      VpcName:                              "{{vpc.cloud_email.name}}"
+      XgemailBucketName:                    "{{s3.internet_submit_bucket}}"
+      XgemailMinSizeDataGB:                 "{{xgemail_size_data_gb}}"
+      XgemailMsgHistoryBucketName:          "{{s3.msg_history_bucket}}"
+      XgemailMsgHistoryMsBucketName:        "{{s3.msg_history_ms_bucket}}"
+      XgemailMsgHistoryQueueUrl:            "{{sqs.url_prefix}}{{sqs.msg_history_sqs_queue}}"
+      XgemailPolicyArn:                     "{{sns.arn_prefix}}{{sns.policy_sns_topic}}"
+      XgemailPolicyBucketName:              "{{s3.policy_bucket}}"
+      XgemailPolicyEfsFileSystemId:         "{{cloud_email_efs_output.ansible_facts.cloudformation[stack.efs.policy_efs_volume].stack_outputs.FileSystemId}}"
+      XgemailPostfixQueueEfsFileSystemId:   "{{cloud_email_postfix_queue_efs_output.ansible_facts.cloudformation[stack.efs.postfix_queue_efs_volume].stack_outputs.FileSystemId}}"
+      XgemailQueueUrl:                      "{{sqs.url_prefix}}{{sqs.internet_submit_sqs_queue}}"
+      XgemailScanEventsTopicArn:            "{{sns.arn_prefix}}{{sns.scan_events_sns_topic}}"
+      XgemailServiceType:                   "journal-submit"
+      XgemailSxlDbl:                        "{{xgemail_sxl_dbl}}"
+      XgemailSxlRbl:                        "{{xgemail_sxl_rbl}}"
+  register: asg_stack_output
+
+- debug:
+    var: asg_stack_output
+    verbosity: 3
+
+- name: "Display ASG Stack Output"
+  debug:
+    msg: "{{asg_stack_output.stack_outputs}}"
+    verbosity: 2

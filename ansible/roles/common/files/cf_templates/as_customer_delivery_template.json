@@ -19,22 +19,11 @@
       "Description": "Decryption key for encrypted buckets",
       "Type": "String"
     },
-    "AlarmScaleInEnabled": {
-      "Description": "Enable AutoScaling Alarms to trigger scaling policies.",
-      "Type": "String",
-      "Default": "false",
-      "AllowedValues": [ "true", "false" ]
-    },
     "AlarmScaleOutEnabled": {
       "Description": "Enable AutoScaling Alarms to trigger scaling policies.",
       "Type": "String",
       "Default": "false",
       "AllowedValues": [ "true", "false" ]
-    },
-    "AlarmScaleInThreshold": {
-      "Description": "The value against which the specified statistic is compared.",
-      "Type": "Number",
-      "Default": "1000"
     },
     "AlarmScaleOutThreshold": {
       "Description": "The value against which the specified statistic is compared.",
@@ -128,6 +117,11 @@
       "Type": "String",
       "Default": "PT1H"
     },
+    "DynamicCpuTargetValue": {
+      "Description": "The target value for the metric.",
+      "Type": "Number",
+      "Default": "50"
+    },
     "EbsVolumeType": {
       "Description": "Indicates the EBS volume type.",
       "Type": "String",
@@ -198,6 +192,17 @@
       "Type": "String",
       "Default": "false",
       "AllowedValues": [ "true", "false" ]
+    },
+    "PolicyEnabled": {
+      "Description": "Enable AutoScaling Policy for specified Accounts.",
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [ "true", "false" ]
+    },
+    "PredictiveCpuTargetValue": {
+      "Description": "The target value for the metric.",
+      "Type": "Number",
+      "Default": "50"
     },
     "S3CookbookRepositoryURL": {
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
@@ -600,7 +605,7 @@
               "Fn::Join":  [ ":",
                 [
                    { "Ref": "VpcName"},
-                   { "Ref": "XgemailServiceType" },
+                   "customer-delivery-public",
                    { "Ref": "Branch" },
                    { "Ref": "BundleVersion" }
                 ]
@@ -698,7 +703,7 @@
         "PredictiveScalingConfiguration":{
           "MetricSpecifications":[
             {
-              "TargetValue":50,
+              "TargetValue": { "Ref": "PredictiveCpuTargetValue"},
               "PredefinedMetricPairSpecification":{
                 "PredefinedMetricType":"ASGCPUUtilization"
               }
@@ -720,7 +725,7 @@
         "PredictiveScalingConfiguration":{
           "MetricSpecifications":[
             {
-              "TargetValue":50,
+              "TargetValue": { "Ref": "PredictiveCpuTargetValue"},
               "PredefinedMetricPairSpecification":{
                 "PredefinedMetricType":"ASGCPUUtilization"
               }
@@ -731,26 +736,6 @@
           "MaxCapacityBuffer": 10,
           "SchedulingBufferTime": 600
         }
-      }
-    },
-
-    "XgemailScaleInPolicy": {
-      "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Properties": {
-        "AdjustmentType": "ChangeInCapacity",
-        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "Cooldown": "60",
-        "ScalingAdjustment": "-1"
-      }
-    },
-
-    "XgemailScaleInPolicyPub": {
-      "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Properties": {
-        "AdjustmentType": "ChangeInCapacity",
-        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroupPub" },
-        "Cooldown": "60",
-        "ScalingAdjustment": "-1"
       }
     },
 
@@ -774,73 +759,33 @@
       }
     },
 
-    "AlarmScaleIn": {
-      "Type": "AWS::CloudWatch::Alarm",
+    "XgemailAutoScalePolicy": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
       "Properties": {
-        "ActionsEnabled": { "Ref": "AlarmScaleInEnabled" },
-        "AlarmDescription": {
-          "Fn::Join": [
-            " ", [
-              "Alarm when",
-              { "Ref": "XgemailServiceType" },
-              "visible SQS messages is below threshold of",
-              { "Ref": "AlarmScaleInThreshold" },
-              "for a duration of time"
-            ]
-          ]
-        },
-        "DatapointsToAlarm": "3",
-        "EvaluationPeriods": "10",
-        "Period": "60",
-        "Statistic": "Average",
-        "Threshold": { "Ref": "AlarmScaleInThreshold" },
-        "InsufficientDataActions": [ { "Ref": "XgemailScaleInPolicy" } ],
-        "AlarmActions": [
-          { "Ref": "XgemailScaleInPolicy" }
-        ],
-        "Namespace": "AWS/SQS",
-        "Dimensions": [
-          {
-            "Name": "QueueName",
-            "Value": { "Ref": "XgemailSnsSqsQueue" }
-          }
-        ],
-        "ComparisonOperator":"LessThanThreshold",
-        "MetricName":"ApproximateNumberOfMessagesVisible"
+        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
+        "EstimatedInstanceWarmup": "600",
+        "PolicyType": "TargetTrackingScaling",
+        "TargetTrackingConfiguration": {
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "ASGAverageCPUUtilization"
+          },
+          "TargetValue": { "Ref": "DynamicCpuTargetValue"}
+        }
       }
     },
 
-    "AlarmScaleInPub": {
-      "Type": "AWS::CloudWatch::Alarm",
+    "XgemailAutoScalePolicyPub": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
       "Properties": {
-        "ActionsEnabled": { "Ref": "AlarmScaleInEnabled" },
-        "AlarmDescription": {
-          "Fn::Join": [ " ",
-            [
-              "Alarm when",
-              { "Ref": "XgemailServiceType" },
-              "visible SQS messages is below threshold of",
-              { "Ref": "AlarmScaleInThreshold" },
-              "for a duration of time"
-            ]
-          ]
-        },
-        "DatapointsToAlarm": "3",
-        "EvaluationPeriods": "10",
-        "Period": "60",
-        "Statistic": "Average",
-        "Threshold": { "Ref": "AlarmScaleInThreshold" },
-        "InsufficientDataActions": [ { "Ref": "XgemailScaleInPolicyPub" } ],
-        "AlarmActions": [ { "Ref": "XgemailScaleInPolicyPub" } ],
-        "Namespace": "AWS/SQS",
-        "Dimensions": [
-          {
-            "Name": "QueueName",
-            "Value": { "Ref": "CidrSnsSqsQueue" }
-          }
-        ],
-        "ComparisonOperator":"LessThanThreshold",
-        "MetricName":"ApproximateNumberOfMessagesVisible"
+        "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroupPub" },
+        "EstimatedInstanceWarmup": "600",
+        "PolicyType": "TargetTrackingScaling",
+        "TargetTrackingConfiguration": {
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "ASGAverageCPUUtilization"
+          },
+          "TargetValue": { "Ref": "DynamicCpuTargetValue"}
+        }
       }
     },
 
@@ -1415,6 +1360,9 @@
                       "  },\n",
                       "  \"newrelic\" : {\n",
                       "    \"enabled\"                                : \"{{newrelic_enabled}}\"\n",
+                      "  },\n",
+                      "  \"fluentd\" : {\n",
+                      "    \"application_name\"                       : \"{{cluster}}-pub\"\n",
                       "  },\n",
                       "  \"xgemail\" : {\n",
                       "    \"alarm_topic_arn\"                        : \"{{alarm_topic_arn}}\",\n",

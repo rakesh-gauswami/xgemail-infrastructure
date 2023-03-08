@@ -71,12 +71,23 @@ MH_MAIL_INFO_STORAGE_DIR = "<%= @mh_mail_info_storage_dir %>"
 MSG_HISTORY_V2_BUCKET = "<%= @msg_history_v2_bucket_name %>"
 DEFAULT_NO_OF_THREADS = <%= @default_number_of_consumer_threads %>
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
-XGEMAIL_WHITESPACE_REMOVE_CLIENTID_KEY = "xgemail.white.space.remove.from.header.client.ids"
-XGEMAIL_WHITESPACE_REMOVE_AWS_REGION = "xgemail.white.space.remove.from.header.aws.regions"
 
 THREAD_COUNT_CONFIG_KEY = "<%= @consumer_thread_count_key %>"
 X_SOPHOS_PROCESSING_START_TIME_HEADER = 'X-Sophos-Processing-Start-Time'
 X_SOPHOS_MAILFLOW_PROCESSING_ID = 'X-Sophos-Mailflow-Processing-Id'
+X_SOPHOS_TRANSPORT_ROUTE = 'X-Sophos-Email-Transport-Route'
+
+tls_version_to_transport_map = {
+    'tls_1_2'       : 'smtp_encrypt',
+    'tls_1_2_v'     : 'tls_12_verify',
+    'tls_1_3'       : 'tls_13',
+    'tls_1_3_v'     : 'tls_13_verify',
+    'pre_tls_1_3'   : 'pref_tls_13',
+    'pre_tls_1.3'   : 'pref_tls_13',
+    'pre_tls_1.3_v' : 'pref_tls_13_verify',
+    'opp_tls_1_3'   : 'opps_tls_13'
+}
+
 # logging to syslog setup
 logging.getLogger("botocore").setLevel(logging.WARNING)
 logger = logging.getLogger('sqsmsgconsumer')
@@ -421,7 +432,7 @@ def sendmail_to_postfix(server, from_addr, to_addrs, msg, mail_options=[], rcpt_
 # Adds headers to the provided message object.
 # Returns the updated message object if successful. If any issues occurred with
 # retrieving or updating the headers, the original message object is returned.
-def add_headers(message, message_path, headers, mh_mail_info):
+def add_headers(message, message_path, headers):
     try:
         if headers is None:
             logger.warn("Unable to add headers for message [%s]: header object was None.", message_path)
@@ -452,11 +463,8 @@ def add_headers(message, message_path, headers, mh_mail_info):
             message_path,
             header_keys
         )
-        customerId = None
-        if mh_mail_info is not None:
-           customerId = mh_mail_info.get("mail_info", {}).get("customer_id", {})
 
-        if NODE_TYPE == 'customer-delivery' and (AWS_REGION  in regionList or customerId in customerIdList):
+        if NODE_TYPE == 'customer-delivery':
             return as_string(parsed_message), timestamp_value
         else:
             return parsed_message.as_string(), timestamp_value
@@ -574,24 +582,6 @@ def get_thread_count():
     # return default config.
     return DEFAULT_NO_OF_THREADS;
 
-def get_client_id_lists_for_ws_remove():
-    customerIdList = []
-    try:
-        response = awshandler.get_parameter_from_ssm(XGEMAIL_WHITESPACE_REMOVE_CLIENTID_KEY)
-        customerIdList = response.split(',')
-    except Exception as e:
-        logger.exception("Error while fetching key from ssm.[{0}]".format(e))
-    return customerIdList
-
-
-def get_region_lists_for_ws_remove():
-    regionList = []
-    try:
-        response = awshandler.get_parameter_from_ssm(XGEMAIL_WHITESPACE_REMOVE_AWS_REGION)
-        regionList = response.split(',')
-    except Exception as e:
-        logger.exception("Error while fetching key from ssm.[{0}]".format(e))
-    return regionList
 
 def wait_for_jilter():
     j = 0
@@ -625,6 +615,37 @@ def get_email_product_type(node_type):
     else:
         return "Gateway"
 
+def find_transport(sqs_message):
+    if 'delivery_tls_version' in sqs_message.message_context:
+        tls_version = sqs_message.message_context['delivery_tls_version']
+        try:
+            transport_to_use =  tls_version_to_transport_map.get(tls_version.lower())
+            if transport_to_use is not None:
+                return transport_to_use
+        except Exception as e:
+            logger.error("Error occurred while getting transport from map for version {1} error: {2} "
+                         .format(tls_version.lower, sqs_message.message_path, e))
+    return None
+
+def maybe_add_custom_route_header(headers, transport, destination):
+    # for outbound we need one of transport or destination
+    if transport is None and destination is None:
+        return
+
+    # for inbound we need destination to avoid looping via MX
+    if MESSAGE_DIRECTION == 'INBOUND' and destination is None:
+        return
+
+    # when transport is not present use default transport smtp: in header
+    if transport is None:
+        transport = "smtp"
+    # when destination is not present use default routing by just adding transport: in header
+    if destination is None:
+        destination = ""
+
+    header_value = transport + ":" + destination
+    headers[X_SOPHOS_TRANSPORT_ROUTE] = header_value
+
 def deliver_messages():
     while True:
         try:
@@ -656,7 +677,7 @@ def deliver_messages():
                     sqs_message = parse_sqs_message(msg["Body"], msg["ReceiptHandle"])
     
                 logger.debug("Polled SQS message [{0}] from queue [{1}]".format(sqs_message, origin_sqs_queue))
-    
+
                 headers = {}
                 try:
                     headers = attempt_to_retrieve_headers(sqs_message.message_path)
@@ -710,16 +731,31 @@ def deliver_messages():
                             mh_mail_info_filename,
                             headers
                         )
-    
+
                 if NODE_TYPE == 'mf-outbound-delivery':
                     headers[X_SOPHOS_MAILFLOW_PROCESSING_ID] = str(uuid.uuid4()).replace('-','')
+
+                if X_SOPHOS_TRANSPORT_ROUTE in headers:
+                    headers.pop(X_SOPHOS_TRANSPORT_ROUTE)
+
+                # if the message_context contains custom_route or delivery_tls_version, we add header for routing
+                if sqs_message.message_context is not None:
+                    destination = None
+                    transport = None
+                    if 'custom_route' in sqs_message.message_context:
+                        # extract the destination which is combination of IP/FQDN:PORT
+                        destination = sqs_message.message_context['custom_route']
+                    if 'delivery_tls_version' in sqs_message.message_context:
+                        # extract the tls version and decide transport
+                        transport = find_transport(sqs_message)
+                    #add new header if at-least one of custom_route or delivery_tls_version is present
+                    maybe_add_custom_route_header(headers, transport, destination)
 
                 # attempt to add any existing headers to the message
                 message_binary_with_headers, timestamp_header  = add_headers(
                     message_binary,
                     sqs_message.message_path,
-                    headers,
-                    mh_mail_info
+                    headers
                 )
     
                 postfix_injection_response = inject_email(
@@ -765,12 +801,6 @@ def deliver_messages():
                         "Removed message [{0}] from SQS".format(sqs_message.message_path)
                     )
     
-                    if NODE_TYPE != 'encryption-delivery':
-                        create_and_publish_message_history_delivery_status_sns_job(
-                            sqs_message,
-                            postfix_injection_response
-                        )
-    
         except Exception:
             logger.exception("Unhandled exception in main loop")
             continue
@@ -783,8 +813,6 @@ wait_for_jilter()
 # Start consumers
 i = 0;
 thread_count = get_thread_count()
-customerIdList = get_client_id_lists_for_ws_remove()
-regionList = get_region_lists_for_ws_remove();
 logger.info("Multi thread is enabled with thread count [{0}].".format(thread_count))
 while i < thread_count:
     logger.info("Starting thread [{0}]".format(i))

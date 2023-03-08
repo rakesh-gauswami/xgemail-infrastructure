@@ -93,6 +93,11 @@
       "Type": "String",
       "Default": "PT1H"
     },
+    "DynamicCpuTargetValue": {
+      "Description": "The target CPU value for the dynamic scaling policy.",
+      "Type": "Number",
+      "Default": "50"
+    },
     "EbsVolumeType": {
       "Description": "Indicates the EBS volume type.",
       "Type": "String",
@@ -161,10 +166,10 @@
       "Type": "String",
       "Default": ""
     },
-    "PolicyTargetValue": {
-      "Description": "The target value for the metric.",
+    "PredictiveCpuTargetValue": {
+      "Description": "The target CPU value for the predictive scaling policy.",
       "Type": "Number",
-      "Default": "80"
+      "Default": "50"
     },
     "S3CookbookRepositoryURL": {
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
@@ -377,9 +382,6 @@
         { "Fn::Equals": [ { "Ref": "Environment" }, "qainf" ] },
         { "Fn::Equals": [ { "Ref": "Environment" }, "dev" ] }
       ]
-    },
-    "ScalingEnabled": {
-      "Fn::Equals": [ { "Ref": "Environment" }, "prod" ]
     }
   },
 
@@ -525,7 +527,7 @@
         "PredictiveScalingConfiguration":{
           "MetricSpecifications":[
             {
-              "TargetValue":50,
+              "TargetValue": { "Ref": "PredictiveCpuTargetValue" },
               "PredefinedMetricPairSpecification":{
                 "PredefinedMetricType":"ASGCPUUtilization"
               }
@@ -540,16 +542,15 @@
     },
     "XgemailScaleCpuPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Condition": "ScalingEnabled",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "EstimatedInstanceWarmup": "400",
+        "EstimatedInstanceWarmup": "600",
         "PolicyType": "TargetTrackingScaling",
         "TargetTrackingConfiguration": {
           "PredefinedMetricSpecification": {
             "PredefinedMetricType": "ASGAverageCPUUtilization"
           },
-          "TargetValue": { "Ref": "PolicyTargetValue" }
+          "TargetValue": { "Ref": "DynamicCpuTargetValue" }
         }
       }
     },
@@ -994,8 +995,7 @@
     },
     "XgemailScaleCpuPolicy": {
       "Description": "Auto Scaling Scale Out Policy based on CPU.",
-      "Value": { "Ref": "XgemailScaleCpuPolicy" },
-      "Condition": "ScalingEnabled"
+      "Value": { "Ref": "XgemailScaleCpuPolicy" }
     }
   }
 }

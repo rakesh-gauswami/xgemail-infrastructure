@@ -19,7 +19,7 @@ require 'json'
 NODE_TYPE = node['xgemail']['cluster_type']
 
 # Only continue when it's internet-submit or mf-inbound-submit
-if NODE_TYPE != 'internet-submit' && NODE_TYPE != 'mf-inbound-submit'
+if NODE_TYPE != 'internet-submit' && NODE_TYPE != 'mf-inbound-submit' && NODE_TYPE != 'journal-submit'
     return
 end
 

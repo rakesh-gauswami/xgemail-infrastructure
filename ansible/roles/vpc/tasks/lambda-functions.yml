@@ -166,6 +166,7 @@
       IAMRoleArn:                           "{{iam_stack.stack_outputs.MfElbO365IpSyncLambdaExecutionRoleArn}}"
       MfIsElbSecurityGroup:                 "{{sg_stack.stack_outputs.XgemailMfInboundSubmitSecurityGroupLb}}"
       MfOsElbSecurityGroup:                 "{{sg_stack.stack_outputs.XgemailMfOutboundSubmitSecurityGroupLb}}"
+      JsElbSecurityGroup:                   "{{sg_stack.stack_outputs.XgemailJournalSubmitSecurityGroupLb}}"
       S3Bucket:                             "{{s3.lambda_bucket}}"
       S3Key:                                "lambda/{{build.branch}}/{{build.number}}/xgemail_mf_elb_o365_ip_sync.zip"
       ScheduleExpression:                   cron(0 10 * * ? *)
@@ -179,4 +180,47 @@
 - name: "Display MF ELB O365 IP Sync Lambda Function Stack Output"
   debug:
     msg: "{{mf_elb_o365_ip_sync_stack.stack_outputs}}"
+    verbosity: 2
+
+# Extract Message Lambda Function
+- name: "Create a zip archive of extract message lambda function"
+  when: account.name == 'prod' and account.region == 'eu-central-1'
+  archive:
+    path: /work/lambda/xgemail_extract_message.py
+    dest: "{{tmp_artifacts_dir}}/xgemail_extract_message.zip"
+    format: zip
+
+- name: "Upload the extract message lambda function for {{stack.lambda.extract_message_lambda_function}} to the config bucket {{s3.lambda_bucket}}"
+  when: account.name == 'prod' and account.region == 'eu-central-1'
+  s3:
+    mode:               put
+    region:             "{{account.region}}"
+    bucket:             "{{s3.lambda_bucket}}"
+    object:             "lambda/{{build.branch}}/{{build.number}}/xgemail_extract_message.zip"
+    src:                "{{tmp_artifacts_dir}}/xgemail_extract_message.zip"
+    overwrite:          always
+
+- name: "Deploy Extract Message Lambda Function {{stack.lambda.extract_message_lambda_function}} to {{account.name}}-{{account.region}}"
+  when: account.name == 'prod' and account.region == 'eu-central-1'
+  cloudformation:
+    stack_name:                             "{{stack.lambda.extract_message_lambda_function}}"
+    state:                                  present
+    region:                                 "{{account.region}}"
+    disable_rollback:                       true
+    template:                               "{{template.lambda.lambda_xgemail_extract_message_template}}"
+    template_parameters:
+      FunctionName:                         "{{lambda.extract_message_lambda_function}}"
+      HandlerName:                          xgemail_extract_message.extract_message_handler
+      S3Bucket:                             "{{s3.lambda_bucket}}"
+      S3Key:                                "lambda/{{build.branch}}/{{build.number}}/xgemail_extract_message.zip"
+  register: extract_message_stack
+
+- debug:
+    var: extract_message_stack
+    verbosity: 3
+
+- name: "Display Extract Message Lambda Function Stack Output"
+  when: account.name == 'prod' and account.region == 'eu-central-1'
+  debug:
+    msg: "{{extract_message_stack.stack_outputs}}"
     verbosity: 2

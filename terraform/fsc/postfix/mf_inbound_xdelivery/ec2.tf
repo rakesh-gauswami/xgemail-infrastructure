@@ -161,7 +161,7 @@ resource "aws_cloudformation_stack" "cloudformation_stack" {
     NewRelicEnabled                     = local.newrelic_enabled
     ParentAccountName                   = local.input_param_parent_account_name
     PolicyBucketName                    = var.policy_bucket
-    S3CookbookRepositoryURL             = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/${var.build_number}/cookbooks.tar.gz"
+    S3CookbookRepositoryURL             = "//${local.input_param_cloud_templates_bucket_name}/${var.build_branch}/${local.instance_type}/${var.build_number}/cookbooks.tar.gz"
     SecurityGroups                      = aws_security_group.security_group_ec2.id
     SpotPrice                           = "-1"
     StationAccountRoleArn               = var.station_account_role_arn

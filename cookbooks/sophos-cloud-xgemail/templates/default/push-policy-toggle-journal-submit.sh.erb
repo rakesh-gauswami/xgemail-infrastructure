@@ -1,0 +1,151 @@
+#!/bin/sh
+#
+# Copyright 2023, Sophos
+#
+# All rights reserved - Do Not Redistribute
+#
+# This script allows for toggling push policy on and off on a single
+# internet submit server.
+#
+# This script is idempotent, meaning, you can run this script with 'enable' or
+# 'disable' multiple times in a row with no adverse effect.
+
+SERVER_NAME="js"
+
+get_post_data() {
+cat << EOF
+{
+"key":"relay.control.passive.mode",
+"value":"$1"
+}
+EOF
+}
+
+switch_passive_mode() {
+
+ local result=0
+ local _ans=$2
+ if (( $1 == 1 )); then
+    result=$(curl -s -w "\n%{http_code}" -H "Content-Type: application/json"\
+         --data "$(get_post_data true)"\
+         "http://localhost:8080/propertyConfig")
+ else
+    result=$(curl -s -w "\n%{http_code}" -H "Content-Type: application/json"\
+         --data "$(get_post_data false)"\
+         "http://localhost:8080/propertyConfig")
+ fi
+ echo "API response after setting property config..."
+ echo $result
+ eval $_ans="'$result'"
+
+}
+
+enable_postfix_relay_domains() {
+  postmulti -i postfix-$1 -x postconf "relay_domains=hash:\$config_directory/relay_domains"
+}
+
+# Usage of this property would make POSTFIX an open relay
+# This is not being used as of now, however, we would start using this in near future
+disable_postfix_relay_domains() {
+  postmulti -i postfix-$1 -x postconf "relay_domains=static:ALL"
+}
+
+
+reload_postfix() {
+    service postfix reload
+}
+
+#
+# Enables push policy on this specific server.
+#
+# After all configuration changes have been made, postfix is reloaded.
+# If the reload fails, all changes are reverted.
+#
+enable() {
+
+    echo "Updating passive mode config in jilter to OFF..."
+
+    switch_passive_mode 0 response
+    switch_passive_mode_return_code=$response
+
+    if (( switch_passive_mode_return_code != 200 )); then
+      echo "Passive mode config update FAILED! ABORTING!"
+      exit 1
+    fi
+
+    echo "DONE"
+
+    # echo "Updating Postfix config to remove relay domains..."
+    # disable_postfix_relay_domains $SERVER_NAME
+
+    echo "Reloading Postfix..."
+    reload_postfix
+    postfix_reload_return_code=$?
+
+    if (( postfix_reload_return_code != 0 )); then
+        echo "Postfix reload failed! Reverting changes..."
+        disable_postfix_header_checks $SERVER_NAME
+        enable_postfix_transport_maps $SERVER_NAME
+        update_transport_route_config "IGNORE"
+        echo "Revert complete. Update aborted!"
+        exit 1
+    else
+      echo "DONE"
+      echo "Toggle Complete! To revert, re-run script with the 'disable' parameter"
+    fi
+}
+
+
+#
+# Disables push policy on this specific server.
+#
+# After all configuration changes have been made, postfix is reloaded.
+# If the reload fails, all changes are reverted.
+#
+disable() {
+
+    echo "Updating passive mode config in ilter to ON..."
+
+    switch_passive_mode 1 response
+    switch_passive_mode_return_code=$response
+
+    if (( switch_passive_mode_return_code != 200 )); then
+      echo "Passive mode config update FAILED! ABORTING!"
+      exit 1
+    fi
+
+    echo "DONE"
+
+    # echo "Updating Postfix config to add relay domains..."
+    # enable_postfix_relay_domains $SERVER_NAME
+
+    echo "Reloading Postfix..."
+    reload_postfix
+    postfix_reload_return_code=$?
+
+    if (( postfix_reload_return_code != 0 )); then
+        echo "Postfix reload failed! Reverting changes..."
+        enable_postfix_header_checks $SERVER_NAME
+        disable_postfix_transport_maps $SERVER_NAME
+        update_transport_route_config "RETRIEVE"
+        echo "Revert complete. Update aborted!"
+        exit 1
+    else
+      echo "DONE"
+      echo "Toggle Complete! To revert, re-run script with the 'enable' parameter"
+    fi
+}
+
+
+case "$1" in
+    enable)
+        $1
+        ;;
+    disable)
+        $1
+        ;;
+    *)
+        echo $"Usage: $0 {enable|disable}"
+        exit 2
+esac
+exit $?

@@ -94,6 +94,11 @@
       "Type": "String",
       "Default": "PT1H"
     },
+    "DynamicCpuTargetValue": {
+      "Description": "The target CPU value for the dynamic scaling policy.",
+      "Type": "Number",
+      "Default": "50"
+    },
     "EbsVolumeType": {
       "Description": "Indicates the EBS volume type.",
       "Type": "String",
@@ -143,10 +148,15 @@
       "Default": "false",
       "AllowedValues": [ "true", "false" ]
     },
-    "PolicyTargetValue": {
-      "Description": "The target value for the metric.",
+    "ParentAccountName" : {
+      "Description" : "FSC Parent Account Name",
+      "Type": "String",
+      "Default": ""
+    },
+    "PredictiveCpuTargetValue": {
+      "Description": "The target CPU value for the predictive scaling policy.",
       "Type": "Number",
-      "Default": "85"
+      "Default": "50"
     },
     "S3CookbookRepositoryURL": {
       "Description": "The absolute S3 path to the cookbooks tar/zip used to install the application.",
@@ -372,9 +382,6 @@
         { "Fn::Equals": [ { "Ref": "Environment" }, "qainf" ] },
         { "Fn::Equals": [ { "Ref": "Environment" }, "dev" ] }
       ]
-    },
-    "ScalingEnabled": {
-      "Fn::Equals": [ { "Ref": "Environment" }, "prod" ]
     }
   },
 
@@ -513,7 +520,7 @@
         "PredictiveScalingConfiguration":{
           "MetricSpecifications":[
             {
-              "TargetValue":50,
+              "TargetValue": { "Ref": "PredictiveCpuTargetValue" },
               "PredefinedMetricPairSpecification":{
                 "PredefinedMetricType":"ASGCPUUtilization"
               }
@@ -528,16 +535,15 @@
     },
     "XgemailScaleCpuPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
-      "Condition": "ScalingEnabled",
       "Properties": {
         "AutoScalingGroupName": { "Ref": "XgemailAutoScalingGroup" },
-        "EstimatedInstanceWarmup": "400",
+        "EstimatedInstanceWarmup": "600",
         "PolicyType": "TargetTrackingScaling",
         "TargetTrackingConfiguration": {
           "PredefinedMetricSpecification": {
             "PredefinedMetricType": "ASGAverageCPUUtilization"
           },
-          "TargetValue": { "Ref": "PolicyTargetValue"}
+          "TargetValue": { "Ref": "DynamicCpuTargetValue" }
         }
       }
     },
@@ -602,6 +608,7 @@
                       "    \"branch\"                                   : \"{{branch}}\",\n",
                       "    \"cluster\"                                  : \"{{cluster}}\",\n",
                       "    \"client-endpoint\"                          : \"{{region}}\",\n",
+                      "    \"parent_account_name\"                      : \"{{parent_account_name}}\",\n",
                       "    \"region\"                                   : \"{{region}}\",\n",
                       "    \"station_account_role_arn\"                 : \"{{station_account_role_arn}}\",\n",
                       "    \"vpc_id\"                                   : \"{{vpc_id}}\",\n",
@@ -656,6 +663,7 @@
                   "msg_history_v2_dynamodb_table_name":                 { "Ref": "MsgHistoryV2DynamoDbTableName"},
                   "msg_history_v2_stream_name":                         { "Ref": "MsgHistoryV2StreamName" },
                   "newrelic_enabled":                                   { "Ref": "NewRelicEnabled" },
+                  "parent_account_name":                                { "Ref": "ParentAccountName" },
                   "postfix_queue_efs_file_system_id":                   { "Ref": "XgemailPostfixQueueEfsFileSystemId" },
                   "region":                                             { "Ref": "AWS::Region" },
                   "stack":                                              { "Ref": "AWS::StackName" },
@@ -990,8 +998,7 @@
     },
     "XgemailScaleCpuPolicy": {
       "Description": "Auto Scaling Scale Out Policy based on CPU.",
-      "Value": { "Ref": "XgemailScaleCpuPolicy" },
-      "Condition": "ScalingEnabled"
+      "Value": { "Ref": "XgemailScaleCpuPolicy" }
     }
   }
 }
