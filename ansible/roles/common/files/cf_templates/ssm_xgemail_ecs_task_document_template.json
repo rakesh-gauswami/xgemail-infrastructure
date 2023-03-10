@@ -1,0 +1,169 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Template containing an Xgemail SSM Document to stop an ECS Task",
+  "Metadata": {
+    "Copyright": [
+      "Copyright 2023, Sophos Limited. All rights reserved.",
+      "",
+      "'Sophos' and 'Sophos Anti-Virus' are registered trademarks of",
+      "Sophos Limited and Sophos Group.  All other product and company",
+      "names mentioned are trademarks or registered trademarks of their",
+      "respective owners."
+    ],
+    "Comments": [
+      "Creates an SSM Document to stop an ECS Task by Task ID."
+    ]
+  },
+  "Resources": {
+    "StopEcsTask": {
+      "Type": "AWS::SSM::Document",
+      "Properties": {
+        "DocumentType": "Automation",
+        "Content": {
+          "schemaVersion": "0.3",
+          "assumeRole": { "Fn::GetAtt": [ "StopEcsTaskRole", "Arn" ] },
+          "description": "This SSM document will stop an ECS Task.",
+          "parameters": {
+            "Cluster": {
+              "type": "String",
+              "description": "The short name or full Amazon Resource Name (ARN) of the cluster that hosts the task to stop.",
+              "default": "central-chassis-ecs-CloudStation"
+            },
+            "Task": {
+              "type": "String",
+              "description": "The task ID or full ARN entry of the task to stop."
+            }
+          },
+          "mainSteps": [
+            {
+              "name": "stopTask",
+              "action": "aws:executeAwsApi",
+              "maxAttempts": 3,
+              "onFailure": "Abort",
+              "inputs": {
+                "Service": "ecs",
+                "Api": "stop_task",
+                "cluster": "{{ Cluster }}",
+                "task": "{{ Task }}"
+              },
+              "isCritical": "true",
+              "isEnd": "true"
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "StopEcsTask"
+                ]
+              ]
+            }
+          },
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
+      }
+    },
+    "StopEcsTaskRole" : {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [
+                "ssm.amazonaws.com"
+              ]
+            },
+            "Action": [ "sts:AssumeRole" ]
+          }]
+        },
+        "Path": "/",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "cloudemail"
+          },
+          {
+            "Key": "BusinessUnit",
+            "Value": "MSG"
+          },
+          {
+            "Key": "Name",
+            "Value": { "Fn::Join": [ "-", [ { "Ref" : "AWS::StackName" }, "StopEcsTaskRole" ] ] }
+          },
+          {
+            "Key": "Project",
+            "Value": "xgemail"
+          },
+          {
+            "Key": "OwnerEmail",
+            "Value": "sophosmailops@sophos.com"
+          }
+        ]
+      }
+    },
+    "StopEcsTaskRolePolicies": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "ecs:DescribeClusters",
+                "ecs:DescribeServices",
+                "ecs:DescribeTaskDefinition",
+                "ecs:DescribeTaskSets",
+                "ecs:DescribeTasks",
+                "ecs:StopTask"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:ecs:*:*:*"
+              ]
+            }
+          ]
+        },
+        "PolicyName": "root",
+        "Roles": [ { "Ref": "StopEcsTaskRole" } ]
+      },
+      "Type": "AWS::IAM::Policy"
+    }
+  },
+
+  "Outputs" : {
+     "StopEcsTask": {
+      "Description": "SSM Stop Ecs Task document stops an ECS Task",
+      "Value": { "Ref": "StopEcsTask" }
+    },
+    "StopEcsTaskRole": {
+      "Description": "Stop Ecs Task role",
+      "Value": { "Ref": "StopEcsTaskRole" }
+    },
+    "StopEcsTaskRoleArn": {
+      "Description": "Stop Ecs Task role ARN",
+      "Value": { "Fn::GetAtt" : [ "StopEcsTaskRole", "Arn" ] }
+    }
+  }
+}
