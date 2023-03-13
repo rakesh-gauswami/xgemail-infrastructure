@@ -80,6 +80,8 @@ end
   execute print_postmulti_cmd( INSTANCE_NAME, "postconf -P '#{cur}'" )
 end
 
+#"nested_header_checks =" is kept empty as we need to skip header checks inside attachment that is of type rfc822
+
 if ACCOUNT != 'sandbox'
 CONFIGURATION_COMMANDS =
   [
@@ -93,7 +95,8 @@ CONFIGURATION_COMMANDS =
     'smtp_tls_CAfile = /etc/pki/tls/certs/ca-bundle.crt',
     'smtp_tls_loglevel=1',
     'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache',
-    "header_checks = regexp:#{HEADER_CHECKS_PATH}"
+    "header_checks = regexp:#{HEADER_CHECKS_PATH}",
+    "nested_header_checks ="
   ]
 
 CONFIGURATION_COMMANDS.each do | cur |
