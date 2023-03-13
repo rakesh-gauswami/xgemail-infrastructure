@@ -75,6 +75,8 @@ file "#{HEADER_CHECKS_PATH}" do
   group 'root'
 end
 
+#"nested_header_checks =" is kept empty as we need to skip header checks inside attachment that is of type rfc822
+
 CONFIGURATION_COMMANDS =
     [
         'bounce_queue_lifetime=0',
@@ -86,7 +88,8 @@ CONFIGURATION_COMMANDS =
         'smtp_tls_mandatory_protocols = TLSv1.2',
         'smtp_tls_loglevel=1',
         'smtp_tls_session_cache_database=btree:${data_directory}/smtp-tls-session-cache',
-        "header_checks=regexp:#{HEADER_CHECKS_PATH}"
+        "header_checks=regexp:#{HEADER_CHECKS_PATH}",
+        "nested_header_checks ="
     ]
 
 CONFIGURATION_COMMANDS.each do | cur |

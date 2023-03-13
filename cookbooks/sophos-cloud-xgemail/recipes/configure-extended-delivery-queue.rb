@@ -210,7 +210,7 @@ else
   end
 end
 
-
+#"nested_header_checks =" is kept empty as we need to skip header checks inside attachment that is of type rfc822
 if NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery' || NODE_TYPE == 'warmup-xdelivery' || NODE_TYPE == 'beta-xdelivery' || NODE_TYPE == 'delta-xdelivery'
 
   HEADER_CHECKS_PATH = "/etc/postfix-#{INSTANCE_NAME}/header_checks"
@@ -230,7 +230,8 @@ if NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery' || NODE_T
   end
 
   [
-    "header_checks = regexp:#{HEADER_CHECKS_PATH}"
+    "header_checks = regexp:#{HEADER_CHECKS_PATH}",
+    "nested_header_checks ="
   ].each do | cur |
     execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
   end
@@ -248,7 +249,8 @@ if NODE_TYPE == 'mf-outbound-xdelivery'
   end
 
   [
-    "header_checks = regexp:#{HEADER_CHECKS_PATH}"
+    "header_checks = regexp:#{HEADER_CHECKS_PATH}",
+    "nested_header_checks ="
   ].each do | cur |
     execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
   end
@@ -266,7 +268,8 @@ if NODE_TYPE == 'xdelivery' || NODE_TYPE == 'customer-xdelivery'
     group 'root'
   end
   [
-    "header_checks = regexp:#{TRANSPORT_ROUTE_HEADER_CHECKS_PATH}"
+    "header_checks = regexp:#{TRANSPORT_ROUTE_HEADER_CHECKS_PATH}",
+    "nested_header_checks ="
   ].each do | cur |
     execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
   end
