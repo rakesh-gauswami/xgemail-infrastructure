@@ -129,7 +129,7 @@ locals {
   SXL_DBL_BY_POP = {
     eml000cmh = "uri.vir1.sophosxl.com"
     eml100bom = "uri.ire1.sophosxl.com"
-    eml100gru = "uri.cal1.sophosxl.com"
+    eml100gru = "uri.vir1.sophosxl.com"
     eml100hnd = "uri.jap1.sophosxl.com"
     eml100syd = "uri.aus1.sophosxl.com"
     eml100yul = "uri.vir1.sophosxl.com"
@@ -145,7 +145,7 @@ locals {
   SXL_RBL_BY_POP = {
     eml000cmh = "fur.vir1.sophosxl.com"
     eml100bom = "fur.ire1.sophosxl.com"
-    eml100gru = "fur.cal1.sophosxl.com"
+    eml100gru = "fur.vir1.sophosxl.com"
     eml100hnd = "fur.jap1.sophosxl.com"
     eml100syd = "fur.aus1.sophosxl.com"
     eml100yul = "fur.vir1.sophosxl.com"
