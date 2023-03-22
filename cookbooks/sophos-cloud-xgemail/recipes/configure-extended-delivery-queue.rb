@@ -222,7 +222,8 @@ if NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery' || NODE_T
 /^X_Sophos_TLS_Connection: TLS_1_3_V$/i FILTER tls_13_verify:
 /^X_Sophos_TLS_Connection: PRE_TLS_1.3$/i FILTER pref_tls_13:
 /^X_Sophos_TLS_Connection: PRE_TLS_1.3_V$/i FILTER pref_tls_13_verify:
-/^X-Sophos-Enforce-TLS: yes$|^X-Sophos-TLS-Probe: SUCCESS$|^X_Sophos_TLS_Connection: TLS_1_2$/i FILTER smtp_encrypt:"
+/^X-Sophos-Enforce-TLS: yes$|^X-Sophos-TLS-Probe: SUCCESS$|^X_Sophos_TLS_Connection: TLS_1_2$/i FILTER smtp_encrypt:
+/^X-Sophos-Email-Transport-Route: (.*)$/i FILTER $1"
     mode '0644'
     owner 'root'
     group 'root'
