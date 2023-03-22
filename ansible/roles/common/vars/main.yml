@@ -1119,6 +1119,13 @@ aws:
       template_parameters:
         QueueName:                                                "{{sqs.user_deleted_action_sqs_queue_sns_listener}}"
         TagApplication:                                           "xgemail-mail"
+    vip_update_events_queue:
+      stack_name:                                                 "{{stack.sqs.vip_update_events_queue}}"
+      state:                                                      present
+      template:                                                   "{{template.sqs.sqs_simple_template}}"
+      template_parameters:
+        QueueName:                                                "{{sqs.vip_update_events_queue}}"
+        TagApplication:                                           "xgemail-mail"
     warmup_delivery_sqs_queue_sns_listener:
       stack_name:                                                 "{{stack.sqs.warmup_delivery_sqs_queue_sns_listener}}"
       state:                                                      present
