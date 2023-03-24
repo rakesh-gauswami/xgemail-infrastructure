@@ -37,7 +37,7 @@ MAIL_PIC_API_AUTH = node['xgemail']['mail_pic_api_auth']
 
 CONFIGURATION_COMMANDS =
   [
-    "relay_domains = hash:$config_directory/#{RELAY_DOMAINS_FILENAME}"
+    "relay_domains = static:ALL"
   ]
 
 PACKAGE_DIR           = "#{XGEMAIL_FILES_DIR}/mf-inbound-submit-domain-cron"

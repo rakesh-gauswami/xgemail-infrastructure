@@ -35,11 +35,6 @@ RELAY_DOMAINS_FILENAME  = node['xgemail']['relay_domains_filename']
 MAIL_PIC_API_RESPONSE_TIMEOUT = node['xgemail']['mail_pic_apis_response_timeout_seconds']
 MAIL_PIC_API_AUTH = node['xgemail']['mail_pic_api_auth']
 
-CONFIGURATION_COMMANDS =
-  [
-    "relay_domains = hash:$config_directory/#{RELAY_DOMAINS_FILENAME}"
-  ]
-
 PACKAGE_DIR           = "#{XGEMAIL_FILES_DIR}/internet-submit-domain-cron"
 CRON_SCRIPT           = 'internet.submit.domain.updater.py'
 CRON_SCRIPT_PATH      = "#{PACKAGE_DIR}/#{CRON_SCRIPT}"
@@ -89,12 +84,6 @@ template CRON_SCRIPT_PATH do
     :account => ACCOUNT
   )
   notifies :run, "execute[#{CRON_SCRIPT_PATH}]", :immediately
-end
-
-if NODE_TYPE != 'encryption-submit'
-  CONFIGURATION_COMMANDS.each do | cur |
-    execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
-  end
 end
 
 cron "#{INSTANCE_NAME}-domain-cron" do

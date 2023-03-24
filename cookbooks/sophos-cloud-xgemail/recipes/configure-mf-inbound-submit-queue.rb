@@ -264,13 +264,6 @@ if ACCOUNT != 'sandbox'
     "smtpd_tls_key_file = #{KEY_FILE}",
     "tls_preempt_cipherlist = yes",
 
-    # Recipient restrictions
-    'smtpd_recipient_restrictions = ' +
-      "check_recipient_access hash:$config_directory/#{RECIPIENT_ACCESS_FILENAME} " +
-      "hash:$config_directory/#{RECIPIENT_ACCESS_EXTRA_FILENAME}, " +
-      "check_sender_access hash:$config_directory/#{SOFT_RETRY_SENDERS_MAP_FILENAME}, " +
-      'reject',
-
     # Sender restrictions
     'smtpd_sender_restrictions = ' +
       "reject_non_fqdn_sender",
