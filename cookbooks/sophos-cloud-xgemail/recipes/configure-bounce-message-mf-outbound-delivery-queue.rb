@@ -50,7 +50,7 @@ if NODE_TYPE == 'mf-outbound-delivery' || NODE_TYPE == 'mf-outbound-xdelivery'
       'xgemail_do_sender_bounce = no',
       'xgemail_suppress_2bounce = yes',
       "transport_maps=hash:$config_directory/#{TRANSPORT_MAPS_FILENAME}",
-      "maximal_queue_lifetime=5d"
+      "maximal_queue_lifetime=1d"
     ]
 
   # Rehash transport map
