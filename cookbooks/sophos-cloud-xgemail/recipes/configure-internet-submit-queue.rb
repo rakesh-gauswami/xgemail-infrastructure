@@ -270,11 +270,9 @@ if ACCOUNT != 'sandbox'
       "reject_rhsbl_reverse_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
       "reject_rhsbl_sender #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
       "reject_rhsbl_client #{SXL_DBL}=#{SXL_DBL_RESPONSE_CODES}, " +
-      'reject_rbl_client $reject_rbl_client, ' +
-      "check_recipient_access hash:$config_directory/#{RECIPIENT_ACCESS_FILENAME} " +
-      "hash:$config_directory/#{RECIPIENT_ACCESS_EXTRA_FILENAME}, " +
-      "check_sender_access hash:$config_directory/#{SOFT_RETRY_SENDERS_MAP_FILENAME}, " +
-      'reject',
+      'reject_rbl_client $reject_rbl_client',
+
+      'relay_domains = static:ALL',
 
     # Sender restrictions
     'smtpd_sender_restrictions = ' +
