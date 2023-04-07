@@ -96,9 +96,3 @@ if NODE_TYPE != 'encryption-submit'
     execute print_postmulti_cmd( INSTANCE_NAME, "postconf '#{cur}'" )
   end
 end
-
-cron "#{INSTANCE_NAME}-domain-cron" do
-  minute "*/#{CRON_MINUTE_FREQUENCY}"
-  user 'root'
-  command "source /etc/profile && timeout #{CRON_JOB_TIMEOUT} flock --nb /var/lock/#{CRON_SCRIPT}.lock -c '#{CRON_SCRIPT_PATH}' >/dev/null 2>&1"
-end

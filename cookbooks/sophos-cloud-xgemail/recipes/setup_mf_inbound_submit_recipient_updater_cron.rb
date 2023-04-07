@@ -90,9 +90,3 @@ template CRON_SCRIPT_PATH do
 end
 
 
-cron "#{INSTANCE_NAME}-recipient-cron" do
-  minute "3-59/#{CRON_MINUTE_FREQUENCY}"
-  user 'root'
-  command "source /etc/profile && timeout #{CRON_JOB_TIMEOUT} flock --nb /var/lock/#{CRON_SCRIPT}.lock -c '#{CRON_SCRIPT_PATH}' >/dev/null 2>&1"
-end
-
