@@ -86,5 +86,4 @@ template CRON_SCRIPT_PATH do
     :connections_bucket => CONNECTIONS_BUCKET,
     :account => ACCOUNT
   )
-  notifies :run, "execute[#{CRON_SCRIPT_PATH}]", :immediately
 end
