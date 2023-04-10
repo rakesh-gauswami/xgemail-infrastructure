@@ -211,14 +211,6 @@
       "Description": "Endpoint for message history Delivery Status Retry SQS queue",
       "Type": "String"
     },
-    "MessageStatisticsQueue": {
-      "Description": "Endpoint for message statistics SQS queue",
-      "Type": "String"
-    },
-    "MessageStatisticsRejectionQueue": {
-      "Description": "Endpoint for message statistics rejection SQS queue",
-      "Type": "String"
-    },
     "MultiPolicyQueue": {
       "Description": "Endpoint for multi Policy queue",
       "Type": "String"
@@ -322,14 +314,6 @@
         "TopicArn": { "Ref": "MessageHistoryEventsTopicArn" }
       }
     },
-    "MessageStatisticsQueueToDeletedSnsSubscription": {
-      "Type" : "AWS::SNS::Subscription",
-      "Properties": {
-        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageStatisticsQueue"}]]},
-        "Protocol": "sqs",
-        "TopicArn": { "Ref": "DeletedEventsTopicArn"}
-      }
-    },
     "MessageHistoryQueueToQuarantinedSnsSubscription": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
@@ -344,14 +328,6 @@
         "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageHistoryQueue"}]]},
         "Protocol": "sqs",
         "TopicArn": { "Ref": "EncryptEventsTopicArn"}
-      }
-    },
-    "MessageStatisticsQueueToQuarantinedSnsSubscription": {
-      "Type" : "AWS::SNS::Subscription",
-      "Properties": {
-        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageStatisticsQueue"}]]},
-        "Protocol": "sqs",
-        "TopicArn": { "Ref": "QuarantinedEventsTopicArn"}
       }
     },
     "QuarantineQueueToQuarantinedSnsSubscription": {
@@ -469,54 +445,6 @@
         "TopicArn": { "Ref": "SuccessEventsTopicArn"}
       }
     },
-    "MessageStatisticsQueueToInternetDeliverySnsSubscription": {
-      "Type" : "AWS::SNS::Subscription",
-      "Properties": {
-        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageStatisticsQueue"}]]},
-        "Protocol": "sqs",
-        "TopicArn": { "Ref": "InternetDeliveryTopicArn"}
-      }
-    },
-    "MessageStatisticsQueueToRiskyDeliverySnsSubscription": {
-      "Type" : "AWS::SNS::Subscription",
-      "Properties": {
-        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageStatisticsQueue"}]]},
-        "Protocol": "sqs",
-        "TopicArn": { "Ref": "RiskyDeliveryTopicArn"}
-      }
-    },
-    "MessageStatisticsQueueToSuccessSnsSubscription": {
-      "Type" : "AWS::SNS::Subscription",
-      "Properties": {
-        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageStatisticsQueue"}]]},
-        "Protocol": "sqs",
-        "TopicArn": { "Ref": "SuccessEventsTopicArn"}
-      }
-    },
-    "MessageStatisticsQueueToEncryptionEventSnsSubscription": {
-      "Type" : "AWS::SNS::Subscription",
-      "Properties": {
-        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageStatisticsQueue"}]]},
-        "Protocol": "sqs",
-        "TopicArn": { "Ref": "EncryptEventsTopicArn"}
-      }
-    },
-    "MessageStatisticsQueueToWarmupDeliverySnsSubscription": {
-      "Type" : "AWS::SNS::Subscription",
-      "Properties": {
-        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageStatisticsQueue"}]]},
-        "Protocol": "sqs",
-        "TopicArn": { "Ref": "WarmupDeliveryTopicArn"}
-      }
-    },
-    "MessageStatisticsRejectionQueueToMessageStatisticsRejectionSnsSubscription": {
-      "Type" : "AWS::SNS::Subscription",
-      "Properties": {
-        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageStatisticsRejectionQueue"}]]},
-        "Protocol": "sqs",
-        "TopicArn": { "Ref": "MessageStatisticsRejectionTopicArn"}
-      }
-    },
     "MultiPolicyQueueToMultiPolicySnsSubscription": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
@@ -567,14 +495,6 @@
         "TopicArn": { "Ref": "WarmupDeliveryTopicArn"}
       }
     },
-    "MessageStatisticsSNSListenerQueueToBounceEventSnsSubscription": {
-      "Type" : "AWS::SNS::Subscription",
-      "Properties": {
-        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageStatisticsQueue"}]]},
-        "Protocol": "sqs",
-        "TopicArn": { "Ref": "BounceEventTopicArn"}
-      }
-    },
     "AdditionalActionSNSListenerQueueToBounceEventSnsSubscription": {
       "Type" : "AWS::SNS::Subscription",
       "Properties": {
@@ -607,14 +527,6 @@
         "Protocol": "sqs",
         "TopicArn": { "Ref": "EncryptionSettingsUpdateEventsTopicArn"},
         "RawMessageDelivery": "true"
-      }
-    },
-    "MessageStatisticsSNSListenerQueueToRedirectEventSnsSubscription": {
-      "Type" : "AWS::SNS::Subscription",
-      "Properties": {
-        "Endpoint": {"Fn::Join": [":", ["arn:aws:sqs", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, {"Ref": "MessageStatisticsQueue"}]]},
-        "Protocol": "sqs",
-        "TopicArn": { "Ref": "RedirectEventTopicArn"}
       }
     },
     "RedirectEventSNSListenerQueueToRedirectEventSnsSubscription": {
@@ -1188,174 +1100,6 @@
           ]
         },
         "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "MessageHistoryStatusRetryQueue" }]]}]
-      }
-    },
-    "MessageStatisticsQueuePolicy": {
-      "Type": "AWS::SQS::QueuePolicy",
-      "Properties": {
-        "PolicyDocument": {
-          "Version": "2012-10-17",
-          "Id": "MessageStatisticsQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
-          "Statement": [
-            {
-              "Sid": "Allow-BetaDeliveryTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": [{ "Fn::ImportValue" :  {"Fn::Sub": "CloudEmail-xgemail-beta-delivery-SNS-SnsTopicArn" } }]
-                }
-              }
-            },
-            {
-              "Sid": "Allow-DeletedEventsTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "DeletedEventsTopicArn"}
-                }
-              }
-            },
-            {
-              "Sid": "Allow-InternetDeliveryTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "InternetDeliveryTopicArn"}
-                }
-              }
-            },
-            {
-              "Sid": "Allow-MfOutboundDeliveryTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "MfOutboundDeliveryTopicArn"}
-                }
-              }
-            },
-            {
-              "Sid": "Allow-QuarantinedEventsTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "QuarantinedEventsTopicArn"}
-                }
-              }
-            },
-            {
-              "Sid": "Allow-SuccessEventsTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "SuccessEventsTopicArn"}
-                }
-              }
-            },
-            {
-              "Sid": "Allow-MfSuccessEventsTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "MfSuccessEventsTopicArn"}
-                }
-              }
-            },
-            {
-              "Sid": "Allow-RedirectEventTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "RedirectEventTopicArn"}
-                }
-              }
-            },
-            {
-              "Sid": "Allow-BounceEventTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "BounceEventTopicArn"}
-                }
-              }
-            },
-            {
-              "Sid": "Allow-RiskyDeliveryTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "RiskyDeliveryTopicArn"}
-                }
-              }
-            },
-            {
-              "Sid": "Allow-WarmupDeliveryTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "WarmupDeliveryTopicArn"}
-                }
-              }
-            },
-            {
-              "Sid": "Allow-EncryptEventsTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "EncryptEventsTopicArn"}
-                }
-              }
-            },
-            {
-              "Sid": "Allow-DeltaDeliveryTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": [{ "Fn::ImportValue" :  {"Fn::Sub": "CloudEmail-xgemail-delta-delivery-SNS-SnsTopicArn" } }]
-                }
-              }
-            }
-          ]
-        },
-        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "MessageStatisticsQueue" }]]}]
       }
     },
     "MessageStatisticsRejectionQueuePolicy": {
