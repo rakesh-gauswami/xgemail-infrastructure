@@ -978,20 +978,6 @@ aws:
       template_parameters:
         QueueName:                                                "{{sqs.msg_history_sqs_queue_sns_listener}}"
         TagApplication:                                           "xgemail-mail"
-    msg_statistics_sqs_queue:
-      stack_name:                                                 "{{stack.sqs.msg_statistics_sqs_queue}}"
-      state:                                                      absent
-      template:                                                   "{{template.sqs.sqs_simple_template}}"
-      template_parameters:
-        QueueName:                                                "{{sqs.msg_statistics_sqs_queue}}"
-        TagApplication:                                           "xgemail-mail"
-    msg_statistics_rejection_sqs_queue:
-      stack_name:                                                 "{{stack.sqs.msg_statistics_rejection_sqs_queue}}"
-      state:                                                      present
-      template:                                                   "{{template.sqs.sqs_simple_template}}"
-      template_parameters:
-        QueueName:                                                "{{sqs.msg_statistics_rejection_sqs_queue}}"
-        TagApplication:                                           "xgemail-mail"
     multi_policy_sqs_queue:
       stack_name:                                                 "{{stack.sqs.multi_policy_sqs_queue}}"
       state:                                                      present

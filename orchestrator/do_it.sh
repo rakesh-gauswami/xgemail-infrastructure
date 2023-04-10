@@ -46,9 +46,6 @@ MSG_HISTORY_SQS_QUEUE="sandbox-Xgemail_MessageHistoryEvent_Delivery"
 MSG_HISTORY_SQS_QUEUE_SNS_LISTENER="sandbox-Xgemail_MessageHistoryEvent_Delivery_SNS_Listener"
 MSG_HISTORY_STATUS_SQS_QUEUE="sandbox-Xgemail_MessageHistory_Delivery_Status"
 MSG_HISTORY_STATUS_SQS_QUEUE_SNS_LISTENER="sandbox-Xgemail_MessageHistory_Delivery_Status_SNS_Listener"
-MSG_STATISTICS_REJECTION_SQS_QUEUE="sandbox-Xgemail_Message_Statistics_Rejection"
-MSG_STATISTICS_SQS_QUEUE="sandbox-Xgemail_Message_Statistics"
-MSG_STATISTICS_SQS_QUEUE_SNS_LISTENER="sandbox-Xgemail_Message_Statistics_SNS_Listener"
 POLICY_SQS_QUEUE="sandbox-xgemail-policy"
 MULTI_POLICY_SQS_QUEUE="sandbox-Xgemail_multi_policy"
 NOTIFIER_REQUEST_SQS_QUEUE="sandbox-Xgemail_Notifier_Request"
@@ -78,9 +75,6 @@ MSG_HISTORY_SQS_QUEUE_DLQ="sandbox-Xgemail_MessageHistoryEvent_Delivery-DLQ"
 MSG_HISTORY_SQS_QUEUE_SNS_LISTENER_DLQ="sandbox-Xgemail_MessageHistoryEvent_Delivery_SNS_Listener-DLQ"
 MSG_HISTORY_STATUS_SQS_QUEUE_DLQ="sandbox-Xgemail_MessageHistory_Delivery_Status-DLQ"
 MSG_HISTORY_STATUS_SQS_QUEUE_SNS_LISTENER_DLQ="sandbox-Xgemail_MessageHistory_Delivery_Status_SNS_Listener-DLQ"
-MSG_STATISTICS_REJECTION_SQS_QUEUE_DLQ="sandbox-Xgemail_Message_Statistics_Rejection-DLQ"
-MSG_STATISTICS_SQS_QUEUE_DLQ="sandbox-Xgemail_Message_Statistics-DLQ"
-MSG_STATISTICS_SQS_QUEUE_SNS_LISTENER_DLQ="sandbox-Xgemail_Message_Statistics_SNS_Listener-DLQ"
 MULTI_POLICY_SQS_QUEUE_DLQ="sandbox-Xgemail_multi_policy-DLQ"
 NOTIFIER_REQUEST_SQS_QUEUE_DLQ="sandbox-Xgemail_Notifier_Request-DLQ"
 QUARANTINE_SQS_QUEUE_DLQ="sandbox-Xgemail_Quarantine_Delivery-DLQ"
@@ -180,12 +174,6 @@ if [[ $startup_check -ne 0 ]]; then
       gprintf "CREATING MSG_HISTORY_STATUS_SQS_QUEUE_SNS_LISTENER"
       awslocal sqs create-queue --queue-name ${MSG_HISTORY_STATUS_SQS_QUEUE_SNS_LISTENER} | jq .
 
-      gprintf "CREATING MSG_STATISTICS_REJECTION_SQS_QUEUE"
-      awslocal sqs create-queue --queue-name ${MSG_STATISTICS_REJECTION_SQS_QUEUE} | jq .
-
-      gprintf "CREATING MSG_STATISTICS_SQS_QUEUE"
-      awslocal sqs create-queue --queue-name ${MSG_STATISTICS_SQS_QUEUE} | jq .
-
       gprintf "CREATING MSG_STATISTICS_SQS_QUEUE_SNS_LISTENER"
       awslocal sqs create-queue --queue-name ${MSG_STATISTICS_SQS_QUEUE_SNS_LISTENER} | jq .
 
@@ -247,12 +235,6 @@ if [[ $startup_check -ne 0 ]]; then
       awslocal sqs create-queue --queue-name ${MSG_HISTORY_STATUS_SQS_QUEUE_DLQ} | jq .
 
       awslocal sqs create-queue --queue-name ${MSG_HISTORY_STATUS_SQS_QUEUE_SNS_LISTENER_DLQ} | jq .
-
-      awslocal sqs create-queue --queue-name ${MSG_STATISTICS_REJECTION_SQS_QUEUE_DLQ} | jq .
-
-      awslocal sqs create-queue --queue-name ${MSG_STATISTICS_SQS_QUEUE_DLQ} | jq .
-
-      awslocal sqs create-queue --queue-name ${MSG_STATISTICS_SQS_QUEUE_SNS_LISTENER_DLQ} | jq .
 
       awslocal sqs create-queue --queue-name ${MULTI_POLICY_SQS_QUEUE_DLQ} | jq .
 
@@ -349,11 +331,6 @@ if [[ $startup_check -ne 0 ]]; then
           --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${INTERNET_DELIVERY_SNS_TOPIC} \
           --protocol sqs \
           --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${MSG_HISTORY_STATUS_SQS_QUEUE_SNS_LISTENER} | jq .
-
-      awslocal sns subscribe \
-          --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${MSG_STATISTICS_REJECTION_SNS_TOPIC} \
-          --protocol sqs \
-          --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${MSG_STATISTICS_REJECTION_SQS_QUEUE} | jq .
 
       awslocal sns subscribe \
           --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${QUARANTINED_EVENTS_SNS_TOPIC} \

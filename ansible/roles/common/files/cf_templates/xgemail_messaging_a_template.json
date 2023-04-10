@@ -1102,30 +1102,6 @@
         "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "MessageHistoryStatusRetryQueue" }]]}]
       }
     },
-    "MessageStatisticsRejectionQueuePolicy": {
-      "Type": "AWS::SQS::QueuePolicy",
-      "Properties": {
-        "PolicyDocument": {
-          "Version": "2012-10-17",
-          "Id": "MsgStatisticsRejectionQueuePolicy-id-{0a87be1d-a442-4db0-8863-555056ffeb06}",
-          "Statement": [
-            {
-              "Sid": "Allow-MsgStatisticsRejectionTopicArn",
-              "Effect": "Allow",
-              "Principal": "*",
-              "Action": ["sqs:SendMessage"],
-              "Resource": "*",
-              "Condition": {
-                "ArnEquals": {
-                  "aws:SourceArn": {"Ref": "MessageStatisticsRejectionTopicArn"}
-                }
-              }
-            }
-          ]
-        },
-        "Queues": [{"Fn::Join": ["", ["https://sqs.", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "AWS::AccountId" }, "/", { "Ref": "MessageStatisticsRejectionQueue" }]]}]
-      }
-    },
     "QuarantineQueuePolicy": {
       "Type": "AWS::SQS::QueuePolicy",
       "Properties": {
