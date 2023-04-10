@@ -985,13 +985,6 @@ aws:
       template_parameters:
         QueueName:                                                "{{sqs.multi_policy_sqs_queue}}"
         TagApplication:                                           "xgemail-mail"
-    msg_statistics_sqs_queue_sns_listener:
-      stack_name:                                                 "{{stack.sqs.msg_statistics_sqs_queue_sns_listener}}"
-      state:                                                      present
-      template:                                                   "{{template.sqs.sqs_simple_template}}"
-      template_parameters:
-        QueueName:                                                "{{sqs.msg_statistics_sqs_queue_sns_listener}}"
-        TagApplication:                                           "xgemail-mail"
     message_redirect_sqs_queue_sns_listener:
       stack_name:                                                 "{{stack.sqs.message_redirect_sqs_queue_sns_listener}}"
       state:                                                      present

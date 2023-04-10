@@ -174,9 +174,6 @@ if [[ $startup_check -ne 0 ]]; then
       gprintf "CREATING MSG_HISTORY_STATUS_SQS_QUEUE_SNS_LISTENER"
       awslocal sqs create-queue --queue-name ${MSG_HISTORY_STATUS_SQS_QUEUE_SNS_LISTENER} | jq .
 
-      gprintf "CREATING MSG_STATISTICS_SQS_QUEUE_SNS_LISTENER"
-      awslocal sqs create-queue --queue-name ${MSG_STATISTICS_SQS_QUEUE_SNS_LISTENER} | jq .
-
       gprintf "CREATING POLICY_SQS_QUEUE"
       awslocal sqs create-queue --queue-name ${POLICY_SQS_QUEUE} | jq .
 
@@ -308,19 +305,9 @@ if [[ $startup_check -ne 0 ]]; then
           --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${MSG_HISTORY_SQS_QUEUE_SNS_LISTENER} | jq .
 
       awslocal sns subscribe \
-          --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${DELETED_EVENTS_SNS_TOPIC} \
-          --protocol sqs \
-          --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${MSG_STATISTICS_SQS_QUEUE_SNS_LISTENER} | jq .
-
-      awslocal sns subscribe \
           --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${INTERNET_DELIVERY_SNS_TOPIC} \
           --protocol sqs \
           --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${INTERNET_DELIVERY_SQS_QUEUE_SNS_LISTENER} | jq .
-
-      awslocal sns subscribe \
-          --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${INTERNET_DELIVERY_SNS_TOPIC} \
-          --protocol sqs \
-          --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${MSG_STATISTICS_SQS_QUEUE_SNS_LISTENER} | jq .
 
       awslocal sns subscribe \
           --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${INTERNET_DELIVERY_SNS_TOPIC} \
@@ -336,11 +323,6 @@ if [[ $startup_check -ne 0 ]]; then
           --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${QUARANTINED_EVENTS_SNS_TOPIC} \
           --protocol sqs \
           --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${MSG_HISTORY_SQS_QUEUE_SNS_LISTENER} | jq .
-
-      awslocal sns subscribe \
-          --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${QUARANTINED_EVENTS_SNS_TOPIC} \
-          --protocol sqs \
-          --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${MSG_STATISTICS_SQS_QUEUE_SNS_LISTENER} | jq .
 
       awslocal sns subscribe \
           --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${QUARANTINED_EVENTS_SNS_TOPIC} \
@@ -361,11 +343,6 @@ if [[ $startup_check -ne 0 ]]; then
           --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${SUCCESS_EVENTS_SNS_TOPIC} \
           --protocol sqs \
           --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${MSG_HISTORY_SQS_QUEUE_SNS_LISTENER} | jq .
-
-      awslocal sns subscribe \
-          --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${SUCCESS_EVENTS_SNS_TOPIC} \
-          --protocol sqs \
-          --notification-endpoint arn:aws:sqs:us-east-1:${AWS_ACCOUNT_ID}:${MSG_STATISTICS_SQS_QUEUE_SNS_LISTENER} | jq .
 
       awslocal sns subscribe \
           --topic-arn arn:aws:sns:us-east-1:${AWS_ACCOUNT_ID}:${SUCCESS_EVENTS_SNS_TOPIC} \
