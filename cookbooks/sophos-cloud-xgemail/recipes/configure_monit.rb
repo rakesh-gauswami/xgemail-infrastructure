@@ -81,14 +81,6 @@ template '/etc/monit.d/xdelivery.conf' do
   only_if { NODE_TYPE == 'xdelivery' || NODE_TYPE == 'customer-xdelivery' || NODE_TYPE == 'internet-xdelivery' || NODE_TYPE == 'risky-xdelivery' || NODE_TYPE == 'warmup-xdelivery' || NODE_TYPE == 'beta-xdelivery' || NODE_TYPE == 'delta-xdelivery' || NODE_TYPE == 'mf-inbound-xdelivery' || NODE_TYPE == 'mf-outbound-xdelivery'}
 end
 
-template '/etc/monit.d/transport-updater.conf' do
-  source 'monit-transport-updater.conf.erb'
-  mode '0644'
-  owner 'root'
-  group 'root'
-  only_if {NODE_TYPE == 'xdelivery' || NODE_TYPE == 'customer-xdelivery' || NODE_TYPE == 'customer-delivery'  }
-end
-
 # Restart rsyslog service
 service 'rsyslog' do
     action :restart
